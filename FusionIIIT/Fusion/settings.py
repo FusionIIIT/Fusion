@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     'applications.online_cms.apps.OnlineCmsConfig',
     'applications.placement_cell.apps.PlacementCellConfig',
     'applications.scholarships.apps.ScholarshipsConfig',
-    'applications.visitor_hostel.apps.VisitorHostel',
+    'applications.visitor_hostel.apps.VisitorHostelConfig',
 ]
 
 MIDDLEWARE = [

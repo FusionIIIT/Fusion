@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class FinanceAccountsConfig(AppConfig):
-    name = 'finance_accounts'
+    name = 'applications.finance_accounts'
