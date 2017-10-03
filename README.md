@@ -1,5 +1,5 @@
 # FusionIIIT  
-Software Engineering project to be deployed int the institute for the automation of various functionalities, modules and tasks of the Institute that are currently being handled either manually or ineffeciently.
+Software Engineering project to be deployed in the institute for the automation of various functionalities, modules and tasks of the institute that are currently being handled either manually or ineffeciently.  
 A team of more than 60 people working in 12 groups with each working on a module assigned to them.
 The automated tasks includes various sections of the institute like:
     #1) Academic database management  
