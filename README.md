@@ -2,16 +2,16 @@
 Software Engineering project to be deployed int the institute for the automation of various functionalities, modules and tasks of the Institute that are currently being handled either manually or ineffeciently.
 A team of more than 60 people working in 12 groups with each working on a module assigned to them.
 The automated tasks includes various sections of the institute like:
-    Academic database management
-    Academic workflows
-    Finance and Accounting
-    Placement Cell
-    Mess management
-    Gymkhana Activities
-    Scholarship and Awards Portal
-    Employee Management
-    Course Management
-    Complaint System
-    File Tracking System
-    Health Center Mangement
-    Visitor's Hostel Management
+    #1) Academic database management
+    #2) Academic workflows
+    #3) Finance and Accounting
+    #4) Placement Cell
+    #5) Mess management
+    #6) Gymkhana Activities
+    #7) Scholarship and Awards Portal
+    #8) Employee Management
+    #9) Course Management
+    #10) Complaint System
+    #11) File Tracking System
+    #12) Health Center Mangement
+    #13) Visitor's Hostel Management
