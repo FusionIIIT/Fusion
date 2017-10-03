@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'applications.placement_cell.apps.PlacementCellConfig',
     'applications.scholarships.apps.ScholarshipsConfig',
     'applications.visitor_hostel.apps.VisitorHostelConfig',
+    'applications.eis.apps.EisConfig',
 ]
 
 MIDDLEWARE = [
