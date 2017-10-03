@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class FileTrackingConfig(AppConfig):
-    name = 'file_tracking'
+    name = 'applications.file_tracking'
