@@ -1,10 +1,11 @@
 from django.contrib import admin
 
-from .models import (Project, Language, Know, Skill, Has, Education,
-                     Experience, Course, Publication, Achievement,
-                     Coauthor, Patent, Coinventor, Interest, StudentPlacement,
-                     MessageOfficer, NotifyStudent, PlacementStatus, PlacementRecord,
-                     StudentRecord, ChairmanVisit, ContactCompany, PlacementSchedule)
+from .models import (Achievement, ChairmanVisit, Coauthor, Coinventor,
+                     ContactCompany, Course, Education, Experience, Has,
+                     Interest, Know, Language, MessageOfficer, NotifyStudent,
+                     Patent, PlacementRecord, PlacementSchedule,
+                     PlacementStatus, Project, Publication, Skill,
+                     StudentPlacement, StudentRecord)
 
 # Register your models here.
 
