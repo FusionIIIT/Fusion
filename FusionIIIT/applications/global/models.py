@@ -1,8 +1,10 @@
 #imports
-from django.db import models
-from django.contrib.auth.models import User
-from django.dispatch import receiver
 import datetime
+
+from django.contrib.auth.models import User
+from django.db import models
+from django.dispatch import receiver
+
 
 #Class for various choices on the enumerations
 class Constants:

@@ -1,5 +1,7 @@
 from django.contrib import admin
-from .models import Student, ExtraInfo, Staff, Faculty, DepartmentInfo, Designation
+
+from .models import (DepartmentInfo, Designation, ExtraInfo, Faculty, Staff,
+                     Student)
 
 # Register your models here.
 
