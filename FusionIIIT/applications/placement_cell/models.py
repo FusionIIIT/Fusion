@@ -1,7 +1,11 @@
+# imports
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.translation import gettext as _
 import datetime
+
+# Class definations:
+
 
 class Constants:
     RESUME_TYPE = (
@@ -37,7 +41,8 @@ class Constants:
 class Project(models.Model):
     unique_id = models.ForeignKey(User, on_delete=models.CASCADE)
     project_name = models.CharField(max_length=40, default='')
-    project_status = models.CharField(max_length=20, choices=Constants.RESUME_TYPE, default='COMPLETED')
+    project_status = models.CharField(max_length=20, choices=Constants.RESUME_TYPE,
+                                        default='COMPLETED')
     summary = models.CharField(max_length=500, default='')
     project_link = models.CharField(max_length=200, default='')
     sdate = models.DateField(_("Date"), default=datetime.date.today)
@@ -78,7 +83,8 @@ class Education(models.Model):
 class Experience(models.Model):
     unique_id = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=100, default='')
-    status = models.CharField(max_length=20, choices=Constants.RESUME_TYPE, default='COMPLETED')
+    status = models.CharField(max_length=20, choices=Constants.RESUME_TYPE,
+                                default='COMPLETED')
     description = models.CharField(max_length=500, default='')
     company = models.CharField(max_length=200, default='')
     location = models.CharField(max_length=200, default='')
@@ -129,7 +135,8 @@ class Interest(models.Model):
 class Achievement(models.Model):
     unique_id = models.ForeignKey(User, on_delete=models.CASCADE)
     achievement = models.CharField(max_length=100, default='')
-    achievement_type = models.CharField(max_length=20, choices=Constants.ACHIEVEMENT_TYPE, default='OTHER')
+    achievement_type = models.CharField(max_length=20, choices=Constants.ACHIEVEMENT_TYPE,
+                                            default='OTHER')
     description = models.CharField(max_length=250, default='')
     issuer = models.CharField(max_length=200, default='')
     date_earned = models.DateField(_("Date"), default=datetime.date.today)
@@ -141,7 +148,8 @@ class MessageOfficer(models.Model):
 
 
 class NotifyStudent(models.Model):
-    placement_type = models.CharField(max_length=20, choices=Constants.PLACEMENT_TYPE, default='PLACEMENT')
+    placement_type = models.CharField(max_length=20, choices=Constants.PLACEMENT_TYPE,
+                                        default='PLACEMENT')
     company_name = models.CharField(max_length=100, default='')
     ctc = models.DecimalField(default='0.0', decimal_places='2', max_digits = '5')
     description = models.CharField(max_length=1000, default='')
@@ -150,15 +158,18 @@ class NotifyStudent(models.Model):
 class PlacementStatus(models.Model):
     notify_id = models.ForeignKey(NotifyStudent, on_delete=models.CASCADE)
     unique_id = models.ForeignKey(User, on_delete=models.CASCADE)
-    invitation = models.CharField(max_length=20, choices=Constants.INVITATION_TYPE, default='PENDING')
-    placed = models.CharField(max_length=20, choices=Constants.INVITATION_TYPE, default='PENDING')
+    invitation = models.CharField(max_length=20, choices=Constants.INVITATION_TYPE,
+                                    default='PENDING')
+    placed = models.CharField(max_length=20, choices=Constants.INVITATION_TYPE,
+                                    default='PENDING')
     timestamp = models.DateTimeField(auto_now=True)
     class Meta:
         unique_together = (('notify_id', 'unique_id'),)
 
 
 class PlacementRecord(models.Model):
-    placement_type = models.CharField(max_length=20, choices=Constants.PLACEMENT_TYPE, default='PLACEMENT')
+    placement_type = models.CharField(max_length=20, choices=Constants.PLACEMENT_TYPE,
+                                        default='PLACEMENT')
     name = models.CharField(max_length=100, default='')
     ctc = models.DecimalField(default='0.0', decimal_places='2', max_digits = '5')
     year = models.IntegerField(default='0')
@@ -201,7 +212,9 @@ class PlacementSchedule(models.Model):
 class StudentPlacement(models.Model):
     unique_id = models.ForeignKey(User, on_delete=models.CASCADE)
     debar = models.CharField(max_length=20, choices=Constants.DEBAR_TYPE, default='NOT DEBAR')
-    future_aspect = models.CharField(max_length=20, choices=Constants.PLACEMENT_TYPE, default='PLACEMENT')
-    placed_type = models.CharField(max_length=20, choices=Constants.PLACED_TYPE, default='PLACEMENT')
+    future_aspect = models.CharField(max_length=20, choices=Constants.PLACEMENT_TYPE,
+                                        default='PLACEMENT')
+    placed_type = models.CharField(max_length=20, choices=Constants.PLACED_TYPE,
+                                        default='PLACEMENT')
     placement_date = models.DateField(_("Date"), default=datetime.date.today)
     package = models.DecimalField(default='0.0', decimal_places='2', max_digits = '5')
