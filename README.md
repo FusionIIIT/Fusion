@@ -1,42 +1,50 @@
 # FusionIIIT
 
-FusionIIIT is the automation of various functionalities, modules and tasks of for PDPM Indian Institute of Information Technology, Design and Manufacturing, Jabalpur being developed in python3.6 and using django webframework version 1.11.3
+**FusionIIIT** is the automation of various functionalities, modules and tasks of/for PDPM Indian Institute of Information Technology, Design and Manufacturing, Jabalpur being developed in python3.5 and using django webframework version 1.11.4  
 
-Build Status
+[![Build Status](https://api.travis-ci.org/3Peers/FusionIIIT.svg?branch=master)](https://travis-ci.org/3Peers/FusionIIIT)
 
-Requirements
 
-Python 3.6+
-Django==1.11.3+
-And additional requirements are in requirements.txt
+## Requirements
 
-How to run it?
+Python 3.5
+Django==1.11.4+
+And additional requirements are in **requirements.txt**  
 
-install virtualenv $ sudo apt install python-virtualenv  
-create a virtual environment $ virtualenv env -p python3.6  
-activate the env: $ source env/bin/activate  
-change directory to FusionIIIT $ cd FusionIIIT
-$ python manage.py makemigrations  
-$ python manage.py migrate  
-$ python manage.py runserver
+## How to run it?
 
-Diffrent modules include
+  * Install virtualenv `$ sudo apt install python-virtualenv`  
+  * Create a virtual environment `$ virtualenv env -p python3`  
+  * Activate the env: `$ source env/bin/activate`  
+  * Install the requirements: `$ pip install -r requirements.txt`  
+  * Change directory to FusionIIIT `$ cd FusionIIIT`
+  * Make migrations `$ python manage.py makemigrations`  
+  * Migrate the changes to the database `$ python manage.py migrate`  
+  * Run the server `$ python manage.py runserver`
 
-    #1) Academic database management  
-    #2) Academic workflows  
-    #3) Finance and Accounting  
-    #4) Placement Cell  
-    #5) Mess management  
-    #6) Gymkhana Activities  
-    #7) Scholarship and Awards Portal  
-    #8) Employee Management  
-    #9) Course Management  
-    #10) Complaint System  
-    #11) File Tracking System  
-    #12) Health Centre Mangement  
-    #13) Visitor's Hostel Management
-    
-Contribution
+## Diffrent modules include
 
-Open an issue if you want to contribute for something that's not already in issues
-Send a Pull Request anytime.
+  * Academic database management  
+  * Academic workflows  
+  * Finance and Accounting  
+  * Placement Cell  
+  * Mess management  
+  * Gymkhana Activities  
+  * Scholarship and Awards Portal  
+  * Employee Management  
+  * Course Management  
+  * Complaint System  
+  * File Tracking System  
+  * Health Centre Mangement  
+  * Visitor's Hostel Management  
+
+## Contribution
+
+  * Open an issue if you want to contribute for something that's not already in issues
+  * Send a Pull Request anytime.
+  * Before sending a pull request please make sure the changes you make are flake8 and isort compliant by using following commands  
+  ```
+  $ flake8 . --exclude manage.py,__pycache__,migrations --max-line-length=100
+  $ isort
+  ```
+  * If there are errors resolve them, and then send a pull request.
