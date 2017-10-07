@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'applications.complaint_system.apps.ComplaintSystemConfig',
     'applications.file_tracking.apps.FileTrackingConfig',
     'applications.finance_accounts.apps.FinanceAccountsConfig',
-    'applications.global.apps.GlobalConfig',
+    'applications.globals.apps.GlobalConfig',
     'applications.health_center.apps.HealthCenterConfig',
     'applications.leave.apps.LeaveConfig',
     'applications.online_cms.apps.OnlineCmsConfig',
@@ -87,10 +87,15 @@ WSGI_APPLICATION = 'Fusion.wsgi.application'
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
+    'default':
+        {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'fusion',
+            'USER': 'root',
+            'PASSWORD': 'root',
+            'HOST': '127.0.0.1',
+            'PORT': '3306',
+        },
 }
 
 
