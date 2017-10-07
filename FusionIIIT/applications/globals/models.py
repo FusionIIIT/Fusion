@@ -49,7 +49,7 @@ class ExtraInfo(models.Model):
     about_me = models.TextField(default='', max_length=1000, blank=True)
 
     def __str__(self):
-        return '{} - {}'.format(self.user_type, self.user.username)
+        return '{} - {}'.format(self.id, self.user.username)
 
 
 # TODO : Remove from here and use from academics app
