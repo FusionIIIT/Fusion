@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from .models import (Course, Instructor, Meeting, Exam_timetable, Timetable, Student_attendance, Grades, Calendar, Holiday)
+from .models import (Calendar, Course, Exam_timetable, Grades, Holiday,
+                     Instructor, Meeting, Student_attendance, Timetable)
 
 # Register your models here.
 
