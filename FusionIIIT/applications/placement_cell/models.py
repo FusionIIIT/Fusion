@@ -1,10 +1,10 @@
 # imports
 import datetime
 
-from django.contrib.auth.models import User
 from django.db import models
-from applications.globals.models import ExtraInfo
 from django.utils.translation import gettext as _
+
+from applications.globals.models import ExtraInfo
 
 # Class definations:
 
@@ -172,6 +172,7 @@ class Coinventor(models.Model):
 class Interest(models.Model):
     unique_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
     interest = models.CharField(max_length=100, default='')
+
     def __str__(self):
         return '{} - {}'.format(self.unique_id.id, self.interest)
 
@@ -247,7 +248,6 @@ class StudentRecord(models.Model):
 
     def __str__(self):
         return '{} - {}'.format(self.unique_id.id, self.record_id.name)
-
 
 
 class ChairmanVisit(models.Model):
