@@ -69,6 +69,7 @@ class Skill(models.Model):
 class Has(models.Model):
     skill_id = models.ForeignKey(Skill, on_delete=models.CASCADE)
     unique_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    skill_rating = models.IntegerField(default='80')
 
     class Meta:
         unique_together = (('skill_id', 'unique_id'),)
@@ -77,6 +78,7 @@ class Has(models.Model):
 class Education(models.Model):
     unique_id = models.ForeignKey(User, on_delete=models.CASCADE)
     degree = models.CharField(max_length=40, default='')
+    grade = models.CharField(max_length=10, default='')
     institute = models.CharField(max_length=250, default='')
     stream = models.CharField(max_length=150, default='')
     sdate = models.DateField(_("Date"), default=datetime.date.today)
@@ -126,7 +128,7 @@ class Patent(models.Model):
 
 
 class Coinventor(models.Model):
-    publication_id = models.ForeignKey(Publication, on_delete=models.CASCADE)
+    patent_id = models.ForeignKey(Patent, on_delete=models.CASCADE)
     coinventor_name = models.CharField(max_length=100, default='')
 
 
@@ -191,7 +193,7 @@ class StudentRecord(models.Model):
 
 class ChairmanVisit(models.Model):
     company_name = models.CharField(max_length=100, default='')
-    loaction = models.CharField(max_length=100, default='')
+    location = models.CharField(max_length=100, default='')
     visiting_date = models.DateField(_("Date"), default=datetime.date.today)
     description = models.CharField(max_length=1000, default='')
     timestamp = models.DateTimeField(auto_now=True)
@@ -215,7 +217,7 @@ class PlacementSchedule(models.Model):
 
 
 class StudentPlacement(models.Model):
-    unique_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    unique_id = models.OneToOneField(User, primary_key=True, on_delete=models.CASCADE)
     debar = models.CharField(max_length=20, choices=Constants.DEBAR_TYPE, default='NOT DEBAR')
     future_aspect = models.CharField(max_length=20, choices=Constants.PLACEMENT_TYPE,
                                      default='PLACEMENT')
