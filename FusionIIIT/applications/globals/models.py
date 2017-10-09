@@ -44,7 +44,7 @@ class ExtraInfo(models.Model):
     user_type = models.CharField(max_length=20, choices=Constants.USER_CHOICES)
     designation = models.ForeignKey(Designation, on_delete=models.CASCADE,
                                     related_name='holds_designation', null=True)
-    department = models.ForeignKey(DepartmentInfo, on_delete=models.CASCADE, null=True, blank=True)
+    department = models.ForeignKey(DepartmentInfo, on_delete=models.CASCADE, null=True,blank=True)
     profile_picture = models.ImageField(null=True, blank=True)
     about_me = models.TextField(default='', max_length=1000, blank=True)
 
