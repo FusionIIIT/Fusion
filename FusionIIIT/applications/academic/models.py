@@ -22,7 +22,7 @@ class Course(models.Model):
     course_name = models.CharField(max_length=100)
     sem = models.IntegerField()
     credits = models.IntegerField()
-
+    
     class Meta:
         db_table = 'Course'
         unique_together = ('course_id', 'course_name', 'sem')
