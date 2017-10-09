@@ -1,7 +1,9 @@
-from django.db import models
-from applications.globals.models import Student
-from applications.academic_information.models import Course
 import datetime
+
+from django.db import models
+
+from applications.academic_information.models import Course
+from applications.globals.models import Student
 
 # Create your models here.
 
