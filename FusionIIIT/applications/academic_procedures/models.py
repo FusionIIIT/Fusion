@@ -13,3 +13,8 @@ class Register(models.Model):
 	year = models.IntegerField(max_length=4, default=datetime.datetime.now().year)
 	student_id = models.ForeignKey(Student)
 	
+	class Meta:
+		db_table = 'Register'
+
+	def __str__(self):
+		return self.r_id
