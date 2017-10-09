@@ -59,7 +59,7 @@ class StudentAssignment(models.Model):
     score=models.IntegerField()
     feedback=models.CharField(max_length=100)
 
-class QuizReult(models.Model):
+class QuizResult(models.Model):
     qid=models.ForeignKey(Quiz,on_delete=models.CASCADE)
     student_id=models.ForeignKey(Student,on_delete=models.CASCADE)
     score=models.IntegerField()
