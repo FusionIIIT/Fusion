@@ -27,7 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-#Google authentication
+# Google authentication
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
         'SCOPE': [
@@ -36,12 +36,12 @@ SOCIALACCOUNT_PROVIDERS = {
         ],
         'AUTH_PARAMS': {
             'access_type': 'online',
-            'hd' : 'iiitdmj.ac.in',
+            'hd': 'iiitdmj.ac.in',
         }
     }
 }
 
-#allauth settings
+# allauth settings
 
 LOGIN_URL = '/accounts/login/'
 LOGOUT_URL = '/accounts/logout/'
@@ -60,7 +60,7 @@ EMAIL_HOST_PASSWORD = ''
 EMAIL_PORT = 587
 ACCOUNT_EMAIL_REQUIRED = True
 
-ACCOUNT_AUTHENTICATION_METHOD ='username_email'
+ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
 
 ACCOUNT_CONFIRM_EMAIL_ON_GET = False
 
@@ -91,7 +91,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
-    'applications.academic.apps.AcademicConfig',
+    'applications.academic_procedures.apps.AcademicProceduresConfig',
+    'applications.academic_information.apps.AcademicInformationConfig',
     'applications.central_mess.apps.CentralMessConfig',
     'applications.complaint_system.apps.ComplaintSystemConfig',
     'applications.file_tracking.apps.FileTrackingConfig',
