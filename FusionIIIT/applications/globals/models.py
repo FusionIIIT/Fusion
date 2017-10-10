@@ -61,6 +61,7 @@ class Student(models.Model):
     hall = models.IntegerField(default=1)
     room_no = models.CharField(max_length=10, blank=True, null=True)
 
+
     def __str__(self):
         return str(self.id)
 
