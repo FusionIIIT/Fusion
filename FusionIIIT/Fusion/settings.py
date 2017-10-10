@@ -126,7 +126,7 @@ ROOT_URLCONF = 'Fusion.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['/', '/templates'],
+        'DIRS': [BASE_DIR + '/templates/'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -151,9 +151,9 @@ DATABASES = {
             'ENGINE': 'django.db.backends.mysql',
             'NAME': 'fusion',
             'USER': 'root',
-            'PASSWORD': '',
+            'PASSWORD': '1',
             'HOST': '127.0.0.1',
-            'PORT': '3306',
+            'PORT': '1212',
         },
 }
 
