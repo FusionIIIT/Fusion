@@ -8,6 +8,19 @@ from applications.globals.models import ExtraInfo, Faculty, Student
 # Create your models here.
 
 
+class Constants:
+    SEM_CHOICES = (
+        ('1', '1')
+        ('2', '2')
+        ('3', '3')
+        ('4', '4')
+        ('5', '5')
+        ('6', '6')
+        ('7', '7')
+        ('8', '8')
+    )
+
+
 class Register(models.Model):
     r_id = models.IntegerField(primary_key=True)
     course_id = models.ForeignKey(Course)
@@ -32,3 +45,13 @@ class Thesis(models.Model):
 
     def __str__(self):
         return self.topic & self.reg_id & self.student_id & self.supervisor_id
+
+
+class FinalRegistrations(models.Model):
+    reg_id = models.ForeignKey(ExtraInfo)
+    sem = models.IntegerField(max_length=1, choices=Constants.SEM_CHOICES)
+    student_id = models.ForeignKey(Student)
+    registration = models.BooleanField(default=False)
+
+    def __str__(self):
+        return str(self.id)
