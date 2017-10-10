@@ -22,10 +22,10 @@ def viewcourses(request):
         semester=(datetime.now().year-int(roll))*2+sem
         print(semester,"sem")
         register=Register.objects.filter(student_id=student,semester=semester)
-        return render(request,'online_cms/index.html',{'register':register})
+        return render(request,'online_cms/viewcourses.html',{'register':register})
     else:
         instructor=Instructor.objects.filter(instructor_id=extrainfo)
-        return render(request,'online_cms/index.html',{'instructor':instructor})
+        return render(request,'online_cms/viewcourses.html',{'instructor':instructor})
 
 
 @login_required
