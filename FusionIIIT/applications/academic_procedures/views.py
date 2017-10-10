@@ -1,10 +1,13 @@
 import os
-from django.shortcuts import render, HttpResponseRedirect
+from django.shortcuts import render, HttpResponseRedirect, get_object_or_404
 from django.http import HttpResponse
-from . models import Resgister
+from . models import Register
 from applications.academic_information.models import (Calendar, Course, Exam_timetable, Grades, Holiday,
                                                         Instructor, Meeting, Student_attendance, Timetable)
-from . forms import AddDropCourseForm 
+from . forms import AddDropCourseForm
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+
 # Create your views here.
 
 
@@ -17,3 +20,7 @@ def add_course(request):
         CourseForm = AddDropCourseForm(user=request.user)
 
     return render(request, 'test.html', {'CourseForm': CourseForm})
+
+
+def drop_course(request):
+    pass

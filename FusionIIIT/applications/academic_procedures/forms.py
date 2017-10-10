@@ -1,5 +1,5 @@
 from django import forms
-from academic_information.models import Course
+from applications.academic_information.models import Course
 from datetime import datetime
 
 
