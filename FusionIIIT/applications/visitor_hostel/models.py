@@ -84,8 +84,8 @@ class Meal(models.Model):
 	dinner = models.BooleanField(default=False);
 
 
-class Visitor_inventory(models.Model):
-	inventory_id = models.AutoField(primary_key=true);
+class Inventory(models.Model):
+	inventory_id = models.AutoField(primary_key=True);
 	item_name = models.CharField(max_length=20);
 	opening_stock = models.IntegerField(default=0);
 	addition_stock = models.IntegerField(default=0);
