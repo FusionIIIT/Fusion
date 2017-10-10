@@ -2,7 +2,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 from applications.globals.models import *
-from applications.academic.models import *
+from applications.academic_information.models import *
 
 class CourseDocuments(models.Model):
     course_id=models.ForeignKey(Course, on_delete=models.CASCADE)
