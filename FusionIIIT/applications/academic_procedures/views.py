@@ -1,12 +1,9 @@
-import os
-from django.shortcuts import render, HttpResponseRedirect, get_object_or_404
-from django.http import HttpResponse
-from . models import Register
-from applications.academic_information.models import (Calendar, Course, Exam_timetable, Grades, Holiday,
-                                                        Instructor, Meeting, Student_attendance, Timetable)
-from . forms import AddDropCourseForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.shortcuts import render
+
+# from . models import Register
+from .forms import AddDropCourseForm
 
 # Create your views here.
 

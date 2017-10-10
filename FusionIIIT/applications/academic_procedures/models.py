@@ -23,9 +23,9 @@ class Constants:
 
 class Register(models.Model):
     r_id = models.IntegerField(primary_key=True)
-    course_id = models.ForeignKey(Course)
+    course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
     year = models.IntegerField(default=datetime.datetime.now().year)
-    student_id = models.ForeignKey(Student)
+    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'Register'
@@ -48,9 +48,9 @@ class Thesis(models.Model):
 
 
 class FinalRegistrations(models.Model):
-    reg_id = models.ForeignKey(ExtraInfo)
-    sem = models.IntegerField(max_length=1, choices=Constants.SEM_CHOICES)
-    student_id = models.ForeignKey(Student)
+    reg_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
+    sem = models.IntegerField(max_length=1)
+    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     registration = models.BooleanField(default=False)
 
     def __str__(self):
