@@ -53,6 +53,20 @@ def course(request,course_code):
     
     else:
         instructor=Instructor.objects.filter(instructor_id=extrainfo)
+        
+        month=datetime.now().month
+        sem=0
+        if month>=8 and month <=12:
+            sem=1
+        roll=student.id.id[:4]
+        print(roll," ",student.id.user.username)
+        semester=(datetime.now().year-int(roll))*2+sem
+        print(semester,"sem")
+        
+        course=Course.objects.filter(course_id=course_code,sem=semester)
+        
+        #calculate number of students here
+        
         return render(request,'online_cms/course.html',{'instructor':instructor})
 
 
