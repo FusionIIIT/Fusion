@@ -7,9 +7,13 @@
 </head>
 
 <body>
-    ASDASD
+
+    {% for doc in document %}
+      <a href="#">{{doc.document_name}}</a><br>
+    {% endfor %}
     <form method="post" enctype="multipart/form-data">
-        {% csrf_token %} {{ form.doc }} {{ form.description }}
+        {% csrf_token %} {{ form.doc }} <br>
+        {{form.description.label}}{{ form.description }}
         <input type="submit" name="submit" value="submit">
     </form>
 

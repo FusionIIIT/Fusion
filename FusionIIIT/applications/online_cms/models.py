@@ -9,6 +9,7 @@ class CourseDocuments(models.Model):
     upload_time=models.DateTimeField()
     description=models.CharField(max_length=100)
     document_name=models.CharField(max_length=40)
+    document_url=models.CharField(max_length=100,null=True)
 
     def __str__(self):
         return str(self.course_id," ",self.document_name)
@@ -18,6 +19,7 @@ class CourseVideo(models.Model):
     upload_time=models.DateTimeField()
     description=models.CharField(max_length=100)
     video_name=models.CharField(max_length=40)
+    video_url=models.CharField(max_length=100,null=True)
 
     def __str__(self):
         return str(self.course_id," ",self.video_name)
@@ -66,6 +68,7 @@ class Assignment(models.Model):
     upload_time=models.DateTimeField()
     submit_date=models.DateTimeField()
     assignment_name=models.CharField(max_length=100)
+    # assignment_url=models.CharField(max_length=100,null=True)
 
     def __str__(self):
         return str(self.pk," ",self.course_id," ",self.assignment_name)
