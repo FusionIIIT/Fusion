@@ -89,3 +89,6 @@ docs/_build
 docs/_templates
 
 .tox
+
+# media
+FusionIIIT/media
