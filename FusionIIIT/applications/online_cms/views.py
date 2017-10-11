@@ -29,5 +29,30 @@ def viewcourses(request):
 
 
 @login_required
-def courses(request,course_code):
-    return HttpResponse(course_name)
+def course(request,course_code):
+    user=request.user
+    extrainfo=ExtraInfo.objects.get(user=user)
+    
+    if extrainfo.user_type == 'student':
+        student=Student.objects.get(id=extrainfo)
+        
+        month=datetime.now().month
+        sem=0
+        if month>=8 and month <=12:
+            sem=1
+        roll=student.id.id[:4]
+        print(roll," ",student.id.user.username)
+        semester=(datetime.now().year-int(roll))*2+sem
+        print(semester,"sem")
+        
+        course=Course.objects.filter(course_id=course_code,sem=semester)
+        
+        instructor=Instructor.objects.get(course_id=course)
+        
+        return render(request,'online_cms/course.html',{'course':course[0],'instructor':instructor,'extrainfo':extrainfo})
+    
+    else:
+        instructor=Instructor.objects.filter(instructor_id=extrainfo)
+        return render(request,'online_cms/course.html',{'instructor':instructor})
+
+

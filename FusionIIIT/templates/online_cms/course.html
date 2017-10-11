@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title></title>
+</head>
+
+<body>
+
+    {% if extrainfo.user_type == 'student' %} {{course.course_id}}
+    <br> {{course.course_name}}
+    <br> {{course.sem}}
+    <br> {{course.credits}}
+    <br> {{instructor.instructor_id.user.username}} {% endif %}
+
+</body>
+
+</html>
