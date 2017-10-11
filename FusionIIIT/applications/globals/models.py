@@ -50,7 +50,7 @@ class ExtraInfo(models.Model):
 
     def __str__(self):
         return '{} - {}'.format(self.id, self.user.username)
-    
+
 
 # TODO : ADD additional staff related fields when needed
 class Staff(models.Model):

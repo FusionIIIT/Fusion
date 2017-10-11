@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import (DepartmentInfo, Designation, ExtraInfo, Faculty, Staff)
+from .models import DepartmentInfo, Designation, ExtraInfo, Faculty, Staff
 
 # Register your models here.
 
