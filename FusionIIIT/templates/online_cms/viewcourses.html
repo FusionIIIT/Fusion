@@ -9,7 +9,7 @@
 <body>
     {% for reg in register %}
 
-    <a href="/ocms/reg.course_id.course_id">{{reg.course_id.course_name}}</a><br> {% endfor %} {% for reg in instructor %} {{reg.course_id.course_name}} asdasd<br> {% endfor %}
+    <a href="/ocms/{{reg.course_id.course_id}}">{{reg.course_id.course_name}}</a><br> {% endfor %} {% for reg in instructor %} {{reg.course_id.course_name}} asdasd<br> {% endfor %}
 
 </body>
 
