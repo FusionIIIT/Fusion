@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>add doc</title>
+  </head>
+  <body>
+    ASDASD
+    <form  method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form.doc }}
+      {{ form.description }}
+      <input type="submit" name="submit" value="submit">
+    </form>
+  </body>
+</html>
