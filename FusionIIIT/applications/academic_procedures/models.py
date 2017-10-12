@@ -26,6 +26,7 @@ class Register(models.Model):
     course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
     year = models.IntegerField(default=datetime.datetime.now().year)
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+    semester = models.IntegerField(max_length=1)
 
     class Meta:
         db_table = 'Register'
