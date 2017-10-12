@@ -27,6 +27,59 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# Google authentication
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+            'hd': 'iiitdmj.ac.in',
+        }
+    }
+}
+
+# allauth settings
+
+LOGIN_URL = '/accounts/login/'
+LOGOUT_URL = '/accounts/logout/'
+LOGIN_REDIRECT_URL = '/'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+
+# email of sender
+EMAIL_HOST_USER = 'ramlalfff@gmail.com'
+
+# password of sender
+EMAIL_HOST_PASSWORD = ''
+
+EMAIL_PORT = 587
+ACCOUNT_EMAIL_REQUIRED = True
+
+ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
+
+ACCOUNT_CONFIRM_EMAIL_ON_GET = False
+
+ACCOUNT_EMAIL_CONFIRMATION_ANONYMOUS_REDIRECT_URL = '/accounts/login/'
+ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = '/'
+ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 1
+ACCOUNT_EMAIL_CONFIRMATION_HMAC = True
+
+ACCOUNT_EMAIL_VERIFICATION = 'optional'
+
+ACCOUNT_EMAIL_SUBJECT_PREFIX = 'Fusion: '
+DEFAULT_FROM_EMAIL = 'ramlalfff@gmail.com'
+
+SERVER_EMAIL = 'ramlalfff@gmail.com'
+
+ACCOUNT_LOGOUT_REDIRECT_URL = '/accounts/login/'
+ACCOUNT_USERNAME_MIN_LENGTH = 3
+
+SOCIALACCOUNT_ADAPTER = 'applications.globals.adapters.MySocialAccountAdapter'
 
 # Application definition
 
@@ -37,7 +90,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'applications.academic.apps.AcademicConfig',
+    'django.contrib.sites',
+    'applications.academic_procedures.apps.AcademicProceduresConfig',
+    'applications.academic_information.apps.AcademicInformationConfig',
     'applications.central_mess.apps.CentralMessConfig',
     'applications.complaint_system.apps.ComplaintSystemConfig',
     'applications.file_tracking.apps.FileTrackingConfig',
@@ -50,6 +105,10 @@ INSTALLED_APPS = [
     'applications.scholarships.apps.ScholarshipsConfig',
     'applications.visitor_hostel.apps.VisitorHostelConfig',
     'applications.eis.apps.EisConfig',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth',
+    'allauth.socialaccount.providers.google',
 ]
 
 MIDDLEWARE = [
@@ -92,7 +151,7 @@ DATABASES = {
             'ENGINE': 'django.db.backends.mysql',
             'NAME': 'fusion',
             'USER': 'root',
-            'PASSWORD': 'root',
+            'PASSWORD': '',
             'HOST': '127.0.0.1',
             'PORT': '3306',
         },
@@ -131,7 +190,7 @@ USE_L10N = False
 
 USE_TZ = True
 
-
+SITE_ID = 1
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
