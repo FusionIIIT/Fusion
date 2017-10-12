@@ -149,9 +149,9 @@ DATABASES = {
     'default':
         {
             'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'leave_application',
+            'NAME': 'fusion',
             'USER': 'root',
-            'PASSWORD': 'TakecarE',
+            'PASSWORD': '',
             'HOST': '127.0.0.1',
             'PORT': '3306',
         },
