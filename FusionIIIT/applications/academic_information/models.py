@@ -89,8 +89,8 @@ class Holiday(models.Model):
 
 
 class Grades(models.Model):
-    student_id = models.ForeignKey(Student, null=True)
-    course_id = models.ForeignKey(Course, null=True)
+    student_id = models.ForeignKey(Student)
+    course_id = models.ForeignKey(Course)
     sem = models.IntegerField()
     Grade = models.CharField(max_length=4)
 

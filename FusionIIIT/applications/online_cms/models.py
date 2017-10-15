@@ -49,7 +49,7 @@ class QuizQuestion(models.Model):
     options4 = models.CharField(null=True, max_length=100)
     options5 = models.CharField(null=True, max_length=100)
     answer = models.IntegerField()
-    announcement = models.CharField(max_length=2000)
+    announcement = models.TextField(max_length=2000, null=True, blank=True)
     image = models.TextField(max_length=1000, null=True)
     marks = models.IntegerField()
 
@@ -65,7 +65,7 @@ class StudentAnswer(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     qid = models.ForeignKey(Quiz, on_delete=models.CASCADE)
     qqid = models.ForeignKey(QuizQuestion, on_delete=models.CASCADE)
-    choice = models.CharField(max_length=100)
+    choice = models.IntegerField()
 
     def __str__(self):
         return str(self.pk, " ", self.student_id, " ",
@@ -77,7 +77,7 @@ class Assignment(models.Model):
     upload_time = models.DateTimeField()
     submit_date = models.DateTimeField()
     assignment_name = models.CharField(max_length=100)
-    # assignment_url=models.CharField(max_length=100,null=True)
+    assignment_url=models.CharField(max_length=100,null=True)
 
     def __str__(self):
         return str(self.pk, " ", self.course_id, " ", self.assignment_name)
