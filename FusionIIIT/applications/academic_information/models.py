@@ -2,8 +2,6 @@ from django.db import models
 
 from applications.globals.models import ExtraInfo
 
-# Create your models here.
-
 
 class Constants:
     HOLIDAY_TYPE = (
@@ -43,7 +41,7 @@ class Course(models.Model):
     course_name = models.CharField(max_length=100)
     sem = models.IntegerField()
     credits = models.IntegerField()
-    
+
     class Meta:
         db_table = 'Course'
         unique_together = ('course_id', 'course_name', 'sem')
@@ -91,16 +89,16 @@ class Holiday(models.Model):
 
 
 class Grades(models.Model):
-    student_id = models.ForeignKey(Student)
-    course_id = models.ForeignKey(Course)
+    student_id = models.ForeignKey(Student, null=True)
+    course_id = models.ForeignKey(Course, null=True)
     sem = models.IntegerField()
     Grade = models.CharField(max_length=4)
 
     class Meta:
         db_table = 'Grades'
 
-    def __str__(self):
-        return self.grade_id
+#    def __str__(self):
+#        return self.grade_id
 
 
 class Student_attendance(models.Model):

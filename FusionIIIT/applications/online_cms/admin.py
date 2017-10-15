@@ -1,9 +1,8 @@
-# from django.contrib import admin
-
-# Register your models here.
 from django.contrib import admin
 
-from .models import *
+from .models import (Assignment, CourseDocuments, CourseVideo, Forum,
+                     ForumReply, Quiz, QuizQuestion, QuizResult, StudentAnswer,
+                     StudentAssignment)
 
 admin.site.register(CourseDocuments)
 admin.site.register(CourseVideo)

@@ -90,10 +90,9 @@ docs/_templates
 
 .tox
 
-<<<<<<< HEAD
+
 # media
 FusionIIIT/media
-=======
 #ignoring settings.py
 FusionIIIT/Fusion/settings.py
->>>>>>> upstream/master
+
