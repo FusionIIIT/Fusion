@@ -1,86 +1,87 @@
 import datetime
 
 from django.db import models
+
 from applications.academic_information.models import Student
 
 # Create your models here.
 MEAL = (
-			('MB', 'Monday Breakfast'),
-			('ML', 'Monday Lunch'),
-			('MD', 'Monday Dinner'),
-			('TB', 'Tuesday Breakfast'),
-			('TL', 'Tuesday Lunch'),
-			('TD', 'Tuesday Dinner'),
-			('WB', 'Wednesday Breakfast'),
-			('WL', 'Wednesday Lunch'),
-			('WD', 'Wednesday Dinner'),
-			('THB', 'Thursday Breakfast'),
-			('THL', 'Thursday Lunch'),
-			('THD', 'Thursday Dinner'),
-			('FB', 'Friday Breakfast'),
-			('FL', 'Friday Lunch'),
-			('FD', 'Friday Dinner'),
-			('SB', 'Saturday Breakfast'),
-			('SL', 'Saturday Lunch'),
-			('SD', 'Saturday Dinner'),
-			('SUB', 'Sunday Breakfast'),
-			('SUL', 'Sunday Lunch'),
-			('SUD', 'Sunday Dinner')
-		)
+	('MB', 'Monday Breakfast'),
+	('ML', 'Monday Lunch'),
+	('MD', 'Monday Dinner'),
+	('TB', 'Tuesday Breakfast'),
+	('TL', 'Tuesday Lunch'),
+	('TD', 'Tuesday Dinner'),
+	('WB', 'Wednesday Breakfast'),
+	('WL', 'Wednesday Lunch'),
+	('WD', 'Wednesday Dinner'),
+	('THB', 'Thursday Breakfast'),
+	('THL', 'Thursday Lunch'),
+	('THD', 'Thursday Dinner'),
+	('FB', 'Friday Breakfast'),
+	('FL', 'Friday Lunch'),
+	('FD', 'Friday Dinner'),
+	('SB', 'Saturday Breakfast'),
+	('SL', 'Saturday Lunch'),
+	('SD', 'Saturday Dinner'),
+	('SUB', 'Sunday Breakfast'),
+	('SUL', 'Sunday Lunch'),
+	('SUD', 'Sunday Dinner')
+)
 
 STATUS = (
-			('0', 'rejected'),
-			('1', 'pending'),
-			('2', 'accepted')
-		)
+	('0', 'rejected'),
+	('1', 'pending'),
+	('2', 'accepted')
+)
 
 TIME = (
-			('10', '10 a.m.'),
-			('11', '11 a.m.'),
-			('12', '12 p.m.'),
-			('13', '1 p.m.'),
-			('14', '2 p.m.'),
-			('15', '3 p.m.'),
-			('16', '4 p.m.'),
-			('17', '5 p.m.'),
-			('18', '6 p.m.'),
-			('19', '7 p.m.'),
-			('20', '8 p.m.'),
-			('21', '9 p.m.')
-		)
+	('10', '10 a.m.'),
+	('11', '11 a.m.'),
+	('12', '12 p.m.'),
+	('13', '1 p.m.'),
+	('14', '2 p.m.'),
+	('15', '3 p.m.'),
+	('16', '4 p.m.'),
+	('17', '5 p.m.'),
+	('18', '6 p.m.'),
+	('19', '7 p.m.'),
+	('20', '8 p.m.'),
+	('21', '9 p.m.')
+)
 
 FEEDBACK_TYPE = (
-			('maintenance', 'Maintenance'),
-			('food', 'Food'),
-			('cleanliness', 'Cleanliness & Hygiene'),
-			('others', 'Others')
-	)
+	('maintenance', 'Maintenance'),
+	('food', 'Food'),
+	('cleanliness', 'Cleanliness & Hygiene'),
+	('others', 'Others')
+)
 
 MONTHS = (
-			('jan', 'January'),
-			('feb', 'February'),
-			('mar', 'March'),
-			('apr', 'April'),
-			('may', 'May'),
-			('jun', 'June'),
-			('jul', 'July'),
-			('aug', 'August'),
-			('sep', 'September'),
-			('oct', 'October'),
-			('nov', 'November'),
-			('dec', 'December')
-		)
+	('jan', 'January'),
+	('feb', 'February'),
+	('mar', 'March'),
+	('apr', 'April'),
+	('may', 'May'),
+	('jun', 'June'),
+	('jul', 'July'),
+	('aug', 'August'),
+	('sep', 'September'),
+	('oct', 'October'),
+	('nov', 'November'),
+	('dec', 'December')
+)
 
 INTERVAL = (
+	('Breakfast', 'Breakfast'),
+	('Lunch', 'Lunch'),
+	('Dinner', 'Dinner')
+)
 
-			('Breakfast', 'Breakfast'),
-			('Lunch', 'Lunch'),
-			('Dinner', 'Dinner')
-	)
 MESS_OPTION = (
-			('mess1', 'Non_veg_mess'),
-			('mess2', 'Veg_mess')
-	)
+	('mess1', 'Non_veg_mess'),
+	('mess2', 'Veg_mess')
+)
 
 
 class Mess(models.Model):
@@ -91,15 +92,14 @@ class Mess(models.Model):
 	count = models.IntegerField(default='135')
 	current_bill = models.IntegerField(default='0')
 
-	
+
 class Monthly_bill(models.Model):
 	student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
 	month = models.CharField(max_length=20, choices=MONTHS)
 	amount = models.IntegerField(default='0')
 
-
 	class Meta:
-        	unique_together = (('student_id', 'month'),)
+		unique_together = (('student_id', 'month'),)
 
 
 class Payments(models.Model):
@@ -108,7 +108,7 @@ class Payments(models.Model):
 	amount_paid = models.IntegerField(default='0')
 
 	class Meta:
-        	unique_together = (('student_id', 'sem'),)
+		unique_together = (('student_id', 'sem'),)
 
 
 class Menu(models.Model):
@@ -118,7 +118,7 @@ class Menu(models.Model):
 
 
 class Rebate(models.Model):
-	student_id= models.ForeignKey(Student, on_delete=models.CASCADE)
+	student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
 	start_date = models.DateField(default=datetime.date.today)
 	end_date = models.DateField(default=datetime.date.today)
 	purpose = models.TextField()
@@ -130,7 +130,7 @@ class Vacation_food(models.Model):
 	start_date = models.DateField(default=datetime.date.today)
 	end_date = models.DateField(default=datetime.date.today)
 	purpose = models.TextField()
-	status = models.IntegerField(choices=STATUS, default='1')	
+	status = models.IntegerField(choices=STATUS, default='1')
 
 
 class Nonveg_menu(models.Model):
@@ -140,7 +140,7 @@ class Nonveg_menu(models.Model):
 
 class Nonveg_data(models.Model):
 	student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
-	order_date = models.DateField(default= datetime.date.today)
+	order_date = models.DateField(default=datetime.date.today)
 	order_interval = models.CharField(max_length=20, choices=INTERVAL, default='Breakfast')
 	dish = models.ForeignKey(Nonveg_menu, on_delete=models.CASCADE)
 
@@ -150,7 +150,7 @@ class Special_request(models.Model):
 	start_date = models.DateField(default=datetime.date.today)
 	end_date = models.DateField(default=datetime.date.today)
 	request = models.TextField()
-	status = models.IntegerField(choices=STATUS, default='1')	
+	status = models.IntegerField(choices=STATUS, default='1')
 
 
 class Mess_meeting(models.Model):
@@ -165,6 +165,7 @@ class Menu_change_request(models.Model):
 	dish = models.ForeignKey(Menu, on_delete=models.CASCADE)
 	request = models.TextField()
 	status = models.IntegerField(choices=STATUS, default='1')
+
 
 class Feedback(models.Model):
 	student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
