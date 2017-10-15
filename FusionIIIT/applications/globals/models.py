@@ -52,6 +52,7 @@ class ExtraInfo(models.Model):
         return '{} - {}'.format(self.id, self.user.username)
 
 
+<<<<<<< HEAD
 # TODO : Remove from here and use from academics app
 class Student(models.Model):
     id = models.OneToOneField(ExtraInfo, on_delete=models.CASCADE, primary_key=True)
@@ -66,6 +67,8 @@ class Student(models.Model):
         return str(self.id)
 
 
+=======
+>>>>>>> upstream/master
 # TODO : ADD additional staff related fields when needed
 class Staff(models.Model):
     id = models.OneToOneField(ExtraInfo, on_delete=models.CASCADE, primary_key=True)

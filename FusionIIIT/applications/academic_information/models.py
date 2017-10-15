@@ -6,7 +6,7 @@ from applications.globals.models import ExtraInfo
 
 
 class Constants:
-    TYPE = (
+    HOLIDAY_TYPE = (
         ('restricted', 'restricted'),
         ('closed', 'closed')
     )
@@ -15,6 +15,27 @@ class Constants:
         ('present', 'present'),
         ('absent', 'absent')
     )
+
+    PROGRAMME = (
+        ('B.Tech', 'B.Tech'),
+        ('B.Des', 'B.Des'),
+        ('M.Tech', 'M.Tech'),
+        ('M.Des', 'M.Des'),
+        ('PhD', 'PhD')
+    )
+
+
+class Student(models.Model):
+    id = models.OneToOneField(ExtraInfo, on_delete=models.CASCADE, primary_key=True)
+    programme = models.CharField(max_length=10, choices=Constants.PROGRAMME),
+    cpi = models.FloatField(default=0)
+    father_name = models.CharField(max_length=40, default='')
+    mother_name = models.CharField(max_length=40, default='')
+    hall_no = models.IntegerField(default=1)
+    room_no = models.CharField(max_length=10, blank=True, null=True)
+
+    def __str__(self):
+        return str(self.id)
 
 
 class Course(models.Model):
@@ -42,7 +63,7 @@ class Meeting(models.Model):
         db_table = 'Meeting'
 
     def __str__(self):
-        return self.agenda
+        return self.date
 
 
 class Calendar(models.Model):
@@ -59,7 +80,7 @@ class Calendar(models.Model):
 
 class Holiday(models.Model):
     holiday_date = models.DateField()
-    holiday_type = models.CharField(max_length=30, choices=Constants.TYPE),
+    holiday_type = models.CharField(max_length=30, choices=Constants.HOLIDAY_TYPE),
     holiday_name = models.CharField(max_length=40)
 
     class Meta:
@@ -70,8 +91,7 @@ class Holiday(models.Model):
 
 
 class Grades(models.Model):
-    grade_id = models.AutoField(primary_key=True)
-    student_id = models.ForeignKey(ExtraInfo)
+    student_id = models.ForeignKey(Student)
     course_id = models.ForeignKey(Course)
     sem = models.IntegerField()
     Grade = models.CharField(max_length=4)
@@ -84,8 +104,7 @@ class Grades(models.Model):
 
 
 class Student_attendance(models.Model):
-    attend_id = models.AutoField(primary_key=True)
-    student_id = models.ForeignKey(ExtraInfo)
+    student_id = models.ForeignKey(Student)
     course_id = models.ForeignKey(Course)
     attend = models.CharField(max_length=6, choices=Constants.ATTEND_CHOICES)
     date = models.DateField()
@@ -111,8 +130,8 @@ class Instructor(models.Model):
 
 class Spi(models.Model):
     sem = models.IntegerField()
-    student_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
-    spi = models.IntegerField()
+    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+    spi = models.FloatField(default=0)
 
     class Meta:
         db_table = 'Spi'
