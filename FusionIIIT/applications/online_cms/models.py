@@ -77,7 +77,7 @@ class Assignment(models.Model):
     upload_time = models.DateTimeField()
     submit_date = models.DateTimeField()
     assignment_name = models.CharField(max_length=100)
-    assignment_url=models.CharField(max_length=100,null=True)
+    assignment_url = models.CharField(max_length=100, null=True)
 
     def __str__(self):
         return str(self.pk, " ", self.course_id, " ", self.assignment_name)

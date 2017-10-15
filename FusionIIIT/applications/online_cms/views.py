@@ -10,7 +10,8 @@ from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponse
 from django.shortcuts import render
 
-from applications.academic_information.models import Course, Student, Instructor
+from applications.academic_information.models import (Course, Instructor,
+                                                      Student)
 from applications.academic_procedures.models import Register
 from applications.globals.models import ExtraInfo
 
