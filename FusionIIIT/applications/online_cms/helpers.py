@@ -7,5 +7,4 @@ def semester(roll):
     if month >= 8 and month <= 12:
         sem = 1
     semester = (datetime.now().year-int(roll))*2+sem
-    print(semester, "sem")
     return semester

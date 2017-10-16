@@ -57,7 +57,6 @@ def course(request, course_code):
 
     else:
         instructor = Instructor.objects.filter(instructor_id=extrainfo)
-        instructor = Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.course_id.course_id is course_code:
                 course = ins.course_id
@@ -69,18 +68,15 @@ def course(request, course_code):
 @login_required
 def add_document(request, course_code):
     #    CHECK FOR ERRORS IN UPLOADING
-    print("xcxc")
     extrainfo = ExtraInfo.objects.get(user=request.user)
     instructor = Instructor.objects.filter(instructor_id=extrainfo)
     for ins in instructor:
-        if(ins.course_id.course_id == course_code):
+        if ins.course_id.course_id == course_code:
             course = ins.course_id
-            print("YES")
 
-    if(request.method == 'POST'):
-        print("x")
+    if request.method == 'POST':
         form = AddDocuments(request.POST, request.FILES)
-        if(form.is_valid()):
+        if form.is_valid():
             description = request.POST.get('description')
             doc = request.FILES['doc']
             filename, file_extenstion = os.path.splitext(request.FILES['doc'].name)
@@ -118,19 +114,15 @@ def add_document(request, course_code):
 def add_videos(request, course_code):
 
     # CHECK FOR ERRORS IN UPLOADING
-
-    print("xcxc")
     extrainfo = ExtraInfo.objects.get(user=request.user)
     instructor = Instructor.objects.filter(instructor_id=extrainfo)
     for ins in instructor:
-        if(ins.course_id.course_id == course_code):
+        if ins.course_id.course_id == course_code:
             course = ins.course_id
-            print("YES")
 
-    if(request.method == 'POST'):
-        print("x")
+    if request.method == 'POST':
         form = AddVideos(request.POST, request.FILES)
-        if(form.is_valid()):
+        if form.is_valid():
             description = request.POST.get('description')
             vid = request.FILES['vid']
             filename, file_extenstion = os.path.splitext(request.FILES['vid'].name)
@@ -156,7 +148,6 @@ def add_videos(request, course_code):
         elif(form.errors):
             form.errors
     else:
-        print("c")
         form = AddVideos()
         video = CourseVideo.objects.filter(course_id=course)
         return render(request, 'online_cms/add_vid.html',
