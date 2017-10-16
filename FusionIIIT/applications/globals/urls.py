@@ -2,7 +2,7 @@ from django.conf.urls import url, include
 from . import views
 
 
-app_name = 'susil'
+app_name = 'globals'
 
 urlpatterns = [
 
@@ -12,5 +12,4 @@ urlpatterns = [
 
     url(r'^dashboard/', views.dashboard, name='dashboard'),
 
-    url(r'^accounts/', include('allauth.urls')),
 ]

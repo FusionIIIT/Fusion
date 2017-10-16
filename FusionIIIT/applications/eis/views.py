@@ -1,3 +1,8 @@
-# from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import *
 
-# Create your views here.
+
+def profile(request):
+    context = {}
+
+    return render(request, "eisModule/profile.html", context)

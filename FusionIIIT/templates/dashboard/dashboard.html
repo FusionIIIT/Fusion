@@ -12,22 +12,23 @@
         {% include 'dashboard/navbar.html' %}
     {% endblock %}
 
+
+    {% comment %}
+
     <div class="container" style="margin-left: 2.5%; max-right: 7.5%;">
         <div class="ui stackable grid">
 
-            {% comment %}Modules start here!{% endcomment %}
             <div class="four wide column">
-                {% comment %}The Modules:{% endcomment %}
                 {% block modules %}
                     {% include 'dashboard/modules.html' %}
                 {% endblock %}
             </div>
-            {% comment %}Modules end here!{% endcomment %}
 
-            {% comment %}Calendar starts here!{% endcomment %}
+
             <div class="twelve wide column">
+
                 <div class="row">
-                    {% comment %}The Modules:{% endcomment %}
+                    The Modules:
                     {% block calendar %}
                         {% include 'dashboard/calendar.html' %}
                     {% endblock %}
@@ -36,7 +37,7 @@
                 <div class="row">
                     <div class="ui stackable grid">
                         <div class="five wide column">
-                            {% comment %}The Alerts:{% endcomment %}
+                            The Alerts:
                             {% block alerts %}
                                 {% include 'dashboard/alerts.html' %}
                             {% endblock %}
@@ -45,7 +46,7 @@
                         <div class="column"></div>
 
                         <div class="eight wide column">
-                            {% comment %}The Modules:{% endcomment %}
+                            The Modules:
                             {% block contacts %}
                                 {% include 'dashboard/contacts.html' %}
                             {% endblock %}
@@ -55,6 +56,7 @@
             </div>
         </div>
     </div>
+    {% endcomment %}
 
 {% endblock %}
 

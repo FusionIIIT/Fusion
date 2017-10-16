@@ -1,4 +1,4 @@
-{% extends 'root/Desktop/ProjectFusion/FusionIIIT/FusionIIIT/templates/Fusion/../..//globals/base.html' %}
+{% extends 'globals/base.html' %}
 {% load static %}
 
 
@@ -9,7 +9,7 @@
 
 {% block body %}
     {% block navBar %}
-        {% include 'root/Desktop/ProjectFusion/FusionIIIT/FusionIIIT/templates/Fusion/globals/../dashboard/navbar.html' %}
+        {% include 'dashboard/navbar.html' %}
     {% endblock %}
 
     {% comment %}The grid starts here!{% endcomment %}
@@ -25,7 +25,7 @@
 
             {% comment %}The user image card starts here!{% endcomment %}
             {% block usercard %}
-                {% include 'root/Desktop/ProjectFusion/FusionIIIT/FusionIIIT/templates/Fusion/globals/usercard.html' %}
+                {% include 'globals/usercard.html' %}
             {% endblock %}
             {% comment %}The user image card ends here!{% endcomment %}
 
@@ -81,7 +81,7 @@
             {% comment %}The Details start here!{% endcomment %}
             <div class="ui active tab segment" data-tab="first">
                 {% block profile %}
-                    {% include 'root/Desktop/ProjectFusion/FusionIIIT/FusionIIIT/templates/Fusion/placementModule/profile.html' %}
+                    {% include 'placementModule/profile.html' %}
                 {% endblock %}
             </div>
             {% comment %}The Personal Details end here!{% endcomment %}
@@ -90,7 +90,7 @@
             {% comment %}The Skills & Technologies start here!{% endcomment %}
             <div class="ui tab segment" data-tab="second">
                 {% block skills %}
-                    {% include 'root/Desktop/ProjectFusion/FusionIIIT/FusionIIIT/templates/Fusion/placementModule/skills.html' %}
+                    {% include 'placementModule/skills.html' %}
                 {% endblock %}
             </div>
             {% comment %}The Skills & Technologies end here!{% endcomment %}
@@ -98,7 +98,7 @@
             {% comment %}The Education tab starts here!{% endcomment %}
             <div class="ui tab segment" data-tab="third">
                 {% block education %}
-                    {% include 'root/Desktop/ProjectFusion/FusionIIIT/FusionIIIT/templates/Fusion/placementModule/education.html' %}
+                    {% include 'placementModule/education.html' %}
                 {% endblock %}
             </div>
             {% comment %}The Education tab ends here!{% endcomment %}
@@ -106,7 +106,7 @@
             {% comment %}The Education tab starts here!{% endcomment %}
             <div class="ui tab segment" data-tab="fourth">
                 {% block workexperience %}
-                    {% include 'root/Desktop/ProjectFusion/FusionIIIT/FusionIIIT/templates/Fusion/placementModule/workexperience.html' %}
+                    {% include 'placementModule/workexperience.html' %}
                 {% endblock %}
             </div>
             {% comment %}The Education tab ends here!{% endcomment %}
@@ -114,7 +114,7 @@
             {% comment %}The Achievements tab starts here!{% endcomment %}
             <div class="ui tab segment" data-tab="fifth">
                 {% block achievements %}
-                    {% include 'root/Desktop/ProjectFusion/FusionIIIT/FusionIIIT/templates/Fusion/placementModule/achievements.html' %}
+                    {% include 'placementModule/achievements.html' %}
                 {% endblock %}
             </div>
             {% comment %}The Achievements tab ends here!{% endcomment %}
@@ -122,7 +122,7 @@
             {% comment %}The Achievements tab starts here!{% endcomment %}
             <div class="ui tab segment" data-tab="sixth">
                 {% block publications %}
-                    {% include 'root/Desktop/ProjectFusion/FusionIIIT/FusionIIIT/templates/Fusion/placementModule/publications.html' %}
+                    {% include 'placementModule/publications.html' %}
                 {% endblock %}
             </div>
             {% comment %}The Achievements tab ends here!{% endcomment %}
@@ -165,16 +165,16 @@
 {% endblock %}
 
 {%  block javascript %}
-    <script type="text/javascript" src="{% static 'Fusion/js/editProfile.js' %}"></script>
-    <script type="text/javascript" src="{% static 'Fusion/js/checkbox.js' %}"></script>
-    <script type="text/javascript" src="{% static 'Fusion/js/tablesort.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/editProfile.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/checkbox.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
 
     <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
-    <script type="text/javascript" src="{% static 'Fusion/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
 
     {% comment %}
         TODO: Add a JS logic here!
     {% endcomment %}
-    <script type="text/javascript" src="{% static 'Fusion/js/progress.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/progress.js' %}"></script>
 
 {% endblock %}
