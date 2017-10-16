@@ -1,5 +1,5 @@
 from django.apps import AppConfig
 
 
-class GlobalConfig(AppConfig):
+class GlobalsConfig(AppConfig):
     name = 'applications.globals'
