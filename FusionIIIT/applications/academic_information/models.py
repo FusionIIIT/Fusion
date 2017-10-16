@@ -32,9 +32,9 @@ class Constants:
 
 class Student(models.Model):
     id = models.OneToOneField(ExtraInfo, on_delete=models.CASCADE, primary_key=True)
-    programme = models.CharField(max_length=10, choices = Constants.PROGRAMME)
+    programme = models.CharField(max_length=10, choices=Constants.PROGRAMME)
     cpi = models.FloatField(default=0)
-    category = models.CharField(max_length=10, choices = Constants.CATEGORY, null = False, blank = False)
+    category = models.CharField(max_length=10, choices=Constants.CATEGORY, null=False)
     father_name = models.CharField(max_length=40, default='')
     mother_name = models.CharField(max_length=40, default='')
     hall_no = models.IntegerField(default=1)
