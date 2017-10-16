@@ -9,3 +9,6 @@ from django.contrib.auth.decorators import login_required
 @login_required(login_url='/login')
 def add_course(request):
     pass
+
+def drop_course(request):
+    pass
