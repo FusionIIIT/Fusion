@@ -110,7 +110,7 @@ class QuizResult(models.Model):
     def __str__(self):
         return '{} - {} - {} - {} - {}'.format(
                 self.pk, self.student_id,
-                self.qid, self.score,
+                self.quiz_id, self.score,
                 self.feedback)
 
 
