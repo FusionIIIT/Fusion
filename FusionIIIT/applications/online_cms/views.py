@@ -98,10 +98,9 @@ def add_document(request, course_code):
                 document_name=name
             )
             return HttpResponse("Upload successful.")
-        elif(form.errors):
+        elif form.errors:
             form.errors
     else:
-        print("c")
         form = AddDocuments()
         document = CourseDocuments.objects.filter(course_id=course)
         return render(request, 'online_cms/add_doc.html',
@@ -136,7 +135,6 @@ def add_videos(request, course_code):
             uploaded_file_url = "/media/online_cms/"+course_code+"/vid/"+vid.name
             index = uploaded_file_url.rfind('/')
             name = uploaded_file_url[index+1:]
-            print(name)
             CourseVideo.objects.create(
                 course_id=course,
                 upload_time=datetime.now(),
@@ -145,7 +143,7 @@ def add_videos(request, course_code):
                 video_name=name
             )
             return HttpResponse("Upload successful.")
-        elif(form.errors):
+        elif form.errors:
             form.errors
     else:
         form = AddVideos()
