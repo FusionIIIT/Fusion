@@ -90,5 +90,9 @@ docs/_templates
 
 .tox
 
+
+# media
+FusionIIIT/media
 #ignoring settings.py
 FusionIIIT/Fusion/settings.py
+

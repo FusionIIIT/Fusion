@@ -2,8 +2,6 @@ from django.db import models
 
 from applications.globals.models import ExtraInfo
 
-# Create your models here.
-
 
 class Constants:
     HOLIDAY_TYPE = (
@@ -99,8 +97,8 @@ class Grades(models.Model):
     class Meta:
         db_table = 'Grades'
 
-    def __str__(self):
-        return self.grade_id
+#    def __str__(self):
+#        return self.grade_id
 
 
 class Student_attendance(models.Model):
