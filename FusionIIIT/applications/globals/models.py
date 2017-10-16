@@ -16,6 +16,7 @@ class Constants:
     USER_CHOICES = (
         ('student', 'student'),
         ('staff', 'staff'),
+        ('compounder', 'compounder'),
         ('faculty', 'faculty')
     )
 
