@@ -31,7 +31,7 @@ class Constants:
 
 class Caretaker(models.Model):
     staff_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
-    area = models.CharField(choices=Constants.AREA)
+    # area = models.CharField(choices=Constants.AREA)
 
 
 class Workers(models.Model):
@@ -39,14 +39,14 @@ class Workers(models.Model):
     name = models.CharField(max_length=50)
     age = models.CharField(max_length=10)
     phone = models.IntegerField(blank=True)
-    worker_type = models.CharField(choices=Constants.COMPLAINT_TYPE)
+    # worker_type = models.CharField(choices=Constants.COMPLAINT_TYPE)
 
 
 class StudentComplain(models.Model):
     complainer = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
     complaint_date = models.DateTimeField(default=timezone.now)
     complaint_finish = models.DateTimeField
-    complaint_type = models.CharField(choices=Constants.COMPLAINT_TYPE)
+    # complaint_type = models.CharField(choices=Constants.COMPLAINT_TYPE)
     location = models.CharField(max_length=20, choices=Constants.AREA)
     specific_location = models.CharField(max_length=50, blank=True)
     details = models.CharField(max_length=100)

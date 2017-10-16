@@ -151,7 +151,7 @@ DATABASES = {
             'ENGINE': 'django.db.backends.mysql',
             'NAME': 'fusion',
             'USER': 'root',
-            'PASSWORD': 'root',
+            'PASSWORD': '',
             'HOST': '127.0.0.1',
             'PORT': '3306',
         },
@@ -196,3 +196,5 @@ SITE_ID = 1
 
 STATIC_URL = '/static/'
 STATIC_ROOT = '/static'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'

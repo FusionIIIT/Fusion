@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title></title>
+</head>
+
+<body>
+
+    {% if extrainfo.user_type == 'student' %}
+    <h3>Course Information</h3>
+    <br> Course Code : {{course.course_id}}
+    <br>Course Name : {{course.course_name}}
+    <br>Semester : {{course.sem}}
+    <br>Credits : {{course.credits}}
+    <br>Instructor(s) : {{instructor.instructor_id.user.username}}
+    <br>
+    <br> <a href="#">Slides</a>
+    <br> <a href="#">Videos</a>
+    <br> <a href="#">Assignments</a>
+    <br> <a href="#">Quiz</a>
+    <br> <a href="#">View Performance</a> {% endif %} {% if extrainfo.user_type == 'faculty' %}
+    <h3>Course Information</h3>
+    <br> Course Code : {{course.course_id}}
+    <br>Course Name : {{course.course_name}}
+    <br>Semester : {{course.sem}}
+    <br>Credits : {{course.credits}}
+    <br>Instructor(s) : {{instructor.instructor_id.user.username}}
+    <br>
+    <br> <a href="#">Slides</a>
+    <br> <a href="#">Videos</a>
+    <br> <a href="#">Assignments</a>
+    <br> <a href="#">Quiz</a>
+    <br> <a href="#">View Performance</a> {% endif %}
+
+    <!--    Add discussion forum here-->
+
+</body>
+
+</html>
