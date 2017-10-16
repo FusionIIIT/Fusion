@@ -48,8 +48,7 @@ def course(request, course_code):
         student = Student.objects.get(id=extrainfo)
         roll = student.id.id[:4]
         course = Course.objects.filter(course_id=course_code, sem=semester(roll))
-        instructor = Instructor.objects.get(course_id=course)
-
+        instructor = Instructor.objects.get(course_id=course[0])
         return render(request, 'online_cms/course.html',
                       {'course': course[0],
                        'instructor': instructor,

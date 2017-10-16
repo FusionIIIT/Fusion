@@ -6,7 +6,7 @@ from applications.globals.models import ExtraInfo
 
 class CourseDocuments(models.Model):
     course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
-    upload_time = models.DateTimeField()
+    upload_time = models.DateTimeField(auto_now=True)
     description = models.CharField(max_length=100)
     document_name = models.CharField(max_length=40)
     document_url = models.CharField(max_length=100, null=True)
@@ -17,7 +17,7 @@ class CourseDocuments(models.Model):
 
 class CourseVideo(models.Model):
     course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
-    upload_time = models.DateTimeField()
+    upload_time = models.DateTimeField(auto_now=True)
     description = models.CharField(max_length=100)
     video_name = models.CharField(max_length=40)
     video_url = models.CharField(max_length=100, null=True)
@@ -41,7 +41,7 @@ class Quiz(models.Model):
 
 
 class QuizQuestion(models.Model):
-    qid = models.ForeignKey(Quiz, on_delete=models.CASCADE)
+    quiz_id = models.ForeignKey(Quiz, on_delete=models.CASCADE)
     question = models.TextField(max_length=1000)
     options1 = models.CharField(null=True, max_length=100)
     options2 = models.CharField(null=True, max_length=100)
@@ -63,8 +63,8 @@ class QuizQuestion(models.Model):
 
 class StudentAnswer(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
-    qid = models.ForeignKey(Quiz, on_delete=models.CASCADE)
-    qqid = models.ForeignKey(QuizQuestion, on_delete=models.CASCADE)
+    quiz_id = models.ForeignKey(Quiz, on_delete=models.CASCADE)
+    question_id = models.ForeignKey(QuizQuestion, on_delete=models.CASCADE)
     choice = models.IntegerField()
 
     def __str__(self):
@@ -74,7 +74,7 @@ class StudentAnswer(models.Model):
 
 class Assignment(models.Model):
     course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
-    upload_time = models.DateTimeField()
+    upload_time = models.DateTimeField(auto_now=True)
     submit_date = models.DateTimeField()
     assignment_name = models.CharField(max_length=100)
     assignment_url = models.CharField(max_length=100, null=True)
@@ -86,7 +86,7 @@ class Assignment(models.Model):
 class StudentAssignment(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     assignment_id = models.ForeignKey(Assignment, on_delete=models.CASCADE)
-    upload_time = models.DateTimeField()
+    upload_time = models.DateTimeField(auto_now=True)
     upload_url = models.TextField(max_length=200)
     score = models.IntegerField()
     feedback = models.CharField(max_length=100)
@@ -98,7 +98,7 @@ class StudentAssignment(models.Model):
 
 
 class QuizResult(models.Model):
-    qid = models.ForeignKey(Quiz, on_delete=models.CASCADE)
+    quiz_id = models.ForeignKey(Quiz, on_delete=models.CASCADE)
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     score = models.IntegerField()
     feedback = models.CharField(max_length=100)
@@ -111,7 +111,7 @@ class QuizResult(models.Model):
 class Forum(models.Model):
     course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
     commenter_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
-    comment_time = models.DateTimeField()
+    comment_time = models.DateTimeField(auto_now=True)
     comment = models.TextField(max_length=2000)
 
     def __str__(self):
