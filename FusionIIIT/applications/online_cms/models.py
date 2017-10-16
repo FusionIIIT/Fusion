@@ -12,7 +12,7 @@ class CourseDocuments(models.Model):
     document_url = models.CharField(max_length=100, null=True)
 
     def __str__(self):
-        return str(self.course_id, " ", self.document_name)
+        return '{} - {}'.format(self.course_id, self.document_name)
 
 
 class CourseVideo(models.Model):
@@ -23,7 +23,7 @@ class CourseVideo(models.Model):
     video_url = models.CharField(max_length=100, null=True)
 
     def __str__(self):
-        return str(self.course_id, " ", self.video_name)
+        return '{} - {}'.format(self.course_id, self.video_name)
 
 
 class Quiz(models.Model):
@@ -36,8 +36,10 @@ class Quiz(models.Model):
     negative_marks = models.FloatField(default=0)
 
     def __str__(self):
-        return str(self.pk, " ", self.course_id, " ", self.start_time, " ",
-                   self.end_time, " ", self.negative_marks)
+        return '{} - {} - {} - {} - {}'.format(
+                self.pk, self.course_id,
+                self.start_time, self.end_time,
+                self.negative_marks)
 
 
 class QuizQuestion(models.Model):
@@ -54,11 +56,10 @@ class QuizQuestion(models.Model):
     marks = models.IntegerField()
 
     def __str__(self):
-        return str(self.pk, " ", self.qid, " ",
-                   self.options1, " ", self.options2, " ",
-                   self.options3, " ", self.options4, " ",
-                   self.options5, " ", self.answer, " ",
-                   self.announcement)
+        return '{} - {} - {} - {} - {} - {} - {} - {} - {}'.format(
+            self.pk, self.quiz_id, self.options1,
+            self.options2, self.options3, self.options4,
+            self.options5, self.answer, self.announcement)
 
 
 class StudentAnswer(models.Model):
@@ -68,8 +69,10 @@ class StudentAnswer(models.Model):
     choice = models.IntegerField()
 
     def __str__(self):
-        return str(self.pk, " ", self.student_id, " ",
-                   self.qid, " ", self.qqid, " ", self.choice)
+        return '{} - {} - {} - {} - {}'.format(
+                self.pk, self.student_id,
+                self.quiz_id, self.question_id,
+                self.choice)
 
 
 class Assignment(models.Model):
@@ -80,7 +83,7 @@ class Assignment(models.Model):
     assignment_url = models.CharField(max_length=100, null=True)
 
     def __str__(self):
-        return str(self.pk, " ", self.course_id, " ", self.assignment_name)
+        return '{} - {} - {}'.format(self.pk, self.course_id, self.assignment_name)
 
 
 class StudentAssignment(models.Model):
@@ -92,9 +95,10 @@ class StudentAssignment(models.Model):
     feedback = models.CharField(max_length=100)
 
     def __str__(self):
-        return str(self.pk, " ", self.student_id, " ",
-                   self.assignment_id, " ", self.score,
-                   " ", self.feedback)
+        return '{} - {} - {} - {} - {}'.format(
+                self.pk, self.student_id,
+                self.assignment_id, self.score,
+                self.feedback)
 
 
 class QuizResult(models.Model):
@@ -104,8 +108,10 @@ class QuizResult(models.Model):
     feedback = models.CharField(max_length=100)
 
     def __str__(self):
-        return str(self.pk, " ", self.student_id, " ", self.qid, " ",
-                   self.score, " ", self.feedback)
+        return '{} - {} - {} - {} - {}'.format(
+                self.pk, self.student_id,
+                self.qid, self.score,
+                self.feedback)
 
 
 class Forum(models.Model):
@@ -115,8 +121,10 @@ class Forum(models.Model):
     comment = models.TextField(max_length=2000)
 
     def __str__(self):
-        return str(self.pk, " ", self.course_id, " ",
-                   self.commenter_id, " ", self.comment)
+        return '{} - {} - {} - {}'.format(
+            self.pk, self.course_id,
+            self.commenter_id,
+            self.comment)
 
 
 class ForumReply(models.Model):
@@ -126,4 +134,4 @@ class ForumReply(models.Model):
                                     related_name='forum_reply')
 
     def __str__(self):
-        return str(self.pk, " ", self.forum_ques, " ", self.forum_reply)
+        return '{} - {} - {}'.format(self.pk, self.forum_ques, self.forum_reply)

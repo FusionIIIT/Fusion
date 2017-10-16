@@ -13,6 +13,5 @@ urlpatterns = [
     url(r'^(?P<course_code>[A-z]+[0-9]+)/add_documents$', views.add_document,
         name='add_document'),
     url(r'^(?P<course_code>[A-z]+[0-9]+)/add_video$', views.add_videos,
-        name='add_videos')
-
+        name='add_videos'),
 ]
