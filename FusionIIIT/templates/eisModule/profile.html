@@ -1,4 +1,4 @@
-{% extends 'root/Desktop/ProjectFusion/FusionIIIT/FusionIIIT/templates/Fusion/globals/base.html' %}
+{% extends 'globals/base.html' %}
 {% load static %}
 
 
@@ -9,7 +9,7 @@
 
 {% block body %}
     {% block navBar %}
-        {% include 'root/Desktop/ProjectFusion/FusionIIIT/FusionIIIT/templates/Fusion/globals/../dashboard/navbar.html' %}
+        {% include 'dashboard/navbar.html' %}
     {% endblock %}
 
 
@@ -26,7 +26,7 @@
 
             {% comment %}The user image card starts here!{% endcomment %}
             {% block usercard %}
-                {% include 'root/Desktop/ProjectFusion/FusionIIIT/FusionIIIT/templates/Fusion/globals/usercard.html' %}
+                {% include 'globals/usercard.html' %}
             {% endblock %}
             {% comment %}The user image card ends here!{% endcomment %}
 
@@ -93,7 +93,7 @@
             {% comment %}The Details start here!{% endcomment %}
             <div class="ui active tab segment" data-tab="first">
                 {% block personaldetails %}
-                    {% include 'root/Desktop/ProjectFusion/FusionIIIT/FusionIIIT/templates/Fusion/eisModule/personaldetails.html' %}
+                    {% include 'eisModule/personaldetails.html' %}
                 {% endblock %}
             </div>
             {% comment %}The Personal Details end here!{% endcomment %}
@@ -102,7 +102,7 @@
             {% comment %}The Publications starts here!{% endcomment %}
             <div class="ui tab segment" data-tab="second">
                 {% block publications %}
-                    {% include 'root/Desktop/ProjectFusion/FusionIIIT/FusionIIIT/templates/Fusion/eisModule/publications.html' %}
+                    {% include 'eisModule/publications.html' %}
                 {% endblock %}
             </div>
             {% comment %}The Publications ends here!{% endcomment %}
@@ -111,7 +111,7 @@
             {% comment %}The Projects starts here!{% endcomment %}
             <div class="ui tab segment" data-tab="third">
                 {% block projects %}
-                    {% include 'root/Desktop/ProjectFusion/FusionIIIT/FusionIIIT/templates/Fusion/eisModule/projects.html' %}
+                    {% include 'eisModule/projects.html' %}
                 {% endblock %}
             </div>
             {% comment %}The Projects ends here!{% endcomment %}
@@ -120,7 +120,7 @@
             {% comment %}The Thesis Supervision starts here!{% endcomment %}
             <div class="ui tab segment" data-tab="fourth">
                 {% block thesis %}
-                    {% include 'root/Desktop/ProjectFusion/FusionIIIT/FusionIIIT/templates/Fusion/eisModule/thesis.html' %}
+                    {% include 'eisModule/thesis.html' %}
                 {% endblock %}
             </div>
             {% comment %}The Publications ends here!{% endcomment %}
@@ -128,7 +128,7 @@
             {% comment %}The Thesis Supervision starts here!{% endcomment %}
             <div class="ui tab segment" data-tab="fifth">
                 {% block eventorganised %}
-                    {% include 'root/Desktop/ProjectFusion/FusionIIIT/FusionIIIT/templates/Fusion/eisModule/eventorganized.html' %}
+                    {% include 'eisModule/eventorganized.html' %}
                 {% endblock %}
             </div>
             {% comment %}The Publications ends here!{% endcomment %}
@@ -136,7 +136,7 @@
             {% comment %}The Thesis Supervision starts here!{% endcomment %}
             <div class="ui tab segment" data-tab="sixth">
                 {% block visits %}
-                    {% include 'root/Desktop/ProjectFusion/FusionIIIT/FusionIIIT/templates/Fusion/eisModule/visits.html' %}
+                    {% include 'eisModule/visits.html' %}
                 {% endblock %}
             </div>
             {% comment %}The Publications ends here!{% endcomment %}
@@ -161,14 +161,14 @@
             <div class="row">
                 {% comment %}The Modules:{% endcomment %}
                 {% block generatereport %}
-                    {% include 'root/Desktop/ProjectFusion/FusionIIIT/FusionIIIT/templates/Fusion/eisModule/generatereport.html' %}
+                    {% include 'eisModule/generatereport.html' %}
                 {% endblock %}
             </div>
 
             <div class="row">
                 {% comment %}The Modules:{% endcomment %}
                 {% block modules %}
-                    {% include 'root/Desktop/ProjectFusion/FusionIIIT/FusionIIIT/templates/Fusion/dashboard/modules.html' %}
+                    {% include 'dashboard/modules.html' %}
                 {% endblock %}
             </div>
 
@@ -186,8 +186,8 @@
 {% endblock %}
 
 {% block javascript %}
-    <script type="text/javascript" src="{% static 'Fusion/js/editProfile.js' %}"></script>
-    <script type="text/javascript" src="{% static 'Fusion/js/tablesort.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/editProfile.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
 
 {% comment %}
     <script>
