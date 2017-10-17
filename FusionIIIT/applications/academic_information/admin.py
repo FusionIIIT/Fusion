@@ -1,10 +1,10 @@
 from django.contrib import admin
 
 from .models import (Calendar, Course, Exam_timetable, Grades, Holiday,
-                     Instructor, Meeting, Student_attendance, Timetable)
+                     Instructor, Meeting, Student, Student_attendance,
+                     Timetable)
 
-# Register your models here.
-
+admin.site.register(Student)
 admin.site.register(Course)
 admin.site.register(Instructor)
 admin.site.register(Meeting)

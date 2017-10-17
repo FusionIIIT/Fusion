@@ -1,0 +1,272 @@
+<div class="ui container">
+    <div class="ui vertical stripe team segment"
+         style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+
+        <div class="ui header">
+            Leave Application Form:
+        </div>
+
+        <div class="ui divider"></div>
+        <br>
+
+        <form class="ui large form">
+
+            {% comment %} The ApplyLeave conatianer starts here! {% endcomment %}
+            <div id="applyLeave">
+                {% comment %}The form row starts here!{% endcomment %}
+                <div class="two fields">
+                    <div class="field">
+                        <label>Leave From:</label>
+                        <div class="ui calendar" id="rangestart">
+                            <div class="ui input left icon">
+                                <i class="calendar icon"></i>
+                                <input type="text" placeholder="From">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Leave To:</label>
+                        <div class="ui calendar" id="rangeend">
+                            <div class="ui input left icon">
+                                <i class="calendar icon"></i>
+                                <input type="text" placeholder="To">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="two fields">
+                    <div class="twelve wide field">
+                        {% comment %}The Dropdown field starts here!{% endcomment %}
+                        <label>Leave Type</label>
+
+                        <div class="ui fluid search selection dropdown">
+                            <input name="Leave Type" type="hidden">
+                            <i class="dropdown icon"></i>
+
+                            <div class="default text">Select Leave</div>
+
+                            <div class="menu">
+                                <div class="item" data-value="CL">
+                                    Casual Leave
+                                </div>
+
+                                <div class="item" data-value="COL">
+                                    Commuted Leave
+                                </div>
+
+                                <div class="item" data-value="EL">
+                                    Earned Leave
+                                </div>
+
+                                <div class="item" data-value="RH">
+                                    Restricted Holiday
+                                </div>
+
+                                <div class="item" data-value="SCL">
+                                    Sp. Casual Leave
+                                </div>
+
+                                <div class="item" data-value="VL">
+                                    Vacation Leave
+                                </div>
+                            </div>
+                        </div>
+                        {% comment %}The Dropdown field ends here!{% endcomment %}
+                    </div>
+
+                    <div class="four wide field">
+                        <label>Station Leave:</label>
+                        <div class="ui toggle checkbox"
+                             style="margin-top: 8px;">
+                            <label>Required</label>
+                            <input tabindex="0" class="hidden" type="checkbox" id="chkAddress" onchange="ShowHideDiv()">
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="fields">
+                    <div class="sixteen wide field" id="leaveAddress" style="display: none;">
+                        <label>Leave Address:</label>
+                        <textarea class="ui textarea" rows="2"></textarea>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="fields">
+
+                        {% comment %}Academic Responsibilities start here!{% endcomment %}
+                        <div class="eight wide field">
+                            <label>Academic Responsibilities:</label>
+                            <div class="ui fluid search selection dropdown">
+                                <input name="Select" type="hidden">
+                                <i class="dropdown icon"></i>
+
+                                <div class="default text">Select</div>
+
+                                <div class="menu">
+                                    <div class="item" data-value="aojha">
+                                        Aparajita Ojha
+                                    </div>
+
+                                    <div class="item" data-value="pkhanna">
+                                        Preeti Khanna
+                                    </div>
+                                    <div class="item" data-value="mkbajpai">
+                                        Manish Bajpai
+                                    </div>
+
+                                    <div class="item" data-value="vkjain">
+                                        Vinod K. Jain
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% comment %}Academic Responsibilities end here!{% endcomment %}
+
+                        {% comment %}Administrative Responsibilities start here!{% endcomment %}
+                        <div class="eight wide field">
+                            <label>Administrative Responsibilities:</label>
+                            <div class="ui fluid search selection dropdown">
+                                <input name="Select" type="hidden">
+                                <i class="dropdown icon"></i>
+
+                                <div class="default text">Select</div>
+
+                                <div class="menu">
+                                    <div class="item" data-value="aojha">
+                                        Aparajita Ojha
+                                    </div>
+
+                                    <div class="item" data-value="pkhanna">
+                                        Preeti Khanna
+                                    </div>
+                                    <div class="item" data-value="mkbajpai">
+                                        Manish Bajpai
+                                    </div>
+
+                                    <div class="item" data-value="vkjain">
+                                        Vinod K. Jain
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                        {% comment %}Administrative Responsibilities end here!{% endcomment %}
+                    </div>
+                </div>
+                {% comment %}The Resposibilities end here!{% endcomment %}
+
+                <br>
+
+                {% comment %}Leave Purpose starts here!{% endcomment %}
+                <div class="fields">
+                    <div class="twelve wide field">
+                        <label>Leave Purpose:</label>
+                        <div class="ui fluid input">
+                            <input name="leavePurpose">
+                        </div>
+                    </div>
+
+                    <div class="four wide field">
+                        <label><br></label>
+                        <div class="ui large fluid primary button">
+                            Submit
+                        </div>
+                    </div>
+                </div>
+                {% comment %}Leave Purpose ends here!{% endcomment %}
+                <br>
+            </div>
+        </form>
+    </div>
+
+    <div class="extra content">
+        <br>
+        <br>
+
+        <div class="ui six equal width blue small stackable statistics"
+             style="margin: auto;">
+
+            <div class="ui statistic">
+                <div class="value">
+                    8
+                </div>
+
+                <div class="label">
+                    <i class="plane icon"></i>
+                    CL&ensp;
+                </div>
+            </div>
+
+            <div class="ui statistic">
+                <div class="value">
+                    20
+                </div>
+
+                <div class="label">
+                    <i class="plane icon"></i>
+                    COL&ensp;
+                </div>
+            </div>
+
+            <div class="ui statistic">
+                <div class="value">
+                    30
+                </div>
+
+                <div class="label">
+                    <i class="plane icon"></i>
+                    EL
+                </div>
+            </div>
+
+            <div class="ui statistic">
+                <div class="value">
+                    2
+                </div>
+
+                <div class="label">
+                    <i class="plane icon"></i>
+                    RH
+                </div>
+            </div>
+
+            <div class="ui statistic">
+                <div class="value">
+                    2
+                </div>
+
+                <div class="label">
+                    <i class="plane icon"></i>
+                    Sp. CL&ensp;
+                </div>
+            </div>
+
+            <div class="ui statistic">
+                <div class="value">
+                    60
+                </div>
+
+                <div class="label">
+                    <i class="plane icon"></i>
+                    VL
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script type="text/javascript">
+    function ShowHideDiv() {
+        var chkAddress = document.getElementById("chkAddress");
+        var leaveAddress = document.getElementById("leaveAddress");
+        leaveAddress.style.display = chkAddress.checked ? "block" : "none";
+    }
+</script>

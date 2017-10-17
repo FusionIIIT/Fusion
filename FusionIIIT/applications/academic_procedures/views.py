@@ -6,10 +6,11 @@ from django.contrib.auth.decorators import login_required
 # Create your views here.
 
 
-@login_required(login_url='/login')
+@login_required(login_url='/accounts/login')
 def add_course(request):
     pass
 
 
+@login_required(login_url='/accounts/login')
 def drop_course(request):
     pass

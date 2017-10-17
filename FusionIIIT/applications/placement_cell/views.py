@@ -1,3 +1,7 @@
-# from django.shortcuts import render
+from django.shortcuts import render
 
-# Create your views here.
+
+def placement(request):
+    context = {}
+
+    return render(request, "placementModule/placement.html", context)
