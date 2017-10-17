@@ -21,6 +21,13 @@ from django.contrib import admin
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
+    url(r'^', include('applications.globals.urls')),
+    url(r'^eis/', include('applications.eis.urls')),
+    url(r'^mess/', include('applications.central_mess.urls')),
+    url(r'^complaint/', include('applications.complaint_system.urls')),
+    url(r'^leave/', include('applications.leave.urls')),
+    url(r'^placement/', include('applications.placement_cell.urls')),
+    url(r'^visitorhostel/', include('applications.visitor_hostel.urls')),
     url(r'^admin/', admin.site.urls),
     url(r'^accounts/', include('allauth.urls')),
     url(r'^ocms/', include('applications.online_cms.urls')),
