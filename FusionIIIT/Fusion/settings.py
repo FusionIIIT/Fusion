@@ -45,13 +45,14 @@ SOCIALACCOUNT_PROVIDERS = {
 
 LOGIN_URL = '/accounts/login/'
 LOGOUT_URL = '/accounts/logout/'
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = '/dashboard'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'
 
 # email of sender
+# TODO: Remove Ramlal!
 EMAIL_HOST_USER = 'ramlalfff@gmail.com'
 
 # password of sender
@@ -126,7 +127,7 @@ ROOT_URLCONF = 'Fusion.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['/', '/templates'],
+        'DIRS': ['/', os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -194,6 +195,8 @@ SITE_ID = 1
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
+
+# os.path.join(BASE_DIR, 'static/')
 STATIC_URL = '/static/'
 STATIC_ROOT = '/static'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
