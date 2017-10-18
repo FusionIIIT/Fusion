@@ -1,0 +1,209 @@
+
+{% extends 'fusion/general/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Academic Information System
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'fusion/general/../dashboard/navbar.html' %}
+    {% endblock %}
+
+
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}
+            The left-rail segment starts here!
+        {% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'fusion/general/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu starts here!{% endcomment %}
+            <div class="ui huge fluid vertical pointing menu"
+                 style="max-width: 320px;">
+
+                <a class="active item" data-tab="first">
+                    Academic/Examination Time Table
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="second">
+                    Manage Student Profile
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="third">
+                    Academics
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="fourth">
+                   Academic Calendar
+                    <i class="right floated chevron right icon"></i>
+                </a>
+<!-- 
+                <a class="item" data-tab="fifth">
+                    Senate Meeting
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                 <a class="item" data-tab="sixth">
+                    Attendance
+                    <i class="right floated chevron right icon"></i>
+                </a> -->
+
+            </div>
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+
+
+        {% comment %}
+            The central-rail segment starts here!
+        {% endcomment %}
+
+        <div class="eight wide column">
+            {% comment %}The time table start here!{% endcomment %}
+            <div class="ui active tab segment" data-tab="first">
+                {% block timetable %}
+                    {% include 'fusion/ais/timetable.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The time table end here!{% endcomment %}
+
+
+            {% comment %}The student profile starts here!{% endcomment %}
+
+            <div class="ui tab segment" data-tab="second">
+                {% block profile %}
+                    {% include 'fusion/ais/profile.html' %}
+                {% endblock %}
+            </div>
+
+            {% comment %}The student profile ends here!{% endcomment %}
+
+
+            {% comment %}The academics starts here!{% endcomment %}
+
+            <div class="ui tab segment" data-tab="third">
+                {% block academics %}
+                    {% include 'fusion/ais/academics.html' %}
+                {% endblock %}
+            </div>
+
+            {% comment %}The academics ends here!{% endcomment %}
+
+
+            {% comment %}The calendar starts here!{% endcomment %}
+
+            <div class="ui tab segment" data-tab="fourth">
+                {% block calendar %}
+                    {% include 'fusion/ais/calendar.html' %}
+                {% endblock %}
+            </div>
+
+            {% comment %}The calendar ends here!{% endcomment %}
+
+            {% comment %}The senate  starts here!{% endcomment %}
+            {% comment %}
+                <div class="ui tab segment" data-tab="fifth">
+                    {% block senate %}
+                        {% include 'fusion/ais/senate.html' %}
+                    {% endblock %}
+                </div>
+            {% endcomment %}
+
+            {% comment %}The senate ends here!{% endcomment %}
+            
+
+             {% comment %}The attendance  starts here!{% endcomment %}
+
+            {% comment %}
+                <div class="ui tab segment" data-tab="sixth">
+                    {% block attendance %}
+                        {% include 'fusion/ais/attendance.html' %}
+                    {% endblock %}
+                </div>
+            {% endcomment %}
+
+            {% comment %}The attendance ends here!{% endcomment %}
+
+           
+           
+
+           
+
+           
+
+        </div>
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            <div class="row">
+             
+            </div>
+                
+
+            <div class="row">
+                
+            </div>
+
+        </div>
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+    </div>
+    {% comment %}The grid ends here!{% endcomment %}
+
+
+
+{% endblock %}
+
+{% block javascript %}
+    <script type="text/javascript" src="{% static 'fusion/js/editProfile.js' %}"></script>
+    <script type="text/javascript" src="{% static 'fusion/js/tablesort.js' %}"></script>
+
+    <script>
+        $(document).ready(function() {
+            $('table').tablesort();
+        });
+    </script>
+
+    <script>
+        function toggleContent() {
+            $('.modulesContent').toggle();
+
+            if($('.modulesContent').is(':visible')){
+                $('#toggleIcon').removeClass("chevron down");
+                $('#toggleIcon').addClass("chevron up");
+            }
+            else if(!$('.modulesContent').is(':visible')){
+                $('#toggleIcon').removeClass("chevron up");
+                $('#toggleIcon').addClass("chevron down");
+            }
+        }
+    </script>
+
+{% endblock %}
