@@ -24,8 +24,8 @@ And additional requirements are in **requirements.txt**
 
 ## Configuring a Upstream:
 
- * git remote add upstream https://github.com/3Peers/FusionIIIT.git
- * git remote -v
+ * `$ git remote add upstream https://github.com/3Peers/FusionIIIT.git`
+ * `$ git remote -v`
    * It should like this:
      * origin    https://github.com/YOUR_USERNAME/FusionIIIT.git (fetch)
      * origin    https://github.com/YOUR_USERNAME/FusionIIIT.git (push)
@@ -34,9 +34,9 @@ And additional requirements are in **requirements.txt**
      
 ## Syncing with Fork:
 
- * git fetch upstream
- * git checkout master
- * git merge upstream/master
+ * `$ git fetch upstream`
+ * `$ git checkout master`
+ * `$ git merge upstream/master`
 
 
 ## Different modules include
