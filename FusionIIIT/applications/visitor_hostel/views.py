@@ -1,9 +1,7 @@
-# from django.shortcuts import render
+from django.shortcuts import render
 
-# Create your views here.
 
-# Views for the VH In-charge
+def visitorhostel(request):
+    context = {}
 
-# Views for the Intender
-
-# Views for the VH Caretaker
+    return render(request, "vhModule/visitorhostel.html", context)
