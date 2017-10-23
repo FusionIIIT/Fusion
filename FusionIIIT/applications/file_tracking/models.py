@@ -15,13 +15,13 @@ class Constants:
 
 
 class File(models.Model):
-    employee_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
+    employee_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE, related_name='employee_id')
     subject = models.CharField(max_length=40)
-    file_type = models.CharField(choices=Constants.FILE_TYPE)
+    file_type = models.CharField(max_length=20, choices=Constants.FILE_TYPE)
     description = models.CharField(max_length=100)
     status = models.IntegerField(choices=Constants.STATUS, default=1)
     leave_flag = models.BooleanField(default=False)
-    substitute_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
+    substitute_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE, related_name='substitute_id')
     upload_date = models.DateTimeField(auto_now=True)
     resolve_date = models.DateTimeField()
 
