@@ -1,0 +1,101 @@
+{% load static %}
+{% block resiterstudent %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="complainthistory">
+            Pre-Registration
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="complainthistory">
+    <div class="ui vertical segment">
+
+   
+    
+    {% if details.check_pre_register %}
+        You have already registered
+    {% else %}
+            <table class="ui very basic collapsing celled sortable table"
+                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                <thead>
+                 
+                <tr>
+                    <th>
+                    </th>
+
+                    <th>
+                        Course ID
+                    </th>
+
+                    <th>
+                        Course Name
+                    </th>
+
+                    <th>
+                        Credits
+                    </th>
+                    <th>
+                        Semester
+                    </th>
+                    <th>
+                        Optional
+                    </th>
+                </tr>
+                </thead>
+
+                <tbody>
+                
+                    <form action='/academic-procedures/register/' method='post'>
+                    {% csrf_token %}
+                    {% for items in courses_list %}
+                        <tr>
+                            <td>
+                            </td>
+                            <td>
+                                {{ items.course_id }}
+                                {% if items.course_id|length > 5%}
+                                    (optional)
+                                {% endif %}
+                                <input type="text" name='course_id' value='{{ items.course_id}}' hidden="True">
+                            </td>
+                            <td>
+                                {{ items.course_name}}
+                                <input type="text" name='course_name' value='{{ items.course_name}}' hidden="True">
+                            </td>
+                            <td>
+                                {{items.sem}}
+                                <input type="text" name='semester' value='{{ items.sem}}' hidden="True">
+                             </td>
+                             <td>
+                                {{ items.credits }}
+                                <input type="text" name='credits' value='{{ items.credits}}' hidden="True">
+                             </td>
+                             <td>
+                                <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
+                                <input name="choice" type="checkbox" value="{{ items.course_id }}">
+                             </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <br>
+            <div class="ui divider"></div>
+
+            <div class="extra content">
+                <div class="" style="text-align: center;">
+                    <button class="ui primary button">Register</button>
+                </div>
+            </div>
+            </form>
+        </div>
+    </div>
+
+    {% endif %}
+
+{% endblock %}

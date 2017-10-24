@@ -32,7 +32,7 @@ class Register(models.Model):
         db_table = 'Register'
 
     def __str__(self):
-        return self.r_id
+        return str(self.r_id)
 
 
 class Thesis(models.Model):
