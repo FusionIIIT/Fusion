@@ -1,5 +1,5 @@
 
-{% extends 'fusion/general/base.html' %}
+{% extends 'globals/base.html' %}
 {% load static %}
 
 
@@ -15,7 +15,7 @@
 
 {% block body %}
     {% block navBar %}
-        {% include 'fusion/general/../dashboard/navbar.html' %}
+        {% include 'dashboard/navbar.html' %}
     {% endblock %}
 
 
@@ -32,7 +32,7 @@
 
             {% comment %}The user image card starts here!{% endcomment %}
             {% block usercard %}
-                {% include 'fusion/general/usercard.html' %}
+                {% include 'globals/usercard.html' %}
             {% endblock %}
             {% comment %}The user image card ends here!{% endcomment %}
 
@@ -90,7 +90,7 @@
             {% comment %}The Details start here!{% endcomment %}
             <div class="ui active tab segment" data-tab="first">
                 {% block timetable %}
-                    {% include 'fusion/ais/timetable.html' %}
+                    {% include 'ais/timetable.html' %}
                 {% endblock %}
             </div>
             {% comment %}The Personal Details end here!{% endcomment %}
@@ -100,7 +100,7 @@
 
             <div class="ui tab segment" data-tab="second">
                 {% block profile %}
-                    {% include 'fusion/ais/profile.html' %}
+                    {% include 'ais/profile.html' %}
                 {% endblock %}
             </div>
 
@@ -111,7 +111,7 @@
 
             <div class="ui tab segment" data-tab="third">
                 {% block academics %}
-                    {% include 'fusion/ais/academics.html' %}
+                    {% include 'ais/academics.html' %}
                 {% endblock %}
             </div>
 
@@ -122,7 +122,7 @@
 
             <div class="ui tab segment" data-tab="fourth">
                 {% block calendar %}
-                    {% include 'fusion/ais/calendar.html' %}
+                    {% include 'ais/calendar.html' %}
                 {% endblock %}
             </div>
 
@@ -132,7 +132,7 @@
 
             <div class="ui tab segment" data-tab="fifth">
                 {% block senate %}
-                    {% include 'fusion/ais/senate.html' %}
+                    {% include 'ais/senate.html' %}
                 {% endblock %}
             </div>
 
@@ -142,7 +142,7 @@
 
             <div class="ui tab segment" data-tab="sixth">
                 {% block attendance %}
-                    {% include 'fusion/ais/attendance.html' %}
+                    {% include 'ais/attendance.html' %}
                 {% endblock %}
             </div> 
            

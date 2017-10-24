@@ -1,5 +1,5 @@
 
-{% extends 'fusion/general/base.html' %}
+{% extends 'globals/base.html' %}
 {% load static %}
 
 
@@ -10,7 +10,7 @@
 
 {% block body %}
     {% block navBar %}
-        {% include 'fusion/general/../dashboard/navbar.html' %}
+        {% include 'dashboard/navbar.html' %}
     {% endblock %}
 
 
@@ -27,7 +27,7 @@
 
             {% comment %}The user image card starts here!{% endcomment %}
             {% block usercard %}
-                {% include 'fusion/general/usercard.html' %}
+                {% include 'globals/usercard.html' %}
             {% endblock %}
             {% comment %}The user image card ends here!{% endcomment %}
 
@@ -87,7 +87,7 @@
             {% comment %}The view courses start here!{% endcomment %}
             <div class="ui active tab segment" data-tab="first">
                 {% block viewcourse %}
-                    {% include 'fusion/coursemanagement/viewcourses.html' %}
+                    {% include 'coursemanagement/viewcourses.html' %}
                 {% endblock %}
             </div>
             {% comment %}The view courses end here!{% endcomment %}
@@ -97,7 +97,7 @@
 
             <div class="ui tab segment" data-tab="second">
                 {% block submitassignments %}
-                    {% include 'fusion/coursemanagement/submitassignments.html' %}
+                    {% include 'coursemanagement/submitassignments.html' %}
                 {% endblock %}
             </div>
 
@@ -108,7 +108,7 @@
 
             <div class="ui tab segment" data-tab="third">
                 {% block viewperformance %}
-                    {% include 'fusion/coursemanagement/viewperformance.html' %}
+                    {% include 'coursemanagement/viewperformance.html' %}
                 {% endblock %}
             </div>
 
@@ -119,7 +119,7 @@
 
             <div class="ui tab segment" data-tab="fourth">
                 {% block assessment %}
-                    {% include 'fusion/coursemanagement/assessment.html' %}
+                    {% include 'coursemanagement/assessment.html' %}
                 {% endblock %}
             </div>
 
@@ -129,7 +129,7 @@
             {% comment %}
                 <div class="ui tab segment" data-tab="fifth">
                     {% block addcontent %}
-                        {% include 'fusion/coursemanagement/addcontent.html' %}
+                        {% include 'coursemanagement/addcontent.html' %}
                     {% endblock %}
                 </div>
             {% endcomment %}
@@ -153,13 +153,13 @@
             </div>
                 {% comment %}The Instructor Note:{% endcomment %}
                 {% block note %}
-                    {% include 'fusion/coursemanagement/note.html' %}
+                    {% include 'coursemanagement/note.html' %}
                 {% endblock %}
 
             <div class="row">
                 {% comment %}The comments:{% endcomment %}
                 {% block comments %}
-                    {% include 'fusion/coursemanagement/comments.html' %}
+                    {% include 'coursemanagement/comments.html' %}
                 {% endblock %}
             </div>
 
