@@ -1,0 +1,178 @@
+{% block skills %}
+    <div class="ui vertical segment">
+        <div class="ui header">
+            Skills & Technologies
+        </div>
+
+        <div class="ui divider"></div>
+        <br>
+
+        {% comment %}
+        TODO: Add a proper JS logic for Skills!
+        {% endcomment %}
+
+        <form class="ui form">
+            {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+            <div class="ui active accordion field">
+                <div class="title">
+                    <i class="icon dropdown"></i>
+                    Add a new Skill/Technology
+                </div>
+
+                <div class="active content fields">
+                    <div class="two fields">
+                        <div class="one wide field"></div>
+                        <div class="eight wide field">
+                            <label>Skill/Technology:</label>
+                            <input placeholder="Skill/Technology"
+                                   class="ui fluid input"
+                                   type="text">
+                        </div>
+
+                        <div class="four wide field">
+                            <label>Rate:</label>
+                            <input placeholder="Rate"
+                                   class="ui fluid input"
+                                   type="text">
+                        </div>
+
+                        <div class="two wide field">
+                            <label><br></label>
+                            <button class="ui primary button">Add</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% comment %}The add a new skill Accordian ends here!{% endcomment %}
+        </form>
+    </div>
+
+    <div class="extra content">
+        <div class="ui container stackable doubling grid" style="margin: 12px;">
+
+            {% comment %}A skill row starts here!{% endcomment %}
+            <div class="ui row">
+                {% comment %}The Left margin{% endcomment %}
+                <div class="two wide column"></div>
+
+                <div class="ten wide column">
+                    <div class="ui indicating large progress" data-value="95" data-total="100" id="example1">
+                        <div class="bar">
+                            <div class="progress"></div>
+                        </div>
+                        <div class="label">
+                            <div class="ui mini statistic">
+                                <div class="value">
+                                    HTML/CSS
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% comment %}Edit starts here! {% endcomment %}
+                <div class="two wide column">
+                    <div class="ui buttons">
+                        <button class="ui green basic button" onclick="increment()">
+                            <i class="plus icon green"></i>
+                        </button>
+
+                        <button class="ui red basic button" onclick="decrement()">
+                            <i class="minus icon red"></i>
+                        </button>
+                    </div>
+                </div>
+                {% comment %}Edit ends here! {% endcomment %}
+
+                {% comment %}The Right margin starts here!{% endcomment %}
+                <div class="two wide column"></div>
+                {% comment %}The Right margin ends here!{% endcomment %}
+
+            </div>
+            {% comment %}A skill row ends here!{% endcomment %}
+
+            {% comment %}A skill row starts here!{% endcomment %}
+            <div class="ui row">
+                {% comment %}The Left margin{% endcomment %}
+                <div class="two wide column"></div>
+
+                <div class="ten wide column">
+                    <div class="ui indicating large progress" data-value="75" data-total="100" id="example2">
+                        <div class="bar">
+                            <div class="progress"></div>
+                        </div>
+                        <div class="label">
+                            <div class="ui mini statistic">
+                                <div class="value">
+                                    JS/JQuery
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% comment %}Edit starts here! {% endcomment %}
+                <div class="two wide column">
+                    <div class="ui buttons">
+                        <button class="ui green basic button" onclick="increment()">
+                            <i class="plus icon green"></i>
+                        </button>
+
+                        <button class="ui red basic button" onclick="decrement()">
+                            <i class="minus icon red"></i>
+                        </button>
+                    </div>
+                </div>
+                {% comment %}Edit ends here! {% endcomment %}
+
+                {% comment %}The Right margin starts here!{% endcomment %}
+                <div class="two wide column"></div>
+                {% comment %}The Right margin ends here!{% endcomment %}
+
+            </div>
+            {% comment %}A skill row ends here!{% endcomment %}
+
+            {% comment %}A skill row starts here!{% endcomment %}
+            <div class="ui row">
+                {% comment %}The Left margin{% endcomment %}
+                <div class="two wide column"></div>
+
+                <div class="ten wide column">
+                    <div class="ui indicating large progress" data-value="65" data-total="100" id="example3">
+                        <div class="bar">
+                            <div class="progress"></div>
+                        </div>
+                        <div class="label">
+                            <div class="ui mini statistic">
+                                <div class="value">
+                                    Django
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% comment %}Edit starts here! {% endcomment %}
+                <div class="two wide column">
+                    <div class="ui buttons">
+                        <button class="ui green basic button" onclick="increment()">
+                            <i class="plus icon green"></i>
+                        </button>
+
+                        <button class="ui red basic button" onclick="decrement()">
+                            <i class="minus icon red"></i>
+                        </button>
+                    </div>
+                </div>
+                {% comment %}Edit ends here! {% endcomment %}
+
+                {% comment %}The Right margin starts here!{% endcomment %}
+                <div class="two wide column"></div>
+                {% comment %}The Right margin ends here!{% endcomment %}
+
+            </div>
+            {% comment %}A skill row ends here!{% endcomment %}
+
+        </div>
+    </div>
+{% endblock %}

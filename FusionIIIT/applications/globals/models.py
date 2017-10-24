@@ -16,6 +16,7 @@ class Constants:
     USER_CHOICES = (
         ('student', 'student'),
         ('staff', 'staff'),
+        ('compounder', 'compounder'),
         ('faculty', 'faculty')
     )
 
@@ -44,25 +45,12 @@ class ExtraInfo(models.Model):
     user_type = models.CharField(max_length=20, choices=Constants.USER_CHOICES)
     designation = models.ForeignKey(Designation, on_delete=models.CASCADE,
                                     related_name='holds_designation', null=True)
-    department = models.ForeignKey(DepartmentInfo, on_delete=models.CASCADE, null=True)
+    department = models.ForeignKey(DepartmentInfo, on_delete=models.CASCADE, null=True, blank=True)
     profile_picture = models.ImageField(null=True, blank=True)
     about_me = models.TextField(default='', max_length=1000, blank=True)
 
     def __str__(self):
         return '{} - {}'.format(self.id, self.user.username)
-
-
-# TODO : Remove from here and use from academics app
-class Student(models.Model):
-    id = models.OneToOneField(ExtraInfo, on_delete=models.CASCADE, primary_key=True)
-    cpi = models.IntegerField(default=0)
-    father_name = models.CharField(max_length=40, default='')
-    mother_name = models.CharField(max_length=40, default='')
-    hall = models.IntegerField(default=1)
-    room_no = models.CharField(max_length=10, blank=True, null=True)
-
-    def __str__(self):
-        return str(self.id)
 
 
 # TODO : ADD additional staff related fields when needed

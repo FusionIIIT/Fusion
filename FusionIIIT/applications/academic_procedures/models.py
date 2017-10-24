@@ -2,8 +2,8 @@ import datetime
 
 from django.db import models
 
-from applications.academic_information.models import Course
-from applications.globals.models import ExtraInfo, Faculty, Student
+from applications.academic_information.models import Course, Student
+from applications.globals.models import ExtraInfo, Faculty
 
 # Create your models here.
 
@@ -26,6 +26,7 @@ class Register(models.Model):
     course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
     year = models.IntegerField(default=datetime.datetime.now().year)
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+    semester = models.IntegerField()
 
     class Meta:
         db_table = 'Register'
@@ -49,7 +50,7 @@ class Thesis(models.Model):
 
 class FinalRegistrations(models.Model):
     reg_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
-    sem = models.IntegerField(max_length=1)
+    semester = models.IntegerField()
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     registration = models.BooleanField(default=False)
 

@@ -1,0 +1,319 @@
+{% load static %}
+{% block views %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="menu">
+            Menu
+        </a>
+
+        <a class="item" data-tab="bill">
+            Bill
+        </a>
+
+        <a class="item" data-tab="paymenthistory">
+            Payment History
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="menu">
+        <div class="ui vertical segment">
+            <table class="ui definition padded table" style="margin: auto;">
+                <thead>
+                <tr>
+                    <th></th>
+                    <th>Breakfast</th>
+                    <th>Lunch</th>
+                    <th>Dinner</th>
+                </tr></thead>
+                <tbody>
+                <tr>
+                    <td>Monday</td>
+                    <td>Ganda Khana #1</td>
+                    <td>Ganda Khana #2</td>
+                    <td>Ganda Khana #3</td>
+                </tr>
+
+                <tr>
+                    <td>Tueday</td>
+                    <td>Ganda Khana #1</td>
+                    <td>Ganda Khana #2</td>
+                    <td>Ganda Khana #3</td>
+
+
+                <tr>
+                    <td>Wednesday</td>
+                    <td>Ganda Khana #1</td>
+                    <td>Ganda Khana #2</td>
+                    <td>Ganda Khana #3</td>
+                </tr>
+
+                <tr>
+                    <td>Thursday</td>
+                    <td>Ganda Khana #1</td>
+                    <td>Ganda Khana #2</td>
+                    <td>Ganda Khana #3</td>
+                </tr>
+
+                <tr>
+                    <td>Friday</td>
+                    <td>Ganda Khana #1</td>
+                    <td>Ganda Khana #2</td>
+                    <td>Ganda Khana #3</td>
+                </tr>
+
+                <tr>
+                    <td>Saturday</td>
+                    <td>Ganda Khana #1</td>
+                    <td>Ganda Khana #2</td>
+                    <td>Ganda Khana #3</td>
+                </tr>
+
+                <tr>
+                    <td>Sunday</td>
+                    <td>Ganda Khana #1</td>
+                    <td>Ganda Khana #2</td>
+                    <td>Ganda Khana #3</td>
+                </tr>
+                </tbody>
+            </table>
+
+            <br>
+            <div class="ui divider"></div>
+
+            <div class="extra content">
+                <button class="ui primary button right floated">
+                    Download
+                    <i class="ui download icon right floated"></i>
+                </button>
+                <br>
+            </div>
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="bill">
+        <div class="ui vertical segment">
+
+            <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
+                <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Month</th>
+                    <th>Monthly bill</th>
+                    <th>Rebate day</th>
+                    <th>Rebate Amt</th>
+                    <th>Non-Veg Amt</th>
+                    <th>Total Amt</th>
+                </tr></thead>
+                <tbody>
+                <tr>
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                            <div class="content">
+                                Zlatan Ibrahimovic
+                                <div class="sub header">2015121
+                                </div>
+                            </div>
+                        </h4>
+                    </td>
+                    {% comment %}
+                        TODO: do the for loop and python variables for values here!
+                    {% endcomment %}
+                    <td>January</td>
+                    <td>1800</td>
+                    <td>10.01.2017</td>
+                    <td>1001</td>
+                    <td>1001</td>
+                    <td>1800</td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                            <div class="content">
+                                Zlatan Ibrahimovic
+                                <div class="sub header">2015121
+                                </div>
+                            </div>
+                        </h4>
+                    </td>
+                    {% comment %}
+                        TODO: do the for loop and python variables for values here!
+                    {% endcomment %}
+                    <td>April</td>
+                    <td>1800</td>
+                    <td>10.01.2017</td>
+                    <td>1001</td>
+                    <td>1001</td>
+                    <td>1800</td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                            <div class="content">
+                                Zlatan Ibrahimovic
+                                <div class="sub header">2015121
+                                </div>
+                            </div>
+                        </h4>
+                    </td>
+                    {% comment %}
+                        TODO: do the for loop and python variables for values here!
+                    {% endcomment %}
+                    <td>August</td>
+                    <td>1800</td>
+                    <td>10.01.2017</td>
+                    <td>1001</td>
+                    <td>1001</td>
+                    <td>1800</td>
+                </tr>
+                </tbody>
+            </table>
+
+            <br>
+            <br>
+
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="paymenthistory">
+        <table class="ui very basic collapsing celled table sortable" style="margin: auto;">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Transaction Date</th>
+                    <th>Transaction ID</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr>
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                            <div class="content">
+                                Zlatan Ibrahimovic
+                                <div class="sub header">2015121</div>
+                            </div>
+                        </h4>
+                    </td>
+
+                    <td>Semester #1</td>
+
+                    {% comment %}ID# is confidential, you do not have the required clearance level to access such data!{% endcomment %}
+                    <td>ID# XXXXXXXXXX</td>
+
+                    <td>10,000</td>
+
+                    <td><i class="ui large green checkmark icon"></i></td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                            <div class="content">
+                                Zlatan Ibrahimovic
+                                <div class="sub header">2015121</div>
+                            </div>
+                        </h4>
+                    </td>
+
+                    <td>Semester #2</td>
+
+                    {% comment %}ID# is confidential, you do not have the required clearance level to access such data!{% endcomment %}
+                    <td>ID# XXXXXXXXXX</td>
+
+                    <td>10,000</td>
+
+                    <td><i class="ui large green checkmark icon"></i></td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                            <div class="content">
+                                Zlatan Ibrahimovic
+                                <div class="sub header">2015121</div>
+                            </div>
+                        </h4>
+                    </td>
+
+                    <td>Semester #3</td>
+
+                    {% comment %}ID# is confidential, you do not have the required clearance level to access such data!{% endcomment %}
+                    <td>ID# XXXXXXXXXX</td>
+
+                    <td>10,000</td>
+
+                    <td><i class="ui large green checkmark icon"></i></td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                            <div class="content">
+                                Zlatan Ibrahimovic
+                                <div class="sub header">2015121</div>
+                            </div>
+                        </h4>
+                    </td>
+
+                    <td>Semester #4</td>
+
+                    {% comment %}ID# is confidential, you do not have the required clearance level to access such data!{% endcomment %}
+                    <td>ID# XXXXXXXXXX</td>
+
+                    <td>10,000</td>
+
+                    <td><i class="ui large orange warning icon"></i></td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                            <div class="content">
+                                Zlatan Ibrahimovic
+                                <div class="sub header">2015121</div>
+                            </div>
+                        </h4>
+                    </td>
+
+                    <td>Semester #5</td>
+
+                    {% comment %}ID# is confidential, you do not have the required clearance level to access such data!{% endcomment %}
+                    <td>ID# XXXXXXXXXX</td>
+
+                    <td>10,000</td>
+
+                    <td><i class="ui large red x icon"></i></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <br>
+
+        <div class="ui divider"></div>
+
+        <div class="extra content">
+            <div class="" style="text-align: center;">
+                <i class="large green checkmark icon"></i> : Approved &ensp;&ensp;&ensp;&ensp;&ensp;
+                <i class="large orange warning icon"></i> : Processing &ensp;&ensp;&ensp;&ensp;&ensp;
+                <i class="large red x icon"></i> : Failed
+            </div>
+        </div>
+
+    </div>
+
+{% endblock %}
