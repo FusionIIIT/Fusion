@@ -1,15 +1,17 @@
 import datetime
 
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.shortcuts import get_object_or_404, render
+from django.db.models import Max
 from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404, render
+
 # from applications.academic_procedures.models import Register
 from applications.academic_information.models import Course, Student
 from applications.globals.models import ExtraInfo
-from .models import Register, FinalRegistrations
-from django.db.models import Max
-from django.contrib import messages
+
+from .models import FinalRegistrations, Register
 
 # from . forms import AddDropCourseForm
 
