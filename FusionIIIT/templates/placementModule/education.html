@@ -103,7 +103,7 @@
             </form>
             {% comment %}Form Tag ends here!{% endcomment %}
 
-
+            {% if educations %}
             <div class="ui divider"></div>
 
             <table class="ui fixed sortable celled table">
@@ -147,7 +147,7 @@
                 {% endfor %}
                 </tbody>
             </table>
-
+            {% endif %}
         </div>
     </div>
     <div class="ui tab" data-tab="courses">
@@ -231,7 +231,7 @@
             </form>
             {% comment %}Form Tag ends here!{% endcomment %}
 
-
+            {% if courses %}
             <div class="ui divider"></div>
 
             <table class="ui fixed sortable celled table">
@@ -270,7 +270,7 @@
                 {% endfor %}
                 </tbody>
             </table>
-
+            {% endif %}
         </div>
     </div>
 {% endblock %}

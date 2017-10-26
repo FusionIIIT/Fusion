@@ -6,7 +6,8 @@ from django.shortcuts import get_object_or_404, render
 from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo
 
-from .models import Course, Education, Experience, Has, StudentPlacement
+from .models import (Achievement, Course, Education, Experience, Has, Project,
+                     Publication, StudentPlacement)
 
 
 @login_required
@@ -26,6 +27,10 @@ def profile(request, username):
     education = Education.objects.filter(Q(unique_id=student))
     course = Course.objects.filter(Q(unique_id=student))
     experience = Experience.objects.filter(Q(unique_id=student))
+    project = Project.objects.filter(Q(unique_id=student))
+    achievement = Achievement.objects.filter(Q(unique_id=student))
+    publication = Publication.objects.filter(Q(unique_id=student))
     context = {'user': user, 'profile': profile, 'student': studentplacement, 'skills': skills,
-               'educations': education, 'courses': course, 'experiences': experience}
+               'educations': education, 'courses': course, 'experiences': experience,
+               'projects': project, 'achievements': achievement, 'publications': publication}
     return render(request, "placementModule/placement.html", context)

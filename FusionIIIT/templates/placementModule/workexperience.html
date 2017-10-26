@@ -114,7 +114,7 @@
         </form>
         {% comment %}Form Tag ends here!{% endcomment %}
 
-
+        {% if experiences %}
         <div class="ui divider"></div>
 
         <table class="ui fixed sortable celled table">
@@ -163,6 +163,7 @@
             {% endfor %}
             </tbody>
         </table>
+        {% endif %}
 
     </div>
     </div>
@@ -250,92 +251,56 @@
                         </div>
                     </div>
                 </div>
-                {% comment %}The add a new skill Accordian ends here!{% endcomment %}
+                {% comment %}The add a new project Accordian ends here!{% endcomment %}
             </form>
             {% comment %}Form Tag ends here!{% endcomment %}
 
-
+            {% if projects %}
             <div class="ui divider"></div>
 
             <table class="ui fixed sortable celled table">
                 <thead>
                 <tr>
-                    <th class="six wide">Institute Name</th>
-                    <th>Degree</th>
-                    <th>Stream</th>
+                    <th class="three wide">Project Name</th>
+                    <th>Status</th>
                     <th>Start Date</th>
                     <th>End Date</th>
+                    <th class="three wide">Description</th>
+                    <th>Link</th>
                 </tr>
                 </thead>
                 <tbody>
+                {% for project in projects %}
                 <tr>
                     <td>
-                        PDPM IIITDM Jabalpur
+                        {{ project.project_name }}
                     </td>
 
                     <td>
-                        B.Tech.
+                        {{ project.project_status }}
                     </td>
 
                     <td>
-                        CSE
+                        {{ project.sdate }}
                     </td>
 
                     <td>
-                        01.01.1970
+                        {{ project.edate }}
                     </td>
 
                     <td>
-                        01.01.1970
+                        {{ project.summary }}
                     </td>
+
+                    <td>
+                        <a href="{{ project.project_link }}">Click Here</a>
+                    </td>
+
                 </tr>
-
-                <tr>
-                    <td>
-                        PDPM IIITDM Jabalpur
-                    </td>
-
-                    <td>
-                        B.Tech.
-                    </td>
-
-                    <td>
-                        CSE
-                    </td>
-
-                    <td>
-                        01.01.1971
-                    </td>
-
-                    <td>
-                        01.01.1971
-                    </td>
-                </tr>
-
-                <tr>
-                    <td>
-                        PDPM IIITDM Jabalpur
-                    </td>
-
-                    <td>
-                        B.Tech.
-                    </td>
-
-                    <td>
-                        CSE
-                    </td>
-
-                    <td>
-                        01.01.1972
-                    </td>
-
-                    <td>
-                        01.01.1972
-                    </td>
-                </tr>
+                {% endfor %}
                 </tbody>
             </table>
-
+            {% endif %}
         </div>
     </div>
 {% endblock %}

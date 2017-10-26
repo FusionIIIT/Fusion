@@ -183,7 +183,7 @@ class Achievement(models.Model):
     achievement = models.CharField(max_length=100, default='')
     achievement_type = models.CharField(max_length=20, choices=Constants.ACHIEVEMENT_TYPE,
                                         default='OTHER')
-    description = models.CharField(max_length=250, default='', null=True, blank=True)
+    description = models.CharField(max_length=1000, default='', null=True, blank=True)
     issuer = models.CharField(max_length=200, default='')
     date_earned = models.DateField(_("Date"), default=datetime.date.today)
 
