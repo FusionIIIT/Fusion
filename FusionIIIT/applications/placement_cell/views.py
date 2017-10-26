@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404, render
 from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo
 
-from .models import Has, StudentPlacement, Education, Course
+from .models import Course, Education, Experience, Has, StudentPlacement
 
 
 @login_required
@@ -16,7 +16,7 @@ def placement(request):
     return render(request, "placementModule/placement.html", context)
 
 
-#@login_required
+@login_required
 def profile(request, username):
     user = get_object_or_404(User, Q(username=username))
     profile = get_object_or_404(ExtraInfo, Q(user=user))
@@ -25,6 +25,7 @@ def profile(request, username):
     skills = Has.objects.filter(Q(unique_id=student))
     education = Education.objects.filter(Q(unique_id=student))
     course = Course.objects.filter(Q(unique_id=student))
+    experience = Experience.objects.filter(Q(unique_id=student))
     context = {'user': user, 'profile': profile, 'student': studentplacement, 'skills': skills,
-               'educations': education, 'courses': course}
+               'educations': education, 'courses': course, 'experiences': experience}
     return render(request, "placementModule/placement.html", context)
