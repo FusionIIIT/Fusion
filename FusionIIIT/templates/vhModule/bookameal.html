@@ -1,0 +1,96 @@
+{% load static %}
+{% block bookameal %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="bookameal">
+            Book A Meal
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="bookameal">
+        <div class="ui vertical segment">
+            <table class="ui structured sortable celled table">
+                <thead>
+                <tr>
+                    <th rowspan="2" class="five wide">Name</th>
+                    <th rowspan="2" class="one wide">Room-No.</th>
+                    <th rowspan="2" class="one wide">Category</th>
+                    <th colspan="5">Food Items</th>
+                </tr>
+
+                <tr>
+                    <th>Item#1</th>
+                    <th>Item#2</th>
+                    <th>Item#3</th>
+                    <th>Item#4</th>
+                    <th>Item#5</th>
+                </tr>
+                </thead>
+
+                <tbody>
+
+                <tr>
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+
+                            <div class="content">
+                                Zlatan Ibrahimovic
+                                <div class="sub header">gmail@zlatan.com
+                                </div>
+                            </div>
+                        </h4>
+                    </td>
+
+                    <td>
+                        G - 007
+                    </td>
+
+                    <td>
+                        A
+                    </td>
+
+                    <td>
+                        <div class="ui checkbox">
+                            <input name="" type="checkbox">
+                            <label>&#8377; 50</label>
+                        </div>
+                    </td>
+
+                    <td>
+                        <div class="ui checkbox">
+                            <input name="" type="checkbox">
+                            <label>&#8377; 50</label>
+                        </div>
+                    </td>
+
+                    <td>
+                        <div class="ui checkbox">
+                            <input name="" type="checkbox">
+                            <label>&#8377; 50</label>
+                        </div>
+                    </td>
+
+                    <td>
+                        <div class="ui checkbox">
+                            <input name="" type="checkbox">
+                            <label>&#8377; 50</label>
+                        </div>
+                    </td>
+
+                    <td>
+                        <div class="ui checkbox">
+                            <input name="" type="checkbox">
+                            <label>&#8377; 50</label>
+                        </div>
+                    </td>
+                </tr>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="ui divider"></div>
+{% endblock %}
+
