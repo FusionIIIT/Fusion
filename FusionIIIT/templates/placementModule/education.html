@@ -15,7 +15,7 @@
         <div class="ui vertical segment">
             {% comment %}Form Tag starts here!{% endcomment %}
             <form>
-                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                {% comment %}The add a new education Accordian starts here!{% endcomment %}
                 <div class="ui active accordion field">
                     <div class="title">
                         <i class="icon dropdown"></i>
@@ -77,19 +77,29 @@
                                         <input>
                                     </div>
                                 </div>
+                                <div class="field">
+                                    <label>
+                                        Grade
+                                    </label>
 
-                                <div class="four wide field">
-                                    <label><br></label>
-                                    <button class="ui fluid large primary button" type="submit">
-                                        Submit
-                                    </button>
+                                    <div class="ui large input">
+                                        <input>
+                                    </div>
                                 </div>
-                            </div>
 
+                            </div>
+                            <div class="two fields">
+                              <div class="four wide field">
+                                  <label><br></label>
+                                  <button class="ui fluid large primary button" type="submit">
+                                      Submit
+                                  </button>
+                              </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                {% comment %}The add a new skill Accordian ends here!{% endcomment %}
+                {% comment %}The add a new Education Accordian ends here!{% endcomment %}
             </form>
             {% comment %}Form Tag ends here!{% endcomment %}
 
@@ -104,74 +114,37 @@
                     <th>Stream</th>
                     <th>Start Date</th>
                     <th>End Date</th>
+                    <th>Grade</th>
                 </tr>
                 </thead>
                 <tbody>
+                {% for education in educations %}
                 <tr>
                     <td>
-                        PDPM IIITDM Jabalpur
+                        {{ education.institute }}
                     </td>
 
                     <td>
-                        B.Tech.
+                        {{ education.degree }}
                     </td>
 
                     <td>
-                        CSE
+                        {{ education.stream }}
                     </td>
 
                     <td>
-                        01.01.1970
+                        {{ education.sdate }}
                     </td>
 
                     <td>
-                        01.01.1970
+                        {{ education.edate }}
+                    </td>
+
+                    <td>
+                        {{ education.grade }}
                     </td>
                 </tr>
-
-                <tr>
-                    <td>
-                        PDPM IIITDM Jabalpur
-                    </td>
-
-                    <td>
-                        B.Tech.
-                    </td>
-
-                    <td>
-                        CSE
-                    </td>
-
-                    <td>
-                        01.01.1971
-                    </td>
-
-                    <td>
-                        01.01.1971
-                    </td>
-                </tr>
-
-                <tr>
-                    <td>
-                        PDPM IIITDM Jabalpur
-                    </td>
-
-                    <td>
-                        B.Tech.
-                    </td>
-
-                    <td>
-                        CSE
-                    </td>
-
-                    <td>
-                        01.01.1972
-                    </td>
-
-                    <td>
-                        01.01.1972
-                    </td>
-                </tr>
+                {% endfor %}
                 </tbody>
             </table>
 
@@ -181,7 +154,7 @@
             <div class="ui vertical segment">
             {% comment %}Form Tag starts here!{% endcomment %}
             <form>
-                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                {% comment %}The add a new Course Accordian starts here!{% endcomment %}
                 <div class="ui active accordion field">
                     <div class="title">
                         <i class="icon dropdown"></i>
@@ -203,7 +176,7 @@
 
                                 <div class="four wide field">
                                     <label>
-                                        Unique Number
+                                        License Number:
                                     </label>
 
                                     <div class="ui large input">
@@ -254,7 +227,7 @@
                         </div>
                     </div>
                 </div>
-                {% comment %}The add a new skill Accordian ends here!{% endcomment %}
+                {% comment %}The add a new Course Accordian ends here!{% endcomment %}
             </form>
             {% comment %}Form Tag ends here!{% endcomment %}
 
@@ -265,78 +238,36 @@
                 <thead>
                 <tr>
                     <th class="six wide">Institute Name</th>
-                    <th>Degree</th>
-                    <th>Stream</th>
+                    <th>License No</th>
                     <th>Start Date</th>
                     <th>End Date</th>
+                    <th>Description</th>
                 </tr>
                 </thead>
                 <tbody>
+                {% for course in courses %}
                 <tr>
                     <td>
-                        PDPM IIITDM Jabalpur
+                        {{ course.course_name }}
                     </td>
 
                     <td>
-                        B.Tech.
+                        {{ course.license_no }}
                     </td>
 
                     <td>
-                        CSE
+                        {{ course.sdate }}
                     </td>
 
                     <td>
-                        01.01.1970
+                        {{ course.edate }}
                     </td>
 
                     <td>
-                        01.01.1970
+                        {{ course.description }}
                     </td>
                 </tr>
-
-                <tr>
-                    <td>
-                        PDPM IIITDM Jabalpur
-                    </td>
-
-                    <td>
-                        B.Tech.
-                    </td>
-
-                    <td>
-                        CSE
-                    </td>
-
-                    <td>
-                        01.01.1971
-                    </td>
-
-                    <td>
-                        01.01.1971
-                    </td>
-                </tr>
-
-                <tr>
-                    <td>
-                        PDPM IIITDM Jabalpur
-                    </td>
-
-                    <td>
-                        B.Tech.
-                    </td>
-
-                    <td>
-                        CSE
-                    </td>
-
-                    <td>
-                        01.01.1972
-                    </td>
-
-                    <td>
-                        01.01.1972
-                    </td>
-                </tr>
+                {% endfor %}
                 </tbody>
             </table>
 
