@@ -33,6 +33,7 @@ class Constants:
         ('ON CAMPUS', 'On Campus'),
         ('PPO', 'PPO'),
         ('OFF CAMPUS', 'Off Campus'),
+        ('NOT PLACED', 'Not Placed')
     )
     DEBAR_TYPE = (
         ('DEBAR', 'Debar'),
@@ -290,11 +291,11 @@ class StudentPlacement(models.Model):
     future_aspect = models.CharField(max_length=20, choices=Constants.PLACEMENT_TYPE,
                                      default='PLACEMENT')
     placed_type = models.CharField(max_length=20, choices=Constants.PLACED_TYPE,
-                                   default='', null=True, blank=True)
+                                   default='NOT PLACED')
     placement_date = models.DateField(_("Date"), default=datetime.date.today, null=True,
                                       blank=True)
     package = models.DecimalField(default='', decimal_places=2, max_digits=5, null=True,
                                   blank=True)
 
     def __str__(self):
-        return self.unique_id.id
+        return self.unique_id.id.id
