@@ -1,3 +1,7 @@
-# from django.shortcuts import render
+from django.shortcuts import render
 
-# Create your views here.
+
+def profile(request):
+    context = {}
+
+    return render(request, "eisModulenew/profile.html", context)

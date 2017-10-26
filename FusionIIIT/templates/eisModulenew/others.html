@@ -1,0 +1,554 @@
+{% load static %}
+
+{% block others %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="research projects">
+            Achievements
+        </a>
+
+        <a class="item" data-tab="Consultancy project">
+            Experts Lectures/Invited Talks
+        </a>
+
+        <a class="item" data-tab="patents">
+            Session Chaired
+        </a>
+        <a class="item" data-tab="technology transfer">
+            Keynote/Planery Address
+        </a>
+    </div>
+
+
+    {% comment %}The  Achievement segment starts here!{% endcomment %}
+    <div class="ui active tab segment" data-tab="research projects">
+        <h4 class="ui dividing header">Add a Research Project</h4>
+        <form class="ui form">
+           
+
+            <div class="field">
+                <label>Year/Month/Day</label>
+                <div class=" four fields">
+                    <div class=" field">
+                        <!-- <input placeholder="Year/Month/Day" type="text"> -->
+                             <div class="ui fluid search selection dropdown">
+                            <input type="hidden">
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Select Day</div>
+                            <div class="menu">
+                                <div class="item" data-value="1">1</div>
+                                <div class="item" data-value="2">2</div>
+                                <div class="item" data-value="3">3</div>
+                                <div class="item" data-value="30">30</div>
+                                <div class="item" data-value="31">32</div>
+                              
+                            </div>
+                        </div>
+                    </div>
+                     <div class=" field">
+                        <!-- <input placeholder="Year/Month/Day" type="text"> -->
+                             <div class="ui fluid search selection dropdown">
+                            <input type="hidden">
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Month</div>
+                            <div class="menu">
+                                <div class="item" data-value="1">1</div>
+                                <div class="item" data-value="2">2</div>
+                                <div class="item" data-value="3">3</div>
+                                <div class="item" data-value="4">4</div>
+                                <div class="item" data-value="5">5</div>
+                            </div>
+                        </div>
+
+                    </div>
+                     <div class=" field">
+                        <!-- <input placeholder="Year/Month/Day" type="text"> -->
+                        <div class="ui fluid search selection dropdown">
+                            <input type="hidden">
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Select Year</div>
+                            <div class="menu">
+                                <div class="item" data-value="2009">2009</div>
+                                <div class="item" data-value="2008">2008</div>
+                                <div class="item" data-value="2007">2007</div>
+                                <div class="item" data-value="2006">2006</div>
+                                <div class="item" data-value="2005">2005</div>
+                                <div class="item" data-value="2004">2004</div>
+                                <div class="item" data-value="2003">2003</div>
+                                <div class="item" data-value="2002">2002</div>
+                                <div class="item" data-value="2001">2001</div>
+                                <div class="item" data-value="2000">2000</div>
+                                <div class="item" data-value="2010">2010</div>
+                                <div class="item" data-value="2011">2011</div>
+                                <div class="item" data-value="2012">2012</div>
+                                <div class="item" data-value="2013">2013</div>
+                                <div class="item" data-value="2014">2014</div>
+                                <div class="item" data-value="2015">2015</div>
+                                <div class="item" data-value="2016">2016</div>
+                                <div class="item" data-value="2017">2017</div>
+                            </div>
+                        </div>
+                    </div>   
+
+                    <div class=" field">
+                        <div class="ui fluid search selection dropdown">
+                            <input type="hidden">
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Achievement Type</div>
+                            <div class="menu">
+                                <div class="item" data-value="Awards">Awards</div>
+                                <div class="item" data-value="Honours">Honours</div>
+                                <div class="item" data-value="Prizes">Prizes</div>
+                                <div class="item" data-value="Others">Others</div>
+
+
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+              
+
+
+                <div class="fields">
+                    <div class="fourteen wide field">
+                        <div class="field">
+                            <label>Details</label>
+                            <input placeholder="Title" type="text">
+                        </div>
+                    </div>
+
+                    <div class="two wide field">
+                        <label><br></label>
+                        <div class="ui primary button">
+                            Save
+                            <i class="ui save icon right floated"></i>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+        </form>
+        <br>
+        <h4 class="ui dividing header">Report:</h4>
+
+        <table class="ui fixed single line sortable celled table">
+            <thead>
+            <tr>
+                <th class="sorted ascending">Sr.</th>
+                <th class="">Achievement</th>
+                <th class="" colspan="3">Details</th>
+                                <th class="">Year/Month/Day</th>
+                <th class="">Action</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr>
+                
+            </tr>
+
+            <tr>
+                          </tr>
+
+            <tr>
+               
+            </tr>
+            </tbody>
+
+            <tfoot>
+            <tr>
+                <th colspan="7">
+                    <div class="ui right floated pagination menu">
+                        <a class="icon item">
+                            <i class="left chevron icon"></i>
+                        </a>
+                        <a class="item">1</a>
+                        <a class="item">2</a>
+                        <a class="item">3</a>
+                        <a class="item">4</a>
+                        <a class="icon item">
+                            <i class="right chevron icon"></i>
+                        </a>
+                    </div>
+                </th>
+            </tr></tfoot>
+        </table>
+    </div>
+
+    {% comment %}The Achievements segment ends here!{% endcomment %}
+
+
+
+    {% comment %}The Expert Lectures segment starts here!{% endcomment %}
+    <div class="ui tab segment" data-tab="Consultancy project">
+        <h4 class="ui dividing header">Add a Expert Lecture/Invited Talks</h4>
+        <form class="ui form">
+            <div class="field">
+                <div class="three fields">
+                <!-- code change starts -->
+                    <div class="field">
+                        <label>Presentation Type</label>
+                         <!-- <input placeholder="Presentation Type" type="text"> -->
+                          <div class="ui fluid search selection dropdown">
+                            <input type="hidden">
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Presentation Type</div>
+                            <div class="menu">
+                                <div class="item" data-value="Invited Talk">Invited Talk</div>
+                                <div class="item" data-value="Expert Lecture">Expert Lecture</div>
+                              
+
+
+
+                            </div>
+                        </div>
+                    </div>
+                    <!-- code change ends -->
+
+                    <div class="field">
+                        <label>Place</label>
+                        <input placeholder="Place" type="text">
+                    </div>
+                      <div class="field">
+                        <label>Date</label>
+                        <!-- <input placeholder="Client" type="text"> -->
+                        <!-- code change starts -->
+                             <div class="ui calendar" id="example1g">
+                                <div class="ui input left icon">
+                                  <i class="calendar icon"></i>
+                                  <input type="text" placeholder="Date/Time">
+                                </div>
+                              </div>
+                          <!-- code change ends -->
+                    </div>
+                     
+                </div>
+            </div>
+
+            <div class="field">
+                
+
+                <div class="fields">
+                    <div class="fourteen wide field">
+                        <div class="field">
+                            <label>Title</label>
+                            <input placeholder="Title" type="text">
+                        </div>
+                    </div>
+
+                    <div class="two wide field">
+                        <label><br></label>
+                        <div class="ui primary button">
+                            Save
+                            <i class="ui save icon right floated"></i>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+        <br>
+        <h4 class="ui dividing header">Report:</h4>
+
+        <table class="ui fixed single line sortable celled table">
+            <thead>
+            <tr>
+                <th class="sorted ascending">Sr.</th>
+                <th class="">Presentation Type</th>
+                <th class="">Title</th>
+                <th class="">Place</th>
+                <th class="">Date</th>
+                <th class="">Year</th>
+                <th class="">Action</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr>
+                 
+            </tr>
+
+            <tr>
+                  
+            </tr>
+
+            <tr>
+              
+            </tr>
+            </tbody>
+
+            <tfoot>
+            <tr>
+                <th colspan="7">
+                    <div class="ui right floated pagination menu">
+                        <a class="icon item">
+                            <i class="left chevron icon"></i>
+                        </a>
+                        <a class="item">1</a>
+                        <a class="item">2</a>
+                        <a class="item">3</a>
+                        <a class="item">4</a>
+                        <a class="icon item">
+                            <i class="right chevron icon"></i>
+                        </a>
+                    </div>
+                </th>
+            </tr></tfoot>
+        </table>
+    </div>
+    {% comment %}The Expert Lecture ends here!{% endcomment %}
+
+
+    {% comment %}The Session chaired starts here!{% endcomment %}
+    <div class="ui tab segment" data-tab="patents">
+        <h4 class="ui dividing header">Add a  Session Chaired</h4>
+        <form class="ui form">
+            <div class="field">
+                <div class="two fields">
+                    
+
+                    <div class="field">
+                           </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Event</label>
+                <div class=" three fields">
+                    <div class=" field">
+                        <input placeholder="Event" type="text">
+                    </div>
+                  <!-- code change starts -->  
+                    <div class=" field">
+                        <!-- <input placeholder="Date" type="text">--> 
+                         <!--  <label>Start Date</label>  -->
+                           <div class="ui calendar" id="rangestart6">
+                                          <div class="ui input left icon">
+                                            <i class="calendar icon"></i>
+                                            <input type="text" placeholder="Start">
+                                          </div>
+                                </div>                  
+                    </div>
+
+                    <div class=" field">
+                         <!-- <label>End Date</label> -->
+                         <div class="ui calendar" id="rangeend6">
+                                      <div class="ui input left icon">
+                                        <i class="calendar icon"></i>
+                                        <input type="text" placeholder="End">
+                                      </div>
+                                    </div>
+                    </div>
+                     <!-- code change ends--> 
+                </div>
+
+                <div class="fields">
+                    <div class="fourteen wide field">
+                        <div class="field">
+                            <label>Name</label>
+                            <input placeholder="Name" type="text">
+                        </div>
+                    </div>
+
+                    <div class="two wide field">
+                        <label><br></label>
+                        <div class="ui primary button">
+                            Save
+                            <i class="ui save icon right floated"></i>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+        <br>
+        <h4 class="ui dividing header">Report:</h4>
+
+        <table class="ui fixed single line sortable celled table">
+            <thead>
+            <tr>
+                <th class="sorted ascending">Sr.</th>
+                <th class="">Name</th>
+                <th class="" colspan=3>Event</th>
+                <th class="">Date</th>
+                <th class="">Year</th>
+              
+                <th class="">Action</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr>
+              
+            </tr>
+
+            <tr>
+                           </tr>
+
+            <tr>
+                           </tr>
+            </tbody>
+
+            <tfoot>
+            <tr>
+                <th colspan="7">
+                    <div class="ui right floated pagination menu">
+                        <a class="icon item">
+                            <i class="left chevron icon"></i>
+                        </a>
+                        <a class="item">1</a>
+                        <a class="item">2</a>
+                        <a class="item">3</a>
+                        <a class="item">4</a>
+                        <a class="icon item">
+                            <i class="right chevron icon"></i>
+                        </a>
+                    </div>
+                </th>
+            </tr></tfoot>
+        </table>
+    </div>
+
+    {% comment %}The Session chaired segment ends here!{% endcomment %}
+
+
+    {% comment %}The Keynote/Planery Address segment starts here!{% endcomment %}
+
+    <div class="ui tab segment" data-tab="technology transfer">
+        <h4 class="ui dividing header">Add a Keynote/Planery Address</h4>
+        <form class="ui form">
+            <div class="field">
+                <div class="two fields">
+                    
+
+                    <div class="field">
+                           </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Presentation Type</label>
+                <div class=" two fields">
+                    <div class=" field">
+                      <!--   <input placeholder="Event" type="text"> -->
+                           <div class="ui fluid search selection dropdown">
+                            <input type="hidden">
+                            <i class="dropdown icon"></i>
+                            <div class="default text"> Presentation Type</div>
+                            <div class="menu">
+                                <div class="item" data-value="Keynotes">Keynotes</div>
+                                <div class="item" data-value="Planery Address">Planery Address</div>
+                               
+                            </div>
+                        </div>
+                    </div>
+                    <div class=" field">
+                        <!-- <input placeholder="Date" type="text"> -->
+                        <!-- code change starts -->
+                              <div class="ui calendar" id="example1h">
+                                    <div class="ui input left icon">
+                                      <i class="calendar icon"></i>
+                                      <input type="text" placeholder="Date/Time">
+                                    </div>
+                                  </div>
+                        <!-- code change ends -->
+                    </div>
+
+                
+                </div>
+                     <div class=" two fields">
+                    <div class=" field">
+                      <!--   <input placeholder="Event" type="text"> -->
+                      <label>Page No.</label>
+                            <input placeholder="Page No." type="text">
+                          
+                    </div>
+                    <div class=" field">
+                        <!-- <input placeholder="Date" type="text"> -->
+                        <!-- code change starts -->
+                        <label>ISBN No.</label>
+                            <input placeholder="ISBN No." type="text">
+                             
+                        <!-- code change ends -->
+                    </div>
+
+                
+                </div>
+
+                <div class="fields">
+                    <div class="fourteen wide field">
+                        <div class="field">
+                            <label>Title</label>
+                            <input placeholder="Title" type="text">
+                        </div>
+                    </div>
+
+                    <div class="two wide field">
+                        <label><br></label>
+                        <div class="ui primary button">
+                            Save
+                            <i class="ui save icon right floated"></i>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+        
+        <br>
+
+         <h4 class="ui dividing header">Report:</h4>
+
+        <table class="ui fixed single line sortable celled table">
+            <thead>
+            <tr>
+                <th class="sorted ascending">Sr.</th>
+                <th class="" >Name</th>
+                <th class="" colspan="2">Details</th>
+                <th class="" colspan="2">Conference Details</th>
+                <th class="" >Year</th>
+                <th class="" >Date Of Submission</th>
+                
+                <th class="">Action</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr>
+                  
+            </tr>
+
+            <tr>
+                   
+            </tr>
+
+            <tr>
+              
+            </tr>
+            </tbody>
+
+            <tfoot>
+            <tr>
+                <th colspan="7">
+                    <div class="ui right floated pagination menu">
+                        <a class="icon item">
+                            <i class="left chevron icon"></i>
+                        </a>
+                        <a class="item">1</a>
+                        <a class="item">2</a>
+                        <a class="item">3</a>
+                        <a class="item">4</a>
+                        <a class="icon item">
+                            <i class="right chevron icon"></i>
+                        </a>
+                    </div>
+                </th>
+            </tr></tfoot>
+        </table>
+    </div>
+    {% comment %}The Technology segment ends here!{% endcomment %}
+{% endblock %}

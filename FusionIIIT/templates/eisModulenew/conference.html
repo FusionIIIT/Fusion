@@ -1,0 +1,178 @@
+ {% load static %}
+{% block conference %}
+
+ <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="Conference/Symposium">
+            Conference/Symposium
+        </a>
+
+       
+    </div>
+
+ <div class="ui active tab segment" data-tab="Conference/Symposium">
+       <h4 class="ui dividing header">Add a Conference/Symposium</h4>
+        <form class="ui form">
+            <div class="field">
+                 <div class="three fields">
+                    <div class="field">
+                        <label>Role </label>
+                         <!--  <input placeholder="Published" type="text"> -->
+                        <!-- code change starts --> 
+                              <div class="ui fluid search selection dropdown">
+                                <input type="hidden">
+                                <i class="dropdown icon"></i>
+                                <div class="default text">Role</div>
+                                <div class="menu">
+                                     <div class="item" data-value="Organised" onclick="myFunction3(); myFunction4();">Organised</div>
+                                    <div class="item" data-value="Conference Chair" onclick="myFunction3(); myFunction5();">Conference Chair</div>
+                                    <div class="item" data-value="Advisory Committee" onclick="myFunction3(); myFunction5();">Advisory Committee</div>
+                                    <div class="item" data-value="Program Committee" onclick="myFunction3(); myFunction5();">Program Committee</div> 
+                                    <div class="item" data-value="Any other" onclick="myFunction2(); myFunction5();">Any other</div>
+                                   
+                                </div>
+                        </div>
+                    </div>
+                      <div class=" field">
+                               <label><br></label>
+                             <input placeholder="please specify"  type="text" id="myDIV1" style="display:none;">
+                        </div>
+                     
+                           <div class="field">
+                            <label><br> </label>
+                             <!--  <input placeholder="Published" type="text"> -->
+                            <!-- code change starts --> 
+                                  <div class="ui fluid search selection dropdown" id="myDIV2"  style="display:none;">
+                                <input type="hidden">
+                                <i class="dropdown icon"></i>
+                                <div class="default text">Organised</div>
+                                <div class="menu">
+                                    <div class="item" data-value="Chairman/Chairperson" onclick="myFunction3();">Chairman/Chairperson</div>
+                                    <div class="item" data-value="Convener"onclick="myFunction3();">Convener</div>
+                                    <div class="item" data-value="Co-ordinator" onclick="myFunction3();">Co-ordinator</div>
+                                    <div class="item" data-value="Secretary"onclick="myFunction3();" >Secretary</div>
+                                    <div class="item" data-value="Joint-Secretary" onclick="myFunction3();">Joint-Secretary</div>
+                                    <div class="item" data-value="Joint Secretary-Cum Treasurer" onclick="myFunction3();">Joint Secretary-Cum Treasurer </div>
+                                    <div class="item" data-value="Treasure" onclick="myFunction3();">Treasurer</div>
+                                     <div class="item" data-value="Any other" onclick="myFunction2();">Any other</div>
+
+                                   
+                                </div>
+                            </div>
+                        </div>
+                     <!-- code change ends --> 
+                   
+                </div>
+            </div>
+
+            <div class="field">
+                
+                
+                    <div class=" three fields">
+                          
+                            <div class="field">
+                                     <label>Venue</label>
+                                     <input placeholder="" type="text">
+                                </div>
+                        
+                       
+                            <div class="field">
+                                    <label>Start Date</label>
+                                     <!--  <input placeholder="" type="text"> -->
+                                        <!-- code change starts --> 
+                                 <div class="ui calendar" id="rangestart5">
+                                      <div class="ui input left icon">
+                                        <i class="calendar icon"></i>
+                                        <input type="text" placeholder="Start">
+                                      </div>
+                                </div>
+                                <!-- code change ends -->
+                             </div>
+                      
+                       
+                            <div class="field">
+                                    <label>End Date</label>
+                                     <!-- <input placeholder="" type="text"> -->
+                                        <!-- code change starts --> 
+                                         <div class="ui calendar" id="rangestart5">
+                                              <div class="ui input left icon">
+                                                <i class="calendar icon"></i>
+                                                <input type="text" placeholder="Start">
+                                              </div>
+                                        </div>
+                                <!-- code change ends -->
+                                </div>
+            </div>
+
+
+                <div class="fields">
+               <!-- code change starts --> 
+                 <div class="fourteen wide field">
+                        <label>Conference Name</label>
+                        <input placeholder="Co-author" type="text">
+                    </div>
+            <!-- code change ends-->    
+
+                    <div class="two wide field">
+                        <label><br></label>
+                        <div class="ui primary button">
+                            Save
+                            <i class="ui save icon right floated"></i>
+                        </div>
+                    </div> 
+                </div>
+
+                 
+            </div>
+        </form>
+        <br>
+        <h4 class="ui dividing header">Report:</h4>
+
+        <table class="ui fixed single line sortable celled table">
+            <thead>
+            <tr>
+                 <th class="sorted ascending">Sr.</th>
+                <th class="">Role</th>
+                <th class="">Conference Name</th>
+                <th class="">Venue</th>
+                <th class="">Start Date &&  End-Date</th>
+                <th class="">Year</th>
+                <th class="">Action</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr>
+               
+            </tr>
+
+            <tr>
+               
+            </tr>
+
+            <tr>
+              
+            </tr>
+            </tbody>
+
+            <tfoot>
+            <tr>
+                <th colspan="7">
+                    <div class="ui right floated pagination menu">
+                        <a class="icon item">
+                            <i class="left chevron icon"></i>
+                        </a>
+                        <a class="item">1</a>
+                        <a class="item">2</a>
+                        <a class="item">3</a>
+                        <a class="item">4</a>
+                        <a class="icon item">
+                            <i class="right chevron icon"></i>
+                        </a>
+                    </div>
+                </th>
+            </tr></tfoot>
+        </table>
+    </div>
+    {% endblock %}
+
+  

@@ -1,0 +1,99 @@
+{% load static %}
+
+{% block leavestatus %}
+    <div class="ui vertical segment">
+        <div class="ui header">
+            Leave Status:
+        </div>
+
+        <div class="content">
+            <div class="description">
+
+                <table class="ui very basic collapsing celled large sortable table"
+                       style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                    <thead>
+                    <tr>
+                        <th>
+                            Employee
+                        </th>
+
+                        <th>
+                            Type
+                        </th>
+
+                        <th>
+                            From
+                        </th>
+
+                        <th>
+                            To
+                        </th>
+
+                        <th>
+                            Duration
+                        </th>
+
+                        <th>
+                            Status
+                        </th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr>
+                        <td>
+                            <h4 class="ui image header">
+                                {% comment %}
+                                    Todo: ...
+                                {% endcomment %}
+                                <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                                <div class="content">
+                                    Zlatan Ibrahimovic
+                                    <div class="sub header">
+                                        Associate Professor
+                                    </div>
+                                </div>
+                            </h4>
+                        </td>
+
+                        <td>
+                            Casual
+                        </td>
+
+                        <td>
+                            22 Sept'17
+                        </td>
+
+                        <td>
+                            22 Sept'17
+                        </td>
+
+                        <td>
+                            1
+                        </td>
+
+                        <td>
+                            <i class="large green checkmark icon"></i>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <br>
+
+    <div class="extra content">
+        <div class="" style="text-align: center;">
+            <i class="large green checkmark icon"></i> : Approved &ensp;&ensp;&ensp;&ensp;&ensp;
+            <i class="large orange warning icon"></i> : Pending &ensp;&ensp;&ensp;&ensp;&ensp;
+            <i class="large red x icon"></i> : Declined
+        </div>
+    </div>
+
+{%  endblock %}

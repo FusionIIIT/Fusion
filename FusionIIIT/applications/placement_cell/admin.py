@@ -101,7 +101,6 @@ class ContactCompanyAdmin(admin.ModelAdmin):
 class PlacementScheduleAdmin(admin.ModelAdmin):
     list_display = ('title', 'placement_date', 'location', 'time')
 
-
 admin.site.register(Project, ProjectAdmin)
 admin.site.register(Language, LanguageAdmin)
 admin.site.register(Know, KnowAdmin)
@@ -125,3 +124,4 @@ admin.site.register(StudentRecord, StudentRecordAdmin)
 admin.site.register(ChairmanVisit, ChairmanVisitAdmin)
 admin.site.register(ContactCompany, ContactCompanyAdmin)
 admin.site.register(PlacementSchedule, PlacementScheduleAdmin)
+

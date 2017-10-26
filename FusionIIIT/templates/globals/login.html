@@ -1,0 +1,91 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Login
+{% endblock %}
+
+{% block body %}
+    <div class="ui raised stackable doubling centered card right floated"
+         style="margin: auto;
+                margin-top: 7.5%;
+                min-width: 360px;">
+
+        <div class="content">
+            <img class="ui rounded centered small image"
+                 src="{% static 'globals/img/user.png' %}"
+                 style="margin-top: -27.5%;
+                        margin-left: 27.5%;"
+                 alt="User Image" >
+
+            <div class="ui huge centered header">
+                Employee Login
+            </div>
+
+        </div>
+
+        <div class="content">
+            <form method="post"
+                  class="ui form"
+                  style="margin-top: 7.5%;
+                                    margin-bottom: 3.5%;">
+                {% csrf_token %}
+
+                <div class="field">
+                    <label>Email Id:</label>
+                    <div class="ui input">
+                        <input placeholder="e-mail">
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label for="{{ loginform.lf_UserPassword.id_for_label }}">Password:</label>
+                    <div class="ui input">
+                        <input placeholder="Password" type="password">
+                    </div>
+                </div>
+
+                <div class="field"
+                     style="margin-top: 7.5%;
+                                 margin-bottom: 7.5%;">
+                    <div class="ui divider"></div>
+                </div>
+
+                <div class="field">
+                    <button class="ui fluid large primary button"
+                            type="submit">
+                        &ensp;
+                        Login
+                    </button>
+                </div>
+
+                <div class="ui divider"></div>
+
+                <div class="field" style="margin: auto;">
+                    <div class="ui red fluid large button">
+                        <i class="google plus icon left floated"></i>
+                        <span>Google</span>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="extra content">
+            {% comment %}
+                TODO: Whatever!
+            {% endcomment %}
+            <a href="" class="ui inverted text">
+                <div class="" style="text-align: center;">
+                    Forgot Password?
+                </div>
+            </a>
+        </div>
+
+    </div>
+    <div class="ui row">
+        <br>
+        <br>
+        <br>
+    </div>
+{% endblock %}
