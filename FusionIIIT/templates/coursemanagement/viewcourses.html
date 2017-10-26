@@ -510,54 +510,37 @@
 
       {% comment %}The quiz segment starts here!{% endcomment %}
          <div class="ui tab segment" data-tab="quiz">
-           <div id="clock">
-  
-                  <div class="block">
-                    <span class="digit" id="hours"></span>
-                    Hours
-                  </div>
+            
+             <h4 class="ui dividing header">Rules and Regulations of the quiz</h4>
+            
+            <div class="ui bulleted list">
+              <div class="item">Gaining Access</div>
+              <div class="item">Inviting Friends</div>
+              <div class="item">
+                <div>Benefits</div>
+                <div class="list">
                   
-                  <div class="block">
-                    <span class="digit" id="minutes"></span>
-                    Minutes
-                  </div>
-                  
-                  <div class="block">
-                    <span class="digit" id="seconds"></span>
-                    Seconds
-                  </div>
+                  <div class="item">Rebates</div>
+                  <div class="item">Discounts</div>
+                </div>
+              </div>
+              <div class="item">Warranty</div>
+            </div>
 
-           </div>
+             <div class="fields">
+                    <div class="one wide field">
+                        <label><br></label>
+                      <a href="#" > <div class="ui primary button">
+                            Enter
+                            <i class="arrow right icon"></i>
+                        </div></a>
+                    </div> 
+                </div>
+          
+         </div>
 
-            <br> <br>
-           <div class="grouped fields">
-            <label for="fruit">1)From the following which quality deals with maintaining the quality of the software product?</label>
 
-            <div class="field">
-              <div class="ui radio checkbox">
-                <input type="radio" name="fruit" checked="" tabindex="0" class="hidden">
-                <label>Apples</label>
-              </div>
-            </div>
-            <div class="field">
-              <div class="ui radio checkbox">
-                <input type="radio" name="fruit" tabindex="0" class="hidden">
-                <label>Oranges</label>
-              </div>
-            </div>
-            <div class="field">
-              <div class="ui radio checkbox">
-                <input type="radio" name="fruit" tabindex="0" class="hidden">
-                <label>Pears</label>
-              </div>
-            </div>
-            <div class="field">
-              <div class="ui radio checkbox">
-                <input type="radio" name="fruit" tabindex="0" class="hidden">
-                <label>Grapefruit</label>
-              </div>
-            </div>
-  </div>
+           
          </div>
 
 
@@ -576,9 +559,13 @@
                     $('#pdf_modal').modal('show').height('80%');
                 });
             });
+               $('#enter').click(function(){
+            alert('Do not close');
+            window.open('/quiz/{{contest.pk}}/live/','myWindow', "width=1500, height=1000");
+          });
 
               /*JS  of timer starts*/
-                          $(document).ready(function(){
+                        /*  $(document).ready(function(){
 
               var deadline = new Date("2017/11/01");
 
@@ -607,8 +594,8 @@
 
              var interval = setInterval(updateClock,1000);
 
-            });//EOF DOCUMENT.READY
+            });*///EOF DOCUMENT.READY
               /*JS mof timer ends*/
-    </script>
+    </script> 
 
 {% endblock %}

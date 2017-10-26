@@ -179,6 +179,10 @@
 {% block javascript %}
     <script type="text/javascript" src="{% static 'fusion/js/editProfile.js' %}"></script>
     <script type="text/javascript" src="{% static 'fusion/js/tablesort.js' %}"></script>
+     <script type="text/javascript" src="{% static 'fusion/js/jquery.min.js' %}"></script>
+
+    <!-- <script src="https://code.jquery.com/jquery-2.1.4.js"></script> -->
+<script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
 
     <script>
         $(document).ready(function() {
@@ -199,6 +203,14 @@
                 $('#toggleIcon').addClass("chevron down");
             }
         }
+
+
+           $('#enter').click(function(){
+      alert('Do not close');
+      window.open('/quiz/{{contest.pk}}/live/','myWindow', "width=1500, height=1000");
+    });
+
+           
     </script>
 
 {% endblock %}
