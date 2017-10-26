@@ -21,7 +21,8 @@ class File(models.Model):
     description = models.CharField(max_length=100)
     status = models.IntegerField(choices=Constants.STATUS, default=1)
     leave_flag = models.BooleanField(default=False)
-    substitute_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE, related_name='substitute_id')
+    substitute_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE,
+                                      related_name='substitute_id')
     upload_date = models.DateTimeField(auto_now=True)
     resolve_date = models.DateTimeField()
 
