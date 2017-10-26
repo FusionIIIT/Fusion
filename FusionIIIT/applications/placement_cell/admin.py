@@ -101,7 +101,7 @@ class ContactCompanyAdmin(admin.ModelAdmin):
 class PlacementScheduleAdmin(admin.ModelAdmin):
     list_display = ('title', 'placement_date', 'location', 'time')
 
-    
+
 admin.site.register(Project, ProjectAdmin)
 admin.site.register(Language, LanguageAdmin)
 admin.site.register(Know, KnowAdmin)
