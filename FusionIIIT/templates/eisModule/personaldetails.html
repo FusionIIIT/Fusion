@@ -1,0 +1,188 @@
+{% load static %}
+
+{% block personaldetails %}
+
+    <!--About Me card starts here!-->
+    <div class="ui fluid card">
+        <div class="content">
+            <div class="ui header">
+                About Me
+                <input type="button"
+                       id="editButton"
+                       class="ui red mini button right floated" onclick="editFirst()"
+                       value = "Edit">
+                </input>
+            </div>
+
+            <div class="ui divider"></div>
+
+            <span id="aboutSpan">
+                I am interested in investigating and developing intelligent methods and tools in the area of software engineering, computer vision, information extraction, and other domains. Currently, some of the work I am engaged in include Identifying patterns in requirements, design and coding using NLP as well as through model transformation approaches. Some other work include the study the dataset characteristics and suitability of a given dataset to provide an acceptable solution of a Machine Learning problem.
+            </span>
+
+            <div class="textarea">
+                <textarea rows=5
+                          type="text"
+                          style="width: 100%;"
+                          id="aboutTextarea" hidden></textarea>
+            </div>
+        </div>
+    </div>
+    <!--About Me card ends here!-->
+
+
+    <!--The start of details card!-->
+    <div class="ui fluid card">
+        <div class="content">
+            <div class="ui header">Details</div>
+            <div class="ui divider"></div>
+
+            <span>
+                <table class="ui definition table">
+                    <tbody>
+                        <tr>
+                            <td>
+                                Date Of Joining
+                            </td>
+
+                            <td>
+                                <span id="dojSpan">
+                                    January 10, 2012
+                                </span>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                Pension Fund #
+                            </td>
+
+                            <td>
+                                <span id="pfSpan">
+                                    PF# XXXXXXXXX
+                                </span>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                Education
+                            </td>
+
+                            <td>
+                                <span id="educationSpan">
+                                    PhD, IIT Kanpur
+                                </span>
+
+                                <div class="textarea">
+                                    <textarea rows=3
+                                              type="text"
+                                              style="width: 100%;"
+                                              id="educationTextarea" hidden></textarea>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                Interest Areas
+                            </td>
+
+                            <td>
+                                <span id="interestSpan">
+                                    Software Engineering, Machine Learning, Data Science, and NLP.
+                                </span>
+
+                                <div class="textarea">
+                                    <textarea rows=3
+                                              type="text"
+                                              style="width: 100%;"
+                                              id="interestTextarea" hidden></textarea>
+                                </div>
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </span>
+        </div>
+    </div>
+    <!--End of details card!-->
+
+    <!--The contact details card starts here!-->
+    <div class="ui fluid card">
+        <div class="content">
+            <div class="ui header">Contact Details</div>
+            <div class="ui divider"></div>
+
+            <span>
+                <table class="ui definition table">
+                    <tbody>
+                        <tr>
+                            <td>
+                                Contact
+                            </td>
+
+                            <td>
+                                <a>
+                                    <i class="phone icon" id="contactIcon"></i>
+                                        <span id="contactSpan">
+                                            +91 - 7612632139
+                                        </span>
+                                </a>
+
+                                <div class="ui fluid input">
+                                    <input type="text" id="contactInput" hidden>
+                                </div>
+                            </td>
+
+                        </tr>
+                            <tr>
+                                <td>
+                                    Mail
+                                </td>
+
+                                <td>
+                                    <a href="" target="_blank">
+                                        <i class="mail icon" id="mailIcon"></i>
+
+                                        <span id="mailSpan">
+                                            {{ userEmail }}
+                                        </span>
+                                    </a>
+
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    LinkedIn
+                                </td>
+
+                                <td>
+                                    <a href="https://www.linkedin.com/" target="_blank">
+                                        <i class="blue linkedin icon"></i>
+                                        {{ userFirstName }} {{ userLastName }}
+                                    </a>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    Github
+                                </td>
+
+                                <td>
+                                    <a href="https://www.github.com/" target="_blank">
+                                        <i class="teal github icon"></i>
+                                        {{ userFirstName }} {{ userLastName }}
+                                    </a>
+                                </td>
+                            </tr>
+
+                    </tbody>
+                </table>
+            </span>
+        </div>
+    </div><!--The contact details card ends here!-->
+{% endblock %}

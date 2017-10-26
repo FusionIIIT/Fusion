@@ -1,0 +1,345 @@
+{% block education %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="education">
+            Education
+        </a>
+
+        <a class="item" data-tab="courses">
+            Courses
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="education">
+
+        <div class="ui vertical segment">
+            {% comment %}Form Tag starts here!{% endcomment %}
+            <form>
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui active accordion field">
+                    <div class="title">
+                        <i class="icon dropdown"></i>
+                        Add a new Educational Qualification!
+                    </div>
+
+                    <div class="active content">
+                        <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                            <div class="two fields">
+                                <div class="field">
+                                    <label>
+                                        Degree
+                                    </label>
+
+                                    <div class="ui large input">
+                                        <input>
+                                    </div>
+                                </div>
+
+                                <div class="field">
+                                    <label>
+                                        Stream
+                                    </label>
+
+                                    <div class="ui large input">
+                                        <input>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% comment %}The start and end date input{% endcomment %}
+                            <div class="two fields">
+                                <div class="field">
+                                    <label>Start Date:</label>
+                                    <div class="ui calendar" id="rangestart">
+                                        <div class="ui input left icon">
+                                            <i class="calendar icon"></i>
+                                            <input type="text" placeholder="From">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="field">
+                                    <label>End Date:</label>
+                                    <div class="ui calendar" id="rangeend">
+                                        <div class="ui input left icon">
+                                            <i class="calendar icon"></i>
+                                            <input type="text" placeholder="To">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="two fields">
+                                <div class="twelve wide field">
+                                    <label>Institute Name:</label>
+                                    <div class="ui fluid large input">
+                                        {% comment %}The Institute Name input!{% endcomment %}
+                                        <input>
+                                    </div>
+                                </div>
+
+                                <div class="four wide field">
+                                    <label><br></label>
+                                    <button class="ui fluid large primary button" type="submit">
+                                        Submit
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                {% comment %}The add a new skill Accordian ends here!{% endcomment %}
+            </form>
+            {% comment %}Form Tag ends here!{% endcomment %}
+
+
+            <div class="ui divider"></div>
+
+            <table class="ui fixed sortable celled table">
+                <thead>
+                <tr>
+                    <th class="six wide">Institute Name</th>
+                    <th>Degree</th>
+                    <th>Stream</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>
+                        PDPM IIITDM Jabalpur
+                    </td>
+
+                    <td>
+                        B.Tech.
+                    </td>
+
+                    <td>
+                        CSE
+                    </td>
+
+                    <td>
+                        01.01.1970
+                    </td>
+
+                    <td>
+                        01.01.1970
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        PDPM IIITDM Jabalpur
+                    </td>
+
+                    <td>
+                        B.Tech.
+                    </td>
+
+                    <td>
+                        CSE
+                    </td>
+
+                    <td>
+                        01.01.1971
+                    </td>
+
+                    <td>
+                        01.01.1971
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        PDPM IIITDM Jabalpur
+                    </td>
+
+                    <td>
+                        B.Tech.
+                    </td>
+
+                    <td>
+                        CSE
+                    </td>
+
+                    <td>
+                        01.01.1972
+                    </td>
+
+                    <td>
+                        01.01.1972
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+    <div class="ui tab" data-tab="courses">
+            <div class="ui vertical segment">
+            {% comment %}Form Tag starts here!{% endcomment %}
+            <form>
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui active accordion field">
+                    <div class="title">
+                        <i class="icon dropdown"></i>
+                        Add a new Course!
+                    </div>
+
+                    <div class="active content">
+                        <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                            <div class="two fields">
+                                <div class="twelve wide field">
+                                    <label>
+                                        Course Name:
+                                    </label>
+
+                                    <div class="ui large input">
+                                        <input>
+                                    </div>
+                                </div>
+
+                                <div class="four wide field">
+                                    <label>
+                                        Unique Number
+                                    </label>
+
+                                    <div class="ui large input">
+                                        <input>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% comment %}The start and end date input{% endcomment %}
+                            <div class="two fields">
+                                <div class="field">
+                                    <label>Start Date:</label>
+                                    <div class="ui calendar" id="rangestart1">
+                                        <div class="ui input left icon">
+                                            <i class="calendar icon"></i>
+                                            <input type="text" placeholder="From">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="field">
+                                    <label>End Date:</label>
+                                    <div class="ui calendar" id="rangeend1">
+                                        <div class="ui input left icon">
+                                            <i class="calendar icon"></i>
+                                            <input type="text" placeholder="To">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="two fields">
+                                <div class="twelve wide field">
+                                    <label>Description:</label>
+                                    <textarea rows="2">
+                                        {% comment %}The Institute Name input!{% endcomment %}
+                                    </textarea>
+                                </div>
+
+                                <div class="four wide field">
+                                    <label><br></label>
+                                    <button class="ui fluid large primary button" type="submit">
+                                        Submit
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                {% comment %}The add a new skill Accordian ends here!{% endcomment %}
+            </form>
+            {% comment %}Form Tag ends here!{% endcomment %}
+
+
+            <div class="ui divider"></div>
+
+            <table class="ui fixed sortable celled table">
+                <thead>
+                <tr>
+                    <th class="six wide">Institute Name</th>
+                    <th>Degree</th>
+                    <th>Stream</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>
+                        PDPM IIITDM Jabalpur
+                    </td>
+
+                    <td>
+                        B.Tech.
+                    </td>
+
+                    <td>
+                        CSE
+                    </td>
+
+                    <td>
+                        01.01.1970
+                    </td>
+
+                    <td>
+                        01.01.1970
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        PDPM IIITDM Jabalpur
+                    </td>
+
+                    <td>
+                        B.Tech.
+                    </td>
+
+                    <td>
+                        CSE
+                    </td>
+
+                    <td>
+                        01.01.1971
+                    </td>
+
+                    <td>
+                        01.01.1971
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        PDPM IIITDM Jabalpur
+                    </td>
+
+                    <td>
+                        B.Tech.
+                    </td>
+
+                    <td>
+                        CSE
+                    </td>
+
+                    <td>
+                        01.01.1972
+                    </td>
+
+                    <td>
+                        01.01.1972
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+{% endblock %}

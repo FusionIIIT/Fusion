@@ -1,0 +1,706 @@
+ {% load static %}
+{% block attendance%}
+
+ <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="cse">
+          CSE
+        </a>
+        <a class=" item" data-tab="ece">
+            ECE
+        </a>
+         <a class=" item" data-tab="mech">
+           MECHANICAL
+        </a>
+         <a class=" item" data-tab="design">
+           DESIGN
+        </a>
+
+       
+    </div>
+
+
+       <div class="ui active tab segment" data-tab="cse">
+
+            <form class="ui form">
+                  <div class="field">
+                       <div class="three fields">
+                          <div class="field">
+                              <label>Name</label>
+                              <input placeholder="Name" type="text">
+                                 
+                          </div>
+
+                          <div class="field">
+                              <label>Batch</label>
+                                  <div class="ui fluid search selection dropdown">
+                                          <input type="hidden">
+                                          <i class="dropdown icon"></i>
+                                          <div class="default text">Batch</div>
+                                          <div class="menu">
+                                              <div class="item" data-value="2014">2014</div>
+                                              <div class="item" data-value="2015">2015</div>
+                                              <div class="item" data-value="2016">2016</div>
+                                              <div class="item" data-value="2017">2017</div>
+                     
+                                          </div>
+                                      </div>
+                          </div>
+                      
+                       <div class="field">
+                              <label>Roll No.</label>
+                              <input placeholder="Roll No." type="text">
+                          </div>
+                          
+                      </div>
+                  </div>
+
+                  <div class="fields">
+                          <div class="six wide field">
+                              <div class="field">
+                                  <label>Course Code</label>
+                                  <input placeholder="Course Code" type="text">
+                              </div>
+                          </div>
+                           <div class="six wide field">
+                              <div class="field">
+                                  <label>Attendance Percentage</label>
+                                  <input placeholder="Attendance Percentage" type="text">
+                              </div>
+                          </div>
+
+                          <div class="four wide field">
+                              <label><br></label>
+                              <div class="ui primary button">
+                                  Save
+                                  <i class="ui save icon right floated"></i>
+                              </div>
+                          </div> 
+                      </div>
+      
+        </form> 
+
+             <h4 class="ui dividing header">Courses</h4> 
+
+              
+                  
+                    <div class="ui grid">
+
+                     <div class="two wide column">
+                           <button class="ui primary button">
+                             <a id='visualize' style="color:white;">CS204</a>
+                         </button>
+                      </div>
+
+                       <div class="two wide column">
+                           <button class="ui primary button">
+                             <a id='visualize' style="color:white;">CS205</a>
+                         </button>
+                      </div>
+
+                       <div class="two wide column">
+                           <button class="ui primary button">
+                             <a id='visualize' style="color:white;">CS206</a>
+                         </button>
+                      </div>
+
+                       <div class="two wide column">
+                           <button class="ui primary button">
+                             <a id='visualize' style="color:white;">CS207</a>
+                         </button>
+                      </div>
+                      <div class="two wide column">
+                           <button class="ui primary button">
+                             <a id='visualize' style="color:white;">CS208</a>
+                         </button>
+                      </div>
+                      <div class="two wide column">
+                           <button class="ui primary button">
+                             <a id='visualize' style="color:white;">CS301</a>
+                         </button>
+                      </div>
+                      <div class="two wide column">
+                           <button class="ui primary button">
+                             <a id='visualize' style="color:white;">CS304</a>
+                         </button>
+                      </div>
+                      <div class="two wide column">
+                           <button class="ui primary button">
+                             <a id='visualize' style="color:white;">CS302</a>
+                         </button>
+                      </div>
+
+              </div>
+
+
+               <table class="ui fixed  sortable celled table">
+            <thead>
+            <tr>
+                 <th class="sorted ascending">Sr.</th>
+                <th >Name</th>
+                <th class="" >Roll No.</th>
+                <th class="" >Batch </th>
+                 <th class="" >Programme </th>
+                 <th class="" >Course Code </th>
+                  <th class="" >Attendance Percentage </th>
+                  <th class="">Action </th>
+               
+              
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr>
+             <td>1.</td>
+             <td>Mayank Saurabh</td>
+             <td>2015147</td>
+             <td>2015</td>
+             <td>B.Tech</td>
+             <td> CS306</td>
+             <td>100%</td>
+             <td>  <i class="refresh icon" style="font-size:1.3vw"></i><i class="trash outline icon" style="font-size:1.3vw"></i></td>  
+            </tr>
+
+            <tr>
+               
+            </tr>
+
+            <tr>
+              
+            </tr>
+            </tbody>
+
+            <tfoot>
+            <tr>
+                <th colspan="8">
+                    <div class="ui right floated pagination menu">
+                        <a class="icon item">
+                            <i class="left chevron icon"></i>
+                        </a>
+                        <a class="item">1</a>
+                        <a class="item">2</a>
+                        <a class="item">3</a>
+                        <a class="item">4</a>
+                        <a class="icon item">
+                            <i class="right chevron icon"></i>
+                        </a>
+                    </div>
+                </th>
+            </tr></tfoot>
+        </table>
+  </div>
+
+
+   <div class="ui tab segment" data-tab="ece">
+
+            <form class="ui form">
+                  <div class="field">
+                       <div class="three fields">
+                          <div class="field">
+                              <label>Name</label>
+                              <input placeholder="Name" type="text">
+                                 
+                          </div>
+
+                          <div class="field">
+                              <label>Batch</label>
+                                  <div class="ui fluid search selection dropdown">
+                                          <input type="hidden">
+                                          <i class="dropdown icon"></i>
+                                          <div class="default text">Batch</div>
+                                          <div class="menu">
+                                              <div class="item" data-value="2014">2014</div>
+                                              <div class="item" data-value="2015">2015</div>
+                                              <div class="item" data-value="2016">2016</div>
+                                              <div class="item" data-value="2017">2017</div>
+                     
+                                          </div>
+                                      </div>
+                          </div>
+                      
+                       <div class="field">
+                              <label>Roll No.</label>
+                              <input placeholder="Roll No." type="text">
+                          </div>
+                          
+                      </div>
+                  </div>
+
+                  <div class="fields">
+                          <div class="six wide field">
+                              <div class="field">
+                                  <label>Course Code</label>
+                                  <input placeholder="Course Code" type="text">
+                              </div>
+                          </div>
+                           <div class="six wide field">
+                              <div class="field">
+                                  <label>Attendance Percentage</label>
+                                  <input placeholder="Attendance Percentage" type="text">
+                              </div>
+                          </div>
+
+                          <div class="four wide field">
+                              <label><br></label>
+                              <div class="ui primary button">
+                                  Save
+                                  <i class="ui save icon right floated"></i>
+                              </div>
+                          </div> 
+                      </div>
+      
+        </form> 
+
+             <h4 class="ui dividing header">Courses</h4> 
+
+              
+                  
+                    <div class="ui grid">
+
+                     <div class="two wide column">
+                           <button class="ui primary button">
+                             <a id='visualize' style="color:white;">ECE204</a>
+                         </button>
+                      </div>
+
+                       <div class="two wide column">
+                           <button class="ui primary button">
+                             <a id='visualize' style="color:white;">ECE205</a>
+                         </button>
+                      </div>
+
+                       <div class="two wide column">
+                           <button class="ui primary button">
+                             <a id='visualize' style="color:white;">ECE206</a>
+                         </button>
+                      </div>
+
+                       <div class="two wide column">
+                           <button class="ui primary button">
+                             <a id='visualize' style="color:white;">ECE207</a>
+                         </button>
+                      </div>
+                      <div class="two wide column">
+                           <button class="ui primary button">
+                             <a id='visualize' style="color:white;">ECE208</a>
+                         </button>
+                      </div>
+                      <div class="two wide column">
+                           <button class="ui primary button">
+                             <a id='visualize' style="color:white;">ECE301</a>
+                         </button>
+                      </div>
+                      <div class="two wide column">
+                           <button class="ui primary button">
+                             <a id='visualize' style="color:white;">ECE304</a>
+                         </button>
+                      </div>
+                      <div class="two wide column">
+                           <button class="ui primary button">
+                             <a id='visualize' style="color:white;">ECE302</a>
+                         </button>
+                      </div>
+
+              </div>
+
+
+               <table class="ui fixed  sortable celled table">
+            <thead>
+            <tr>
+                 <th class="sorted ascending">Sr.</th>
+                <th >Name</th>
+                <th class="" >Roll No.</th>
+                <th class="" >Batch </th>
+                 <th class="" >Programme </th>
+                 <th class="" >Course Code </th>
+                  <th class="" >Attendance Percentage </th>
+                  <th class="">Action </th>
+               
+              
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr>
+             <td>1.</td>
+             <td>Mayank Saurabh</td>
+             <td>2015147</td>
+             <td>2015</td>
+             <td>B.Tech</td>
+             <td> CS306</td>
+             <td>100%</td>
+             <td>  <i class="refresh icon" style="font-size:1.3vw"></i><i class="trash outline icon" style="font-size:1.3vw"></i></td>  
+            </tr>
+
+            <tr>
+               
+            </tr>
+
+            <tr>
+              
+            </tr>
+            </tbody>
+
+            <tfoot>
+            <tr>
+                <th colspan="8">
+                    <div class="ui right floated pagination menu">
+                        <a class="icon item">
+                            <i class="left chevron icon"></i>
+                        </a>
+                        <a class="item">1</a>
+                        <a class="item">2</a>
+                        <a class="item">3</a>
+                        <a class="item">4</a>
+                        <a class="icon item">
+                            <i class="right chevron icon"></i>
+                        </a>
+                    </div>
+                </th>
+            </tr></tfoot>
+        </table>
+  </div>
+
+   <div class="ui  tab segment" data-tab="mech">
+
+            <form class="ui form">
+                  <div class="field">
+                       <div class="three fields">
+                          <div class="field">
+                              <label>Name</label>
+                              <input placeholder="Name" type="text">
+                                 
+                          </div>
+
+                          <div class="field">
+                              <label>Batch</label>
+                                  <div class="ui fluid search selection dropdown">
+                                          <input type="hidden">
+                                          <i class="dropdown icon"></i>
+                                          <div class="default text">Batch</div>
+                                          <div class="menu">
+                                              <div class="item" data-value="2014">2014</div>
+                                              <div class="item" data-value="2015">2015</div>
+                                              <div class="item" data-value="2016">2016</div>
+                                              <div class="item" data-value="2017">2017</div>
+                     
+                                          </div>
+                                      </div>
+                          </div>
+                      
+                       <div class="field">
+                              <label>Roll No.</label>
+                              <input placeholder="Roll No." type="text">
+                          </div>
+                          
+                      </div>
+                  </div>
+
+                  <div class="fields">
+                          <div class="six wide field">
+                              <div class="field">
+                                  <label>Course Code</label>
+                                  <input placeholder="Course Code" type="text">
+                              </div>
+                          </div>
+                           <div class="six wide field">
+                              <div class="field">
+                                  <label>Attendance Percentage</label>
+                                  <input placeholder="Attendance Percentage" type="text">
+                              </div>
+                          </div>
+
+                          <div class="four wide field">
+                              <label><br></label>
+                              <div class="ui primary button">
+                                  Save
+                                  <i class="ui save icon right floated"></i>
+                              </div>
+                          </div> 
+                      </div>
+      
+        </form> 
+
+             <h4 class="ui dividing header">Courses</h4> 
+
+              
+                  
+                    <div class="ui grid">
+
+                     <div class="two wide column">
+                           <button class="ui primary button">
+                             <a id='visualize' style="color:white;">ME204</a>
+                         </button>
+                      </div>
+
+                       <div class="two wide column">
+                           <button class="ui primary button">
+                             <a id='visualize' style="color:white;">ME205</a>
+                         </button>
+                      </div>
+
+                       <div class="two wide column">
+                           <button class="ui primary button">
+                             <a id='visualize' style="color:white;">ME206</a>
+                         </button>
+                      </div>
+
+                       <div class="two wide column">
+                           <button class="ui primary button">
+                             <a id='visualize' style="color:white;">ME207</a>
+                         </button>
+                      </div>
+                      <div class="two wide column">
+                           <button class="ui primary button">
+                             <a id='visualize' style="color:white;">ME208</a>
+                         </button>
+                        </div> 
+                         <div class="two wide column">
+                           <button class="ui primary button">
+                             <a id='visualize' style="color:white;">ME208</a>
+                         </button>
+                         </div>
+                         <div class="two wide column">
+                           <button class="ui primary button">
+                             <a id='visualize' style="color:white;">ME208</a>
+                         </button>
+                         </div>
+                         <div class="two wide column">
+                           <button class="ui primary button">
+                             <a id='visualize' style="color:white;">ME208</a>
+                         </button>
+                      </div>
+                   
+                     
+                   </div> 
+
+              
+
+
+               <table class="ui fixed  sortable celled table">
+            <thead>
+            <tr>
+                 <th class="sorted ascending">Sr.</th>
+                <th >Name</th>
+                <th class="" >Roll No.</th>
+                <th class="" >Batch </th>
+                 <th class="" >Programme </th>
+                 <th class="" >Course Code </th>
+                  <th class="" >Attendance Percentage </th>
+                  <th class="">Action </th>
+               
+              
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr>
+             <td>1.</td>
+             <td>Mayank Saurabh</td>
+             <td>2015147</td>
+             <td>2015</td>
+             <td>B.Tech</td>
+             <td> CS306</td>
+             <td>100%</td>
+             <td>  <i class="refresh icon" style="font-size:1.3vw"></i><i class="trash outline icon" style="font-size:1.3vw"></i></td>  
+            </tr>
+
+            <tr>
+               
+            </tr>
+
+            <tr>
+              
+            </tr>
+            </tbody>
+
+            <tfoot>
+            <tr>
+                <th colspan="8">
+                    <div class="ui right floated pagination menu">
+                        <a class="icon item">
+                            <i class="left chevron icon"></i>
+                        </a>
+                        <a class="item">1</a>
+                        <a class="item">2</a>
+                        <a class="item">3</a>
+                        <a class="item">4</a>
+                        <a class="icon item">
+                            <i class="right chevron icon"></i>
+                        </a>
+                    </div>
+                </th>
+            </tr></tfoot>
+        </table>
+  </div>
+
+
+   <div class="ui tab segment" data-tab="design">
+
+            <form class="ui form">
+                  <div class="field">
+                       <div class="three fields">
+                          <div class="field">
+                              <label>Name</label>
+                              <input placeholder="Name" type="text">
+                                 
+                          </div>
+
+                          <div class="field">
+                              <label>Batch</label>
+                                  <div class="ui fluid search selection dropdown">
+                                          <input type="hidden">
+                                          <i class="dropdown icon"></i>
+                                          <div class="default text">Batch</div>
+                                          <div class="menu">
+                                              <div class="item" data-value="2014">2014</div>
+                                              <div class="item" data-value="2015">2015</div>
+                                              <div class="item" data-value="2016">2016</div>
+                                              <div class="item" data-value="2017">2017</div>
+                     
+                                          </div>
+                                      </div>
+                          </div>
+                      
+                       <div class="field">
+                              <label>Roll No.</label>
+                              <input placeholder="Roll No." type="text">
+                          </div>
+                          
+                      </div>
+                  </div>
+
+                  <div class="fields">
+                          <div class="six wide field">
+                              <div class="field">
+                                  <label>Course Code</label>
+                                  <input placeholder="Course Code" type="text">
+                              </div>
+                          </div>
+                           <div class="six wide field">
+                              <div class="field">
+                                  <label>Attendance Percentage</label>
+                                  <input placeholder="Attendance Percentage" type="text">
+                              </div>
+                          </div>
+
+                          <div class="four wide field">
+                              <label><br></label>
+                              <div class="ui primary button">
+                                  Save
+                                  <i class="ui save icon right floated"></i>
+                              </div>
+                          </div> 
+                      </div>
+      
+        </form> 
+
+             <h4 class="ui dividing header">Courses</h4> 
+
+              
+                  
+                    <div class="ui grid">
+
+                     <div class="two wide column">
+                           <button class="ui primary button">
+                             <a id='visualize' style="color:white;">DS204</a>
+                         </button>
+                      </div>
+
+                       <div class="two wide column">
+                           <button class="ui primary button">
+                             <a id='visualize' style="color:white;">DS205</a>
+                         </button>
+                      </div>
+
+                       <div class="two wide column">
+                           <button class="ui primary button">
+                             <a id='visualize' style="color:white;">DS206</a>
+                         </button>
+                      </div>
+
+                       <div class="two wide column">
+                           <button class="ui primary button">
+                             <a id='visualize' style="color:white;">DS207</a>
+                         </button>
+                      </div>
+                      <div class="two wide column">
+                           <button class="ui primary button">
+                             <a id='visualize' style="color:white;">DS208</a>
+                         </button>
+                      </div>
+                      <div class="two wide column">
+                           <button class="ui primary button">
+                             <a id='visualize' style="color:white;">DS301</a>
+                         </button>
+                      </div>
+                      <div class="two wide column">
+                           <button class="ui primary button">
+                             <a id='visualize' style="color:white;">DS304</a>
+                         </button>
+                      </div>
+                      <div class="two wide column">
+                           <button class="ui primary button">
+                             <a id='visualize' style="color:white;">DS302</a>
+                         </button>
+                      </div>
+
+              </div>
+
+
+               <table class="ui fixed  sortable celled table">
+            <thead>
+            <tr>
+                 <th class="sorted ascending">Sr.</th>
+                <th >Name</th>
+                <th class="" >Roll No.</th>
+                <th class="" >Batch </th>
+                 <th class="" >Programme </th>
+                 <th class="" >Course Code </th>
+                  <th class="" >Attendance Percentage </th>
+                  <th class="">Action </th>
+               
+              
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr>
+             <td>1.</td>
+             <td>Mayank Saurabh</td>
+             <td>2015147</td>
+             <td>2015</td>
+             <td>B.Tech</td>
+             <td> DS306</td>
+             <td>100%</td>
+             <td>  <i class="refresh icon" style="font-size:1.3vw"></i><i class="trash outline icon" style="font-size:1.3vw"></i></td>  
+            </tr>
+
+            <tr>
+               
+            </tr>
+
+            <tr>
+              
+            </tr>
+            </tbody>
+
+            <tfoot>
+            <tr>
+                <th colspan="8">
+                    <div class="ui right floated pagination menu">
+                        <a class="icon item">
+                            <i class="left chevron icon"></i>
+                        </a>
+                        <a class="item">1</a>
+                        <a class="item">2</a>
+                        <a class="item">3</a>
+                        <a class="item">4</a>
+                        <a class="icon item">
+                            <i class="right chevron icon"></i>
+                        </a>
+                    </div>
+                </th>
+            </tr></tfoot>
+        </table>
+  </div>
+ {% endblock %}   

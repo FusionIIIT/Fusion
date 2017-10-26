@@ -1,0 +1,324 @@
+{% load static %}
+{% block nonvegfood %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="nonvegfood">
+            Non-Vegetarian Food
+        </a>
+
+        <a class="item" data-tab="nonvegfoodhistory">
+            History
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="nonvegfood">
+        <div class="ui vertical segment">
+
+            {% comment %}Form Tag starts here!{% endcomment %}
+            <form>
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                    <div class="ui header">
+                        A la Carte:
+                    </div>
+
+                    <br>
+
+                    <div class="ui stackable grid doubling">
+                        <div class="ui row">
+                            <div class="four wide column">
+                                <div class="ui secondary vertical pointing small menu">
+                                    <a class="active item" data-tab="breakfast">
+                                        Breakfast
+                                    </a>
+
+                                    <a class="item" data-tab="lunch">
+                                        Lunch
+                                    </a>
+
+                                    <a class="item" data-tab="dinner">
+                                        Dinner
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="ui twelve wide column">
+                                <div class="ui active tab" data-tab="breakfast">
+                                    <form class="ui form">
+                                        <div class="ui row">
+                                            <div class="two fields">
+                                                <div class="field">
+                                                    <label>
+                                                        Boiled Eggs
+                                                    </label>
+
+                                                    <div class="ui input">
+                                                        <input placeholder="Quantity">
+                                                    </div>
+                                                </div>
+
+                                                <div class="field">
+                                                    <label>
+                                                        Omelette
+                                                    </label>
+
+                                                    <div class="ui input">
+                                                        <input placeholder="Quantity">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="ui row">
+                                            <br>
+                                            <button type="submit" class="ui primary button right floated">
+                                                Place Order
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <div class="ui tab" data-tab="lunch">
+                                    <form class="ui form">
+                                        <div class="ui row">
+                                            <div class="two fields">
+                                                <div class="field">
+                                                    <label>
+                                                        Egg Curry
+                                                    </label>
+
+                                                    <div class="ui input">
+                                                        <input placeholder="Quantity">
+                                                    </div>
+                                                </div>
+
+                                                <div class="field">
+                                                    <label>
+                                                        Chicken Curry
+                                                    </label>
+
+                                                    <div class="ui input">
+                                                        <input placeholder="Quantity">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="ui row">
+                                            <br>
+                                            <button type="submit" class="ui primary button right floated">
+                                                Place Order
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <div class="ui tab" data-tab="dinner">
+                                    <form class="ui form">
+                                        <div class="ui row">
+                                            <div class="two fields">
+                                                <div class="field">
+                                                    <label>
+                                                        Egg Curry
+                                                    </label>
+
+                                                    <div class="ui input">
+                                                        <input placeholder="Quantity">
+                                                    </div>
+                                                </div>
+
+                                                <div class="field">
+                                                    <label>
+                                                        Chicken Curry
+                                                    </label>
+
+                                                    <div class="ui input">
+                                                        <input placeholder="Quantity">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="ui row">
+                                            <br>
+                                            <button type="submit" class="ui primary button right floated">
+                                                Place Order
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            {% comment %}Form Tag ends here!{% endcomment %}
+
+            <br>
+
+            <div class="ui divider"></div>
+
+            {% comment %}
+                TODO: Price Table!
+            {% endcomment %}
+            <div class="extra content">
+                TODO!
+            </div>
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="nonvegfoodhistory">
+        <div class="ui vertical segment">
+
+            {% comment %} Rupee sign is &#8377; {% endcomment %}
+            <table class="ui very basic collapsing celled large sortable table"
+                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                <thead>
+                    <tr>
+                        <th>
+                            Student
+                        </th>
+
+                        <th>
+                            Date
+                        </th>
+
+                        <th>
+                            Type
+                        </th>
+
+                        <th>
+                            Food Item
+                        </th>
+
+                        <th>
+                            Qty.
+                        </th>
+
+                        <th>
+                            Amt.
+                        </th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr>
+                        <td>
+                            <h4 class="ui image header">
+                                <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                                <div class="content">
+                                    Zlatan Ibrahimovic
+                                    <div class="sub header">
+                                        {% comment %}
+                                            TODO: Replace with Roll Number!
+                                        {% endcomment %}
+                                        King Of Sweden
+                                    </div>
+                                </div>
+                            </h4>
+                        </td>
+
+                        <td>
+                            18 Oct'17
+                        </td>
+
+                        <td>
+                            Breakfast
+                        </td>
+
+                        <td>
+                            Omelette
+                        </td>
+
+                        <td>
+                            1
+                        </td>
+
+                        <td>
+                            &#8377; 19
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <h4 class="ui image header">
+                                <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                                <div class="content">
+                                    Zlatan Ibrahimovic
+                                    <div class="sub header">
+                                        Zlatan doesn't do Auditions
+                                    </div>
+                                </div>
+                            </h4>
+                        </td>
+
+                        <td>
+                            14 Oct'17
+                        </td>
+
+                        <td>
+                            Breakfast
+                        </td>
+
+                        <td>
+                            Omelette
+                        </td>
+
+                        <td>
+                            1
+                        </td>
+
+                        <td>
+                            &#8377; 19
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <h4 class="ui image header">
+                                <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                                <div class="content">
+                                    Zlatan Ibrahimovic
+                                    <div class="sub header">
+                                        God Of Manchester
+                                    </div>
+                                </div>
+                            </h4>
+                        </td>
+
+                        <td>
+                            14 Oct'17
+                        </td>
+
+                        <td>
+                            Dinner
+                        </td>
+
+                        <td>
+                            Chicken Curry
+                        </td>
+
+                        <td>
+                            1
+                        </td>
+
+                        <td>
+                            &#8377; 25
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>
+
+            <br>
+            <div class="ui divider"></div>
+        </div>
+    </div>
+{% endblock %}

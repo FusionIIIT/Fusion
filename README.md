@@ -7,8 +7,8 @@
 
 ## Requirements
 
-Python 3.5
-Django==1.11.4+
+Python 3.5  
+Django==1.11.4+  
 And additional requirements are in **requirements.txt**  
 
 ## How to run it?

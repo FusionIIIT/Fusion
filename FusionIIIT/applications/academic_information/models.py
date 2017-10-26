@@ -2,8 +2,6 @@ from django.db import models
 
 from applications.globals.models import ExtraInfo
 
-# Create your models here.
-
 
 class Constants:
     HOLIDAY_TYPE = (
@@ -24,11 +22,19 @@ class Constants:
         ('PhD', 'PhD')
     )
 
+    CATEGORY = (
+        ('GEN', 'General'),
+        ('SC', 'Scheduled Castes'),
+        ('ST', 'Scheduled Tribes'),
+        ('OBC', 'Other Backward Classes')
+    )
+
 
 class Student(models.Model):
     id = models.OneToOneField(ExtraInfo, on_delete=models.CASCADE, primary_key=True)
-    programme = models.CharField(max_length=10, choices=Constants.PROGRAMME),
+    programme = models.CharField(max_length=10, choices=Constants.PROGRAMME)
     cpi = models.FloatField(default=0)
+    category = models.CharField(max_length=10, choices=Constants.CATEGORY, null=False)
     father_name = models.CharField(max_length=40, default='')
     mother_name = models.CharField(max_length=40, default='')
     hall_no = models.IntegerField(default=1)
@@ -94,13 +100,10 @@ class Grades(models.Model):
     student_id = models.ForeignKey(Student)
     course_id = models.ForeignKey(Course)
     sem = models.IntegerField()
-    Grade = models.CharField(max_length=4)
+    grade = models.CharField(max_length=4)
 
     class Meta:
         db_table = 'Grades'
-
-    def __str__(self):
-        return self.grade_id
 
 
 class Student_attendance(models.Model):

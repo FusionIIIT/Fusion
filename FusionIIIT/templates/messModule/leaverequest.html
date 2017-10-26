@@ -1,0 +1,233 @@
+{% load static %}
+{% block leaveRequest %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="leave">
+            Apply for Leave
+        </a>
+
+        <a class="item" data-tab="leavestatus">
+            Status
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="leave">
+        <div class="ui vertical segment">
+
+            {% comment %}Form Tag starts here!{% endcomment %}
+            <form>
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                    <div class="ui header">
+                        Apply for Leave:
+                    </div>
+
+                    <br>
+
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Mess:</label>
+                            <input value="Central Mess #1" class="ui large input" readonly>
+                        </div>
+
+                        <div class="two fields">
+                            <div class="twelve wide field">
+                                <label>Leave Type:</label>
+                                <select class="ui search fluid dropdown">
+                                    {% comment %}
+                                        TODO: A backend code to stop sending of empty values to database (SELECT OPTION)
+                                    {% endcomment %}
+                                    <option value="">Select</option>
+                                    {% comment %}
+                                        TODO: A backend code to take a minimum of 3 or 4 days for casual leave.
+                                        TODO: /And also backend code to avoid previous date's leave.
+                                    {% endcomment %}
+                                    <option value="Cleanliness">Casual Leave</option>
+                                    <option value="Food">Vacation Leave</option>
+                                </select>
+                            </div>
+
+                            <div class="field">
+                                <label><br></label>
+                                <button class="ui primary fluid button" type="submit">
+                                    Submit
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Leave From:</label>
+                            <div class="ui calendar" id="rangestart">
+                                <div class="ui input left icon">
+                                    <i class="calendar icon"></i>
+                                    <input type="text" placeholder="From">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label>Leave To:</label>
+                            <div class="ui calendar" id="rangeend">
+                                <div class="ui input left icon">
+                                    <i class="calendar icon"></i>
+                                    <input type="text" placeholder="To">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    {% comment %}
+                        TODO: Make this Optional
+                    {% endcomment %}
+                    <div class="field">
+                        <label>Purpose:</label>
+                        <textarea rows="2"></textarea>
+                    </div>
+
+                </div>
+            </form>
+            {% comment %}Form Tag ends here!{% endcomment %}
+
+
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="leavestatus">
+
+        <div class="ui vertical segment" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                
+            <br>
+
+            <div class="content">
+                <div class="description">
+
+                    <table class="ui very basic collapsing celled large sortable table"
+                           style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                        <thead>
+                        <tr>
+                            <th>
+                                Student
+                            </th>
+
+                            <th>
+                                Type
+                            </th>
+
+                            <th>
+                                From
+                            </th>
+
+                            <th>
+                                To
+                            </th>
+
+                            <th>
+                                Duration
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        <tr>
+                            <td>
+                                <h4 class="ui image header">
+                                    <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                                    <div class="content">
+                                        Zlatan Ibrahimovic
+                                        <div class="sub header">
+                                            King Of Sweden
+                                        </div>
+                                    </div>
+                                </h4>
+                            </td>
+
+                            <td>
+                                Vacation
+                            </td>
+
+                            <td>
+                                14 Oct'17
+                            </td>
+
+                            <td>
+                                22 Oct'17
+                            </td>
+
+                            <td>
+                                1
+                            </td>
+
+                            <td>
+                                <i class="large green checkmark icon"></i>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                <h4 class="ui image header">
+                                    <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                                    <div class="content">
+                                        Zlatan Ibrahimovic
+                                        <div class="sub header">
+                                            God Of Manchester
+                                        </div>
+                                    </div>
+                                </h4>
+                            </td>
+
+                            <td>
+                                Casual
+                            </td>
+
+                            <td>
+                                23 Oct'17
+                            </td>
+
+                            <td>
+                                28 Oct'17
+                            </td>
+
+                            <td>
+                                1
+                            </td>
+
+                            <td>
+                                <i class="large green checkmark icon"></i>
+                            </td>
+                        </tr>
+
+                        </tbody>
+                    </table>
+                    <br>
+                </div>
+            </div>
+        </div>
+
+        <br>
+
+        <div class="extra content">
+            <div class="" style="text-align: center;">
+                <i class="large green checkmark icon"></i> : Approved &ensp;&ensp;&ensp;&ensp;&ensp;
+                <i class="large orange warning icon"></i> : Pending &ensp;&ensp;&ensp;&ensp;&ensp;
+                <i class="large red x icon"></i> : Declined
+            </div>
+        </div>
+
+    </div>
+
+{%  endblock %}
