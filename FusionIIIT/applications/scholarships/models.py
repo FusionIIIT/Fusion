@@ -1,12 +1,8 @@
 import datetime
-# Create your models here.
+
 from django.db import models
 
 from applications.academic_information.models import Student
-from applications.globals.models import ExtraInfo
-
-
-# Create your models here
 
 
 class Constants:
@@ -91,15 +87,15 @@ class Mcm(models.Model):
     sister_occupation = models.TextField(max_length=100)
     income_father = models.IntegerField(default=0)
     income_mother = models.IntegerField(default=0)
-    father_occ_choice = models.CharField(max_length=10, choices=Constants.FATHER_OCC_CHOICES, default='pensioners')
+    father_occ_choice = models.CharField(max_length=10, choices=Constants.FATHER_OCC_CHOICES)
     father_occ = models.TextField(max_length=100)
-    mother_occ_choice = models.CharField(max_length=10, choices=Constants.MOTHER_OCC_CHOICES, default='EMPLOYED')
+    mother_occ_choice = models.CharField(max_length=10, choices=Constants.MOTHER_OCC_CHOICES)
     mother_occ = models.TextField(max_length=100)
     four_wheeler = models.IntegerField(default=0)
     four_wheeler_des = models.TextField(max_length=1000, null=True)
     two_wheeler = models.IntegerField(default=0)
     two_wheeler_des = models.TextField(max_length=1000, null=True)
-    house_type = models.CharField(max_length=10, choices=Constants.HOUSE_TYPE_CHOICES, default='RENTED')
+    house_type = models.CharField(max_length=10, choices=Constants.HOUSE_TYPE_CHOICES)
     house_area = models.IntegerField(default=0)
     school_10 = models.CharField(max_length=250)
     school_10_fee = models.IntegerField(default=0)
@@ -107,7 +103,7 @@ class Mcm(models.Model):
     school_12_fee = models.IntegerField(default=0)
     father_declaration = models.FileField(null=True, blank=True)
     affidavit = models.FileField(null=True, blank=True)
-    status = models.CharField(max_length=10, choices=Constants.STATUS_CHOICES, default='COMPLETE')
+    status = models.CharField(max_length=10, choices=Constants.STATUS_CHOICES)
     status_check = models.BooleanField(default=False)
 
     class Meta:
@@ -156,7 +152,7 @@ class Financial_assistance(models.Model):
 
 class Common_info(models.Model):
     police_station = models.TextField(max_length=150)
-    railway_station= models.TextField(max_length=150)
+    railway_station = models.TextField(max_length=150)
     correspondence_address = models.TextField(max_length=150)
     justification_description = models.TextField(max_length=1000)
     financial_assistance_id = models.ForeignKey(Financial_assistance)
@@ -182,7 +178,7 @@ class Proficiency_dm(models.Model):
     common_info_id = models.ForeignKey(Common_info, on_delete=models.CASCADE)
     report_file = models.FileField(null=True, blank=True)
     title_name = models.CharField(max_length=30)
-    description = models.TextField(max_length = 3500)
+    description = models.TextField(max_length=3500)
     ece_topic_description = models.TextField(max_length=1000)
     mech_topic_description = models.TextField(max_length=1000)
     cse_topic_description = models.TextField(max_length=1000)
@@ -201,20 +197,20 @@ class Proficiency_dm(models.Model):
 
 
 class Director_gold(models.Model):
-    common_info_id = models.ForeignKey(Common_info ,on_delete=models.CASCADE)
+    common_info_id = models.ForeignKey(Common_info, on_delete=models.CASCADE)
     academic_achievements = models.TextField(max_length=5000, default='Academic achhievements')
-    sta_in_desc = models.TextField(max_length=5000, default='Science and Technology Acheivements inside IIITDMJ')
-    sta_out_desc = models.TextField(max_length=5000, default='Science and Technology Acheivements outside IIITDMJ')
-    cultural_in_desc = models.TextField(max_length=5000, default='Cultural Achievements inside IIITdmj')
-    cultural_out_desc = models.TextField(max_length=5000, default='Cultural Acheivements outside IIITDMJ')
-    games_in_desc = models.TextField(max_length=5000, default='Games Acheivements inside IIITDMJ')
-    games_out_desc = models.TextField(max_length=5000, default='Games Acheivements outside IIITDMJ')
+    sta_in_desc = models.TextField(max_length=5000, default='Technical Acheivements ins IIITDMJ')
+    sta_out_desc = models.TextField(max_length=5000, default='Technical Acheivements outs IIITDMJ')
+    cul_in_desc = models.TextField(max_length=5000, default='Cultural Achievements ins IIITDMJ')
+    cul_out_desc = models.TextField(max_length=5000, default='Cultural Acheivements outs IIITDMJ')
+    games_in_desc = models.TextField(max_length=5000, default='Games Acheivements ins IIITDMJ')
+    games_out_desc = models.TextField(max_length=5000, default='Games Acheivements outs IIITDMJ')
     social_service = models.TextField(max_length=5000, default='Social Services')
     corporate_service = models.TextField(max_length=5000, default='Corporate Services')
     hall_activity_desc = models.TextField(max_length=5000, default='Hall Related Activities')
     inst_activity_desc = models.TextField(max_length=5000, default='Institute Related Activities')
     gymkhana_desc = models.TextField(max_length=5000, default='Gymkhana Activities')
-    counselling_service_desc = models.TextField(max_length=5000, default='counselling service description')
+    coun_service_desc = models.TextField(max_length=5000, default='counselling service description')
     other_activity_desc = models.TextField(max_length=5000)
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     award_id = models.ForeignKey(Award_and_scholarship, on_delete=models.CASCADE)
@@ -224,10 +220,10 @@ class Director_gold(models.Model):
     class Meta:
         db_table = 'Director_gold'
 
+
 class Group_student(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
-    Proficiency_dm_ug_id = models.ForeignKey(Proficiency_dm, on_delete=models.CASCADE)
+    proficiency_dm_id = models.ForeignKey(Proficiency_dm, on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'Group_student'
-
