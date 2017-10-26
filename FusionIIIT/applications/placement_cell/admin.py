@@ -125,4 +125,3 @@ admin.site.register(StudentRecord, StudentRecordAdmin)
 admin.site.register(ChairmanVisit, ChairmanVisitAdmin)
 admin.site.register(ContactCompany, ContactCompanyAdmin)
 admin.site.register(PlacementSchedule, PlacementScheduleAdmin)
-
