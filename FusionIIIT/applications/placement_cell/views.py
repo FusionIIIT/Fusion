@@ -4,7 +4,7 @@ from io import BytesIO
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db.models import Q
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import get_template
 
@@ -38,11 +38,11 @@ def profile(request, username):
             stream = form.cleaned_data['stream']
             sdate = form.cleaned_data['sdate']
             edate = form.cleaned_data['edate']
-            education_obj = Education.objects.create(unique_id = student, degree = degree,
-                                                     grade = grade, institute = institute,
-                                                     stream = stream, sdate = sdate, edate = edate)
+            education_obj = Education.objects.create(unique_id=student, degree=degree,
+                                                     grade=grade, institute=institute,
+                                                     stream=stream, sdate=sdate, edate=edate)
             education_obj.save()
-            return render(request, "placementModule/placement.html", context)
+            return render(request, "placementModule/placement.html")
     else:
         form = AddEducation(initial={})
         user = get_object_or_404(User, Q(username=username))
@@ -87,12 +87,10 @@ def cv(request, username):
     achievement = Achievement.objects.filter(Q(unique_id=student))
     publication = Publication.objects.filter(Q(unique_id=student))
     return render_to_pdf('placementModule/cv.html', {'pagesize': 'A4', 'user': user,
-                                                            'profile': profile,
-                                                            'student': studentplacement,
-                                                            'skills': skills,
-                                                            'educations': education,
-                                                            'courses': course,
-                                                            'experiences': experience,
-                                                            'projects': project,
-                                                            'achievements': achievement,
-                                                            'publications': publication})
+                                                     'profile': profile,
+                                                     'student': studentplacement,
+                                                     'skills': skills, 'educations': education,
+                                                     'courses': course, 'experiences': experience,
+                                                     'projects': project,
+                                                     'achievements': achievement,
+                                                     'publications': publication})
