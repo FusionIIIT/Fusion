@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CV
+    </title>
+
+    {% load staticfiles %}
+    <link rel="stylesheet" type="text/css" href="{% static 'globals/semantic-ui/components/reset.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'globals/semantic-ui/components/icon.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'globals/css/semantic.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'globals/css/mediaquery.css' %}">
+
+</head>
+<body>
+
+  <div class="ui grid">
+  <div class="two wide column"></div>
+    <div class="twelve wide column" id=maingrid>
+
+      <div class="ui text container">
+          <h1 class="ui dividing header">{{ user.first_name }} {{ user.last_name }}</h1>
+          <p>Age: <b>{{ profile.age }}</b></p>
+          <p><b>{{ profile.phone_no }}, {{ user.email }}</b></p>
+          <p>{{ profile.about_me }}</p>
+      </div>
+
+          {% if educations %}
+          <div class="ui text container">
+              <h3 class="ui dividing header">Education</h3>
+
+          <table class="table">
+              <thead>
+              <tr>
+                  <th>Institute Name</th>
+                  <th>Degree</th>
+                  <th>Stream</th>
+                  <th>Start Date</th>
+                  <th>End Date</th>
+                  <th>Grade</th>
+              </tr>
+              </thead>
+              <tbody>
+              {% for education in educations %}
+              <tr>
+                  <td>
+                      {{ education.institute }}
+                  </td>
+
+                  <td>
+                      {{ education.degree }}
+                  </td>
+
+                  <td>
+                      {{ education.stream }}
+                  </td>
+
+                  <td>
+                      {{ education.sdate }}
+                  </td>
+
+                  <td>
+                      {{ education.edate }}
+                  </td>
+
+                  <td>
+                      {{ education.grade }}
+                  </td>
+              </tr>
+              {% endfor %}
+              </tbody>
+          </table>
+
+          </div>
+          {% endif %}
+
+      {% if courses %}
+      <div class="ui text container">
+          <h3 class="ui dividing header">Courses</h3>
+      </div>
+
+      <table class="table">
+          <thead>
+          <tr>
+              <th class="six wide">Institute Name</th>
+              <th>License No</th>
+              <th>Start Date</th>
+              <th>End Date</th>
+              <th>Description</th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for course in courses %}
+          <tr>
+              <td>
+                  {{ course.course_name }}
+              </td>
+
+              <td>
+                  {{ course.license_no }}
+              </td>
+
+              <td>
+                  {{ course.sdate }}
+              </td>
+
+              <td>
+                  {{ course.edate }}
+              </td>
+
+              <td>
+                  {{ course.description }}
+              </td>
+          </tr>
+          {% endfor %}
+          </tbody>
+      </table>
+      {% endif %}
+
+      {% if skills %}
+      <div class="ui text container">
+          <h3 class="ui dividing header">Skills and Technologies</h3>
+      </div>
+      <div class="ui middle aligned divided list">
+             {% for skill in skills %}
+                    <div class="item">
+
+                    <li>{{ skill.skill_id.skill }}, {{ skill.skill_rating }}% &nbsp</li>
+
+                    </div>
+                    
+            {% endfor %}
+      </div>
+      {% endif %}
+
+      <div class="ui text container">
+          <h3 class="ui dividing header">Work Experience</h3>
+      </div>
+
+      {% if experiences %}
+      <p><b>Internships</b></p>
+      <table class="table">
+          <thead>
+          <tr>
+              <th class="four wide">Organisation Name</th>
+              <th>Title</th>
+              <th>Status</th>
+              <th class="two wide">Start Date</th>
+              <th class="two wide">End Date</th>
+              <th class="two wide">Location</th>
+              <th class="three wide">Description</th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for experience in experiences %}
+          <tr>
+              <td>
+                  {{ experience.company }}
+              </td>
+
+              <td>
+                  {{ experience.title }}
+              </td>
+
+              <td>
+                  {{ experience.status }}
+              </td>
+
+              <td>
+                  {{ experience.sdate }}
+              </td>
+
+              <td>
+                  {{ experience.edate }}
+              </td>
+
+              <td>
+                  {{ experience.location }}
+              </td>
+
+              <td>
+                  {{ experience.description }}
+              </td>
+          </tr>
+          {% endfor %}
+          </tbody>
+      </table>
+      {% endif %}
+
+      {% if projects %}
+      <p><b>Projects</b></p>
+
+      <table class="table">
+          <thead>
+          <tr>
+              <th class="two wide">Project Name</th>
+              <th>Status</th>
+              <th>Start Date</th>
+              <th>End Date</th>
+              <th class="three wide">Description</th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for project in projects %}
+          <tr>
+              <td>
+                  {{ project.project_name }}
+              </td>
+
+              <td>
+                  {{ project.project_status }}
+              </td>
+
+              <td>
+                  {{ project.sdate }}
+              </td>
+
+              <td>
+                  {{ project.edate }}
+              </td>
+
+              <td>
+                  {{ project.summary }}
+              </td>
+
+          </tr>
+          {% endfor %}
+          </tbody>
+      </table>
+      {% endif %}
+
+      {% if achievements %}
+      <div class="ui text container">
+          <h3 class="ui dividing header">Achievements</h3>
+      </div>
+
+      <table class="table">
+          <thead>
+          <tr>
+              <th class="six wide">Achievement Name</th>
+              <th>Type</th>
+              <th>Issuer</th>
+              <th>Date</th>
+              <th class="four wide">Description</th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for achievement in achievements %}
+          <tr>
+              <td>
+                  {{ achievement.achievement }}
+              </td>
+
+              <td>
+                  {{ achievement.achievement_type }}
+              </td>
+
+              <td>
+                  {{ achievement.issuer }}
+              </td>
+
+              <td>
+                  {{ achievement.date_earned }}
+              </td>
+
+              <td>
+                  {{ achievement.description }}
+              </td>
+          </tr>
+          {% endfor %}
+          </tbody>
+      </table>
+      {% endif %}
+
+      {% if publications %}
+      <div class="ui text container">
+          <h3 class="ui dividing header">Publication</h3>
+      </div>
+
+      <table class="table">
+          <thead>
+          <tr>
+              <th class="six wide">Publication Title</th>
+              <th>Publisher</th>
+              <th>Description</th>
+              <th class="five wide">Date Published</th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for publication in publications %}
+          <tr>
+              <td>
+                  {{ publication.publication_title }}
+              </td>
+
+              <td>
+                  {{ publication.publisher }}
+              </td>
+
+              <td>
+                  {{ publication.description }}
+              </td>
+
+              <td>
+                  {{ publication.publication_date }}
+              </td>
+          </tr>
+          {% endfor %}
+          </tbody>
+      </table>
+      {% endif %}
+
+
+      {% if patents %}
+      <div class="ui text container">
+          <h3 class="ui dividing header">Patents</h3>
+      </div>
+
+      <table class="table">
+          <thead>
+          <tr>
+              <th class="five wide">Patent Name</th>
+              <th class="five wide">Patent Office</th>
+              <th>Description</th>
+              <th class="five wide">Date Published</th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for patent in patents %}
+          <tr>
+              <td>
+                  {{ patent.patent_name }}
+              </td>
+
+              <td>
+                  {{ patent.patent_office }}
+              </td>
+
+              <td>
+                  {{ patent.description }}
+              </td>
+
+              <td>
+                  {{ patent.patent_date }}
+              </td>
+          </tr>
+          {% endfor %}
+          </tbody>
+      </table>
+      {% endif %}
+
+    </div>
+
+</div>
+
+<!--style type="text/css">
+/* Some basic formatting */
+.container {
+  padding: 2em 0em;
+}
+.ui.dividing.header,
+.first {
+  margin-top: 5em;
+}
+.ui.dividing.header:first-child {
+  margin-top: 0em;
+}
+h1,
+h3 {
+  margin-top: 7em;
+}
+/* Shows content box (not negative margins) */
+.grid {
+  position: relative;
+  margin-top: 7em;
+}
+#maingrid{
+  background:white;
+  border: 0.5px solid #d3d3d3;
+  border-radius: 2px;
+  box-shadow: 0px 0px 10px #888888;
+}
+</style-->
+    
+<style>
+
+table {border: 0.1px solid #3d3d3d;}
+
+th,
+td {
+    text-align: center;
+}
+
+</style>
+</body>
+
+</html>
