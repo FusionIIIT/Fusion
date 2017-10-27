@@ -12,6 +12,19 @@
     <link rel="stylesheet" type="text/css" href="{% static 'globals/css/semantic.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'globals/css/mediaquery.css' %}">
 
+    <style type="text/css">
+            @page {
+                size: {{ pagesize }};
+                margin: 1cm;
+                @frame footer {
+                    -pdf-frame-content: footerContent;
+                    bottom: 0cm;
+                    margin-left: 9cm;
+                    margin-right: 9cm;
+                    height: 1cm;
+                }
+            }
+        </style>
     {% block css %}
     {% endblock %}
 
@@ -24,6 +37,12 @@
     {% block navBar %}
     {% endblock %}
 {% endblock %}
+
+<div id="footerContent">
+           {%block page_foot%}
+               Page <pdf:pagenumber>
+           {%endblock%}
+       </div>
 
 </body>
 
