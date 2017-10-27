@@ -13,9 +13,9 @@
 
    
     
-    {% if details.check_pre_register %}
-        You have already registered
-    {% else %}
+            {% if details.check_pre_register %}
+                You have already registered
+            {% else %}
             <table class="ui very basic collapsing celled sortable table"
                    style="padding-left: 2.5%;
                                                           padding-right: 2.5%;
@@ -93,9 +93,10 @@
                 </div>
             </div>
             </form>
+             {% endif %}
         </div>
     </div>
 
-    {% endif %}
+   
 
 {% endblock %}

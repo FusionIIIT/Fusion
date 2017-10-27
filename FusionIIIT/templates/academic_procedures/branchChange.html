@@ -1,0 +1,50 @@
+{% load static %}
+{% block changebranch %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="complainthistory">
+            Branch Change
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="complainthistory">
+    <div class="ui vertical segment">
+
+            {% if change_branch.label_for_change %}
+            <form method="post" action="/academic-procedures/brach-change-request/">
+            {% csrf_token %}
+                <h3>Your CPI meets the minimum requirement for branch change</h3>
+                <h4>Choose the branch</h4> 
+                {% for i in change_branch.branches %}
+                   <div class="ui form">
+                      <div class="grouped fields">
+                        <div class="field">
+                          <div class="ui radio checkbox">
+                            <input name="change" checked="checked" type="radio" required="required" value="{{ i }}">
+                            
+                            <label>{{ i }}</label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                {% endfor %}
+                <input type="text" name="user" value='{{ details.current_user }}' hidden="true">
+           
+
+            <br>
+            <div class="ui divider"></div>
+
+            <div class="extra content">
+                <div class="" style="text-align: center;">
+                    <button class="ui primary button">Change Branch</button>
+                </div>
+            </div>
+            </form>
+             {% else %}
+                You don't meet the minimum criteria for branch change
+            {% endif %}
+        </div>
+    </div>
+
+{% endblock %}

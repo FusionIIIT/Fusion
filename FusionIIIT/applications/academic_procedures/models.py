@@ -3,7 +3,7 @@ import datetime
 from django.db import models
 
 from applications.academic_information.models import Course, Student
-from applications.globals.models import ExtraInfo, Faculty
+from applications.globals.models import DepartmentInfo, ExtraInfo, Faculty
 
 # Create your models here.
 
@@ -56,3 +56,13 @@ class FinalRegistrations(models.Model):
 
     def __str__(self):
         return str(self.id)
+
+
+class BranchChange(models.Model):
+    c_id = models.AutoField(primary_key=True)
+    branches = models.ForeignKey(DepartmentInfo, on_delete=models.CASCADE)
+    user = models.ForeignKey(Student, on_delete=models.CASCADE)
+    applied_date = models.DateField(default=datetime.datetime.now())
+
+    def __str__(self):
+        return str(self.user) + " " + str(self.branches)
