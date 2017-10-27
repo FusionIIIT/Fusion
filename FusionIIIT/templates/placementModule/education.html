@@ -14,34 +14,35 @@
 
         <div class="ui vertical segment">
             {% comment %}Form Tag starts here!{% endcomment %}
-            <form>
+            <form method="post" class="ui form" role="form">
                 {% comment %}The add a new education Accordian starts here!{% endcomment %}
                 <div class="ui active accordion field">
                     <div class="title">
                         <i class="icon dropdown"></i>
                         Add a new Educational Qualification!
                     </div>
-
+                    {{ form.non_field_errors }}
                     <div class="active content">
                         <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                          {% csrf_token %}
                             <div class="two fields">
                                 <div class="field">
-                                    <label>
+                                    {{ form.degree.errors }}
+                                    <label for="{{ form.degree.id_for_label }}">
                                         Degree
                                     </label>
-
                                     <div class="ui large input">
-                                        <input>
+                                      {{ form.degree }}
                                     </div>
                                 </div>
 
                                 <div class="field">
-                                    <label>
+                                  {{ form.stream.errors }}
+                                    <label for="{{ form.stream.id_for_label }}">
                                         Stream
                                     </label>
-
                                     <div class="ui large input">
-                                        <input>
+                                      {{ form.stream }}
                                     </div>
                                 </div>
                             </div>
@@ -49,21 +50,25 @@
                             {% comment %}The start and end date input{% endcomment %}
                             <div class="two fields">
                                 <div class="field">
-                                    <label>Start Date:</label>
+                                {{ form.sdate.errors }}
+                                    <label for="{{ form.sdate.id_for_label }}">
+                                    Start Date:</label>
                                     <div class="ui calendar" id="rangestart">
                                         <div class="ui input left icon">
                                             <i class="calendar icon"></i>
-                                            <input type="text" placeholder="From">
+                                            {{ form.sdate }}
                                         </div>
                                     </div>
                                 </div>
 
                                 <div class="field">
-                                    <label>End Date:</label>
+                                {{ form.edate.errors }}
+                                    <label for="{{ form.edate.id_for_label }}">
+                                    End Date:</label>
                                     <div class="ui calendar" id="rangeend">
                                         <div class="ui input left icon">
                                             <i class="calendar icon"></i>
-                                            <input type="text" placeholder="To">
+                                            {{ form.edate }}
                                         </div>
                                     </div>
                                 </div>
@@ -71,19 +76,20 @@
 
                             <div class="two fields">
                                 <div class="twelve wide field">
-                                    <label>Institute Name:</label>
+                                {{ form.institute.errors }}
+                                    <label  for="{{ form.institute.id_for_label }}">
+                                    Institute Name:</label>
                                     <div class="ui fluid large input">
-                                        {% comment %}The Institute Name input!{% endcomment %}
-                                        <input>
+                                    {{ form.institute }}
                                     </div>
                                 </div>
                                 <div class="field">
-                                    <label>
+                                {{ form.grade.errors }}
+                                    <label for="{{ form.grade.id_for_label }}">
                                         Grade
                                     </label>
-
                                     <div class="ui large input">
-                                        <input>
+                                      {{ form.grade }}
                                     </div>
                                 </div>
 
