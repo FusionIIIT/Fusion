@@ -92,22 +92,6 @@ def get_user_branch(user_details):
     return user_details.department.name
 
 
-@login_required(login_url='/accounts/login')
-def add_course(request):
-    current_user = get_object_or_404(User, username=request.user.username)
-    user_details = ExtraInfo.objects.all().filter(user=current_user).first()
-    # Fuction Call to get the current semster of the Student
-    user_sem = get_user_semester(user_details.id)
-    user_sem = 3
-    get_courses = Course.objects.all().filter(sem=user_sem)
-    print(get_courses, user_sem)
-    details = {'current_user': current_user, 'user_sem': user_sem}
-    return render(
-        request,
-        '../templates/academic_procedures/addCourse.html',
-        {'details': details, 'courses_list': get_courses})
-
-
 def register(request):
     if request.method == 'POST':
         try:
