@@ -44,6 +44,56 @@
                     Room Status
                     <i class="right floated chevron right icon"></i>
                 </a>
+
+                <a class="item" data-tab="third">
+                    Add Item
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="fourth">
+                    Book a Room
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="fifth">
+                    Bookings
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="sixth">
+                    Check Availability
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="seventh">
+                    Cards
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="eight">
+                    View Inventory
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="ninth">
+                    Update Inventory
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="tenth">
+                    Checkin
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="eleventh">
+                    Checkout
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="twelveth">
+                    Pending Requests
+                    <i class="right floated chevron right icon"></i>
+                </a>
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
 
@@ -66,11 +116,98 @@
             </div>
             {% comment %}The Personal Details end here!{% endcomment %}
 
-
             {% comment %}The Publications starts here!{% endcomment %}
             <div class="ui tab segment" data-tab="second">
                 {% block roomstatus %}
                     {% include 'vhModule/roomstatus.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The Publications ends here!{% endcomment %}
+
+            {% comment %}The Publications starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="third">
+                {% block additem %}
+                    {% include 'vhModule/additem.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The Publications ends here!{% endcomment %}
+
+            {% comment %}The Publications starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="fourth">
+                {% block bookaroom %}
+                    {% include 'vhModule/bookaroom.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The Publications ends here!{% endcomment %}
+
+            {% comment %}The Publications starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="fifth">
+                {% block bookings %}
+                    {% include 'vhModule/bookings.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The Publications ends here!{% endcomment %}
+
+            {% comment %}The Publications starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="sixth">
+                {% block checkavailability %}
+                    {% comment %}
+                        TODO: what is this page for?
+                    {% endcomment %}
+                    {% include 'vhModule/checkavailability.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The Publications ends here!{% endcomment %}
+
+            {% comment %}The Publications starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="seventh">
+                {% block cards %}
+                    {% comment %}
+                        TODO: WTF?
+                    {% endcomment %}
+                    {% include 'vhModule/cards.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The Publications ends here!{% endcomment %}
+
+            {% comment %}The Publications starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="eight">
+                {% block viewinventory %}
+                    {% include 'vhModule/viewinventory.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The Publications ends here!{% endcomment %}
+
+            {% comment %}The Publications starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="ninth">
+                {% block updateinventory %}
+                    {% include 'vhModule/updateinventory.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The Publications ends here!{% endcomment %}
+
+
+            {% comment %}The Publications starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="tenth">
+                {% block checkin %}
+                    {% include 'vhModule/checkin.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The Publications ends here!{% endcomment %}
+
+
+            {% comment %}The Publications starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="eleventh">
+                {% block checkout %}
+                    {% include 'vhModule/checkout.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The Publications ends here!{% endcomment %}
+
+            {% comment %}The Publications starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="twelveth">
+                {% block pendingreq %}
+                    {% include 'vhModule/pendingreq.html' %}
                 {% endblock %}
             </div>
             {% comment %}The Publications ends here!{% endcomment %}

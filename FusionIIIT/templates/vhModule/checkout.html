@@ -1,0 +1,51 @@
+{% load static %}
+
+{% block checkout %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="checkout">
+            Checkout
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="checkout">
+        <div class="ui vertical stripe team segment"
+             style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+
+            <form class="ui large form">
+                <div id="checkout">
+                    <div class="field">
+                        <div class="two fields">
+                            <div class="field">
+                                <label>Name </label>
+                                <input value="Zlatan Ibrahimovic" type="text" readonly>
+                            </div>
+
+                            <div class="field">
+                                <label>email</label>
+                                <input value="gmail@zlatan.com" type="email" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="three fields">
+                        <div class="twelve wide field"></div>
+                        <div class="two wide field">
+                            <label><br></label>
+                            <div class="ui large right floated button">
+                                Settle
+                            </div>
+                        </div>
+                        <div class="two wide field">
+                            <label><br></label>
+                            <div class="ui large center floated primary button">
+                                Print
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+
