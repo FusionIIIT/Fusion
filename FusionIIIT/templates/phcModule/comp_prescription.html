@@ -1,0 +1,112 @@
+{% load static %}
+
+{% block comp_prescription %}
+{% comment %}the compounder prescription tab starts here {% endcomment %}
+<div class="ui container">
+    <div class="ui vertical stripe team segment"
+         style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+
+        <div class="ui header">
+            prescription Form:
+        </div>
+
+        <div class="ui divider"></div>
+        <br>
+
+        <form class="ui large form">
+
+
+            <div id="comp_prescription">
+                <div class="fields">
+                 <div class="eleven wide field">
+                                    <label> Roll Number:</label>
+                                    <div class="ui fluid large input">
+                                         <input name="rollno" type="text">
+                                        <input>
+                                    </div>
+                                </div>
+            </div>
+                <div>
+                    <div class="fields">
+                        {% comment %}disease dropdown start here!{% endcomment %}
+                        <div class="eight wide field">
+                            <label>Diesease(s):</label>
+                            <div class="ui fluid search selection dropdown">
+                                <input name="Select" type="hidden">
+                                <i class="dropdown icon"></i>
+
+                                <div class="default text">Select</div>
+
+                                <div class="menu">
+                                    <div class="item" data-value="d1">
+                                      Headache
+                                    </div>
+
+                                    <div class="item" data-value="d2">
+                                       stomach pain
+                                    </div>
+                                    <div class="item" data-value="d3">
+                                        Viral Fever
+                                    </div>
+
+                                    <div class="item" data-value="d4">
+                                        Typhoid
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                        {% comment %}diesease dropdown ends here!{% endcomment %}
+                        {% comment %}medicine dropdown start here!{% endcomment %}
+                        <div class="eight wide field">
+                            <label>medicine(s):</label>
+                            <div class="ui fluid search selection dropdown">
+                                <input name="Select" type="hidden">
+                                <i class="dropdown icon"></i>
+
+                                <div class="default text">Select</div>
+
+                                <div class="menu">
+                                    <div class="item" data-value="m1">
+                                        paracetmol
+                                    </div>
+
+                                    <div class="item" data-value="m2">
+                                        Dolo 360
+                                    </div>
+                                    <div class="item" data-value="m3">
+                                       ORS
+                                    </div>
+
+                                    <div class="item" data-value="m4">
+                                        Vicks
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                        {% comment %}medicine dropdown ends here!{% endcomment %}
+                    </div>
+                </div>
+                <div class="fields">
+                    <div class="sixteen wide field" id="leaveAddress" style="display: none;">
+                        <label>Suggestions:</label>
+                        <textarea class="ui textarea" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="fields">
+                 <div class="four wide field">
+                        <label><br></label>
+                        <div class="ui large fluid primary button">
+                            Submit
+                        </div>
+                    </div>
+            </div>
+            </div>
+
+        </form>
+    </div>
+</div>
+{% comment %}the compounder prescription tab ends here {% endcomment %}
+{% endblock %}

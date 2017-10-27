@@ -1,0 +1,22 @@
+{% load static %}
+
+{% block feedback %}
+{% comment %}the feedback form starts here {% endcomment %}
+<div class="ui fluid card">
+    <form class="ui form">
+    <div class="field">
+                 <label> reason</label>
+                      <div class="ui fluid input">
+                        <textarea class="ui textarea" rows="6"></textarea>
+                      </div>
+             </div>
+    <div class="four wide field">
+                    <label><br></label>
+                    <div class="ui large fluid primary button">
+                        Submit
+                    </div>
+                </div>
+    </form>
+</div>
+{% comment %}the feedback form ends here {% endcomment %}
+{% endblock %}

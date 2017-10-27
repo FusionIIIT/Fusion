@@ -1,0 +1,140 @@
+{% load static %}
+{% block appointment %}
+{% comment %}the main tab starts here {% endcomment %}
+<div class="ui pointing secondary menu">
+        <a class="active item" data-tab="doctor">
+            Doctor apppointment
+        </a>
+
+        <a class="item" data-tab="ambulance">
+            Ambulance Appointment
+        </a>
+</div>
+
+{% comment %}the doctor appointment tab starts here {% endcomment %}
+    <div class="ui active tab segment" data-tab="doctor">
+        <form class="ui form">
+             <div class="field">
+                <div class="two fields">
+                    <div class="field">
+                        <label>Name</label>
+                        <input placeholder="Name" type="text">
+                    </div>
+
+                    <div class="field">
+                        <label>Phone</label>
+                        <input placeholder="Phone number" type="number">
+                    </div>
+                </div>
+             </div>
+             <div class="field">
+                <div class="two fields">
+                    <div class="field">
+                        <label>Roll No</label>
+                        <input placeholder="roll no" type="number">
+                    </div>
+
+                    <div class="field">
+                        <label>Date Of Appointment</label>
+                         <div class="ui calendar" id="rangestart">
+                            <div class="ui input left icon">
+                                <i class="calendar icon"></i>
+                                <input type="text" placeholder="date">
+                            </div>
+                    </div>
+                </div>
+            </div>
+            <div class="content fields">
+                        <div class="field">
+                            <label> Symptom(s)</label>
+                            <div class="ui fluid input">
+                        <textarea class="ui textarea" rows="2"></textarea>
+                    </div>
+                        </div>
+
+                        <div class="field" style="padding-top: 8px;">
+                            <label>Doctor</label>
+                            <input placeholder="Conference Details" type="text">
+                        </div>
+                    </div>
+             <br>
+
+                <div class="four wide field">
+                    <label><br></label>
+                    <div class="ui large fluid primary button">
+                        Submit
+                    </div>
+                </div>
+
+        </form>
+        <br>
+    </div>
+{% comment %}the doctor appointment tab ends here {% endcomment %}
+
+{% comment %}the ambulance appointment tab starts here {% endcomment %}
+<div class="ui  tab segment" data-tab="doctor">
+        <form class="ui form">
+             <div class="field">
+                <div class="two fields">
+                    <div class="field">
+                        <label>Name:</label>
+                        <input placeholder="Name" type="text">
+                    </div>
+
+                    <div class="field">
+                        <label>Phone:</label>
+                        <input placeholder="Phone number" type="number">
+                    </div>
+                </div>
+             </div>
+             <div class="field">
+                 <label> reason</label>
+                      <div class="ui fluid input">
+                        <textarea class="ui textarea" rows="2"></textarea>
+                      </div>
+             </div>
+               <div class="two fields">
+                    <div class="field">
+                        <label>From Date:</label>
+                        <div class="ui calendar" id="rangestart">
+                            <div class="ui input left icon">
+                                <i class="calendar icon"></i>
+                                <input type="text" placeholder="From">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label> To Date:</label>
+                        <div class="ui calendar" id="rangeend">
+                            <div class="ui input left icon">
+                                <i class="calendar icon"></i>
+                                <input type="text" placeholder="To">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <br>
+            <div class="inline fields">
+                <label>Timings</label>
+                        <div class="eight wide field">
+                             <label>From:</label>
+                                <input type="text" placeholder="First Name">
+                        </div>
+                        <div class="eight wide field">
+                            <label>To:</label>
+                            <input type="text" placeholder="Middle Name">
+                        </div>
+                        </div>
+
+                <div class="four wide field">
+                    <label><br></label>
+                    <div class="ui large fluid primary button">
+                        Submit
+                    </div>
+                </div>
+
+        </form>
+</div>
+{% comment %}the ambulance appointment tab ends here {% endcomment %}
+{% endblock %}

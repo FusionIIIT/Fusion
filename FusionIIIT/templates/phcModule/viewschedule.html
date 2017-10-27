@@ -1,0 +1,121 @@
+{% load static %}
+{% block viewschedule %}
+{% comment %}the main tab starts here {% endcomment %}
+<div class="ui pointing secondary menu">
+        <a class="active item" data-tab="doctor_1">
+            Doctor Schedule
+        </a>
+
+        <a class="item" data-tab="ambulance_1">
+            Ambulance Schedule
+        </a>
+</div>
+{% comment %}the doctor schedule tab starts here {% endcomment %}
+ <div class="ui active tab segment" data-tab="doctor_1">
+        <form class="ui form">
+            <table class="ui sortable celled table">
+  <thead>
+    <tr>
+      <th>  </th>
+      <th>9:00-10:00</th>
+      <th>10:00-11:00</th>
+        <th>11:00-12:00</th>
+      <th>12:00-1:00</th>
+      <th>2:30-3:00</th>
+        <th>4:00-5:00</th>
+      <th>5:00-6:00</th>
+      <th>6:00-7:00</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+        <td>MONDAY</td>
+        <td>DR.RAM</td>
+        <td>DR.RAHIM</td>
+        <td>DR.John</td>
+        <td>DR.HEENA</td>
+        <td>DR.KAMAL</td>
+        <td>DR.John</td>
+        <td>DR.SAHIT</td>
+
+    </tr>
+    <tr>
+      <td>TUESDAY</td>
+        <td>DR.RAM</td>
+        <td>DR.RAHIM</td>
+        <td>DR.John</td>
+        <td>DR.HEENA</td>
+        <td>DR.KAMAL</td>
+        <td>DR.John</td>
+        <td>DR.SAHIT</td>
+    </tr>
+    <tr>
+      <td>WEDNESDAY</td>
+        <td>DR.RAM</td>
+        <td>DR.RAHIM</td>
+        <td>DR.John</td>
+        <td>DR.HEENA</td>
+        <td>DR.KAMAL</td>
+        <td>DR.John</td>
+        <td>DR.SAHIT</td>
+    </tr>
+  <tr>
+      <td>THRUSDAY</td>
+        <td>DR.RAM</td>
+        <td>DR.RAHIM</td>
+        <td>DR.John</td>
+        <td>DR.HEENA</td>
+        <td>DR.KAMAL</td>
+        <td>DR.John</td>
+        <td>DR.SAHIT</td>
+    </tr>
+  <tr>
+      <td>FRIDAY</td>
+        <td>DR.RAM</td>
+        <td>DR.RAHIM</td>
+        <td>DR.John</td>
+        <td>DR.HEENA</td>
+        <td>DR.KAMAL</td>
+        <td>DR.John</td>
+        <td>DR.SAHIT</td>
+    </tr>
+  <tr>
+      <td>SATURDAY</td>
+        <td>DR.RAM</td>
+        <td>DR.RAHIM</td>
+        <td>DR.John</td>
+        <td>DR.HEENA</td>
+        <td>DR.KAMAL</td>
+        <td>DR.John</td>
+        <td>DR.SAHIT</td>
+    </tr>
+  <tr>
+      <td>SUNDAY</td>
+        <td>DR.RAM</td>
+        <td>DR.RAHIM</td>
+        <td>DR.John</td>
+        <td>DR.HEENA</td>
+        <td>DR.KAMAL</td>
+        <td>DR.John</td>
+        <td>DR.SAHIT</td>
+    </tr>
+  </tbody>
+  <tfoot>
+    <tr><th>3 People</th>
+    <th>2 Approved</th>
+    <th></th>
+  </tr></tfoot>
+</table>
+
+        </form>
+ </div>
+{% comment %}the doctor schedule tab ends here {% endcomment %}
+
+
+{% comment %}the ambulance schedule tab starts here {% endcomment %}
+<div class="ui active tab segment" data-tab="ambulance_1">
+        <form class="ui form">
+        </form>
+</div>
+{% comment %}the ambulance Schedule tab ends here {% endcomment %}
+{% endblock %}

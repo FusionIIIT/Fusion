@@ -1,0 +1,88 @@
+{% load static %}
+
+{% block personaldetails %}
+{% comment %}the prescription history  starts here {% endcomment %}
+<div class="ui fluid card">
+    <form class="ui form">
+        <div class="ui header">
+        Leave Status:
+    </div>
+
+    <div class="content">
+        <div class="description">
+
+            <table class="ui very basic collapsing celled large sortable table"
+                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                <thead>
+                <tr>
+                    <th>
+                        Prescription Number
+                    </th>
+
+                    <th>
+                        Date
+                    </th>
+
+                    <th>
+                        Doctor
+                    </th>
+
+                    <th>
+                       Disease
+                    </th>
+
+                </tr>
+                </thead>
+
+                <tbody>
+
+                {% for leave in leave_type %}
+
+                    <tr>
+                        <td>
+                            <h4 class="ui image header">
+                                <img src="{% static 'fusion/img/user.png' %}" class="ui mini rounded image">
+                                <div class="content">
+                                    {{ userFirstName }}
+                                    {{ userLastName }}
+                                    <div class="sub header">
+                                        {{ userDesignation }}
+                                    </div>
+                                </div>
+                            </h4>
+                        </td>
+
+                        <td>
+                            {{ leave }}
+                        </td>
+
+                        <td>
+                            22 Sept'17
+                        </td>
+
+                        <td>
+                            22 Sept'17
+                        </td>
+
+                        <td>
+                            1
+                        </td>
+
+                        <td>
+                            <i class="large green checkmark icon"></i>
+                        </td>
+                    </tr>
+
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    </form>
+</div>
+{% comment %}the prescription history  ends here {% endcomment %}
+{% endblock %}
