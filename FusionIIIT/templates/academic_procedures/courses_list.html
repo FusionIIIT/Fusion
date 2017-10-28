@@ -1,0 +1,101 @@
+{% load static %}
+{% block complainthistory %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="complainthistory">
+            Registered Courses for Sem {{ date.semflag }} {{ date.year }}
+
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="complainthistory">
+        <div class="ui vertical segment">
+          <B>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            Name = {{ dict2.name }}
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            Roll No = {{ dict2.roll_no }}
+          </B>
+            {% if details %}
+            <table class="ui very basic collapsing celled sortable table"
+                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                <thead>
+                <tr>
+                    <th>
+                        Reg ID#
+                    </th>
+
+                    <th>
+                        Course ID
+                    </th>
+
+                    <th>
+                        Course Name
+                    </th>
+
+                    <th>
+                        Credits
+                    </th>
+                    <th>
+                        Semester
+                    </th>
+                    <th>
+                        Drop Course
+                    </th>
+                </tr>
+                </thead>
+
+                <tbody>
+
+                    {% csrf_token %}
+                    {% for items in details %}
+                        <tr>
+                            <td>
+                                {{ items.rid }}
+                            </td>
+                            <td>
+                                {{ items.course_id }}
+                            </td>
+                            <td>
+                                {{ items.course_name }}
+                            </td>
+                            <td>
+                                {{ items.credits }}
+                             </td>
+                             <td>
+                                {{ items.sem }}
+                             </td>
+                             <td>
+                               <A href="/academic-procedures/acad_person/verifyCourse/drop/?id={{ items.reg_id|urlencode }}"
+                               class="ui blue label"> DROP </div>
+                             </td>
+                        </tr>
+                    {% endfor %}
+                </form>
+                </tbody>
+            </table>
+
+              <br>
+              {% else %}
+                <br>
+                  <br>  <br>  <br><CENTER>
+                  <B> NO RECORDS FOUND </B></center>
+              {% endif %}
+
+            <div class="ui divider"></div>
+
+
+        </div>
+    </div>
+
+{% endblock %}
