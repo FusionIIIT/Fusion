@@ -1,0 +1,154 @@
+{% extends 'fusion/general/base.html' %}
+{% load static %}
+
+
+
+{% block title %}
+   Create Contest
+{% endblock %}
+
+
+
+{% block css %}
+ <link href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.4/semantic.min.css" rel="stylesheet" type="text/css" />
+    <link href="https://cdn.rawgit.com/mdehoog/Semantic-UI-Calendar/76959c6f7d33a527b49be76789e984a0a407350b/dist/calendar.min.css" rel="stylesheet" type="text/css" />
+
+ 
+  {% endblock %}   
+
+
+
+      {% block body %}
+
+		  
+
+
+         <div class="ui " style="margin-top:10em;margin-left:10em;margin-right:10em;padding:10em">
+
+            <form class="ui large form" method="post">
+                {% csrf_token %}
+                {% if errors %}
+                {{errors}}
+                {% endif %}
+                <br/>
+                <h4 class="ui dividing header">Contest Details</h4>
+                <div class="field">
+                  <label>Contest Name</label>
+                    <div class="field">
+                      <div class="ui input left icon">
+                        <i class="id card outline icon"></i>
+                        {{ form.name }}
+                      </div>
+                    </div>
+
+                </div>
+                <div class="field">
+                <B>  <label>Type of Contest</label>
+                  <div class="ui input left icon">
+                      {{ form.ctype }}
+                  </div>
+                </div>
+
+
+                 <label>Start Date</label>
+
+                    {{ form.startdate }}
+
+                 <div class="ui calendar field" id='example6'>
+                   <label>Start Time</label>
+                    <div class="ui input left icon">
+                      <i class="hourglass empty icon"></i>
+                      {{ form.starttime}}
+                    </div>
+                  </div>
+                  <label>End Date</label>
+
+                     {{ form.enddate }}
+                     <div class="ui calendar field" id='example7'>
+                       <label>End Time</label>
+                        <div class="ui input left icon">
+                          <i class="hourglass full icon"></i>
+                          {{ form.endtime}}
+                        </div>
+                      </div></B>
+                  <div class="ui calendar field" >
+                    <label>Description</label>
+                     <div class="ui input left icon">
+                       <i class="comments icon"></i>
+                       {{ form.description }}
+                     </div>
+                   </div>
+                   <div class="ui calendar field">
+                     <label>Rules And Regulations</label>
+                      <div class="ui input left icon">
+                        {{ form.rules }}
+                      </div>
+                    </div>
+                    <div class="ui calendar field" >
+                      <label>Prizes</label>
+                       <div class="ui input left icon">
+                         {{ form.prizes }}
+
+                       </div>
+                     </div>
+                    <div class="ui checkbox">
+                    {{form.enable_negative}}
+                      <label>Enable Penalty</label>
+                    </div>
+                    </br></br>
+                <input type="submit"  class="ui primary button" value="Submit" />
+            </form>
+          </div>
+        </div>
+    </div>
+
+      {% endblock %}  
+
+
+{% block Javascript %}
+    {% if user.is_authenticated %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI-Calendar/76959c6f7d33a527b49be76789e984a0a407350b/dist/calendar.min.js"></script>
+
+      <script type="text/javascript">
+    $(document).ready(function() {
+         window.history.pushState(null, "", window.location.href);
+         window.onpopstate = function() {
+             window.history.pushState(null, "", window.location.href);
+         };
+     });
+    </script>
+
+ 	 {% endif %}
+    <script>
+    $('#example2').calendar({
+    type: 'date'
+    });
+    $('#example3').calendar({
+    type: 'time'
+    });
+    $('#example6').calendar({
+      ampm: false,
+      type: 'time'
+    });
+    $('#example7').calendar({
+  ampm: false,
+  type: 'time'
+});
+    </script>
+
+    <script type="text/javascript">
+    $(document).ready(function(){
+      $('.ui.accordion').accordion('refresh');
+      });
+    $('.ui.sidebar')
+        .sidebar('attach events', '#navbar #sidebartrigger')
+        // .sidebar('setting', 'transition', 'overlay')
+        // .sidebar('toggle')
+    ;
+    $('.special.cards .image').dimmer({
+      on: 'hover'
+    });
+    </script>
+
+
+{% endblock %}     
