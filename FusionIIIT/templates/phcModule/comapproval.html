@@ -1,105 +1,80 @@
 {% load static %}
 
 {% block comapproval %}
-{% comment %}the compounder approval tab starts here {% endcomment %}
- <div class="ui fluid card">
-    <form class="ui form">
-        <div class="ui header">
-        Leave Status:
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="compounderapproval">
+            Approve
+        </a>
     </div>
+    {% comment %}the ambulance schedule tab starts here {% endcomment %}
+    <div class="ui active tab" data-tab="compounderapproval">
+        <table class="ui very basic collapsing celled large sortable table"
+               style="padding-left: 2.5%;padding-right: 2.5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
+            <thead>
+            <tr>
+                <th class="four wide">
+                    Name
+                </th>
 
-    <div class="content">
-        <div class="description">
+                <th class="two wide">
+                    Roll Number
+                </th>
 
-            <table class="ui very basic collapsing celled large sortable table"
-                   style="padding-left: 2.5%;
-                                                          padding-right: 2.5%;
-                                                          padding-top: 1%;
-                                                          padding-bottom: 1.5%;
-                                                          margin: auto;">
-                <thead>
-                <tr>
-                    <th>
-                        Name
-                    </th>
+                <th class="four wide">
+                    Doctor
+                </th>
 
-                    <th>
-                        Roll Number
-                    </th>
+                <th>
+                    Appointment
+                </th>
 
-                    <th>
-                        Doctor
-                    </th>
-                     <th>
-                         Date of Appointment
-                    </th>
-                    <th>
-                         Disease
-                    </th>
+                <th class="three wide">
+                    Disease
+                </th>
 
-                     <th>
-                        Accept
-                    </th>
+                <th>
+                    Action
+                </th>
 
-                    <th>
-                       Decline
-                    </th>
+            </tr>
+            </thead>
 
-                </tr>
-                </thead>
+            <tbody>
+            <tr>
+                <td>
+                    <h4 class="ui image header">
+                        <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                        <div class="content">
+                            Zlatan Ibrahimovic
+                            <div class="sub header">
+                                gmail@zlatan.com
+                            </div>
+                        </div>
+                    </h4>
+                </td>
 
-                <tbody>
+                <td>
+                    2015207
+                </td>
 
-                {% for leave in leave_type %}
+                <td>
+                    Dr. #1
+                </td>
 
-                    <tr>
-                        <td>
-                            <h4 class="ui image header">
-                                <img src="{% static 'fusion/img/user.png' %}" class="ui mini rounded image">
-                                <div class="content">
-                                    {{ userFirstName }}
-                                    {{ userLastName }}
-                                    <div class="sub header">
-                                        {{ userDesignation }}
-                                    </div>
-                                </div>
-                            </h4>
-                        </td>
+                <td>
+                    22 Sept'17
+                </td>
 
-                        <td>
-                            {{ leave }}
-                        </td>
+                <td>
+                    Being Sarcastic all the time!
+                </td>
 
-                        <td>
-                            22 Sept'17
-                        </td>
-
-                        <td>
-                            22 Sept'17
-                        </td>
-
-                        <td>
-                            1
-                        </td>
-
-                        <td>
-                            <i class="large green checkmark icon"></i>
-                        </td>
-
-
-                        <td>
-                               <i class="large red remove icon"></i>
-                        </td>
-
-                    </tr>
-
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
+                <td>
+                    <i class="large green checkmark icon"></i>
+                </td>
+            </tr>
+            </tbody>
+        </table>
     </div>
-    </form>
-</div>
-
-{% comment %}the compounder approval tab ends here {% endcomment %}
+    {% comment %}the compounder approval tab ends here {% endcomment %}
 {% endblock %}
