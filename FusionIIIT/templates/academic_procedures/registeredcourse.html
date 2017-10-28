@@ -1,16 +1,18 @@
 {% load static %}
-{% block complainthistory %}
+{% block finalregister %}
 
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="complainthistory">
-            Add Course(s)
+            Registered Courses
         </a>
     </div>
 
     <div class="ui active tab" data-tab="complainthistory">
         <div class="ui vertical segment">
-        <form action='/academic-procedures/register/' method='post'>
+            {% if final_count %}
+                You have already registered for next semester
+            {% else %}
             <table class="ui very basic collapsing celled sortable table"
                    style="padding-left: 2.5%;
                                                           padding-right: 2.5%;
@@ -38,16 +40,17 @@
                         Semester
                     </th>
                     <th>
-                        Select Course
+                        Selected
                     </th>
+
                 </tr>
                 </thead>
 
                 <tbody>
 
-                    {% csrf_token %}
-                            {% for items in add_course %}
-                                    <tr>
+
+                    {% for items in courses_list %}
+                        <tr>
                             <td>
                             </td>
                             <td>
@@ -71,18 +74,23 @@
                              </td>
                              <td>
                                 <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
-                                <input name="choice" type="checkbox" value="{{ items.course_id }}">
+                                {% for x in final_register %}
+                                    {% if items.course_id == x.course_id.course_id %}
+                                        Yes
+                                    {% endif %}
+                                {% endfor %}
+
                              </td>
                         </tr>
-                        {% endfor %}
+                    {% endfor %}
                 </tbody>
             </table>
 
-
+            <br>
             <div class="ui divider"></div>
-            <center><button class="ui positive basic button">Add Course(s)</button></center>
 
-        </form>
+
+            {% endif %}
         </div>
     </div>
 

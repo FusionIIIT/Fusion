@@ -1,0 +1,88 @@
+{% load static %}
+{% block complainthistory %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="complainthistory">
+            Drop Course(s)
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="complainthistory">
+        <div class="ui vertical segment">
+        <form action='/academic-procedures/dropCourse/' method='POST'>
+        {% csrf_token %}
+            <table class="ui very basic collapsing celled sortable table"
+                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                <thead>
+                <tr>
+                    <th>
+                        #
+                    </th>
+
+                    <th>
+                        Course ID
+                    </th>
+
+                    <th>
+                        Course Name
+                    </th>
+
+                    <th>
+                        Credits
+                    </th>
+                    <th>
+                        Semester
+                    </th>
+                    <th>
+                        Select Course
+                    </th>
+                </tr>
+                </thead>
+
+                <tbody>
+                    {% for items in courses_list %}
+                        {% for x in final_register %}
+                            {% if items.course_id == x.course_id.course_id %}
+                                <tr>
+                                    <td>
+                                    </td>
+                                    <td>
+                                        {{ items.course_id }}
+                                    </td>
+                                    <td>
+                                        {{ items.course_name}}
+                                    </td>
+                                    <td>
+                                        {{ items.credits }}
+                                     </td>
+                                     <td>
+                                        {{items.sem}}
+                                     </td>
+                                    <td>
+                                        <input name="course_id" type="checkbox" value="{{ items.course_id }}">
+                                        <input name="user" type="text" value="{{ x.student_id }}" hidden="True">
+                                    </td>
+                                </tr>
+                            {% else %}
+
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+
+                 </tbody>
+            </table>
+
+            <br>
+            <div class="ui divider"></div>
+             <center><button class="ui negative basic button">Drop Course(s)</button></center>
+        </form>
+
+        </div>
+    </div>
+
+{% endblock %}

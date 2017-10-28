@@ -40,6 +40,11 @@
                     <i class="right floated chevron right icon"></i>
                 </a>
 
+                <a class="item" data-tab="second">
+                    Approve Branch Change
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
 
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
@@ -62,8 +67,19 @@
                 {%  endblock %}
             </div>
 
-            {% comment %}ACHINT's CODE{% endcomment %}
             {% comment %}The ... end here!{% endcomment %}
+            <div class="ui tab segment" data-tab="second">
+                {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                    <li>{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+                {% block changebranch %}
+                    {%  include 'academic_procedures/branch_change.html' %}
+                {%  endblock %}
+            </div>
 
         </div>
         {% comment %}The central-rail segment ends here!{% endcomment %}

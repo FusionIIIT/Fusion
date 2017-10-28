@@ -1,16 +1,21 @@
 {% load static %}
-{% block complainthistory %}
+{% block resiterstudent %}
 
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="complainthistory">
-            Add Course(s)
+            Pre-Registration
         </a>
     </div>
 
     <div class="ui active tab" data-tab="complainthistory">
-        <div class="ui vertical segment">
-        <form action='/academic-procedures/register/' method='post'>
+    <div class="ui vertical segment">
+
+   
+    
+            {% if details.check_pre_register %}
+                You have already registered
+            {% else %}
             <table class="ui very basic collapsing celled sortable table"
                    style="padding-left: 2.5%;
                                                           padding-right: 2.5%;
@@ -18,9 +23,9 @@
                                                           padding-bottom: 1.5%;
                                                           margin: auto;">
                 <thead>
+                 
                 <tr>
                     <th>
-                        #
                     </th>
 
                     <th>
@@ -38,16 +43,17 @@
                         Semester
                     </th>
                     <th>
-                        Select Course
+                        Optional
                     </th>
                 </tr>
                 </thead>
 
                 <tbody>
-
+                
+                    <form action='/academic-procedures/register/' method='post'>
                     {% csrf_token %}
-                            {% for items in add_course %}
-                                    <tr>
+                    {% for items in courses_list %}
+                        <tr>
                             <td>
                             </td>
                             <td>
@@ -74,16 +80,23 @@
                                 <input name="choice" type="checkbox" value="{{ items.course_id }}">
                              </td>
                         </tr>
-                        {% endfor %}
+                    {% endfor %}
                 </tbody>
             </table>
 
-
+            <br>
             <div class="ui divider"></div>
-            <center><button class="ui positive basic button">Add Course(s)</button></center>
 
-        </form>
+            <div class="extra content">
+                <div class="" style="text-align: center;">
+                    <button class="ui primary button">Register</button>
+                </div>
+            </div>
+            </form>
+             {% endif %}
         </div>
     </div>
+
+   
 
 {% endblock %}
