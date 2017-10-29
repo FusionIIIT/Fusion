@@ -1,3 +1,7 @@
-# from django.shortcuts import render
+from django.shortcuts import render
 
-# Create your views here.
+
+def healthcenter(request):
+    context = {}
+
+    return render(request, "phcModule/phc.html", context)

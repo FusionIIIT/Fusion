@@ -1,0 +1,202 @@
+
+{% extends 'fusion/general/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Course Management
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'fusion/general/../dashboard/navbar.html' %}
+    {% endblock %}
+
+
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}
+            The left-rail segment starts here!
+        {% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'fusion/general/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu starts here!{% endcomment %}
+            <div class="ui huge fluid vertical pointing menu"
+                 style="max-width: 320px;">
+
+                <a class="active item" data-tab="first">
+                    View Courses
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="second">
+                    Submit Assignment
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="third">
+                    View Performance
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="fourth">
+                    Assessment
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="fifth">
+                    Add Content
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+              
+               
+
+               
+
+               
+
+            </div>
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+
+
+        {% comment %}
+            The central-rail segment starts here!
+        {% endcomment %}
+
+        <div class="eight wide column">
+        
+            {% comment %}The view courses start here!{% endcomment %}
+            <div class="ui active tab segment" data-tab="first">
+                {% block viewcourse %}
+                    {% include 'fusion/coursemanagement/viewcourses.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The view courses end here!{% endcomment %}
+
+
+            {% comment %}The submit assignment starts here!{% endcomment %}
+
+            <div class="ui tab segment" data-tab="second">
+                {% block submitassignments %}
+                    {% include 'fusion/coursemanagement/submitassignments.html' %}
+                {% endblock %}
+            </div>
+
+            {% comment %}The submit assignment ends here!{% endcomment %}
+
+
+            {% comment %}The view performance starts here!{% endcomment %}
+
+            <div class="ui tab segment" data-tab="third">
+                {% block viewperformance %}
+                    {% include 'fusion/coursemanagement/viewperformance.html' %}
+                {% endblock %}
+            </div>
+
+            {% comment %}The view performance ends here!{% endcomment %}
+
+
+            {% comment %}The assessment starts here!{% endcomment %}
+
+            <div class="ui tab segment" data-tab="fourth">
+                {% block assessment %}
+                    {% include 'fusion/coursemanagement/assessment.html' %}
+                {% endblock %}
+            </div>
+
+            {% comment %}The assessment ends here!{% endcomment %}
+
+            {% comment %}The add contents  starts here!{% endcomment %}
+
+            <div class="ui tab segment" data-tab="fifth">
+                {% block addcontent %}
+                    {% include 'fusion/coursemanagement/addcontent.html' %}
+                {% endblock %}
+            </div>
+
+            {% comment %}The add content ends here!{% endcomment %}
+
+           
+           
+
+           
+
+           
+
+        </div>
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            <div class="row">
+             
+            </div>
+                {% comment %}The Instructor Note:{% endcomment %}
+                {% block note %}
+                    {% include 'fusion/coursemanagement/note.html' %}
+                {% endblock %}
+
+            <div class="row">
+                {% comment %}The comments:{% endcomment %}
+                {% block comments %}
+                    {% include 'fusion/coursemanagement/comments.html' %}
+                {% endblock %}
+            </div>
+
+        </div>
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+    </div>
+    {% comment %}The grid ends here!{% endcomment %}
+
+
+
+{% endblock %}
+
+{% block javascript %}
+    <script type="text/javascript" src="{% static 'fusion/js/editProfile.js' %}"></script>
+    <script type="text/javascript" src="{% static 'fusion/js/tablesort.js' %}"></script>
+
+    <script>
+        $(document).ready(function() {
+            $('table').tablesort();
+        });
+   
+        function toggleContent() {
+            $('.modulesContent').toggle();
+
+            if($('.modulesContent').is(':visible')){
+                $('#toggleIcon').removeClass("chevron down");
+                $('#toggleIcon').addClass("chevron up");
+            }
+            else if(!$('.modulesContent').is(':visible')){
+                $('#toggleIcon').removeClass("chevron up");
+                $('#toggleIcon').addClass("chevron down");
+            }
+        }
+    </script>
+
+{% endblock %}
