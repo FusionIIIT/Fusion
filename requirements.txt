@@ -21,3 +21,4 @@ requests-oauthlib==0.8.0
 sqlparse==0.2.4
 urllib3==1.22
 xlrd==1.1.0
+xhtml2pdf==0.2b1
