@@ -7,10 +7,10 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import get_template
+from xhtml2pdf import pisa
 
 from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo
-from xhtml2pdf import pisa
 
 from .forms import AddEducation
 from .models import (Achievement, Course, Education, Experience, Has, Project,
