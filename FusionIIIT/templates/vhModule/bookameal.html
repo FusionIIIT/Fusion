@@ -9,21 +9,58 @@
 
     <div class="ui active tab" data-tab="bookameal">
         <div class="ui vertical segment">
+
+            <form class="ui form">
+
+                <div class="three fields">
+                    <div class="field">
+                        <label>From:</label>
+                        <div class="ui calendar" id="rangestart">
+                            <div class="ui input left icon">
+                                <i class="calendar icon"></i>
+                                <input type="text" placeholder="From">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>To:</label>
+                        <div class="ui calendar" id="rangeend">
+                            <div class="ui input left icon">
+                                <i class="calendar icon"></i>
+                                <input type="text" placeholder="To">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label><br></label>
+                        <button class="ui primary right floated button">
+                            Submit
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <br>
+            <div class="ui divider"></div>
+
             <table class="ui structured sortable celled table">
                 <thead>
                 <tr>
-                    <th rowspan="2" class="five wide">Name</th>
-                    <th rowspan="2" class="one wide">Room-No.</th>
+                    <th rowspan="2" class="four wide">Name</th>
                     <th rowspan="2" class="one wide">Category</th>
+                    <th rowspan="2" class="one wide">Room-No.</th>
+                    <th rowspan="2" class="two wide">Date</th>
                     <th colspan="5">Food Items</th>
                 </tr>
 
                 <tr>
-                    <th>Item#1</th>
-                    <th>Item#2</th>
-                    <th>Item#3</th>
-                    <th>Item#4</th>
-                    <th>Item#5</th>
+                    <th>Breakfast</th>
+                    <th>Lunch</th>
+                    <th>Dinner</th>
+                    <th>Snack #1</th>
+                    <th>Snack #2</th>
                 </tr>
                 </thead>
 
@@ -43,11 +80,15 @@
                     </td>
 
                     <td>
+                        A
+                    </td>
+
+                    <td>
                         G - 007
                     </td>
 
                     <td>
-                        A
+                        10<sup>th</sup> Aug'17
                     </td>
 
                     <td>

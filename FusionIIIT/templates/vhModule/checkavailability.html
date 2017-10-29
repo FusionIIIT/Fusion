@@ -1,86 +1,82 @@
 {% load static %}
 {% block checkavailability %}
-<div class="ui container">
-    <div class="ui vertical stripe team segment"
-         style="padding-left: 3.5%;
-                padding-right: 3.5%;">
-
-        <div class="ui header">
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="availability">
             Check Availability
-        </div>
+        </a>
+    </div>
 
-        <div class="ui divider"></div>
-        <br>
+    <div class="ui active tab" data-tab="availability">
+        <div class="ui vertical stripe team segment"
+             style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+            <form class="ui large form">
+                <div id="checkavailability">
 
-        <form class="ui large form">
-
-            {% comment %} The check availability form  starts here! {% endcomment %}
-            <div id="checkavailability">
-
-                 <div class="two fields">
-                    <div class="field">
-                        <label>Arrival Date:</label>
-                        <div class="ui calendar" id="rangestart">
-                            <div class="ui input left icon">
-                                <i class="calendar icon"></i>
-                                <input type="text" placeholder="From">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="field">
-                        <label>Arrival Time:</label>
-                        <input placeholder="time" type="text">
-                    </div>
-                </div>
-
-                 <div class="field">
                     <div class="two fields">
                         <div class="field">
-                        <label>Type Of Room:</label>
-                        <div class="ui fluid search selection dropdown">
-                            <input name="Select" type="hidden">
-                            <i class="dropdown icon"></i>
-
-                            <div class="default text">Select</div>
-
-                            <div class="menu">
-                                <div class="item" data-value="type_1">
-                                    Single Occupancy
-                                </div>
-
-                                <div class="item" data-value="type_2">
-                                    Double Occupancy
-                                </div>
-                                <div class="item" data-value="type_3">
-                                    VIP
-                                </div>
-
-                                <div class="item" data-value="type_4">
-                                   Standard
+                            <label>Arrival Date:</label>
+                            <div class="ui calendar" id="rangestart">
+                                <div class="ui input left icon">
+                                    <i class="calendar icon"></i>
+                                    <input type="text" placeholder="From">
                                 </div>
                             </div>
                         </div>
-                        </div>
-
 
                         <div class="field">
-                            <label>Number of Rooms:</label>
-                            <input placeholder="" type="number">
+                            <label>Arrival Time:</label>
+                            <input placeholder="time" type="text">
                         </div>
                     </div>
-                </div>
-                   <br>
-                <div class="four wide field">
-                    <label><br></label>
-                    <div class="ui large fluid primary button">
-                        Submit
-                    </div>
-                </div>
 
-            </div>
-        </form>
+                    <div class="field">
+                        <div class="two fields">
+                            <div class="field">
+                                <label>Type Of Room:</label>
+                                <div class="ui fluid search selection dropdown">
+                                    <input name="Select" type="hidden">
+                                    <i class="dropdown icon"></i>
+
+                                    <div class="default text">Select</div>
+
+                                    <div class="menu">
+                                        <div class="item" data-value="type_1">
+                                            Single Occupancy
+                                        </div>
+
+                                        <div class="item" data-value="type_2">
+                                            Double Occupancy
+                                        </div>
+                                        <div class="item" data-value="type_3">
+                                            VIP
+                                        </div>
+
+                                        <div class="item" data-value="type_4">
+                                            Standard
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="field">
+                                <label>Number of Rooms:</label>
+                                <input placeholder="" type="number">
+                            </div>
+                        </div>
+                    </div>
+                    <br>
+                    <div class="four wide field">
+                        <label><br></label>
+                        <div class="ui large fluid primary button">
+                            Submit
+                        </div>
+                    </div>
+
+                </div>
+            </form>
+        </div>
     </div>
-</div>
 {% endblock %}
 
