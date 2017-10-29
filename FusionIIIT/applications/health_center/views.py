@@ -1,7 +1,7 @@
 from django.shortcuts import render
 
 
-def phc(request):
+def healthcenter(request):
     context = {}
 
     return render(request, "phcModule/phc.html", context)

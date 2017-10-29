@@ -1,5 +1,4 @@
-
-{% extends 'fusion/general/base.html' %}
+{% extends 'globals/base.html' %}
 {% load static %}
 
 
@@ -15,7 +14,7 @@
 
 {% block body %}
     {% block navBar %}
-        {% include 'fusion/general/../dashboard/navbar.html' %}
+        {% include 'dashboard/navbar.html' %}
     {% endblock %}
 
 
@@ -32,7 +31,7 @@
 
             {% comment %}The user image card starts here!{% endcomment %}
             {% block usercard %}
-                {% include 'fusion/general/usercard.html' %}
+                {% include 'globals/usercard.html' %}
             {% endblock %}
             {% comment %}The user image card ends here!{% endcomment %}
 
@@ -103,7 +102,7 @@
             {% comment %}The Details start here!{% endcomment %}
             <div class="ui active tab segment" data-tab="first">
                 {% block personaldetails %}
-                    {% include 'fusion/eisModule/personaldetails.html' %}
+                    {% include 'eisModulenew/personaldetails.html' %}
                 {% endblock %}
             </div>
             {% comment %}The Personal Details end here!{% endcomment %}
@@ -113,7 +112,7 @@
 
             <div class="ui tab segment" data-tab="second">
                 {% block publications %}
-                    {% include 'fusion/eisModulenew/publications.html' %}
+                    {% include 'eisModulenew/publications.html' %}
                 {% endblock %}
             </div>
 
@@ -124,7 +123,7 @@
 
             <div class="ui tab segment" data-tab="third">
                 {% block projects %}
-                    {% include 'fusion/eisModulenew/projects.html' %}
+                    {% include 'eisModulenew/projects.html' %}
                 {% endblock %}
             </div>
 
@@ -135,7 +134,7 @@
 
             <div class="ui tab segment" data-tab="fourth">
                 {% block thesis %}
-                    {% include 'fusion/eisModulenew/thesis.html' %}
+                    {% include 'eisModulenew/thesis.html' %}
                 {% endblock %}
             </div>
 
@@ -145,7 +144,7 @@
 
             <div class="ui tab segment" data-tab="fifth">
                 {% block eventorganised %}
-                    {% include 'fusion/eisModulenew/eventorganized.html' %}
+                    {% include 'eisModulenew/eventorganized.html' %}
                 {% endblock %}
             </div>
 
@@ -155,7 +154,7 @@
 
             <div class="ui tab segment" data-tab="sixth">
                 {% block visits %}
-                    {% include 'fusion/eisModulenew/visits.html' %}
+                    {% include 'eisModulenew/visits.html' %}
                 {% endblock %}
             </div>
             {% comment %}The visits ends here!{% endcomment %}
@@ -163,7 +162,7 @@
             {% comment %}The conference starts here!{% endcomment %}
             <div class="ui tab segment" data-tab="seventh">
                 {% block conference %}
-                    {% include 'fusion/eisModulenew/conference.html' %}
+                    {% include 'eisModulenew/conference.html' %}
                 {% endblock %}
             </div>
             {% comment %}The conference ends here!{% endcomment %}
@@ -171,7 +170,7 @@
             {% comment %}The others starts here!{% endcomment %}
             <div class="ui tab segment" data-tab="eigth">
                 {% block others %}
-                    {% include 'fusion/eisModulenew/others.html' %}
+                    {% include 'eisModulenew/others.html' %}
                 {% endblock %}
             </div>
             {% comment %}The others ends here!{% endcomment %}
@@ -190,14 +189,14 @@
             <div class="row">
                 {% comment %}The Modules:{% endcomment %}
                 {% block generatereport %}
-                    {% include 'fusion/eisModulenew/generatereport.html' %}
+                    {% include 'eisModulenew/generatereport.html' %}
                 {% endblock %}
             </div>
 
             <div class="row">
                 {% comment %}The Modules:{% endcomment %}
                 {% block modules %}
-                    {% include 'fusion/dashboard/modules.html' %}
+                    {% include 'dashboard/modules.html' %}
                 {% endblock %}
             </div>
 
