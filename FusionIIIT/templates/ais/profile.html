@@ -78,19 +78,53 @@
                     </div> 
                 </div>
       
-        </form>  
+        </form> 
+
+         <br> <br>
+
+          <h4 class="ui dividing header">Search A Student By Roll No.</h4>
+
+        <div class="ui two column grid">
+
+              <div class="row">
+                  <div class=" four wide column"></div>
+           
+                <div class=" six wide column">
+                      <div class="ui loading search">
+                          <div class="ui icon input">
+                            <input class="prompt" type="text" placeholder="Search...">
+                            <i class="search icon"></i>
+                          </div>
+                          <div class="results"></div>
+                        </div>
+
+
+
+                </div>
+
+                <div class=" four wide column">
+                  <div class="ui primary button">
+                            Search
+                            <i class="ui search icon right floated"></i>
+                        </div>
+                    </div>
+               
+              </div>
+
+        </div>
 
           <br> <br>
 
            <table class="ui fixed single line sortable celled table">
             <thead>
             <tr>
-                 <th class="sorted ascending">Sr.</th>
-                <th class="">Name</th>
-                <th class="">Roll No.</th>
-                <th class="">Batch</th>
-                <th class="">Programme</th>
-                <th class="">Mobile Number</th>
+                 <th class="sorted ascending"  style="width: 7%;">Sr.</th>
+                <th class="" style="width: 25%;">Name</th>
+                <th class="" style="width: 15%;">Roll No.</th>
+                <th class="" style="width: 13%;">Batch</th>
+                <th class="" style="width: 15%;">Programme</th>
+                <th class="" style="width: 15%;">Mobile Number</th>
+                 <th class="" style="width: 10%;">Action</th>
               
             </tr>
             </thead>
@@ -194,15 +228,19 @@
         <br> <br> 
         
 
-             <table class="ui very basic collapsing celled table">
+             <table class="ui sortable collapsing celled table">
             <thead>
-              <tr><th colspan=3>Student</th>
-              <th colspan=2>Father's Name</th>
-               <th colspan=2>Mother's Name</th>
-                <th>Hall Details</th>
+              <tr>
+              <th style="width: 7%;">Sr.</th>
+              <th  style="width: 25%;">Student</th>
+              <th  style="width: 25%;">Father's Name</th>
+               <th style="width: 23%;" >Mother's Name</th>
+                <th style="width: 18%;">Hall Details</th>
+                <th style="width: 10%;"> Action</th>
             </tr></thead>
             <tbody>
               <tr>
+               <td>1.</td>
                 <td>
                   <h4 class="ui image header">
                     <img src="{% static 'fusion/img/jenny.jpg' %}" class="ui  rounded image">
@@ -220,9 +258,12 @@
                 <td>
                 
                 </td>
+                <td></td>
+                <td><i class="edit icon" style="font-size:1.3vw;color:blue"></i><br><i class="trash outline icon" style="font-size:1.3vw;color:red;"></i></td>
 
               </tr>
               <tr>
+                <td>2.</td>
                 <td>
                   <h4 class="ui image header">
                     <img src="{% static 'fusion/img/jina.png' %}" class="ui  rounded image">
@@ -232,13 +273,17 @@
                     </div>
                   </div>
                 </h4></td>
+
                 <td>
                  
                 </td>
                 <td>
-                                   </td>
+                 </td>
+                    <td></td>
+                    <td><i class="edit icon" style="font-size:1.3vw;color:blue"></i><br><i class="trash outline icon" style="font-size:1.3vw;color:red;"></i></td>
               </tr>
               <tr>
+                <td>3.</td>
                 <td>
                   <h4 class="ui image header">
                     <img src="{% static 'fusion/img/matthew.png' %}" class="ui  rounded image">
@@ -256,7 +301,9 @@
                   </td>
               </tr>
               <tr>
+                <td>4.</td>
                 <td>
+
                   <h4 class="ui image header">
                     <img src="{% static 'fusion/img/steve.jpg' %}" class="ui  rounded image">
                     <div class="content">
@@ -286,38 +333,11 @@
             <div class="field">
                  <div class="three fields">
                     <div class="field">
-                        <label>Name</label>
-                        <input placeholder="Name" type="text">
-                           
-                    </div>
+                            <label>Course Code</label>
+                            <input placeholder="Course Code" type="text">
+                        </div>
 
-                    <div class="field">
-                        <label>Batch</label>
-                            <div class="ui fluid search selection dropdown">
-                                    <input type="hidden">
-                                    <i class="dropdown icon"></i>
-                                    <div class="default text">Batch</div>
-                                    <div class="menu">
-                                        <div class="item" data-value="2014">2014</div>
-                                        <div class="item" data-value="2015">2015</div>
-                                        <div class="item" data-value="2016">2016</div>
-                                        <div class="item" data-value="2017">2017</div>
-               
-                                    </div>
-                                </div>
-                    </div>
-                
-                 <div class="field">
-                        <label>Roll No.</label>
-                        <input placeholder="Roll No." type="text">
-                    </div>
-                    
-                </div>
-            </div>
-
-            <div class="fields">
-                    <div class="four wide field">
-                        <div class="field">
+                      <div class="field">
                             <label>Semester</label>
                              <div class="ui fluid search selection dropdown">
                                     <input type="hidden">
@@ -337,13 +357,17 @@
                                 </div>
                             
                         </div>
+                
+                 <div class="field">
+                        <label>Roll No.</label>
+                        <input placeholder="Roll No." type="text">
                     </div>
-                     <div class="four wide field">
-                        <div class="field">
-                            <label>Course Code</label>
-                            <input placeholder="Course Code" type="text">
-                        </div>
-                    </div>
+                    
+                </div>
+            </div>
+
+            <div class="fields">
+                   
                      <div class="four wide field">
                         <div class="field">
                             <label>Grade</label>
@@ -362,18 +386,50 @@
       
         </form>  
 
-          <br> <br>
+           <br> <br>
+
+          <h4 class="ui dividing header">Search A Student By Roll No.</h4>
+
+        <div class="ui two column grid">
+
+              <div class="row">
+                  <div class=" four wide column"></div>
+           
+                <div class=" six wide column">
+                      <div class="ui loading search">
+                          <div class="ui icon input">
+                            <input class="prompt" type="text" placeholder="Search...">
+                            <i class="search icon"></i>
+                          </div>
+                          <div class="results"></div>
+                        </div>
+
+
+
+                </div>
+
+                <div class=" four wide column">
+                  <div class="ui primary button">
+                            Search
+                            <i class="ui search icon right floated"></i>
+                        </div>
+                    </div>
+               
+              </div>
+
+        </div>
+
+        <br> <br>
 
            <table class="ui fixed single line sortable celled table">
             <thead>
             <tr>
-                 <th class="sorted ascending">Sr.</th>
-                <th class="">Name</th>
-                <th class="">Roll No.</th>
-                <th class="">Batch</th>
-                <th class="">Semester</th>
-                <th class="">Course-Code</th>
-                <th class="">Grade</th>
+                 <th class="sorted ascending" style="width: 7%;">Sr.</th>
+                <th class="" style="width: 17%;">Roll No.</th>
+                <th class="" style="width: 17%;">Semester</th>
+                <th class="" style="width: 25%;">Course-Code</th>
+                <th class="" style="width: 17%;">Grade</th>
+                <th style="width: 10%;"> Action </th>
 
               
             </tr>
@@ -422,52 +478,30 @@
        <form class="ui form">
             <div class="field">
                  <div class="three fields">
-                    <div class="field">
-                        <label>Name</label>
-                        <input placeholder="Name" type="text">
-                           
-                    </div>
 
-                    <div class="field">
-                        <label>Batch</label>
-                            <div class="ui fluid search selection dropdown">
-                                    <input type="hidden">
-                                    <i class="dropdown icon"></i>
-                                    <div class="default text">Batch</div>
-                                    <div class="menu">
-                                        <div class="item" data-value="2014">2014</div>
-                                        <div class="item" data-value="2015">2015</div>
-                                        <div class="item" data-value="2016">2016</div>
-                                        <div class="item" data-value="2017">2017</div>
-               
-                                    </div>
-                                </div>
-                    </div>
-                
-                 <div class="field">
+                  <div class="field">
                         <label>Roll No.</label>
                         <input placeholder="Roll No." type="text">
                     </div>
-                    
+
+                    <div class="field">
+                       
+                        <label>Course 1  code</label>
+                        <input placeholder="Course 1 code" type="text">
+                    </div>
+
+                     <div class="field">
+                       
+                        <label>Course 2 code</label>
+                        <input placeholder="Course 2 code" type="text">
+                    </div>
+                      
                 </div>
             </div>
 
             <div class="fields">
                     <div class="four wide field">
                         <div class="field">
-                            <label>Course 1 code</label>
-                            <input placeholder="Course 1 code" type="text">
-                        </div>
-                    </div>
-                     <div class="four wide field">
-                         <div class="field">
-                            <label>Course 2 code</label>
-                            <input placeholder="Course 2 code" type="text">
-                        </div>
-                    </div>
-
-                    <div class="four wide field">
-                         <div class="field">
                             <label>Course 3 code</label>
                             <input placeholder="Course 3 code" type="text">
                         </div>
@@ -477,47 +511,82 @@
                             <label>Course 4 code</label>
                             <input placeholder="Course 4 code" type="text">
                         </div>
+                    </div>
+
+                    <div class="four wide field">
+                         <div class="field">
+                            <label>Course 5 code</label>
+                            <input placeholder="Course 5 code" type="text">
+                        </div>
+                    </div>
+                     <div class="four wide field">
+                         <div class="field">
+                            <label>Course 6 code</label>
+                            <input placeholder="Course 6 code" type="text">
+                        </div>
                     </div> 
                 </div>
 
-                  <div class="field">
-                 <div class="three fields">
-                    <div class="field">
-                       <label>Course 5 code</label>
-                        <input placeholder="Course 5 code" type="text">
-                           
-                    </div>
-
-                    <div class="field">
-                       
-                             <label>Course 6 code</label>
-                        <input placeholder="Course 6 code" type="text">
-                    </div>
-                
-                 <div class="field">
-                         <label><br></label>
-                        <div class="ui primary button">
-                            Save
-                            <i class="ui save icon right floated"></i>
-                        </div>
-                    </div>
-                    
-                </div>
-            </div>
+                  <div class="fields">
+                        
+                         <div class=" two wide field">
+                                 <label><br></label>
+                                <div class="ui primary button">
+                                    Save
+                                    <i class="ui save icon right floated"></i>
+                                </div>
+                            </div>
+                            
+                 
+                  </div>
       
         </form>  
+  
+    <br> <br>
+
+            <h4 class="ui dividing header">Search A Student By Roll No.</h4>
+
+                    <div class="ui two column grid">
+
+                          <div class="row">
+                              <div class=" four wide column"></div>
+                       
+                            <div class=" six wide column">
+                                  <div class="ui loading search">
+                                      <div class="ui icon input">
+                                        <input class="prompt" type="text" placeholder="Search...">
+                                        <i class="search icon"></i>
+                                      </div>
+                                      <div class="results"></div>
+                                    </div>
+
+
+
+                            </div>
+
+                            <div class=" four wide column">
+                              <div class="ui primary button">
+                                        Search
+                                        <i class="ui search icon right floated"></i>
+                                    </div>
+                                </div>
+                           
+                          </div>
+
+                    </div>
+
+
+
 
           <br> <br>
 
            <table class="ui fixed single line sortable celled table">
             <thead>
             <tr>
-                 <th class="sorted ascending">Sr.</th>
-                <th class="">Name</th>
-                <th class="">Roll No.</th>
-                <th class="">Batch</th>
-               
-                <th class="" colspan=3>Courses</th>
+                 <th class="sorted ascending" style="width: 7%;">Sr.</th>
+                  <th class="" style="width: 20%;">Roll No.</th>
+                <th class=""  style="width: 50%;">Courses</th>
+                <th style="width: 13%;">Action </th>
               
             </tr>
             </thead>
