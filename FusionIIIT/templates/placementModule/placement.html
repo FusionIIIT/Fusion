@@ -74,6 +74,11 @@
                     Placement Statistics
                     <i class="right floated chevron right icon"></i>
                 </a>
+
+                <a class="item" data-tab="ninth">
+                    Student Records
+                    <i class="right floated chevron right icon"></i>
+                </a>
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
 
@@ -149,6 +154,14 @@
             <div class="ui tab segment" data-tab="eighth">
                 {% block placementstatistics %}
                     {% include 'placementModule/placementstatistics.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The Placement Visits tab ends here!{% endcomment %}
+
+            {% comment %}The Placement Statistics tab starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="ninth">
+                {% block studentrecords %}
+                    {% include 'placementModule/studentrecords.html' %}
                 {% endblock %}
             </div>
             {% comment %}The Placement Visits tab ends here!{% endcomment %}
