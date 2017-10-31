@@ -79,6 +79,11 @@
                     Student Records
                     <i class="right floated chevron right icon"></i>
                 </a>
+
+                <a class="item" data-tab="tenth">
+                    Manage Records
+                    <i class="right floated chevron right icon"></i>
+                </a>
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
 
@@ -162,6 +167,14 @@
             <div class="ui tab segment" data-tab="ninth">
                 {% block studentrecords %}
                     {% include 'placementModule/studentrecords.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The Placement Visits tab ends here!{% endcomment %}
+
+            {% comment %}The Placement Statistics tab starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="tenth">
+                {% block managerecords %}
+                    {% include 'placementModule/managerecords.html' %}
                 {% endblock %}
             </div>
             {% comment %}The Placement Visits tab ends here!{% endcomment %}
