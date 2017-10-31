@@ -1,4 +1,3 @@
-'''
 from cgi import escape
 from io import BytesIO
 
@@ -94,8 +93,3 @@ def cv(request, username):
                                                      'projects': project,
                                                      'achievements': achievement,
                                                      'publications': publication})
-'''
-
-
-def placement(request):
-    pass
