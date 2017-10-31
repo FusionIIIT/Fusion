@@ -1,3 +1,4 @@
+{% comment %} ACAD ADMIN will drop course here {% endcomment%}
 {% load static %}
 {% block complainthistory %}
 
@@ -8,7 +9,42 @@
 
         </a>
     </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"> </script>
+    <script type="text/javascript">
+    $(document).on('click','.ui.blue.label',
+    function(e)
+    {
+        e.preventDefault();
+        $('.ajaxProgress').show();
+        console.log("clickk");
+        var this_ = $(this);
+        var url_ = this_.attr("href");
+        var id = url_.indexOf('=') + 1;
+        var id2 = url_.indexOf('%');
+        console.log(id2);
+        console.log(id);
+        var num = url_.substring(id,id2);
 
+        num = '.' + num;
+        console.log($(num).text());
+
+        $.ajax({
+            url: url_,
+            method: "GET",
+            async: true,
+            data: $(this).serialize(),
+            success: function(jsondata)
+            {
+              $(num).hide(),
+              $('.ajaxProgress').hide(),
+            },
+            error: function(error)
+            {
+              alert("Some Error Occured")
+            }
+        });
+      });
+    </script>
     <div class="ui active tab" data-tab="complainthistory">
         <div class="ui vertical segment">
           <B>
@@ -16,7 +52,7 @@
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            Name = {{ dict2.name }}
+            Name = {{ dict2.firstname }}&nbsp;{{ dict2.lastname }}
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -59,8 +95,9 @@
 
                     {% csrf_token %}
                     {% for items in details %}
-                        <tr>
-                            <td>
+
+                        <tr class= "{{ items.rid }}" >
+                            <td >
                                 {{ items.rid }}
                             </td>
                             <td>
@@ -76,10 +113,13 @@
                                 {{ items.sem }}
                              </td>
                              <td>
-                               <A href="/academic-procedures/acad_person/verifyCourse/drop/?id={{ items.reg_id|urlencode }}"
-                               class="ui blue label"> DROP </div>
+                               <A class="ui blue label"
+                               href="/academic-procedures/acad_person/verifyCourse/drop/?id={{ items.reg_id|urlencode }}">
+                                  DROP </A>
                              </td>
+
                         </tr>
+
                     {% endfor %}
                 </form>
                 </tbody>
