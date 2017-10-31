@@ -22,6 +22,11 @@ def academic_procedures_redirect(request):
 
 
 @login_required(login_url='/accounts/login')
+def main(request):
+    return HttpResponseRedirect('/academic-procedures/main/')
+
+
+@login_required(login_url='/accounts/login')
 def academic_procedures(request):
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
@@ -57,7 +62,8 @@ def academic_procedures(request):
             }
     final_register = Register.objects.all().filter(student_id=user_details.id)
     final_register_count = FinalRegistrations.objects.all().filter(student_id=user_details.id)
-
+    add_course = get_add_course(branch_courses, final_register)
+    print(final_register_count)
     # Branch Change Code starts here
     change_branch = apply_branch_change(request)
     return render(
@@ -66,9 +72,21 @@ def academic_procedures(request):
                                                                 'courses_list': branch_courses,
                                                                 'final_register': final_register,
                                                                 'final_count': final_register_count,
-                                                                'change_branch': change_branch
+                                                                'change_branch': change_branch,
+                                                                'add_course': add_course
                                                                 }
         )
+
+
+def get_add_course(branch, final):
+    x = []
+    for i in final:
+        x.append(i.course_id)
+    total_course = []
+    for i in branch:
+        if i not in x:
+            total_course.append(i)
+    return total_course
 
 
 # function to get user semester
@@ -182,6 +200,7 @@ def apply_branch_change(request):
     label_for_change = False
 
     semester = get_user_semester(extraInfo_user.id)
+    semester = 2
 
     if cpi_data.cpi >= 8 and semester >= 1 and semester <= 2:
         label_for_change = True
@@ -276,12 +295,16 @@ def acad_person(request):
     }
     print(context)
     return render(
-        request,
-        '../templates/academic_procedures/academicadmin.html',
-        {'context': context, 'lists': lists,
-            'date': date,
-            'query_option1': query_option1,
-            'query_option2': query_option2})
+                request,
+                '../templates/academic_procedures/academicadmin.html',
+                {
+                    'context': context,
+                    'lists': lists,
+                    'date': date,
+                    'query_option1': query_option1,
+                    'query_option2': query_option2
+                }
+            )
 
 
 @login_required(login_url='/acounts/login')
@@ -382,9 +405,10 @@ def verify_course(request):
                     k['sem'] = p.sem
                     k['credits'] = p.credits
                 details.append(k)
+
     year = datetime.datetime.now().year
     month = datetime.datetime.now().month
-    yearr = str(year) + "+" + str(year+1)
+    yearr = str(year) + "-" + str(year+1)
     semflag = 0
     if(month >= 7):
         semflag = 1

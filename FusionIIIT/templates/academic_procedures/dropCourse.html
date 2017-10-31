@@ -10,7 +10,7 @@
 
     <div class="ui active tab" data-tab="complainthistory">
         <div class="ui vertical segment">
-        <form action='/academic-procedures/dropCourse/' method='POST'>
+        <form id='drop_courses' action='/academic-procedures/dropCourse/' method='POST'>
         {% csrf_token %}
             <table class="ui very basic collapsing celled sortable table"
                    style="padding-left: 2.5%;
@@ -84,7 +84,28 @@
 
         </div>
     </div>
-<script type="text/javascript" >
-</script>
 
 {% endblock %}
+
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+$(function() {
+    $("#drop_courses").submit(function(event) {
+
+        event.preventDefault();
+        var friendForm = $(this);
+
+        var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
+        // if success:
+        posting.done(function(data) {
+            alert('Course Drop Successful');
+            window.location = "/academic-procedures/main/";
+        });
+        // if failure
+        posting.fail(function(data) {
+            alert('Failed to drop a course');
+            window.location = "/academic-procedures/main/";
+        });
+    });
+});
+</script>

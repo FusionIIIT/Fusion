@@ -4,13 +4,25 @@
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="complainthistory">
-            Add Course(s)
+            Registered Courses for Sem {{ date.semflag }} {{ date.year }}
+
         </a>
     </div>
 
     <div class="ui active tab" data-tab="complainthistory">
         <div class="ui vertical segment">
-        <form id='add_course_form' action='/academic-procedures/register/' method='post'>
+          <B>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            Name = {{ dict2.name }}
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            Roll No = {{ dict2.roll_no }}
+          </B>
+            {% if details %}
             <table class="ui very basic collapsing celled sortable table"
                    style="padding-left: 2.5%;
                                                           padding-right: 2.5%;
@@ -20,7 +32,7 @@
                 <thead>
                 <tr>
                     <th>
-                        #
+                        Reg ID#
                     </th>
 
                     <th>
@@ -38,7 +50,7 @@
                         Semester
                     </th>
                     <th>
-                        Select Course
+                        Drop Course
                     </th>
                 </tr>
                 </thead>
@@ -46,43 +58,43 @@
                 <tbody>
 
                     {% csrf_token %}
-                            {% for items in courses_list %}
-                                    <tr>
+                    {% for items in details %}
+                        <tr>
                             <td>
+                                {{ items.rid }}
                             </td>
                             <td>
                                 {{ items.course_id }}
-                                {% if items.course_id|length > 5%}
-                                    (optional)
-                                {% endif %}
-                                <input type="text" name='course_id' value='{{ items.course_id}}' hidden="True">
                             </td>
                             <td>
-                                {{ items.course_name}}
-                                <input type="text" name='course_name' value='{{ items.course_name}}' hidden="True">
+                                {{ items.course_name }}
                             </td>
                             <td>
-                                {{items.sem}}
-                                <input type="text" name='semester' value='{{ items.sem}}' hidden="True">
-                             </td>
-                             <td>
                                 {{ items.credits }}
-                                <input type="text" name='credits' value='{{ items.credits}}' hidden="True">
                              </td>
                              <td>
-                                <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
-                                <input name="choice" type="checkbox" value="{{ items.course_id }}">
+                                {{ items.sem }}
+                             </td>
+                             <td>
+                               <A href="/academic-procedures/acad_person/verifyCourse/drop/?id={{ items.reg_id|urlencode }}"
+                               class="ui blue label"> DROP </div>
                              </td>
                         </tr>
-                        {% endfor %}
+                    {% endfor %}
+                </form>
                 </tbody>
             </table>
 
+              <br>
+              {% else %}
+                <br>
+                  <br>  <br>  <br><CENTER>
+                  <B> NO RECORDS FOUND </B></center>
+              {% endif %}
 
             <div class="ui divider"></div>
-            <center><button class="ui positive basic button">Add Course(s)</button></center>
 
-        </form>
+
         </div>
     </div>
 

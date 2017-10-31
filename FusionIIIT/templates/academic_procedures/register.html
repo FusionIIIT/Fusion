@@ -43,14 +43,14 @@
                         Semester
                     </th>
                     <th>
-                        Optional
+                        Select
                     </th>
                 </tr>
                 </thead>
 
                 <tbody>
                 
-                    <form action='/academic-procedures/register/' method='post'>
+                    <form id='student_register' action='/academic-procedures/register/' method='post'>
                     {% csrf_token %}
                     {% for items in courses_list %}
                         <tr>
@@ -100,3 +100,26 @@
    
 
 {% endblock %}
+
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+$(function() {
+    $("#student_register").submit(function(event) {
+        
+        event.preventDefault();
+        var friendForm = $(this);
+        
+        var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
+        // if success:
+        posting.done(function(data) {
+            alert('You have successfully registered');
+            window.location = "/academic-procedures/main/";
+        });
+        // if failure
+        posting.fail(function(data) {
+            alert('Registration Failed');
+            window.location = "/academic-procedures/main/";
+        });
+    });
+});
+</script>
