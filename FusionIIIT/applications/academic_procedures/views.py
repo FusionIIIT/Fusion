@@ -51,8 +51,9 @@ def academic_procedures(request):
     registered_or_not = Register.objects.all().filter(student_id=student).first()
     # Fucntio call to get the current user's branch
     user_branch = get_user_branch(user_details)
-
+    user_sem = 2
     get_courses = Course.objects.all().filter(sem=(user_sem+1))
+    print(get_courses, user_sem)
     # Fucntion Call to get the courses related to the branch
     branch_courses = get_branch_courses(get_courses, user_branch)
     details = {
@@ -112,7 +113,7 @@ def get_branch_courses(courses, branch):
     print(branch)
     for course in courses:
         # print (course.course_id)
-        if branch[:2] == course.course_id[:2] and len(course.course_id) >= 5:
+        if branch[:2].lower() == course.course_id[:2].lower() and len(course.course_id) >= 5:
             course_list.append(course)
         if len(course.course_id) > 5:
             course_list.append(course)
