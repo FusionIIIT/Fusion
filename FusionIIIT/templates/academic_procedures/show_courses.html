@@ -31,17 +31,7 @@
 
             <div class="ui divider"></div>
 
-            {% comment %}The Tab-Menu starts here!{% endcomment %}
-            <div class="ui huge fluid vertical pointing menu"
-                 style="max-width: 320px;">
-                <a class=" active item" data-tab="second">
-                    Approve Branch Change
-                    <i class="right floated chevron right icon"></i>
-                </a>
 
-
-            </div>
-            {% comment %}The Tab-Menu ends here!{% endcomment %}
 
         </div>
         {% comment %}
@@ -54,18 +44,10 @@
             The central-rail segment starts here!
         {% endcomment %}
         <div class="eight wide column">
-
-            {% comment %}The ... end here!{% endcomment %}
-            <div class="ui tab segment" data-tab="second">
-                {% if messages %}
-                <ul class="messages">
-                    {% for message in messages %}
-                    <li>{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-                    {% endfor %}
-                </ul>
-                {% endif %}
-                {% block changebranch %}
-                    {%  include 'academic_procedures/branch_change.html' %}
+            {% comment %}The ... start here!{% endcomment %}
+            <div class="ui active tab segment" data-tab="first">
+                {% block courses_list %}
+                    {%  include 'academic_procedures/course_list.html' %}
                 {%  endblock %}
             </div>
 

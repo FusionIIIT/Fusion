@@ -1,21 +1,16 @@
 {% load static %}
-{% block resiterstudent %}
+{% block finalregister %}
 
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="complainthistory">
-            Pre-Registration
+            Registered Courses
         </a>
     </div>
 
     <div class="ui active tab" data-tab="complainthistory">
-    <div class="ui vertical segment">
-
-   
-    
-            {% if details.check_pre_register %}
-                You have already registered
-            {% else %}
+        <div class="ui vertical segment">
+           
             <table class="ui very basic collapsing celled sortable table"
                    style="padding-left: 2.5%;
                                                           padding-right: 2.5%;
@@ -23,9 +18,9 @@
                                                           padding-bottom: 1.5%;
                                                           margin: auto;">
                 <thead>
-                 
                 <tr>
                     <th>
+                        #
                     </th>
 
                     <th>
@@ -43,15 +38,15 @@
                         Semester
                     </th>
                     <th>
-                        Select
+                        Selected
                     </th>
+
                 </tr>
                 </thead>
 
                 <tbody>
                 
-                    <form id='student_register' action='/academic-procedures/register/' method='post'>
-                    {% csrf_token %}
+
                     {% for items in courses_list %}
                         <tr>
                             <td>
@@ -77,7 +72,12 @@
                              </td>
                              <td>
                                 <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
-                                <input name="choice" type="checkbox" value="{{ items.course_id }}">
+                                {% for x in final_register %}
+                                    {% if items.course_id == x.course_id.course_id %}
+                                        Yes
+                                    {% endif %}
+                                {% endfor %}
+
                              </td>
                         </tr>
                     {% endfor %}
@@ -87,39 +87,7 @@
             <br>
             <div class="ui divider"></div>
 
-            <div class="extra content">
-                <div class="" style="text-align: center;">
-                    <button class="ui primary button">Register</button>
-                </div>
-            </div>
-            </form>
-             {% endif %}
         </div>
     </div>
 
-   
-
 {% endblock %}
-
-<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
-<script type="text/javascript">
-$(function() {
-    $("#student_register").submit(function(event) {
-        
-        event.preventDefault();
-        var friendForm = $(this);
-        
-        var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
-        // if success:
-        posting.done(function(data) {
-            alert('You have successfully registered');
-            window.location = "/academic-procedures/main/";
-        });
-        // if failure
-        posting.fail(function(data) {
-            alert('Registration Failed');
-            window.location = "/academic-procedures/main/";
-        });
-    });
-});
-</script>

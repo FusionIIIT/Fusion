@@ -19,10 +19,27 @@ from .models import BranchChange, FinalRegistrations, Register
 
 
 @login_required(login_url='/accounts/login')
+def main(request):
+    return HttpResponseRedirect('/academic-procedures/main/')
+
+
+@login_required(login_url='/accounts/login')
 def academic_procedures(request):
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     user_type = Designation.objects.all().filter(name=user_details.designation).first()
+
+    desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
+    dep_id = DepartmentInfo.objects.all().filter(name='Academics')
+    acadadmin = ExtraInfo.objects.all().filter(
+                                                user_type='staff',
+                                                designation=desig_id,
+                                                department=dep_id).first()
+
+    # IF user is academic admin
+    if(acadadmin == user_details):
+        return HttpResponseRedirect('/academic-procedures/acad_person/')
+
     if user_type.name != 'student':
         return HttpResponseRedirect('/academic-procedures/acad_person')
 
@@ -45,7 +62,8 @@ def academic_procedures(request):
             }
     final_register = Register.objects.all().filter(student_id=user_details.id)
     final_register_count = FinalRegistrations.objects.all().filter(student_id=user_details.id)
-
+    add_course = get_add_course(branch_courses, final_register)
+    print(final_register_count)
     # Branch Change Code starts here
     change_branch = apply_branch_change(request)
     return render(
@@ -54,9 +72,21 @@ def academic_procedures(request):
                                                                 'courses_list': branch_courses,
                                                                 'final_register': final_register,
                                                                 'final_count': final_register_count,
-                                                                'change_branch': change_branch
+                                                                'change_branch': change_branch,
+                                                                'add_course': add_course
                                                                 }
         )
+
+
+def get_add_course(branch, final):
+    x = []
+    for i in final:
+        x.append(i.course_id)
+    total_course = []
+    for i in branch:
+        if i not in x:
+            total_course.append(i)
+    return total_course
 
 
 # function to get user semester
@@ -152,9 +182,29 @@ def final_register(request):
 
 @login_required(login_url='/accounts/login')
 def drop_course(request):
-    pass
+    # current_user = get_object_or_404(User, username=request.user.username)
+    if request.method == 'POST':
+        try:
+            c_id = request.POST.getlist('course_id')
+            user_id = request.POST.getlist('user')
+            for i in range(len(c_id)):
+                cour_id = Course.objects.all().filter(course_id=c_id[i]).first()
+                s_id = ExtraInfo.objects.all().filter(id=user_id[i][:7]).first()
+                s_id = Student.objects.all().filter(id=s_id)
+                instance = Register.objects.filter(course_id=cour_id).filter(student_id=s_id)
+                instance = instance[0]
+                print('ind=s', instance)
+                instance.delete()
+            messages.info(request, 'Successfully Dropped')
+            return HttpResponseRedirect('/academic-procedures/main')
+        except:
+            return HttpResponseRedirect('/academic-procedures/main')
+    else:
+        messages.info(request, 'Problem in dropping')
+    return HttpResponseRedirect('/academic-procedures/main')
 
 
+# Change here to show
 @login_required(login_url='/accounts/login')
 def apply_branch_change(request):
     # Get all the departments
@@ -174,6 +224,7 @@ def apply_branch_change(request):
     label_for_change = False
 
     semester = get_user_semester(extraInfo_user.id)
+    semester = 2
 
     if cpi_data.cpi >= 8 and semester >= 1 and semester <= 2:
         label_for_change = True
@@ -209,6 +260,19 @@ def branch_change_request(request):
 
 @login_required(login_url='/accounts/login')
 def acad_person(request):
+    year = datetime.datetime.now().year
+    month = datetime.datetime.now().month
+    yearr = str(year) + "-" + str(year+1)
+    semflag = 0
+    queryflag = 0
+    query_option1 = get_batch_query_detail(month, year)
+    query_option2 = {"CSE": "CSE", "ECE": "ECE", "ME": "ME"}
+    if(month >= 7):
+        semflag = 1
+    else:
+        semflag = 2
+    # TO DO Bdes
+    date = {'year': yearr, 'month': month, 'semflag': semflag, 'queryflag': queryflag}
     change_queries = BranchChange.objects.all()
     # Total seats taken as some random value
     total_cse_seats = 100
@@ -254,9 +318,16 @@ def acad_person(request):
     }
     print(context)
     return render(
-        request,
-        '../templates/academic_procedures/academicadmin.html',
-        {'context': context, 'lists': lists})
+                request,
+                '../templates/academic_procedures/academicadmin.html',
+                {
+                    'context': context,
+                    'lists': lists,
+                    'date': date,
+                    'query_option1': query_option1,
+                    'query_option2': query_option2
+                }
+            )
 
 
 @login_required(login_url='/acounts/login')
@@ -293,3 +364,135 @@ def approve_branch_change(request):
     else:
         messages.info(request, 'Unable to proceed')
         return HttpResponseRedirect('/academic-procedures/main')
+
+
+# Function returning Branch , Banch data which was required many times
+def get_batch_query_detail(month, year):
+    stream1 = "B.Tech "
+    query_option1 = {}
+    if(month >= 7):
+        query_option1 = {
+                            stream1+str(year): stream1+str(year),
+                            stream1+str(year-1): stream1+str(year-1),
+                            stream1+str(year-2): stream1+str(year-2),
+                            stream1+str(year-3): stream1+str(year-3),
+                            stream1+str(year-4): stream1+str(year-4)}
+    else:
+        query_option1 = {
+                            stream1+str(year-1): stream1+str(year-1),
+                            stream1+str(year-2): stream1+str(year-2),
+                            stream1+str(year-3): stream1+str(year-3),
+                            stream1+str(year-4): stream1+str(year-4),
+                            stream1+str(year-5): stream1+str(year-5)}
+    return query_option1
+
+
+# view when Admin drops a user course
+@login_required(login_url='/accounts/login')
+def dropcourseadmin(request):
+    data = request.GET.get('id')
+    data = data.split('^')
+    rid = data[0]
+    redirectid = data[1]
+    redirecturl = '/academic-procedures/acad_person/verifyCourse/?id=' + redirectid
+    # print(redirecturl)
+    Register.objects.filter(r_id=rid).delete()
+    return HttpResponseRedirect(redirecturl)
+
+
+# view where Admin verifies the registered courses of every student
+@login_required(login_url='/accounts/login')
+def verify_course(request):
+    roll_no = request.GET.get('id')
+    obj = ExtraInfo.objects.all().filter(id=roll_no)
+    name = 1
+    for p in obj:
+        name = p.user.username
+    dict2 = {'roll_no': roll_no, 'name': name}
+    obj2 = Student.objects.all().filter(id=roll_no)
+    obj = Register.objects.all()
+    details = []
+    for a in obj2:
+        idd = a.id
+        for z in obj:
+            k = {}
+            # reg_ig has course registration id appended with the the roll number
+            # so that when we have removed the registration we can be redirected to this view
+            k['reg_id'] = str(z.r_id) + "^" + str(roll_no)
+            k['rid'] = z.r_id
+            courseobj2 = Course.objects.all().filter(course_id=z.course_id)
+            if(str(z.student_id) == str(idd)):
+                for p in courseobj2:
+                    k['course_id'] = p.course_id
+                    k['course_name'] = p.course_name
+                    k['sem'] = p.sem
+                    k['credits'] = p.credits
+                details.append(k)
+
+    year = datetime.datetime.now().year
+    month = datetime.datetime.now().month
+    yearr = str(year) + "-" + str(year+1)
+    semflag = 0
+    if(month >= 7):
+        semflag = 1
+    else:
+        semflag = 2
+    # TO DO Bdes
+    date = {'year': yearr, 'semflag': semflag}
+
+    return render(
+                    request,
+                    '../templates/academic_procedures/show_courses.html',
+                    {'details': details, 'dict2': dict2, 'date': date}
+                )
+
+
+# view to generate all list of students
+@login_required(login_url='/accounts/login')
+def student_list(request):
+    if(request.POST):
+        # Branch Stream Year options
+        option1 = request.POST.get("1")
+        option2 = request.POST.get("2")
+
+        year = datetime.datetime.now().year
+        month = datetime.datetime.now().month
+        yearr = str(year) + "-" + str(year+1)
+        semflag = 0
+        queryflag = 1
+        if(month >= 7):
+            semflag = 1
+        else:
+            semflag = 2
+        query_option1 = get_batch_query_detail(month, year)
+        query_option2 = {"CSE": "CSE", "ECE": "ECE", "ME": "ME"}
+        date = {'year': yearr, 'month': month, 'semflag': semflag, 'queryflag': queryflag}
+        dep_id = DepartmentInfo.objects.all().filter(name=option2)
+        obj1 = ExtraInfo.objects.all().filter(department=dep_id)
+        queryflag = 1
+        obj2 = Student.objects.filter(programme='B.Tech').select_related()
+        student_obj = []
+        cnt = 1
+        for k in obj2:
+            p = str(k.id)
+            tempobj = {}
+            for z in obj1:
+                if(p[0:7] == z.id and p[0:4] == option1[7:]):
+                    tempobj['roll_no'] = p[0:7]
+                    tempobj['name'] = z.user.username
+                    tempobj['branch'] = option2
+                    # student_obj[str(cnt)]=tempobj
+                    student_obj.append(tempobj)
+                    cnt += 1
+        # print (student_obj)
+        return render(
+                        request,
+                        '../templates/academic_procedures/academicadmin.html',
+                        {
+                            'date': date,
+                            'query_option1': query_option1,
+                            'query_option2': query_option2,
+                            'student_obj': student_obj,
+                            'queryflag': queryflag
+                        }
+                        )
