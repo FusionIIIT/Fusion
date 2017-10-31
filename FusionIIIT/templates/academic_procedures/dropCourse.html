@@ -91,17 +91,15 @@
 <script type="text/javascript">
 $(function() {
     $("#drop_courses").submit(function(event) {
-        
+
         event.preventDefault();
         var friendForm = $(this);
-        
+
         var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
-        // if success:
         posting.done(function(data) {
             alert('Course Drop Successful');
             window.location = "/academic-procedures/main/";
         });
-        // if failure
         posting.fail(function(data) {
             alert('Failed to drop a course');
             window.location = "/academic-procedures/main/";

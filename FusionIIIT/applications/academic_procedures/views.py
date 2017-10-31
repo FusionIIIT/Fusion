@@ -1,11 +1,13 @@
 import datetime
+import json
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db.models import Max
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
+from django.template.loader import render_to_string
 
 # from applications.academic_procedures.models import Register
 from applications.academic_information.models import Course, Student
@@ -13,9 +15,10 @@ from applications.globals.models import DepartmentInfo, Designation, ExtraInfo
 
 from .models import BranchChange, FinalRegistrations, Register
 
-# from . forms import AddDropCourseForm
 
-# Create your views here.
+@login_required(login_url='/accounts/login')
+def academic_procedures_redirect(request):
+    return HttpResponseRedirect('/academic-procedures/main')
 
 
 @login_required(login_url='/accounts/login')
@@ -27,8 +30,9 @@ def main(request):
 def academic_procedures(request):
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
-    user_type = Designation.objects.all().filter(name=user_details.designation).first()
+    # user_type = Designation.objects.all().filter(name=user_details.designation).first()
 
+    # Academics Admin Check
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
     dep_id = DepartmentInfo.objects.all().filter(name='Academics')
     acadadmin = ExtraInfo.objects.all().filter(
@@ -40,9 +44,6 @@ def academic_procedures(request):
     if(acadadmin == user_details):
         return HttpResponseRedirect('/academic-procedures/acad_person/')
 
-    if user_type.name != 'student':
-        return HttpResponseRedirect('/academic-procedures/acad_person')
-
     student = Student.objects.all().filter(id=user_details.id).first()
     # Fuction Call to get the current semster of the Student
     user_sem = get_user_semester(user_details.id)
@@ -50,7 +51,6 @@ def academic_procedures(request):
     registered_or_not = Register.objects.all().filter(student_id=student).first()
     # Fucntio call to get the current user's branch
     user_branch = get_user_branch(user_details)
-    user_sem = 2
 
     get_courses = Course.objects.all().filter(sem=(user_sem+1))
     # Fucntion Call to get the courses related to the branch
@@ -109,9 +109,10 @@ def get_user_semester(roll_no):
 
 def get_branch_courses(courses, branch):
     course_list = []
-    print(courses, branch)
+    print(branch)
     for course in courses:
-        if branch[:2].lower() == course.course_id[:2].lower() and len(course.course_id) >= 5:
+        # print (course.course_id)
+        if branch[:2] == course.course_id[:2] and len(course.course_id) >= 5:
             course_list.append(course)
         if len(course.course_id) > 5:
             course_list.append(course)
@@ -181,31 +182,6 @@ def final_register(request):
 
 
 @login_required(login_url='/accounts/login')
-def drop_course(request):
-    # current_user = get_object_or_404(User, username=request.user.username)
-    if request.method == 'POST':
-        try:
-            c_id = request.POST.getlist('course_id')
-            user_id = request.POST.getlist('user')
-            for i in range(len(c_id)):
-                cour_id = Course.objects.all().filter(course_id=c_id[i]).first()
-                s_id = ExtraInfo.objects.all().filter(id=user_id[i][:7]).first()
-                s_id = Student.objects.all().filter(id=s_id)
-                instance = Register.objects.filter(course_id=cour_id).filter(student_id=s_id)
-                instance = instance[0]
-                print('ind=s', instance)
-                instance.delete()
-            messages.info(request, 'Successfully Dropped')
-            return HttpResponseRedirect('/academic-procedures/main')
-        except:
-            return HttpResponseRedirect('/academic-procedures/main')
-    else:
-        messages.info(request, 'Problem in dropping')
-    return HttpResponseRedirect('/academic-procedures/main')
-
-
-# Change here to show
-@login_required(login_url='/accounts/login')
 def apply_branch_change(request):
     # Get all the departments
     branch_list = DepartmentInfo.objects.all()
@@ -273,6 +249,7 @@ def acad_person(request):
         semflag = 2
     # TO DO Bdes
     date = {'year': yearr, 'month': month, 'semflag': semflag, 'queryflag': queryflag}
+
     change_queries = BranchChange.objects.all()
     # Total seats taken as some random value
     total_cse_seats = 100
@@ -300,11 +277,11 @@ def acad_person(request):
         user_branch = ExtraInfo.objects.all().filter(id=students.id.id).first()
         initial_branch.append(user_branch.department.name)
         cpi.append(students.cpi)
-        if i.branches.name == 'cse':
+        if i.branches.name == 'CSE':
             available_seats.append(available_cse_seats)
-        elif i.branches.name == 'ece':
+        elif i.branches.name == 'ECE':
             available_seats.append(available_ece_seats)
-        elif i.branches.name == 'me':
+        elif i.branches.name == 'ME':
             available_seats.append(available_me_seats)
     lists = zip(applied_by, change_branch, initial_branch, available_seats, cpi)
     tag = False
@@ -391,13 +368,12 @@ def get_batch_query_detail(month, year):
 @login_required(login_url='/accounts/login')
 def dropcourseadmin(request):
     data = request.GET.get('id')
-    data = data.split('^')
+    data = data.split("+")
     rid = data[0]
-    redirectid = data[1]
-    redirecturl = '/academic-procedures/acad_person/verifyCourse/?id=' + redirectid
     # print(redirecturl)
     Register.objects.filter(r_id=rid).delete()
-    return HttpResponseRedirect(redirecturl)
+    response_data = {}
+    return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 
 # view where Admin verifies the registered courses of every student
@@ -405,12 +381,12 @@ def dropcourseadmin(request):
 def verify_course(request):
     roll_no = request.GET.get('id')
     obj = ExtraInfo.objects.all().filter(id=roll_no)
-    name = 1
-    for p in obj:
-        name = p.user.username
-    dict2 = {'roll_no': roll_no, 'name': name}
+    firstname = obj[0].user.first_name
+    lastname = obj[0].user.last_name
+    dict2 = {'roll_no': roll_no, 'firstname': firstname, 'lastname': lastname}
     obj2 = Student.objects.all().filter(id=roll_no)
     obj = Register.objects.all()
+
     details = []
     for a in obj2:
         idd = a.id
@@ -418,9 +394,10 @@ def verify_course(request):
             k = {}
             # reg_ig has course registration id appended with the the roll number
             # so that when we have removed the registration we can be redirected to this view
-            k['reg_id'] = str(z.r_id) + "^" + str(roll_no)
+            k['reg_id'] = str(z.r_id) + "+" + str(roll_no)
             k['rid'] = z.r_id
-            courseobj2 = Course.objects.all().filter(course_id=z.course_id)
+            # Name ID Confusion here , be carefull
+            courseobj2 = Course.objects.all().filter(course_name=z.course_id)
             if(str(z.student_id) == str(idd)):
                 for p in courseobj2:
                     k['course_id'] = p.course_id
@@ -439,12 +416,12 @@ def verify_course(request):
         semflag = 2
     # TO DO Bdes
     date = {'year': yearr, 'semflag': semflag}
-
     return render(
                     request,
                     '../templates/academic_procedures/show_courses.html',
-                    {'details': details, 'dict2': dict2, 'date': date}
-                )
+                    {'details': details,
+                        'dict2': dict2,
+                        'date': date})
 
 
 # view to generate all list of students
@@ -452,9 +429,9 @@ def verify_course(request):
 def student_list(request):
     if(request.POST):
         # Branch Stream Year options
-        option1 = request.POST.get("1")
-        option2 = request.POST.get("2")
-
+        option1 = request.POST['d1']
+        option2 = request.POST['d2']
+        print(option1, option2)
         year = datetime.datetime.now().year
         month = datetime.datetime.now().month
         yearr = str(year) + "-" + str(year+1)
@@ -479,20 +456,19 @@ def student_list(request):
             for z in obj1:
                 if(p[0:7] == z.id and p[0:4] == option1[7:]):
                     tempobj['roll_no'] = p[0:7]
-                    tempobj['name'] = z.user.username
+                    tempobj['name'] = str(z.user.first_name) + " " + str(z.user.last_name)
                     tempobj['branch'] = option2
                     # student_obj[str(cnt)]=tempobj
                     student_obj.append(tempobj)
                     cnt += 1
-        # print (student_obj)
-        return render(
-                        request,
-                        '../templates/academic_procedures/academicadmin.html',
-                        {
-                            'date': date,
-                            'query_option1': query_option1,
-                            'query_option2': query_option2,
-                            'student_obj': student_obj,
-                            'queryflag': queryflag
-                        }
-                        )
+
+        html = render_to_string('academic_procedures/student_table.html',
+                                {'student_obj': student_obj}, request)
+
+        maindict = {'date': date,
+                    'query_option1': query_option1,
+                    'query_option2': query_option2,
+                    'html': html,
+                    'queryflag': queryflag}
+        obj = json.dumps(maindict)
+        return HttpResponse(obj, content_type='application/json')
