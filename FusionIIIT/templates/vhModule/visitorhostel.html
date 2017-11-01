@@ -87,6 +87,10 @@
                     Requests
                     <i class="right floated chevron right icon"></i>
                 </a>
+                <a class="item" data-tab="thirteen">
+                    Cancel Booking
+                    <i class="right floated chevron right icon"></i>
+                </a>
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
 
@@ -190,6 +194,14 @@
             <div class="ui tab segment" data-tab="twelveth">
                 {% block pendingreq %}
                     {% include 'vhModule/pendingreq.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The Publications ends here!{% endcomment %}
+
+             {% comment %}The Publications starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="thirteen">
+                {% block cancelbooking %}
+                    {% include 'vhModule/cancelbooking.html' %}
                 {% endblock %}
             </div>
             {% comment %}The Publications ends here!{% endcomment %}
