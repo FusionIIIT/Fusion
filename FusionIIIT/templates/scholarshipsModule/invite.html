@@ -1,0 +1,130 @@
+{% load static %}
+{% block winners %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="inviteapplications">
+            Invite Applications
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="inviteapplications">
+        <div class="ui vertical segment">
+            <form class="ui form" style="padding-left: 36px; padding-right: 36px;">
+                <div class="two fields">
+                    <div class="six wide field">
+                        <label>Type</label>
+                        <div class="ui fluid search selection large dropdown">
+                            <input name="" type="hidden">
+                            <i class="dropdown icon"></i>
+
+                            <div class="default text">Select</div>
+
+                            <div class="menu">
+                                <div class="item" data-value="awards">
+                                    Awards
+                                </div>
+
+                                <div class="item" data-value="scholarship">
+                                    Scholarship
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="ten wide field">
+                        <label>Name</label>
+                        <div class="ui fluid search selection large dropdown">
+                            <input name="" type="hidden">
+                            <i class="dropdown icon"></i>
+
+                            <div class="default text">Select</div>
+
+                            <div class="menu">
+                                <div class="item" data-value="type1">
+                                    Type #1
+                                </div>
+
+                                <div class="item" data-value="type2">
+                                    Type #2
+                                </div>
+
+                                <div class="item" data-value="type3">
+                                    Type #3
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="two fields">
+                    <div class="field">
+                        <label>From</label>
+                        <div class="ui calendar" id="rangestart">
+                            <div class="ui input large left icon">
+                                <i class="calendar icon"></i>
+                                <input type="text" placeholder="From">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>To</label>
+                        <div class="ui calendar" id="rangeend">
+                            <div class="ui input large left icon">
+                                <i class="calendar icon"></i>
+                                <input type="text" placeholder="To">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="fields">
+                    <div class="eight wide field">
+                        <label>Batch</label>
+                        <select class="ui fluid search large dropdown" multiple="">
+                            <option value="">Batch</option>
+                            <option value="ug2015">UG 2015</option>
+                            <option value="ug2016">UG 2016</option>
+                            <option value="ug2017">UG 2017</option>
+                            <option value="ug2018">UG 2018</option>
+                        </select>
+                    </div>
+
+                    <div class="four wide field">
+                        <label>Time</label>
+                        <div class="ui large input">
+                            <input placeholder="Time" type="time">
+                        </div>
+                    </div>
+
+                    <div class="four wide field">
+                        <label>Venue</label>
+                        <select class="ui fluid search large dropdown">
+                            <option value="">Venue</option>
+                            <option value="academicoffice">Academic Office</option>
+                            <option value="cabin">Cabin</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label><br></label>
+                    <button class="ui primary large right floated button">
+                        Submit
+                    </button>
+                </div>
+
+                <br>
+                <br>
+            </form>
+
+            <div class="ui divider"></div>
+        </div>
+    </div>
+
+{% endblock %}
