@@ -1,0 +1,100 @@
+{% load static %}
+{% block winners %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="winners">
+            Winners
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="winners">
+        <div class="ui vertical segment">
+            <table class="ui very basic collapsing celled sortable table"
+                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                <thead>
+                <tr>
+                    <th class="four wide">
+                        Student
+                    </th>
+
+                    <th class="two wide">
+                        Year
+                    </th>
+
+                    <th class="four wide">
+                        Type
+                    </th>
+
+                    <th class="six wide">
+                        Award
+                    </th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr>
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                            <div class="content">
+                                Zlatan Ibrahimovic
+                                <div class="sub header">
+                                    2015121
+                                </div>
+                            </div>
+                        </h4>
+                    </td>
+
+                    <td>
+                        2017
+                    </td>
+
+                    <td>
+                        Awards
+                    </td>
+
+                    <td>
+                        Award #1
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                            <div class="content">
+                                Zlatan Ibrahimovic
+                                <div class="sub header">
+                                    2015121
+                                </div>
+                            </div>
+                        </h4>
+                    </td>
+
+                    <td>
+                        2017
+                    </td>
+
+                    <td>
+                        Scholarship
+                    </td>
+
+                    <td>
+                        Scholarship #1
+                    </td>
+                </tr>
+
+                </tbody>
+            </table>
+
+            <br>
+            <div class="ui divider"></div>
+        </div>
+    </div>
+
+{% endblock %}

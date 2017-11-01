@@ -22,7 +22,24 @@ And additional requirements are in **requirements.txt**
   * Migrate the changes to the database `$ python manage.py migrate`  
   * Run the server `$ python manage.py runserver`
 
-## Diffrent modules include
+## Configuring a Upstream:
+
+ * `$ git remote add upstream https://github.com/3Peers/FusionIIIT.git`
+ * `$ git remote -v`
+   * It should like this:
+     * origin    https://github.com/YOUR_USERNAME/FusionIIIT.git (fetch)
+     * origin    https://github.com/YOUR_USERNAME/FusionIIIT.git (push)
+     * upstream  https://github.com/3Peers/FusionIIIT.git (fetch)
+     * upstream  https://github.com/3Peers/FusionIIIT.git (push)
+     
+## Syncing with Fork:
+
+ * `$ git fetch upstream`
+ * `$ git checkout master`
+ * `$ git merge upstream/master`
+
+
+## Different modules include
 
   * Academic database management  
   * Academic workflows  

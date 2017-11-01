@@ -1,0 +1,206 @@
+{% block placementvisits %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="addvisit">
+            Add a new Visit
+        </a>
+
+        <a class="item" data-tab="managevisit">
+            Manage Visits
+        </a>
+    </div>
+    {% comment %}The tab menu ends here!{% endcomment %}
+
+    <div class="ui active tab" data-tab="addvisit">
+        <div class="ui vertical segment">
+            {% comment %}Form Tag starts here!{% endcomment %}
+            <form>
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui active accordion field">
+                    <div class="title">
+                        <i class="icon dropdown"></i>
+                        Add a new Placement Visit!
+                    </div>
+
+                    <div class="active content">
+                        <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                            <div class="two fields">
+                                <div class="field">
+                                    <label>
+                                        Company Name
+                                    </label>
+
+                                    <div class="ui large input">
+                                        <input>
+                                    </div>
+                                </div>
+
+                                <div class="field">
+                                    <label>
+                                        Date:
+                                    </label>
+
+                                    {% comment %}
+                                        TODO: Add a calendar ui!
+                                    {% endcomment %}
+                                    <div class="ui calendar" id="">
+                                        <div class="ui input left icon">
+                                            <i class="calendar icon"></i>
+                                            <input type="text" placeholder="Date">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% comment %} A new row starts here!{% endcomment %}
+                            <div class="two fields">
+                                <div class="field">
+                                    <label>
+                                        Location
+                                    </label>
+
+                                    <div class="ui large input">
+                                        <input>
+                                    </div>
+                                </div>
+
+                                <div class="field">
+                                    <label>City</label>
+                                    <div class="ui input">
+                                        <input>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% comment %} A new row starts here!{% endcomment %}
+                            <div class="field">
+                                <label>Description:</label>
+                                <div class="ui fluid large input">
+                                    <textarea rows="2"></textarea>
+                                </div>
+                            </div>
+
+                            {% comment %}A new row starts here!{% endcomment %}
+                            <div class="field">
+                                <button class="ui large primary button right floated" type="submit">
+                                    Submit
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% comment %}The add a new skill Accordian ends here!{% endcomment %}
+            </form>
+            {% comment %}Form Tag ends here!{% endcomment %}
+
+            <br>
+            <br>
+
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+
+    {% comment %}
+        TODO: You people should add a contact detail of the company here itself maybe phone# or email!
+    {% endcomment %}
+
+    <div class="ui tab" data-tab="managevisit">
+        <div class="ui vertical segment">
+
+            {% comment %}
+                TODO: can add a list also instead like mess module!
+            {% endcomment %}
+
+            <table class="ui fixed sortable very basic celled table">
+                <thead>
+                    <tr>
+                        <th class="two wide">Date</th>
+                        <th class="five wide">Company Name</th>
+                        {% comment %}
+                            TODO: Concatinate city and location here!
+                        {% endcomment %}
+                        <th class="three wide">Location</th>
+                        <th class="five wide">Description</th>
+                        <th class="one wide">Edit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                           10<sup>th</sup> Aug'17
+                        </td>
+
+                        <td>
+                            Oracle India Ltd.
+                        </td>
+
+                        <td>
+                            Bangalore.
+                        </td>
+
+                        <td>
+                            ...
+                        </td>
+
+                        <td>
+                            <div class="ui inverted circular icon button" style="margin: auto;">
+                                <i class="wrench black icon"></i>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                           10<sup>th</sup> Aug'17
+                        </td>
+
+                        <td>
+                            Oracle India Ltd.
+                        </td>
+
+                        <td>
+                            Bangalore.
+                        </td>
+
+                        <td>
+                            ...
+                        </td>
+
+                        <td>
+                            <div class="ui inverted circular icon button" style="margin: auto;">
+                                <i class="wrench black icon"></i>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                           10<sup>th</sup> Aug'17
+                        </td>
+
+                        <td>
+                            Oracle India Ltd.
+                        </td>
+
+                        <td>
+                            Bangalore.
+                        </td>
+
+                        <td>
+                            ...
+                        </td>
+
+                        <td>
+                            <div class="ui inverted circular icon button" style="margin: auto;">
+                                <i class="wrench black icon"></i>
+                            </div>
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+{% endblock %}

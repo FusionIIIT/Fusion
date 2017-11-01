@@ -1,0 +1,72 @@
+{% load static %}
+{% block invitation %}
+<div class="ui pointing secondary menu">
+    <a class="active item" data-tab="invitation">
+        Meeting Invitation
+    </a>
+</div>
+<div class="ui active tab" data-tab="invitation">
+    <div class="ui vertical stripe team segment"
+         style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+
+        <form class="ui large form">
+
+            {% comment %} The invitation form  starts here! {% endcomment %}
+
+            {% comment %}The form row starts here!{% endcomment %}
+
+
+            <div class="two fields">
+                <div class="field">
+                    <label>Date</label>
+                    <div class="ui calendar" id="rangestart">
+                        <div class="ui input left icon">
+                            <i class="calendar icon"></i>
+                            <input type="text" placeholder="Date">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>Time</label>
+                    <input type="time">
+                </div>
+
+            </div>
+            <div class="two fields">
+                <div class="field">
+                    <label>Agenda</label>
+                    <input placeholder="Agenda" type="text">
+                </div>
+                 <div class="field">
+                    <label>Place</label>
+                                <select class="ui search fluid dropdown">
+                                    <option value="Cm1">Central Mess I</option>
+                                    <option value="Cm2">Central Mess II</option>
+                                </select>
+
+                </div>
+
+            </div>
+           <div class="field">
+                   <label>Description:</label>
+                        <textarea rows="2"></textarea>
+           </div>
+
+             <div class="field">
+                                <label><br></label>
+                                <button class="ui primary right floated button" type="submit">
+                                    Submit
+                                </button>
+
+
+                            </div>
+            <br>
+
+        </form>
+        <div class="ui divider"></div>
+    </div>
+</div>
+
+{% endblock %}

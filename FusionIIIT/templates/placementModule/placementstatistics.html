@@ -1,0 +1,523 @@
+{% load static %}
+{% block placementstatistics %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="placementschedule">
+            Placement Schedule
+        </a>
+
+        <a class="item" data-tab="batchstats">
+            Batch Statistics
+        </a>
+    </div>
+
+    {% comment %}
+        TODO: Change the css to timeline feed!
+    {% endcomment %}
+    <div class="ui active tab" data-tab="placementschedule">
+        <div class="ui vertical segment">
+
+            {% comment %}Form Tag starts here!{% endcomment %}
+            <form>
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui accordion field">
+                    <div class="title">
+                        <i class="icon dropdown"></i>
+                        Add a new Event!
+                    </div>
+
+                    <div class="content">
+                        <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                            <div class="three fields">
+                                <div class="eight wide field">
+                                    <label>Company Name:</label>
+                                    <div class="ui fluid large input">
+                                        {% comment %}The Institute Name input!{% endcomment %}
+                                        <input>
+                                    </div>
+                                </div>
+
+                                <div class="four wide field">
+                                    <label>Date:</label>
+                                    <div class="ui calendar" id="rangestart2">
+                                        <div class="ui input large left icon">
+                                            <i class="calendar icon"></i>
+                                            <input type="text" placeholder="From">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="four wide field">
+                                    <label>Event Type:</label>
+                                    <select class="ui search fluid large dropdown">
+                                        <option value="">Select</option>
+                                        <option value="interview">Interview</option>
+                                        <option value="placement">Placement</option>
+                                        <option value="seminar">Seminar</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label>
+                                    Description
+                                </label>
+
+                                <textarea rows="2"></textarea>
+                            </div>
+
+                            <div class="field">
+                                <button class="ui right floated large primary button" type="submit">
+                                    Submit
+                                </button>
+                            </div>
+
+                            <br>
+                            <br>
+
+                        </div>
+                    </div>
+                </div>
+                {% comment %}The add a new Achievement Accordian ends here!{% endcomment %}
+            </form>
+            {% comment %}Form Tag ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            <div class="ui large fluid feed" style="padding: 16px; padding-left: 32px; padding-right: 32px;">
+
+                {% comment %}A new event starts here!{% endcomment %}
+                <div class="event">
+                    <div class="label">
+                        <img src="{% static 'globals/img/zlatan.jpg' %}">
+                    </div>
+                    <div class="content">
+                        <div class="summary">
+                            <a>Robert LewanGOAlski</a> scored a brace!
+                        </div>
+
+                        <div class="extra content">
+                            In 9 matches this season and he has scored 12 goals!
+                        </div>
+                    </div>
+
+                    <div class="extra date right floated">
+                        10<sup>th</sup> Aug'17
+                    </div>
+                </div>
+                {% comment %}A new event ends here!{% endcomment %}
+
+                {% comment %}A new event starts here!{% endcomment %}
+                <div class="event">
+                    <div class="label">
+                        <img src="{% static 'globals/img/zlatan.jpg' %}">
+                    </div>
+                    <div class="content">
+                        <div class="summary">
+                            <a>Zlatan ibrahimovic</a> scored a Goal!
+                        </div>
+
+                        <div class="extra text">
+                            It was a screamer, right foot into the top right corner from 35 yards!
+                        </div>
+                    </div>
+
+                    <div class="extra date right floated">
+                        10<sup>th</sup> Aug'17
+                    </div>
+                </div>
+                {% comment %}A new event ends here!{% endcomment %}
+
+                {% comment %}A new event starts here!{% endcomment %}
+                <div class="event">
+                    <div class="label">
+                        <img src="{% static 'globals/img/zlatan.jpg' %}">
+                    </div>
+                    <div class="content">
+                        <div class="summary">
+                            <a>Cristiano Penaldo</a> scored a Penalty!
+                        </div>
+
+                        <div class="extra text">
+                            Disgraceful dive and the refree pointed to the spot!
+                        </div>
+                    </div>
+
+                    <div class="extra date right floated">
+                        10<sup>th</sup> Aug'17
+                    </div>
+                </div>
+                {% comment %}A new event ends here!{% endcomment %}
+
+            </div>
+        </div>
+    </div>
+
+
+    <div class="ui tab" data-tab="batchstats">
+        <div class="ui vertical segment">
+
+            <div class="ui four item menu">
+                <a class="active item" data-tab="2015">2015</a>
+                <a class="item" data-tab="2016">2016</a>
+                <a class="item" data-tab="2017">2017</a>
+                <a class="item" data-tab="2018">2018</a>
+            </div>
+
+            <div class="ui active tab" data-tab="2015">
+
+                <table class="ui definition padded sortable celled table" style="margin: auto;">
+                    <thead>
+                    <tr>
+                        <th></th>
+                        <th class="two wide">CSE</th>
+                        <th class="two wide">ECE</th>
+                        <th class="two wide">ME</th>
+                        <th class="two wide">Total</th>
+                        <th class="two wide">Package</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr>
+                        <td>Oracle</td>
+                        <td>48</td>
+                        <td>50</td>
+                        <td>02</td>
+                        <td>100</td>
+                        <td>7.56</td>
+                    </tr>
+
+                    <tr>
+                        <td>Mu Sigma</td>
+                        <td>36</td>
+                        <td>05</td>
+                        <td>02</td>
+                        <td>43</td>
+                        <td>8.75</td>
+                    </tr>
+
+                    <tr>
+                        <td>Total Offers</td>
+
+                        <td>
+                            xx
+                        </td>
+
+                        <td>
+                            xx
+                        </td>
+
+                        <td>
+                            xx
+                        </td>
+
+                        <td>
+                            xx
+                        </td>
+
+                        <td>
+                            xx
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>Placement</td>
+
+                        <td>
+                            xx %
+                        </td>
+
+                        <td>
+                            xx %
+                        </td>
+
+                        <td>
+                            xx %
+                        </td>
+
+                        <td>
+                            xx %
+                        </td>
+
+                        <td>
+                            xx %
+                        </td>
+                    </tr>
+
+                    </tbody>
+
+                </table>
+                <br>
+                <div class="ui divider"></div>
+            </div>
+
+            <div class="ui tab" data-tab="2016">
+
+                <table class="ui definition padded sortable celled table" style="margin: auto;">
+                    <thead>
+                    <tr>
+                        <th></th>
+                        <th class="two wide">CSE</th>
+                        <th class="two wide">ECE</th>
+                        <th class="two wide">ME</th>
+                        <th class="two wide">Total</th>
+                        <th class="two wide">Package</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr>
+                        <td>Oracle</td>
+                        <td>48</td>
+                        <td>50</td>
+                        <td>02</td>
+                        <td>100</td>
+                        <td>7.56</td>
+                    </tr>
+
+                    <tr>
+                        <td>Mu Sigma</td>
+                        <td>36</td>
+                        <td>05</td>
+                        <td>02</td>
+                        <td>43</td>
+                        <td>8.75</td>
+                    </tr>
+
+                    <tr>
+                        <td>Total Offers</td>
+
+                        <td>
+                            xx
+                        </td>
+
+                        <td>
+                            xx
+                        </td>
+
+                        <td>
+                            xx
+                        </td>
+
+                        <td>
+                            xx
+                        </td>
+
+                        <td>
+                            xx
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>Placement</td>
+
+                        <td>
+                            xx %
+                        </td>
+
+                        <td>
+                            xx %
+                        </td>
+
+                        <td>
+                            xx %
+                        </td>
+
+                        <td>
+                            xx %
+                        </td>
+
+                        <td>
+                            xx %
+                        </td>
+                    </tr>
+
+                    </tbody>
+
+                </table>
+                <br>
+                <div class="ui divider"></div>
+            </div>
+
+            <div class="ui tab" data-tab="2017">
+
+                <table class="ui definition padded sortable celled table" style="margin: auto;">
+                    <thead>
+                    <tr>
+                        <th></th>
+                        <th class="two wide">CSE</th>
+                        <th class="two wide">ECE</th>
+                        <th class="two wide">ME</th>
+                        <th class="two wide">Total</th>
+                        <th class="two wide">Package</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr>
+                        <td>Oracle</td>
+                        <td>48</td>
+                        <td>50</td>
+                        <td>02</td>
+                        <td>100</td>
+                        <td>7.56</td>
+                    </tr>
+
+                    <tr>
+                        <td>Mu Sigma</td>
+                        <td>36</td>
+                        <td>05</td>
+                        <td>02</td>
+                        <td>43</td>
+                        <td>8.75</td>
+                    </tr>
+
+                    <tr>
+                        <td>Total Offers</td>
+
+                        <td>
+                            xx
+                        </td>
+
+                        <td>
+                            xx
+                        </td>
+
+                        <td>
+                            xx
+                        </td>
+
+                        <td>
+                            xx
+                        </td>
+
+                        <td>
+                            xx
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>Placement</td>
+
+                        <td>
+                            xx %
+                        </td>
+
+                        <td>
+                            xx %
+                        </td>
+
+                        <td>
+                            xx %
+                        </td>
+
+                        <td>
+                            xx %
+                        </td>
+
+                        <td>
+                            xx %
+                        </td>
+                    </tr>
+
+                    </tbody>
+
+                </table>
+                <br>
+                <div class="ui divider"></div>
+            </div>
+
+            <div class="ui tab" data-tab="2018">
+
+                <table class="ui definition padded sortable celled table" style="margin: auto;">
+                    <thead>
+                    <tr>
+                        <th></th>
+                        <th class="two wide">CSE</th>
+                        <th class="two wide">ECE</th>
+                        <th class="two wide">ME</th>
+                        <th class="two wide">Total</th>
+                        <th class="two wide">Package</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr>
+                        <td>Oracle</td>
+                        <td>48</td>
+                        <td>50</td>
+                        <td>02</td>
+                        <td>100</td>
+                        <td>7.56</td>
+                    </tr>
+
+                    <tr>
+                        <td>Mu Sigma</td>
+                        <td>36</td>
+                        <td>05</td>
+                        <td>02</td>
+                        <td>43</td>
+                        <td>8.75</td>
+                    </tr>
+
+                    <tr>
+                        <td>Total Offers</td>
+
+                        <td>
+                            xx
+                        </td>
+
+                        <td>
+                            xx
+                        </td>
+
+                        <td>
+                            xx
+                        </td>
+
+                        <td>
+                            xx
+                        </td>
+
+                        <td>
+                            xx
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>Placement</td>
+
+                        <td>
+                            xx %
+                        </td>
+
+                        <td>
+                            xx %
+                        </td>
+
+                        <td>
+                            xx %
+                        </td>
+
+                        <td>
+                            xx %
+                        </td>
+
+                        <td>
+                            xx %
+                        </td>
+                    </tr>
+
+                    </tbody>
+
+                </table>
+                <br>
+                <div class="ui divider"></div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
