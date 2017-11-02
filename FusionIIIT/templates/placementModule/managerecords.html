@@ -1,0 +1,380 @@
+{% load static %}
+{% block managerecords %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="manageplacementrecords">
+            Placement
+        </a>
+
+        <a class="item" data-tab="managepbirecords">
+            P.B.I.
+        </a>
+
+        <a class="item" data-tab="managehigherstudiesrecords">
+            Higher Studies
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="manageplacementrecords">
+        <div class="ui vertical segment">
+
+            <form class="ui form">
+                <div class="ui active accordion field">
+                    <div class="title">
+                        <i class="icon dropdown"></i>
+                        Manage Placement Records!
+                    </div>
+
+                    <div class="active content">
+                        <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                            <div class="three fields">
+                                <div class="eight wide field">
+                                    <label>Student</label>
+                                    <div class="ui fluid large input">
+                                        <input placeholder="Student">
+                                    </div>
+                                </div>
+
+                                <div class="four wide field">
+                                    <label>Year</label>
+                                    <select class="ui search fluid large dropdown">
+                                        <option value="">Select</option>
+                                        <option value="2015">2015</option>
+                                        <option value="2016">2016</option>
+                                        <option value="2017">2017</option>
+                                        <option value="2018">2018</option>
+                                    </select>
+                                </div>
+
+                                <div class="four wide field">
+                                    <label>Roll Number</label>
+                                    <div class="ui fluid large input">
+                                        <input placeholder="Roll Number">
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% comment %}The start and end date input{% endcomment %}
+                            <div class="two fields">
+                                <div class="twelve wide field">
+                                    <label>Company</label>
+                                    <div class="ui input">
+                                        <input type="text" placeholder="Company">
+                                    </div>
+                                </div>
+
+                                <div class="four wide field">
+                                    <label>CTC</label>
+                                    <div class="ui input">
+                                        <input type="text" placeholder="CTC">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label><br></label>
+                                <button class="ui right floated large primary button" type="submit">
+                                    Submit
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <br>
+            <br>
+            <div class="ui divider"></div>
+
+        <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;">
+            <thead>
+            <tr>
+                <th class="four wide">Student</th>
+                <th class="two wide">Year</th>
+                <th class="six wide">Company</th>
+                <th class="two wide">CTC</th>
+                <th class="two wide">Delete</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr>
+                <td>
+                    <h4 class="ui image header">
+                        <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                        <div class="content">
+                            Zlatan Ibrahimovic
+                            <div class="sub header">
+                                2015121
+                            </div>
+                        </div>
+                    </h4>
+                </td>
+
+                <td>
+                    2015
+                </td>
+
+                <td>
+                    Manchester United FC
+                </td>
+
+                <td>
+                    &#8377; 12,00,000
+                </td>
+
+                <td>
+                    <button class="ui inverted huge circular icon button" style="margin: auto;">
+                        <i class="delete red icon"></i>
+                    </button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="managepbirecords">
+        <div class="ui vertical segment">
+
+            <form class="ui form">
+                <div class="ui active accordion field">
+                    <div class="title">
+                        <i class="icon dropdown"></i>
+                        Manage PBI Records!
+                    </div>
+
+                    <div class="active content">
+                        <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                            <div class="three fields">
+                                <div class="eight wide field">
+                                    <label>Student</label>
+                                    <div class="ui fluid large input">
+                                        <input placeholder="Student">
+                                    </div>
+                                </div>
+
+                                <div class="four wide field">
+                                    <label>Year</label>
+                                    <select class="ui search fluid large dropdown">
+                                        <option value="">Select</option>
+                                        <option value="2015">2015</option>
+                                        <option value="2016">2016</option>
+                                        <option value="2017">2017</option>
+                                        <option value="2018">2018</option>
+                                    </select>
+                                </div>
+
+                                <div class="four wide field">
+                                    <label>Roll Number</label>
+                                    <div class="ui fluid large input">
+                                        <input placeholder="Roll Number">
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% comment %}The start and end date input{% endcomment %}
+                            <div class="two fields">
+                                <div class="twelve wide field">
+                                    <label>Company</label>
+                                    <div class="ui input">
+                                        <input type="text" placeholder="Company">
+                                    </div>
+                                </div>
+
+                                <div class="four wide field">
+                                    <label>CTC</label>
+                                    <div class="ui input">
+                                        <input type="text" placeholder="CTC">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label><br></label>
+                                <button class="ui right floated large primary button" type="submit">
+                                    Submit
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <br>
+            <br>
+            <div class="ui divider"></div>
+
+        <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;">
+            <thead>
+            <tr>
+                <th class="four wide">Student</th>
+                <th class="two wide">Year</th>
+                <th class="six wide">Company</th>
+                <th class="two wide">CTC</th>
+                <th class="two wide">Delete</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr>
+                <td>
+                    <h4 class="ui image header">
+                        <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                        <div class="content">
+                            Zlatan Ibrahimovic
+                            <div class="sub header">
+                                2015121
+                            </div>
+                        </div>
+                    </h4>
+                </td>
+
+                <td>
+                    2015
+                </td>
+
+                <td>
+                    Manchester United FC
+                </td>
+
+                <td>
+                    &#8377; 50,000
+                </td>
+
+                <td>
+                    <button class="ui inverted huge circular icon button" style="margin: auto;">
+                        <i class="delete red icon"></i>
+                    </button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="managehigherstudiesrecords">
+        <div class="ui vertical segment">
+
+            <form class="ui form">
+                <div class="ui active accordion field">
+                    <div class="title">
+                        <i class="icon dropdown"></i>
+                        Manage Higher Study Records!
+                    </div>
+
+                    <div class="active content">
+                        <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                            <div class="three fields">
+                                <div class="eight wide field">
+                                    <label>Student</label>
+                                    <div class="ui fluid large input">
+                                        <input placeholder="Student">
+                                    </div>
+                                </div>
+
+                                <div class="four wide field">
+                                    <label>Roll Number</label>
+                                    <div class="ui fluid large input">
+                                        <input placeholder="Roll Number">
+                                    </div>
+                                </div>
+
+                                <div class="four wide field">
+                                    <label>Exam</label>
+                                    <select class="ui search fluid large dropdown">
+                                        <option value="">Select</option>
+                                        <option value="gate">GATE</option>
+                                        <option value="gmat">GMAT</option>
+                                        <option value="gre">GRE</option>
+                                        <option value="cat">CAT</option>
+                                        <option value="others">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            {% comment %}The start and end date input{% endcomment %}
+                            <div class="two fields">
+                                <div class="twelve wide field">
+                                    <label>University</label>
+                                    <div class="ui input">
+                                        <input type="text" placeholder="University">
+                                    </div>
+                                </div>
+
+                                <div class="four wide field">
+                                    <label>Exam Score</label>
+                                    <div class="ui input">
+                                        <input type="text" placeholder="Score">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label><br></label>
+                                <button class="ui right floated large primary button" type="submit">
+                                    Submit
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <br>
+            <br>
+            <div class="ui divider"></div>
+
+        <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;">
+            <thead>
+            <tr>
+                <th class="four wide">Student</th>
+                <th class="two wide">Exam</th>
+                <th class="six wide">University</th>
+                <th class="two wide">Score</th>
+                <th class="two wide">Delete</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr>
+                <td>
+                    <h4 class="ui image header">
+                        <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                        <div class="content">
+                            Zlatan Ibrahimovic
+                            <div class="sub header">
+                                2015121
+                            </div>
+                        </div>
+                    </h4>
+                </td>
+
+                <td>
+                    GRE
+                </td>
+
+                <td>
+                    Manchester United FC
+                </td>
+
+                <td>
+                    340
+                </td>
+
+                <td>
+                    <button class="ui inverted huge circular icon button" style="margin: auto;">
+                        <i class="delete red icon"></i>
+                    </button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        </div>
+    </div>
+
+{% endblock %}
+

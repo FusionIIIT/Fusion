@@ -1,0 +1,98 @@
+{% load static %}
+{% block splreq %}
+<<<<<<< HEAD
+<div class="ui pointing secondary menu">
+    <a class="active item" data-tab="splreq">
+        Special Request
+    </a>
+</div>
+<div class="ui active tab" data-tab="minutes">
+    <div class="ui vertical stripe team segment"
+         style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+
+        <form class="ui large form">
+
+            {% comment %} The Minutes form  starts here! {% endcomment %}
+
+            {% comment %}The form row starts here!{% endcomment %}
+            <table class="ui padded table">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Roll No.</th>
+      <th>Food</th>
+        <th>Food</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+          <h4 class="ui image header">
+
+                            <div class="content">
+                                Zlatan Ibrahimovic
+                                <div class="sub header">gmail@zlatan.com
+                                </div>
+                            </div>
+                        </h4></td>
+      <td>gmail@zlatan.com</td>
+        <td>Dahi wada</td>
+      <td>Dahi Wada is love,love = dahi wada so kindly provide.</td>
+    </tr>
+
+  </tbody>
+</table>
+        </form>
+    </div>
+</div>
+=======
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="splreq">
+            Special Request
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="minutes">
+        <div class="ui vertical stripe team segment"
+             style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+
+            <form class="ui large form">
+                <table class="ui collapsing celled very basic sortable table" style="margin: auto;">
+                    <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Food</th>
+                        <th>Description</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>
+                            <h4 class="ui image header">
+                                <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                                <div class="content">
+                                    Zlatan Ibrahimovic
+                                    <div class="sub header">
+                                        King Of Sweden
+                                    </div>
+                                </div>
+                            </h4>
+                        </td>
+
+                        <td>Dahi wada</td>
+
+                        <td>Dahi Wada is love, love = dahi wada so kindly provide.</td>
+                    </tr>
+
+                    </tbody>
+                </table>
+            </form>
+
+            <br>
+            <div class="ui divider"></div>
+        </div>
+    </div>
+>>>>>>> upstream/master
+{% endblock %}

@@ -1,0 +1,65 @@
+{% load static %}
+
+{% block viewinventory %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="viewinventory">
+            View Inventory
+        </a>
+    </div>
+
+    {% comment %}The Past bookings segment starts here!{% endcomment %}
+    <div class="ui active tab" data-tab="viewinventory">
+        <div class="ui vertical segment">
+            <table class="ui structured celled sortable table" style="margin-bottom: 16px;">
+                <thead>
+                <tr>
+                    <th>Bill-No.</th>
+                    <th>Item</th>
+                    <th>Type</th>
+                    <th>Quantity</th>
+                    <th>Amount</th>
+                    <th>Bill</th>
+                </tr>
+                </thead>
+
+                <tbody>
+
+                <tr>
+                    <td>
+                        XXXX-XXXX-XXXX-XXXX
+                    </td>
+
+                    <td>
+                        Item #1
+                    </td>
+
+                    <td>
+                        Consumable
+                    </td>
+
+                    <td>
+                        Qty #1
+                    </td>
+
+                    <td>
+                        Amt #1
+                    </td>
+
+                    <td>
+                        <div class="ui inverted circular icon button" style="margin: auto;">
+                            <i class="wrench black icon"></i>
+                        </div>
+                    </td>
+
+                </tr>
+
+                </tbody>
+            </table>
+
+            <br>
+            <div class="ui divider"></div>
+        </div>
+    </div>
+    {% comment %}The  segment ends here!{% endcomment %}
+{% endblock %}

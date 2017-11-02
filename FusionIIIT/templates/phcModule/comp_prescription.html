@@ -1,0 +1,68 @@
+{% load static %}
+
+{% block comp_prescription %}
+    {% comment %}the compounder prescription tab starts here {% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="prescribe">
+            Prescribe
+        </a>
+    </div>
+    {% comment %}the ambulance schedule tab starts here {% endcomment %}
+    <div class="ui active tab" data-tab="prescribe">
+        <div class="ui vertical stripe team segment"
+             style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+
+            <form class="ui form">
+                <div class="three fields">
+                    <div class="field">
+                        <label>Patient's Name</label>
+                        <div class="ui fluid large input">
+                            <input placeholder="Patient's Name" type="text">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Roll No.</label>
+                        <div class="ui fluid large input">
+                            <input placeholder="Roll No.">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Email</label>
+                        <div class="ui fluid large input">
+                            <input placeholder="Email" type="email">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>Symptoms</label>
+                    <textarea rows="2"></textarea>
+                </div>
+
+                <div class="field">
+                    <label>Medicines Prescribed</label>
+                    <textarea rows="2"></textarea>
+                </div>
+
+                <div class="field">
+                    <label><br></label>
+                    <div class="ui large right floated primary button">
+                        Submit
+                    </div>
+                </div>
+
+            </form>
+
+            <br>
+            <br>
+
+        </div>
+
+        <br>
+        <div class="extra content"></div>
+    </div>
+    {% comment %}the compounder prescription tab ends here {% endcomment %}
+{% endblock %}
