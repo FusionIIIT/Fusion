@@ -46,7 +46,7 @@
                 <tbody>
 
                     {% csrf_token %}
-                            {% for items in courses_list %}
+                            {% for items in show_list %}
                                     <tr>
                             <td>
                             </td>
@@ -71,7 +71,12 @@
                              </td>
                              <td>
                                 <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
-                                <input name="choice" type="checkbox" value="{{ items.course_id }}">
+                                                            {% if items.optional %}
+                                                                <input name="choice" type="checkbox" value="{{ items.course_id }}">
+                                                            {% else %}
+                                                                <input name="choice" type="checkbox" value="{{ items.course_id }}" onclick="return false;" checked hidden="True">(Compulsory)
+                                                            {% endif %}
+
                              </td>
                         </tr>
                         {% endfor %}
@@ -81,7 +86,6 @@
 
             <div class="ui divider"></div>
             <center><button class="ui positive basic button">Add Course(s)</button></center>
-
         </form>
         </div>
     </div>

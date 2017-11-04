@@ -1,3 +1,6 @@
+{% comment %}
+Used to show student list on evry ajax call, this will render the template
+{% endcomment %}
 {% if student_obj %}
 <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%;padding-right: 2.5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
           <thead>
@@ -32,5 +35,5 @@
           </tbody>
       </table>
 {% else %}
-<CENTER>  <B> NO RECORDS FOUND</B> </center>
+<CENTER><BR><BR>  <B> NO RECORDS FOUND</B> </center>
   {% endif %}

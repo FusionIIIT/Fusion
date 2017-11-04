@@ -11,8 +11,8 @@
     <div class="ui active tab" data-tab="complainthistory">
     <div class="ui vertical segment">
 
-   
-    
+
+
             {% if details.check_pre_register %}
                 You have already registered
             {% else %}
@@ -23,7 +23,7 @@
                                                           padding-bottom: 1.5%;
                                                           margin: auto;">
                 <thead>
-                 
+
                 <tr>
                     <th>
                     </th>
@@ -49,7 +49,7 @@
                 </thead>
 
                 <tbody>
-                
+
                     <form id='student_register' action='/academic-procedures/register/' method='post'>
                     {% csrf_token %}
                     {% for items in courses_list %}
@@ -76,8 +76,12 @@
                                 <input type="text" name='credits' value='{{ items.credits}}' hidden="True">
                              </td>
                              <td>
+                                {% if items.optional %}
+                                    <input name="choice" type="checkbox" value="{{ items.course_id }}">
+                                {% else %}
+                                    <input name="choice" type="checkbox" value="{{ items.course_id }}" onclick="return false;" checked hidden="True">(Compulsory)
+                                {% endif %}
                                 <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
-                                <input name="choice" type="checkbox" value="{{ items.course_id }}">
                              </td>
                         </tr>
                     {% endfor %}
@@ -97,7 +101,7 @@
         </div>
     </div>
 
-   
+
 
 {% endblock %}
 
@@ -105,10 +109,10 @@
 <script type="text/javascript">
 $(function() {
     $("#student_register").submit(function(event) {
-        
+
         event.preventDefault();
         var friendForm = $(this);
-        
+
         var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
         // if success:
         posting.done(function(data) {
@@ -122,4 +126,3 @@ $(function() {
         });
     });
 });
-</script>

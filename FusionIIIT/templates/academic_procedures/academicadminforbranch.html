@@ -34,11 +34,11 @@
             {% comment %}The Tab-Menu starts here!{% endcomment %}
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
-                 <a class=" active item" data-tab="first">
+                 <a class="item" href="/academic-procedures/acad_person/">
                        Verify Grades
                      <i class="right floated chevron right icon"></i>
                  </a>
-                <a class="item" href='/academic-procedures/acad_person/branch_change'>
+                <a class="active item" data-tab="first">
                     Approve Branch Change
                     <i class="right floated chevron right icon"></i>
                 </a>
@@ -58,15 +58,7 @@
             The central-rail segment starts here!
         {% endcomment %}
         <div class="eight wide column">
-            {% comment %}The ... start here!{% endcomment %}
-            <div class="ui active tab segment" data-tab="first">
-                {% block studentlist %}
-                    {%  include 'academic_procedures/studentlist.html' %}
-                {%  endblock %}
-            </div>
-
-            {% comment %}The ... end here!{% endcomment %}
-            <div class="ui tab segment" data-tab="second">
+            <div class="ui tab segment" data-tab="first">
                 {% if messages %}
                 <ul class="messages">
                     {% for message in messages %}

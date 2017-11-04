@@ -13,7 +13,8 @@
             {% if final_count %}
                 You have already registered for next semester
             {% else %}
-            <table class="ui very basic collapsing celled sortable table"
+            {% if pre_register %}
+                <table class="ui very basic collapsing celled sortable table"
                    style="padding-left: 2.5%;
                                                           padding-right: 2.5%;
                                                           padding-top: 1%;
@@ -46,7 +47,7 @@
                 </thead>
 
                 <tbody>
-                
+
                     <form id='final_student_register' action='/academic-procedures/finalregister/' method='post'>
                     {% csrf_token %}
                     {% for items in courses_list %}
@@ -94,6 +95,9 @@
                 </div>
             </div>
             </form>
+            {% else %}
+                You are not yet eligible to register!!!
+            {% endif %}
             {% endif %}
         </div>
     </div>
@@ -104,10 +108,10 @@
 <script type="text/javascript">
 $(function() {
     $("#final_student_register").submit(function(event) {
-        
+
         event.preventDefault();
         var friendForm = $(this);
-        
+
         var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
         // if success:
         posting.done(function(data) {

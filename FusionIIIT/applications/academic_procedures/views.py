@@ -13,7 +13,7 @@ from django.template.loader import render_to_string
 from applications.academic_information.models import Course, Student
 from applications.globals.models import DepartmentInfo, Designation, ExtraInfo
 
-from .models import BranchChange, FinalRegistrations, Register
+from .models import BranchChange, FinalRegistrations, Register, CoursesMtech
 
 
 @login_required(login_url='/accounts/login')
@@ -29,7 +29,9 @@ def main(request):
 @login_required(login_url='/accounts/login')
 def academic_procedures(request):
     current_user = get_object_or_404(User, username=request.user.username)
+    print (current_user)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
+    print(user_details)
     # user_type = Designation.objects.all().filter(name=user_details.designation).first()
 
     # Academics Admin Check
@@ -39,22 +41,26 @@ def academic_procedures(request):
                                                 user_type='staff',
                                                 designation=desig_id,
                                                 department=dep_id).first()
-
+    print (str(acadadmin) == str(user_details))
+    print (acadadmin, user_details)
     # IF user is academic admin
-    if(acadadmin == user_details):
-        return HttpResponseRedirect('/academic-procedures/acad_person/')
+    if(str(acadadmin) == str(user_details)):
+        return HttpResponseRedirect('/academic-procedures/son/')
 
+    obj1 = Student.objects.all().filter(id=user_details.id)
+    pgflag = 0
+    for i in obj1:
+        if(i.programme[0]=="M" or i.programme[0]=="P"):
+            pgflag = 1
+    # Written by ANURAAG
+    change_branch_flag = 1
+    # END (ANURAAG)
     student = Student.objects.all().filter(id=user_details.id).first()
     # Fuction Call to get the current semster of the Student
     user_sem = get_user_semester(user_details.id)
-
     registered_or_not = Register.objects.all().filter(student_id=student).first()
-    # Fucntio call to get the current user's branch
+    # Function call to get the current user's branch
     user_branch = get_user_branch(user_details)
-
-    get_courses = Course.objects.all().filter(sem=(user_sem+1))
-    # Fucntion Call to get the courses related to the branch
-    branch_courses = get_branch_courses(get_courses, user_branch)
     details = {
             'current_user': current_user,
             'user_sem': user_sem,
@@ -62,10 +68,44 @@ def academic_procedures(request):
             }
     final_register = Register.objects.all().filter(student_id=user_details.id)
     final_register_count = FinalRegistrations.objects.all().filter(student_id=user_details.id)
+
+    get_courses = Course.objects.all().filter(sem=(user_sem+1))
+    # Fucntion Call to get the courses related to the branch
+    branch_courses = get_branch_courses(get_courses, user_branch)
+
+    final_register = Register.objects.all().filter(student_id=user_details.id)
+    final_register_count = FinalRegistrations.objects.all().filter(student_id=user_details.id).first()
     add_course = get_add_course(branch_courses, final_register)
-    print(final_register_count)
     # Branch Change Code starts here
     change_branch = apply_branch_change(request)
+    # ENDCHANGE BY ANURAAG
+    show_list = get_course_to_show(branch_courses, final_register)
+    # print(show_list)
+    pre_register_found = Register.objects.all().filter(student_id=user_details.id).first()
+    pre_register = True
+    print(final_register)
+    if (pre_register_found) is None:
+        pre_register = False
+    else:
+        pre_register = True
+    print(pre_register_found)
+
+    if(pgflag == 1):
+        specialization = ""
+        for i in obj1:
+            if(i.programme[0]=="M" or i.programme[0]=="P"):
+                change_branch_flag = 0
+            specialization = i.specialization
+        branch_courses = get_pg_course(user_sem,specialization)
+        add_courses = get_pg_course(user_sem,specialization)
+        show_list = add_courses
+
+    details['change_branch_flag']=change_branch_flag
+    # ENDCHANGE BY ANURAAG
+    print(final_register)
+    print("yoyo\n")
+    print(branch_courses)
+    print(show_list)
     return render(
         request, '../templates/academic_procedures/academic.html', {
                                                                 'details': details,
@@ -73,9 +113,65 @@ def academic_procedures(request):
                                                                 'final_register': final_register,
                                                                 'final_count': final_register_count,
                                                                 'change_branch': change_branch,
-                                                                'add_course': add_course
+                                                                'add_course': add_course,
+                                                                'show_list':  show_list,
+                                                                'pre_register': pre_register
                                                                 }
         )
+
+
+def get_course_to_show(branch, final_register):
+    x = []
+    for i in final_register:
+        x.append(i.course_id)
+    total_course = []
+    for i in branch:
+        if i not in x:
+            total_course.append(i)
+    return total_course
+
+
+def get_pg_course(usersem,specialization):
+    usersem = 2
+    obj = CoursesMtech.objects.filter(specialization=specialization)
+    obj3 = CoursesMtech.objects.filter(specialization="all")
+    obj2 = Course.objects.filter(sem=usersem)
+    result = []
+    for i in obj:
+        p=i.c_id
+        for j in obj2:
+            if(str(j.course_name)==str(p)):
+                result.append(j)
+    for i in obj3:
+        p=i.c_id
+        for j in obj2:
+            if(str(j.course_name)==str(p)):
+                result.append(j)
+    return result
+
+
+@login_required(login_url='/accounts/login')
+def drop_course(request):
+    # current_user = get_object_or_404(User, username=request.user.username)
+    if request.method == 'POST':
+        try:
+            c_id = request.POST.getlist('course_id')
+            user_id = request.POST.getlist('user')
+            for i in range(len(c_id)):
+                cour_id = Course.objects.all().filter(course_id=c_id[i]).first()
+                s_id = ExtraInfo.objects.all().filter(id=user_id[i][:7]).first()
+                s_id = Student.objects.all().filter(id=s_id)
+                instance = Register.objects.filter(course_id=cour_id).filter(student_id=s_id)
+                instance = instance[0]
+                print('ind=s', instance)
+                instance.delete()
+            messages.info(request, 'Successfully Dropped')
+            return HttpResponseRedirect('/academic-procedures/main')
+        except:
+            return HttpResponseRedirect('/academic-procedures/main')
+    else:
+        messages.info(request, 'Problem in dropping')
+        return HttpResponseRedirect('/academic-procedures/main')
 
 
 def get_add_course(branch, final):
@@ -112,7 +208,7 @@ def get_branch_courses(courses, branch):
     print(branch)
     for course in courses:
         # print (course.course_id)
-        if branch[:2] == course.course_id[:2] and len(course.course_id) >= 5:
+        if branch[:2].lower() == course.course_id[:2].lower() and len(course.course_id) >= 5:
             course_list.append(course)
         if len(course.course_id) > 5:
             course_list.append(course)
@@ -126,6 +222,7 @@ def get_user_branch(user_details):
 def register(request):
     if request.method == 'POST':
         try:
+            print(request.POST)
             current_user = get_object_or_404(User, username=request.POST.get('user'))
             current_user = ExtraInfo.objects.all().filter(user=current_user).first()
             current_user = Student.objects.all().filter(id=current_user.id).first()
@@ -138,11 +235,11 @@ def register(request):
                 for key, values in request.POST.lists():
                     if (key == 'choice'):
                         last_id = Register.objects.all().aggregate(Max('r_id'))
-                        print(last_id)
 
                         try:
                             last_id = last_id['r_id__max']+1
                         except:
+                            print ("nahi hua")
                             last_id = 1
                         course_id = get_object_or_404(Course, course_id=values[x])
                         p = Register(
@@ -236,6 +333,18 @@ def branch_change_request(request):
 
 @login_required(login_url='/accounts/login')
 def acad_person(request):
+
+    current_user = get_object_or_404(User, username=request.user.username)
+    user_details = ExtraInfo.objects.all().filter(user=current_user).first()
+    desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
+    dep_id = DepartmentInfo.objects.all().filter(name='Academics')
+    acadadmin = ExtraInfo.objects.all().filter(
+                                                user_type='staff',
+                                                designation=desig_id,
+                                                department=dep_id).first()
+    print (str(acadadmin) != str(user_details))
+    if(str(user_details) != str(acadadmin)):
+        return HttpResponseRedirect('/academic-procedures/')
     year = datetime.datetime.now().year
     month = datetime.datetime.now().month
     yearr = str(year) + "-" + str(year+1)
@@ -346,6 +455,7 @@ def approve_branch_change(request):
 # Function returning Branch , Banch data which was required many times
 def get_batch_query_detail(month, year):
     stream1 = "B.Tech "
+    stream2 = "M.Tech "
     query_option1 = {}
     if(month >= 7):
         query_option1 = {
@@ -353,20 +463,25 @@ def get_batch_query_detail(month, year):
                             stream1+str(year-1): stream1+str(year-1),
                             stream1+str(year-2): stream1+str(year-2),
                             stream1+str(year-3): stream1+str(year-3),
-                            stream1+str(year-4): stream1+str(year-4)}
+                            stream1+str(year-4): stream1+str(year-4),
+                            stream2+str(year): stream2+str(year),
+                            stream2+str(year-1): stream2+str(year)}
     else:
         query_option1 = {
                             stream1+str(year-1): stream1+str(year-1),
                             stream1+str(year-2): stream1+str(year-2),
                             stream1+str(year-3): stream1+str(year-3),
                             stream1+str(year-4): stream1+str(year-4),
-                            stream1+str(year-5): stream1+str(year-5)}
+                            stream1+str(year-5): stream1+str(year-5),
+                            stream2+str(year-1): stream2+str(year-1),
+                            stream2+str(year-2): stream2+str(year)-2,}
     return query_option1
 
 
 # view when Admin drops a user course
 @login_required(login_url='/accounts/login')
 def dropcourseadmin(request):
+
     data = request.GET.get('id')
     data = data.split("+")
     rid = data[0]
@@ -379,6 +494,17 @@ def dropcourseadmin(request):
 # view where Admin verifies the registered courses of every student
 @login_required(login_url='/accounts/login')
 def verify_course(request):
+    current_user = get_object_or_404(User, username=request.user.username)
+    user_details = ExtraInfo.objects.all().filter(user=current_user).first()
+    desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
+    dep_id = DepartmentInfo.objects.all().filter(name='Academics')
+    acadadmin = ExtraInfo.objects.all().filter(
+                                                user_type='staff',
+                                                designation=desig_id,
+                                                department=dep_id).first()
+    print (str(acadadmin) != str(user_details))
+    if(str(user_details) != str(acadadmin)):
+        return HttpResponseRedirect('/academic-procedures/')
     roll_no = request.GET.get('id')
     obj = ExtraInfo.objects.all().filter(id=roll_no)
     firstname = obj[0].user.first_name
@@ -472,3 +598,86 @@ def student_list(request):
                     'queryflag': queryflag}
         obj = json.dumps(maindict)
         return HttpResponse(obj, content_type='application/json')
+
+
+def acad_branch_change(request):
+    current_user = get_object_or_404(User, username=request.user.username)
+    user_details = ExtraInfo.objects.all().filter(user=current_user).first()
+    # user_type = Designation.objects.all().filter(name=user_details.designation).first()
+
+    # Academics Admin Check
+    desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
+    dep_id = DepartmentInfo.objects.all().filter(name='Academics')
+    acadadmin = ExtraInfo.objects.all().filter(
+                                                user_type='staff',
+                                                designation=desig_id,
+                                                department=dep_id).first()
+    year = datetime.datetime.now().year
+    month = datetime.datetime.now().month
+    yearr = str(year) + "-" + str(year+1)
+    semflag = 0
+    queryflag = 0
+    query_option1 = get_batch_query_detail(month, year)
+    query_option2 = {"CSE": "CSE", "ECE": "ECE", "ME": "ME"}
+    if(month >= 7):
+        semflag = 1
+    else:
+        semflag = 2
+    # TO DO Bdes
+    date = {'year': yearr, 'month': month, 'semflag': semflag, 'queryflag': queryflag}
+
+    change_queries = BranchChange.objects.all()
+    # Total seats taken as some random value
+    total_cse_seats = 100
+    total_ece_seats = 100
+    total_me_seats = 100
+
+    total_cse_filled_seats = 98
+    total_ece_filled_seats = 98
+    total_me_filled_seats = 98
+
+    available_cse_seats = total_cse_seats - total_cse_filled_seats
+    available_ece_seats = total_ece_seats - total_ece_filled_seats
+    available_me_seats = total_me_seats - total_me_filled_seats
+
+    initial_branch = []
+    change_branch = []
+    available_seats = []
+    applied_by = []
+    cpi = []
+
+    for i in change_queries:
+        applied_by.append(i.user.id)
+        change_branch.append(i.branches.name)
+        students = Student.objects.all().filter(id=i.user.id).first()
+        user_branch = ExtraInfo.objects.all().filter(id=students.id.id).first()
+        initial_branch.append(user_branch.department.name)
+        cpi.append(students.cpi)
+        if i.branches.name == 'CSE':
+            available_seats.append(available_cse_seats)
+        elif i.branches.name == 'ECE':
+            available_seats.append(available_ece_seats)
+        elif i.branches.name == 'ME':
+            available_seats.append(available_me_seats)
+    lists = zip(applied_by, change_branch, initial_branch, available_seats, cpi)
+    tag = False
+    print(lists)
+    if len(initial_branch) > 0:
+        tag = True
+    context = {
+        'list': lists,
+        'total': len(initial_branch),
+        'tag': tag
+    }
+    print(context)
+    return render(
+                request,
+                '../templates/academic_procedures/academicadminforbranch.html',
+                {
+                    'context': context,
+                    'lists': lists,
+                    'date': date,
+                    'query_option1': query_option1,
+                    'query_option2': query_option2
+                }
+)

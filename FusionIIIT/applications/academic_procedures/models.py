@@ -20,6 +20,18 @@ class Constants:
         ('8', '8'),
     )
 
+    MTechSpecialization = (
+        ('Power and Control', 'Power and Control'),
+        ('Microwave and Communication Engineering', 'Microwave and Communication Engineering'),
+        ('Micro-nano Electronics', 'Micro-nano Electronics'),
+        ('CAD/CAM','CAD/CAM'),
+        ('Design', 'Design'),
+        ('Manufacturing', 'Manufacturing'),
+        ('CSE','CSE'),
+        ('Mechatronics','Mechatronics'),
+        ('MDes','MDes'),
+        ('all','all')
+    )
 
 class Register(models.Model):
     r_id = models.IntegerField(primary_key=True)
@@ -66,3 +78,9 @@ class BranchChange(models.Model):
 
     def __str__(self):
         return str(self.user) + " " + str(self.branches)
+
+class CoursesMtech(models.Model):
+    c_id = models.ForeignKey(Course, on_delete=models.CASCADE)
+    specialization = models.CharField(max_length=30, choices=Constants.MTechSpecialization)
+    def __str__(self):
+        return str(self.c_id)
