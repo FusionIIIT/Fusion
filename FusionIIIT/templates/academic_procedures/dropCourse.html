@@ -48,7 +48,7 @@
                     {% for items in courses_list %}
                         {% for x in final_register %}
                             {% if items.course_id == x.course_id.course_id %}
-                                <tr>
+                                <tr id="{{ items.course_id}}">
                                     <td>
                                     </td>
                                     <td>
@@ -64,7 +64,11 @@
                                         {{items.sem}}
                                      </td>
                                     <td>
-                                        <input name="course_id" type="checkbox" value="{{ items.course_id }}">
+                                        {% if items.optional %}
+                                            <input name="course_id" type="checkbox" value="{{ items.course_id }}">
+                                        {% else %}
+                                            <input name="course_id" type="checkbox" value="{{ items.course_id }}" onclick="return false;" hidden="True">(Compulsory)
+                                        {% endif %}
                                         <input name="user" type="text" value="{{ x.student_id }}" hidden="True">
                                     </td>
                                 </tr>
@@ -91,11 +95,10 @@
 <script type="text/javascript">
 $(function() {
     $("#drop_courses").submit(function(event) {
-
         event.preventDefault();
         var friendForm = $(this);
-
         var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
+
         posting.done(function(data) {
             alert('Course Drop Successful');
             window.location = "/academic-procedures/main/";

@@ -13,7 +13,8 @@
             {% if final_count %}
                 You have already registered for next semester
             {% else %}
-            <table class="ui very basic collapsing celled sortable table"
+            {% if pre_register %}
+                <table class="ui very basic collapsing celled sortable table"
                    style="padding-left: 2.5%;
                                                           padding-right: 2.5%;
                                                           padding-top: 1%;
@@ -94,6 +95,9 @@
                 </div>
             </div>
             </form>
+            {% else %}
+                You are not yet eligible to register!!!
+            {% endif %}
             {% endif %}
         </div>
     </div>

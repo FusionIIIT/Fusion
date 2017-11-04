@@ -53,7 +53,7 @@ def academic_procedures(request):
     user_branch = get_user_branch(user_details)
     user_sem = 2
     get_courses = Course.objects.all().filter(sem=(user_sem+1))
-    print(get_courses, user_sem)
+    # print(get_courses, user_sem)
     # Fucntion Call to get the courses related to the branch
     branch_courses = get_branch_courses(get_courses, user_branch)
     details = {
@@ -62,9 +62,20 @@ def academic_procedures(request):
             'check_pre_register': registered_or_not
             }
     final_register = Register.objects.all().filter(student_id=user_details.id)
-    final_register_count = FinalRegistrations.objects.all().filter(student_id=user_details.id)
+    final_register_count = FinalRegistrations.objects.all().filter(student_id=user_details.id).first()
     add_course = get_add_course(branch_courses, final_register)
-    print(final_register_count)
+    # print("branchh Cousr",branch_courses, final_register)
+    show_list = get_course_to_show(branch_courses, final_register)
+    # print(show_list)
+    pre_register_found = Register.objects.all().filter(student_id=user_details.id).first()
+    pre_register = True
+    
+    if (pre_register_found) is None:
+        pre_register = False
+    else:
+        pre_register = True
+
+    print(pre_register_found)
     # Branch Change Code starts here
     change_branch = apply_branch_change(request)
     return render(
@@ -74,10 +85,21 @@ def academic_procedures(request):
                                                                 'final_register': final_register,
                                                                 'final_count': final_register_count,
                                                                 'change_branch': change_branch,
-                                                                'add_course': add_course
+                                                                'add_course': add_course,
+                                                                'show_list':  show_list,
+                                                                'pre_register': pre_register,
                                                                 }
         )
 
+def get_course_to_show(branch, final_register):
+    x = []
+    for i in final_register:
+        x.append(i.course_id)
+    total_course = []
+    for i in branch:
+        if i not in x:
+            total_course.append(i)
+    return total_course
 
 def get_add_course(branch, final):
     x = []
@@ -233,6 +255,30 @@ def branch_change_request(request):
         messages.info(request, 'Unable to proceed')
         return HttpResponseRedirect('/academic-procedures/main')
     return HttpResponseRedirect('/academic-procedures/main')
+
+
+@login_required(login_url='/accounts/login')
+def drop_course(request):
+    # current_user = get_object_or_404(User, username=request.user.username)
+    if request.method == 'POST':
+        try:
+            c_id = request.POST.getlist('course_id')
+            user_id = request.POST.getlist('user')
+            for i in range(len(c_id)):
+                cour_id = Course.objects.all().filter(course_id=c_id[i]).first()
+                s_id = ExtraInfo.objects.all().filter(id=user_id[i][:7]).first()
+                s_id = Student.objects.all().filter(id=s_id)
+                instance = Register.objects.filter(course_id=cour_id).filter(student_id=s_id)
+                instance = instance[0]
+                print('ind=s', instance)
+                instance.delete()
+            messages.info(request, 'Successfully Dropped')
+            return HttpResponseRedirect('/academic-procedures/main')
+        except:
+            return HttpResponseRedirect('/academic-procedures/main')
+    else:
+        messages.info(request, 'Problem in dropping')
+        return HttpResponseRedirect('/academic-procedures/main')
 
 
 @login_required(login_url='/accounts/login')
@@ -473,3 +519,85 @@ def student_list(request):
                     'queryflag': queryflag}
         obj = json.dumps(maindict)
         return HttpResponse(obj, content_type='application/json')
+
+def acad_branch_change(request):
+    current_user = get_object_or_404(User, username=request.user.username)
+    user_details = ExtraInfo.objects.all().filter(user=current_user).first()
+    # user_type = Designation.objects.all().filter(name=user_details.designation).first()
+
+    # Academics Admin Check
+    desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
+    dep_id = DepartmentInfo.objects.all().filter(name='Academics')
+    acadadmin = ExtraInfo.objects.all().filter(
+                                                user_type='staff',
+                                                designation=desig_id,
+                                                department=dep_id).first()
+    year = datetime.datetime.now().year
+    month = datetime.datetime.now().month
+    yearr = str(year) + "-" + str(year+1)
+    semflag = 0
+    queryflag = 0
+    query_option1 = get_batch_query_detail(month, year)
+    query_option2 = {"CSE": "CSE", "ECE": "ECE", "ME": "ME"}
+    if(month >= 7):
+        semflag = 1
+    else:
+        semflag = 2
+    # TO DO Bdes
+    date = {'year': yearr, 'month': month, 'semflag': semflag, 'queryflag': queryflag}
+
+    change_queries = BranchChange.objects.all()
+    # Total seats taken as some random value
+    total_cse_seats = 100
+    total_ece_seats = 100
+    total_me_seats = 100
+
+    total_cse_filled_seats = 98
+    total_ece_filled_seats = 98
+    total_me_filled_seats = 98
+
+    available_cse_seats = total_cse_seats - total_cse_filled_seats
+    available_ece_seats = total_ece_seats - total_ece_filled_seats
+    available_me_seats = total_me_seats - total_me_filled_seats
+
+    initial_branch = []
+    change_branch = []
+    available_seats = []
+    applied_by = []
+    cpi = []
+
+    for i in change_queries:
+        applied_by.append(i.user.id)
+        change_branch.append(i.branches.name)
+        students = Student.objects.all().filter(id=i.user.id).first()
+        user_branch = ExtraInfo.objects.all().filter(id=students.id.id).first()
+        initial_branch.append(user_branch.department.name)
+        cpi.append(students.cpi)
+        if i.branches.name == 'CSE':
+            available_seats.append(available_cse_seats)
+        elif i.branches.name == 'ECE':
+            available_seats.append(available_ece_seats)
+        elif i.branches.name == 'ME':
+            available_seats.append(available_me_seats)
+    lists = zip(applied_by, change_branch, initial_branch, available_seats, cpi)
+    tag = False
+    print(lists)
+    if len(initial_branch) > 0:
+        tag = True
+    context = {
+        'list': lists,
+        'total': len(initial_branch),
+        'tag': tag
+    }
+    print(context)
+    return render(
+                request,
+                '../templates/academic_procedures/academicadminforbranch.html',
+                {
+                    'context': context,
+                    'lists': lists,
+                    'date': date,
+                    'query_option1': query_option1,
+                    'query_option2': query_option2
+                }
+            )

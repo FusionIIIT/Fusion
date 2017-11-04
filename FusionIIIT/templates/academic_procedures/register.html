@@ -76,8 +76,12 @@
                                 <input type="text" name='credits' value='{{ items.credits}}' hidden="True">
                              </td>
                              <td>
+                                {% if items.optional %}
+                                    <input name="choice" type="checkbox" value="{{ items.course_id }}">
+                                {% else %}
+                                    <input name="choice" type="checkbox" value="{{ items.course_id }}" onclick="return false;" checked hidden="True">(Compulsory)
+                                {% endif %}
                                 <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
-                                <input name="choice" type="checkbox" value="{{ items.course_id }}">
                              </td>
                         </tr>
                     {% endfor %}
