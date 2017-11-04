@@ -45,7 +45,7 @@ class Thesis(models.Model):
         db_table = 'Thesis'
 
     def __str__(self):
-        return self.topic & self.reg_id & self.student_id & self.supervisor_id
+        return str(self.topic) +" " +str(self.student_id)
 
 
 class FinalRegistrations(models.Model):

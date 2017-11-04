@@ -11,9 +11,9 @@ from django.template.loader import render_to_string
 
 # from applications.academic_procedures.models import Register
 from applications.academic_information.models import Course, Student
-from applications.globals.models import DepartmentInfo, Designation, ExtraInfo
+from applications.globals.models import DepartmentInfo, Designation, ExtraInfo, Faculty
 
-from .models import BranchChange, FinalRegistrations, Register
+from .models import BranchChange, FinalRegistrations, Register, Thesis
 
 
 @login_required(login_url='/accounts/login')
@@ -47,7 +47,9 @@ def academic_procedures(request):
     student = Student.objects.all().filter(id=user_details.id).first()
     # Fuction Call to get the current semster of the Student
     user_sem = get_user_semester(user_details.id)
-
+    print(student.programme)
+    if student.programme == 'PhD':
+        return HttpResponseRedirect('/academic-procedures/PhD/')
     registered_or_not = Register.objects.all().filter(student_id=student).first()
     # Fucntio call to get the current user's branch
     user_branch = get_user_branch(user_details)
@@ -207,8 +209,8 @@ def final_register(request):
 @login_required(login_url='/accounts/login')
 def apply_branch_change(request):
     # Get all the departments
-    branch_list = DepartmentInfo.objects.all()
-    branches = []
+    # branch_list = DepartmentInfo.objects.all()
+    branches = ['CSE', 'ME', 'ECE']
 
     # Get the current logged in user
     student = User.objects.all().filter(username=request.user).first()
@@ -216,9 +218,9 @@ def apply_branch_change(request):
     # Get the current logged in user's cpi
     extraInfo_user = ExtraInfo.objects.all().filter(user=student).first()
     cpi_data = Student.objects.all().filter(id=extraInfo_user.id).first()
-    for i in range(len(branch_list)):
-        branch_cut = branch_list[i].name
-        branches.append(branch_cut)
+    # for i in range(len(branch_list)):
+    #     branch_cut = branch_list[i].name
+    #     branches.append(branch_cut)
 
     label_for_change = False
 
@@ -601,3 +603,62 @@ def acad_branch_change(request):
                     'query_option2': query_option2
                 }
             )
+
+@login_required(login_url='/accounts/login')
+def phd_details(request):
+    print(request.user.username)
+    current_user = get_object_or_404(User, username=request.user.username)
+    user_details = ExtraInfo.objects.all().filter(user=current_user).first()
+    student = Student.objects.all().filter(id=user_details.id).first()
+    thesis = Thesis.objects.all().filter(student_id=student).first()
+    Professor = Designation.objects.all().filter(name='Professor')
+    # print(user_details.department.name)
+    faculty = ExtraInfo.objects.all().filter(department=user_details.department, designation=Professor)
+    faculties_list = []
+    for i in faculty:
+        faculties_list.append(i)
+    
+    total_thesis=True
+    if(thesis is None):
+        total_thesis = False
+
+    context = {
+            'total_thesis':total_thesis,
+            'thesis': thesis,
+            }
+    print(total_thesis)
+    return render(
+            request,
+            '../templates/academic_procedures/phdregistration.html',
+            {'context': context, 'faculty': faculties_list, 'student': student}
+            )
+    
+
+def add_thesis(request):
+    if request.method=='POST':
+        faculty = request.POST.get('faculty')
+        student = request.POST.get('student')
+        thesis = request.POST.get('thesis')
+        
+        f_user = get_object_or_404(User, username=faculty)
+        fac = ExtraInfo.objects.all().filter(user=f_user).first()
+        fac = Faculty.objects.all().filter(id=fac).first()
+        
+        print(student)
+        s_user = get_object_or_404(User, username=student)
+        user_details = ExtraInfo.objects.all().filter(user=s_user).first()
+        student = Student.objects.all().filter(id=user_details.id).first()
+
+        print(fac, student)
+
+        p = Thesis(
+                reg_id=user_details,
+                student_id=student,
+                supervisor_id=fac,
+                topic=thesis
+            )
+        p.save()
+        messages.info(request, 'Thesis Topic Selected')
+        return HttpResponseRedirect('/academic-procedures/PhD')
+    else:
+        return HttpResponseRedirect('/academic_procedures/PhD/')

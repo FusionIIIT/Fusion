@@ -34,16 +34,16 @@
             {% comment %}The Tab-Menu starts here!{% endcomment %}
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
-                 <a class="item" href="/academic-procedures/acad_person/">
-                       Verify Grades
-                     <i class="right floated chevron right icon"></i>
-                 </a>
+
                 <a class="active item" data-tab="first">
-                    Approve Branch Change
+                    Registered Thesis Topic
                     <i class="right floated chevron right icon"></i>
                 </a>
 
-
+                <a class="item" data-tab="second">
+                    Add Thesis Topic
+                    <i class="right floated chevron right icon"></i>
+                </a>
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
 
@@ -52,23 +52,18 @@
             The left-rail segment ends here!
         {% endcomment %}
 
-
-
         {% comment %}
             The central-rail segment starts here!
         {% endcomment %}
         <div class="eight wide column">
+
+            {% comment %}The ... start here!{% endcomment %}
+            <div class="ui tab segment" data-tab="second">
+                {%  include 'academic_procedures/addThesis.html' %}
+            </div>
+            
             <div class="ui active tab segment" data-tab="first">
-                {% if messages %}
-                <ul class="messages">
-                    {% for message in messages %}
-                    <li>{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-                    {% endfor %}
-                </ul>
-                {% endif %}
-                {% block changebranch %}
-                    {%  include 'academic_procedures/branch_change.html' %}
-                {%  endblock %}
+                {%  include 'academic_procedures/registeredThesis.html' %}
             </div>
 
         </div>

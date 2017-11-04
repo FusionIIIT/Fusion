@@ -17,4 +17,6 @@ urlpatterns = [
     url(r'^acad_person/verifyCourse/drop/$', views.dropcourseadmin, name='dropcourseadmin'),
     url(r'^branch-validate', views.approve_branch_change, name='branch_validate'),
     url(r'^acad_person/branch_change/$', views.acad_branch_change, name='acad_branch_change'),
+    url(r'^PhD/$', views.phd_details, name='phd_details'),
+    url(r'^addThesis/$', views.add_thesis, name='add_thesis'),
 ]
