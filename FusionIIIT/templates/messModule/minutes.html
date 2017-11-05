@@ -1,0 +1,68 @@
+{% load static %}
+{% block minutes %}
+<div class="ui pointing secondary menu">
+    <a class="active item" data-tab="minutes">
+        Meeting Minutes
+    </a>
+</div>
+<div class="ui active tab" data-tab="minutes">
+    <div class="ui vertical stripe team segment"
+         style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+
+        <form class="ui large form">
+
+            {% comment %} The Minutes form  starts here! {% endcomment %}
+
+            {% comment %}The form row starts here!{% endcomment %}
+
+
+            <div class="two fields">
+                <div class="field">
+                    <label>Date</label>
+                    <div class="ui calendar" id="rangestart">
+                        <div class="ui input left icon">
+                            <i class="calendar icon"></i>
+                            <input type="text" placeholder="date">
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="field">
+                    <label>Place</label>
+                    <input placeholder="Central Mess II" type="text">
+                </div>
+            </div>
+            <div class="two fields">
+                <div class="field">
+                    <label>Agenda</label>
+                    <input placeholder="Agenda" type="text">
+                </div>
+                <div class="field">
+                    <label>Minutes</label>
+                    <input placeholder="Minutes" type="file">
+                </div>
+
+            </div>
+           <div class="field">
+                   <label>Description:</label>
+                        <textarea rows="2"></textarea>
+           </div>
+
+             <div class="field">
+                                <label><br></label>
+                                <button class="ui primary right floated button" type="submit">
+                                    Submit
+                                </button>
+
+
+                            </div>
+            <br>
+
+        </form>
+        <div class="ui divider"></div>
+    </div>
+</div>
+
+{% endblock %}

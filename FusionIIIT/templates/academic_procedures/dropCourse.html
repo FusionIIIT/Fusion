@@ -100,6 +100,7 @@ $(function() {
         event.preventDefault();
         var friendForm = $(this);
         var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
+
         posting.done(function(data) {
             alert('Course Drop Successful');
             window.location = "/academic-procedures/main/";

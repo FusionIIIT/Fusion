@@ -1,0 +1,80 @@
+{% load static %}
+
+{% block comapproval %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="compounderapproval">
+            Approve
+        </a>
+    </div>
+    {% comment %}the ambulance schedule tab starts here {% endcomment %}
+    <div class="ui active tab" data-tab="compounderapproval">
+        <table class="ui very basic collapsing celled large sortable table"
+               style="padding-left: 2.5%;padding-right: 2.5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
+            <thead>
+            <tr>
+                <th class="four wide">
+                    Name
+                </th>
+
+                <th class="two wide">
+                    Roll Number
+                </th>
+
+                <th class="four wide">
+                    Doctor
+                </th>
+
+                <th>
+                    Appointment
+                </th>
+
+                <th class="three wide">
+                    Disease
+                </th>
+
+                <th>
+                    Action
+                </th>
+
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr>
+                <td>
+                    <h4 class="ui image header">
+                        <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                        <div class="content">
+                            Zlatan Ibrahimovic
+                            <div class="sub header">
+                                gmail@zlatan.com
+                            </div>
+                        </div>
+                    </h4>
+                </td>
+
+                <td>
+                    2015207
+                </td>
+
+                <td>
+                    Dr. #1
+                </td>
+
+                <td>
+                    22 Sept'17
+                </td>
+
+                <td>
+                    Being Sarcastic all the time!
+                </td>
+
+                <td>
+                    <i class="large green checkmark icon"></i>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    {% comment %}the compounder approval tab ends here {% endcomment %}
+{% endblock %}

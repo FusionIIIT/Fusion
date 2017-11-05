@@ -29,18 +29,19 @@ class Constants:
         ('OBC', 'Other Backward Classes')
     )
 
-
     MTechSpecialization = (
         ('Power and Control', 'Power and Control'),
         ('Microwave and Communication Engineering', 'Microwave and Communication Engineering'),
         ('Micro-nano Electronics', 'Micro-nano Electronics'),
-        ('CAD/CAM','CAD/CAM'),
+        ('CAD/CAM', 'CAD/CAM'),
         ('Design', 'Design'),
         ('Manufacturing', 'Manufacturing'),
-        ('CSE','CSE'),
-        ('Mechatronics','Mechatronics'),
-        ('MDes','MDes')
+        ('CSE', 'CSE'),
+        ('Mechatronics', 'Mechatronics'),
+        ('MDes', 'MDes'),
+        ('None', 'None')
     )
+
 
 class Student(models.Model):
     id = models.OneToOneField(ExtraInfo, on_delete=models.CASCADE, primary_key=True)
@@ -51,7 +52,9 @@ class Student(models.Model):
     mother_name = models.CharField(max_length=40, default='')
     hall_no = models.IntegerField(default=1)
     room_no = models.CharField(max_length=10, blank=True, null=True)
-    specialization = models.CharField(max_length=20, choices=Constants.MTechSpecialization, null = True)
+    specialization = models.CharField(max_length=20,
+                                      choices=Constants.MTechSpecialization, null=True)
+
     def __str__(self):
         return str(self.id)
 
@@ -62,6 +65,7 @@ class Course(models.Model):
     sem = models.IntegerField()
     credits = models.IntegerField()
     optional = models.BooleanField(default=False)
+
     class Meta:
         db_table = 'Course'
         unique_together = ('course_id', 'course_name', 'sem')

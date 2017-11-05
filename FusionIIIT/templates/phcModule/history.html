@@ -1,0 +1,318 @@
+{% load static %}
+
+{% block personaldetails %}
+    {% comment %}the prescription and hospitalhistory  starts here {% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="prescriptionhistory">
+            Prescription
+        </a>
+
+        <a class="item" data-tab="ambulancehistory">
+            Ambulance
+        </a>
+
+        <a class="item" data-tab="hospitalhistory">
+            Hospital
+        </a>
+        <a class="item" data-tab="compounderhistory">
+            Compounder
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="prescriptionhistory">
+        <div class="ui vertical segment" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+            <table class="ui very basic collapsing celled large fluid sortable table"
+                   style="padding-left: 2.5%;padding-right: 2.5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
+                <thead>
+                <tr>
+                    <th class="four wide">
+                        Treated By
+                    </th>
+
+                    <th>
+                        Date
+                    </th>
+
+                    <th>
+                        Time
+                    </th>
+
+                    <th class="four wide">
+                        Cause/Symptoms
+                    </th>
+
+                    <th class="four wide">
+                        Medicine(s) Prescribed
+                    </th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr>
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                            <div class="content">
+                                Zlatan Ibrahimovic
+                                <div class="sub header">
+                                    gmail@zlatan.com
+                                </div>
+                            </div>
+                        </h4>
+                    </td>
+
+                    <td>
+                        23<sup>rd</sup> Nov'17
+                    </td>
+
+                    <td>
+                        10:08 pm
+                    </td>
+
+                    <td>
+                        Was sarcastic all the time!
+                    </td>
+
+                    <td>
+                        Fukitol, Masticate more than 32 times.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="ambulancehistory">
+        <div class="ui vertical segment" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+            <table class="ui very basic collapsing celled large sortable table"
+                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                <thead>
+                <tr>
+                    <th class="four wide">
+                        Patient
+                    </th>
+
+                    <th class="three wide">
+                        Cause
+                    </th>
+
+                    <th>
+                        Type
+                    </th>
+
+                    <th>
+                        From
+                    </th>
+
+                    <th>
+                        To
+                    </th>
+
+                    <th>
+                        Time From
+                    </th>
+
+                    <th>
+                        Time To
+                    </th>
+                </tr>
+                </thead>
+
+                <tbody>
+
+                <tr>
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                            <div class="content">
+                                Zlatan Ibrahimovic
+                                <div class="sub header">
+                                    2015207
+                                </div>
+                            </div>
+                        </h4>
+                    </td>
+
+                    <td>
+                        Leg Injury
+                    </td>
+
+                    <td>
+                        Casual
+                    </td>
+
+                    <td>
+                        23 Oct'17
+                    </td>
+
+                    <td>
+                        28 Oct'17
+                    </td>
+
+                    <td>
+                        9:00 A.M.
+                    </td>
+
+                    <td>
+                        10:00 A.M.
+                    </td>
+                </tr>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="hospitalhistory">
+        <div class="ui vertical segment" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+            <table class="ui very basic collapsing celled large sortable table"
+                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                <thead>
+                <tr>
+                    <th class="four wide">
+                        Doctor
+                    </th>
+
+                    <th class="four wide">
+                        Hospital
+                    </th>
+
+                    <th>
+                        From
+                    </th>
+
+                    <th>
+                        To
+                    </th>
+
+                    <th class="three wide">
+                        Cause
+                    </th>
+
+                    <th>
+                        Payment
+                    </th>
+                </tr>
+                </thead>
+
+                <tbody>
+
+                <tr>
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                            <div class="content">
+                                Zlatan Ibrahimovic
+                                <div class="sub header">
+                                    gmail@zlatan.com
+                                </div>
+                            </div>
+                        </h4>
+                    </td>
+
+                    <td>
+                        Jabalpur Hospital
+                    </td>
+
+                    <td>
+                        23 Nov'17
+                    </td>
+
+                    <td>
+                        30 Nov'17
+                    </td>
+
+                    <td>
+                        Hunger Games!
+                    </td>
+
+                    <td>
+                        <i class="large green checkmark icon"></i>
+                    </td>
+                </tr>
+
+                </tbody>
+            </table>
+        </div>
+        <br>
+        <div class="extra content">
+            <div class="" style="text-align: center;">
+                <i class="large green checkmark icon"></i> : Approved &ensp;&ensp;&ensp;&ensp;&ensp;
+                <i class="large orange warning icon"></i> : In Progress &ensp;&ensp;&ensp;&ensp;&ensp;
+                <i class="large red x icon"></i> : Cancelled
+            </div>
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="compounderhistory">
+        <div class="ui vertical segment" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+            <table class="ui very basic collapsing celled large fluid sortable table"
+                   style="padding-left: 2.5%;padding-right: 2.5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
+                <thead>
+                <tr>
+                    <th class="four wide">
+                        Treated By
+                    </th>
+
+                    <th>
+                        Date
+                    </th>
+
+                    <th>
+                        Time
+                    </th>
+
+                    <th class="four wide">
+                        Cause/Symptoms
+                    </th>
+
+                    <th class="four wide">
+                        Medicine(s) Prescribed
+                    </th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr>
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                            <div class="content">
+                                Zlatan Ibrahimovic
+                                <div class="sub header">
+                                    gmail@zlatan.com
+                                </div>
+                            </div>
+                        </h4>
+                    </td>
+
+                    <td>
+                        23<sup>rd</sup> Nov'17
+                    </td>
+
+                    <td>
+                        10:08 pm
+                    </td>
+
+                    <td>
+                        Was sarcastic all the time!
+                    </td>
+
+                    <td>
+                        Fukitol, Masticate more than 32 times.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% comment %}the  prescription and hospital history  ends here {% endcomment %}
+{% endblock %}

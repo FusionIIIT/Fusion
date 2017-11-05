@@ -1,0 +1,250 @@
+{% load static %}
+{% block respondtorequests %}
+
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="respondtoleaverequests">
+            Respond to Leave Requests
+        </a>
+
+        <a class="item" data-tab="respondtomesschange">
+            Respond to Mess Change
+        </a>
+    </div>
+
+    {% comment %}
+        TODO: Add notification counters!
+    {% endcomment %}
+
+    <div class="ui active tab" data-tab="respondtoleaverequests">
+        <div class="ui vertical segment">
+            <table class="ui very basic collapsing celled large sortable table"
+                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                <thead>
+                <tr>
+                    <th class="four wide">
+                        Student
+                    </th>
+
+                    <th>
+                        Type
+                    </th>
+
+                    <th class="four wide">
+                        Purpose
+                    </th>
+
+                    <th class="two wide">
+                        From
+                    </th>
+
+                    <th class="two wide">
+                        To
+                    </th>
+
+                    <th class="one wide">
+                        Approve
+                    </th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr>
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                            <div class="content">
+                                Zlatan Ibrahimovic
+                                <div class="sub header">
+                                    2015121
+                                </div>
+                            </div>
+                        </h4>
+                    </td>
+
+                    <td>
+                        Casual
+                    </td>
+
+                    <td>
+                        Visit to Home!
+                    </td>
+
+                    <td>
+                        10 Aug'17
+                    </td>
+
+                    <td>
+                        10 Jan'17
+                    </td>
+
+                    <td>
+                        <div class="ui buttons">
+                            <button class="ui negative button">R</button>
+                            <div class="or"></div>
+                            <button class="ui positive button">A</button>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                            <div class="content">
+                                Zlatan Ibrahimovic
+                                <div class="sub header">
+                                    2015121
+                                </div>
+                            </div>
+                        </h4>
+                    </td>
+
+                    <td>
+                        Vacation
+                    </td>
+
+                    <td>
+                        Visit to Home!
+                    </td>
+
+                    <td>
+                        10<sup>th</sup> Aug'17
+                    </td>
+
+                    <td>
+                        10<sup>th</sup> Jan'17
+                    </td>
+
+                    <td>
+                        <div class="ui buttons">
+                            <button class="ui negative button">R</button>
+                            <div class="or"></div>
+                            <button class="ui positive button">A</button>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <br>
+
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="respondtomesschange">
+        <div class="ui vertical segment">
+            <table class="ui very basic collapsing celled large sortable table"
+                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                <thead>
+                <tr>
+                    <th class="four wide">
+                        Student
+                    </th>
+
+                    <th>
+                        Reason
+                    </th>
+
+                    <th class="two wide">
+                        From
+                    </th>
+
+                    <th class="two wide">
+                        To
+                    </th>
+
+                    <th class="one wide">
+                        Approve
+                    </th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr>
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                            <div class="content">
+                                Zlatan Ibrahimovic
+                                <div class="sub header">
+                                    2015121
+                                </div>
+                            </div>
+                        </h4>
+                    </td>
+
+                    <td>
+                        I have decided to go Vegetarian!
+                    </td>
+
+                    <td>
+                        CM #1
+                    </td>
+
+                    <td>
+                        CM #2
+                    </td>
+
+                    <td>
+                        <div class="ui buttons">
+                            <button class="ui negative button">R</button>
+                            <div class="or"></div>
+                            <button class="ui positive button">A</button>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                            <div class="content">
+                                Zlatan Ibrahimovic
+                                <div class="sub header">
+                                    2015121
+                                </div>
+                            </div>
+                        </h4>
+                    </td>
+
+                    <td>
+                        Mata rani paap lagayegi!
+                    </td>
+
+                    <td>
+                        CM #1
+                    </td>
+
+                    <td>
+                        CM #2
+                    </td>
+
+                    <td>
+                        <div class="ui buttons">
+                            <button class="ui negative button">R</button>
+                            <div class="or"></div>
+                            <button class="ui positive button">A</button>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <br>
+
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+
+{% endblock %}

@@ -1,0 +1,356 @@
+{% load static %}
+{% block studentrecords %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="search">
+            Search
+        </a>
+
+        <a class="item" data-tab="pastrecords">
+            Past Records
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="search">
+        <form>
+            {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+            <div class="ui active accordion field">
+                <div class="title">
+                    <i class="icon dropdown"></i>
+                    Search a Student!
+                </div>
+
+                <div class="active content">
+                    <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                        <div class="two fields">
+                            <div class="field">
+                                <label>
+                                    Name
+                                </label>
+
+                                <div class="ui large input">
+                                    <input placeholder="Name">
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label>
+                                    Roll Number
+                                </label>
+
+                                <div class="ui large input">
+                                    <input placeholder="Roll Number">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="three fields">
+                            <div class="field">
+                                <label>
+                                    Year
+                                </label>
+
+                                <select class="ui search fluid large dropdown">
+                                    <option value="">Select</option>
+                                    <option value="2015">2015</option>
+                                    <option value="2016">2016</option>
+                                    <option value="2017">2017</option>
+                                    <option value="2018">2018</option>
+                                </select>
+                            </div>
+
+                            <div class="field">
+                                <label>
+                                    Discipline
+                                </label>
+
+                                <select class="ui search fluid large dropdown">
+                                    <option value="">Select</option>
+                                    <option value="btech">B.Tech.</option>
+                                    <option value="mtech">M.Tech.</option>
+                                    <option value="bdes">B.Des.</option>
+                                    <option value="mdes">M.Des.</option>
+                                </select>
+                            </div>
+
+                            <div class="field">
+                                <label>
+                                    Department
+                                </label>
+
+                                <select class="ui search fluid large dropdown">
+                                    <option value="">Select</option>
+                                    <option value="CSE">CSE</option>
+                                    <option value="ECE">ECE</option>
+                                    <option value="ME">ME</option>
+                                    <option value="DES">DES</option>
+                                </select>
+                            </div>
+
+                            <div class="field">
+                                <label>
+                                    Min. CPI
+                                </label>
+
+                                <select class="ui search fluid large dropdown">
+                                    <option value="">Select</option>
+                                    <option value="6.0">6.0</option>
+                                    <option value="6.5">6.5</option>
+                                    <option value="7.0">7.0</option>
+                                    <option value="7.5">7.5</option>
+                                    <option value="8.0">8.0</option>
+                                    <option value="8.5">8.5</option>
+                                    <option value="9.0">9.0</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="two fields">
+                            <div class="twelve wide field">
+                                <label>Skills</label>
+                                <select class="ui fluid search dropdown" multiple="">
+                                    <option value="">Select</option>
+                                    <option value="skill1">Skill #1</option>
+                                    <option value="skill2">Skill #2</option>
+                                    <option value="skill3">Skill #3</option>
+                                </select>
+                            </div>
+
+                            <div class="four wide field">
+                                <label><br></label>
+                                <div class="ui toggle checkbox">
+                                    <input name="public" type="checkbox">
+                                    <label>Debarred?</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <br>
+
+                        <div class="field">
+                            <button class="ui large primary button right floated" type="submit">
+                                Submit
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% comment %}The add a new skill Accordian ends here!{% endcomment %}
+        </form>
+        {% comment %}Form Tag ends here!{% endcomment %}
+
+        <br>
+        <br>
+        <div class="ui divider"></div>
+        <br>
+        {% comment %}
+                TODO: Add a max-height to it!
+            {% endcomment %}
+        <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;">
+            <thead>
+            <tr>
+                <th>Student</th>
+                <th>CPI</th>
+                <th>Department</th>
+                <th>Discipline</th>
+                <th>View Profile</th>
+                <th>Placed?</th>
+                <th>Debarred?</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr>
+                <td>
+                    <h4 class="ui image header">
+                        <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                        <div class="content">
+                            Zlatan Ibrahimovic
+                            <div class="sub header">
+                                2015121
+                            </div>
+                        </div>
+                    </h4>
+                </td>
+
+                <td>
+                    7.0
+                </td>
+
+                <td>
+                    BTech
+                </td>
+
+                <td>
+                    CSE
+                </td>
+
+                <td>
+                    {% comment %}
+                            <a class="ui inverted circular icon button" target="_blank" href="{% url 'placement:cv' username %}" style="margin: auto;">
+                        {% endcomment %}
+                    <a class="ui inverted huge circular icon button" target="_blank" href="{% url 'placement:placement' %}" style="margin: auto;">
+                        <i class="attach black icon"></i>
+                    </a>
+                </td>
+
+                <td>
+                    Yes
+                </td>
+
+                <td>
+                    No
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <div class="ui divider"></div>
+
+    </div>
+
+    <div class="ui tab" data-tab="pastrecords">
+        <div class="ui vertical segment">
+
+            <div class="ui three item menu">
+                <a class="active item" data-tab="Placement">Placement</a>
+                <a class="item" data-tab="PBI">PBI</a>
+                <a class="item" data-tab="HigherStudies">Higher Studies</a>
+            </div>
+
+            <div class="ui active tab" data-tab="Placement">
+                <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;">
+                    <thead>
+                    <tr>
+                        <th class="four wide">Student</th>
+                        <th class="two wide">Year</th>
+                        <th class="six wide">Company</th>
+                        <th class="two wide">CTC</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr>
+                        <td>
+                            <h4 class="ui image header">
+                                <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                                <div class="content">
+                                    Zlatan Ibrahimovic
+                                    <div class="sub header">
+                                        2015121
+                                    </div>
+                                </div>
+                            </h4>
+                        </td>
+
+                        <td>
+                            2015
+                        </td>
+
+                        <td>
+                            Manchester United FC
+                        </td>
+
+                        <td>
+                            &#8377; 12,00,000
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <br>
+                <div class="ui divider"></div>
+            </div>
+
+            <div class="ui tab" data-tab="PBI">
+                <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;">
+                    <thead>
+                    <tr>
+                        <th class="four wide">Student</th>
+                        <th class="two wide">Year</th>
+                        <th class="six wide">Company</th>
+                        <th class="two wide">CTC</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr>
+                        <td>
+                            <h4 class="ui image header">
+                                <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                                <div class="content">
+                                    Zlatan Ibrahimovic
+                                    <div class="sub header">
+                                        2015121
+                                    </div>
+                                </div>
+                            </h4>
+                        </td>
+
+                        <td>
+                            2015
+                        </td>
+
+                        <td>
+                            Manchester United FC
+                        </td>
+
+                        <td>
+                            &#8377; 50,000
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <br>
+                <div class="ui divider"></div>
+            </div>
+
+            <div class="ui tab" data-tab="HigherStudies">
+
+                <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;">
+                    <thead>
+                    <tr>
+                        <th class="four wide">Student</th>
+                        <th class="two wide">Exam</th>
+                        <th class="six wide">University</th>
+                        <th class="two wide">Score</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr>
+                        <td>
+                            <h4 class="ui image header">
+                                <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                                <div class="content">
+                                    Zlatan Ibrahimovic
+                                    <div class="sub header">
+                                        2015121
+                                    </div>
+                                </div>
+                            </h4>
+                        </td>
+
+                        <td>
+                            GRE
+                        </td>
+
+                        <td>
+                            Manchester United FC
+                        </td>
+
+                        <td>
+                            340
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <br>
+                <div class="ui divider"></div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

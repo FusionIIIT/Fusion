@@ -82,8 +82,10 @@
 <script type="text/javascript">
 $(function() {
     $("#branch_change_form").submit(function(event) {
+
         event.preventDefault();
         var friendForm = $(this);
+
         var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
         posting.done(function(data) {
             alert('Change Successful');
