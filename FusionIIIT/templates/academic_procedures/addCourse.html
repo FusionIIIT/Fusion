@@ -54,8 +54,9 @@
                             </td>
                             <td>
                                 {{ items.course_id }}
-                                {% if items.course_id|length > 5%}
-                                    (optional)
+                                {% if items.optional %}
+                              <B>      (optional)</B>
+
                                 {% endif %}
                                 <input type="text" name='course_id' value='{{ items.course_id}}' hidden="True">
                             </td>

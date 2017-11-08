@@ -47,7 +47,7 @@ def academic_procedures(request):
     print(acadadmin, user_details)
     # IF user is academic admin
     if(str(acadadmin) == str(user_details)):
-        return HttpResponseRedirect('/academic-procedures/acad_person/')
+        return HttpResponseRedirect('/aims')
 
     obj1 = Student.objects.all().filter(id=user_details.id)
     pgflag = 0

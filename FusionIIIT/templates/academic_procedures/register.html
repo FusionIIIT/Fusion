@@ -14,7 +14,7 @@
 
 
             {% if details.check_pre_register %}
-                You have already registered
+              <B><CENTER>   You have already registered </B></CENTER>
             {% else %}
             <table class="ui very basic collapsing celled sortable table"
                    style="padding-left: 2.5%;
@@ -57,10 +57,11 @@
                             <td>
                             </td>
                             <td>
-                                {{ items.course_id }}
-                                {% if items.course_id|length > 5%}
-                                    (optional)
-                                {% endif %}
+                              {{ items.course_id }}
+                              {% if items.optional %}
+                            <B>      (optional)</B>
+
+                              {% endif %}
                                 <input type="text" name='course_id' value='{{ items.course_id}}' hidden="True">
                             </td>
                             <td>
@@ -75,14 +76,14 @@
                                 {{ items.credits }}
                                 <input type="text" name='credits' value='{{ items.credits}}' hidden="True">
                              </td>
-                             <td>
+                             <td><B>
                                 {% if items.optional %}
                                     <input name="choice" type="checkbox" value="{{ items.course_id }}">
                                 {% else %}
                                     <input name="choice" type="checkbox" value="{{ items.course_id }}" onclick="return false;" checked hidden="True">(Compulsory)
                                 {% endif %}
                                 <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
-                             </td>
+                             </td></B>
                         </tr>
                     {% endfor %}
                 </tbody>

@@ -11,7 +11,7 @@
     <div class="ui active tab" data-tab="complainthistory">
         <div class="ui vertical segment">
             {% if final_count %}
-                You have already registered for next semester
+              <B><CENTER>  You have already registered for next semester </B></CENTER>
             {% else %}
             {% if pre_register %}
                 <table class="ui very basic collapsing celled sortable table"
@@ -55,10 +55,11 @@
                             <td>
                             </td>
                             <td>
-                                {{ items.course_id }}
-                                {% if items.course_id|length > 5%}
-                                    (optional)
-                                {% endif %}
+                              {{ items.course_id }}
+                              {% if items.optional %}
+                            <B>      (optional)</B>
+
+                              {% endif %}
                                 <input type="text" name='course_id' value='{{ items.course_id}}' hidden="True">
                             </td>
                             <td>
@@ -77,7 +78,8 @@
                                 <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
                                 {% for x in final_register %}
                                     {% if items.course_id == x.course_id.course_id %}
-                                        Selected
+                                      <B>  Selected </B>
+
                                     {% endif %}
                                 {% endfor %}
                              </td>
@@ -96,7 +98,7 @@
             </div>
             </form>
             {% else %}
-                You are not yet eligible to register!!!
+              <B><CENTER>   You have not pre-registered yet!!! </B></CENTER>
             {% endif %}
             {% endif %}
         </div>

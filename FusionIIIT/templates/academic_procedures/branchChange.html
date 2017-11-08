@@ -14,15 +14,15 @@
             {% if change_branch.label_for_change %}
             <form id='branch_change' method="post" action="/academic-procedures/brach-change-request/">
             {% csrf_token %}
-                <h3>Your CPI meets the minimum requirement for branch change</h3>
-                <h4>Choose the branch</h4> 
+            <B><CENTER>    <h3>Your CPI meets the minimum requirement for branch change</h3> </B></CENTER>
+                <h4>Choose the branch</h4>
                 {% for i in change_branch.branches %}
                    <div class="ui form">
                       <div class="grouped fields">
                         <div class="field">
                           <div class="ui radio checkbox">
                             <input name="change" checked="checked" type="radio" required="required" value="{{ i }}">
-                            
+
                             <label>{{ i }}</label>
                           </div>
                         </div>
@@ -30,7 +30,7 @@
                     </div>
                 {% endfor %}
                 <input type="text" name="user" value='{{ details.current_user }}' hidden="true">
-           
+
 
             <br>
             <div class="ui divider"></div>
@@ -42,7 +42,7 @@
             </div>
             </form>
              {% else %}
-                You don't meet the minimum criteria for branch change
+              <B><CENTER>   You don't meet the minimum criteria for branch change</B></CENTER> 
             {% endif %}
         </div>
     </div>
@@ -52,10 +52,10 @@
 <script type="text/javascript">
 $(function() {
     $("#branch_change").submit(function(event) {
-        
+
         event.preventDefault();
         var friendForm = $(this);
-        
+
         var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
         // if success:
         posting.done(function(data) {

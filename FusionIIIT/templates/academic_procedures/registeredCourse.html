@@ -52,10 +52,11 @@
                             <td>
                             </td>
                             <td>
-                                {{ items.course_id }}
-                                {% if items.course_id|length > 5%}
-                                    (optional)
-                                {% endif %}
+                              {{ items.course_id }}
+                              {% if items.optional %}
+                            <B>      (optional)</B>
+
+                              {% endif %}
                                 <input type="text" name='course_id' value='{{ items.course_id}}' hidden="True">
                             </td>
                             <td>
@@ -75,6 +76,7 @@
                               <B>  {% for x in final_register %}
                                     {% if items.course_id == x.course_id.course_id %}
                                         Yes
+
                                     {% endif %}
                                 {% endfor %}</B>
 

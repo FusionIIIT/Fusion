@@ -125,14 +125,16 @@ class Grades(models.Model):
 class Student_attendance(models.Model):
     student_id = models.ForeignKey(Student)
     course_id = models.ForeignKey(Course)
-    attend = models.CharField(max_length=6, choices=Constants.ATTEND_CHOICES)
-    date = models.DateField()
+#    attend = models.CharField(max_length=6, choices=Constants.ATTEND_CHOICES)
+    date = models.DateField(auto_now=True)
+    present_attend = models.IntegerField(default=0)
+    total_attend = models.IntegerField(default=0)
 
     class Meta:
         db_table = 'Student_attendance'
 
     def __self__(self):
-        return self.date
+        return self.course_id
 
 
 class Instructor(models.Model):
@@ -162,7 +164,7 @@ class Spi(models.Model):
 
 class Timetable(models.Model):
     upload_date = models.DateTimeField(auto_now_add=True)
-    time_table = models.CharField(max_length=20)
+    time_table = models.FileField(upload_to='documents/%Y/%m/%d')
 
     class Meta:
         db_table = 'Timetable'
@@ -170,7 +172,7 @@ class Timetable(models.Model):
 
 class Exam_timetable(models.Model):
     upload_date = models.DateField(auto_now_add=True)
-    exam_time_table = models.CharField(max_length=20)
+    exam_time_table = models.FileField(upload_to='documents/%Y/%m/%d')
 
     class Meta:
         db_table = 'Exam_Timetable'

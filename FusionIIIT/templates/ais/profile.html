@@ -1,4 +1,4 @@
- {% load static %}
+{% load static %}
 {% block profile %}
 
  <div class="ui pointing secondary menu">
@@ -22,19 +22,20 @@
 
       
 
-       <form class="ui form">
+       <form class="ui form" method="post" action="{% url 'academic_information:add_basic_profile' %}" id="form1">
+            {% csrf_token %}
             <div class="field">
                  <div class="three fields">
                     <div class="field">
                         <label>Name</label>
-                        <input placeholder="Name" type="text">
+                        <input placeholder="Name" type="text" name="name">
                            
                     </div>
 
                     <div class="field">
                         <label>Batch</label>
                             <div class="ui fluid search selection dropdown">
-                                    <input type="hidden">
+                                    <input type="hidden" name="batch">
                                     <i class="dropdown icon"></i>
                                     <div class="default text">Batch</div>
                                     <div class="menu">
@@ -49,7 +50,7 @@
                 
                  <div class="field">
                         <label>Roll No.</label>
-                        <input placeholder="Roll No." type="text">
+                        <input placeholder="Roll No." type="text" name="roll">
                     </div>
                     
                 </div>
@@ -59,22 +60,35 @@
                     <div class="six wide field">
                         <div class="field">
                             <label>Phone Number</label>
-                            <input placeholder="Phone Number" type="text">
+                            <input placeholder="Phone Number" type="text" name="ph">
                         </div>
                     </div>
                      <div class="six wide field">
                         <div class="field">
                             <label>Programme</label>
-                            <input placeholder="Programme" type="text">
+                            <div class="ui fluid search selection dropdown">
+                                    <input type="hidden" name="programme">
+                                    <i class="dropdown icon"></i>
+                                    <div class="default text">Programme</div>
+                                    <div class="menu">
+                                        <div class="item" data-value="B.Tech">B.Tech</div>
+                                        <div class="item" data-value="B.Des ">B.Des </div>
+                                        <div class="item" data-value="M.Tech">M.Tech</div>
+                                        <div class="item" data-value="M.Des">M.Des </div>
+                                        <div class="item" data-value="P.hD">P.hD </div>
+                                    </div>
+                                </div>
                         </div>
                     </div>
 
                     <div class="four wide field">
                         <label><br></label>
-                        <div class="ui primary button">
-                            Save
+                        <a href="#" onclick="document.getElementById('form1').submit();">
+                        <div class="ui primary button">Save
                             <i class="ui save icon right floated"></i>
                         </div>
+                             </a>
+
                     </div> 
                 </div>
       
@@ -92,7 +106,7 @@
                 <div class=" six wide column">
                       <div class="ui loading search">
                           <div class="ui icon input">
-                            <input class="prompt" type="text" placeholder="Search...">
+                            <input class="prompt" type="text"  placeholder="Search...">
                             <i class="search icon"></i>
                           </div>
                           <div class="results"></div>
@@ -118,7 +132,6 @@
            <table class="ui fixed single line sortable celled table">
             <thead>
             <tr>
-                 <th class="sorted ascending"  style="width: 7%;">Sr.</th>
                 <th class="" style="width: 25%;">Name</th>
                 <th class="" style="width: 15%;">Roll No.</th>
                 <th class="" style="width: 13%;">Batch</th>
@@ -130,11 +143,23 @@
             </thead>
 
             <tbody>
+            <form action="{% url 'academic_information:delete_basic_profile' %}" method="post">
+            {% csrf_token %}
+            {% for s in student %}
             <tr>
-               
+                <!--<td><input type="radio" value="{{ s.id }}" name="delete"></input></td>-->
+                <td>{{ s.name }}</td>
+                <td>{{ s.id }}</td>
+                <td>{{ s.batch }}</td>
+                <td>{{ s.programme }}</td>
+                <td></td>
+
+                <td><button type="submit" value="{{ s.id }}" name="delete"><i class="trash outline icon" style="font-size:1.3vw;color:red;"></i></button></td>
             </tr>
 
+            {% endfor %}
             <tr>
+            </form>
                
             </tr>
 
@@ -169,30 +194,31 @@
 
       
 
-       <form class="ui form">
+       <form class="ui form" method="post" action="{% url 'academic_information:add_advanced_profile' %}" id="form2">
+            {% csrf_token %}
             <div class="field">
                  <div class="three fields">
                     <div class="field">
                         <label>Father's Name</label>
-                       <input placeholder="Father's Name" type="text">
+                       <input placeholder="Father's Name" type="text" name="father">
                     </div>
 
                     <div class="field">
                         <label>Mother's Name</label>
-                        <input placeholder="Mother's Name" type="text">
+                        <input placeholder="Mother's Name" type="text" name="mother">
                             
                     </div>
                 
                  <div class="field">
                         <label>Hall No.</label>
                            <div class="ui fluid search selection dropdown">
-                                    <input type="hidden">
+                                    <input type="hidden" name="hall">
                                     <i class="dropdown icon"></i>
                                     <div class="default text">Hall No.</div>
                                     <div class="menu">
-                                        <div class="item" data-value="Hall-1">Hall-1</div>
-                                        <div class="item" data-value="Hall-3">Hall-3</div>
-                                        <div class="item" data-value="Hall-4">Hall-4</div>
+                                        <div class="item" data-value="1">Hall-1</div>
+                                        <div class="item" data-value="3">Hall-3</div>
+                                        <div class="item" data-value="4">Hall-4</div>
                      
                                     </div>
                                 </div>
@@ -205,21 +231,29 @@
              <div class="fields">
                    <div class="four wide field">
                         <label>Room No.</label>
-                        <input placeholder="Room No" type="text">
+                        <input placeholder="Room No" type="text" name="room">
                             
                     </div>
-                     <div class="eight wide field">
+                     <div class="four wide field">
                         <label>Upload  Picture</label>
-                        <input placeholder="Upload Picture" type="file">
+                        <input placeholder="Upload Picture" type="file" name="dp">
                             
+                    </div>
+
+                 <div class="four wide field">
+                        <label>Roll No.</label>
+                        <input placeholder="Roll No" type="text" name="roll">
+
                     </div>
 
                     <div class=" four wide field">
                         <label><br></label>
+                        <a href="#" onclick="document.getElementById('form2').submit();">
                         <div class="ui primary button">
                             Save
                             <i class="ui save icon right floated"></i>
                         </div>
+                        </a>
                     </div> 
                 </div>
         </form> 
@@ -231,7 +265,6 @@
              <table class="ui sortable collapsing celled table">
             <thead>
               <tr>
-              <th style="width: 7%;">Sr.</th>
               <th  style="width: 25%;">Student</th>
               <th  style="width: 25%;">Father's Name</th>
                <th style="width: 23%;" >Mother's Name</th>
@@ -239,86 +272,32 @@
                 <th style="width: 10%;"> Action</th>
             </tr></thead>
             <tbody>
+            <form action="{% url 'academic_information:delete_advanced_profile' %}" method="post">
+                {% csrf_token %}
+            {% for s in student %}
               <tr>
-               <td>1.</td>
                 <td>
                   <h4 class="ui image header">
                     <img src="{% static 'fusion/img/jenny.jpg' %}" class="ui  rounded image">
                     <div class="content">
-                      Animesh
-                      <div class="sub header">2015301
+                      <div class="sub header">{{ s.id }}
                     </div>
                   </div>
                 </h4></td>
 
                 <td>
-                 
+                    {{ s.father_name}}
                 </td>
 
                 <td>
-                
+                    {{ s.mother_name}}
                 </td>
-                <td></td>
-                <td><i class="edit icon" style="font-size:1.3vw;color:blue"></i><br><i class="trash outline icon" style="font-size:1.3vw;color:red;"></i></td>
+                <td>{{ s.hall_no }}</td>
+                <td><button type="submit" name="delete" value="{{ s.id }}"><i class="trash outline icon" style="font-size:1.3vw;color:red;"></i></button></td>
 
               </tr>
-              <tr>
-                <td>2.</td>
-                <td>
-                  <h4 class="ui image header">
-                    <img src="{% static 'fusion/img/jina.png' %}" class="ui  rounded image">
-                    <div class="content">
-                      Paras
-                      <div class="sub header">2015183
-                    </div>
-                  </div>
-                </h4></td>
-
-                <td>
-                 
-                </td>
-                <td>
-                 </td>
-                    <td></td>
-                    <td><i class="edit icon" style="font-size:1.3vw;color:blue"></i><br><i class="trash outline icon" style="font-size:1.3vw;color:red;"></i></td>
-              </tr>
-              <tr>
-                <td>3.</td>
-                <td>
-                  <h4 class="ui image header">
-                    <img src="{% static 'fusion/img/matthew.png' %}" class="ui  rounded image">
-                    <div class="content">
-                      Chinmay
-                      <div class="sub header">2015093
-                    </div>
-                  </div>
-                </h4></td>
-                <td>
-                  >
-                </td>
-                  <td>
-                      
-                  </td>
-              </tr>
-              <tr>
-                <td>4.</td>
-                <td>
-
-                  <h4 class="ui image header">
-                    <img src="{% static 'fusion/img/steve.jpg' %}" class="ui  rounded image">
-                    <div class="content">
-                      Girish
-                      <div class="sub header">2015155
-                    </div>
-                  </div>
-                </h4></td>
-                <td>
-                  
-                </td>
-                 <td>
-                  
-                 </td>
-              </tr>
+            {% endfor %}
+                </form>
             </tbody>
          </table>
 
@@ -329,29 +308,34 @@
 
       
 
-       <form class="ui form">
+       <form class="ui form" method="post" action="{% url 'academic_information:add_grade' %}" id="form3">
+            {% csrf_token %}
             <div class="field">
                  <div class="three fields">
                     <div class="field">
                             <label>Course Code</label>
-                            <input placeholder="Course Code" type="text">
+                            <select placeholder="Course Code" type="text" name="course">
+                                {% for c in courses %}
+                                    <option value="{{ c.course_id }}">{{ c.course_id }}</option>
+                                {% endfor%}
+                            </select>
                         </div>
 
                       <div class="field">
                             <label>Semester</label>
                              <div class="ui fluid search selection dropdown">
-                                    <input type="hidden">
+                                    <input type="hidden" name="sem">
                                     <i class="dropdown icon"></i>
                                     <div class="default text">Semester</div>
                                     <div class="menu">
-                                        <div class="item" data-value="1st">1st</div>
-                                        <div class="item" data-value="2nd">2nd</div>
-                                        <div class="item" data-value="3rd">3rd</div>
-                                        <div class="item" data-value="4th">4th</div>
-                                        <div class="item" data-value="5th">5th</div>
-                                        <div class="item" data-value="6th">6th</div>
-                                        <div class="item" data-value="7th">7th</div>
-                                        <div class="item" data-value="8th">8th</div>
+                                        <div class="item" data-value="1">1st</div>
+                                        <div class="item" data-value="2">2nd</div>
+                                        <div class="item" data-value="3">3rd</div>
+                                        <div class="item" data-value="4">4th</div>
+                                        <div class="item" data-value="5">5th</div>
+                                        <div class="item" data-value="6">6th</div>
+                                        <div class="item" data-value="7">7th</div>
+                                        <div class="item" data-value="8">8th</div>
                
                                     </div>
                                 </div>
@@ -360,7 +344,7 @@
                 
                  <div class="field">
                         <label>Roll No.</label>
-                        <input placeholder="Roll No." type="text">
+                        <input placeholder="Roll No." type="text" name="roll">
                     </div>
                     
                 </div>
@@ -371,16 +355,29 @@
                      <div class="four wide field">
                         <div class="field">
                             <label>Grade</label>
-                            <input placeholder="Grade" type="text">
+                            <select  placeholder="Grade" type="text" name="grade">
+                                <option value="A+">A+</option>
+                                <option value="A">A</option>
+                                <option value="B+">B+</option>
+                                <option value="B">B</option>
+                                <option value="C+">C+</option>
+                                <option value="C">C</option>
+                                <option value="D+">D+</option>
+                                <option value="D">D</option>
+                                <option value="F">F</option>
+                            </select>
+
                         </div>
                     </div>
 
                     <div class="four wide field">
                         <label><br></label>
+                        <a href="#" onclick="document.getElementById('form3').submit();">
                         <div class="ui primary button">
                             Save
                             <i class="ui save icon right floated"></i>
                         </div>
+                        </a>
                     </div> 
                 </div>
       
@@ -424,29 +421,30 @@
            <table class="ui fixed single line sortable celled table">
             <thead>
             <tr>
-                 <th class="sorted ascending" style="width: 7%;">Sr.</th>
                 <th class="" style="width: 17%;">Roll No.</th>
                 <th class="" style="width: 17%;">Semester</th>
-                <th class="" style="width: 25%;">Course-Code</th>
+                <th class="" style="width: 25%;">Course-Id</th>
                 <th class="" style="width: 17%;">Grade</th>
                 <th style="width: 10%;"> Action </th>
 
               
             </tr>
+            {% for g in grade %}
+            <tr>
+                <td>{{ g.student_id }}</td>
+                <td>{{ g.sem }}</td>
+                <td>{{ g.course_id }}</td>
+                <td>{{ g.grade }}</td>
+                <td></td>
+            </tr>
+            {% endfor %}
             </thead>
 
             <tbody>
-            <tr>
-               
-            </tr>
+            <form method="post" action="{% url 'academic_information:delete_grade' %}">
+                {% csrf_token %}
 
-            <tr>
-               
-            </tr>
-
-            <tr>
-              
-            </tr>
+                 </form>
             </tbody>
 
             <tfoot>
@@ -475,25 +473,36 @@
 
       
 
-       <form class="ui form">
+       <form class="ui form" method="post" action="{% url 'academic_information:add_course' %}" id="form4">
+            {% csrf_token %}
             <div class="field">
                  <div class="three fields">
 
                   <div class="field">
                         <label>Roll No.</label>
-                        <input placeholder="Roll No." type="text">
+                        <input placeholder="Roll No." type="text" name="roll">
                     </div>
 
                     <div class="field">
                        
                         <label>Course 1  code</label>
-                        <input placeholder="Course 1 code" type="text">
+                        <select placeholder="Course 1 code" type="text" name="c1">
+                             <option value="">----</option>
+                            {% for c in courses %}
+                            <option value = "{{ c.course_id }}" default="">{{ c.course_id }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
 
                      <div class="field">
                        
                         <label>Course 2 code</label>
-                        <input placeholder="Course 2 code" type="text">
+                        <select placeholder="Course 2 code" type="text" name="c2">
+                             <option value="">----</option>
+                            {% for c in courses %}
+                            <option value = "{{ c.course_id }}"  default="">{{ c.course_id }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                       
                 </div>
@@ -503,26 +512,47 @@
                     <div class="four wide field">
                         <div class="field">
                             <label>Course 3 code</label>
-                            <input placeholder="Course 3 code" type="text">
+                            <select placeholder="Course 3 code" type="text" name="c3" default="">
+                                 <option value="">----</option>
+                            {% for c in courses %}
+                            <option value = "{{ c.course_id }}" default="">{{ c.course_id }}</option>
+                            {% endfor %}
+                        </select>
                         </div>
                     </div>
                      <div class="four wide field">
                          <div class="field">
                             <label>Course 4 code</label>
-                            <input placeholder="Course 4 code" type="text">
+                            <select placeholder="Course 4 code" type="text" name="c4">
+                                 <option value="">----</option>
+                            {% for c in courses %}
+                            <option value = "{{ c.course_id }}" default="">{{ c.course_id }}</option>
+                            {% endfor %}
+                        </select>
                         </div>
                     </div>
 
                     <div class="four wide field">
                          <div class="field">
                             <label>Course 5 code</label>
-                            <input placeholder="Course 5 code" type="text">
+                            <select placeholder="Course 5 code" type="text" name="c5">
+                                 <option value="">----</option>
+                            {% for c in courses %}
+                            <option value = "{{ c.course_id }}" default="">{{ c.course_id }}</option>
+                            {% endfor %}
+                        </select>
                         </div>
                     </div>
                      <div class="four wide field">
                          <div class="field">
                             <label>Course 6 code</label>
-                            <input placeholder="Course 6 code" type="text">
+                            <select placeholder="Course 6 code" type="text" name="c6">
+                                <option value="">----</option>
+                            {% for c in courses %}
+
+                            <option value = "{{ c.course_id }}" default="">{{ c.course_id }}</option>
+                            {% endfor %}
+                        </select>
                         </div>
                     </div> 
                 </div>
@@ -531,10 +561,12 @@
                         
                          <div class=" two wide field">
                                  <label><br></label>
+                             <a href="#" onclick="document.getElementById('form4').submit();">
                                 <div class="ui primary button">
                                     Save
                                     <i class="ui save icon right floated"></i>
                                 </div>
+                             </a>
                             </div>
                             
                  
@@ -583,7 +615,6 @@
            <table class="ui fixed single line sortable celled table">
             <thead>
             <tr>
-                 <th class="sorted ascending" style="width: 7%;">Sr.</th>
                   <th class="" style="width: 20%;">Roll No.</th>
                 <th class=""  style="width: 50%;">Courses</th>
                 <th style="width: 13%;">Action </th>
@@ -592,10 +623,19 @@
             </thead>
 
             <tbody>
+            {% for s in student %}
             <tr>
-               
-            </tr>
+                <td>{{ s.id }}</td>
+              <td><ul>
+                    {% for t in s.courses.all %}
+                  <li>{{ t.course_name }}</li>
+                    {% endfor %}
+                  </ul>
+                </td>
 
+                <td></td>
+            </tr>
+            {% endfor %}
             <tr>
                
             </tr>
