@@ -11,7 +11,9 @@
     <div class="ui active tab" data-tab="complainthistory">
         <div class="ui vertical segment">
         {% if context.total_thesis %}
-            You can only have one thesis per year
+        <B>
+            You can only have one thesis per semester
+          </B>
         {% else %}
             <form action='/academic-procedures/addThesis/' method='post'>
             {% csrf_token %}
@@ -25,7 +27,7 @@
                   <div class="default text">Mentor</div>
                   <div class="menu">
                     {% for i in faculty %}
-                        <div class="item" value="{{ i }}">{{ i.user.username }}</div>
+                        <div class="item" value="{{ i }}">{{ i }}</div>
                     {% endfor %}
                   </div>
                 </div>
@@ -39,7 +41,7 @@
 
         </form>
         {% endif %}
-        
+
         </div>
     </div>
 

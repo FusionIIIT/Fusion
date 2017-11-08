@@ -10,7 +10,7 @@
 
     <div class="ui active tab" data-tab="complainthistory">
         <div class="ui vertical segment">
-           
+
             <table class="ui very basic collapsing celled sortable table"
                    style="padding-left: 2.5%;
                                                           padding-right: 2.5%;
@@ -45,7 +45,7 @@
                 </thead>
 
                 <tbody>
-                
+
 
                     {% for items in courses_list %}
                         <tr>
@@ -63,20 +63,20 @@
                                 <input type="text" name='course_name' value='{{ items.course_name}}' hidden="True">
                             </td>
                             <td>
-                                {{items.sem}}
+  {{ items.credits }}
                                 <input type="text" name='semester' value='{{ items.sem}}' hidden="True">
                              </td>
                              <td>
-                                {{ items.credits }}
+                              {{items.sem}}
                                 <input type="text" name='credits' value='{{ items.credits}}' hidden="True">
                              </td>
                              <td>
                                 <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
-                                {% for x in final_register %}
+                              <B>  {% for x in final_register %}
                                     {% if items.course_id == x.course_id.course_id %}
                                         Yes
                                     {% endif %}
-                                {% endfor %}
+                                {% endfor %}</B>
 
                              </td>
                         </tr>

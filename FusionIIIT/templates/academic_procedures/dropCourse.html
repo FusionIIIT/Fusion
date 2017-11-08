@@ -66,11 +66,11 @@
                                         {{items.sem}}
                                      </td>
                                     <td>
-                                        {% if items.optional %}
+                                    <B>    {% if items.optional %}
                                             <input name="course_id" type="checkbox" value="{{ items.course_id }}">
                                         {% else %}
                                             <input name="course_id" type="checkbox" value="{{ items.course_id }}" onclick="return false;" hidden="True">(Compulsory)
-                                        {% endif %}
+                                        {% endif %}</B>
                                         <input name="user" type="text" value="{{ x.student_id }}" hidden="True">
                                     </td>
                                 </tr>

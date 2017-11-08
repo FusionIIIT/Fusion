@@ -115,14 +115,13 @@ def academic_procedures(request):
             specialization = i.specialization
         branch_courses = get_pg_course(user_sem, specialization)
         add_courses = get_pg_course(user_sem, specialization)
-        show_list = add_courses
+        print("karde")
+        show_list = get_course_to_show_pg(add_courses,final_register)
 
     details['change_branch_flag'] = change_branch_flag
     # ENDCHANGE BY ANURAAG
-    print(final_register)
+
     print("yoyo\n")
-    print(branch_courses)
-    print(show_list)
     return render(
         request, '../templates/academic_procedures/academic.html', {
                                                                 'details': details,
@@ -136,6 +135,19 @@ def academic_procedures(request):
                                                                 }
         )
 
+def get_course_to_show_pg(initial_courses,final_register):
+    x = []
+    print (initial_courses,final_register)
+    for i in initial_courses:
+        flag = 0
+        for j in final_register:
+            print (i.course_id,"sdss", j.course_id)
+            if(str(i.course_name)==str(j.course_id)):
+                flag = 1
+        if(flag==0):
+            x.append(i)
+    print(x)
+    return x
 
 def get_course_to_show(branch, final_register):
     x = []
@@ -227,7 +239,9 @@ def get_branch_courses(courses, branch):
         # print (course.course_id)
         if branch[:2].lower() == course.course_id[:2].lower() and len(course.course_id) >= 5:
             course_list.append(course)
-        if len(course.course_id) > 5:
+        elif branch[:2].lower() == course.course_id[:2].lower() and len(course.course_id) > 5:
+            course_list.append(course)
+        elif (str(course.course_id[:2])=="HS" or str(course.course_id[:2])=="ES"or str(course.course_id[:2])=="NS" or str(course.course_id[:2])=="DS"):
             course_list.append(course)
     return course_list
 
@@ -589,14 +603,24 @@ def student_list(request):
         dep_id = DepartmentInfo.objects.all().filter(name=option2)
         obj1 = ExtraInfo.objects.all().filter(department=dep_id)
         queryflag = 1
-        obj2 = Student.objects.filter(programme='B.Tech').select_related()
+        # obj2 = Student.objects.filter(programme='B.Tech').select_related()
+        obj2 = Student.objects.filter(programme=option1[:6]).select_related()
         student_obj = []
+        print(obj2,dep_id)
+        print(obj1)
         cnt = 1
         for k in obj2:
             p = str(k.id)
             tempobj = {}
             for z in obj1:
                 if(p[0:7] == z.id and p[0:4] == option1[7:]):
+                    tempobj['roll_no'] = p[0:7]
+                    tempobj['name'] = str(z.user.first_name) + " " + str(z.user.last_name)
+                    tempobj['branch'] = option2
+                    # student_obj[str(cnt)]=tempobj
+                    student_obj.append(tempobj)
+                    cnt += 1
+                elif(p[0:7] == z.id and p[0:2] == option1[9:]):
                     tempobj['roll_no'] = p[0:7]
                     tempobj['name'] = str(z.user.first_name) + " " + str(z.user.last_name)
                     tempobj['branch'] = option2
@@ -709,10 +733,11 @@ def phd_details(request):
     # print(user_details.department.name)
     faculty = ExtraInfo.objects.all().filter(department=user_details.department,
                                              designation=Professor)
+    print(Professor,faculty)
     faculties_list = []
     for i in faculty:
-        faculties_list.append(i)
-
+        faculties_list.append(str(i.user.first_name)+" "+str(i.user.last_name))
+    print (faculties_list)
     total_thesis = True
     if(thesis is None):
         total_thesis = False
@@ -731,11 +756,12 @@ def phd_details(request):
 
 def add_thesis(request):
     if request.method == 'POST':
+        print (request.POST)
         faculty = request.POST.get('faculty')
         student = request.POST.get('student')
         thesis = request.POST.get('thesis')
-
-        f_user = get_object_or_404(User, username=faculty)
+        faculty = faculty.split()
+        f_user = get_object_or_404(User, last_name=faculty[len(faculty)-1])
         fac = ExtraInfo.objects.all().filter(user=f_user).first()
         fac = Faculty.objects.all().filter(id=fac).first()
 

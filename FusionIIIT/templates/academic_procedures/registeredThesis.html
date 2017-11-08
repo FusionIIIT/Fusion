@@ -34,7 +34,7 @@
                     </thead>
 
                     <tbody>
-                
+
                         <tr>
                             <td>
                             </td>
@@ -42,7 +42,7 @@
                                 {{ context.thesis.topic }}
                             </td>
                             <td>
-                                {{ context.thesis.supervisor_id.id.user.username}}
+                                {{ context.thesis.supervisor_id.id.user.first_name}} {{context.thesis.supervisor_id.id.user.last_name }}
                             </td>
                         </tr>
                     </tbody>

@@ -10,6 +10,7 @@
 
     <div class="ui active tab" data-tab="complainthistory">
         <div class="ui vertical segment">
+          {% if show_list %}
         <form id='add_course_form' action='/academic-procedures/register/' method='post'>
             <table class="ui very basic collapsing celled sortable table"
                    style="padding-left: 2.5%;
@@ -17,6 +18,7 @@
                                                           padding-top: 1%;
                                                           padding-bottom: 1.5%;
                                                           margin: auto;">
+
                 <thead>
                 <tr>
                     <th>
@@ -62,32 +64,38 @@
                                 <input type="text" name='course_name' value='{{ items.course_name}}' hidden="True">
                             </td>
                             <td>
-                                {{items.sem}}
+                              {{ items.credits }}
+
                                 <input type="text" name='semester' value='{{ items.sem}}' hidden="True">
                              </td>
                              <td>
-                                {{ items.credits }}
+                                                                {{items.sem}}
                                 <input type="text" name='credits' value='{{ items.credits}}' hidden="True">
                              </td>
-                             <td>
+                             <td><B>
                                 <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
                                                             {% if items.optional %}
                                                                 <input name="choice" type="checkbox" value="{{ items.course_id }}">
                                                             {% else %}
                                                                 <input name="choice" type="checkbox" value="{{ items.course_id }}" onclick="return false;" checked hidden="True">(Compulsory)
-                                                            {% endif %}
+                                                            {% endif %}</B>
 
                              </td>
                         </tr>
                         {% endfor %}
                 </tbody>
+
             </table>
 
 
             <div class="ui divider"></div>
             <center><button class="ui positive basic button">Add Course(s)</button></center>
         </form>
+        {% else %}<B><CENTER>
+            NO COURSES TO ADD </B></CENTER>
+        {% endif %}
         </div>
+
     </div>
 
 {% endblock %}
