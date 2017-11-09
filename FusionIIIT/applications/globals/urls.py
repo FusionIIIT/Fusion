@@ -1,5 +1,4 @@
 from django.conf.urls import url
-
 from . import views
 
 app_name = 'globals'
@@ -11,5 +10,9 @@ urlpatterns = [
     url(r'^login/', views.login, name='login'),
 
     url(r'^dashboard/', views.dashboard, name='dashboard'),
+
+    # Feedback and issues url
+    url(r'^feedback/', views.feedback, name="feedback"),
+    url(r'^issue/', views.issue, name="issue"),
 
 ]
