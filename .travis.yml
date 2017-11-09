@@ -10,4 +10,4 @@ install:
 script:
   - flake8 . --exclude manage.py,__pycache__,migrations --max-line-length=100
   - isort
-  - ./FusionIIIT/manage.py runserver
+  - timeout 4s ./FusionIIIT/manage.py runserver
