@@ -2,18 +2,18 @@
 {% block senate %}
 
 
-    
+
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="cse">
           SENATORS
-        </a>        
+        </a>
         <a class=" item" data-tab="office">
             OFFICE BEARERS
         </a>
         <a class=" item" data-tab="minutes">
              MINUTES
         </a>
-       
+
     </div>
 
 <div class="ui active tab segment" data-tab="cse">
@@ -31,9 +31,9 @@
         <div class="one wide field">
             <label><br></label>
                 <input type="submit" value="Save" />
-        </div> 
         </div>
-    </form>  
+        </div>
+    </form>
 
     <table class="ui single line table">
     <thead>
@@ -46,31 +46,60 @@
     </thead>
     <tbody>
         {% if senates %}
-        {% for senate in senates%}                      
+        {% for senate in senates%}
         <tr>
         <td>{{senate.user.username}} </td>
         {% for s in students %}
-        {% if s.id == senate %}                       
-            <td>{{s.programme}} </td>                      
+        {% if s.id == senate %}
+            <td>{{s.programme}} </td>
             <td>{{senate.id}}</td>
         {% endif %}
         {% endfor %}
         <!-- for deleting -->
-        <td><form method="POST" action="{% url 'academic_information:deleteSenator' %}">{% csrf_token %}<button type="submit" name= "delete" value="{{senate.id}}"> Delete </button></form></td>                                                
+        <td><form method="POST" action="{% url 'academic_information:deleteSenator' %}">{% csrf_token %}<button type="submit" name= "delete" value="{{senate.id}}"> Delete </button></form></td>
         </tr>
         {% endfor %}
         {% endif %}
-    </tbody>                 
-    </table>               
-    </div>   
+    </tbody>
+    </table>
+    </div>
     {% block javascript %}
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js" type="text/javascript"></script>
-        <script src="{% static 'academic_information/scripts/senate_members.js' %}" type="text/javascript"></script>
     {% endblock %}
+    <script type="text/javascript">
+                                  // Submit post on submit
+                                  $(document).ready(function() {
+
+                                      $('#senate-member').on('submit', function(event){
+                                          event.preventDefault();
+                                          create_member();
+                                      });
+                                  });
+
+                                  function create_member() {
+                                      $.ajax({
+                                          type : "POST", // http method
+                                          url : "senator/", // the endpoint
+                                          dataType: 'json',
+                                          data : {
+                                              'rollno' : $('#rollno').val()
+                                          },
+                                          // data sent with the post request
+                                          // handle a successful response
+                                          success : function(data) {
+                                              alert("Data Entered")
+                                          },
+                                          error : function(data) {
+                                              alert("Unexpected Error Occured")
+                                          }
+                                      });
+                                  };
+        </script>
+
 
     <!-- office bearers -->
     <div class="ui  tab segment" data-tab="office">
-    
+
     <!-- Dean -->
     <h4 class="ui dividing header"> Faculty Members</h4>
     <table class="ui single line table">
@@ -119,12 +148,12 @@
                     <div class="one wide field">
                     <label><br></label>
                         <input type="submit" value="update" />
-                    </div> 
+                    </div>
             </div>
 
             </div>
-        </div>        
-    </form> 
+        </div>
+    </form>
 
     <h4 class="ui dividing header"> Students</h4>
     <table class="ui single line table">
@@ -168,8 +197,8 @@
         <form class="ui form" method="POST" enctype="multipart/form-data" id="minutes">
             {% csrf_token %}
                   <div class="field">
-                    <div class="three fields">                       
-                            {{ form.as_p }} 
+                    <div class="three fields">
+                            {{ form.as_p }}
                          <div class="field">
                            <label><br></label>
                                 <input type="submit" value="Save" />
@@ -187,10 +216,10 @@
                       <th>Date</th>
                       <th>Minutes</th>
                       <th>Action</th>
-                      
+
                     </tr>
                   </thead>
-                  
+
                 <tbody>
                     {% if meetings %}
                     {% for meeting in meetings %}
@@ -200,7 +229,7 @@
                     <td><a href="{{ meeting.minutes_file.url }}">
                       <div class="ui primary button">
                                Open PDF
-                           
+
                         </div>
                     </a>
                     </td>
@@ -208,7 +237,7 @@
                    </tr>
                    {% endfor %}
                    {% endif %}
-                 </tbody>            
+                 </tbody>
 <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js" type="text/javascript"></script>
 <script src="{% static 'academic_information/scripts/minutes.js' %}" type="text/javascript"></script> -->
 
@@ -229,10 +258,10 @@
                                   </div>
                               </th>
                           </tr>
-                    </tfoot> 
+                    </tfoot>
               </table>
 
-    
+
  </div>
 
 {% endblock %}

@@ -79,10 +79,12 @@ def deleteSenator(request):
     return HttpResponse("Deleted")
 
 
+# EDITED BY ANURAAG
 @csrf_exempt
 def senator(request):
+    print(request.POST)
     if request.method == 'POST':
-        rollno = request.POST.get('rollno')
+        rollno = request.POST['rollno']
         extraInfo = ExtraInfo.objects.get(id=rollno)
         s = Designation.objects.get(name='senate')
         extraInfo.designation.add(s)
@@ -98,6 +100,7 @@ def senator(request):
     else:
         data = {}
         return JsonResponse(data)
+# END EDIT
 
 
 def add_convenor(request):
