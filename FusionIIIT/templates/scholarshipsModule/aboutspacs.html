@@ -1,0 +1,34 @@
+{% load static %}
+{% block aboutspecs %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="aboutspacs">
+            About
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="aboutspacs">
+        <div class="ui vertical segment">
+
+            <div class="ui three cards">
+                <div class="ui card">
+                    <div class="image">
+                        <img src="{% static 'globals/img/zlatan.jpg' %}">
+                    </div>
+
+                    <div class="content">
+                        <a class="header">Zlatan Ibrahimovic</a>
+                        <div class="meta">
+                            <span>Associate Professor</span>
+                        </div>
+
+                        <div class="description">
+                            Phone:
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% comment %}The tab menu starts here!{% endcomment %}
+{% endblock %}

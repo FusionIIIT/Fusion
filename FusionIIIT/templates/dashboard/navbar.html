@@ -28,48 +28,76 @@
                     Atul Gupta
                 </a>
 
-                <div class="ui dropdown icon item">
-                    <i class="settings icon"></i>
-                    <div class="menu">
-                        <div class="item">
-                            <i class="dropdown icon"></i>
-                            <span class="text">New</span>
-                            <div class="menu">
-                                <div class="item">Document</div>
-                                <div class="item">Image</div>
+                <a class="item" id="new-notification">
+                    Notifications
+                    <div class="ui teal label">22</div>
+                </a>
+
+                <div class="ui fluid popup bottom left transition hidden">
+                    <div class="ui four column relaxed equal height stackable doubling grid">
+                        <div class="row">
+                            <h3 class="ui dividing header" style="margin: auto; margin-top: 8px;">Notifications</h3>
+                        </div>
+
+                        <div class="row">
+                            <div class="column">
+                                <div class="ui secondary vertical pointing compact menu">
+                                    <a class="active item" data-tab="leaveModule">
+                                        <span style="color: #000;">
+                                            Leave
+                                        </span>
+                                    </a>
+
+                                    <a class="item" data-tab="complaintModule">
+                                        <span style="color: #000;">
+                                            Complaint
+                                        </span>
+                                    </a>
+
+                                    <a class="item" data-tab="messModule">
+                                        <span style="color: #000;">
+                                            Mess
+                                        </span>
+                                    </a>
+
+                                    <a class="item" data-tab="placementModule">
+                                        <span style="color: #000;">
+                                            Placement
+                                        </span>
+                                    </a>
+                                </div>
                             </div>
-                        </div>
-                        <div class="item">
-                            Open...
-                        </div>
-                        <div class="item">
-                            Save...
-                        </div>
-                        <div class="item">Edit Permissions</div>
-                        <div class="divider"></div>
-                        <div class="header">
-                            Export
-                        </div>
-                        <div class="item">
-                            Share...
+
+                            <div class="three wide column">
+                                <div class="ui active tab" data-tab="leaveModule">
+                                    <div class="ui animated fluid list"
+                                         id="new-message-list" style="min-width: 20vw; max-height: 28.5vh; overflow-y: auto;">
+                                    </div>
+                                </div>
+
+                                <div class="ui tab"  data-tab="complaintModule">
+                                </div>
+
+                                <div class="ui tab"  data-tab="messModule">
+                                </div>
+
+                                <div class="ui tab"  data-tab="placementModule">
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                 </div>
-
                 <div class="item">
                     <i class="icon mail"></i>
                     <div class="ui red label">22</div>
                 </div>
 
-                <div class="item">
-                    <i class="alarm icon"></i>
-                    <div class="ui teal label">22</div>
-                </div>
+                <div class="item"></div>
 
                 <a class="right item" href="">
                     {% comment %}
-                        TODO: Whatever!
+                        TODO: LOGOUT!
                     {% endcomment %}
                     <i class="ui inverted sign out icon"></i>
                     Logout
@@ -81,8 +109,8 @@
         <div class="ui divider"></div>
 
 
-    {% block data%}
-    {% endblock %}
+        {% block data%}
+        {% endblock %}
 
 
 

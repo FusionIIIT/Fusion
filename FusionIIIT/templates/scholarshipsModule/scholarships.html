@@ -44,6 +44,21 @@
                     Invite
                     <i class="right floated chevron right icon"></i>
                 </a>
+
+                <a class="item" data-tab="third">
+                    Scholarships
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="fourth">
+                    About
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="fifth">
+                    Catalog
+                    <i class="right floated chevron right icon"></i>
+                </a>
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
 
@@ -75,15 +90,39 @@
             </div>
             {% comment %}The Publications ends here!{% endcomment %}
 
+            {% comment %}The Publications starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="third">
+                {% block awards %}
+                    {% include 'scholarshipsModule/awards.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The Publications ends here!{% endcomment %}
+
+
+            {% comment %}The Publications starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="fourth">
+                {% block aboutspacs %}
+                    {% include 'scholarshipsModule/aboutspacs.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The Publications ends here!{% endcomment %}
+
+
+            {% comment %}The Publications starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="fifth">
+                {% block catalog %}
+                    {% include 'scholarshipsModule/catalog.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The Publications ends here!{% endcomment %}
+
         </div>
         {% comment %}The central-rail segment ends here!{% endcomment %}
 
         {% comment %}The right-rail segment starts here!{% endcomment %}
         <div class="three wide column">
             <div class="row">
-                {% comment %}
-                    TODO: the right rail!
-                {% endcomment %}
+
             </div>
         </div>
         {% comment %}The right-rail segment ends here!{% endcomment %}
@@ -100,4 +139,5 @@
     <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
     <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
     <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/editProfile.js' %}"></script>
 {% endblock %}

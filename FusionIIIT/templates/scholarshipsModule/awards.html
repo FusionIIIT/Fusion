@@ -1,0 +1,52 @@
+{% load static %}
+{% block awards %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="awards">
+            Awards And Scholarships
+        </a>
+    </div>
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui active tab" data-tab="awards">
+        <div class="ui vertical segment">
+
+            <div class="ui styled accordion">
+                <div class="title">
+                    <i class="dropdown icon"></i>
+                    Awards
+                </div>
+
+                <div class="content">
+                    <button class="ui blue button">CCM</button>
+                    <button class="ui blue button">DCM</button>
+                    <button class="ui blue button">MCM</button>
+                </div>
+
+                <div class="title">
+                    <i class="dropdown icon"></i>
+                    Prizes
+                </div>
+
+                <div class="content">
+                    <button class="ui blue button">CCM</button>
+                    <button class="ui blue button">DCM</button>
+                    <button class="ui blue button">MCM</button>
+                </div>
+
+                <div class="title">
+                    <i class="dropdown icon"></i>
+                    Scholarships
+                </div>
+
+                <div class="content">
+                    <button class="ui blue button">CCM</button>
+                    <button class="ui blue button">DCM</button>
+                    <button class="ui blue button">MCM</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% comment %}The tab menu ends here!{% endcomment %}
+{% endblock %}
