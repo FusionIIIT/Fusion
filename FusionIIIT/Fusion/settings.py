@@ -101,6 +101,7 @@ INSTALLED_APPS = [
     'applications.gymkhana.apps.GymkhanaConfig',
     'applications.globals.apps.GlobalsConfig',
     'applications.health_center.apps.HealthCenterConfig',
+    'applications.gymkhana.apps.GymkhanaConfig',
     'applications.leave.apps.LeaveConfig',
     'applications.online_cms.apps.OnlineCmsConfig',
     'applications.placement_cell.apps.PlacementCellConfig',

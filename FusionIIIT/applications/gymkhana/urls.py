@@ -7,5 +7,4 @@ app_name = 'gymkhana'
 urlpatterns = [
 
     url(r'^$', views.gymkhana, name='gymkhana'),
-
 ]
