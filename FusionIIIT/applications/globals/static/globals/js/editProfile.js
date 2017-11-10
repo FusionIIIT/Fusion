@@ -103,3 +103,25 @@ function editStudent() {
 
     }
 }
+
+function editCatalog() {
+    var buttonValue = $("#editButton").val()
+    var aboutSpan = $("#aboutSpan").text().trim();
+
+    if(buttonValue == "Edit") {
+        $("#editButton").val("Save");
+
+        $("#aboutTextarea").val(aboutSpan);
+        $("#aboutTextarea").show();
+        $("#aboutSpan").hide();
+    }
+
+    else if($("#editButton").val("Save")) {
+        $("#editButton").val("Edit");
+
+        var aboutSpan = $("#aboutTextarea").val().trim();
+        $("#aboutSpan").text(aboutSpan);
+        $("#aboutTextarea").hide();
+        $("#aboutSpan").show();
+    }
+}
