@@ -1,0 +1,433 @@
+{% load static %}
+{% block awards %}
+{% comment %}The tab menu starts here!{% endcomment %}
+
+<div class="ui pointing secondary menu">
+    <a class="active item" data-tab="awards">
+        Awards And Scholarships
+    </a>
+</div>
+{% comment %}The tab menu starts here!{% endcomment %}
+<div class="ui active tab" data-tab="awards">
+    <div class="ui vertical segment">
+
+        <div class="ui styled accordion">
+            <div class="title">
+                <i class="dropdown icon"></i>
+                Awards
+            </div>
+
+            <div class="content">
+                <button class="ui blue button" onclick="modalGoldmedal()">CCM</button>
+                <button class="ui blue button" onclick="modalDandm()">DandM</button>
+                <button class="ui blue button" onclick="modalCmc()">MCM</button>
+            </div>
+
+            <div class="title">
+                <i class="dropdown icon"></i>
+                Prizes
+            </div>
+
+           <div class="content">
+                <button class="ui blue button" onclick="modalGoldmedal()">CCM</button>
+                <button class="ui blue button" onclick="modalDandm()">DandM</button>
+                <button class="ui blue button" onclick="modalCmc()">MCM</button>
+            </div>
+
+
+            <div class="title">
+                <i class="dropdown icon"></i>
+                Scholarships
+            </div>
+
+            <div class="content">
+                <button class="ui blue button" onclick="modalGoldmedal()">CCM</button>
+                <button class="ui blue button" onclick="modalDandm()">DandM</button>
+                <button class="ui blue button" onclick="modalCmc()">MCM</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="ui modal" id="dandm">
+    <div class="header">
+        D and M Proficiency Gold Medal
+        <a class="right floated item">
+            <button class="ui primary button">
+                Download
+                <i class="right floated download icon"></i>
+            </button>
+        </a>
+    </div>
+
+    <div class="content">
+        <div class="description"
+             style="margin: auto;
+                        margin-top: .5vw;
+                        margin-left: 5vw;
+                        margin-right: 5vw;">
+
+
+
+
+
+
+
+            <form class="ui form" style="padding-left: 36px; padding-right: 36px;">
+                <div class="field">
+                    <label>PBI Project/Design Project</label>
+                    <div class="ui large input">
+                        <input placeholder="Project" type="text">
+                    </div>
+                    <label>Number Of Student</label>
+                    <div class="ui fluid search selection large dropdown">
+                        <input name="" type="hidden">
+                        <i class="dropdown icon"></i>
+
+                        <div class="default text">Select</div>
+
+                        <div class="menu">
+                            <div class="item" data-value="n1">
+                                1
+                            </div>
+                            <div class="item" data-value="n2">
+                                2
+                            </div>
+                            <div class="item" data-value="n3">
+                                3
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+                <div class="field">
+                    <label>Permanent Address:</label>
+                    <textarea rows="2"></textarea>
+                </div>
+
+                <div class="field">
+                    <label>Correspondance Address:</label>
+                    <textarea rows="2"></textarea>
+                </div>
+                <a class="right floated item">
+                    <button class="ui primary button">
+                        Submit
+                    </button>
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+ <div class="ui modal" id="mcm">
+        <div class="header">
+           MCM Form
+
+              <a class="right floated item">
+            <button class="ui primary button">
+                Download
+                <i class="right floated download icon"></i>
+            </button>
+        </a>
+        </div>
+
+        <div class="content">
+            <div class="description"
+                 style="margin: auto;
+                        margin-top: .5vw;
+                        margin-left: 5vw;
+                        margin-right: 5vw;">
+
+        <form class="ui form" style="padding-left: 36px; padding-right: 36px;">
+            <div class="three fields">
+                <div class="six wide field">
+                    <label>Category</label>
+                    <div class="ui fluid search selection large dropdown">
+                        <input name="" type="hidden">
+                        <i class="dropdown icon"></i>
+
+                        <div class="default text">Select</div>
+
+                        <div class="menu">
+                            <div class="item" data-value="c1">
+                                General
+                            </div>
+                            <div class="item" data-value="c2">
+                                OBC
+                            </div>
+                            <div class="item" data-value="c3">
+                                SC
+                            </div>
+
+                            <div class="item" data-value="c4">
+                                ST
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+                <div class="six wide field">
+                    <label>Hall no</label>
+                    <div class="ui fluid search selection large dropdown">
+                        <input name="" type="hidden">
+                        <i class="dropdown icon"></i>
+
+                        <div class="default text">Select</div>
+
+                        <div class="menu">
+                            <div class="item" data-value="h1">
+                                Hall-1
+                            </div>
+                            <div class="item" data-value="h3">
+                                Hall-3
+                            </div>
+                            <div class="item" data-value="h4">
+                                Hall-4
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+                <div class="four wide field">
+                    <label>Room no</label>
+                    <div class="ui large input">
+                        <input placeholder="Room no." type="number">
+                    </div>
+                </div>
+            </div>
+            <div class="two fields">
+                <div class="eight wide field ">
+                    <label>Father's Name/Guardian's</label>
+                    <div class="ui large input">
+                        <input placeholder="Fathers NAme" type="text">
+                    </div>
+                </div>
+                <div class="eight wide field ">
+                    <label>Mother's Name</label>
+                    <div class="ui large input">
+                        <input placeholder="Mother's Name" type="text">
+                    </div>
+                </div>
+            </div>
+            <div class="two fields">
+                <div class="eight wide field ">
+                    <label>Brother's Name</label>
+                    <div class="ui large input">
+                        <input placeholder="Brother NAme" type="text">
+                    </div>
+                </div>
+                <div class="six wide field ">
+                    <label>Brother's Occupation</label>
+                    <div class="ui large input">
+                        <input placeholder="Brother occupation" type="text">
+                    </div>
+                </div>
+            </div>
+            <div class="two fields">
+                <div class="eight wide field ">
+                    <label>Sisters's Name</label>
+                    <div class="ui large input">
+                        <input placeholder="Sister's Name" type="text">
+                    </div>
+                </div>
+                <div class="six wide field ">
+                    <label>Sisters's Occupation</label>
+                    <div class="ui large input">
+                        <input placeholder="Sister's occupation" type="text">
+                    </div>
+                </div>
+            </div>
+            <div class="three fields">
+                <div class=" field">
+                    <label>Father's Annual Income</label>
+                    <div class="ui large input">
+                        <input placeholder=" Income" type="number">
+                    </div>
+                </div>
+                <div class=" field">
+                    <label>Mother's Annual Income</label>
+                    <div class="ui large input">
+                        <input placeholder="Income" type="number">
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Other Source's</label>
+                    <div class="ui fluid search selection large dropdown">
+                        <input name="" type="hidden">
+                        <i class="dropdown icon"></i>
+
+                        <div class="default text">Select</div>
+
+                        <div class="menu">
+                            <div class="item" data-value="i1">
+                                Land Property
+                            </div>
+                            <div class="item" data-value="i2">
+                                Debentures
+                            </div>
+                            <div class="item" data-value="i3">
+                                UTI
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+<div class=" two fields">
+    <div class="field">
+     <a class="right floated item">
+    <label><br></label>
+                    <button class="ui primary large button">
+                       Upload
+                        <i class="right floated upload icon"></i>
+                    </button>
+     </a>
+</div>
+    <div class="field">
+          <a class="right floated item">
+                    <label><br></label>
+                    <button class="ui primary large right floated button">
+                        Submit
+                    </button>
+  </a>
+                </div>
+</div>
+        </form>
+    </div>
+</div>
+ </div>
+
+
+<div class="ui modal" id="goldmedal">
+    <div class="header">
+        Director's Gold Medal Form
+        <a class="right floated item">
+            <button class="ui primary button">
+                Download
+                <i class="right floated download icon"></i>
+            </button>
+        </a>
+    </div>
+
+    <div class="content">
+        <div class="description"
+             style="margin: auto;
+                        margin-top: .5vw;
+                        margin-left: 5vw;
+                        margin-right: 5vw;">
+
+            <form class="ui form" style="padding-left: 36px; padding-right: 36px;">
+                <div class="two fields">
+                    <div class="six wide field">
+                        <label>Hall no</label>
+                        <div class="ui fluid search selection large dropdown">
+                            <input name="" type="hidden">
+                            <i class="dropdown icon"></i>
+
+                            <div class="default text">Select</div>
+
+                            <div class="menu">
+                                <div class="item" data-value="h1">
+                                    Hall-1
+                                </div>
+                                <div class="item" data-value="h3">
+                                    Hall-3
+                                </div>
+                                <div class="item" data-value="h4">
+                                    Hall-4
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="six wide field">
+                        <label>Room no</label>
+                        <div class="ui large input">
+                            <input placeholder="Room no." type="number">
+                        </div>
+                    </div>
+
+                </div>
+                <div class="two fields">
+                    <div class="eight wide field ">
+                        <label>Father's Name</label>
+                        <div class="ui large input">
+                            <input placeholder="Fathers NAme" type="text">
+                        </div>
+                    </div>
+                    <div class="eight wide field ">
+                        <label>Guardian's Name</label>
+                        <div class="ui large input">
+                            <input placeholder="Mother's Name" type="text">
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Permanent Address:</label>
+                    <textarea rows="2"></textarea>
+                </div>
+
+                <div class="field">
+                    <label>Correspondance Address:</label>
+                    <textarea rows="2"></textarea>
+                </div>
+                <div class="two fields">
+                    <div class="field">
+                        <label>Nearest Police Station</label>
+                        <div class="ui large input">
+                            <input placeholder="Police Station" type="text">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Nearest Railway Station</label>
+                        <div class="ui large input">
+                            <input placeholder="Railway Station" type="text">
+                        </div>
+                    </div>
+                </div>
+
+                <div class=" two fields">
+                    <div class="field">
+                        <a class="right floated item">
+                            <label><br></label>
+                            <button class="ui primary large button">
+                                Upload
+                                <i class="right floated upload icon"></i>
+                            </button>
+                        </a>
+                    </div>
+                    <div class="field">
+                        <a class="right floated item">
+                            <label><br></label>
+                            <button class="ui primary large right floated button">
+                                Submit
+                            </button>
+                        </a>
+                    </div>
+                </div>
+
+
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+{% comment %}The tab menu ends here!{% endcomment %}
+{% endblock %}
