@@ -58,13 +58,12 @@
                     Notional Prize
                     <i class="right floated chevron right icon"></i>
                 </a>
+
                 <a class="item" data-tab="sixth">
-                  Catalog
+                    Catalog
                     <i class="right floated chevron right icon"></i>
                 </a>
             </div>
-            {% comment %}The Tab-Menu ends here!{% endcomment %}
-
         </div>
         {% comment %}
             The left-rail segment ends here!
@@ -76,52 +75,41 @@
             The central-rail segment starts here!
         {% endcomment %}
         <div class="eight wide column">
-            {% comment %}The Details start here!{% endcomment %}
             <div class="ui active tab segment" data-tab="first">
                 {% block winners %}
                     {% include 'scholarshipsModule/winners.html' %}
                 {% endblock %}
             </div>
-            {% comment %}The Personal Details end here!{% endcomment %}
 
-
-            {% comment %}The Publications starts here!{% endcomment %}
             <div class="ui tab segment" data-tab="second">
                 {% block invite %}
                     {% include 'scholarshipsModule/invite.html' %}
                 {% endblock %}
             </div>
-            {% comment %}The Publications ends here!{% endcomment %}
 
-            {% comment %}The Publications starts here!{% endcomment %}
             <div class="ui tab segment" data-tab="third">
                 {% block awards %}
                     {% include 'scholarshipsModule/awards.html' %}
                 {% endblock %}
             </div>
-            {% comment %}The Publications ends here!{% endcomment %}
 
-
-            {% comment %}The Publications starts here!{% endcomment %}
             <div class="ui tab segment" data-tab="fourth">
                 {% block aboutspacs %}
                     {% include 'scholarshipsModule/aboutspacs.html' %}
                 {% endblock %}
             </div>
-            {% comment %}The Publications ends here!{% endcomment %}{% comment %}The Publications starts here!{% endcomment %}
+
             <div class="ui tab segment" data-tab="fifth">
                 {% block notionalprize %}
                     {% include 'scholarshipsModule/notionalprize.html' %}
                 {% endblock %}
             </div>
-            {% comment %}The Publications ends here!{% endcomment %}
- {% comment %}The Publications ends here!{% endcomment %}{% comment %}The Publications starts here!{% endcomment %}
+
             <div class="ui tab segment" data-tab="sixth">
                 {% block catalog %}
                     {% include 'scholarshipsModule/catalog.html' %}
                 {% endblock %}
             </div>
-            {% comment %}The Publications ends here!{% endcomment %}
 
         </div>
         {% comment %}The central-rail segment ends here!{% endcomment %}
