@@ -1,0 +1,69 @@
+{% load static %}
+{% block notionalprize %}
+{% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="notionalprize">
+            Notional Prize
+        </a>
+    </div>
+
+  <div class="ui active tab" data-tab="notionalprize">
+        <div class="ui vertical segment">
+            <form class="ui form" style="padding-left: 36px; padding-right: 36px;">
+                <div class="field">
+                    <div class="eight wide field">
+                        <label>Year</label>
+                        <div class="ui fluid search selection large dropdown">
+                            <input name="" type="hidden">
+                            <i class="dropdown icon"></i>
+
+                            <div class="default text">Select</div>
+
+                            <div class="menu">
+                                <div class="item" data-value="y1">
+                                    UG-Firstyear
+                                </div>
+                                 <div class="item" data-value="y2">
+                                    UG-Firstyear
+                                </div>
+                                <div class="item" data-value="y3">
+                                    UG-Firstyear
+                                </div>
+                                <div class="item" data-value="y4">
+                                    UG-Fourthyear
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                     <div class="field">
+                          <div class="eight wide field">
+                            <label>SPI</label>
+                            <input type="text" value="9.0" class="ui large input" readonly>
+                        </div>
+                     </div>
+
+                     <div class="field">
+                          <div class="eight wide field">
+                            <label>CPI</label>
+                            <input  class="ui large input" value="9.5" type="text" readonly>
+                        </div>
+                     </div>
+
+                    <div class="field">
+                    <label><br></label>
+                    <button class="ui primary large right floated button">
+                        Email
+                    </button>
+                </div>
+                    <br>
+                    <br>
+                </div>
+            </form>
+             <div class="ui divider"></div>
+        </div>
+
+  </div>
+{% comment %}The tab menu starts here!{% endcomment %}
+{% endblock %}

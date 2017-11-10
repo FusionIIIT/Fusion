@@ -1,0 +1,211 @@
+{% load static %}
+{% block approvalrequests %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="clubbudget">
+            Club Budget
+        </a>
+
+        <a class="item" data-tab="festbudget">
+            Fest Budget
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="clubbudget">
+        <div class="ui vertical segment">
+            <table class="ui very basic collapsing celled sortable table"
+                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                <thead>
+                <tr>
+                    <th>
+                    </th>
+
+                    <th class="four wide column">
+                        Student
+                    </th>
+
+                    <th class="two wide column">
+                        Club
+                    </th>
+
+                    <th class="two wide column">
+                        Category
+                    </th>
+
+                    <th class="two wide column">
+                        Budget For
+                    </th>
+
+                    <th class="one wide column">
+                        PFA
+                    </th>
+
+                    <th class="four wide column">
+                        Description
+                    </th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr>
+
+                    <td class="collapsing">
+                        <div class="ui fitted checkbox">
+                            <input type="checkbox"> <label></label>
+                        </div>
+                    </td>
+
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                            <div class="content">
+                                Zlatan Ibrahimovic
+                                <div class="sub header">
+                                    gmail@zlatan.com
+                                </div>
+                            </div>
+                        </h4>
+                    </td>
+
+                    <td>
+                        Football Club
+                    </td>
+
+                    <td>
+                        Category #1
+                    </td>
+
+                    <td>
+                        Goal Posts
+                    </td>
+
+                    <td>
+                        {% comment %}
+                            TODO: Add the attachment here!
+                        {% endcomment %}
+                        <a class="ui inverted circular icon button" style="margin: auto;" target="_blank" href="">
+                            <i class="large attach black icon"></i>
+                        </a>
+                    </td>
+
+                    <td>
+                        ...
+                    </td>
+                </tr>
+
+                </tbody>
+            </table>
+
+
+            <br>
+
+            <div class="ui primary right floated button">Approve Selected</div>
+            <div class="ui red right floated button">Reject Selected</div>
+
+            <br>
+            <br>
+
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="festbudget">
+        <div class="ui vertical segment">
+            <table class="ui very basic collapsing celled sortable table"
+                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                <thead>
+                <tr>
+                    <th>
+                    </th>
+
+                    <th class="four wide column">
+                        Student
+                    </th>
+
+                    <th class="three wide column">
+                        Fest
+                    </th>
+
+                    <th class="three wide column">
+                        Budget
+                    </th>
+
+                    <th class="one wide column">
+                        PFA
+                    </th>
+
+                    <th class="four wide column">
+                        Description
+                    </th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr>
+
+                    <td class="collapsing">
+                        <div class="ui fitted checkbox">
+                            <input type="checkbox"><label></label>
+                        </div>
+                    </td>
+
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                            <div class="content">
+                                Zlatan Ibrahimovic
+                                <div class="sub header">
+                                    gmail@zlatan.com
+                                </div>
+                            </div>
+                        </h4>
+                    </td>
+
+                    <td>
+                        Fest #1
+                    </td>
+
+                    <td>
+                        &#8377; XX,XX,XXX
+                    </td>
+
+                    <td>
+                        {% comment %}
+                            TODO: Add the attachment here!
+                        {% endcomment %}
+                        <a class="ui inverted circular icon button" style="margin: auto;" target="_blank" href="">
+                            <i class="large attach black icon"></i>
+                        </a>
+                    </td>
+
+                    <td>
+                        ...
+                    </td>
+                </tr>
+
+                </tbody>
+            </table>
+
+            <br>
+
+            <div class="ui primary right floated button">Approve Selected</div>
+            <div class="ui red right floated button">Reject Selected</div>
+
+            <br>
+            <br>
+
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+{% endblock %}
