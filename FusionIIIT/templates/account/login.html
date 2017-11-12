@@ -1,0 +1,58 @@
+{% extends "account/base.html" %}
+{%block content%}
+{% load i18n %}
+{% load account socialaccount %}
+{% load static %}
+        <div class="content">
+                <img class="ui rounded centered small image"
+                 src="{% static 'globals/img/user.png' %}"
+                 style="margin-top: -27.5%;
+                        margin-left: 27.5%;"
+                 alt="User Image" >
+
+                <div class="ui huge centered header">
+                    Login
+                </div>  
+
+            </div>
+
+            <div class="content">
+            <form method="post" class="ui form" style="margin-top: 2.5%;margin-bottom: 2.5%;">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <a class="button secondaryAction" style="display: inline; float: right; margin-top: -30px;" href="{% url 'account_reset_password' %}">{% trans "Forgot Password?" %}</a>
+                {% if redirect_field_value %}
+                <input type="hidden"  name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+                {% endif %} 
+                <br>
+                <div class="field"
+                     style="margin-top: 2.5%;
+                                 margin-bottom: 2.5%;">
+                    <div class="ui divider"></div>
+                </div>
+
+                <div class="field">
+                    <button class="ui fluid large primary button" type="submit">Login</button>
+                </div>
+
+                <div class="ui divider"><center style="margin-top: -0.5em;">OR</center></div>
+                <div class="box-header with-border">
+                        {% get_providers as socialaccount_providers %}</h3>
+                </div>
+                  <center>
+                  {% if socialaccount_providers %}
+                    <div class="socialaccount_ballot">
+                      <div class="socialaccount_providers">
+                        {% include "socialaccount/snippets/provider_list.html" with process="login" %}
+                      </div>
+                    </div>
+                    {% include "socialaccount/snippets/login_extra.html" %}
+                    {% endif %}
+                  </center>
+                
+            </form>
+        </div>
+
+
+{% endblock %}
+

@@ -112,6 +112,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth',
     'allauth.socialaccount.providers.google',
+    'semanticuiforms',
 ]
 
 MIDDLEWARE = [
@@ -154,7 +155,7 @@ DATABASES = {
             'ENGINE': 'django.db.backends.mysql',
             'NAME': 'fusion',
             'USER': 'root',
-            'PASSWORD': '',
+            'PASSWORD': 'root',
             'HOST': '127.0.0.1',
             'PORT': '3306',
         },
