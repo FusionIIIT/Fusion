@@ -1,0 +1,31 @@
+{% load socialaccount %}
+{% load static %}
+{% get_providers as socialaccount_providers %}
+
+{% for provider in socialaccount_providers %}
+{% if provider.id == "openid" %}
+{% for brand in provider.get_brands %}
+
+  <a title="{{brand.name}}" 
+     class="socialaccount_provider {{provider.id}} {{brand.id}}" 
+     href="{% provider_login_url provider.id openid=brand.openid_url process=process %}"
+     >{{brand.name}}</a>
+
+{% endfor %}
+{% endif %}
+	{% if provider.name == 'Google' %}
+      <!-- In the callback, you would hide the gSignInWrapper element on a
+      successful sign in -->
+    <div class="field" style="margin: auto;">
+        <a title="{{provider.name}}" class="socialaccount_provider {{provider.id}} ui green fluid large button" 
+         href="{% provider_login_url provider.id process=process scope=scope auth_params=auth_params %}">
+            <i class="mail icon"></i>
+            <span class="buttonText">IIITDMJ Mail</span>
+        </a>
+    </div>
+     {% else %}
+     <a title="{{provider.name}}" class="socialaccount_provider {{provider.id}}" 
+     href="{% provider_login_url provider.id process=process scope=scope auth_params=auth_params %}">{{provider.name}}</a>
+     {% endif %}
+{% endfor %}
+

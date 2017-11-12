@@ -10,6 +10,14 @@ Fusion - Feedback
         label{
             font-size: 1.2em !important;
         }
+        .supported{
+            color: linear-gradient(yellow, purple);
+            transition: 0.2s ease-in;
+        }
+        .unsupported{
+            color: grey;
+            transition: 0.2s ease-in;
+        }
     </style>
 {% endblock %}
 
@@ -36,8 +44,7 @@ Fusion - Feedback
 
             <div class="ui divider"></div>
 
-            <div class="ui huge fluid vertical pointing menu"
-                 style="max-width: 320px;">
+            <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
 
                 <a class="item" href="{% url 'globals:feedback' %}">
                     Feedback
@@ -63,33 +70,27 @@ Fusion - Feedback
             The central-rail segment starts here!
         {% endcomment %}
         <div class="eight wide column">
-
-            <div class="ui active tab segment" data-tab="first"> 
-            	<div class="ui huge header">
-            		<i class="bug icon"></i>
-            		Issue
-            	</div>	
-            	<div class="ui horizontal divider"><button id="new-issue" class="ui green large button"><i class="plus icon"></i>New</button></div>
-            	<form class="ui form" method="post" action="{% url 'globals:issue' %}" id="issue-form" style="display: none;" enctype= multipart/form-data>
-            		<!-- <div class="ui warning message" id="issue-warning" style="display: none;">
-						<div class="header">
-							Fields
-						</div>
-					</div> -->
-            		<center>
-            			{% csrf_token %}
-            		</center>
+            {% if request.user == issue.user %}
+                <form class="ui segment form" method="post" action="{% url 'globals:view_issue' issue.id %}" id="issue-form" style="display: none;" enctype= multipart/form-data>
+                    <!-- <div class="ui warning message" id="issue-warning" style="display: none;">
+                        <div class="header">
+                            Fields
+                        </div>
+                    </div> -->
+                    <center>
+                        {% csrf_token %}
+                    </center>
                     <div class="two fields">
                     {% for field in form %}
                         {% if field.name == "module" or field.name == "report_type" %}
                             {% render_field field %}
-                        {% endif %} 
+                        {% endif %}
                     {% endfor %}
                     </div>
                     {% for field in form %}
                         {% if field.name == "module" or field.name == "report_type" %}
                         {% else %}
-                            {% render_field field %} 
+                            {% render_field field %}
                         {% endif %}
                     {% endfor %}
                     <label id="image-input-label"><b>Images&emsp;&emsp;&emsp;&emsp;</b></label>
@@ -99,48 +100,57 @@ Fusion - Feedback
                         <div class="image-button ui icon button">
                             <i class="attach icon"></i>
                         </div>
-                    </div><br><br>
-
-            		<button type="submit" class="ui right floated large primary button">submit</button><br><br>
+                    </div>
+                    <br><br><br><br>
+                    {% if issue.images.all.count > 0 %} 
+                    <center>
+                        <div class="ui checkbox">
+                            <input type="checkbox" name="remove-images">
+                            <label>Remove these images</label>
+                        </div><br><br>
+                    {% for img in issue.images.all %}
+                        <img style="display: inline-block;padding: 5px;" src="{{ img.image.url }}" class="ui medium responsive image">&emsp;
+                    {% endfor %}
+                    {% endif %}
+                    </center>
+                    <br><br>
+                    <button type="submit" class="ui left floated large red button">cancel</button>
+                    <button type="submit" class="ui right floated large primary button">submit</button><br><br>
                     <div class="ui divider"></div>
                     <div class="ui container">
-                        <p><b>Note:</b> The Title can have atmost 255 letters and exceeding the limit might give unwanted results so keep it short.</p>
+                        <b>Note:</b>
+                        <p> The Title can have atmost 255 letters and exceeding the limit might give unwanted results so keep it short.</p>
+                        <p> New images will be added to the previously existing images if you haven't checked the remove checkbox.</p>
                     </div>
-            	</form>
-            	<br>
-            	<div class="ui pointing secondary menu">
-                    <a class="active item" data-tab="open">
-                        Open Issues
-                    </a>
-                    <a class=" item" data-tab="closed">
-                        Closed Issues
-                    </a>        
-                </div>
-                <div class="ui active tab" data-tab="open">
-                    {% for issue in openissue %}
-                    <a href="{% url 'globals:view_issue' issue.id %}">
-                        <div class="ui segment">
-                            <h2 class="ui left floated header">{{ issue.title }}</h2>
-                            <h3 class="ui right floated large purple label">{{ issue.get_module_display }}</h3>
-                            <h3 class="ui right floated large blue label">{{ issue.get_report_type_display }}</h3>
-                            <h3 class="ui right floated large green label">Open</h3>
-                        </div>
-                    </a>
-                    <br>
-                    {% endfor %}
-                </div>
-                <div class="ui tab" data-tab="closed">
-                    {% for issue in closedissue %}
-                    <a href="{% url 'globals:view_issue' id=issue.id %}">
-                        <div class="ui segment">
-                            <h2 class="ui left floated header">{{ issue.title }}</h2>
-                            <h3 class="ui right floated large purple label">{{ issue.get_module_display }}</h3>
-                            <h3 class="ui right floated large blue label">{{ issue.get_report_type_display }}</h3>
-                            <h3 class="ui right floated large red label">Closed</h3>
-                        </div>
-                    </a>
-                    <br>
-                    {% endfor %}
+                </form>    
+            {% endif %}
+            <div class="ui segment" id="issue-content">
+            	<div class="ui huge header">
+            		<i class="bug icon"></i> Issue
+                    
+            	</div>	
+                <div class="ui horizontal divider">{% if request.user == issue.user and not issue.closed %}<button id="edit-issue" class="ui green large button"><i class="edit icon"></i>Edit</button>{% endif %}</div>
+                <div class="ui segments">
+                    <div class="ui large header segment">
+                        <h2 style="display: block;" class="ui left floated header">{{ issue.title }}</h2>
+                        <br>
+                        <h3 class="ui large purple label">{{ issue.get_module_display }}</h3>
+                        <h3 class="ui large blue label">{{ issue.get_report_type_display }}</h3>
+                        <h3 style="float:right;" class="ui large {% if issue.closed %}red{% else %}green{% endif %} label">{% if issue.closed %}Closed{% else %}Open{% endif %}</h3>
+                    </div>
+                    <div class="ui segment">
+                        <p style="font-size: 1.3em;">{{ issue.text }}</p>
+                        <br><br>
+                        <center>
+                        {% for img in issue.images.all %}
+                            <img style="display: inline-block;padding: 5px;" src="{{ img.image.url }}" class="ui medium responsive image">&emsp;
+                        {% endfor %}
+                        </center>
+                    </div>
+                    <div class="ui horizontal divider">
+                        <a class="support-issue {% if request.user in issue.support.all %}supported{% else %}unsupported{% endif %}" id="support-{{ issue.id }}" action="{% url 'globals:support_issue' issue.id %}" style="color: ; cursor: pointer;" data="{{ issue.id }}" title="Support Issue"><i class="huge flag icon"></i></a>
+                        <center id="support-count-{{ issue.id }}">{{ issue.support.all.count }}</center>
+                    </div>
                 </div>
             </div>
         </div>
@@ -166,8 +176,38 @@ Fusion - Feedback
 
 {% block javascript %}
 <script type="text/javascript">
-    $("#new-issue").click(function(e){
+    $("#edit-issue").click(function(e){
         $("#issue-form").slideDown();
+        $("#issue-content").slideUp();
+    });
+
+    $(".support-issue").click(function(r){
+        var id = $(this).attr("data");
+        var url = $(this).attr("action");
+        $.ajax({
+            type: "GET",
+            url: url,
+            success: function(data){
+                if(data.supported == true)
+                {
+                    $("#support-"+id).addClass("supported");
+                    $("#support-"+id).removeClass("unsupported");
+                }
+                else{
+                    $("#support-"+id).addClass("unsupported");
+                    $("#support-"+id).removeClass("supported");
+                }
+
+                $("#support-count-"+id).text(data.support_count);
+            },
+            error: function(data){
+                console.log(data);
+            },
+        });
+    });
+
+    $("#edit-cancel").click(function(e){
+        location.reload();
     });
 
     $(".image-button").click(function(e){

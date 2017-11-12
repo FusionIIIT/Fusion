@@ -2,8 +2,11 @@ from django.shortcuts import render
 from applications.globals.models import Feedback, Issue, IssueImage
 from applications.globals.forms import WebFeedbackForm, IssueForm
 from Fusion.settings import LOGIN_URL
+from django.http import HttpResponse
+import json
 from django.contrib.auth.decorators import login_required
 from PIL import Image
+from django.shortcuts import get_object_or_404
 
 def index(request):
     context = {}
@@ -82,8 +85,6 @@ def feedback(request):
 
 @login_required(login_url=LOGIN_URL)
 def issue(request):
-	openissue = Issue.objects.filter(closed=False)
-	closedissue = Issue.objects.filter(closed=True)
 	if request.method == "POST":
 		form = IssueForm(request.POST or None)
 		if form.is_valid():
@@ -98,8 +99,73 @@ def issue(request):
 				except Exception as e:
 					print(e)
 			issue.save()
-			return render(request, "globals/issue.html")
-		return render(request, "globals/issue.html")
+			openissue = Issue.objects.filter(closed=False)
+			closedissue = Issue.objects.filter(closed=True)
+			form = IssueForm()
+			context = { "form":form, "openissue":openissue, "closedissue":closedissue, }
+			return render(request, "globals/issue.html", context)
+		openissue = Issue.objects.filter(closed=False)
+		closedissue = Issue.objects.filter(closed=True)
+		form = IssueForm(request.POST)
+		context = { "form":form, "openissue":openissue, "closedissue":closedissue, }
+		return render(request, "globals/issue.html", context)
+	openissue = Issue.objects.filter(closed=False)
+	closedissue = Issue.objects.filter(closed=True)
 	form = IssueForm()
 	context = { "form":form, "openissue":openissue, "closedissue":closedissue, }
 	return render(request, "globals/issue.html", context)
+
+def view_issue(request, id):
+	if request.method == "POST":
+		issue = get_object_or_404(Issue, id=id, user=request.user)
+		form = IssueForm(request.POST or None, instance=issue)
+		if form.is_valid():
+			issue.save()
+			remove = request.POST.get("remove-images")
+			if remove:
+				for img in issue.images.all():
+					img.delete()
+			for image in request.FILES.getlist('images'):
+				try:
+					im = Image.open(image)
+					image = IssueImage.objects.create(image = image, user=request.user)
+					issue.images.add(image)
+				except Exception as e:
+					print(e)
+			issue.save()
+			form = IssueForm(instance=issue)
+			context = {
+			"form":form,
+			"issue": issue,
+			}
+			return render(request, "globals/view_issue.html", context)
+		form = IssueForm(request.POST or None)
+		context = {
+			"form":form,
+			"issue": issue,
+		}
+		return render(request, "globals/view_issue.html", context)
+	issue = get_object_or_404(Issue, id=id)
+	form = None
+	if request.user == issue.user:
+		form = IssueForm(instance=issue)
+	context = {
+		"form":form,
+		"issue": issue,
+	}
+	return render(request, "globals/view_issue.html", context)
+
+def support_issue(request, id):
+	issue = get_object_or_404(Issue, id=id)
+	supported = True
+	if request.user in issue.support.all():
+		issue.support.remove(request.user)
+		supported = False
+	else:
+		issue.support.add(request.user)
+	support_count = issue.support.all().count()
+	context = {
+		"supported": supported,
+		"support_count": support_count,
+	}
+	return HttpResponse(json.dumps(context), "application/json")
