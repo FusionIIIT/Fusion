@@ -19,7 +19,7 @@ def login(request):
 
     return render(request, "globals/login.html", context)
 
-
+@login_required(login_url=LOGIN_URL)
 def dashboard(request):
     context = {}
 
@@ -115,6 +115,8 @@ def issue(request):
 	context = { "form":form, "openissue":openissue, "closedissue":closedissue, }
 	return render(request, "globals/issue.html", context)
 
+
+@login_required(login_url=LOGIN_URL)
 def view_issue(request, id):
 	if request.method == "POST":
 		issue = get_object_or_404(Issue, id=id, user=request.user)
@@ -155,6 +157,8 @@ def view_issue(request, id):
 	}
 	return render(request, "globals/view_issue.html", context)
 
+
+@login_required(login_url=LOGIN_URL)
 def support_issue(request, id):
 	issue = get_object_or_404(Issue, id=id)
 	supported = True
