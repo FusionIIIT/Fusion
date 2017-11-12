@@ -21,26 +21,26 @@ class Constants:
     )
 
     RATING_CHOICES = (
-            (1,1),
-            (2,2),
-            (3,3),
-            (4,4),
-            (5,5),
+            (1, 1),
+            (2, 2),
+            (3, 3),
+            (4, 4),
+            (5, 5),
         )
 
     MODULES = (
-            ("academic_information","Academic"),
-            ("central_mess","Central Mess"),
-            ("complaint_system","Complaint System"),
-            ("eis","Employee Imformation System"),
+            ("academic_information", "Academic"),
+            ("central_mess", "Central Mess"),
+            ("complaint_system", "Complaint System"),
+            ("eis", "Employee Imformation System"),
             ("file_tracking", "File Tracking System"),
             ("health_center", "Health Center"),
             ("leave", "Leave"),
-            ("online_cms","Online Course Management System"),
+            ("online_cms", "Online Course Management System"),
             ("placement_cell", "Placement Cell"),
             ("scholarships", "Scholarships"),
             ("visitor_hostel", "Visitor Hostel"),
-            ("other","Other"),
+            ("other", "Other"),
         )
 
     ISSUE_TYPES = (
@@ -108,6 +108,7 @@ class Feedback(models.Model):
     rating = models.IntegerField(choices=Constants.RATING_CHOICES)
     feedback = models.TextField(blank=True)
     timestamp = models.DateTimeField(auto_now=True)
+
     def __str__(self):
         return self.user.username + ": " + str(self.rating)
 
@@ -132,5 +133,6 @@ class Issue(models.Model):
     support = models.ManyToManyField(User, blank=True)
     timestamp = models.DateTimeField(auto_now=True)
     added_on = models.DateTimeField(auto_now_add=True)
+
 
 """ End of feedback and bug report models"""
