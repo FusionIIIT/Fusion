@@ -4,6 +4,8 @@ defusedxml==0.5.0
 Django==1.11.4
 django-allauth==0.32.0
 django-debug-toolbar==1.8
+django-countries==5.0
+django-semanticui-forms==1.6.4
 flake8==3.4.1
 idna==2.6
 isort==4.2.15

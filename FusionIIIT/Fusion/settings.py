@@ -92,13 +92,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
+    'applications.globals.apps.GlobalsConfig',
     'applications.academic_procedures.apps.AcademicProceduresConfig',
     'applications.academic_information.apps.AcademicInformationConfig',
     'applications.central_mess.apps.CentralMessConfig',
     'applications.complaint_system.apps.ComplaintSystemConfig',
     'applications.file_tracking.apps.FileTrackingConfig',
     'applications.finance_accounts.apps.FinanceAccountsConfig',
-    'applications.globals.apps.GlobalsConfig',
     'applications.health_center.apps.HealthCenterConfig',
     'applications.leave.apps.LeaveConfig',
     'applications.online_cms.apps.OnlineCmsConfig',
@@ -110,6 +110,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth',
     'allauth.socialaccount.providers.google',
+    'semanticuiforms'
 ]
 
 MIDDLEWARE = [
