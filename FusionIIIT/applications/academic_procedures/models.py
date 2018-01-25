@@ -5,7 +5,6 @@ from django.db import models
 from applications.academic_information.models import Course, Student
 from applications.globals.models import DepartmentInfo, ExtraInfo, Faculty
 
-# Create your models here.
 
 
 class Constants:

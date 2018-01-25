@@ -1,692 +1,84 @@
-{% load static %}
-
-{% block assessment %}
-
-  {% comment %}The tab menu starts here!{% endcomment %}
-    <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="quiz">
-            Quiz
-        </a> 
-         <a class="item" data-tab="assignment">
+{% load static %} {% block assessment %}
+<div class="ui pointing secondary menu">
+    <a class="item actve" data-tab="assignment">
             Assignment
-        </a>   
+        </a>
+</div>
+<div class="ui active tab segment" data-tab="assignment">
+    <h4 class="ui dividing header">Software Engineering Course</h4>
+
+    <div class="ui top attached tabular menu">
+      {% for assi in assignment %}
+        <a class="item active" data-tab="{{forloop.counter}}">{{assi.assignment_name}}</a>
+      {% endfor %}
     </div>
+    {% for assi in assignment %}
+    <div class="ui bottom attached active tab segment" data-tab="{{forloop.counter}}">
+        <table class="ui very basic collapsing celled table">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Total Marks & Feedback</th>
+                    <th>Download Assignment</th>
+                    <th>Marks</th>
+                    <th>Feedback</th>
+                </tr>
+            </thead>
+            <tbody>
+              {% for student_assi in student_assignment %}
+                {% if student_assi %}
+                {% for sa in student_assi %}
+                <tr>
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/jenny.jpg' %}" class="ui  rounded image">
+                            <div class="content">
+                                {{sa.student_id.id.user.first_name}} {{sa.student_id.id.user.last_name}}
+                                <div class="sub header">{{sa.student_id.id.id}}
+                                </div>
+                            </div>
+                        </h4>
+                    </td>
+                    <td>
+                      <div class="ui form" style="margin-bottom:10px">
+                        <div class="field">
+                          <input type="text" placeholder="Enter Marks" onkeydown="assess_student(this)" data-assign="{{sa.pk}}" id="assign{{sa.pk}}">
+                        </div>
+                      </div>
+                      <div class="ui form">
+                        <div class="field">
+                          <input type="text" placeholder="Enter Feedback"  onkeydown="assess_feedback(this)" data-feedback="{{sa.pk}}" id="feedback{{sa.pk}}">
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <a class="ui primary button" href="{{sa.upload_url}}">Download</a>
+                    </td>
+                    <td >
+                      {% if sa.score %}
+                        <span id="score{{sa.pk}}">{{sa.score}}</span>
+                      {% else %}
+                        -
+                      {% endif %}
+                    </td>
+                    <td >
+                      {% if sa.feedback %}
+                        <p id="feedback{{sa.pk}}">{{sa.feedback}}</p>
+                      {% else %}
+                        -
+                      {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endfor %}
+</div>
+<script>
+    
+</script>
 
-{% comment %}The  assess quiz  segment starts here!{% endcomment %}
-    <div class="ui active tab" data-tab="quiz">
-        <h4 class="ui dividing header">Software Engineering Course</h4>
-
-            <div class="ui top attached tabular menu">
-			  <a class="item" data-tab="one">Quiz 1</a>
-			  <a class="item" data-tab="two">Quiz 2</a>
-			  <a class="item active" data-tab="three">Quiz 3</a>
-			</div>
-			<div class="ui bottom attached tab segment" data-tab="one">
-			   <table class="ui very basic collapsing celled table">
-					  <thead>
-					    <tr><th>Student</th>
-					    <th>Total Marks</th>
-					     <th>Download Answer sheet</th>
-					  </tr></thead>
-					  <tbody>
-					    <tr>
-					      <td>
-					        <h4 class="ui image header">
-					          <img src="{% static 'fusion/img/jenny.jpg' %}" class="ui  rounded image">
-					          <div class="content">
-					            Animesh
-					            <div class="sub header">2015301
-					          </div>
-					        </div>
-					      </h4></td>
-
-					      <td>
-					        <div class="ui form">
-							  <div class="field">
-							   <input type="text">
-							  </div>
-							</div>
-					      </td>
-
-					      <td>
-					       <button class="ui primary button">
-							 Download
-							</button>
-					      </td>
-					    </tr>
-					    <tr>
-					      <td>
-					        <h4 class="ui image header">
-					          <img src="{% static 'fusion/img/jina.png' %}" class="ui  rounded image">
-					          <div class="content">
-					            Paras
-					            <div class="sub header">2015183
-					          </div>
-					        </div>
-					      </h4></td>
-					      <td>
-					        <div class="ui form">
-							  <div class="field">
-							   <input type="text">
-							  </div>
-							</div>
-					      </td>
-					      <td>
-					         <button class="ui primary button">
-							 Download
-							</button>
-					      </td>
-					    </tr>
-					    <tr>
-					      <td>
-					        <h4 class="ui image header">
-					          <img src="{% static 'fusion/img/matthew.png' %}" class="ui  rounded image">
-					          <div class="content">
-					            Chinmay
-					            <div class="sub header">2015093
-					          </div>
-					        </div>
-					      </h4></td>
-					      <td>
-					         <div class="ui form">
-							  <div class="field">
-							   <input type="text">
-							  </div>
-							</div>
-					      </td>
-					        <td>
-					            <button class="ui primary button">
-							 Download
-							</button>
-					        </td>
-					    </tr>
-					    <tr>
-					      <td>
-					        <h4 class="ui image header">
-					          <img src="{% static 'fusion/img/steve.jpg' %}" class="ui  rounded image">
-					          <div class="content">
-					            Girish
-					            <div class="sub header">2015155
-					          </div>
-					        </div>
-					      </h4></td>
-					      <td>
-					         <div class="ui form">
-							  <div class="field">
-							   <input type="text">
-							  </div>
-							</div>
-					      </td>
-					       <td>
-					         <button class="ui primary button">
-							 Download
-							</button>
-					       </td>
-					    </tr>
-					  </tbody>
-         </table>
-			</div>
-			
-			<div class="ui bottom attached tab" data-tab="two">
-			     <table class="ui very basic collapsing celled table">
-					  <thead>
-					    <tr><th>Student</th>
-					    <th>Total Marks</th>
-					     <th>Download Answer sheet</th>
-					  </tr></thead>
-					  <tbody>
-					    <tr>
-					      <td>
-					        <h4 class="ui image header">
-					          <img src="{% static 'fusion/img/jenny.jpg' %}" class="ui  rounded image">
-					          <div class="content">
-					            Animesh
-					            <div class="sub header">2015301
-					          </div>
-					        </div>
-					      </h4></td>
-
-					      <td>
-					        <div class="ui form">
-							  <div class="field">
-							   <input type="text">
-							  </div>
-							</div>
-					      </td>
-
-					      <td>
-					       <button class="ui primary button">
-							 Download
-							</button>
-					      </td>
-					    </tr>
-					    <tr>
-					      <td>
-					        <h4 class="ui image header">
-					          <img src="{% static 'fusion/img/jina.png' %}" class="ui  rounded image">
-					          <div class="content">
-					            Paras
-					            <div class="sub header">2015183
-					          </div>
-					        </div>
-					      </h4></td>
-					      <td>
-					        <div class="ui form">
-							  <div class="field">
-							   <input type="text">
-							  </div>
-							</div>
-					      </td>
-					      <td>
-					         <button class="ui primary button">
-							 Download
-							</button>
-					      </td>
-					    </tr>
-					    <tr>
-					      <td>
-					        <h4 class="ui image header">
-					          <img src="{% static 'fusion/img/matthew.png' %}" class="ui  rounded image">
-					          <div class="content">
-					            Chinmay
-					            <div class="sub header">2015093
-					          </div>
-					        </div>
-					      </h4></td>
-					      <td>
-					         <div class="ui form">
-							  <div class="field">
-							   <input type="text">
-							  </div>
-							</div>
-					      </td>
-					        <td>
-					            <button class="ui primary button">
-							 Download
-							</button>
-					        </td>
-					    </tr>
-					    <tr>
-					      <td>
-					        <h4 class="ui image header">
-					          <img src="{% static 'fusion/img/steve.jpg' %}" class="ui  rounded image">
-					          <div class="content">
-					            Girish
-					            <div class="sub header">2015155
-					          </div>
-					        </div>
-					      </h4></td>
-					      <td>
-					         <div class="ui form">
-							  <div class="field">
-							   <input type="text">
-							  </div>
-							</div>
-					      </td>
-					       <td>
-					         <button class="ui primary button">
-							 Download
-							</button>
-					       </td>
-					    </tr>
-					  </tbody>
-         </table>
-			  
-			</div>
-			<div class="ui bottom attached tab active" data-tab="three">
-			    <table class="ui very basic collapsing celled table">
-					  <thead>
-					    <tr><th>Student</th>
-					    <th>Total Marks</th>
-					     <th>Download Answer sheet</th>
-					  </tr></thead>
-					  <tbody>
-					    <tr>
-					      <td>
-					        <h4 class="ui image header">
-					          <img src="{% static 'fusion/img/jenny.jpg' %}" class="ui  rounded image">
-					          <div class="content">
-					            Animesh
-					            <div class="sub header">2015301
-					          </div>
-					        </div>
-					      </h4></td>
-
-					      <td>
-					        <div class="ui form">
-							  <div class="field">
-							   <input type="text">
-							  </div>
-							</div>
-					      </td>
-
-					      <td>
-					       <button class="ui primary button">
-							 Download
-							</button>
-					      </td>
-					    </tr>
-					    <tr>
-					      <td>
-					        <h4 class="ui image header">
-					          <img src="{% static 'fusion/img/jina.png' %}" class="ui  rounded image">
-					          <div class="content">
-					            Paras
-					            <div class="sub header">2015183
-					          </div>
-					        </div>
-					      </h4></td>
-					      <td>
-					        <div class="ui form">
-							  <div class="field">
-							   <input type="text">
-							  </div>
-							</div>
-					      </td>
-					      <td>
-					         <button class="ui primary button">
-							 Download
-							</button>
-					      </td>
-					    </tr>
-					    <tr>
-					      <td>
-					        <h4 class="ui image header">
-					          <img src="{% static 'fusion/img/matthew.png' %}" class="ui  rounded image">
-					          <div class="content">
-					            Chinmay
-					            <div class="sub header">2015093
-					          </div>
-					        </div>
-					      </h4></td>
-					      <td>
-					         <div class="ui form">
-							  <div class="field">
-							   <input type="text">
-							  </div>
-							</div>
-					      </td>
-					        <td>
-					            <button class="ui primary button">
-							 Download
-							</button>
-					        </td>
-					    </tr>
-					    <tr>
-					      <td>
-					        <h4 class="ui image header">
-					          <img src="{% static 'fusion/img/steve.jpg' %}" class="ui  rounded image">
-					          <div class="content">
-					            Girish
-					            <div class="sub header">2015155
-					          </div>
-					        </div>
-					      </h4></td>
-					      <td>
-					         <div class="ui form">
-							  <div class="field">
-							   <input type="text">
-							  </div>
-							</div>
-					      </td>
-					       <td>
-					         <button class="ui primary button">
-							 Download
-							</button>
-					       </td>
-					    </tr>
-					  </tbody>
-         </table>
-			  
-			</div>     
-	
-
-
- </div>
-
-
- {% comment %}The  assess quiz  ends  here!{% endcomment %}
- {% comment %}The  assess assignment  ends  here!{% endcomment %}
-     <div class="ui  tab segment" data-tab="assignment">
-        <h4 class="ui dividing header">Software Engineering Course</h4>
-
-          <div class="ui top attached tabular menu">
-			  <a class="item" data-tab="one">Assignment 1</a>
-			  <a class="item" data-tab="two">Assignment 2</a>
-			  <a class="item active" data-tab="three">Assignment 3</a>
-			</div>
-			<div class="ui bottom attached tab segment" data-tab="one">
-			   <table class="ui very basic collapsing celled table">
-					  <thead>
-					    <tr><th>Student</th>
-					    <th>Total Marks</th>
-					     <th>Download Answer sheet</th>
-					  </tr></thead>
-					  <tbody>
-					    <tr>
-					      <td>
-					        <h4 class="ui image header">
-					          <img src="{% static 'fusion/img/jenny.jpg' %}" class="ui  rounded image">
-					          <div class="content">
-					            Animesh
-					            <div class="sub header">2015301
-					          </div>
-					        </div>
-					      </h4></td>
-
-					      <td>
-					        <div class="ui form">
-							  <div class="field">
-							   <input type="text">
-							  </div>
-							</div>
-					      </td>
-
-					      <td>
-					       <button class="ui primary button">
-							 Download
-							</button>
-					      </td>
-					    </tr>
-					    <tr>
-					      <td>
-					        <h4 class="ui image header">
-					          <img src="{% static 'fusion/img/jina.png' %}" class="ui  rounded image">
-					          <div class="content">
-					            Paras
-					            <div class="sub header">2015183
-					          </div>
-					        </div>
-					      </h4></td>
-					      <td>
-					        <div class="ui form">
-							  <div class="field">
-							   <input type="text">
-							  </div>
-							</div>
-					      </td>
-					      <td>
-					         <button class="ui primary button">
-							 Download
-							</button>
-					      </td>
-					    </tr>
-					    <tr>
-					      <td>
-					        <h4 class="ui image header">
-					          <img src="{% static 'fusion/img/matthew.png' %}" class="ui  rounded image">
-					          <div class="content">
-					            Chinmay
-					            <div class="sub header">2015093
-					          </div>
-					        </div>
-					      </h4></td>
-					      <td>
-					         <div class="ui form">
-							  <div class="field">
-							   <input type="text">
-							  </div>
-							</div>
-					      </td>
-					        <td>
-					            <button class="ui primary button">
-							 Download
-							</button>
-					        </td>
-					    </tr>
-					    <tr>
-					      <td>
-					        <h4 class="ui image header">
-					          <img src="{% static 'fusion/img/steve.jpg' %}" class="ui  rounded image">
-					          <div class="content">
-					            Girish
-					            <div class="sub header">2015155
-					          </div>
-					        </div>
-					      </h4></td>
-					      <td>
-					         <div class="ui form">
-							  <div class="field">
-							   <input type="text">
-							  </div>
-							</div>
-					      </td>
-					       <td>
-					         <button class="ui primary button">
-							 Download
-							</button>
-					       </td>
-					    </tr>
-					  </tbody>
-         </table>
-			</div>
-			<div class="ui bottom attached tab segment" data-tab="two">
-			     <table class="ui very basic collapsing celled table">
-					  <thead>
-					    <tr><th>Student</th>
-					    <th>Total Marks</th>
-					     <th>Download Answer sheet</th>
-					  </tr></thead>
-					  <tbody>
-					    <tr>
-					      <td>
-					        <h4 class="ui image header">
-					          <img src="{% static 'fusion/img/jenny.jpg' %}" class="ui  rounded image">
-					          <div class="content">
-					            Animesh
-					            <div class="sub header">2015301
-					          </div>
-					        </div>
-					      </h4></td>
-
-					      <td>
-					        <div class="ui form">
-							  <div class="field">
-							   <input type="text">
-							  </div>
-							</div>
-					      </td>
-
-					      <td>
-					       <button class="ui primary button">
-							 Download
-							</button>
-					      </td>
-					    </tr>
-					    <tr>
-					      <td>
-					        <h4 class="ui image header">
-					          <img src="{% static 'fusion/img/jina.png' %}" class="ui  rounded image">
-					          <div class="content">
-					            Paras
-					            <div class="sub header">2015183
-					          </div>
-					        </div>
-					      </h4></td>
-					      <td>
-					        <div class="ui form">
-							  <div class="field">
-							   <input type="text">
-							  </div>
-							</div>
-					      </td>
-					      <td>
-					         <button class="ui primary button">
-							 Download
-							</button>
-					      </td>
-					    </tr>
-					    <tr>
-					      <td>
-					        <h4 class="ui image header">
-					          <img src="{% static 'fusion/img/matthew.png' %}" class="ui  rounded image">
-					          <div class="content">
-					            Chinmay
-					            <div class="sub header">2015093
-					          </div>
-					        </div>
-					      </h4></td>
-					      <td>
-					         <div class="ui form">
-							  <div class="field">
-							   <input type="text">
-							  </div>
-							</div>
-					      </td>
-					        <td>
-					            <button class="ui primary button">
-							 Download
-							</button>
-					        </td>
-					    </tr>
-					    <tr>
-					      <td>
-					        <h4 class="ui image header">
-					          <img src="{% static 'fusion/img/steve.jpg' %}" class="ui  rounded image">
-					          <div class="content">
-					            Girish
-					            <div class="sub header">2015155
-					          </div>
-					        </div>
-					      </h4></td>
-					      <td>
-					         <div class="ui form">
-							  <div class="field">
-							   <input type="text">
-							  </div>
-							</div>
-					      </td>
-					       <td>
-					         <button class="ui primary button">
-							 Download
-							</button>
-					       </td>
-					    </tr>
-					  </tbody>
-         </table>
-			  
-			</div>
-			<div class="ui bottom attached tab segment active" data-tab="three">
-			    <table class="ui very basic collapsing celled table">
-					  <thead>
-					    <tr><th>Student</th>
-					    <th>Total Marks</th>
-					     <th>Download Answer sheet</th>
-					  </tr></thead>
-					  <tbody>
-					    <tr>
-					      <td>
-					        <h4 class="ui image header">
-					          <img src="{% static 'fusion/img/jenny.jpg' %}" class="ui  rounded image">
-					          <div class="content">
-					            Animesh
-					            <div class="sub header">2015301
-					          </div>
-					        </div>
-					      </h4></td>
-
-					      <td>
-					        <div class="ui form">
-							  <div class="field">
-							   <input type="text">
-							  </div>
-							</div>
-					      </td>
-
-					      <td>
-					       <button class="ui primary button">
-							 Download
-							</button>
-					      </td>
-					    </tr>
-					    <tr>
-					      <td>
-					        <h4 class="ui image header">
-					          <img src="{% static 'fusion/img/jina.png' %}" class="ui  rounded image">
-					          <div class="content">
-					            Paras
-					            <div class="sub header">2015183
-					          </div>
-					        </div>
-					      </h4></td>
-					      <td>
-					        <div class="ui form">
-							  <div class="field">
-							   <input type="text">
-							  </div>
-							</div>
-					      </td>
-					      <td>
-					         <button class="ui primary button">
-							 Download
-							</button>
-					      </td>
-					    </tr>
-					    <tr>
-					      <td>
-					        <h4 class="ui image header">
-					          <img src="{% static 'fusion/img/matthew.png' %}" class="ui  rounded image">
-					          <div class="content">
-					            Chinmay
-					            <div class="sub header">2015093
-					          </div>
-					        </div>
-					      </h4></td>
-					      <td>
-					         <div class="ui form">
-							  <div class="field">
-							   <input type="text">
-							  </div>
-							</div>
-					      </td>
-					        <td>
-					            <button class="ui primary button">
-							 Download
-							</button>
-					        </td>
-					    </tr>
-					    <tr>
-					      <td>
-					        <h4 class="ui image header">
-					          <img src="{% static 'fusion/img/steve.jpg' %}" class="ui  rounded image">
-					          <div class="content">
-					            Girish
-					            <div class="sub header">2015155
-					          </div>
-					        </div>
-					      </h4></td>
-					      <td>
-					         <div class="ui form">
-							  <div class="field">
-							   <input type="text">
-							  </div>
-							</div>
-					      </td>
-					       <td>
-					         <button class="ui primary button">
-							 Download
-							</button>
-					       </td>
-					    </tr>
-					  </tbody>
-         </table>
-			  
-			</div>     
-	
-
-
- </div>
- {% comment %}The  assess assignment  ends  here!{% endcomment %}
-      <script type="text/javascript" src="{% static 'fusion/js/jquery.min.js' %}"></script>
-
-   <script>
-     $('.menu .item')
-       .tab()
-     ;
-
-   </script>
-  
-
-
-
-{% endblock %} 
+{% endblock %}

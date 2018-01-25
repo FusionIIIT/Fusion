@@ -10,7 +10,7 @@ from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
 
 # from applications.academic_procedures.models import Register
-from applications.academic_information.models import Calendar, Course, Student
+from applications.academic_information.models import Course, Student, Calendar
 from applications.globals.models import (DepartmentInfo, Designation,
                                          ExtraInfo, Faculty)
 
@@ -31,11 +31,10 @@ def main(request):
 @login_required(login_url='/accounts/login')
 def academic_procedures(request):
     current_user = get_object_or_404(User, username=request.user.username)
-    # print(current_user)
+    print(current_user)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
-    # print(user_details)
+    print(user_details)
     # user_type = Designation.objects.all().filter(name=user_details.designation).first()
-
     # Academics Admin Check
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
     dep_id = DepartmentInfo.objects.all().filter(name='Academics')
@@ -43,13 +42,19 @@ def academic_procedures(request):
                                                 user_type='staff',
                                                 designation=desig_id,
                                                 department=dep_id).first()
-    # print(str(acadadmin) == str(user_details))
+    print(str(acadadmin) == str(user_details))
     # print(acadadmin, user_details)
     # IF user is academic admin
     if(str(acadadmin) == str(user_details)):
         return HttpResponseRedirect('/aims')
 
     obj1 = Student.objects.all().filter(id=user_details.id)
+    print (obj1)
+    count = 0
+    for i in obj1:
+        count += 1
+    if(count==0):
+            return HttpResponseRedirect('/dashboard')
     pgflag = 0
     for i in obj1:
         if(i.programme[0] == "M" or i.programme[0] == "P"):
@@ -137,7 +142,7 @@ def academic_procedures(request):
                    'final_count': final_register_count,
                    'change_branch': change_branch,
                    'add_course': add_course,
-                   'show_list':  show_list,
+                   'show_list': show_list,
                    'pre_register': pre_register}
         )
 
@@ -289,6 +294,7 @@ def register(request):
             values_length = len(request.POST.getlist('choice'))
             # Get the semester for the registration
             sem = request.POST.get('semester')
+
             for x in range(values_length):
                 for key, values in request.POST.lists():
                     if (key == 'choice'):

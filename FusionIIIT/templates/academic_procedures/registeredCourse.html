@@ -54,7 +54,7 @@
                             <td>
                               {{ items.course_id }}
                               {% if items.optional %}
-                            <B>      (optional)</B>
+                            <B>    <div style="color:green;">     (optional)</B>  </div>
 
                               {% endif %}
                                 <input type="text" name='course_id' value='{{ items.course_id}}' hidden="True">
@@ -75,7 +75,7 @@
                                 <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
                               <B>  {% for x in final_register %}
                                     {% if items.course_id == x.course_id.course_id %}
-                                        Yes
+                                      <div style="color:red;">  Yes </div>
 
                                     {% endif %}
                                 {% endfor %}</B>

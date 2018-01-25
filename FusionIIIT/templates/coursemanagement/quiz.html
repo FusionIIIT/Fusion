@@ -1,70 +1,66 @@
-{% extends 'globals/base.html' %}
-{% load static %}
+<!DOCTYPE html>
+<html>
+  <head>
+    {% load static %}
 
-
-
-{% block title %}
-   Quiz
-{% endblock %}
-
-
-
-
- {% block css %}
-         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css" />
-         <link  href="http://cdnjs.cloudflare.com/ajax/libs/fotorama/4.6.4/fotorama.css" rel="stylesheet"> 
- {% endblock %}
-
-
-{% block Javascript1 %}
-  
-        <script type="text/javascript">
-
-        document.onkeydown = function(e) {
-          switch (event.keyCode) {
-              case 116 : //F5 button
-                  event.returnValue = false;
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Quiz</title>
+		<meta name="description" content="Examples for creative website header animations using Canvas and JavaScript" />
+		<meta name="keywords" content="header, canvas, animated, creative, inspiration, javascript" />
+		<meta name="author" content="Codrops" />
+		<script src="https://code.jquery.com/jquery-3.2.1.js" integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE=" crossorigin="anonymous"></script>
+		<link rel="stylesheet" type="text/css" href="{% static 'globals/css/semantic.min.css' %}">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css" />		<script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
+		<link  href="http://cdnjs.cloudflare.com/ajax/libs/fotorama/4.6.4/fotorama.css" rel="stylesheet"> <!-- 3 KB -->
+		<script src="http://cdnjs.cloudflare.com/ajax/libs/fotorama/4.6.4/fotorama.js"></script> <!-- 16 KB -->
+		<script type="text/javascript" src="{% static 'globals/js/semantic.min.js' %}"></script>
+		<script type="text/javascript" src="{% static 'globals/js/dropdown.js' %}"></script>
+    <meta charset="utf-8">
+    <style media="screen">
+      #demo{
+        text-align: center;
+        font-size: 60px;
+      }
+    </style>
+    <script type="text/javascript">
+    document.onkeydown = function(e) {
+      switch (event.keyCode) {
+          case 116 : //F5 button
+              event.returnValue = false;
+              event.keyCode = 0;
+              return false;
+          case 82 : //R button
+              if (event.ctrlKey) {
+                  e.preventDefault(e);
                   event.keyCode = 0;
                   return false;
-              case 82 : //R button
-                  if (event.ctrlKey) {
-                      e.preventDefault(e);
-                      event.keyCode = 0;
-                      return false;
-                  }
-          }
-        }
-        window.onunload = function () {
-               var r = confirm( "Press a button!" )
-               if ( r == true ) {
-                   alert( "You pressed OK!" )
-               }
-               else {
-                   alert( "You pressed Cancel!" )
-               }
+              }
+      }
+    }
+    window.onunload = function () {
+           var r = confirm( "Press a button!" )
+           if ( r == true ) {
+               alert( "You pressed OK!" )
+           }
+           else {
+               alert( "You pressed Cancel!" )
+           }
 
-           };
+       };
 
-        </script>
+    </script>
+    <title>Past Contests</title>
+  </head>
+  <body oncontextmenu="return false;">
 
- {% endblock %}
-    
-
-
-
-{% block body %}
-
-        {% block navBar %}
-            {% include 'dashboard/navbar.html' %}
-        {% endblock %}
-  
-
-      <div>
-      <h1 class="ui massive center aligned header"> {{contest.contest_name}}</h1>
+		<div>
+      <h1 class="ui massive center aligned header"> {{contest.quiz_name}}</h1>
       <div class="ui two column grid" style="padding-top:5em;padding-bottom:15em;padding-left:5em;padding-right:5em">
         <div class="twelve wide column" style="height:fit-content">
-          <div class="ui  segment" >
-            <span class="ui"> PAST CONTESTS </span>
+          <div class="ui piled segment" >
+            <span class="ui">CONTESTS </span>
             <div class="ui divider">
             </div>
             <div class="total_question ui segment" style="margin:4em" >
@@ -77,7 +73,7 @@
                     <img src="{{question.image}}" style="width:100%;heightL100%">
                   </div>
                   <div class="question_image centered fourteen wide column ui segment" style="margin-top:1em;padding:2em;">
-                    <p>{{ question.problem_statement }}</p>
+                    <p>{{ question.question }}</p>
                   <!-- </div>
                   <div class="answer centered fourteen wide column ui segment" style="margin:1em;padding:2em"> -->
                   <div class="ui divider">
@@ -119,10 +115,10 @@
                       </div>
                       {% endif %}
                       <br>
-                      <div class="ui primary button next">
+                      <div class="ui button next">
                         Next Question
                       </div>
-                      <input type="submit" data-pk={{question.pk}} class="ui  primary button  submit_bt"  value="Submit" />
+                      <input type="submit" data-pk={{question.pk}} class="ui button floated submit_bt"  value="Submit" />
                     </form>
                   </div>
                 </div>
@@ -135,14 +131,14 @@
           </div>
         </div>
         <div class="four wide column" style="">
-          <div class="ui  segment " style="">
+          <div class="ui piled segment " style="">
             <span class="ui">TIME</span>
             <div class="ui divider">
             </div>
-            {% include "fusion/coursemanagement/timer.html" %}
+
             <p id="demo"></p>
           </div>
-          <div class="ui  segment " >
+          <div class="ui piled segment " >
             <span class="ui">QUESTIONS</span>
             <div class="ui divider">
             </div>
@@ -155,7 +151,7 @@
             </div>
           </div>
 
-          <div class="ui  segment " style="min-height:20em">
+          <div class="ui piled segment " style="min-height:20em">
             <span class="ui">ANNUOUNCMENTS</span>
             <div class="ui divider">
               <div class="ui big list">
@@ -172,29 +168,10 @@
 
       </div>
     </div>
-    
-
- {% endblock %}
-
-
-
-
-{% block Javascript %}
-
-
-<script src="https://code.jquery.com/jquery-3.2.1.js" integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE=" crossorigin="anonymous"></script>
-  <script src="http://cdnjs.cloudflare.com/ajax/libs/fotorama/4.6.4/fotorama.js"></script>
-
-  
-
-          {% if user.is_authenticated %}
-    <!-- logging out if no action for 30 minutes -->
-    <script type="text/javascript" src="{% static 'crypto/js/logout_session.js' %}"></script>
-    {% endif %}
-
     <script>
-    var count={{contest.question_count}};
-        // changing background color on hovering
+      var past=1;
+      var count={{contest.number_of_question}};
+      // changing background color on hovering
       var flag=0;
       $('.qt').mouseover(function(){
         if(flag!=1)
@@ -207,6 +184,7 @@
           flag=0;
         }
       });
+
       $('.qt').mouseout(function(){
         if(flag!=1)
         {
@@ -217,6 +195,7 @@
           flag=0;
         }
       });
+
       $('.next').click(function(){
         $('#question'+id).css({'display':'none'});
         $('#ann'+id).css({'display':'none'});
@@ -230,6 +209,7 @@
         $('#ann'+id).css({'display':'block'});
         $('#qt'+id).css({'background':'green'});
       });
+
       // displying the 1st question initially
       id = $('.questions').attr('data');
       $('#question'+id).css({'display':'block'});
@@ -248,7 +228,6 @@
         $('#ann'+id).css({'display':'block'});
         $('#qt'+id).css({'background':'green'});
       });
-
 
       $(document).ready(function(){
       $('.ui.accordion').accordion('refresh');
@@ -272,9 +251,11 @@
       });
       //for timer
       var duration= {{days}}*86400+{{hours}}*3600+{{minutes}}*60+{{seconds}};
+      // alert(duration);
+      // var duration= {{contest.d_day}}*86400+{{contest.d_hour}}*3600+{{contest.d_minute}}*60;
     </script>
-
-    {% block timer %}
+    {% include "coursemanagement/timer.html" %}
+    {% block timerjs %}
     {% endblock %}
     <script type="text/javascript">
       //ajax cheking
@@ -286,7 +267,7 @@
         // alert("pk="+pk+"/nans"+ans);
         $.ajax({
           type: 'POST',
-          url:'/quiz/{{contest.pk}}/ajax',
+          url:'/ocms/{{contest.pk}}/ajax',
           data:{ 'question':pk, 'answer': ans, 'csrfmiddlewaretoken':csrf, },
           success: function(data){
             console.log(data);
@@ -294,7 +275,7 @@
             $('#ann'+id).css({'display':'none'});
             $('#qt'+id).css({'background':'white'});
             id++;
-            if(id>{{contest.question_count}})
+            if(id>{{contest.number_of_question}})
             {
               id=1;
             }
@@ -311,10 +292,10 @@
         event.preventDefault();
         $.ajax({
           type:'POST',
-          url:'/quiz/{{contest.pk}}/submit',
+          url:'/ocms/{{contest.pk}}/submit',
           data:{csrfmiddlewaretoken: '{{ csrf_token }}'},
           success: function(data){
-            alert(data.message+"\n"+data.score);
+            alert(data.message+"\nYour Score="+data.score);
             localStorage.setItem("finished", "1");
             window.close();
 
@@ -326,10 +307,5 @@
       });
     </script>
 
-
-      {% endblock %}
-
-
-
-
-
+  </body>
+</html>

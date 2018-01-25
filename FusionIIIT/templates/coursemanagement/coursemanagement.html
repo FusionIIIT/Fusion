@@ -193,7 +193,6 @@
     <script>
         function toggleContent() {
             $('.modulesContent').toggle();
-
             if($('.modulesContent').is(':visible')){
                 $('#toggleIcon').removeClass("chevron down");
                 $('#toggleIcon').addClass("chevron up");
@@ -204,13 +203,10 @@
                 
             }
         }
-
-
          $('#enter').click(function(){
       alert('Do not close');
       window.open('/quiz/{{contest.pk}}/live/','myWindow', "width=1500, height=1000");
     });
-
     </script>
 
 {% endblock %}

@@ -58,7 +58,7 @@
                                     <td>
                                         {{ items.course_id }}
                                         {% if items.optional %}
-                                      <B>      (optional)</B>
+                                      <B>     <div style="color:green;">    (optional)</B> </div>
 
                                         {% endif %}
                                     </td>
@@ -75,7 +75,8 @@
                                     <B>    {% if items.optional %}
                                             <input name="course_id" type="checkbox" value="{{ items.course_id }}">
                                         {% else %}
-                                            <input name="course_id" type="checkbox" value="{{ items.course_id }}" onclick="return false;" hidden="True">(Compulsory)
+                                            <input name="course_id" type="checkbox" value="{{ items.course_id }}" onclick="return false;" hidden="True">
+                                             <div style="color:red;"> (Compulsory) </div>
                                         {% endif %}</B>
                                         <input name="user" type="text" value="{{ x.student_id }}" hidden="True">
                                     </td>

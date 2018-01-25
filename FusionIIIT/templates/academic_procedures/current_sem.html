@@ -1,23 +1,44 @@
 {% load static %}
 {% block senate %}
 
+<script type="text/javascript">
+    $(document).ready(function()
+    {
+        $('#visualize').click(function()
+        {
+            $('#pdf_modal').modal('show');
+        });
+        $('#visualize2').click(function()
+        {
+            $('#pdf_modal2').modal('show');
+        });
+        $('#visualize3').click(function()
+        {
+            $('#pdf_modal3').modal('show');
+        });
+        $('#visualize4').click(function()
+        {
+            $('#pdf_modal4').modal('show');
+        });
+    });
 
+</script>
 
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="first-currsem">
-          Courses Registerd for {{ details.user_sem }} Semester Year {{ details.year}}
+          Sem {{ details.user_sem }} Year {{ details.year}}
         </a>
         <a class=" item" data-tab="second-currsem">
-          TIME-TABLE
+          Time-Table
         </a>
         <a class=" item" data-tab="third-currsem">
-          ACADEMIC CALENDER
+          Academic Calender
         </a>
         <a class=" item" data-tab="fourth-currsem">
-          LIST OF HOLIDAYS
+          List of Holidays
         </a>
         <a class=" item" data-tab="fifth-currsem">
-          EXAM TIME-TABLE
+          Exam Time Table
         </a>
     </div>
     <!--  Course Registered -->
@@ -45,7 +66,7 @@
                   <td>
                     {{ items.course_id }}
                     {% if items.optional %}
-                  <B>      (optional)</B>
+                  <B>    <div style="color:green;">     (optional)</B> </div>
 
                     {% endif %}
                   </td>
@@ -60,8 +81,9 @@
                    </td>
                    <td>
                     <B>
-                      <a href="/">
-                      </a>
+                      <a target="_blank" href="/ocms/{{items.course_id}}">
+                      <B>  LINK </B>
+                       </a>
                     </B>
 
                    </td>
@@ -77,9 +99,23 @@
 
 <!--  TIME-TABLE -->
 <div class="ui tab segment" data-tab="second-currsem">
-                      <CENTER>
+                    <!--  <CENTER>
                       <B> TIME TABLE has not been added yet </B>
-                      </CENTER>
+                    </CENTER> -->
+{% if details.user_sem <= 3 %}
+<div style="width:100%;height:100%" id='pdf_modal3' class="ui sixteen wide column fullscreen modal">
+    <i class="close  icon"></i>
+    <iframe style="width:100%;height:100%;align-self:center;" src="{% static "/academic_procedures/UG_Second year.pdf" %}"></iframe>
+</div>
+  <CENTER><B><a id='visualize3'>VIEW SEMESTER TIME-TABLE</a></B></CENTER>
+<BR><BR>
+  {% elif details.user_sem <= 5 %}
+  <div style="width:100%;height:100%" id='pdf_modal4' class="ui sixteen wide column fullscreen modal">
+      <i class="close  icon"></i>
+      <iframe style="width:100%;height:100%;align-self:center;" src="{% static "/academic_procedures/UG_Third year.pdf" %}"></iframe>
+  </div>
+    <CENTER><B><a id='visualize4'>VIEW SEMESTER TIME-TABLE</B></a></CENTER>
+  {% endif %}
                       <br>
                       <div class="ui divider"></div>
 </div>
@@ -124,19 +160,31 @@
 <!-- LIST OF HOLIDAYS -->
 
 <div class="ui tab segment" data-tab="fourth-currsem">
-                    <CENTER>
+                    <!--<CENTER>
                   <B> LIST OF HOLIDAYS has not been added yet </B>
-                  </CENTER>
+                </CENTER> -->
+
+                <div style="width:100%;height:100%" id='pdf_modal2' class="ui sixteen wide column fullscreen modal">
+                    <i class="close  icon"></i>
+                    <iframe style="width:100%;height:100%;align-self:center;" src="{% static "/academic_procedures/List_of_Holidays.pdf" %}"></iframe>
+                </div>
+                  <CENTER><B><a id='visualize2'>VIEW LIST OF HOLIDAYS</a> </CENTER></B>
+
+
+
                   <br>
                   <div class="ui divider"></div>
 </div>
 
 <!-- EXAM TIME-TABLE -->
 <div class="ui tab segment" data-tab="fifth-currsem">
-              <CENTER>
-              <B> EXAM TIME TABLE has not been added yet </B>
-              </CENTER>
+  <div style="width:100%;height:100%" id='pdf_modal' class="ui sixteen wide column fullscreen modal">
+      <i class="close  icon"></i>
+      <iframe style="width:100%;height:100%;align-self:center;" src="{% static "/academic_procedures/End_sem_time_table.pdf" %}"></iframe>
+  </div>
+    <CENTER><B><a id='visualize'>VIEW END-SEMESTER TIME-TABLE</a> </CENTER></B>
               <br>
               <div class="ui divider"></div>
 </div>
+
 {% endblock %}

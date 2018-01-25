@@ -146,7 +146,7 @@ class Instructor(models.Model):
         unique_together = ('course_id', 'instructor_id')
 
     def __self__(self):
-        return self.course_id
+        return '{} - {}'.format(self.course_id, self.instructor_id)
 
 
 class Spi(models.Model):

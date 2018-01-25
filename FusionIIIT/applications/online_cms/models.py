@@ -28,12 +28,17 @@ class CourseVideo(models.Model):
 
 class Quiz(models.Model):
     course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
+    quiz_name = models.CharField(max_length=20)
     end_time = models.DateTimeField()
     start_time = models.DateTimeField()
     d_day = models.CharField(max_length=2)
     d_hour = models.CharField(max_length=2)
     d_minute = models.CharField(max_length=2)
     negative_marks = models.FloatField(default=0)
+    number_of_question = models.IntegerField(default=0)
+    description = models.TextField(max_length=1000)
+    rules = models.TextField(max_length=2000)
+    total_score = models.IntegerField(default=0)
 
     def __str__(self):
         return '{} - {} - {} - {} - {}'.format(
@@ -53,7 +58,7 @@ class QuizQuestion(models.Model):
     answer = models.IntegerField()
     announcement = models.TextField(max_length=2000, null=True, blank=True)
     image = models.TextField(max_length=1000, null=True)
-    marks = models.IntegerField()
+    # marks = models.IntegerField()
 
     def __str__(self):
         return '{} - {} - {} - {} - {} - {} - {} - {} - {}'.format(
@@ -91,8 +96,9 @@ class StudentAssignment(models.Model):
     assignment_id = models.ForeignKey(Assignment, on_delete=models.CASCADE)
     upload_time = models.DateTimeField(auto_now=True)
     upload_url = models.TextField(max_length=200)
-    score = models.IntegerField()
-    feedback = models.CharField(max_length=100)
+    score = models.IntegerField(null=True)
+    feedback = models.CharField(max_length=100, null=True)
+    assign_name = models.CharField(max_length=100)
 
     def __str__(self):
         return '{} - {} - {} - {} - {}'.format(
@@ -105,7 +111,7 @@ class QuizResult(models.Model):
     quiz_id = models.ForeignKey(Quiz, on_delete=models.CASCADE)
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     score = models.IntegerField()
-    feedback = models.CharField(max_length=100)
+    finished = models.BooleanField(default=False)
 
     def __str__(self):
         return '{} - {} - {} - {} - {}'.format(

@@ -1,0 +1,124 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+{% block title %}
+Create Contest
+{% endblock %}
+{% block css %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.4/semantic.min.css" rel="stylesheet" type="text/css" />
+<link href="https://cdn.rawgit.com/mdehoog/Semantic-UI-Calendar/76959c6f7d33a527b49be76789e984a0a407350b/dist/calendar.min.css" rel="stylesheet" type="text/css" />
+{% endblock %}
+{% block body %}
+{% block navBar %}
+    {% include 'dashboard/navbar.html' %}
+{% endblock %}
+
+
+<div class="ui stackable doubling grid">
+
+    <div class="column"></div>
+
+    <div class="three wide column" >
+        {% block usercard %} {% include 'globals/usercard.html' %} {% endblock %}
+
+        <div class="ui divider"></div>
+
+
+        <div class="ui huge fluid disabled vertical pointing menu" style="max-width: 320px;">
+
+            <a class="item sidetab disabled" data-tab="first" data-num="11">
+              View Courses
+              <i class="right floated chevron right icon"></i>
+            </a>
+
+            <a class="item sidetab disabled" data-tab="second" data-num="12">
+              Assignments
+              <i class="right floated chevron right icon"></i>
+            </a>
+
+            <a class="item sidetab disabled" data-tab="third" data-num="13">
+              View Performance
+              <i class="right floated chevron right icon"></i>
+            </a>
+            {% if Lecturer == 1 %}
+            <a class="item sidetab disabled" data-tab="fourth" data-num="14">
+              Add Content
+              <i class="right floated chevron right icon"></i>
+            </a>
+
+            <a class="item sidetab disabled" data-tab="fifth" data-num="15">
+              Assessment
+              <i class="right floated chevron right icon"></i>
+          </a>
+          {% endif %}
+        </div>
+    </div>
+    <div class="ui eight wide column "style="margin-bottom:5em">
+        <div class=" ui segment" >
+            <form class="ui large form" method="post">
+            {% csrf_token %} {% if errors %} {{errors}} {% endif %}
+            <br/>
+            <h4 class="ui dividing header">Contest Details</h4>
+            <div class="field">
+                <label>Contest Name</label>
+                <div class="field">
+                    <div class="ui input left icon">
+                        <i class="id card outline icon"></i> {{ form.name }}
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="ui calendar field">
+                <label>Description</label>
+                <div class="ui input left icon">
+                    <i class="comments icon"></i> {{ form.description }}
+                </div>
+            </div>
+            
+            <div class="ui field">
+                <label>Number Of Questions</label>
+                <div class="ui input">
+                    {{ form.number_of_questions }}
+                </div>
+            </div>
+            <div class="ui field">
+                <label>Marks per Question</label>
+                <div class="ui input">
+                    {{ form.per_question_score }}
+                </div>
+            </div>
+            <div class="ui field">
+
+                <label>Enable Penalty</label>
+                {{form.negative_marks}}
+            </div>
+            <br>
+            <input type="submit" class="ui primary button" value="Submit" />
+        </form>
+        </div>
+        
+    </div>
+
+    <div class="column"></div>
+
+</div>
+
+
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('.ui.accordion').accordion('refresh');
+    });
+    $('.ui.sidebar')
+        .sidebar('attach events', '#navbar #sidebartrigger')
+    // .sidebar('setting', 'transition', 'overlay')
+    // .sidebar('toggle')
+    ;
+    $('.special.cards .image').dimmer({
+        on: 'hover'
+    });
+
+</script>
+
+
+{% endblock %}

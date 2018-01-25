@@ -35,6 +35,7 @@ def homepage(request):
     except:
         senates = ""
         students = ""
+        student = ""
         Convenor = ""
         CoConvenor = ""
         meetings = ""
@@ -50,6 +51,7 @@ def homepage(request):
     context = {
          'senates': senates,
          'students': students,
+         'student':student,
          'Convenor': Convenor,
          'CoConvenor': CoConvenor,
          'meetings': meetings,

@@ -5,27 +5,25 @@
     <div class="ui fluid card">
         <div class="content">
             <div class="ui header">
+              <form method="POST" action="/placement/" class="ui form" role="form">
                 About Me
-                <input type="button"
-                       id="editButton"
-                       class="ui red mini button right floated" onclick="editStudent()"
-                       value = "Edit">
-                </input>
+
+                  {{ form.non_field_errors }}
+                  {% csrf_token %}
+                  <input type="submit" value="Save Profile Details" class="ui red mini button right floated" name="profilesubmit">
             </div>
 
             <div class="ui divider"></div>
 
-            <span id="aboutSpan">
-                {{ profile.about_me }}
-            </span>
-
-            <div class="textarea">
-                <textarea rows=5
+            <div class="ui large fluid input">
+                <input name=about
+                          rows=5
                           type="text"
                           style="width: 100%;"
-                          id="aboutTextarea" hidden></textarea>
+                          value="{{ profile.about_me }}"/>
             </div>
         </div>
+
     </div>
     <!--About Me card ends here!-->
 
@@ -45,9 +43,13 @@
                             </td>
 
                             <td>
-                                <span id="dobSpan">
-                                    {{ profile.age }}
-                                </span>
+                              <div class="ui fluid input">
+                                <input name=age
+                                          rows=5
+                                          type="text"
+                                          style="width: 100%;"
+                                          value="{{ profile.age }}"/>
+                              </div>
                             </td>
                         </tr>
 
@@ -57,19 +59,19 @@
                             </td>
 
                             <td>
-                              {% if student.future_aspect == "Higher Studies" %}
+                              {% if student.future_aspect == "HIGHER STUDIES" %}
                                 <label>Higher Studies</label> &ensp;
                                 <div class="ui toggle checkbox"
                                      style="margin-top: 8px;">
                                     <label>Placement</label>
-                                    <input tabindex="0" type="checkbox">
+                                    <input name=fut type="checkbox" tabindex="1" value="1">
                                 </div>
                               {% else %}
                                 <label>Higher Studies</label> &ensp;
                                 <div class="ui toggle checked checkbox"
                                     style="margin-top: 8px;">
                                     <label>Placement</label>
-                                    <input tabindex="1" type="checkbox" checked="">
+                                    <input name=futu type="checkbox" value="2" tabindex="2" checked="">
                                 </div>
                               {% endif %}
                             </td>
@@ -81,16 +83,13 @@
                             </td>
 
                             <td>
-                                <span id="interestSpan">
-                                    {{ profile.address }}
-                                </span>
-
-                                <div class="textarea">
-                                    <textarea rows=3
-                                              type="text"
-                                              style="width: 100%;"
-                                              id="interestTextarea" hidden></textarea>
-                                </div>
+                              <div class="ui fluid input">
+                                <input name=address
+                                          rows=5
+                                          type="text"
+                                          style="width: 100%;"
+                                          value="{{ profile.address }}"/>
+                              </div>
                             </td>
                         </tr>
 
@@ -116,15 +115,11 @@
                             </td>
 
                             <td>
-                                <a>
-                                    <i class="phone icon" id="contactIcon"></i>
-                                        <span id="contactSpan">
-                                            {{ profile.phone_no }}
-                                        </span>
-                                </a>
 
-                                <div class="ui fluid input">
-                                    <input type="text" id="contactInput" hidden>
+                                <div class="ui large fluid input">
+                                    <a><i class="phone icon" id="contactIcon"></i>
+                                    <input name=contact type="text" value="{{ profile.phone_no }}">
+                                    </a>
                                 </div>
                             </td>
 
@@ -136,59 +131,65 @@
                             </td>
 
                             <td>
-                                <a href="" target="_blank">
-                                    <i class="mail icon" id="mailIcon"></i>
-
-                                    <span id="mailSpan">
-                                        {{ user.email }}
-                                    </span>
-                                </a>
+                                <span>
+                                    <a><i class="mail icon" id="mailIcon"></i>
+                                    {{ user.email }}
+                                    </a>
+                                </span>
 
                             </td>
                         </tr>
 
-                        <tr>
-                            <td>
-                                Facebook
-                            </td>
-
-                            <td>
-                                <a href="https://www.facebook.com/" target="_blank">
-                                    <i class="blue facebook icon"></i>
-                                    {{ user.first_name }} {{ user.last_name }}
-                                </a>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>
-                                LinkedIn
-                            </td>
-
-                            <td>
-                                <a href="https://www.linkedin.com/" target="_blank">
-                                    <i class="blue linkedin icon"></i>
-                                    {{ user.first_name }} {{ user.last_name }}
-                                </a>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>
-                                Github
-                            </td>
-
-                            <td>
-                                <a href="https://www.github.com/" target="_blank">
-                                    <i class="teal github icon"></i>
-                                    {{ user.first_name }} {{ user.last_name }}
-                                </a>
-                            </td>
-                        </tr>
-
+                        </form>
                     </tbody>
                 </table>
             </span>
         </div>
     </div><!--The contact details card ends here!-->
+
+   {% if placementstatus %}
+    <!--The noticeboard card starts here!-->
+    <div class="ui fluid card">
+        <div class="content">
+            <div class="ui header">Activity</div>
+            <div class="ui divider"></div>
+
+            {% for ps in placementstatus %}
+            {% if ps.invitation != 'PENDING' and ps.invitation != 'Pending' %}
+            {% if ps.placed != 'Placed' and ps.placed != 'PLACED' %}
+            <span>
+              <div class="ui segments">
+                <div class="ui horizontal segments">
+                  <div class="ui segment">
+                    {{ ps.notify_id.placement_type }}
+                    {{ ps.notify_id.timestamp }}
+                    <!--form method="post" class="ui form" role="form">
+                      {% csrf_token %}
+                    <input value="Dismiss" name="submitstudentdismiss" type="submit" class="ui hidden red mini button right floated" hidden="hidden"/>
+                  </form-->
+                </div>
+                  </div>
+                  <div class="ui secondary segment">
+                    <p>{{ ps.notify_id.company_name }} ,<b> CTC: {{ ps.notify_id.ctc }}</b></p>
+                    <p>{{ ps.notify_id.description }} </p>
+                  </div>
+                  {% if ps.invitation == 'ACCEPTED' or ps.invitation == 'Accepted' %}
+                  <div class="ui secondary green inverted segment">
+                    <p>Invitation was <b>{{ ps.invitation}}.</b></p>
+                  </div>
+                  {% endif %}
+                  {% if ps.invitation == 'REJECTED' or ps.invitation == 'Rejected' %}
+                  <div class="ui secondary red inverted segment">
+                    <p>Invitation was <b>{{ ps.invitation}}.</b></p>
+                  </div>
+                  {% endif %}
+              </div>
+            </span><br>
+            {% endif %}
+            {% endif %}
+            {% endfor %}
+
+        </div>
+    </div><!--The noticeboard details card ends here!-->
+    {% endif %}
 {% endblock %}

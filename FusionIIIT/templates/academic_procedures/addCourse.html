@@ -55,7 +55,7 @@
                             <td>
                                 {{ items.course_id }}
                                 {% if items.optional %}
-                              <B>      (optional)</B>
+                              <B>       <div style="color:green;">  (optional)</B> </div>
 
                                 {% endif %}
                                 <input type="text" name='course_id' value='{{ items.course_id}}' hidden="True">
@@ -75,11 +75,12 @@
                              </td>
                              <td><B>
                                 <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
-                                                            {% if items.optional %}
-                                                                <input name="choice" type="checkbox" value="{{ items.course_id }}">
-                                                            {% else %}
-                                                                <input name="choice" type="checkbox" value="{{ items.course_id }}" onclick="return false;" checked hidden="True">(Compulsory)
-                                                            {% endif %}</B>
+                              {% if items.optional %}
+                                  <input name="choice" type="checkbox" value="{{ items.course_id }}">
+                              {% else %}
+                                  <input name="choice" type="checkbox" value="{{ items.course_id }}" onclick="return false;" checked hidden="True">
+                                    <div style="color:red;"> (Compulsory) </div>
+                              {% endif %}</B>
 
                              </td>
                         </tr>
@@ -111,11 +112,11 @@ $(function() {
 
         var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
         posting.done(function(data) {
-            alert('Course Added Successful');
+            alert('Course Added Successfully');
             window.location = "/academic-procedures/main/";
         });
         posting.fail(function(data) {
-            alert('Failed to add');
+            alert('Filed to add course, some error occured');
             window.location = "/academic-procedures/main/";
         });
     });
