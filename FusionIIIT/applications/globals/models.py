@@ -51,9 +51,9 @@ class ExtraInfo(models.Model):
                                    null=True, blank=True)
     profile_picture = models.ImageField(null=True, blank=True)
     about_me = models.TextField(default='', max_length=1000, blank=True, null=True)
-    leave_sanc_auth = models.ForeignKey(User, on_delete=models.CASCADE,
+    leave_sanc_auth = models.ForeignKey(Designation, on_delete=models.CASCADE,
                                         related_name='sanc_auth_of', null=True)
-    leave_sanc_off = models.ForeignKey(User, on_delete=models.CASCADE,
+    leave_sanc_off = models.ForeignKey(Designation, on_delete=models.CASCADE,
                                        related_name='sanc_off_of', null=True)
 
     @property

@@ -11,7 +11,7 @@ LEAVE_TYPES = (
 
 class EmployeeCommonForm(forms.Form):
     leave_type = forms.CharField(widget=forms.Select(choices=LEAVE_TYPES))
-    purpose = forms.CharField(widget=forms.text)
+    purpose = forms.CharField(widget=forms.TextInput)
     is_station = forms.BooleanField(initial=False, required=False)
     station_start_date = forms.DateField(label='From')
     station_end_date = forms.DateField(label='To')
@@ -35,9 +35,11 @@ class AdminReplacementForm(forms.Form):
         try:
             user_type = self.user.extrainfo.user_type
             ALL_USERS = User.objects.all()
-            USER_CHOICES = list((user.username, '{} {}'.format(user.first_name, user.last_name) \
-                              for user in ALL_USERS if user.extrainfo.user_type==user_type \
-                              and user != self.user))
+            # TODO: Add code for userchoices
+            USET_CHOICES = []
+            # USER_CHOICES = list((user.username, '{} {}'.format(user.first_name, user.last_name) \
+            #                   for user in ALL_USERS if user.extrainfo.user_type==user_type \
+            #                   and user != self.user))
         except:
             USER_CHOICES = []
 
@@ -45,7 +47,7 @@ class AdminReplacementForm(forms.Form):
                                                    widget=forms.Select(choices=USER_CHOICES))
 
 
-class AcademicReplacementForm(form.Form):
+class AcademicReplacementForm(forms.Form):
     acad_start_date = forms.DateField(label='From')
     acad_end_date = forms.DateField(label='To')
 
@@ -58,9 +60,9 @@ class AcademicReplacementForm(form.Form):
         try:
             user_type = self.user.extrainfo.user_type
             ALL_USERS = User.objects.all()
-            USER_CHOICES = list((user.username, '{} {}'.format(user.first_name, user.last_name) \
-                              for user in ALL_USERS if user.extrainfo.user_type==user_type \
-                              and user != self.user))
+            # USER_CHOICES = list((user.username, '{} {}'.format(user.first_name, user.last_name) \
+            #                   for user in ALL_USERS if user.extrainfo.user_type==user_type \
+            #                   and user != self.user))
         except:
             USER_CHOICES = []
 

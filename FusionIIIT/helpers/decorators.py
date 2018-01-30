@@ -1,5 +1,14 @@
+from functools import wraps
 from django.utils import timezone
+from django.contrib.auth.decorators import login_required
+from applications.globals.models import Designation
 
+def get_object_or_none(model, **kwargs):
+    try:
+        obj = model.objects.get(**kwargs)
+    except:
+        obj = None
+    return obj
 
 def critical_section(critical_view):
 
