@@ -85,17 +85,6 @@ SOCIALACCOUNT_ADAPTER = 'applications.globals.adapters.MySocialAccountAdapter'
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'django.contrib.sites',
-    'allauth.account',
-    'allauth.socialaccount',
-    'allauth',
-    'allauth.socialaccount.providers.google',
     'applications.globals.apps.GlobalsConfig',
     'applications.academic_information.apps.AcademicInformationConfig',
     'applications.academic_procedures.apps.AcademicProceduresConfig',
@@ -110,6 +99,17 @@ INSTALLED_APPS = [
     'applications.scholarships.apps.ScholarshipsConfig',
     'applications.visitor_hostel.apps.VisitorHostelConfig',
     'applications.eis.apps.EisConfig',
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'django.contrib.sites',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth',
+    'allauth.socialaccount.providers.google',
 ]
 
 MIDDLEWARE = [

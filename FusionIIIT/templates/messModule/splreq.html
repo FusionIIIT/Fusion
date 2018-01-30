@@ -1,98 +1,63 @@
+{% extends 'globals/base.html' %}
 {% load static %}
+{% block body %}
 {% block splreq %}
-<<<<<<< HEAD
 <div class="ui pointing secondary menu">
     <a class="active item" data-tab="splreq">
         Special Request
     </a>
 </div>
-<div class="ui active tab" data-tab="minutes">
-    <div class="ui vertical stripe team segment"
+<div class="ui active tab" data-tab="splreq">
+    <div class="ui vertical strip segment"
          style="padding-left: 3.5%;
                 padding-right: 3.5%;">
 
-        <form class="ui large form">
+            <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
+              <thead>
+                <tr>
+                  <th>App Date</th>
+                  <th>Student Id</th>
+                  <th>Start Date</th>
+                  <th>End Date</th>
+                  <th>Food1</th>
+                  <!-- <th>Food2</th> -->
+                  <th>purpose</th>
+                  <th>accept/reject</th>
+                </tr>
+              </thead>
+              <tbody>
+                  {% for var in sprequest %}
+                <tr>
+                    <th class="four wide">
+                        {{var.app_date}}
+                    </th>
+                    <td>
+                        <h4 class="ui image header">
+                            <div class="content">{{var.student_id}}</div>
+                        </h4>
+                    </td>
+                    <td>{{var.start_date}}</td>
+                    <td>{{var.end_date}}</td>
+                    <td>{{var.item1}}</td>
+                    <!-- <td>{{var.item2}}</td> -->
+                    <td>{{var.request}}</td>
+                    <td>
+                        <form action="{{var.pk}}/responsespl/" method="POST">
+                        {% csrf_token %}
+                        <div class="ui buttons">
+                        <button class="ui negative button" name="submit" value="reject" >R</button>
+                        <div class="or"></div>
+                        <button class="ui positive button" name="submit" value="approve" >A</button>
+                        </div>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
 
-            {% comment %} The Minutes form  starts here! {% endcomment %}
-
-            {% comment %}The form row starts here!{% endcomment %}
-            <table class="ui padded table">
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Roll No.</th>
-      <th>Food</th>
-        <th>Food</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>
-          <h4 class="ui image header">
-
-                            <div class="content">
-                                Zlatan Ibrahimovic
-                                <div class="sub header">gmail@zlatan.com
-                                </div>
-                            </div>
-                        </h4></td>
-      <td>gmail@zlatan.com</td>
-        <td>Dahi wada</td>
-      <td>Dahi Wada is love,love = dahi wada so kindly provide.</td>
-    </tr>
-
-  </tbody>
-</table>
-        </form>
+              </tbody>
+            </table>
     </div>
 </div>
-=======
-    <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="splreq">
-            Special Request
-        </a>
-    </div>
 
-    <div class="ui active tab" data-tab="minutes">
-        <div class="ui vertical stripe team segment"
-             style="padding-left: 3.5%;
-                padding-right: 3.5%;">
-
-            <form class="ui large form">
-                <table class="ui collapsing celled very basic sortable table" style="margin: auto;">
-                    <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Food</th>
-                        <th>Description</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                        <td>
-                            <h4 class="ui image header">
-                                <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
-                                <div class="content">
-                                    Zlatan Ibrahimovic
-                                    <div class="sub header">
-                                        King Of Sweden
-                                    </div>
-                                </div>
-                            </h4>
-                        </td>
-
-                        <td>Dahi wada</td>
-
-                        <td>Dahi Wada is love, love = dahi wada so kindly provide.</td>
-                    </tr>
-
-                    </tbody>
-                </table>
-            </form>
-
-            <br>
-            <div class="ui divider"></div>
-        </div>
-    </div>
->>>>>>> upstream/master
+{% endblock %}
 {% endblock %}

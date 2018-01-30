@@ -10,14 +10,19 @@
         <a class="item" data-tab="spfood">
             Special Food
         </a>
+
+        <a class="item" data-tab="spfoodstatus">
+            Special Food Status
+        </a>
+
     </div>
 
     <div class="ui active tab" data-tab="messchange">
         <div class="ui vertical segment">
 
             {% comment %}Form Tag starts here!{% endcomment %}
-            <form>
-                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+            <form method="post" action="{% url 'mess:regsubmit' %}">
+                {% csrf_token %}
                 <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
 
                     <div class="ui header">
@@ -25,32 +30,39 @@
                     </div>
 
                     <br>
+                    
+                    {{current_date}}
 
+
+                    {% if current_date < mess_reg.end_reg %}
                     <div class="two fields">
                         <div class="field">
-                            <label>From:</label>
-                            <input value="Central Mess #1" class="ui large input" readonly>
-                        </div>
-
-                        <div class="field">
-                            <label>To:</label>
-                            <input value="Central Mess #2" class="ui large input" readonly>
+                            <label>Choose Mess:</label>
+                            <select class="ui search fluid dropdown" name="mess_type" id="mess_type">
+                                    <option value="mess2">Veg Mess</option>
+                                    <option value="mess1">Nonveg Mess</option>
+                            </select>
                         </div>
                     </div>
+                    
 
                     {% comment %}
                         TODO: Make this Optional!
                     {% endcomment %}
                     <div class="field">
                         <label>Reason:</label>
-                        <textarea rows="2"></textarea>
+                        <textarea rows="2" name="reason"></textarea>
                     </div>
 
                     <div class="field">
-                        <button class="ui primary button right floated" type="submit">
+                        <button class="ui primary button right floated" type="submit" name="submit">
                             Submit
                         </button>
                     </div>
+                    {% else %}
+                    Registration Timed Out
+
+                    {% endif %}
                 </div>
             </form>
             {% comment %}Form Tag ends here!{% endcomment %}
@@ -65,7 +77,8 @@
     <div class="ui tab" data-tab="spfood">
         <div class="ui vertical segment">
             {% comment %}Form Tag starts here!{% endcomment %}
-            <form>
+            <form method="post" action="placerequest/">
+                {% csrf_token %}
                 {% comment %}The add a new skill Accordian starts here!{% endcomment %}
                 <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
 
@@ -75,44 +88,44 @@
 
                     <br>
 
-                    <div class="two fields">
+                    
                         <div class="field">
                             <label>Mess:</label>
                             <input value="Central Mess #1" class="ui large input" readonly>
                         </div>
-                    </div>
+                    
 
                     <div class="two fields">
                         <div class="field">
                             <label>Food Item(a):</label>
-                            <input placeholder="Food Item" class="ui large input" readonly>
+                            <input placeholder="Food Item" name="food1" class="ui large input" required="true">
                         </div>
 
                         <div class="field">
                             <label>Food Item(b):</label>
-                            <input placeholder="Food Item" class="ui large input" readonly>
+                            <input placeholder="Food Item" name="food2" class="ui large input" >
                         </div>
                     </div>
 
                     <div class="two fields">
                         <div class="field">
                             <label>From:</label>
-                            <div class="ui calendar" id="rangestart1">
+                            <!-- <div class="ui calendar" id="rangestart1">
                                 <div class="ui input left icon">
-                                    <i class="calendar icon"></i>
-                                    <input type="text" placeholder="From">
-                                </div>
-                            </div>
+                                    <i class="calendar icon"></i> -->
+                                    <input type="date" name="from" placeholder="From" required="true">
+                                <!-- </div>
+                            </div> -->
                         </div>
 
                         <div class="field">
                             <label>To:</label>
-                            <div class="ui calendar" id="rangeend1">
+                            <!-- <div class="ui calendar" id="rangeend1">
                                 <div class="ui input left icon">
-                                    <i class="calendar icon"></i>
-                                    <input type="text" placeholder="To">
-                                </div>
-                            </div>
+                                    <i class="calendar icon"></i> -->
+                                    <input type="date" name="to" placeholder="To" required="true">
+                                <!-- </div>
+                            </div> -->
                         </div>
                     </div>
 
@@ -121,7 +134,7 @@
                     {% endcomment %}
                     <div class="field">
                         <label>Purpose:</label>
-                        <textarea rows="2"></textarea>
+                        <textarea name="purpose" rows="2" required="true"></textarea>
                     </div>
 
                     <div class="field">
@@ -140,4 +153,112 @@
 
         </div>
     </div>
+
+    {% comment %}special food status {% endcomment %}
+        <div class="ui tab" data-tab="spfoodstatus">
+
+            <div class="ui vertical segment" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+
+                <br>
+
+                <div class="content">
+                    <div class="description">
+
+                        <table class="ui very basic collapsing celled large sortable table"
+                               style="padding-left: 2.5%;
+                                                              padding-right: 2.5%;
+                                                              padding-top: 1%;
+                                                              padding-bottom: 1.5%;
+                                                              margin: auto;">
+                            
+                              <thead>
+                              <tr>
+                                  <th>
+                                      App Date
+                                  </th>
+                                  <th>
+                                      StudentID
+                                  </th>
+
+                                  <th>
+                                      Purpose
+                                  </th>
+
+                                  <th>
+                                      From
+                                  </th>
+
+                                  <th>
+                                      To
+                                  </th>
+
+
+                                  <th>
+                                      Status
+                                  </th>
+                              </tr>
+                              </thead>
+
+                              <tbody>
+                                  {% for item in splrequest %}
+                              <tr>
+                                  <td>
+                                      {{item.app_date}}
+                                  </td>
+
+                                  <td>
+                                      <h4 class="ui image header">
+                                          <div class="content">
+                                              {{item.student_id}}
+                                          </div>
+                                      </h4>
+                                  </td>
+
+                                  <td>
+                                      {{item.request}}
+                                  </td>
+
+                                  <td>
+                                      {{item.start_date}}
+                                  </td>
+
+                                  <td>
+                                      {{item.end_date}}
+                                  </td>
+
+
+
+                                  <td>
+                                      {% if item.status == '2' %}
+                                            <i class="large green checkmark icon"></i>
+                                      {% elif item.status == '0' %}
+                                            <i class="large red x icon"></i>
+                                      {% elif item.status == '1' %}
+                                            <i class="large orange warning icon"></i>
+
+                                      {% endif %}
+
+                                  </td>
+                              </tr>
+                              {% endfor %}
+
+                              </tbody>
+                          </table>
+                          <br>
+                      </div>
+                  </div>
+              </div>
+              <br>
+
+              <div class="extra content">
+                  <div class="" style="text-align: center;">
+                      <i class="large green checkmark icon"></i> : Approved &ensp;&ensp;&ensp;&ensp;&ensp;
+                      <i class="large orange warning icon"></i> : Pending &ensp;&ensp;&ensp;&ensp;&ensp;
+                      <i class="large red x icon"></i> : Declined
+                  </div>
+              </div>
+
+            </div>
+
 {% endblock %}

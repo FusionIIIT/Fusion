@@ -1,4 +1,6 @@
+{% extends 'globals/base.html' %}
 {% load static %}
+{% block body %}
 {% block minutes %}
 <div class="ui pointing secondary menu">
     <a class="active item" data-tab="minutes">
@@ -10,59 +12,39 @@
          style="padding-left: 3.5%;
                 padding-right: 3.5%;">
 
-        <form class="ui large form">
-
-            {% comment %} The Minutes form  starts here! {% endcomment %}
-
-            {% comment %}The form row starts here!{% endcomment %}
-
-
-            <div class="two fields">
+        <form class="ui form" method="POST" enctype="multipart/form-data" id="minutes" action="{% url 'mess:minutes' %}">
+            {% csrf_token %}
                 <div class="field">
-                    <label>Date</label>
-                    <div class="ui calendar" id="rangestart">
-                        <div class="ui input left icon">
-                            <i class="calendar icon"></i>
-                            <input type="text" placeholder="date">
+                    <div class="three fields">
+                        {{form.as_p}}
+                        <div class="field">
+                            <label><br></label>
+                            <input type="submit" value="Save" />
                         </div>
                     </div>
-                </div>
-
-
-                <div class="field">
-                    <label>Place</label>
-                    <input placeholder="Central Mess II" type="text">
-                </div>
-            </div>
-            <div class="two fields">
-                <div class="field">
-                    <label>Agenda</label>
-                    <input placeholder="Agenda" type="text">
-                </div>
-                <div class="field">
-                    <label>Minutes</label>
-                    <input placeholder="Minutes" type="file">
-                </div>
-
-            </div>
-           <div class="field">
-                   <label>Description:</label>
-                        <textarea rows="2"></textarea>
-           </div>
-
-             <div class="field">
-                                <label><br></label>
-                                <button class="ui primary right floated button" type="submit">
-                                    Submit
-                                </button>
-
-
-                            </div>
-            <br>
-
+                </div>            
         </form>
         <div class="ui divider"></div>
+
+        <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
+                <thead>
+                <tr>
+                    <th>Meeting Date - Agenda</th>
+                    <th>Minutes</th>
+                </tr>
+                </thead>
+                <tbody>
+                    {% for item in minutes %}
+                <tr>
+                    <td>{{item.meeting_date}}</td>
+                    <td><a href="{{item.mess_minutes.url}}">{{item.mess_minutes}}</a></td>
+                </tr>
+                {% endfor %}
+                </tbody>
+        </table>
+
     </div>
 </div>
 
+{% endblock %}
 {% endblock %}

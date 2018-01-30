@@ -164,7 +164,9 @@ class Spi(models.Model):
 
 class Timetable(models.Model):
     upload_date = models.DateTimeField(auto_now_add=True)
-    time_table = models.FileField(upload_to='documents/%Y/%m/%d')
+    time_table = models.FileField(upload_to='Administrator/academic_information/')
+    year = models.IntegerField(default="2015")
+    programme = models.CharField(max_length=30, default="B.Tech")
 
     class Meta:
         db_table = 'Timetable'
@@ -172,7 +174,9 @@ class Timetable(models.Model):
 
 class Exam_timetable(models.Model):
     upload_date = models.DateField(auto_now_add=True)
-    exam_time_table = models.FileField(upload_to='documents/%Y/%m/%d')
+    exam_time_table = models.FileField(upload_to='Administrator/academic_information/')
+    year = models.IntegerField(default="2015")
+    programme = models.CharField(max_length=30, default="B.Tech")
 
     class Meta:
         db_table = 'Exam_Timetable'

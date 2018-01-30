@@ -1,4 +1,6 @@
+{% extends 'globals/base.html' %}
 {% load static %}
+{% block body %}
 {% block invitation %}
 <div class="ui pointing secondary menu">
     <a class="active item" data-tab="invitation">
@@ -10,7 +12,8 @@
          style="padding-left: 3.5%;
                 padding-right: 3.5%;">
 
-        <form class="ui large form">
+        <form  method="POST" class="ui large form">
+            {% csrf_token %}
 
             {% comment %} The invitation form  starts here! {% endcomment %}
 
@@ -20,28 +23,28 @@
             <div class="two fields">
                 <div class="field">
                     <label>Date</label>
-                    <div class="ui calendar" id="rangestart">
+                    <!-- <div class="ui calendar" id="rangestart">
                         <div class="ui input left icon">
-                            <i class="calendar icon"></i>
-                            <input type="text" placeholder="Date">
-                        </div>
-                    </div>
+                            <i class="calendar icon"></i> -->
+                            <input  name="date" type="date" placeholder="Date" required="true" id="date">
+                        <!-- </div>
+                    </div> -->
                 </div>
 
                 <div class="field">
                     <label>Time</label>
-                    <input type="time">
+                    <input name="time" type="time" required="true" id="time">
                 </div>
 
             </div>
             <div class="two fields">
                 <div class="field">
                     <label>Agenda</label>
-                    <input placeholder="Agenda" type="text">
+                    <input name="agenda" placeholder="Agenda" type="text" required="true" id="agenda">
                 </div>
                  <div class="field">
                     <label>Place</label>
-                                <select class="ui search fluid dropdown">
+                                <select  name="venue" class="ui search fluid dropdown" required="true" id="venue">
                                     <option value="Cm1">Central Mess I</option>
                                     <option value="Cm2">Central Mess II</option>
                                 </select>
@@ -49,24 +52,88 @@
                 </div>
 
             </div>
-           <div class="field">
+            <div class="field">
                    <label>Description:</label>
-                        <textarea rows="2"></textarea>
-           </div>
+                        <textarea name="description" rows="2" required="true" id="description"></textarea>
+            </div>
 
-             <div class="field">
+            <div class="field">
                                 <label><br></label>
-                                <button class="ui primary right floated button" type="submit">
+                                <button class="ui primary right floated button" onclick="return invitation()">
                                     Submit
                                 </button>
 
 
-                            </div>
+            </div>
             <br>
 
         </form>
         <div class="ui divider"></div>
-    </div>
-</div>
 
+        <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
+                <thead>
+                <tr>
+                    <!-- <th>App Date</th> -->
+                    <th>Meeting Date</th>
+                    <th>Venue</th>
+                    <th>Agenda</th>
+                    <th>Time</th>
+                </tr>
+                </thead>
+                <tbody id="invitation_table">
+                    {% for item in meeting %}
+                <tr>
+                    <td>{{item.meet_date}}</td>
+                    <td>{{item.venue}}</td>
+                    <td>{{item.agenda}}</td>
+                    <td>{{item.meeting_time}}</td>
+                </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+    </div>
+    </div>
+
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+
+<script type="text/javascript">
+
+    function invitation(){
+            $.ajax({
+                type: 'POST',
+                url: 'invitation/',
+                dataType: 'json',
+                data: {
+                    'date':$("#date").val(),
+                    'agenda':$("#agenda").val(),
+                    'venue':$("#venue").val(),
+                    'time':$("#time").val()
+                },                
+                success: function(data) {
+                    if(data.status == 1){
+                        alert("Data Inserted Successfully");
+
+                        $("#invitation_table").prepend("<tr><td>"+ $("#date").val() +"</td><td>"+
+                            $("#venue").val() + "</td><td>"+ $("#agenda").val() +"</td><td>"+
+                            $("#time").val(), +"</td></tr>")
+
+                        document.getElementById('date').value="";
+                        document.getElementById('agenda').value="";
+                        document.getElementById('venue').value="";
+                        document.getElementById('time').value="";
+                        document.getElementById('description').value="";
+
+                    }
+                },
+                error: function(data, err) {
+                    alert(err.message);
+                }
+            });
+        return false;
+        }
+
+</script>    
+
+{% endblock %}
 {% endblock %}

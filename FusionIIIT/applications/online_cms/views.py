@@ -67,6 +67,7 @@ def course(request, course_code):
         roll = student.id.id[:4]
         course = Course.objects.filter(course_id=course_code, sem=semester(roll))
         print (course)
+        print ("ERROR.................................")
         instructor = Instructor.objects.get(course_id=course[0])
         videos = CourseVideo.objects.filter(course_id=course[0])
         slides = CourseDocuments.objects.filter(course_id=course[0])
@@ -106,11 +107,15 @@ def course(request, course_code):
                        'Lecturer': lec})
 
     else:
+        print(extrainfo)
         instructor = Instructor.objects.filter(instructor_id=extrainfo)
+        print(instructor)
         for ins in instructor:
             if ins.course_id.course_id == course_code:
                 course = ins.course_id
         lec = 1
+        print("EOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOo")
+        print(course)
         videos = CourseVideo.objects.filter(course_id=course)
         slides = CourseDocuments.objects.filter(course_id=course)
         quiz = Quiz.objects.filter(course_id=course)

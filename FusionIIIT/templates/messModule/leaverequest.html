@@ -1,8 +1,9 @@
+{% extends 'globals/base.html' %}
 {% load static %}
+{% block body %}
 {% block leaveRequest %}
 
     {% comment %}The tab menu starts here!{% endcomment %}
-<div class="ui fluid card">
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="leave">
             Apply for Leave
@@ -17,7 +18,8 @@
         <div class="ui vertical segment">
 
             {% comment %}Form Tag starts here!{% endcomment %}
-            <form>
+            <form method="POST">
+                {% csrf_token %}
                 {% comment %}The add a new skill Accordian starts here!{% endcomment %}
                 <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
 
@@ -30,29 +32,29 @@
                     <div class="two fields">
                         <div class="field">
                             <label>Mess:</label>
-                            <input value="Central Mess #1" class="ui large input" readonly>
+                            <input value={{messinfo.mess_option}} class="ui large input" readonly>
                         </div>
 
                         <div class="two fields">
                             <div class="twelve wide field">
                                 <label>Leave Type:</label>
-                                <select class="ui search fluid dropdown">
+                                <select name="leave_type" class="ui search fluid dropdown" required="true" id="leave_type">
                                     {% comment %}
                                         TODO: A backend code to stop sending of empty values to database (SELECT OPTION)
                                     {% endcomment %}
                                     <option value="">Select</option>
-                                    {% comment %}
-                                        TODO: A backend code to take a minimum of 3 or 4 days for casual leave.
-                                        TODO: /And also backend code to avoid previous date's leave.
-                                    {% endcomment %}
-                                    <option value="Cleanliness">Casual Leave</option>
-                                    <option value="Food">Vacation Leave</option>
+                                    {% if count >= 10 %}
+                                    <option value="" readonly>Casual Leave(not allowed)</option>
+                                    {% else %}
+                                    <option value="casual">Casual Leave(took {{count}} leaves)</option>
+                                    {% endif %}
+                                    <option value="vacation">Vacation Leave</option>
                                 </select>
                             </div>
 
                             <div class="field">
                                 <label><br></label>
-                                <button class="ui primary fluid button" type="submit">
+                                <button class="ui primary fluid button" onclick="return lsrequest()">
                                     Submit
                                 </button>
                             </div>
@@ -62,22 +64,22 @@
                     <div class="two fields">
                         <div class="field">
                             <label>Leave From:</label>
-                            <div class="ui calendar" id="rangestart">
+                            <!-- <div class="ui calendar" id="rangestart">
                                 <div class="ui input left icon">
-                                    <i class="calendar icon"></i>
-                                    <input type="text" placeholder="From">
-                                </div>
-                            </div>
+                                    <i class="calendar icon"></i> -->
+                                    <input name="start_date" type="date" placeholder="From" required="true" id="start_date">
+                                <!-- </div>
+                            </div> -->
                         </div>
 
                         <div class="field">
                             <label>Leave To:</label>
-                            <div class="ui calendar" id="rangeend">
+                            <!-- <div class="ui calendar" id="rangeend">
                                 <div class="ui input left icon">
-                                    <i class="calendar icon"></i>
-                                    <input type="text" placeholder="To">
-                                </div>
-                            </div>
+                                    <i class="calendar icon"></i> -->
+                                    <input name="end_date" type="date" placeholder="To" required="true" id="end_date">
+                                <!-- </div>
+                            </div> -->
                         </div>
                     </div>
 
@@ -87,7 +89,8 @@
                     {% endcomment %}
                     <div class="field">
                         <label>Purpose:</label>
-                        <textarea rows="2"></textarea>
+                        <textarea name="purpose" rows="2" required="true" id="purpose"></textarea>
+                        
                     </div>
 
                 </div>
@@ -118,6 +121,9 @@
                         <thead>
                         <tr>
                             <th>
+                                App_date
+                            </th>
+                            <th>
                                 Student
                             </th>
 
@@ -143,76 +149,52 @@
                         </tr>
                         </thead>
 
-                        <tbody>
+                        {% for item in rebates %}
+                        <tbody id="ls_table">
                         <tr>
+                            <td>
+                                {{item.app_date}}
+                            </td>
                             <td>
                                 <h4 class="ui image header">
                                     <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
                                     <div class="content">
-                                        Zlatan Ibrahimovic
-                                        <div class="sub header">
-                                            King Of Sweden
-                                        </div>
+                                        {{item.student_id}}
                                     </div>
                                 </h4>
                             </td>
 
                             <td>
-                                Vacation
+                                {{item.leave_type}}
                             </td>
 
                             <td>
-                                14 Oct'17
+                                {{item.start_date}}
                             </td>
 
                             <td>
-                                22 Oct'17
+                                {{item.end_date}}
                             </td>
 
                             <td>
-                                1
+                               {{item.duration}}
                             </td>
 
                             <td>
-                                <i class="large green checkmark icon"></i>
+                                {% if item.status == '2' %}
+                                    <i class="large green checkmark icon"></i>
+
+                                {% elif item.status == '1' %}
+                                    <i class="large orange warning icon"></i>
+
+                                {% else %}
+                                    <i class="large red x icon"></i>
+
+                                {% endif %}
                             </td>
                         </tr>
-
-                        <tr>
-                            <td>
-                                <h4 class="ui image header">
-                                    <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
-                                    <div class="content">
-                                        Zlatan Ibrahimovic
-                                        <div class="sub header">
-                                            God Of Manchester
-                                        </div>
-                                    </div>
-                                </h4>
-                            </td>
-
-                            <td>
-                                Casual
-                            </td>
-
-                            <td>
-                                23 Oct'17
-                            </td>
-
-                            <td>
-                                28 Oct'17
-                            </td>
-
-                            <td>
-                                1
-                            </td>
-
-                            <td>
-                                <i class="large green checkmark icon"></i>
-                            </td>
-                        </tr>
-
                         </tbody>
+                        {% endfor %}
                     </table>
                     <br>
                 </div>
@@ -230,5 +212,48 @@
         </div>
 
     </div>
-</div>
+{% endblock %}
 {%  endblock %}
+
+
+{% block javascript %}
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+
+<script>
+        function lsrequest(){
+            $.ajax({
+                type: 'POST',
+                url: 'leave/',
+                dataType: 'json',
+                data: {
+                    'leave_type':$("#leave_type").val(),
+                    'start_date':$("#start_date").val(),
+                    'end_date':$("#end_date").val(),
+                    'purpose':$("#purpose").val()
+                },                
+                success: function(data) {
+                    if(data.status){
+                        alert("Data Inserted Successfully");
+                        
+                        /*$('#ls_table').prepend("<tr><td>"+ $("#leave_type").val()+ "</td><td>"+ 
+                            $("#start_date").val() + "</td><td>" + $("end_date").val()+
+                            "</td><td>"+ $("#purpose").val()+ "</td></tr>")*/
+
+                        document.getElementById('leave_type').value="";
+                        document.getElementById('start_date').value="";
+                        document.getElementById('end_date').value="";
+                        document.getElementById('purpose').value="";
+                        
+                    }
+                },
+                error: function(data, err) {
+                    alert(err.message);
+                }
+            });
+        return false;
+    }
+    
+
+
+</script>
+{% endblock %}

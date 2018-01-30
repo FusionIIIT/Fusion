@@ -15,27 +15,27 @@
            Courses per Semester
         </a>
 
-       
+
     </div>
 
  <div class="ui active tab segment" data-tab="basic">
 
-      
 
-       <form class="ui form" method="post" action="{% url 'academic_information:add_basic_profile' %}" id="form1">
+
+       <form class="ui form" method="post" id="addBasicProfile">
             {% csrf_token %}
             <div class="field">
                  <div class="three fields">
                     <div class="field">
                         <label>Name</label>
-                        <input placeholder="Name" type="text" name="name">
-                           
+                        <input placeholder="Name" type="text" name="name" id="studentName">
+
                     </div>
 
                     <div class="field">
                         <label>Batch</label>
                             <div class="ui fluid search selection dropdown">
-                                    <input type="hidden" name="batch">
+                                    <input type="hidden" name="batch" id="studentBatch">
                                     <i class="dropdown icon"></i>
                                     <div class="default text">Batch</div>
                                     <div class="menu">
@@ -43,16 +43,16 @@
                                         <div class="item" data-value="2015">2015</div>
                                         <div class="item" data-value="2016">2016</div>
                                         <div class="item" data-value="2017">2017</div>
-               
+
                                     </div>
                                 </div>
                     </div>
-                
+
                  <div class="field">
                         <label>Roll No.</label>
-                        <input placeholder="Roll No." type="text" name="roll">
+                        <input placeholder="Roll No." type="text" name="roll" id="studentRollNo">
                     </div>
-                    
+
                 </div>
             </div>
 
@@ -60,14 +60,14 @@
                     <div class="six wide field">
                         <div class="field">
                             <label>Phone Number</label>
-                            <input placeholder="Phone Number" type="text" name="ph">
+                            <input placeholder="Phone Number" type="text" name="ph" id="phoneNo">
                         </div>
                     </div>
                      <div class="six wide field">
                         <div class="field">
                             <label>Programme</label>
                             <div class="ui fluid search selection dropdown">
-                                    <input type="hidden" name="programme">
+                                    <input type="hidden" name="programme" id="studentProgramme">
                                     <i class="dropdown icon"></i>
                                     <div class="default text">Programme</div>
                                     <div class="menu">
@@ -83,16 +83,15 @@
 
                     <div class="four wide field">
                         <label><br></label>
-                        <a href="#" onclick="document.getElementById('form1').submit();">
-                        <div class="ui primary button">Save
+                        <button class="ui primary button" type="submit">
+                            Save
                             <i class="ui save icon right floated"></i>
-                        </div>
-                             </a>
+                        </button>
 
-                    </div> 
+                    </div>
                 </div>
-      
-        </form> 
+
+        </form>
 
          <br> <br>
 
@@ -102,7 +101,7 @@
 
               <div class="row">
                   <div class=" four wide column"></div>
-           
+
                 <div class=" six wide column">
                       <div class="ui loading search">
                           <div class="ui icon input">
@@ -122,7 +121,7 @@
                             <i class="ui search icon right floated"></i>
                         </div>
                     </div>
-               
+
               </div>
 
         </div>
@@ -138,33 +137,27 @@
                 <th class="" style="width: 15%;">Programme</th>
                 <th class="" style="width: 15%;">Mobile Number</th>
                  <th class="" style="width: 10%;">Action</th>
-              
+
             </tr>
             </thead>
 
-            <tbody>
-            <form action="{% url 'academic_information:delete_basic_profile' %}" method="post">
-            {% csrf_token %}
+            <tbody id='basic_profile_list'>
+
             {% for s in student %}
-            <tr>
+            <tr id='student-{{s.id.id}}'>
                 <!--<td><input type="radio" value="{{ s.id }}" name="delete"></input></td>-->
                 <td>{{ s.name }}</td>
-                <td>{{ s.id }}</td>
+                <td>{{ s.id.id }}</td>
                 <td>{{ s.batch }}</td>
                 <td>{{ s.programme }}</td>
                 <td></td>
 
-                <td><button type="submit" value="{{ s.id }}" name="delete"><i class="trash outline icon" style="font-size:1.3vw;color:red;"></i></button></td>
+                <td><a id='remove-student-{{s.id.id}}'><button><i class="trash outline icon" style="font-size:1.3vw;color:red;"></i></button></a></td>
             </tr>
 
             {% endfor %}
             <tr>
-            </form>
-               
-            </tr>
 
-            <tr>
-              
             </tr>
             </tbody>
 
@@ -192,7 +185,7 @@
 
     <div class="ui  tab segment" data-tab="advanced">
 
-      
+
 
        <form class="ui form" method="post" action="{% url 'academic_information:add_advanced_profile' %}" id="form2">
             {% csrf_token %}
@@ -206,9 +199,9 @@
                     <div class="field">
                         <label>Mother's Name</label>
                         <input placeholder="Mother's Name" type="text" name="mother">
-                            
+
                     </div>
-                
+
                  <div class="field">
                         <label>Hall No.</label>
                            <div class="ui fluid search selection dropdown">
@@ -219,12 +212,12 @@
                                         <div class="item" data-value="1">Hall-1</div>
                                         <div class="item" data-value="3">Hall-3</div>
                                         <div class="item" data-value="4">Hall-4</div>
-                     
+
                                     </div>
                                 </div>
                     </div>
-                   
-                    
+
+
                 </div>
             </div>
 
@@ -232,12 +225,12 @@
                    <div class="four wide field">
                         <label>Room No.</label>
                         <input placeholder="Room No" type="text" name="room">
-                            
+
                     </div>
                      <div class="four wide field">
                         <label>Upload  Picture</label>
                         <input placeholder="Upload Picture" type="file" name="dp">
-                            
+
                     </div>
 
                  <div class="four wide field">
@@ -254,13 +247,13 @@
                             <i class="ui save icon right floated"></i>
                         </div>
                         </a>
-                    </div> 
+                    </div>
                 </div>
-        </form> 
+        </form>
 
 
-        <br> <br> 
-        
+        <br> <br>
+
 
              <table class="ui sortable collapsing celled table">
             <thead>
@@ -276,11 +269,12 @@
                 {% csrf_token %}
             {% for s in student %}
               <tr>
+                  <td>{{ forloop.counter }}</td>
                 <td>
                   <h4 class="ui image header">
                     <img src="{% static 'fusion/img/jenny.jpg' %}" class="ui  rounded image">
                     <div class="content">
-                      <div class="sub header">{{ s.id }}
+                      <div class="sub header">{{ s.id.id }}
                     </div>
                   </div>
                 </h4></td>
@@ -306,7 +300,7 @@
 
     <div class="ui tab segment" data-tab="grades">
 
-      
+
 
        <form class="ui form" method="post" action="{% url 'academic_information:add_grade' %}" id="form3">
             {% csrf_token %}
@@ -336,22 +330,22 @@
                                         <div class="item" data-value="6">6th</div>
                                         <div class="item" data-value="7">7th</div>
                                         <div class="item" data-value="8">8th</div>
-               
+
                                     </div>
                                 </div>
-                            
+
                         </div>
-                
+
                  <div class="field">
                         <label>Roll No.</label>
                         <input placeholder="Roll No." type="text" name="roll">
                     </div>
-                    
+
                 </div>
             </div>
 
             <div class="fields">
-                   
+
                      <div class="four wide field">
                         <div class="field">
                             <label>Grade</label>
@@ -378,10 +372,10 @@
                             <i class="ui save icon right floated"></i>
                         </div>
                         </a>
-                    </div> 
+                    </div>
                 </div>
-      
-        </form>  
+
+        </form>
 
            <br> <br>
 
@@ -391,7 +385,7 @@
 
               <div class="row">
                   <div class=" four wide column"></div>
-           
+
                 <div class=" six wide column">
                       <div class="ui loading search">
                           <div class="ui icon input">
@@ -411,7 +405,7 @@
                             <i class="ui search icon right floated"></i>
                         </div>
                     </div>
-               
+
               </div>
 
         </div>
@@ -421,17 +415,20 @@
            <table class="ui fixed single line sortable celled table">
             <thead>
             <tr>
-                <th class="" style="width: 17%;">Roll No.</th>
-                <th class="" style="width: 17%;">Semester</th>
-                <th class="" style="width: 25%;">Course-Id</th>
-                <th class="" style="width: 17%;">Grade</th>
-                <th style="width: 10%;"> Action </th>
+                <th class="" style="width: 17%;">Serial No.</th>
+                <th class="" style="width: 17%;">Roll No</th>
+                <th class="" style="width: 25%;">Semester</th>
+                <th class="" style="width: 17%;">Course Id</th>
+                <th style="width: 10%;"> Grade </th>
 
-              
+
             </tr>
             {% for g in grade %}
+            <form method = "post" action="{% url 'academic_information:delete_grade' %}">
+                {% csrf_token %}
             <tr>
-                <td>{{ g.student_id }}</td>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ g.student_id.id }}</td>
                 <td>{{ g.sem }}</td>
                 <td>{{ g.course_id }}</td>
                 <td>{{ g.grade }}</td>
@@ -471,7 +468,7 @@
 
     <div class="ui tab segment" data-tab="courses">
 
-      
+
 
        <form class="ui form" method="post" action="{% url 'academic_information:add_course' %}" id="form4">
             {% csrf_token %}
@@ -484,7 +481,7 @@
                     </div>
 
                     <div class="field">
-                       
+
                         <label>Course 1  code</label>
                         <select placeholder="Course 1 code" type="text" name="c1">
                              <option value="">----</option>
@@ -495,7 +492,7 @@
                     </div>
 
                      <div class="field">
-                       
+
                         <label>Course 2 code</label>
                         <select placeholder="Course 2 code" type="text" name="c2">
                              <option value="">----</option>
@@ -504,7 +501,7 @@
                             {% endfor %}
                         </select>
                     </div>
-                      
+
                 </div>
             </div>
 
@@ -554,11 +551,11 @@
                             {% endfor %}
                         </select>
                         </div>
-                    </div> 
+                    </div>
                 </div>
 
                   <div class="fields">
-                        
+
                          <div class=" two wide field">
                                  <label><br></label>
                              <a href="#" onclick="document.getElementById('form4').submit();">
@@ -568,12 +565,12 @@
                                 </div>
                              </a>
                             </div>
-                            
-                 
+
+
                   </div>
-      
-        </form>  
-  
+
+        </form>
+
     <br> <br>
 
             <h4 class="ui dividing header">Search A Student By Roll No.</h4>
@@ -582,7 +579,7 @@
 
                           <div class="row">
                               <div class=" four wide column"></div>
-                       
+
                             <div class=" six wide column">
                                   <div class="ui loading search">
                                       <div class="ui icon input">
@@ -602,7 +599,7 @@
                                         <i class="ui search icon right floated"></i>
                                     </div>
                                 </div>
-                           
+
                           </div>
 
                     </div>
@@ -618,7 +615,7 @@
                   <th class="" style="width: 20%;">Roll No.</th>
                 <th class=""  style="width: 50%;">Courses</th>
                 <th style="width: 13%;">Action </th>
-              
+
             </tr>
             </thead>
 
@@ -637,11 +634,11 @@
             </tr>
             {% endfor %}
             <tr>
-               
+
             </tr>
 
             <tr>
-              
+
             </tr>
             </tbody>
 
@@ -666,7 +663,11 @@
 
     </div>
 
+    {% block javascript %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js" type="text/javascript"></script>
+    <script src="{% static 'academic_information/scripts/student.js' %}" type="text/javascript"></script>
 
+   {% endblock %}
 
 
     {% endblock %}
