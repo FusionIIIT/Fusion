@@ -12,7 +12,7 @@ from django.template.loader import render_to_string
 # from applications.academic_procedures.models import Register
 from applications.academic_information.models import Course, Student, Calendar
 from applications.globals.models import (DepartmentInfo, Designation,
-                                         ExtraInfo, Faculty)
+                                         ExtraInfo, Faculty, HoldsDesignation)
 
 from .models import (BranchChange, CoursesMtech, FinalRegistrations, Register,
                      Thesis)
@@ -36,16 +36,21 @@ def academic_procedures(request):
     print(user_details)
     # user_type = Designation.objects.all().filter(name=user_details.designation).first()
     # Academics Admin Check
+
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
-    dep_id = DepartmentInfo.objects.all().filter(name='Academics')
-    acadadmin = ExtraInfo.objects.all().filter(
-                                                user_type='staff',
-                                                designation=desig_id,
-                                                department=dep_id).first()
-    print(str(acadadmin) == str(user_details))
+    print ("yaha se")
+    print (desig_id)
+    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
+    acadadmin = temp.working
+    print (temp.working)
+    k = str(user_details).split()
+    final_user = k[2]
+    print (final_user)
+
+    print (str(acadadmin) == str(final_user))
     # print(acadadmin, user_details)
     # IF user is academic admin
-    if(str(acadadmin) == str(user_details)):
+    if (str(acadadmin) == str(final_user)):
         return HttpResponseRedirect('/aims')
 
     obj1 = Student.objects.all().filter(id=user_details.id)
@@ -53,7 +58,7 @@ def academic_procedures(request):
     count = 0
     for i in obj1:
         count += 1
-    if(count==0):
+    if(count == 0):
             return HttpResponseRedirect('/dashboard')
     pgflag = 0
     for i in obj1:
@@ -397,18 +402,17 @@ def branch_change_request(request):
 
 @login_required(login_url='/accounts/login')
 def acad_person(request):
-
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
-    dep_id = DepartmentInfo.objects.all().filter(name='Academics')
-    acadadmin = ExtraInfo.objects.all().filter(
-                                                user_type='staff',
-                                                designation=desig_id,
-                                                department=dep_id).first()
-    # print(str(acadadmin) != str(user_details))
-    if(str(user_details) != str(acadadmin)):
+    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
+    acadadmin = temp.working
+    k = str(user_details).split()
+    final_user = k[2]
+
+    if (str(acadadmin) != str(final_user)):
         return HttpResponseRedirect('/academic-procedures/')
+
     year = datetime.datetime.now().year
     month = datetime.datetime.now().month
     yearr = str(year) + "-" + str(year+1)
@@ -675,16 +679,18 @@ def student_list(request):
 
 
 def acad_branch_change(request):
+
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
-    dep_id = DepartmentInfo.objects.all().filter(name='Academics')
-    acadadmin = ExtraInfo.objects.all().filter(user_type='staff',
-                                               designation=desig_id,
-                                               department=dep_id).first()
-    # print(str(acadadmin) != str(user_details))
-    if(str(user_details) != str(acadadmin)):
+    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
+    acadadmin = temp.working
+    k = str(user_details).split()
+    final_user = k[2]
+
+    if (str(acadadmin) != str(final_user)):
         return HttpResponseRedirect('/academic-procedures/')
+
     year = datetime.datetime.now().year
     month = datetime.datetime.now().month
     yearr = str(year) + "-" + str(year+1)

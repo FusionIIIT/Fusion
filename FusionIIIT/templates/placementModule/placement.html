@@ -34,7 +34,8 @@
             {% comment %}The Tab-Menu starts here!{% endcomment %}
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
-                 {% if profile.designation.name == 'student' %}
+                 {% for c in current %}
+                 {% if c.designation.name == 'student' %}
                 <a class="active item" data-tab="first">
                     Profile
                     <i class="right floated chevron right icon"></i>
@@ -65,8 +66,10 @@
                     <i class="right floated chevron right icon"></i>
                 </a>
                 {% endif %}
+                {% endfor %}
 
-                {% if profile.designation.name == 'placement chairman' or profile.designation.name == 'placement officer' %}
+                {% for c in current2 %}
+                {% if c.designation.name == 'placement officer' %}
                 <a class="active item" data-tab="ninth">
                     Student Records
                     <i class="right floated chevron right icon"></i>
@@ -77,13 +80,25 @@
                     <i class="right floated chevron right icon"></i>
                 </a>
                 {% endif %}
+                {% endfor %}
 
-                {% if profile.designation.name == 'placement chairman' %}
+                {% for c in current1 %}
+                {% if c.designation.name == 'placement chairman' %}
+                <a class="active item" data-tab="ninth">
+                    Student Records
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="tenth">
+                    Manage Records
+                    <i class="right floated chevron right icon"></i>
+                </a>
                 <a class="item" data-tab="seventh">
                     Placement Visits
                     <i class="right floated chevron right icon"></i>
                 </a>
                 {% endif %}
+                {% endfor %}
                 <a class="item" data-tab="eighth">
                     Placement Statistics
                     <i class="right floated chevron right icon"></i>
@@ -103,7 +118,8 @@
             The central-rail segment starts here!
         {% endcomment %}
         <div class="eight wide column">
-          {% if profile.designation.name == 'student' %}
+          {% for c in current %}
+          {% if c.designation.name == 'student' %}
             {% comment %}The Details start here!{% endcomment %}
             <div class="ui active tab segment" data-tab="first">
                 {% block profile %}
@@ -153,8 +169,11 @@
             </div>
             {% comment %}The Achievements tab ends here!{% endcomment %}
             {% endif %}
+            {% endfor %}
 
-            {% if profile.designation.name == 'placement chairman' %}
+
+            {% for c in current1 %}
+            {% if c.designation.name == 'placement chairman' %}
             {% comment %}The Placement Visits tab starts here!{% endcomment %}
             <div class="ui tab segment" data-tab="seventh">
                 {% block placementvisits %}
@@ -163,6 +182,7 @@
             </div>
             {% comment %}The Placement Visits tab ends here!{% endcomment %}
             {% endif %}
+            {% endfor %}
 
             {% comment %}The Placement Statistics tab starts here!{% endcomment %}
             <div class="ui tab segment" data-tab="eighth">
@@ -172,7 +192,8 @@
             </div>
             {% comment %}The Placement Visits tab ends here!{% endcomment %}
 
-            {% if profile.designation.name == 'placement chairman' or profile.designation.name == 'placement officer' %}
+
+            {% if current == None %}
             {% comment %}The Placement Statistics tab starts here!{% endcomment %}
             <div class="ui active tab segment" data-tab="ninth">
                 {% block studentrecords %}
@@ -192,7 +213,8 @@
         </div>
         {% comment %}The central-rail segment ends here!{% endcomment %}
 
-        {% if profile.designation.name == 'student' %}
+        {% for c in current %}
+        {% if c.designation.name == 'student' %}
         {% comment %}The right-rail segment starts here!{% endcomment %}
         <div class="three wide column">
             <div class="row">
@@ -269,6 +291,7 @@
 
         {% comment %}The right-rail segment ends here!{% endcomment %}
         {% endif %}
+        {% endfor %}
         {% comment %}The right-margin segment!{% endcomment %}
         <div class="column"></div>
 

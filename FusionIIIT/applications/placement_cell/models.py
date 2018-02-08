@@ -41,10 +41,10 @@ class Constants:
 
 class Project(models.Model):
     unique_id = models.ForeignKey(Student, on_delete=models.CASCADE)
-    project_name = models.CharField(max_length=100, default='')
+    project_name = models.CharField(max_length=50, default='')
     project_status = models.CharField(max_length=20, choices=Constants.RESUME_TYPE,
                                       default='COMPLETED')
-    summary = models.CharField(max_length=10000, default='', null=True, blank=True)
+    summary = models.CharField(max_length=1000, default='', null=True, blank=True)
     project_link = models.CharField(max_length=200, default='', null=True, blank=True)
     sdate = models.DateField(_("Date"), default=datetime.date.today)
     edate = models.DateField(null=True, blank=True)

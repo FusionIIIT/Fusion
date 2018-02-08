@@ -1,13 +1,12 @@
 {% load static %}
 
 {% block interviewrequest %}
-
     {% if placementstatus %}
     <div class="ui cards">
-
         {% for ps in placementstatus %}
         {% if ps.invitation == 'PENDING' or ps.invitation == 'Pending' %}
         {% if ps.placed == 'Not Placed' or ps.placed == 'NOT PLACED' %}
+
         <div class="ui fluid card">
             <div class="content">
                 <div class="header">

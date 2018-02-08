@@ -1,0 +1,123 @@
+{% load static %}
+{% block mcm %}
+
+{% comment %}The tab menu starts here!{% endcomment %}
+<div class="ui pointing secondary fluid menu">
+    <a class="active item" data-tab="mcm">
+        MCM Form
+    </a>
+
+    <a class="right floated item" href="http://site.iiitdmj.ac.in/IIITDM/SPACS-fellowships.pdf" download>
+        <button name="Download" class="ui primary button">
+            Download
+            <i class="right floated download icon"></i>
+        </button>
+    </a>
+</div>
+
+<div class="ui active tab" data-tab="mcm">
+    <div class="ui vertical segment">
+        <form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;" enctype="multipart/form-data">
+            {% csrf_token %}  
+            <div class="two fields">
+                <div class="eight wide field ">
+                    <label>Father Occupation</label>
+                    <select class="ui fluid search large dropdown" name="father_occ" >
+                            <option selected hidden>Select</option>
+                            {% for p,v in source %}
+                            <option value="{{p}}">{{v}}</option>
+                            {% endfor %}
+
+                        </select>
+                </div>
+                <div class="eight wide field ">
+                    <label>Mother Occupation</label>
+                    <select class="ui fluid search large dropdown" name="mother_occ" >
+                            <option selected hidden>Select</option>
+                            {% for p,v in mother_occ %}
+                            <option value="{{p}}">{{v}}</option>
+                            {% endfor %}
+
+                    </select>
+                </div>
+            </div>
+            <div class="two fields">
+                <div class="eight wide field ">
+                    <label>Brother's name</label>
+                    <div class="ui large input">
+                        <input placeholder="Brother's Name" name="brother_name" type="text">
+                    </div>
+                </div>
+                <div class="eight wide field ">
+                    <label>Brother's Occupation</label>
+                    <div class="ui large input">
+                        <input placeholder="Brother occupation" name="brother_occupation" type="text">
+                    </div>
+                </div>
+            </div>
+            <div class="two fields">
+                <div class="eight wide field ">
+                    <label>Sisters's Name</label>
+                    <div class="ui large input">
+                        <input placeholder="Sister's Name"  name="sister_name" type="text">
+                    </div>
+                </div>
+                <div class="eight wide field ">
+                    <label>Sisters's Occupation</label>
+                    <div class="ui large input">
+                        <input placeholder="Sister's occupation" name="sister_occupation" type="text">
+                    </div>
+                </div>
+            </div>
+            <div class="three fields">
+                <div class=" field">
+                    <label>Father's Annual Income</label>
+                    <div class="ui large input">
+                        <input placeholder=" Income" name="father_income" type="number">
+                    </div>
+                </div>
+                <div class=" field">
+                    <label>Mother's Annual Income</label>
+                    <div class="ui large input">
+                        <input placeholder="Income" name="mother_income" type="number">
+                    </div>
+                </div>
+               
+                <div class=" field">
+                    <label>Other sources Annual Income</label>
+                    <div class="ui large input">
+                        <input placeholder="Income" name="other_income" type="number">
+                    </div>
+                </div>
+                     
+            </div>
+            
+					<div class="two fields">
+                            <div class="field">
+                                    <a class="right floated item">
+                                   <label><br></label>               
+                                   <div class="seven wide field">
+                                       <label>Upload file</label>
+                                       <div class="ui fluid input">
+                                           <input type="file" name="myfile">
+                                       </div>
+                                   </div>
+                               </div>
+                        <div class="field">
+						  <a class="right floated item">
+									<label><br></label>
+									<button type="submit" name="Submit_mcm" class="ui primary large right floated button">
+										Submit
+									</button>
+                            </a>
+                        </div>
+                    </div>
+            </form>
+
+            </div>
+
+        
+    </div>
+
+{% endblock %}
+

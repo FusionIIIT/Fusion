@@ -1,0 +1,186 @@
+{% load static %}
+{% block lodgecomplaint %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="add">
+            ADD
+        </a>
+        <a class="item" data-tab="remove">
+            REMOVE
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="add">
+        <div class="ui vertical segment">
+            <form class="ui form" style="padding-left: 24px; padding-right: 24px;" method="post"
+                  action=".">
+                {% csrf_token %}
+                <div class="ui header">
+                    Add a new worker:
+                </div>
+
+                <br>
+
+                <div class="fields">
+
+                    <div class="eight wide field">
+                        <label>Workers Type</label>
+                        <div class="ui fluid search selection dropdown">
+                            <input name="complaint_type" type="hidden">
+                            <i class="dropdown icon"></i>
+
+                            <div class="default text">Select Worker Type</div>
+
+                            <div class="menu" >
+                                <div class="item" data-value="Electricity" >
+                                    Electricity
+                                </div>
+
+                                <div class="item" data-value="carpenter" >
+                                    Carpenter
+                                </div>
+
+                                <div class="item" data-value="plumber">
+                                    Plumber
+                                </div>
+                                <div class="item" data-value="garbage" >
+                                    Garbage
+                                </div>
+                                <div class="item" data-value="dustbin" >
+                                    Dustbin
+                                </div>
+                                <div class="item" data-value="internet" >
+                                    Internet
+                                </div>
+                                <div class="item" data-value="other" >
+                                    Other
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+
+                </div>
+
+                <div class="field">
+                    <label>Name </label>
+                    <div class="ui large input">
+                        <input placeholder="NAME" name="name">
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>Phone NO </label>
+                    <textarea rows="1" name="phone_no" PLACEHOLDER="PHONE NO"></textarea>
+                </div>
+                <div class="field">
+                    <label>AGE  </label>
+                    <textarea rows="1" name="age" ></textarea>
+                </div>
+
+                <br>
+
+                <button class="ui large primary button right floated">
+                    Submit
+                </button>
+
+                <br>
+                <br>
+
+            </form>
+
+            <br>
+            <div class="ui divider"></div>
+        </div>
+    </div>
+
+
+    <div class="ui tab" data-tab="remove">
+        <div class="ui vertical segment">
+                <div class="ui header">
+                    Remove Workers :
+                </div>
+                    These Worker present under Caretaker :   <b>{{ request.user.first_name}}
+                                                             {{ request.user.last_name}}</b>
+                <br>
+                <table class="ui very basic collapsing celled sortable table"
+                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                <thead>
+                <tr>
+                    <th>
+                        ID
+                    </th>
+                    <th>
+                        Name
+                    </th>
+                    <th>
+                        Worker Type
+                    </th>
+                    <th>
+                        Complaint Assign
+                    </th>
+
+
+                </tr>
+                </thead>
+
+
+
+                <tbody>
+
+                {% for a in complaint_assign_no %}
+                    <tr>
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                            <div class="content">
+                                {{ a.id }}
+                                <div class="sub header">
+
+                                </div>
+                            </div>
+                        </h4>
+                    </td>
+
+                    <td>
+                        {{ a.name }}
+                    </td>
+
+                    <td>
+                        {{ a.worker_type }}
+                    <td>
+                        {{ a.total_complaint }}
+                    </td>
+
+                    <td>
+                        {% if a.total_complaint == 0 %}
+                            <a href="./removew/{{ a.id }}"><button class="ui basic button">Delete</button></a>
+                        {% else %}
+                            <button class="ui disabled button">Delete</button>
+                        {% endif %}
+                    </td>
+                {% endfor %}
+                </tr>
+
+
+
+
+                </tbody>
+
+
+
+            </table>
+
+
+
+            <div class="ui divider"></div>
+        </div>
+    </div>
+
+{% endblock %}

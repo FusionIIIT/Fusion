@@ -67,7 +67,7 @@ class AddExperience(forms.Form):
 
 class AddProject(forms.Form):
 
-    project_name = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
+    project_name = forms.CharField(widget=forms.TextInput(attrs={'max_length': 50,
                                                                  'class': 'field'}),
                                    label="title")
     project_status = forms.ChoiceField(choices = Constants.RESUME_TYPE, label="project_status",

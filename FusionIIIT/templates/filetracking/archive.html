@@ -1,0 +1,37 @@
+{% extends 'filetracking/filetracking.html' %}
+{% load static %}
+
+{% block filetracking_tab %}
+    <div class="ui pointing secondary menu">
+        <h3>
+            <a class="active item" data-tab="archive">
+            Archive
+            </a>
+        </h3>
+
+    </div>
+
+    <div class="ui divider"></div>
+
+    <table class="ui very basic celled sortable table">
+        <thead>
+        <tr>
+            <th>From</th>
+            <th>File ID</th>
+            <th>Title</th>
+            <th>Date</th>
+            <th>Download File</th>
+            <th>View File</th>
+        </tr>
+        </thead>
+
+        <tbody>
+
+
+        </tbody>
+
+    </table>
+
+    <br>
+
+{% endblock %}

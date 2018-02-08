@@ -157,7 +157,7 @@ def course(request, course_code):
 @login_required
 def upload_assignment(request, course_code):
     extrainfo = ExtraInfo.objects.get(user=request.user)
-    if extrainfo.designation.name == "student":
+    if extrainfo.user_type == "student":
         student = Student.objects.get(id=extrainfo)
 #        roll = student.id.id[:4]
 #        course = Course.objects.filter(course_id=course_code, sem=semester(roll))
@@ -197,7 +197,7 @@ def upload_assignment(request, course_code):
 def add_document(request, course_code):
     #    CHECK FOR ERRORS IN UPLOADING
     extrainfo = ExtraInfo.objects.get(user=request.user)
-    if extrainfo.designation.name == "faculty":
+    if extrainfo.user_type == "faculty":
         instructor = Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.course_id.course_id == course_code:
@@ -238,8 +238,7 @@ def add_videos(request, course_code):
 
     # CHECK FOR ERRORS IN UPLOADING
     extrainfo = ExtraInfo.objects.get(user=request.user)
-    print(extrainfo.designation)
-    if extrainfo.designation.name == "faculty":
+    if extrainfo.user_type == "faculty":
         instructor = Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.course_id.course_id == course_code:
@@ -281,7 +280,7 @@ def add_videos(request, course_code):
 def forum(request, course_code):
     # take care of sem
     extrainfo = ExtraInfo.objects.get(user=request.user)
-    if extrainfo.designation.name == "student":
+    if extrainfo.user_type == "student":
         student = Student.objects.get(id=extrainfo)
         roll = student.id.id[:4]
         course = Course.objects.get(course_id=course_code, sem=semester(roll))
@@ -310,7 +309,7 @@ def forum(request, course_code):
 @login_required
 def ajax_reply(request, course_code):
     extrainfo = ExtraInfo.objects.get(user=request.user)
-    if extrainfo.designation.name == "student":
+    if extrainfo.user_type == "student":
         student = Student.objects.get(id=extrainfo)
         roll = student.id.id[:4]
         course = Course.objects.get(course_id=course_code, sem=semester(roll))
@@ -341,7 +340,7 @@ def ajax_reply(request, course_code):
 @login_required
 def ajax_new(request, course_code):
     extrainfo = ExtraInfo.objects.get(user=request.user)
-    if extrainfo.designation.name == "student":
+    if extrainfo.user_type == "student":
         student = Student.objects.get(id=extrainfo)
         roll = student.id.id[:4]
         course = Course.objects.get(course_id=course_code, sem=semester(roll))
@@ -388,23 +387,12 @@ def ajax_remove(request, course_code):
         f.delete()
     data = {'message': 'deleted'}
     return HttpResponse(json.dumps(data), content_type='application/json')
-#    extrainfo = ExtraInfo.objects.get(user=request.user)
-#    if extrainfo.designation.name == "student":
-#        student = Student.objects.get(id=extrainfo)
-#        roll = student.id.id[:4]
-#        course = Course.objects.get(course_id=course_code, sem=semester(roll))
-#    else:
-#        instructor = Instructor.objects.filter(instructor_id=extrainfo)
-#        for ins in instructor:
-#            if ins.course_id.course_id == course_code:
-#                course = ins.course_id
-
 
 @login_required
 def add_assignment(request, course_code):
     #    CHECK FOR ERRORS IN UPLOADING
     extrainfo = ExtraInfo.objects.get(user=request.user)
-    if extrainfo.designation.name == "faculty":
+    if extrainfo.user_type == "faculty":
         instructor = Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.course_id.course_id == course_code:

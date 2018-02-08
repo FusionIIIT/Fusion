@@ -18,7 +18,7 @@ from wsgiref.util import FileWrapper
 from xhtml2pdf import pisa
 
 from applications.academic_information.models import Student
-from applications.globals.models import ExtraInfo, DepartmentInfo
+from applications.globals.models import ExtraInfo, DepartmentInfo, HoldsDesignation
 
 from .forms import (AddEducation, AddProfile, AddSkill, AddCourse, AddAchievement, AddProject,
                     AddPublication, AddPatent, AddExperience, AddChairmanVisit,
@@ -206,7 +206,8 @@ def placement(request):
         placementrecord = StudentRecord.objects.all()
         pbirecord = StudentRecord.objects.all()
         higherrecord = StudentRecord.objects.all()
-    if profile.designation.name == 'student':
+    current = HoldsDesignation.objects.filter(Q(working=user, designation__name="student"))
+    if current:
         student = get_object_or_404(Student, Q(id=profile.id))
         if request.method == 'POST':
             if 'studentapprovesubmit' in request.POST:
@@ -232,14 +233,22 @@ def placement(request):
                 address = request.POST.get('address')
                 contact = request.POST.get('contact')
                 fut = request.POST.get('fut')
-                futu = request.POST.get('futu')
+                # futu = request.POST.get('futu')
                 studentplacement_obj = StudentPlacement.objects.get(unique_id=profile.id)
-                if studentplacement_obj.future_aspect == "HIGHER STUDIES":
-                    if fut != 1:
-                        studentplacement_obj.future_aspect = "PLACEMENT"
-                elif studentplacement_obj.future_aspect == "PLACEMENT":
-                    if futu != 2:
-                        studentplacement_obj.future_aspect = "HIGHER STUDIES"
+                # print(studentplacement_obj.future_aspect)
+                # print('fut=', fut)
+                # print('futu=', futu)
+                # if studentplacement_obj.future_aspect == "HIGHER STUDIES":
+                #     if futu == 2:
+                #         studentplacement_obj.future_aspect = "PLACEMENT"
+                # elif studentplacement_obj.future_aspect == "PLACEMENT":
+                #     if futu == None:
+                #         studentplacement_obj.future_aspect = "HIGHER STUDIES"
+                if(fut==None):
+                    studentplacement_obj.future_aspect="HIGHER STUDIES"
+                else:
+                    studentplacement_obj.future_aspect = "PLACEMENT"
+
                 studentplacement_obj.save()
                 extrainfo_obj = ExtraInfo.objects.get(user=user)
                 extrainfo_obj.about_me = about_me
@@ -407,289 +416,280 @@ def placement(request):
                    'placementstatus':placementstatus, 'studentrecord':studentrecord,
                    'placementrecord':placementrecord, 'higherrecord':higherrecord, 'years':years,
                    'pbirecord':pbirecord, 'form10':form10, 'form11':form11, 'form12':form12,
-                   'records':records}
+                   'records':records, 'current':current}
         return render(request, "placementModule/placement.html", context)
-    elif profile.designation.name == "placement chairman" or profile.designation.name == 'placement officer':
-        if request.method == 'POST':
-            if 'visitsubmit' in request.POST:
-                form = AddChairmanVisit(request.POST)
-                if form.is_valid():
-                    company_name = form.cleaned_data['company_name']
-                    location = form.cleaned_data['location']
-                    description = form.cleaned_data['description']
-                    visiting_date = form.cleaned_data['visiting_date']
-                    visit_obj = ChairmanVisit.objects.create(company_name=company_name,
-                                                             location=location,
-                                                             description=description,
-                                                             visiting_date=visiting_date,
-                                                             timestamp=timezone.now())
-                    visit_obj.save()
-            if 'deleterecord' in request.POST:
-                rid = request.POST['deleterecord']
-                sr = StudentRecord.objects.get(Q(pk=rid))
-                sr.delete()
-            if 'deletevisit' in request.POST:
-                rid = request.POST['deletevisit']
-                sr = ChairmanVisit.objects.get(Q(pk=rid))
-                sr.delete()
-            if 'deleteinvite' in request.POST:
-                rid = request.POST['deleteinvite']
-                sr = PlacementStatus.objects.get(Q(pk=rid))
-                sr.delete()
-            if 'schedulesubmit' in request.POST:
-                form5 = AddSchedule(request.POST)
-                if form5.is_valid():
-                    company_name = form5.cleaned_data['company_name']
-                    placement_date = form5.cleaned_data['placement_date']
-                    location = form5.cleaned_data['location']
-                    ctc = form5.cleaned_data['ctc']
-                    time = form5.cleaned_data['time']
-                    placement_type = form5.cleaned_data['placement_type']
-                    description = form5.cleaned_data['description']
-                    notify = NotifyStudent.objects.create(placement_type=placement_type,
-                                                          company_name=company_name,
-                                                          description=description,
-                                                          ctc=ctc,
-                                                          timestamp=timezone.now())
-                    schedule = PlacementSchedule.objects.create(notify_id=notify,
-                                                                title=company_name,
-                                                                description=description,
-                                                                placement_date=placement_date,
-                                                                location=location, time=time)
-                    if 'q' not in request.session:
-                        stud = Student.objects.all()
-                    else:
-                        q = request.session['q']
-                        p = []
-                        for w in q:
-                            p.append(w['id_id'])
-                            stud = Student.objects.filter(Q(id__in=p))
-                    for student in stud:
-                        status = PlacementStatus.objects.create(notify_id=notify,
-                                                                unique_id=student,
-                                                                timestamp=timezone.now())
-                        status.save()
-                    notify.save()
-                    schedule.save()
-            if 'recordsubmit' in request.POST:
-                form1 = SearchStudentRecord(request.POST)
-                if form1.is_valid():
-                    if form1.cleaned_data['name']:
-                        name = form1.cleaned_data['name']
-                    else:
-                        name = ''
-                    if form1.cleaned_data['rollno']:
-                        rollno = form1.cleaned_data['rollno']
-                    else:
-                        rollno = ''
-                    programme = form1.cleaned_data['programme']
-                    if form1.cleaned_data['department']:
-                        department = form1.cleaned_data['department']
-                    else:
-                        department = ''
-                    if form1.cleaned_data['cpi']:
-                        cpi = form1.cleaned_data['cpi']
-                    else:
-                        cpi = 0
-                    debar = form1.cleaned_data['debar']
-                    placed_type = form1.cleaned_data['placed_type']
-                    skill = form1.cleaned_data['skill']
-                    q2 = []
-                    skill = skill.values_list('skill', flat=True)
-                    for sk in skill:
-                        q2.extend(list(Skill.objects.filter(skill=sk)))
-                    q1 = Has.objects.all()
-                    q3 = Student.objects.all()
-                    for ski in q2:
-                        q5 = []
-                        q4 = Has.objects.filter(Q(skill_id=ski)).values_list('unique_id', flat=True)
-                        q5.extend(list(q4))
-                        q3 = q3.objects.filter(Q(id__in=ExtraInfo.objects.filter(Q(id__in=q4))))
-                    searchdepartment=""
-                    if(department):
-                        data = str(department).split()
-                        searchdepartment = data[1]
-                    students = Student.objects.filter(Q(id__in=ExtraInfo.objects.filter
-                                                        (Q(user__in=User.objects.filter
-                                                           (Q(first_name__icontains=name)),
-                                                           department__in=DepartmentInfo.objects.filter
-                                                           (Q(name__icontains=searchdepartment)),
-                                                           id__icontains=rollno
-                                                          )),
-                                                        programme=programme,
-                                                        cpi__gte=cpi)).filter(Q(pk__in=StudentPlacement.objects.filter(Q(debar=debar, placed_type=placed_type)).values('unique_id_id')))
-            else:
-                students = Student.objects.all()
-                if 'getcvsubmit' in request.POST:
-                    ee =[]
+    current1 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement chairman"))
+    current2 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement officer"))
+    if request.method == 'POST':
+        if 'visitsubmit' in request.POST:
+            form = AddChairmanVisit(request.POST)
+            if form.is_valid():
+                company_name = form.cleaned_data['company_name']
+                location = form.cleaned_data['location']
+                description = form.cleaned_data['description']
+                visiting_date = form.cleaned_data['visiting_date']
+                visit_obj = ChairmanVisit.objects.create(company_name=company_name,
+                                                         location=location,
+                                                         description=description,
+                                                         visiting_date=visiting_date,
+                                                         timestamp=timezone.now())
+                visit_obj.save()
+        if 'deleterecord' in request.POST:
+            rid = request.POST['deleterecord']
+            sr = StudentRecord.objects.get(Q(pk=rid))
+            sr.delete()
+        if 'deletevisit' in request.POST:
+            rid = request.POST['deletevisit']
+            sr = ChairmanVisit.objects.get(Q(pk=rid))
+            sr.delete()
+        if 'deleteinvite' in request.POST:
+            rid = request.POST['deleteinvite']
+            sr = PlacementStatus.objects.get(Q(pk=rid))
+            sr.delete()
+        if 'schedulesubmit' in request.POST:
+            form5 = AddSchedule(request.POST)
+            if form5.is_valid():
+                company_name = form5.cleaned_data['company_name']
+                placement_date = form5.cleaned_data['placement_date']
+                location = form5.cleaned_data['location']
+                ctc = form5.cleaned_data['ctc']
+                time = form5.cleaned_data['time']
+                placement_type = form5.cleaned_data['placement_type']
+                description = form5.cleaned_data['description']
+                notify = NotifyStudent.objects.create(placement_type=placement_type,
+                                                      company_name=company_name,
+                                                      description=description,
+                                                      ctc=ctc,
+                                                      timestamp=timezone.now())
+                schedule = PlacementSchedule.objects.create(notify_id=notify,
+                                                            title=company_name,
+                                                            description=description,
+                                                            placement_date=placement_date,
+                                                            location=location, time=time)
+                if 'q' not in request.session:
+                    stud = Student.objects.all()
                 else:
-                    if 'debar' in request.POST:
-                        spid = request.POST['debar']
-                        sr = StudentPlacement.objects.get(Q(pk=spid))
-                        sr.debar = "DEBAR"
-                        sr.save()
-                    if 'undebar' in request.POST:
-                        spid = request.POST['undebar']
-                        sr = StudentPlacement.objects.get(Q(pk=spid))
-                        sr.debar = "NOT DEBAR"
-                        sr.save()
-            qq = students.values('id_id')
-            q = list(qq)
-            #for t in qq:
-            #    q.extend(t['id_id'])
-            request.session['q'] = q
-            if 'getcvsubmit' in request.POST:
-                form1 = SearchStudentRecord(request.POST)
-                if form1.is_valid():
-                    if form1.cleaned_data['name']:
-                        name = form1.cleaned_data['name']
-                    else:
-                        name = ''
-                    if form1.cleaned_data['rollno']:
-                        rollno = form1.cleaned_data['rollno']
-                    else:
-                        rollno = ''
-                    programme = form1.cleaned_data['programme']
-                    if form1.cleaned_data['department']:
-                        department = form1.cleaned_data['department']
-                    else:
-                        department = ''
-                    if form1.cleaned_data['cpi']:
-                        cpi = form1.cleaned_data['cpi']
-                    else:
-                        cpi = 0
-                    debar = form1.cleaned_data['debar']
-                    skill = form1.cleaned_data['skill']
-                    placed_type = form1.cleaned_data['placed_type']
-                    searchdepartment=""
-                    if(department):
-                        data = str(department).split()
-                        searchdepartment = data[1]
-                    students = Student.objects.filter(Q(id__in=ExtraInfo.objects.filter
-                                                        (Q(user__in=User.objects.filter
-                                                           (Q(first_name__icontains=name)),
-                                                           department__in=DepartmentInfo.objects.filter
-                                                           (Q(name__icontains=searchdepartment)),
-                                                           id__icontains=rollno
-                                                          )),
-                                                        programme=programme,
-                                                        cpi__gte=cpi)).filter(Q(pk__in=StudentPlacement.objects.filter(Q(debar=debar, placed_type=placed_type)).values('unique_id_id')))
-                    achievementcheck = request.POST.get('achievementcheck')
-                    educationcheck = request.POST.get('educationcheck')
-                    publicationcheck = request.POST.get('publicationcheck')
-                    patentcheck = request.POST.get('patentcheck')
-                    internshipcheck = request.POST.get('internshipcheck')
-                    projectcheck = request.POST.get('projectcheck')
-                    coursecheck = request.POST.get('coursecheck')
-                    skillcheck = request.POST.get('skillcheck')
-                    folder = 'media/placement_cell/'
-                    for the_file in os.listdir(folder):
-                        file_path = os.path.join(folder, the_file)
-                        if os.path.isfile(file_path):
-                            os.unlink(file_path)
-                    for student in students:
-                        profile1 = get_object_or_404(ExtraInfo, Q(pk=student.id.pk))
-                        user1 = get_object_or_404(User, Q(pk=profile1.user.pk))
-                        studentplacement = get_object_or_404(StudentPlacement, Q(unique_id=student))
-                        skills = Has.objects.filter(Q(unique_id=student))
-                        education = Education.objects.filter(Q(unique_id=student))
-                        course = Course.objects.filter(Q(unique_id=student))
-                        experience = Experience.objects.filter(Q(unique_id=student))
-                        project = Project.objects.filter(Q(unique_id=student))
-                        achievement = Achievement.objects.filter(Q(unique_id=student))
-                        publication = Publication.objects.filter(Q(unique_id=student))
-                        patent = Patent.objects.filter(Q(unique_id=student))
-                        render_to_pdf1('placementModule/cv.html',
-                                             {'pagesize': 'A4', 'user': user1, 'profile': profile1,
-                                              'projects': project, 'student': studentplacement,
-                                              'skills': skills, 'educations': education,
-                                              'courses': course, 'experiences': experience,
-                                              'achievements': achievement, 'records':records,
-                                              'publications': publication, 'patents': patent,
-                                              'achievementcheck': achievementcheck,
-                                              'educationcheck': educationcheck,
-                                              'publicationcheck': publicationcheck,
-                                              'patentcheck': patentcheck, 'skillcheck': skillcheck,
-                                              'internshipcheck': internshipcheck,
-                                              'projectcheck': projectcheck,
-                                              'coursecheck': coursecheck})
-                    #download({'students': students})
-            if 'studenthigheraddsubmit' in request.POST:
-                form = SearchHigherRecord(request.POST)
-                if form.is_valid():
-                    rollno = form.cleaned_data['roll']
-                    uname = form.cleaned_data['uname']
-                    test_score = form.cleaned_data['test_score']
-                    test_type = form.cleaned_data['test_type']
-                    year = form.cleaned_data['year']
-                    placementr = PlacementRecord.objects.create(year=year, name=uname,
-                                                                      placement_type="HIGHER STUDIES",
-                                                                      test_type=test_type,
-                                                                      test_score=test_score)
-                    studentr = StudentRecord.objects.create(record_id=placementr,
-                                                                 unique_id=Student.objects.get
-                                                                 ((Q(id=ExtraInfo.objects.get
-                                                                     (Q(id=rollno))))))
-                    studentr.save()
-                    placementr.save()
-            if 'studentpbiaddsubmit' in request.POST:
-                form = SearchPbiRecord(request.POST)
-                if form.is_valid():
-                    rollno = form.cleaned_data['roll']
-                    ctc = form.cleaned_data['ctc']
-                    year = form.cleaned_data['year']
-                    cname = form.cleaned_data['cname']
-                    placementr = PlacementRecord.objects.create(year=year, ctc=ctc,
-                                                                      placement_type="PBI",
-                                                                      name=cname)
-                    studentr = StudentRecord.objects.create(record_id=placementr,
-                                                                 unique_id=Student.objects.get
-                                                                 ((Q(id=ExtraInfo.objects.get
-                                                                     (Q(id=rollno))))))
-                    studentr.save()
-                    placementr.save()
-            if 'studentplacementaddsubmit' in request.POST:
-                form = SearchPlacementRecord(request.POST)
-                if form.is_valid():
-                    rollno = form.cleaned_data['roll']
-                    ctc = form.cleaned_data['ctc']
-                    year = form.cleaned_data['year']
-                    cname = form.cleaned_data['cname']
-                    placementr = PlacementRecord.objects.create(year=year, ctc=ctc,
-                                                                      placement_type="PLACEMENT",
-                                                                      name=cname)
-                    studentr = StudentRecord.objects.create(record_id=placementr,
-                                                                 unique_id=Student.objects.get
-                                                                 ((Q(id=ExtraInfo.objects.get
-                                                                     (Q(id=rollno))))))
-                    studentr.save()
-                    placementr.save()
+                    q = request.session['q']
+                    p = []
+                    for w in q:
+                        p.append(w['id_id'])
+                        stud = Student.objects.filter(Q(id__in=p))
+                for student in stud:
+                    status = PlacementStatus.objects.create(notify_id=notify,
+                                                            unique_id=student,
+                                                            timestamp=timezone.now())
+                    status.save()
+                notify.save()
+                schedule.save()
+        if 'recordsubmit' in request.POST:
+            form1 = SearchStudentRecord(request.POST)
+            if form1.is_valid():
+                if form1.cleaned_data['name']:
+                    name = form1.cleaned_data['name']
+                else:
+                    name = ''
+                if form1.cleaned_data['rollno']:
+                    rollno = form1.cleaned_data['rollno']
+                else:
+                    rollno = ''
+                programme = form1.cleaned_data['programme']
+                if form1.cleaned_data['department']:
+                    department = form1.cleaned_data['department']
+                else:
+                    department = ''
+                if form1.cleaned_data['cpi']:
+                    cpi = form1.cleaned_data['cpi']
+                else:
+                    cpi = 0
+                debar = form1.cleaned_data['debar']
+                placed_type = form1.cleaned_data['placed_type']
+                skill = form1.cleaned_data['skill']
+                q2 = []
+                skill = skill.values_list('skill', flat=True)
+                for sk in skill:
+                    q2.extend(list(Skill.objects.filter(skill=sk)))
+                q1 = Has.objects.all()
+                q3 = Student.objects.all()
+                for ski in q2:
+                    q5 = []
+                    q4 = Has.objects.filter(Q(skill_id=ski)).values_list('unique_id', flat=True)
+                    q5.extend(list(q4))
+                    q3 = q3.objects.filter(Q(id__in=ExtraInfo.objects.filter(Q(id__in=q4))))
+                students = Student.objects.filter(Q(id__in=ExtraInfo.objects.filter
+                                                    (Q(user__in=User.objects.filter
+                                                       (Q(first_name__icontains=name)),
+                                                       department__in=DepartmentInfo.objects.filter
+                                                       (Q(name__icontains=department)),
+                                                       id__icontains=rollno
+                                                      )),
+                                                    programme=programme,
+                                                    cpi__gte=cpi)).filter(Q(pk__in=StudentPlacement.objects.filter(Q(debar=debar, placed_type=placed_type)).values('unique_id_id')))
         else:
             students = Student.objects.all()
-        form1 = SearchStudentRecord(initial={})
-        form = AddChairmanVisit(initial={})
-        form5 = AddSchedule(initial={})
-        form2 = SearchPlacementRecord(initial={})
-        form3 = SearchPbiRecord(initial={})
-        form4 = SearchHigherRecord(initial={})
-        form11 = ManagePlacementRecord(initial={})
-        form9 = ManagePbiRecord(initial={})
-        form10 = ManageHigherRecord(initial={})
-        chairmanvisit = ChairmanVisit.objects.all()
-        notify = NotifyStudent.objects.all()
-        schedules = PlacementSchedule.objects.all()
-        placementstatus = PlacementStatus.objects.all()
-        studentplacement = StudentPlacement.objects.all()
-        context = {'user': user, 'profile': profile, 'form':form, 'form1':form1, 'form5':form5,
-                   'chairmanvisits':chairmanvisit, 'students':students, 'schedules':schedules,
-                   'notify':notify, 'form2':form2, 'form3':form3, 'form4':form4, 'form9':form9,
-                   'form10':form10, 'form11':form11, 'placementstatus':placementstatus,
-                   'placementrecord':placementrecord, 'higherrecord':higherrecord, 'years':years,
-                   'pbirecord':pbirecord, 'studentrecord':studentrecord, 'records':records,
-                   'studentplacement':studentplacement}
-        return render(request, "placementModule/placement.html", context)
+            if 'getcvsubmit' in request.POST:
+                ee =[]
+            else:
+                if 'debar' in request.POST:
+                    spid = request.POST['debar']
+                    sr = StudentPlacement.objects.get(Q(pk=spid))
+                    sr.debar = "DEBAR"
+                    sr.save()
+                if 'undebar' in request.POST:
+                    spid = request.POST['undebar']
+                    sr = StudentPlacement.objects.get(Q(pk=spid))
+                    sr.debar = "NOT DEBAR"
+                    sr.save()
+        qq = students.values('id_id')
+        q = list(qq)
+        #for t in qq:
+        #    q.extend(t['id_id'])
+        request.session['q'] = q
+        if 'getcvsubmit' in request.POST:
+            form1 = SearchStudentRecord(request.POST)
+            if form1.is_valid():
+                if form1.cleaned_data['name']:
+                    name = form1.cleaned_data['name']
+                else:
+                    name = ''
+                if form1.cleaned_data['rollno']:
+                    rollno = form1.cleaned_data['rollno']
+                else:
+                    rollno = ''
+                programme = form1.cleaned_data['programme']
+                if form1.cleaned_data['department']:
+                    department = form1.cleaned_data['department']
+                else:
+                    department = ''
+                if form1.cleaned_data['cpi']:
+                    cpi = form1.cleaned_data['cpi']
+                else:
+                    cpi = 0
+                debar = form1.cleaned_data['debar']
+                skill = form1.cleaned_data['skill']
+                placed_type = form1.cleaned_data['placed_type']
+                students = Student.objects.filter(Q(id__in=ExtraInfo.objects.filter
+                                                    (Q(user__in=User.objects.filter
+                                                       (Q(first_name__icontains=name)),
+                                                       department__in=DepartmentInfo.objects.filter
+                                                       (Q(name__icontains=department)),
+                                                       id__icontains=rollno
+                                                      )),
+                                                    programme=programme,
+                                                    cpi__gte=cpi)).filter(Q(pk__in=StudentPlacement.objects.filter(Q(debar=debar, placed_type=placed_type)).values('unique_id_id')))
+                achievementcheck = request.POST.get('achievementcheck')
+                educationcheck = request.POST.get('educationcheck')
+                publicationcheck = request.POST.get('publicationcheck')
+                patentcheck = request.POST.get('patentcheck')
+                internshipcheck = request.POST.get('internshipcheck')
+                projectcheck = request.POST.get('projectcheck')
+                coursecheck = request.POST.get('coursecheck')
+                skillcheck = request.POST.get('skillcheck')
+                folder = 'media/placement_cell/'
+                for the_file in os.listdir(folder):
+                    file_path = os.path.join(folder, the_file)
+                    if os.path.isfile(file_path):
+                        os.unlink(file_path)
+                for student in students:
+                    profile1 = get_object_or_404(ExtraInfo, Q(pk=student.id.pk))
+                    user1 = get_object_or_404(User, Q(pk=profile1.user.pk))
+                    studentplacement = get_object_or_404(StudentPlacement, Q(unique_id=student))
+                    skills = Has.objects.filter(Q(unique_id=student))
+                    education = Education.objects.filter(Q(unique_id=student))
+                    course = Course.objects.filter(Q(unique_id=student))
+                    experience = Experience.objects.filter(Q(unique_id=student))
+                    project = Project.objects.filter(Q(unique_id=student))
+                    achievement = Achievement.objects.filter(Q(unique_id=student))
+                    publication = Publication.objects.filter(Q(unique_id=student))
+                    patent = Patent.objects.filter(Q(unique_id=student))
+                    render_to_pdf1('placementModule/cv.html',
+                                         {'pagesize': 'A4', 'user': user1, 'profile': profile1,
+                                          'projects': project, 'student': studentplacement,
+                                          'skills': skills, 'educations': education,
+                                          'courses': course, 'experiences': experience,
+                                          'achievements': achievement, 'records':records,
+                                          'publications': publication, 'patents': patent,
+                                          'achievementcheck': achievementcheck,
+                                          'educationcheck': educationcheck,
+                                          'publicationcheck': publicationcheck,
+                                          'patentcheck': patentcheck, 'skillcheck': skillcheck,
+                                          'internshipcheck': internshipcheck,
+                                          'projectcheck': projectcheck,
+                                          'coursecheck': coursecheck})
+                download({'students': students})
+        if 'studenthigheraddsubmit' in request.POST:
+            form = SearchHigherRecord(request.POST)
+            if form.is_valid():
+                rollno = form.cleaned_data['roll']
+                uname = form.cleaned_data['uname']
+                test_score = form.cleaned_data['test_score']
+                test_type = form.cleaned_data['test_type']
+                year = form.cleaned_data['year']
+                placementr = PlacementRecord.objects.create(year=year, name=uname,
+                                                                  placement_type="HIGHER STUDIES",
+                                                                  test_type=test_type,
+                                                                  test_score=test_score)
+                studentr = StudentRecord.objects.create(record_id=placementr,
+                                                             unique_id=Student.objects.get
+                                                             ((Q(id=ExtraInfo.objects.get
+                                                                 (Q(id=rollno))))))
+                studentr.save()
+                placementr.save()
+        if 'studentpbiaddsubmit' in request.POST:
+            form = SearchPbiRecord(request.POST)
+            if form.is_valid():
+                rollno = form.cleaned_data['roll']
+                ctc = form.cleaned_data['ctc']
+                year = form.cleaned_data['year']
+                cname = form.cleaned_data['cname']
+                placementr = PlacementRecord.objects.create(year=year, ctc=ctc,
+                                                                  placement_type="PBI",
+                                                                  name=cname)
+                studentr = StudentRecord.objects.create(record_id=placementr,
+                                                             unique_id=Student.objects.get
+                                                             ((Q(id=ExtraInfo.objects.get
+                                                                 (Q(id=rollno))))))
+                studentr.save()
+                placementr.save()
+        if 'studentplacementaddsubmit' in request.POST:
+            form = SearchPlacementRecord(request.POST)
+            if form.is_valid():
+                rollno = form.cleaned_data['roll']
+                ctc = form.cleaned_data['ctc']
+                year = form.cleaned_data['year']
+                cname = form.cleaned_data['cname']
+                placementr = PlacementRecord.objects.create(year=year, ctc=ctc,
+                                                                  placement_type="PLACEMENT",
+                                                                  name=cname)
+                studentr = StudentRecord.objects.create(record_id=placementr,
+                                                             unique_id=Student.objects.get
+                                                             ((Q(id=ExtraInfo.objects.get
+                                                                 (Q(id=rollno))))))
+                studentr.save()
+                placementr.save()
     else:
-        return render(request, "placementModule/placement.html")
+        students = Student.objects.all()
+    form1 = SearchStudentRecord(initial={})
+    form = AddChairmanVisit(initial={})
+    form5 = AddSchedule(initial={})
+    form2 = SearchPlacementRecord(initial={})
+    form3 = SearchPbiRecord(initial={})
+    form4 = SearchHigherRecord(initial={})
+    form11 = ManagePlacementRecord(initial={})
+    form9 = ManagePbiRecord(initial={})
+    form10 = ManageHigherRecord(initial={})
+    chairmanvisit = ChairmanVisit.objects.all()
+    notify = NotifyStudent.objects.all()
+    schedules = PlacementSchedule.objects.all()
+    placementstatus = PlacementStatus.objects.all()
+    studentplacement = StudentPlacement.objects.all()
+    context = {'user': user, 'profile': profile, 'form':form, 'form1':form1, 'form5':form5,
+               'chairmanvisits':chairmanvisit, 'students':students, 'schedules':schedules,
+               'notify':notify, 'form2':form2, 'form3':form3, 'form4':form4, 'form9':form9,
+               'form10':form10, 'form11':form11, 'placementstatus':placementstatus,
+               'placementrecord':placementrecord, 'higherrecord':higherrecord, 'years':years,
+               'pbirecord':pbirecord, 'studentrecord':studentrecord, 'records':records,
+               'studentplacement':studentplacement, 'current1':current1, 'current2':current2}
+    return render(request, "placementModule/placement.html", context)
 
 
 def render_to_pdf(template_src, context_dict):
@@ -769,7 +769,8 @@ def cv(request, username):
     user = request.user
     profile = get_object_or_404(ExtraInfo, Q(user=user))
 
-    if profile.designation.name == 'student':
+    current = HoldsDesignation.objects.filter(Q(working=user, designation__name="student"))
+    if current:
         if request.method == 'POST':
             achievementcheck = request.POST.get('achievementcheck')
             educationcheck = request.POST.get('educationcheck')

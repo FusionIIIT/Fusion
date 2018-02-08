@@ -1,0 +1,55 @@
+{% load static %}
+{% block notionalprize %}
+{% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="notionalprize">
+            Notional Prize
+        </a>
+    </div>
+
+  <div class="ui active tab" data-tab="notionalprize">
+        <div class="ui vertical segment">
+            <form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;">
+                {% csrf_token %}
+                <div class="field">
+                    <div class="eight wide field">
+                        <label>Year</label>
+                        <select class="ui fluid search large dropdown" name="year" >
+                                <option selected hidden>Select</option>
+                                {% for p,v in ch %}
+                                <option value="{{p}}">{{v}}</option>
+                                {% endfor %}
+    
+                            </select>
+                    </div>
+                </div>
+                     <div class="field">
+                          <div class="eight wide field">
+                            <label>SPI</label>
+                            <input type="text" name="spi" value="8.5" class="ui large input" readonly>
+                        </div>
+                     </div>
+
+                     <div class="field">
+                          <div class="eight wide field">
+                            <label>CPI</label>
+                            <input  class="ui large input" name="cpi" value="8.5" type="text" readonly>
+                        </div>
+                     </div>
+
+                    <div class="field">
+                    <label><br></label>
+                    <button type="submit" name="Email" class="ui primary large right floated button">
+                        Email
+                    </button>
+                </div>
+                    <br>
+                    <br>
+                
+            </form>
+             <div class="ui divider"></div>
+        </div>
+
+  </div>
+{% comment %}The tab menu starts here!{% endcomment %}
+{% endblock %}

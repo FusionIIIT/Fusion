@@ -1,0 +1,40 @@
+{% load static %}
+{% block catalog %}
+
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="catalog">
+            Catalogue
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="catalog">
+        <div class="ui vertical segment">
+            
+            <div class="ui stackable doubling grid">
+
+            {% for award in awards %}
+                <div class="eleven wide column">
+                    <div class="ui active tab" data-tab="award1">
+                        <h4 class="ui dividing header" style="margin-bottom: 16px;">
+                            {{award.award_name}}
+                        </h4>
+
+                        <span id="aboutSpan">
+                            {{award.catalog}}
+                        </span>
+
+                        <div class="textarea">
+                            <textarea rows=5
+                                      type="text"
+                                      style="width: 100%;"
+                                      id="aboutTextarea" hidden></textarea>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                <div class="column"></div>
+            </div>
+            
+        </div>
+    </div>
+{% endblock %}

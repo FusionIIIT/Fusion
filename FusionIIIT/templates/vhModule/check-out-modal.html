@@ -1,0 +1,224 @@
+{% load static %}
+{% block checkout %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="checkout">
+            Guest Check-Out
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="checkout">
+        <div class="ui vertical stripe team segment"
+             style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+
+            <form class="ui large form">
+                <div id="checkout">
+                    <div class="field">
+                        <div class="two fields">
+                            <div class="field">
+                                <label>Name </label>
+                                <input  type="text" value=" {{context.visitor}} " readonly >
+                            </div>
+
+                            <div class="field">
+                                <label>email</label>
+                                <input  type="email" value=" {{context.v_id}} " readonly >
+                            </div>
+                        </div>
+
+
+
+                        <div class="two fields">
+                            <div class="field">
+                                <label>Room Bill </label>
+                                <input  type="text" value=" {{context.room_bill}} " readonly >
+                            </div>
+
+                            <div class="field">
+                                <label>Mess Bill</label>
+                                <input  type="text" value=" {{context.mess_bill}} " readonly >
+                            </div>
+                        </div>
+
+
+
+
+                        <div class="field">
+                            <label>Total Amount</label>
+                            <div class="ui input">
+                                <input type="text" value=" {{context.total_bill}} " readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ui accordion field">
+                        <div class="title">
+                            <i class="icon dropdown"></i>
+                            View Details
+                        </div>
+
+                        <div class="content fields" style="margin: 24px;">
+                            <div class="four fields">
+                                <!--<div class="field">-->
+                                    <!--<label>From</label>-->
+                                    <!--<div class="ui input">-->
+                                        <!--<input value="From" readonly>-->
+                                    <!--</div>-->
+                                <!--</div>-->
+
+                                <!--<div class="field">-->
+                                    <!--<label>To</label>-->
+                                    <!--<div class="ui input">-->
+                                        <!--<input value="To" readonly>-->
+                                    <!--</div>-->
+                                <!--</div>-->
+
+                                <!--<div class="field">-->
+                                    <!--<label>Rate</label>-->
+                                    <!--<div class="ui input">-->
+                                        <!--<input value="&#8377; 100/day" >-->
+                                    <!--</div>-->
+                                <!--</div>-->
+
+                                <!--<div class="field">-->
+                                    <!--<label>Total</label>-->
+                                    <!--<div class="ui input">-->
+                                        <!--<input value="Amount" readonly>-->
+                                    <!--</div>-->
+                                <!--</div>-->
+                            </div>
+
+                            <div class="ui divider"></div>
+                            <h1>Visitors Details</h1>
+
+                            <table class="ui sortable very basic celled table">
+                                <thead>
+                                <tr>
+                                    <th>
+                                        Visitors
+                                    </th>
+
+                                    <th>
+                                        Email
+                                    </th>
+                                    <th>
+                                        Mobile No
+                                    </th>
+
+                                </tr>
+                                </thead>
+
+                                <tbody>
+                                {% for e in visitor_info %}
+                                <tr>
+                                    <td>
+
+                                        {{ e.visitor_name }}
+                                    </td>
+
+                                    <td>
+                                       {{ e.visitor_email }}
+                                    </td>
+
+                                    <td>
+                                       {{ e.visitor_phone }}
+                                    </td>
+                                <!--</tr>-->
+
+                                <!--<tr>-->
+                                    <!--<td>-->
+                                        <!--10<sup>th</sup> Aug'17-->
+                                    <!--</td>-->
+
+                                    <!--<td>-->
+                                        <!--Lunch-->
+                                    <!--</td>-->
+
+                                    <!--<td>-->
+                                        <!--&#8377; 50-->
+                                    <!--</td>-->
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+
+                            <h1>Room Details</h1>
+                            <div class="ui divider"></div>
+
+                            <table class="ui sortable very basic celled table">
+                                <thead>
+                                <tr>
+                                    <th>
+                                        Room Type
+                                    </th>
+
+                                    <th>
+                                        Room No
+                                    </th>
+                                    <th>
+                                        Floor
+                                    </th>
+
+                                </tr>
+                                </thead>
+
+                                <tbody>
+                                {% for r in rooms %}
+                                <tr>
+                                    <td>
+
+                                        {{ r.room_type }}
+                                    </td>
+
+                                    <td>
+                                       {{ r.room_number }}
+                                    </td>
+
+                                    <td>
+                                       {{ r.room_floor }}
+                                    </td>
+                                <!--</tr>-->
+
+                                <!--<tr>-->
+                                    <!--<td>-->
+                                        <!--10<sup>th</sup> Aug'17-->
+                                    <!--</td>-->
+
+                                    <!--<td>-->
+                                        <!--Lunch-->
+                                    <!--</td>-->
+
+                                    <!--<td>-->
+                                        <!--&#8377; 50-->
+                                    <!--</td>-->
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+
+
+
+                        </div>
+                    </div>
+
+                    <div class="three fields">
+                        <div class="ten wide field"></div>
+                        <div class="two wide field">
+                            <label><br></label>
+                            <div class="ui large right floated button">
+                                Settle
+                            </div>
+                        </div>
+                        <div class="two wide field">
+                            <label><br></label>
+                            <div class="ui large center floated primary button">
+                                Print
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+

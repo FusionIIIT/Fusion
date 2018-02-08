@@ -1,0 +1,93 @@
+{% block roomstatus %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="roomstatus">
+            Room Status
+        </a>
+    </div>
+
+    <form class="ui form" id="find-room-status">
+        <div class="two fields">
+            <div class="field">
+                <label>From:</label>
+                <div class="ui calendar" id="rangestart3">
+                    <div class="ui input left icon">
+                        <i class="calendar icon"></i>
+                        <input type="text" placeholder="From" name="booking_from" class="date-selector">
+                    </div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>To:</label>
+                <div class="ui calendar" id="rangeend3">
+                    <div class="ui input left icon">
+                        <i class="calendar icon"></i>
+                        <input type="text" placeholder="To" name="booking_to" class="date-selector">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="ui large primary button right floated" onclick="find_room_status()">
+                        Submit
+        </div>
+    </form>
+    <br>
+    <br>
+    <div class="ui divider"></div>
+    <div class="ui active tab" data-tab="roomstatus">
+        <div class="ui vertical segment">
+            <table class="ui structured celled sortable table" style="margin-bottom: 16px;">
+                <thead>
+                <tr>
+
+                    <th rowspan="2">Room Number</th>
+                    <th rowspan="2">Floor</th>
+                    <th rowspan="4"><center>Room Status</center></th>
+
+                </tr>
+                </thead>
+
+                <tbody>
+                    {% for instance in all_rooms_status %}
+                    <tr>
+                        <td>
+                            {{ instance.room }}
+                        </td>
+                        <td>
+                            {{ instance.room.room_floor }}
+                        </td>
+                        <td>
+                            <div class="field" style="display: none" id=select-{{instance.room.room_number}}>
+                                <div class="ui fluid search selection dropdown">
+                                    <input name="Select" type="hidden" onchange='submit_room_status("{{ instance.room.room_number }}")' id="input-{{instance.room.room_number}}">
+                                    <i class="dropdown icon"></i>
+
+                                    <div class="default text">{{ instance.status }}</div>
+                                    <div class="menu">
+                                        <div class="item" data-value="UnderMaintenance">
+                                            Under Maintenance
+                                        </div>
+
+                                        <div class="item" data-value="Available">
+                                            Available
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <span style="display: inline;" id=show-{{instance.room.room_number}} >
+                                {{ instance.status }}
+                            </span>
+                            <i class="edit icon" onclick="edit_room_status('{{ instance.room.room_number }}')" style="float: right;" id="submit-{{instance.room.room_number}}"></i>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <br>
+            <br>
+        </div>
+    </div>
+{% endblock %}
+

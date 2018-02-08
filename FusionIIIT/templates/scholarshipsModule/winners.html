@@ -26,9 +26,6 @@
                         Year
                     </th>
 
-                    <th class="four wide">
-                        Type
-                    </th>
 
                     <th class="six wide">
                         Award
@@ -37,58 +34,29 @@
                 </thead>
 
                 <tbody>
+                {% for winner in winners %}
                 <tr>
                     <td>
                         <h4 class="ui image header">
                             <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
                             <div class="content">
-                                Zlatan Ibrahimovic
-                                <div class="sub header">
-                                    2015121
-                                </div>
+                               {{winner.student_id}}
                             </div>
                         </h4>
                     </td>
 
                     <td>
-                        2017
+                            {{winner.year}}
                     </td>
 
                     <td>
-                        Awards
+                            {{winner.award_id}}
                     </td>
 
-                    <td>
-                        Award #1
-                    </td>
                 </tr>
+                {% endfor %}
 
-                <tr>
-                    <td>
-                        <h4 class="ui image header">
-                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
-                            <div class="content">
-                                Zlatan Ibrahimovic
-                                <div class="sub header">
-                                    2015121
-                                </div>
-                            </div>
-                        </h4>
-                    </td>
-
-                    <td>
-                        2017
-                    </td>
-
-                    <td>
-                        Scholarship
-                    </td>
-
-                    <td>
-                        Scholarship #1
-                    </td>
-                </tr>
-
+                
                 </tbody>
             </table>
 

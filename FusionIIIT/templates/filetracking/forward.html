@@ -1,0 +1,116 @@
+{% extends 'filetracking/filetracking.html' %}
+{% load static %}
+
+{% block filetracking_tab %}
+    {% comment %}the compounder prescription tab starts here {% endcomment %}
+    <div class="ui pointing secondary menu">
+        <h3>
+            <a class="active item">
+            Note Sheet
+            </a>
+        </h3>
+    </div>
+    {% comment %}the ambulance schedule tab starts here {% endcomment %}
+    <div class="ui active tab" data-tab="composefile">
+        <div class="ui vertical segment" style="padding-left: 3.5%; padding-right: 3.5%;">
+
+            <form class="ui large form" method="POST" enctype="multipart/form-data" id="form1">
+            {% csrf_token %}
+
+                <div class="field">
+                        {% comment %}The Dropdown field starts here!{% endcomment %}
+                        <div class="ui fluid card">
+                            <div class="content">
+                                <div class="ui header">File Details</div>
+                                    <div class="ui divider"></div>
+
+                                    <span>
+                                        <div class="ui very relaxed fluid selection list" style="padding-left: 24px; padding-top: 16px; padding-bottom: 16px; max-height: 70vh; overflow-y: auto;">
+                                            <div class="item">
+                                            <img class="ui mini circular image" src="{% static 'globals/img/zlatan.jpg' %}">
+                                            <div class="content">
+
+                                                <a class="header">{{file.ref_id}}</a>
+                                                <span class="meta">{{file.subject}}</span>
+                                                <div class="description">
+                                                    {{file.description}}
+                                                </div>
+                                                <div class="remarks">
+                                                    {{remarks}}
+                                                </div>
+                                            </div>
+
+                                                <div class="right floated content">
+                                                    <span class="meta">{{file.upload_date}}</span>
+                                                    <br>
+                                                    <br>
+                                                    <a href="/media/{{file.upload_file}}" target="_">
+                                                        <span class="meta">{{file.upload_file}}</span>
+                                                    </a>
+
+                                                </div>
+                                            </div>
+                                          </div>
+                                    </span>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                             <label>Remarks</label>
+                             <textarea rows="2" name="remarks"></textarea>
+                        </div>
+
+                        <label>Forward To</label>
+                        <select class="ui fluid search selection dropdown" name="receiver">
+                        <option selected hidden>Select</option>
+                        {% for extrainfo in extrainfo %}
+                                <option value="{{extrainfo.id}}">{{extrainfo.user}}</option>
+                        {% endfor %}
+                        </select>
+                        {% comment %}The Dropdown field ends here!{% endcomment %}
+                </div>
+
+                <br>
+
+                <a class="field">
+
+                    <div>
+                        <label for="file" class="ui icon button">
+                            <i class="ui large left floated upload icon "></i>
+                            Attach File</label>
+                        <input type="file" name="myfile" id="file" style="display:none">
+                    </div>
+
+                    <a class="right floated item">
+                        <label><br></label>
+
+                    <button type="submit" name="send" class="ui large right floated primary button">
+                        Send<i class="ui send icon right floated"></i>
+                    </button>
+                    </a>
+
+                </a>
+            <br>
+            <br>
+
+            </form>
+
+            <br>
+
+        </div>
+
+
+        <br>
+        <div class="extra content"></div>
+    </div>
+    {% comment %}the compounder prescription tab ends here {% endcomment %}
+{% endblock %}
+
+
+<script type="text/javascript">
+    function ShowHideDiv() {
+        var chkAddress = document.getElementById("chkAddress");
+        var leaveAddress = document.getElementById("leaveAddress");
+        leaveAddress.style.display = chkAddress.checked ? "block" : "none";
+    }
+</script>
