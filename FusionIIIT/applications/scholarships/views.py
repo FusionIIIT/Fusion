@@ -33,6 +33,7 @@ def spacs(request):
         usertype = i.designation
     z = HoldsDesignation.objects.all()
     convener = 'spacsconvener'
+    assistant = 'as'
     for i in z:
         if(i.designation == 'spacsconvener'):
             convener = i.working
