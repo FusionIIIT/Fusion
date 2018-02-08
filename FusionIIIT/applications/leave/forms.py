@@ -4,22 +4,23 @@ from applications.leave.models import LeaveType
 from django.contrib.auth.models import User
 
 
-LEAVE_TYPES = (
-    ((leave_type.id, leave_type.name) for leave_type in LeaveType.objects.all())
-)
-
-
 class EmployeeCommonForm(forms.Form):
-    leave_type = forms.CharField(widget=forms.Select(choices=LEAVE_TYPES))
+    
     purpose = forms.CharField(widget=forms.TextInput)
     is_station = forms.BooleanField(initial=False, required=False)
-    station_start_date = forms.DateField(label='From')
-    station_end_date = forms.DateField(label='To')
+    station_leave_info = forms.CharField(widget=forms.Textarea)
 
 
 class LeaveSegmentForm(forms.Form):
+
+    LEAVE_TYPES = (
+        ((leave_type.id, leave_type.name) for leave_type in LeaveType.objects.all())
+    )
+
+    leave_type = forms.CharField(widget=forms.Select(choices=LEAVE_TYPES))
     start_date = forms.DateField(label='From')
     end_date = forms.DateField(label='To')
+    document = forms.FileField(label='Related Document')
 
 
 class AdminReplacementForm(forms.Form):
@@ -36,7 +37,7 @@ class AdminReplacementForm(forms.Form):
             user_type = self.user.extrainfo.user_type
             ALL_USERS = User.objects.all()
             # TODO: Add code for userchoices
-            USET_CHOICES = []
+            USER_CHOICES = []
             # USER_CHOICES = list((user.username, '{} {}'.format(user.first_name, user.last_name) \
             #                   for user in ALL_USERS if user.extrainfo.user_type==user_type \
             #                   and user != self.user))
@@ -60,6 +61,7 @@ class AcademicReplacementForm(forms.Form):
         try:
             user_type = self.user.extrainfo.user_type
             ALL_USERS = User.objects.all()
+            USER_CHOICES = [] 
             # USER_CHOICES = list((user.username, '{} {}'.format(user.first_name, user.last_name) \
             #                   for user in ALL_USERS if user.extrainfo.user_type==user_type \
             #                   and user != self.user))
@@ -74,3 +76,20 @@ class BaseLeaveFormSet(BaseFormSet):
 
     def clean(self):
         pass
+
+
+class BaseAcadFormSet(BaseFormSet):
+    def clean(self):
+        pass
+
+
+class BaseAdminFormSet(BaseFormSet):
+    def clean(self):
+        pass
+
+
+class BaseCommonFormSet(BaseFormSet):
+    def clean(self):
+        pass
+
+

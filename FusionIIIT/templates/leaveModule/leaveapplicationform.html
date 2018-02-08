@@ -1,4 +1,12 @@
 <div class="ui container">
+
+    <script type="text/javascript">
+        $(document).on('click','#leave_next', function(e){
+            e.preventDefault();
+            // alert("Woah, this worked");
+            $("leave_form").css({"display", "None"});
+        });
+    </script>
     <div class="ui vertical stripe team segment"
          style="padding-left: 3.5%;
                 padding-right: 3.5%;">
@@ -9,7 +17,35 @@
 
         <div class="ui divider"></div>
         <br>
+        <form class="ui large form">
+            <div id="leave_form">
+                {{ leave_form_set.management_form }}
+                {% for form in leave_form_set %}
+                    {{ form }}
+                {% endfor %} 
+                <button id="leave_next" type="button"> Next </button>
+            </div>
+            <div id="acad_form" hidden>    
+                {{ acad_form_set.management_form }}
+                {% for form in acad_form_set %}
+                    {{ form }}
+                {% endfor %}
 
+                <button id="acad_next" type="button"> Next </button>
+            </div>
+            <div id="admin_form" hidden>
+                {{ admin_form_set.management_form }}
+                {% for form in admin_form_set %}
+                    {{ form }}
+                {% endfor %}
+                <button id="admin_next" type="button"> Next </button>
+            </div>
+            <div id="common_form" hidden>
+                {{ common_form }}
+                <button id="submit" type="submit"> Next </button>
+            </div>
+        </form>
+        <!-- 
         <form class="ui large form">
 
             {% comment %} The ApplyLeave conatianer starts here! {% endcomment %}
@@ -182,6 +218,7 @@
                 <br>
             </div>
         </form>
+        -->
     </div>
 
     <div class="extra content">

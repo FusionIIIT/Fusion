@@ -28,7 +28,6 @@ urlpatterns = [
     url(r'^healthcenter/', include('applications.health_center.urls')),
     url(r'^leave/', include('applications.leave.urls')),
     url(r'^placement/', include('applications.placement_cell.urls')),
-    url(r'^healthcenter/', include('applications.health_center.urls')),
     url(r'^spacs/', include('applications.scholarships.urls')),
     url(r'^visitorhostel/', include('applications.visitor_hostel.urls')),
     url(r'^admin/', admin.site.urls),

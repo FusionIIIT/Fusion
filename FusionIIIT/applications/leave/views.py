@@ -13,8 +13,8 @@ from applications.leave.forms import (EmployeeCommonForm, LeaveSegmentForm,
 def leave(request):
 
     LeaveFormSet = formset_factory(LeaveSegmentForm, formset=BaseLeaveFormSet)
-    AcadFormSet = formset_factory(AcademicReplacementForm) # (form_kwargs={'user': request.user})
-    AdminFormSet = formset_factory(AdminReplacementForm) # (form_kwargs={'user': request.user})
+    AcadFormSet = formset_factory(AcademicReplacementForm)# (form_kwargs={'user': request.user})
+    AdminFormSet = formset_factory(AdminReplacementForm)# (form_kwargs={'user': request.user})
     common_form = EmployeeCommonForm()
 
     context = {}
@@ -23,7 +23,7 @@ def leave(request):
 
     if request.method == 'POST':
         kwargs = {'user' : request.user}
-        kwargs.update(requst.POST)
+        kwargs.update(request.POST)
         leave_form_set = LeaveFormSet(kwargs)
         academic_form_set = AcadFormSet(kwargs)
         admin_form_set = AdminFormSet(kwargs)
@@ -37,6 +37,9 @@ def leave(request):
     else:
         context = {
             'leave_form_set': LeaveFormSet(initial={}),
+            'acad_form_set': AcadFormSet(form_kwargs={'user': request.user}),
+            'admin_form_set': AdminFormSet(form_kwargs={'user': request.user}),
+            'common_form': common_form,
         }
 
         if user_type == 'staff':
