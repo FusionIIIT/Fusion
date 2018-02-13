@@ -103,7 +103,7 @@
                     {% comment %}The Publications awards  starts here!{% endcomment %}
                         <div class="ui tab segment" data-tab="three">
                                 {% block awards %}
-                                    {% include 'scholarshipsModule/awards.html' %}
+                                    {% include 'scholarshipsModule/awards.html' with mcm=mcm gold=gold silver=silver dandm=dandm source=source mother_occ=mother_occ awards=awards %}
                                 {% endblock %}
                         </div>
                             {% comment %}The Publications about awards ends here!{% endcomment %}

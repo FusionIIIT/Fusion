@@ -15,23 +15,8 @@ function modalDandm(){
     });
 }
 
-function modalGoldmedal(){
-    $(document).ready(function() {
-        $('#goldmedal')
-          .modal('show')
-        ;
-    });
-}
 
-function modalSilver(){
-    $(document).ready(function() {
-        $('#silver')
-          .modal('show')
-        ;
-    });
-}
-
-function modalMcm(){
+function modalCmc(){
     $(document).ready(function() {
         $('#mcm')
           .modal('show')
@@ -39,3 +24,19 @@ function modalMcm(){
     });
 }
 
+
+function modalGoldmedal(){
+    $(document).ready(function() {
+        $('#goldmedal')
+          .modal('show')
+        ;
+    });
+}
+/*
+
+function modalAvailability(){
+    $('#availability')
+        .modal('show')
+    ;
+}
+*/

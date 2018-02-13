@@ -40,8 +40,8 @@
                 Proficiency Medals
             </a>
         
-            <a class="right floated item">
-                <button class="ui primary button">
+            <a class="right floated item" href="http://site.iiitdmj.ac.in/IIITDM/SPACS-fellowships.pdf" download>
+                <button class="ui primary button" href="http://site.iiitdmj.ac.in/IIITDM/SPACS-fellowships.pdf" download>
                     Download
                     <i class="right floated download icon"></i>
                 </button>
@@ -50,8 +50,8 @@
         
         <div class="ui active tab" data-tab="dandm">
             <div class="ui vertical segment">
-                <form class="ui form" style="padding-left: 36px; padding-right: 36px;">
-                    
+                <form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;" enctype="multipart/form-data">
+                    {% csrf_token %} 
                         <div class="eight wide field">
                         <label>PBI Project/Design Project</label>
                         <div class="ui large input">
@@ -61,26 +61,12 @@
                     <div class="two fields">
                         <div class="eight wide field">
                             <label>Number Of Student</label>
-                            <div class="ui fluid search selection large dropdown" name="students">
-                                <input  type="hidden">
-                                <i class="dropdown icon"></i>
-        
-                                <div class="default text">Select</div>
-        
-                                <div class="menu">
-                                    <div class="item" data-value="1">
-                                        1
-                                    </div>
-                                    <div class="item" data-value="2">
-                                        2
-                                    </div>
-                                    <div class="item" data-value="3">
-                                        3
-                                    </div>
-        
-                                </div>
-        
-                            </div>
+                            <select class="ui fluid search selection large dropdown" name="students">
+                                <option selected hidden>Select</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                            </select>
                             </div>
                             
                             <div class="six wide field">
@@ -267,7 +253,7 @@
               Director's Silver Medal
             </a>
     
-            <a class="right floated item">
+            <a class="right floated item" href="http://site.iiitdmj.ac.in/IIITDM/SPACS-fellowships.pdf" download>
             <button name="Download" class="ui primary button">
                 Download
                 <i class="right floated download icon"></i>
@@ -278,8 +264,8 @@
     
      <div class="ui active tab" data-tab="goldmedal">
             <div class="ui vertical segment">
-                <form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;">
-                    {% csrf_token %}
+                <form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;" enctype="multipart/form-data">
+                    {% csrf_token %} 
             <div class="three fields">
                     <div class="six wide field">
                             <label>Hall no</label>
@@ -379,7 +365,7 @@
               Director's Gold Medal
             </a>
     
-            <a class="right floated item">
+            <a class="right floated item" href="http://site.iiitdmj.ac.in/IIITDM/SPACS-fellowships.pdf" download>
             <button name="Download" class="ui primary button">
                 Download
                 <i class="right floated download icon"></i>
@@ -390,7 +376,7 @@
     
      <div class="ui active tab" data-tab="goldmedal">
             <div class="ui vertical segment">
-                <form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;">
+                <<form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;" enctype="multipart/form-data">
                     {% csrf_token %}
                 <div class="two fields">
                 <div class="six wide field">

@@ -1,10 +1,11 @@
 import json
 
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.models import User
 
-from applications.globals.models import Designation, ExtraInfo
+from applications.globals.models import Designation, ExtraInfo, HoldsDesignation
 
 from .forms import AcademicTimetableForm, ExamTimetableForm, MinuteForm
 from .models import (Course, Exam_timetable, Grades, Meeting, Student,
@@ -12,6 +13,19 @@ from .models import (Course, Exam_timetable, Grades, Meeting, Student,
 
 
 def homepage(request):
+    current_user = get_object_or_404(User, username=request.user.username)
+    user_details = ExtraInfo.objects.all().filter(user=current_user).first()
+    desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
+    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
+    print (temp)
+    print (current_user)
+    acadadmin = temp.working
+    k = str(user_details).split()
+    print(k)
+    final_user = k[2]
+
+    if (str(acadadmin) != str(final_user)):
+        return HttpResponseRedirect('/academic-procedures/')
     minuteForm = MinuteForm()
     examTtForm = ExamTimetableForm()
     acadTtForm = AcademicTimetableForm()
@@ -70,6 +84,19 @@ def homepage(request):
 # ---------------------senator------------------
 @csrf_exempt
 def senator(request):
+    current_user = get_object_or_404(User, username=request.user.username)
+    user_details = ExtraInfo.objects.all().filter(user=current_user).first()
+    desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
+    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
+    print (temp)
+    print (current_user)
+    acadadmin = temp.working
+    k = str(user_details).split()
+    print(k)
+    final_user = k[2]
+
+    if (str(acadadmin) != str(final_user)):
+        return HttpResponseRedirect('/academic-procedures/')
     if request.method == 'POST':
         rollno = request.POST.get('rollno')
         extraInfo = ExtraInfo.objects.get(id=rollno)
@@ -150,6 +177,19 @@ def deleteConvenor(request, pk):
 # ##########Senate meeting Minute##################
 @csrf_exempt
 def addMinute(request):
+    current_user = get_object_or_404(User, username=request.user.username)
+    user_details = ExtraInfo.objects.all().filter(user=current_user).first()
+    desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
+    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
+    print (temp)
+    print (current_user)
+    acadadmin = temp.working
+    k = str(user_details).split()
+    print(k)
+    final_user = k[2]
+
+    if (str(acadadmin) != str(final_user)):
+        return HttpResponseRedirect('/academic-procedures/')
     if request.method == 'POST' and request.FILES:
         form = MinuteForm(request.POST, request.FILES)
         if form.is_valid():
@@ -216,6 +256,19 @@ def delete_basic_profile(request, pk):
 
 # view to add attendance data to database
 def add_attendance(request):
+    current_user = get_object_or_404(User, username=request.user.username)
+    user_details = ExtraInfo.objects.all().filter(user=current_user).first()
+    desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
+    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
+    print (temp)
+    print (current_user)
+    acadadmin = temp.working
+    k = str(user_details).split()
+    print(k)
+    final_user = k[2]
+
+    if (str(acadadmin) != str(final_user)):
+        return HttpResponseRedirect('/academic-procedures/')
     if request.method == 'POST':
         s_id = request.POST.get('student_id')
         c_id = request.POST.get('course_id')
@@ -269,6 +322,19 @@ def add_attendance(request):
 
 # view to fetch attendance data
 def get_attendance(request):
+    current_user = get_object_or_404(User, username=request.user.username)
+    user_details = ExtraInfo.objects.all().filter(user=current_user).first()
+    desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
+    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
+    print (temp)
+    print (current_user)
+    acadadmin = temp.working
+    k = str(user_details).split()
+    print(k)
+    final_user = k[2]
+
+    if (str(acadadmin) != str(final_user)):
+        return HttpResponseRedirect('/academic-procedures/')
     course_id = request.GET.get('course_id')
 
     c_id = Course.objects.get(course_id=course_id)
@@ -302,6 +368,19 @@ def get_attendance(request):
 
 # view to delete attendance data
 def delete_attendance(request):
+    current_user = get_object_or_404(User, username=request.user.username)
+    user_details = ExtraInfo.objects.all().filter(user=current_user).first()
+    desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
+    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
+    print (temp)
+    print (current_user)
+    acadadmin = temp.working
+    k = str(user_details).split()
+    print(k)
+    final_user = k[2]
+
+    if (str(acadadmin) != str(final_user)):
+        return HttpResponseRedirect('/academic-procedures/')
     course_id = request.GET.get('course_id')
     student_id = request.GET.get('student_id')
     c_id = Course.objects.get(course_id=course_id)
@@ -313,6 +392,19 @@ def delete_attendance(request):
 
 
 def delete_advanced_profile(request):
+    current_user = get_object_or_404(User, username=request.user.username)
+    user_details = ExtraInfo.objects.all().filter(user=current_user).first()
+    desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
+    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
+    print (temp)
+    print (current_user)
+    acadadmin = temp.working
+    k = str(user_details).split()
+    print(k)
+    final_user = k[2]
+
+    if (str(acadadmin) != str(final_user)):
+        return HttpResponseRedirect('/academic-procedures/')
     if request.method == "POST":
         st = request.POST['delete']
         arr = st.split("-")
@@ -331,6 +423,19 @@ def delete_advanced_profile(request):
 
 
 def add_advanced_profile(request):
+    current_user = get_object_or_404(User, username=request.user.username)
+    user_details = ExtraInfo.objects.all().filter(user=current_user).first()
+    desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
+    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
+    print (temp)
+    print (current_user)
+    acadadmin = temp.working
+    k = str(user_details).split()
+    print(k)
+    final_user = k[2]
+
+    if (str(acadadmin) != str(final_user)):
+        return HttpResponseRedirect('/academic-procedures/')
     if request.method == "POST":
         try:
             roll = ExtraInfo.objects.get(id=request.POST['roll'])
@@ -353,6 +458,19 @@ def add_advanced_profile(request):
 
 
 def add_grade(request):
+    current_user = get_object_or_404(User, username=request.user.username)
+    user_details = ExtraInfo.objects.all().filter(user=current_user).first()
+    desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
+    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
+    print (temp)
+    print (current_user)
+    acadadmin = temp.working
+    k = str(user_details).split()
+    print(k)
+    final_user = k[2]
+
+    if (str(acadadmin) != str(final_user)):
+        return HttpResponseRedirect('/academic-procedures/')
     if request.method == "POST":
         try:
             roll = Student.objects.get(id=request.POST['roll'])
@@ -393,6 +511,19 @@ def add_grade(request):
 
 
 def delete_grade(request):
+    current_user = get_object_or_404(User, username=request.user.username)
+    user_details = ExtraInfo.objects.all().filter(user=current_user).first()
+    desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
+    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
+    print (temp)
+    print (current_user)
+    acadadmin = temp.working
+    k = str(user_details).split()
+    print(k)
+    final_user = k[2]
+
+    if (str(acadadmin) != str(final_user)):
+        return HttpResponseRedirect('/academic-procedures/')
     print(request.POST['delete'])
     data = request.POST['delete']
     d = data.split("-")
@@ -412,6 +543,19 @@ def delete_grade(request):
 
 
 def add_course(request):
+    current_user = get_object_or_404(User, username=request.user.username)
+    user_details = ExtraInfo.objects.all().filter(user=current_user).first()
+    desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
+    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
+    print (temp)
+    print (current_user)
+    acadadmin = temp.working
+    k = str(user_details).split()
+    print(k)
+    final_user = k[2]
+
+    if (str(acadadmin) != str(final_user)):
+        return HttpResponseRedirect('/academic-procedures/')
     if request.method == "POST":
         try:
             c = Student.objects.get(id=request.POST['roll'])

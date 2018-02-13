@@ -102,7 +102,7 @@
                             <form method='POST'>
                                 {%csrf_token %}
                                 <input type="hidden" name="id" value="{{winner.student}}"/>
-                            <button class="ui blue button" name="Reject_dm">Reject</button>
+                            <button class="ui blue button" name="Reject_dm" value="{{winner.id}}">Reject</button>
                             </form>
                         </td>
                         
@@ -179,14 +179,14 @@
                             <form method='POST'>
                                 {% csrf_token %}
                                 <input type="hidden" name="id" value="{{winner.id}}"/>
-                            <button class="ui blue button" name="Accept_mcm">Accept</button>
+                            <button class="ui blue button" name="Accept_mcm" value="{{winner.id}}">Accept</button>
                                 </form>
                         </td>
                         <td>
                             <form method='POST'>
                                 {%csrf_token %}
                                 <input type="hidden" name="id" value="{{winner.id}}"/>
-                            <button class="ui blue button" name="Reject_mcm">Reject</button>
+                            <button class="ui blue button" name="Reject_mcm" value="{{winner.id}}">Reject</button>
                             </form>
                         </td>
                         
@@ -258,7 +258,7 @@
                             <form method='POST'>
                                 {%csrf_token %}
                                 <input type="hidden" name="id" value="{{winner.id}}"/>
-                            <button class="ui blue button" name="Reject_silver">Reject</button>
+                            <button class="ui blue button" name="Reject_silver"  value="{{winner.id}}">Reject</button>
                             </form>
                         </td>
                         
@@ -331,7 +331,7 @@
                             <form method='POST'>
                                 {%csrf_token %}
                                 <input type="hidden" name="id" value="{{winner.id}}"/>
-                            <button class="ui blue button" name="Reject_gold">Reject</button>
+                            <button class="ui blue button" name="Reject_gold" value="{{winner.id}}">Reject</button>
                             </form>
                         </td>
                         

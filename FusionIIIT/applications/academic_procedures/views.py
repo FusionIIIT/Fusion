@@ -406,8 +406,11 @@ def acad_person(request):
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
     temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
+    print (temp)
+    print (current_user)
     acadadmin = temp.working
     k = str(user_details).split()
+    print(k)
     final_user = k[2]
 
     if (str(acadadmin) != str(final_user)):
@@ -565,12 +568,15 @@ def verify_course(request):
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
-    dep_id = DepartmentInfo.objects.all().filter(name='Academics')
-    acadadmin = ExtraInfo.objects.all().filter(user_type='staff',
-                                               designation=desig_id,
-                                               department=dep_id).first()
-    # print(str(acadadmin) != str(user_details))
-    if(str(user_details) != str(acadadmin)):
+    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
+    print (temp)
+    print (current_user)
+    acadadmin = temp.working
+    k = str(user_details).split()
+    print(k)
+    final_user = k[2]
+
+    if (str(acadadmin) != str(final_user)):
         return HttpResponseRedirect('/academic-procedures/')
     roll_no = request.GET.get('id')
     obj = ExtraInfo.objects.all().filter(id=roll_no)
