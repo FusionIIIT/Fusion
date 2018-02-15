@@ -25,30 +25,37 @@
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
 
-                <a class="active item" data-tab="first" id="bookings">
+                <a class=" active item" data-tab="first" id="bookings">
                     Bookings
                     <i class="right floated chevron right icon"></i>
                 </a>
+
 
                 <a class="item" data-tab="second" id="bookaroom">
                     Booking Form
                     <i class="right floated chevron right icon"></i>
                 </a>
 
+                {% if user_designation == 'VhIncharge' or user_designation == 'VhCaretaker' %}
                 <a class="item" data-tab="third" id="roomstatus">
                     Room Availability
                     <i class="right floated chevron right icon"></i>
                 </a>
+                {% endif %}
 
+                {% if user_designation == 'VhIncharge' or user_designation == 'VhCaretaker' %}
                 <a class=" item" data-tab="fourth" id="bookameal">
                     Meals Record
                     <i class="right floated chevron right icon"></i>
                 </a>
+                {% endif %}
 
+                {% if user_designation == 'VhIncharge' or user_designation == 'VhCaretaker' %}
                 <a class="item" data-tab="fifth">
                     Inventory
                     <i class="right floated chevron right icon"></i>
                 </a>
+                {% endif %}
 
                 <a class="item" data-tab="sixth">
 

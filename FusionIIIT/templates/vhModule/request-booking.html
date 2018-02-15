@@ -12,6 +12,8 @@
                 padding-right: 3.5%;">
 
             <form class="ui large form" id="request-booking-form">
+
+                {% if user_designation == 'VhIncharge' or user_designation == 'VhCaretaker' %}
                 <div class="field">
                     <label>Intender ID:</label>
                     <div class="ui fluid search selection dropdown">
@@ -29,7 +31,11 @@
                         </div>
                     </div>
                 </div>
+                {% endif %}
 
+                {% if user_designation == 'Intender' %}
+                <input type="hidden" name="intender" value="{{ user.id }}">
+                {% endif %}
                 <div class="two fields">
                     <div class="field">
                         <label>From:</label>
@@ -53,24 +59,70 @@
                 </div>
 
                 <div class="field">
-                    <label>Number Of People </label>
-                    <div class="ui fluid input">
-                        <input name="number-of-people" type="number">
+                    <div class="three fields">
+                        <div class="field">
+                            <label>Number Of People </label>
+                            <div class="ui fluid input">
+                                <input name="number-of-people" type="number" placeholder="1">
+                            </div>
+                        </div>
+                        <div class="twelve wide field">
+                            <label>Category</label>
+                            <div class="ui fluid search selection dropdown">
+                                <input name="visitor-category" type="hidden">
+                                <i class="dropdown icon"></i>
+
+                                <div class="default text">Select</div>
+
+                                <div class="menu">
+                                    <div class="item" data-value="A">
+                                        (A)
+                                        (i) Institute Guests/ Directors/ Examiners/ External Members of Institute Committees/ Invited Speakers/ CAG Audit Team/MHRD officials.
+                                        (ii) Important guests of Chairman, BOG/ Director/ Senate/ BWC/ Statutory bodies.
+                                        (iii) Other Institute guests not covered above will be approved by the Director.
+                                    </div>
+                                    <div class="item" data-value="B">
+                                        (B)
+                                        (i) Institute employee &amp; their dependents
+                                        (ii) Project employee &amp; their dependents
+                                        (iii) Retired IIITDMJ Faculty/ Staff/ Alumni
+                                        (iv) Relatives/ Guests of IIITDMJ Faculty &amp; Staff
+                                        (v) Parents/ Guardian/ Spouse of IIITDMJ students
+                                        (vi) Other than Institute employees staying for Institute work
+                                        (vii) Any other Guest (Approved by the Director)
+                                    </div>
+                                    <div class="item" data-value="C">
+                                        (C)
+                                        (i) Employees of other IIITs/ IITs/ Centrally funded engineering colleges/ universities/ PSUs.
+                                        (ii) Visitors of government/ public sector organization.
+                                        (iii) Trainees coming to the Institute under programmes organized by the Institute.
+                                        (iv) Others (Approved by the Director).
+                                    </div>
+                                    <div class="item" data-value="D">
+                                        (D)
+                                        Contractors, representatives of firms, vendors etc. coming for their work viz. meeting, presentations etc. and requesting to stay in the VH.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+
+
                 </div>
 
                 <div class="field">
                     <label>Purpose Of Visit</label>
                     <div class="ui fluid input">
-                        <textarea rows="2" name="purpose-of-visit"></textarea>
+                        <input rows="2" name="purpose-of-visit" required=""></textarea>
                     </div>
                 </div>
                 <input type="hidden" name="csrf" value="{{ csrf_token }}">
                 <div class="field">
                     <label></label>
-                    <div class="ui large primary button right floated" id="request-booking-form-submit">
+                    <button class="ui large primary button right floated"
+                        id="request-booking-form-submit">
                         Submit
-                    </div>
+                    </button>
                 </div>
                 <br>
                 <br>

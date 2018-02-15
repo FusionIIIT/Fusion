@@ -80,11 +80,11 @@ Fusion - Feedback
         {% endcomment %}
         <div class="eight wide column">
 
-            <div class="ui active tab segment" data-tab="first">
+            <div class="ui active tab segment" data-tab="first"> 
             	<div class="ui huge header">
             		<i class="write icon"></i>
             		Feedback
-            	</div>
+            	</div>	
             	<div class="ui divider"></div>
             	<form class="ui form" method="post" action="{% url 'globals:feedback' %}" style="{% if reviewed %} display:none;{% endif %}" id="feedback-form">
             		<div class="ui warning message" id="feedback-warning" style="display: none;">
@@ -97,7 +97,7 @@ Fusion - Feedback
             			<div class="ui header">
             				Rate Us
             			</div>
-            			<div class="ui feedback massive star rating" data-rating="3" style="z-index: 100;"></div>
+            			<div class="ui feedback massive star rating" data-rating="3" style="z-index: 100;"></div> 	
             		</center>
             		<input type="number" name="rating" style="display: none">
             		{% render_form form %}
@@ -106,10 +106,10 @@ Fusion - Feedback
             	{% if reviewed %}
             	<div class="ui info message" id="my-feedback">
             		<div class="ui right action large header">
-            			Your Feedback
+            			Your Feedback 
             			<i class="write icon" onmouseover='this.style.cursor="pointer"'  style="float: right;" id="edit-feedback" ></i>
             		</div>
-
+            		
             		<center>
 	            	{% for i in stars %}
 	            		<i class="huge star icon yellow" style="display: inline;"></i>
@@ -143,7 +143,7 @@ Fusion - Feedback
                     TODO: the right rail!
                 {% endcomment %}
                 <div class="ui comments">
-
+                
                 {% for feed, rate in feeds %}
                   <div class="comment">
                     <div class="content">
@@ -167,8 +167,8 @@ Fusion - Feedback
                   </div>
                   <div class="ui divider"></div>
                 {% endfor %}
-
-                </div>
+                
+                </div>  
             </div>
         </div>
         {% comment %}The right-rail segment ends here!{% endcomment %}
@@ -176,7 +176,7 @@ Fusion - Feedback
         {% comment %}The right-margin segment!{% endcomment %}
         <div class="column"></div>
 
-    </div>
+    </div> 	
 
 {% endblock %}
 
@@ -184,17 +184,17 @@ Fusion - Feedback
 	<script type="text/javascript" src="{% static 'globals/semantic-ui/components/rating.js' %}"></script>
 	<script type="text/javascript">
 		$(document).ready(function(e){
-			$('.feedback.rating').rating({
+			$('.feedback.rating').rating({	
 		    	maxRating: 5
 		  });
 			$(".feedback.rating").rating("set rating",{% if reviewed %}{{ feedback.rating }}{% else %}0{% endif %});
 			$("input[name=rating]").val($(".feedback.rating").rating("get rating"));
 		});
-
+		
 		$('#feedback-form').submit(function(e){
 			if($("input[name=rating]").val()==0)
 			{
-				$("#feedback-warning").slideDown();
+				$("#feedback-warning").slideDown();	 
 				e.preventDefault();
 			}
 		});

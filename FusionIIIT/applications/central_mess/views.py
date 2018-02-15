@@ -222,7 +222,7 @@ def placeorder(request):
 
         stu = Messinfo.objects.get(student_id=student)
         if stu.mess_option == 'mess1':
-            dish = Nonveg_menu.objects.get(dish=request.POST.get("dish"))
+            dish = Nonveg_menu.objects.get(dish=request.POST.get("dish"), order_interval=request.POST.get('interval'))
             order_interval = dish.order_interval
             order_date = datetime.datetime.now().date()
             nonveg_obj = Nonveg_data(student_id=student, order_date=order_date,
@@ -286,8 +286,9 @@ def vacasubmit(request):
 def menusubmit(request):
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
-
-    if HoldsDesignation.user == 'mess_convener':
+    holds_designations = HoldsDesignation.objects.get(user=user)
+    desig = holds_designations.designation.name
+    if desig == 'mess_convener':
 
         dish = Menu.objects.get(dish=request.POST.get("dish"))
         newdish = request.POST.get("newdish")
@@ -309,8 +310,10 @@ def menusubmit(request):
 def response(request, ap_id):
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
-
-    if extrainfo.designation.name == 'mess_manager':
+    holds_designations = HoldsDesignation.objects.get(user=user)
+    desig = holds_designations.designation.name
+    
+    if desig == 'mess_manager':
         application = Menu_change_request.objects.get(pk=ap_id)
 
         if(request.POST.get('submit') == 'approve'):
@@ -335,8 +338,10 @@ def response(request, ap_id):
 def processvacafood(request, ap_id):
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
+    holds_designations = HoldsDesignation.objects.get(user=user)
+    desig = holds_designations.designation.name
 
-    if extrainfo.designation.name == 'mess_manager':
+    if desig == 'mess_manager':
         applications = Vacation_food.objects.get(pk=ap_id)
 
         if(request.POST.get('submit') == 'approve'):
@@ -376,8 +381,10 @@ def regsubmit(request):
 def regadd(request):
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
+    holds_designations = HoldsDesignation.objects.get(user=user)
+    desig = holds_designations.designation.name
 
-    if extrainfo.designation.name == 'mess_manager':
+    if desig == 'mess_manager':
 
         sem = request.POST.get('sem')
         start_reg = request.POST.get('start_date')

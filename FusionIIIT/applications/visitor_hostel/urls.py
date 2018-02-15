@@ -7,6 +7,9 @@ app_name = 'visitorhostel'
 urlpatterns = [
 
     url(r'^$', views.visitorhostel, name='visitorhostel'),
+    url(r'^get-booking-requests/', views.get_booking_requests, name='get_booking_requests'),
+    url(r'^get-active-bookings/', views.get_active_bookings, name='get_active_bookings'),
+    url(r'^get-booking-form/', views.get_booking_form, name='get_booking_form'),
     url(r'^request-booking/' , views.request_booking , name ='request_booking'),
     url(r'^confirm-booking/' , views.confirm_booking , name ='confirm_booking'),
     url(r'^cancel-booking/', views.cancel_booking, name = 'cancel_booking'),

@@ -28,14 +28,15 @@ $('#request-booking-form-submit').on('click', function(event){
         url: '/visitorhostel/request-booking/',
         data: {
             'intender' : $('input[name="intender"]').val(),
+            'category' : $('input[name="visitor-category"]').val(),
             'csrfmiddlewaretoken': $('input[name="csrf"]').val(),
             'booking_from' : $('input[name="booking-from"]').val(),
             'booking_to' : $('input[name="booking-to"]').val(),
-            'numberofpeople' : $('input[name="number-of-people"]').val(),
-            'purposeofvisit' : $('textarea[name="purpose-of-visit"]').val(),
+            'number-of-people' : $('input[name="number-of-people"]').val(),
+            'purpose-of-visit' : $('input[name="purpose-of-visit"]').val(),
         },
         success: function(data) {
-            $('#request-booking-form').reset();
+            $('#request-booking-form')[0].reset();
         },
         error: function(data, err) {
             alert(err.message);
@@ -88,7 +89,7 @@ function submit_inventory_form(id){
         type: 'POST',
         url: '/visitorhostel/update-inventory/',
         data: {
-            'csrfmiddlewaretoken': '{{csrf_token}}',
+            'csrfmiddlewaretoken': $('input[name="csrf"]').val(),
             'id' : id,
             'quantity' : quantity,
         },
@@ -150,7 +151,7 @@ $('#add-item-form-submit').click(function(event){
         type: 'POST',
         url: '/visitorhostel/add-to-inventory/',
         data: {
-            'csrfmiddlewaretoken': '{{csrf_token}}',
+            'csrfmiddlewaretoken': $('input[name="csrf"]').val(),
             'item_name' : $('input[name="item-name"]').val(),
             'quantity' : $('input[name="quantity_add"]').val(),
             'cost' : $('input[name="cost"]').val(),
@@ -214,12 +215,7 @@ $('#confirm-booking').click(function(event){
         data: {
             'booking-id' : $('input[name="booking-id"]').val(),
             'csrfmiddlewaretoken': $('input[name="csrf"]').val(),
-            'intender' : $('input[name="intender"]').val(),
             'category' : $('input[name="category"]').val(),
-            'numberofpeople' : $('input[name="numberofpeople"]').val(),
-            'purpose' : $('textarea[name="purposeofvisit"]').val(),
-            'booking_from' : $('input[name="booking_from"]').val(),
-            'booking_to' : $('input[name="booking_to"]').val()
         },
         success: function(data) {
             alert("Success");
