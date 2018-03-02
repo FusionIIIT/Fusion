@@ -20,6 +20,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 
+
 urlpatterns = [
     url(r'^', include('applications.globals.urls')),
     url(r'^eis/', include('applications.eis.urls')),
@@ -32,6 +33,7 @@ urlpatterns = [
     url(r'^healthcenter/', include('applications.health_center.urls')),
     url(r'^gymkhana/', include('applications.gymkhana.urls')),
     url(r'^spacs/', include('applications.scholarships.urls')),
+    url(r'^office/', include('applications.office_module.urls')),
     url(r'^visitorhostel/', include('applications.visitor_hostel.urls')),
     url(r'^admin/', admin.site.urls),
     url(r'^accounts/', include('allauth.urls')),

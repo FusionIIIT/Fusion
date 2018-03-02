@@ -39,14 +39,18 @@
                 inline: true,
                 hoverable: true,
                 position: 'bottom left',
+                popup: $('#notificationPopup'),
+                on: 'click',
                 delay: {
                     show: 250,
                     hide: 500
                 }
-            });
+            })
         ;
     });
+</script>
 
+<script>
     $(document).ready(function(){
         newNotification();
         newNotification();
@@ -60,7 +64,13 @@
         ;
     });
 
+</script>
+
+<script>
     function newNotification(){
+
+        console.log('A new Notification added!');
+
         var notifactionName = document.createTextNode("Kanishka Munshi");
         var notificationEmail = document.createTextNode("gmail@zlatan.com");
         var notificationMessage = document.createTextNode("I have decided to go on a leave!");

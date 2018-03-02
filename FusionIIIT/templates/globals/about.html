@@ -1,0 +1,162 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Team
+{% endblock %}
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    <br>
+
+    <div class="ui stackable doubling grid container">
+
+        <div class="row">
+            <h1 class="ui header" style="margin: auto;">
+                Meet Our Team!
+            </h1>
+        </div>
+        <div class="ui divider"></div>
+
+        <div class="row">
+            <div class="ui four wide column">
+                <div class="ui secondary vertical pointing compact huge menu">
+                    <a class="active item" data-tab="PSGTeam">
+                        Project Steering Group
+                    </a>
+
+                    {% for k, i in teams.items %}
+                        <a class="item" data-tab="{{ i.teamId }}">
+                            {{ i.teamName }}
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="ui twelve wide column">
+                <div class="ui active tab" data-tab="PSGTeam">
+                    <div class="ui stackable doubling three centered cards">
+                        {% for key, value in psgTeam.items %}
+                            <div class="ui card">
+                                <div class="teamImage image">
+                                    <img src="{% static 'globals/img/'|add:value.devImage %}">
+                                </div>
+                                <div class="content">
+                                    <a class="header">{{ value.devName }}</a>
+                                    <div class="meta">
+                                        <span>{{ value.devTitle }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                {% comment %}
+            TODO: Ask Logic for this here!!!
+            {% for k, i in teams.items %}
+                <div class="ui tab" data-tab="{{ i.teamId }}">
+                    <div class="ui stackable doubling three centered cards">
+                        {% for key, value in i.teamId.items %}
+                            <div class="ui card">
+                                <div class="teamteamImage image">
+                                    <img src="{% static 'globals/img/'|add:value.devImage %}">
+                                </div>
+                                <div class="content">
+                                    <a class="header">{{ value.devName }}</a>
+                                    <div class="meta">
+                                        <span>{{ value.devTitle }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+
+            {% endcomment %}
+
+                <div class="ui tab" data-tab="uiTeam">
+                    <div class="ui stackable doubling three centered cards">
+                        {% for key, value in uiTeam.items %}
+                            <div class="ui card">
+                                <div class="teamImage image">
+                                    <img src="{% static 'globals/img/'|add:value.devImage %}">
+                                </div>
+                                <div class="content">
+                                    <a class="header">{{ value.devName }}</a>
+                                    <div class="meta">
+                                        <span>{{ value.devTitle }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+
+                <div class="ui tab" data-tab="qaTeam">
+                    <div class="ui stackable doubling three centered cards">
+                        {% for key, value in qaTeam.items %}
+                            <div class="ui card">
+                                <div class="teamImage image">
+                                    <img src="{% static 'globals/img/'|add:value.devImage %}">
+                                </div>
+                                <div class="content">
+                                    <a class="header">{{ value.devName }}</a>
+                                    <div class="meta">
+                                        <span>{{ value.devTitle }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+
+                <div class="ui tab" data-tab="eisTeam">
+                    <div class="ui stackable doubling three centered cards">
+                        {% for key, value in eisTeam.items %}
+                            <div class="ui card">
+                                <div class="teamImage image">
+                                    <img src="{% static 'globals/img/'|add:value.devImage %}">
+                                </div>
+                                <div class="content">
+                                    <a class="header">{{ value.devName }}</a>
+                                    <div class="meta">
+                                        <span>{{ value.devTitle }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+
+                <div class="ui tab" data-tab="leaveTeam">
+                    <div class="ui stackable doubling three centered cards">
+                        {% for key, value in leaveTeam.items %}
+                            <div class="ui card">
+                                <div class="teamImage image">
+                                    <img src="{% static 'globals/img/'|add:value.devImage %}">
+                                </div>
+                                <div class="content">
+                                    <a class="header">{{ value.devName }}</a>
+                                    <div class="meta">
+                                        <span>{{ value.devTitle }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+{% endblock %}
