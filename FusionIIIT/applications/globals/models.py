@@ -20,6 +20,37 @@ class Constants:
         ('faculty', 'faculty')
     )
 
+    RATING_CHOICES = (
+            (1, 1),
+            (2, 2),
+            (3, 3),
+            (4, 4),
+            (5, 5),
+        )
+
+    MODULES = (
+            ("academic_information", "Academic"),
+            ("central_mess", "Central Mess"),
+            ("complaint_system", "Complaint System"),
+            ("eis", "Employee Imformation System"),
+            ("file_tracking", "File Tracking System"),
+            ("health_center", "Health Center"),
+            ("leave", "Leave"),
+            ("online_cms", "Online Course Management System"),
+            ("placement_cell", "Placement Cell"),
+            ("scholarships", "Scholarships"),
+            ("visitor_hostel", "Visitor Hostel"),
+            ("other", "Other"),
+        )
+
+    ISSUE_TYPES = (
+            ("feature_request", "Feature Request"),
+            ("bug_report", "Bug Report"),
+            ("security_issue", "Security Issue"),
+            ("ui_issue", "User Interface Issue"),
+            ("other", "Other than the ones listed"),
+        )
+
 
 class Designation(models.Model):
     name = models.CharField(max_length=20, unique=True, blank=False, default='student')
@@ -67,3 +98,41 @@ class Faculty(models.Model):
 
     def __str__(self):
         return str(self.id)
+
+
+""" Feedback and bug report models start"""
+
+
+class Feedback(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="fusion_feedback")
+    rating = models.IntegerField(choices=Constants.RATING_CHOICES)
+    feedback = models.TextField(blank=True)
+    timestamp = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.user.username + ": " + str(self.rating)
+
+
+def Issue_image_directory(instance, filename):
+    return 'issues/{0}/images/{1}'.format(instance.user.username, filename)
+
+
+class IssueImage(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    image = models.ImageField(upload_to=Issue_image_directory)
+
+
+class Issue(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reported_issues")
+    report_type = models.CharField(max_length=63, choices=Constants.ISSUE_TYPES)
+    module = models.CharField(max_length=63, choices=Constants.MODULES)
+    closed = models.BooleanField(default=False)
+    text = models.TextField()
+    title = models.CharField(max_length=255)
+    images = models.ManyToManyField(IssueImage, blank=True)
+    support = models.ManyToManyField(User, blank=True)
+    timestamp = models.DateTimeField(auto_now=True)
+    added_on = models.DateTimeField(auto_now_add=True)
+
+
+""" End of feedback and bug report models"""

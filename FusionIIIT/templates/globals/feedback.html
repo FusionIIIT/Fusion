@@ -1,0 +1,214 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+{% load semanticui %}
+{% block title %}
+Fusion - Feedback
+{% endblock %}
+
+{% block css %}
+		<link rel="stylesheet" type="text/css" href="{%  static 'globals/semantic-ui/components/rating.css' %}">
+		<style type="text/css">
+			.feedback-text:before {
+          color: #0e566c;
+          content: open-quote;
+          font-size: 4em;
+          line-height: 0.1em;
+          margin-right: 0.25em;
+          vertical-align: -0.4em;
+        }
+
+        .feedback-text:after {
+          color: #0e566c;
+          content: close-quote;
+          font-size: 4em;
+          line-height: 0.1em;
+          margin-left: 0.25em;
+          vertical-align: -0.5em;
+        }
+		</style>
+{% endblock %}
+
+
+{% block body %}
+	{% block navBar %}
+		{% include 'dashboard/navbar.html' %}
+	{% endblock %}
+
+	<div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}
+            The left-rail segment starts here!
+        {% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            <div class="ui huge fluid vertical pointing menu"
+                 style="max-width: 320px;">
+
+                <a class="active item" href="{% url 'globals:feedback' %}">
+                    Feedback
+                    <i class="right floated chevron right icon"></i>
+                    <i class="left floated write icon"></i>
+                </a>
+
+                <a class="item" href="{% url 'globals:issue' %}">
+                    Issues
+                    <i class="right floated chevron right icon"></i>
+                    <i class="left floated bug icon"></i>
+                </a>
+            </div>
+
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+
+
+        {% comment %}
+            The central-rail segment starts here!
+        {% endcomment %}
+        <div class="eight wide column">
+
+            <div class="ui active tab segment" data-tab="first"> 
+            	<div class="ui huge header">
+            		<i class="write icon"></i>
+            		Feedback
+            	</div>	
+            	<div class="ui divider"></div>
+            	<form class="ui form" method="post" action="{% url 'globals:feedback' %}" style="{% if reviewed %} display:none;{% endif %}" id="feedback-form">
+            		<div class="ui warning message" id="feedback-warning" style="display: none;">
+						<div class="header">
+							It's important for you to rate us in order to submit your feedback !
+						</div>
+					</div>
+            		<center>
+            			{% csrf_token %}
+            			<div class="ui header">
+            				Rate Us
+            			</div>
+            			<div class="ui feedback massive star rating" data-rating="3" style="z-index: 100;"></div> 	
+            		</center>
+            		<input type="number" name="rating" style="display: none">
+            		{% render_form form %}
+            		<button type="submit" class="ui right floated primary button">submit</button><br>
+            	</form>
+            	{% if reviewed %}
+            	<div class="ui info message" id="my-feedback">
+            		<div class="ui right action large header">
+            			Your Feedback 
+            			<i class="write icon" onmouseover='this.style.cursor="pointer"'  style="float: right;" id="edit-feedback" ></i>
+            		</div>
+            		
+            		<center>
+	            	{% for i in stars %}
+	            		<i class="huge star icon yellow" style="display: inline;"></i>
+	            	{% endfor %}
+	            	</center>
+	            	{% if feedback.feedback %}
+	            	<p class="feedback-text" style="font-size: 1.5em;">
+	            		{{ feedback.feedback }}
+	            	</p>
+	            	{% endif %}
+	            </div>
+            	{% endif %}
+            	<br>
+            	<div class="ui divider"></div>
+            	<center>
+            		<i class="massive star icon yellow"></i>
+            		<div class="ui massive header" style="font-size: 3em;">
+            			{{ rating }}
+            		</div>
+            	</center>
+            	<div class="ui divider"></div>
+            </div>
+
+        </div>
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            <div class="ui segment">
+                {% comment %}
+                    TODO: the right rail!
+                {% endcomment %}
+                <div class="ui comments">
+                
+                {% for feed, rate in feeds %}
+                  <div class="comment">
+                    <div class="content">
+                      <a class="author" style="font-size: 2em;">{{ feed.user.username }}</a>
+                      <div class="metadata">
+                        <div class="date" style="font-size: 1.2em;">{{ feed.timestamp }}</div>
+                      </div>
+                      <center class="text">
+                        <center class="rating">
+                          {% for i in rate %}
+                            <i class="big star icon yellow" style="display: inline;"></i>
+                          {% endfor %}
+                        </center>
+                        {% if feed.feedback %}
+                            <p class="feedback-text" style="font-size: 1.5em;">
+                                {{ feed.feedback }}
+                            </p>
+                        {% endif %}
+                      </center>
+                    </div>
+                  </div>
+                  <div class="ui divider"></div>
+                {% endfor %}
+                
+                </div>  
+            </div>
+        </div>
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+    </div> 	
+
+{% endblock %}
+
+{% block javascript %}
+	<script type="text/javascript" src="{% static 'globals/semantic-ui/components/rating.js' %}"></script>
+	<script type="text/javascript">
+		$(document).ready(function(e){
+			$('.feedback.rating').rating({	
+		    	maxRating: 5
+		  });
+			$(".feedback.rating").rating("set rating",{% if reviewed %}{{ feedback.rating }}{% else %}0{% endif %});
+			$("input[name=rating]").val($(".feedback.rating").rating("get rating"));
+		});
+		
+		$('#feedback-form').submit(function(e){
+			if($("input[name=rating]").val()==0)
+			{
+				$("#feedback-warning").slideDown();	 
+				e.preventDefault();
+			}
+		});
+
+		$('.feedback.rating').click(function(e){
+			var rating = $(".feedback.rating").rating("get rating");
+			if(rating>0 && rating<6)
+				$("input[name=rating]").val(rating);
+		});
+
+		$('#edit-feedback').click(function(e){
+			$('#feedback-form').slideToggle();
+			$("#my-feedback").slideToggle();
+		});
+
+	</script>
+{% endblock %}
