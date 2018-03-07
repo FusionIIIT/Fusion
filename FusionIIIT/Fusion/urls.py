@@ -28,6 +28,7 @@ urlpatterns = [
     url(r'^complaint/', include('applications.complaint_system.urls')),
     url(r'^gymkhana/', include('applications.gymkhana.urls')),
     url(r'^healthcenter/', include('applications.health_center.urls')),
+    url(r'^library/', include('applications.library.urls')),
     url(r'^leave/', include('applications.leave.urls')),
     url(r'^placement/', include('applications.placement_cell.urls')),
     url(r'^healthcenter/', include('applications.health_center.urls')),

@@ -65,7 +65,7 @@
             {% comment %}The Details start here!{% endcomment %}
             <div class="ui active tab segment" data-tab="first">
                 {% block form1 %}
-                    {% include 'officeModule/officeOfDeanStudents/tab1.html' %}
+                    {% include 'officeModule/officeOfPurchaseOfficer/tab1.html' %}
                 {% endblock %}
             </div>
             {% comment %}The Personal Details end here!{% endcomment %}
@@ -85,7 +85,7 @@
             <div class="row">
                 <div class="ui row">
                     <h3 class="ui header" style="padding-left: 16px;">
-                        Office Of Dean Students
+                        Office Of Purchase Officer
                     </h3>
                 </div>
             </div>
@@ -102,7 +102,7 @@
 
                         <div id="textLoader" style="max-height: 87.5vh; overflow-y: auto; overflow-x: hidden;">
                             {% block alerts %}
-                                {% include 'officeModule/officeOfDeanStudents/alerts.html' %}
+                                {% include 'officeModule/officeOfPurchaseOfficer/alerts.html' %}
                             {% endblock %}
                         </div>
 
@@ -117,7 +117,6 @@
 
     </div>
     {% comment %}The grid ends here!{% endcomment %}
-
 
 
 {% endblock %}

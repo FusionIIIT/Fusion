@@ -56,6 +56,10 @@
                                 <h4>Health Center Module</h4>
                             </a>
 
+                            <a class="item" href="{% url 'library:libraryModule' %}">
+                                <h4>Library Module</h4>
+                            </a>
+
                             <a class="item" href="{% url 'leave:leave' %}">
                                 <h4>Leave Module</h4>
                             </a>
@@ -87,30 +91,23 @@
             {% comment %}The Profile Item starts here!{% endcomment %}
             <a class="centered raised item" href="{% url 'office:officeOfDeanStudents'%}">
                 <span class="inverted header">Office Of Dean Students</span>
-                <i class="large inverted user icon right floated"></i>
+                <i class="large inverted briefcase icon right floated"></i>
             </a>
             {% comment %}The email Item ends here!{% endcomment %}
 
-            {% comment %}The email Item starts here!{% endcomment %}
-            <div class="centered raised item">
-                <span class="inverted header">Emails</span>
-                <i class="large inverted mail icon right floated"></i>
-            </div>
+            {% comment %}The Profile Item starts here!{% endcomment %}
+            <a class="centered raised item" href="{% url 'office:officeOfPurchaseOfficer'%}">
+                <span class="inverted header">Office Of Purchase Officer</span>
+                <i class="large inverted briefcase icon right floated"></i>
+            </a>
             {% comment %}The email Item ends here!{% endcomment %}
 
-            {% comment %}The Webpage Item starts here!{% endcomment %}
-            <div class="centered raised item">
-                <span class="inverted header">Webpage</span>
-                <i class="large inverted external icon right floated"></i>
-            </div>
-            {% comment %}The Webpage Item ends here!{% endcomment %}
-
-            {% comment %}The Activity Log Item starts here!{% endcomment %}
-            <div class="centered raised item">
-                <span class="inverted header">Activity Log</span>
-                <i class="large inverted area chart icon right floated"></i>
-            </div>
-            {% comment %}The Activity Log Item ends here!{% endcomment %}
+            {% comment %}The Profile Item starts here!{% endcomment %}
+            <a class="centered raised item" href="{% url 'office:officeOfRegistrar'%}">
+                <span class="inverted header">Office Of Registrar</span>
+                <i class="large inverted briefcase icon right floated"></i>
+            </a>
+            {% comment %}The email Item ends here!{% endcomment %}
 
             {% comment %}The Logout Item starts here!{% endcomment %}
             <div class="centered raised item">

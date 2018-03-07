@@ -65,7 +65,7 @@
             {% comment %}The Details start here!{% endcomment %}
             <div class="ui active tab segment" data-tab="first">
                 {% block form1 %}
-                    {% include 'officeModule/officeOfDeanStudents/tab1.html' %}
+                    {% include 'officeModule/genericModule/tab1.html' %}
                 {% endblock %}
             </div>
             {% comment %}The Personal Details end here!{% endcomment %}
@@ -85,12 +85,12 @@
             <div class="row">
                 <div class="ui row">
                     <h3 class="ui header" style="padding-left: 16px;">
-                        Office Of Dean Students
+                        Generic Module!
                     </h3>
                 </div>
             </div>
 
-            <div class="ui divider"></div>
+        <div class="ui divider"></div>
 
             <div class="row">
                 <div class="ui row">
@@ -102,7 +102,7 @@
 
                         <div id="textLoader" style="max-height: 87.5vh; overflow-y: auto; overflow-x: hidden;">
                             {% block alerts %}
-                                {% include 'officeModule/officeOfDeanStudents/alerts.html' %}
+                                {% include 'officeModule/genericModule/alerts.html' %}
                             {% endblock %}
                         </div>
 
@@ -123,6 +123,10 @@
 {% endblock %}
 
 {% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+
     <script>
         $(document).ready(function(){
             $("#textLoader").toggle();
