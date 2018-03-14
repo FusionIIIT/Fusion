@@ -7,10 +7,9 @@ def officeOfDeanStudents(request):
     return render(request, "officeModule/officeOfDeanStudents/officeOfDeanStudents.html", context)
 
 
-def officeOfPurchaseOfficer(request):
-    context = {}
+def officeOfPurchaseOfficr(request):
+    return render(request, "officeModule/officeOfPurchaseOfficer/officeOfPurchaseOfficer.html", {})
 
-    return render(request, "officeModule/officeOfPurchaseOfficer/officeOfPurchaseOfficer.html", context)
 
 def officeOfRegistrar(request):
     context = {}

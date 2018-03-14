@@ -41,12 +41,22 @@
                  style="max-width: 320px;">
 
                 <a class="active item" data-tab="first">
-                    Tab Content #1
+                    Manage Store
                     <i class="right floated chevron right icon"></i>
                 </a>
 
                 <a class="item" data-tab="second">
-                    Tab Content #2
+                    Vendors
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="third">
+                    Purchase History
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="fourth">
+                    Indent Form
                     <i class="right floated chevron right icon"></i>
                 </a>
             </div>
@@ -64,8 +74,8 @@
         <div class="eight wide column">
             {% comment %}The Details start here!{% endcomment %}
             <div class="ui active tab segment" data-tab="first">
-                {% block form1 %}
-                    {% include 'officeModule/officeOfPurchaseOfficer/tab1.html' %}
+                {% block tab1 %}
+                    {% include 'officeModule/officeOfPurchaseOfficer/manageStore.html' %}
                 {% endblock %}
             </div>
             {% comment %}The Personal Details end here!{% endcomment %}
@@ -73,7 +83,27 @@
 
             {% comment %}The Publications starts here!{% endcomment %}
             <div class="ui tab segment" data-tab="second">
+                {% block tab2 %}
+                    {% include 'officeModule/officeOfPurchaseOfficer/vendors.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The Publications ends here!{% endcomment %}
 
+
+            {% comment %}The Publications starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="third">
+                {% block tab3 %}
+                    {% include 'officeModule/officeOfPurchaseOfficer/purchaseHistory.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The Publications ends here!{% endcomment %}
+
+
+            {% comment %}The Publications starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="fourth">
+                {% block tab4 %}
+                    {% include 'officeModule/officeOfPurchaseOfficer/indentForm.html' %}
+                {% endblock %}
             </div>
             {% comment %}The Publications ends here!{% endcomment %}
 
@@ -122,6 +152,10 @@
 {% endblock %}
 
 {% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+
     <script>
         $(document).ready(function(){
             $("#textLoader").toggle();
