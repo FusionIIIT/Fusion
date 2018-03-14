@@ -7,7 +7,12 @@ app_name = 'globals'
 urlpatterns = [
 
     url(r'^$', views.index, name='index'),
-    url(r'^dashboard/$', views.dashboard, name='dashboard'),
+
+    url(r'^login/', views.login, name='login'),
+
+    url(r'^dashboard/', views.dashboard, name='dashboard'),
+
+    url(r'^about/', views.about, name='about'),
 
     # Feedback and issues url
     url(r'^feedback/$', views.feedback, name="feedback"),

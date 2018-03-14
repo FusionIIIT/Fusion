@@ -1,0 +1,58 @@
+{% load static %}
+
+{% block alerts %}
+    <div class="ui centered cards" style="padding: 2px">
+
+        {% comment %}A single card starts here!{% endcomment %}
+        <div class="ui card">
+            <div class="content">
+                <img class="right floated circular ui image" src="{% static 'globals/img/zlatan.jpg' %}" style="width: 50px; height: auto;">
+                <div class="header">
+                    Pending Requests
+                </div>
+
+                <div class="meta">
+                    Office Of Registrar
+                </div>
+
+                <div class="ui divider"></div>
+
+                <div class="description">
+
+                    <span>Director Section</span>
+                    <span class="right floated">...</span>
+
+                    <br>
+
+                    <span>General Admnistration</span>
+                    <span class="right floated">...</span>
+
+                    <br>
+
+                    <span>Purchase & Sales</span>
+                    <span class="right floated">...</span>
+
+                    <br>
+
+                    <span>Establishment Section</span>
+                    <span class="right floated">...</span>
+
+                    <br>
+
+                    <span>Finance & Accounts Section</span>
+                    <span class="right floated">...</span>
+
+                    <br>
+
+                </div>
+            </div>
+
+            <div class="extra content">
+                <span style="color: #000;">Total Pending Requests</span>
+                <span class="right floated" style="color: #000;">...</span>
+            </div>
+        </div>
+        {% comment %}A single card starts here!{% endcomment %}
+
+    </div>
+{% endblock %}
