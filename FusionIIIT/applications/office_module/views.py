@@ -17,6 +17,12 @@ def officeOfRegistrar(request):
     return render(request, "officeModule/officeOfRegistrar/officeOfRegistrar.html", context)
 
 
+def officeOfDeanRSPC(request):
+    context = {}
+
+    return render(request, "officeModule/officeOfDeanRSPC/officeOfDeanRSPC.html", context)
+
+
 def genericModule(request):
     context = {}
 
