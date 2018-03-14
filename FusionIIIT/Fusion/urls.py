@@ -25,6 +25,7 @@ urlpatterns = [
     url(r'^eis/', include('applications.eis.urls')),
     url(r'^mess/', include('applications.central_mess.urls')),
     url(r'^complaint/', include('applications.complaint_system.urls')),
+    url(r'^finance/', include('applications.finance_accounts.urls')),
     url(r'^gymkhana/', include('applications.gymkhana.urls')),
     url(r'^healthcenter/', include('applications.health_center.urls')),
     url(r'^library/', include('applications.library.urls')),
