@@ -101,6 +101,7 @@ INSTALLED_APPS = [
     'applications.globals.apps.GlobalsConfig',
     'applications.health_center.apps.HealthCenterConfig',
     'applications.leave.apps.LeaveConfig',
+    'applications.notification_channels.apps.NotificationChannelsConfig',
     'applications.online_cms.apps.OnlineCmsConfig',
     'applications.placement_cell.apps.PlacementCellConfig',
     'applications.scholarships.apps.ScholarshipsConfig',
@@ -146,17 +147,11 @@ WSGI_APPLICATION = 'Fusion.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
-
 DATABASES = {
-    'default':
-        {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'fusion',
-            'USER': 'root',
-            'PASSWORD': '',
-            'HOST': '127.0.0.1',
-            'PORT': '3306',
-        },
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
 }
 
 

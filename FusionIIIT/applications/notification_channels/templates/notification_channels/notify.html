@@ -1,0 +1,5 @@
+<ul>
+	{% for notif in notifications %}
+	<a href="{{ notif.reference_url }}"><li>{{ notif }}</li></a>
+	{% endfor %}
+</ul>

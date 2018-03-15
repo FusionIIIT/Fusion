@@ -1,0 +1,5 @@
+<ul>
+	{% for activity in activities %}
+	<a href="{{ activity.notification.reference_url }}"><li> {{ activity }} </li></a>
+	{{ endfor }}
+</ul>
