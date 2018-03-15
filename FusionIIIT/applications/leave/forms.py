@@ -2,10 +2,12 @@ from django import forms
 from django.forms.formsets import BaseFormSet
 from applications.leave.models import LeaveType
 from django.contrib.auth.models import User
+from .helpers import get_user_choices
+from django.db.models import Q
 
 
 class EmployeeCommonForm(forms.Form):
-    
+
     purpose = forms.CharField(widget=forms.TextInput)
     is_station = forms.BooleanField(initial=False, required=False)
     station_leave_info = forms.CharField(widget=forms.Textarea)
@@ -13,14 +15,12 @@ class EmployeeCommonForm(forms.Form):
 
 class LeaveSegmentForm(forms.Form):
 
-    LEAVE_TYPES = (
-        ((leave_type.id, leave_type.name) for leave_type in LeaveType.objects.all())
-    )
+    LEAVE_TYPES = list((leave_type.id, leave_type.name) for leave_type in LeaveType.objects.all())
 
-    leave_type = forms.CharField(widget=forms.Select(choices=LEAVE_TYPES))
+    leave_type = forms.ChoiceField(label='Leave Type', choices=LEAVE_TYPES)
     start_date = forms.DateField(label='From')
     end_date = forms.DateField(label='To')
-    document = forms.FileField(label='Related Document')
+    document = forms.FileField(label='Related Document', required=False)
 
 
 class AdminReplacementForm(forms.Form):
@@ -33,19 +33,10 @@ class AdminReplacementForm(forms.Form):
 
         super(AdminReplacementForm, self).__init__(*args, **kwargs)
 
-        try:
-            user_type = self.user.extrainfo.user_type
-            ALL_USERS = User.objects.all()
-            # TODO: Add code for userchoices
-            USER_CHOICES = []
-            # USER_CHOICES = list((user.username, '{} {}'.format(user.first_name, user.last_name) \
-            #                   for user in ALL_USERS if user.extrainfo.user_type==user_type \
-            #                   and user != self.user))
-        except:
-            USER_CHOICES = []
+        USER_CHOICES = get_user_choices(self.user)
 
-        self.fields['admin_rep'] = forms.CharField(label='Administrative Responsibility To: ',
-                                                   widget=forms.Select(choices=USER_CHOICES))
+        self.fields['admin_rep'] = forms.ChoiceField(label='Administrative Responsibility To: ',
+                                                     choices=USER_CHOICES)
 
 
 class AcademicReplacementForm(forms.Form):
@@ -58,18 +49,10 @@ class AcademicReplacementForm(forms.Form):
 
         super(AcademicReplacementForm, self).__init__(*args, **kwargs)
 
-        try:
-            user_type = self.user.extrainfo.user_type
-            ALL_USERS = User.objects.all()
-            USER_CHOICES = [] 
-            # USER_CHOICES = list((user.username, '{} {}'.format(user.first_name, user.last_name) \
-            #                   for user in ALL_USERS if user.extrainfo.user_type==user_type \
-            #                   and user != self.user))
-        except:
-            USER_CHOICES = []
+        USER_CHOICES = get_user_choices(self.user)
 
-        self.fields['acad_rep'] = forms.CharField(label='Academic Responsibility To: ',
-                                                   widget=forms.Select(choices=USER_CHOICES))
+        self.fields['acad_rep'] = forms.ChoiceField(label='Academic Responsibility To: ',
+                                                    choices=USER_CHOICES)
 
 
 class BaseLeaveFormSet(BaseFormSet):
@@ -91,5 +74,3 @@ class BaseAdminFormSet(BaseFormSet):
 class BaseCommonFormSet(BaseFormSet):
     def clean(self):
         pass
-
-

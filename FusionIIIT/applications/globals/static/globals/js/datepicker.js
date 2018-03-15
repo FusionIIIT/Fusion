@@ -1,35 +1,35 @@
-$('#rangestart').calendar({
+$('.rangestart').calendar({
     type: 'date',
-    endCalendar: $('#rangeend')
+    // endCalendar: $('#rangeend')
 });
-$('#rangeend').calendar({
+$('.rangeend').calendar({
     type: 'date',
-    startCalendar: $('#rangestart')
+    // startCalendar: $('#rangestart')
 });
-
-$('#rangestart1').calendar({
-    type: 'date',
-    endCalendar: $('#rangeend1')
-});
-$('#rangeend1').calendar({
-    type: 'date',
-    startCalendar: $('#rangestart1')
-});
-
-$('#rangestart2').calendar({
-    type: 'date',
-    endCalendar: $('#rangeend2')
-});
-$('#rangeend2').calendar({
-    type: 'date',
-    startCalendar: $('#rangestart2')
-});
-
-$('#rangestart3').calendar({
-    type: 'date',
-    endCalendar: $('#rangeend3')
-});
-$('#rangeend3').calendar({
-    type: 'date',
-    startCalendar: $('#rangestart3')
-});
+//
+// $('#rangestart1').calendar({
+//     type: 'date',
+//     endCalendar: $('#rangeend1')
+// });
+// $('#rangeend1').calendar({
+//     type: 'date',
+//     startCalendar: $('#rangestart1')
+// });
+//
+// $('#rangestart2').calendar({
+//     type: 'date',
+//     endCalendar: $('#rangeend2')
+// });
+// $('#rangeend2').calendar({
+//     type: 'date',
+//     startCalendar: $('#rangestart2')
+// });
+//
+// $('#rangestart3').calendar({
+//     type: 'date',
+//     endCalendar: $('#rangeend3')
+// });
+// $('#rangeend3').calendar({
+//     type: 'date',
+//     startCalendar: $('#rangestart3')
+// });

@@ -11,6 +11,10 @@
     {% block navBar %}
         {% include 'dashboard/navbar.html' %}
     {% endblock %}
+    <div id="instructions">
+        {% include 'leaveModule/instructions.html' %}
+    </div>
+
 
     {% comment %}The grid starts here!{% endcomment %}
     <div class="ui stackable doubling grid">
@@ -146,17 +150,14 @@
     <script type="text/javascript" src="{% static 'globals/js/addLeave.js' %}"></script>
 
     <script>
-        $(document).ready(function() {
-            $('table').tablesort();
-        });
-    </script>
-
-
-    <script>
         $(document).ready(function(){
+
+            $('#instructions .modal').modal('show');
+
+            $('table').tablesort();
             $("#textLoader").toggle();
             $("#replacement-card").toggle();
-            setTimeout(loader, 500);
+            setTimeout(loader, 200);
         });
 
         function loader() {

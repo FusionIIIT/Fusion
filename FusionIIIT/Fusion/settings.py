@@ -110,7 +110,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth',
     'allauth.socialaccount.providers.google',
-    'semanticuiforms'
+    'semanticuiforms',
 ]
 
 MIDDLEWARE = [

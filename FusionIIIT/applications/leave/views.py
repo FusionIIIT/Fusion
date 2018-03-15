@@ -12,9 +12,13 @@ from applications.leave.forms import (EmployeeCommonForm, LeaveSegmentForm,
 @login_required(login_url='/accounts/login')
 def leave(request):
 
-    LeaveFormSet = formset_factory(LeaveSegmentForm, formset=BaseLeaveFormSet)
-    AcadFormSet = formset_factory(AcademicReplacementForm)# (form_kwargs={'user': request.user})
-    AdminFormSet = formset_factory(AdminReplacementForm)# (form_kwargs={'user': request.user})
+    LeaveFormSet = formset_factory(LeaveSegmentForm, extra=0, max_num=3, min_num=1,
+                                   # initial_form_count=1,
+                                   formset=BaseLeaveFormSet)
+    AcadFormSet = formset_factory(AcademicReplacementForm, extra=0, max_num=3, min_num=1)
+                                  # initial_form_count=1)# (form_kwargs={'user': request.user})
+    AdminFormSet = formset_factory(AdminReplacementForm, extra=0, max_num=3, min_num=1)
+                                   # initial_form_count=1)# (form_kwargs={'user': request.user})
     common_form = EmployeeCommonForm()
 
     context = {}
@@ -22,23 +26,26 @@ def leave(request):
     user_type = request.user.extrainfo.user_type
 
     if request.method == 'POST':
-        kwargs = {'user' : request.user}
-        kwargs.update(request.POST)
-        leave_form_set = LeaveFormSet(kwargs)
-        academic_form_set = AcadFormSet(kwargs)
-        admin_form_set = AdminFormSet(kwargs)
+
+        leave_form_set = LeaveFormSet(request.POST, prefix='leave_form')
+        academic_form_set = AcadFormSet(request.POST, prefix='acad_form',
+                                        form_kwargs={'user': request.user})
+        admin_form_set = AdminFormSet(request.POST, prefix='admin_form',
+                                      form_kwargs={'user': request.user})
         common_form = EmployeeCommonForm(request.POST)
 
+        # if leave_form_set.is_valid() and academic_form_set.is_valid() \
+            # and admin_form_set.is_valid() and common_form.is_valid():
+        # print(leave_form_set)
         if leave_form_set.is_valid() and academic_form_set.is_valid() \
             and admin_form_set.is_valid() and common_form.is_valid():
-
-            pass
+            print('hey worked')
 
     else:
         context = {
-            'leave_form_set': LeaveFormSet(initial={}),
-            'acad_form_set': AcadFormSet(form_kwargs={'user': request.user}),
-            'admin_form_set': AdminFormSet(form_kwargs={'user': request.user}),
+            'leave_form_set': LeaveFormSet(prefix='leave_form'),
+            'acad_form_set': AcadFormSet(prefix='acad_form', form_kwargs={'user': request.user}),
+            'admin_form_set': AdminFormSet(prefix='admin_form', form_kwargs={'user': request.user}),
             'common_form': common_form,
         }
 
