@@ -3,8 +3,6 @@ from django.contrib import admin
 from .models import (DepartmentInfo, Designation, ExtraInfo, Faculty,
                      HoldsDesignation, Staff)
 
-# Register your models here.
-
 admin.site.register(ExtraInfo)
 admin.site.register(Staff)
 admin.site.register(Faculty)
