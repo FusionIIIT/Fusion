@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 
 
 class EmployeeCommonForm(forms.Form):
-    
+
     purpose = forms.CharField(widget=forms.TextInput)
     is_station = forms.BooleanField(initial=False, required=False)
     station_leave_info = forms.CharField(widget=forms.Textarea)
@@ -61,7 +61,7 @@ class AcademicReplacementForm(forms.Form):
         try:
             user_type = self.user.extrainfo.user_type
             ALL_USERS = User.objects.all()
-            USER_CHOICES = [] 
+            USER_CHOICES = []
             # USER_CHOICES = list((user.username, '{} {}'.format(user.first_name, user.last_name) \
             #                   for user in ALL_USERS if user.extrainfo.user_type==user_type \
             #                   and user != self.user))
@@ -91,5 +91,3 @@ class BaseAdminFormSet(BaseFormSet):
 class BaseCommonFormSet(BaseFormSet):
     def clean(self):
         pass
-
-

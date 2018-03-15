@@ -39,7 +39,7 @@ class DepartmentInfo(models.Model):
 
 # TODO: Remove unnecessary null=True.
 class ExtraInfo(models.Model):
-    id = models.CharField(max_length=20, primary_key=True)
+    unique_id = models.CharField(max_length=20, primary_key=True, unique=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     sex = models.CharField(max_length=2, choices=Constants.SEX_CHOICES, default='M')
     date_of_birth = models.DateField(null=True)
