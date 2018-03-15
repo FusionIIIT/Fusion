@@ -1,7 +1,8 @@
-from django.db import models
 from django.contrib.auth.models import User
+from django.db import models
+
 from applications.globals.models import HoldsDesignation
-# Create your models here.
+
 
 class Constants:
 
@@ -116,7 +117,6 @@ class LeaveMigration(models.Model):
     date = models.DateField(null=False)
     replacee = models.ForeignKey(User, on_delete=models.CASCADE, related_name='replacings')
     replacing_as = models.ForeignKey(HoldsDesignation, on_delete=models.CASCADE)
-
 
     def __str__(self):
         return '{} : {}, type => {}'.format(self.replacee.username, self.replacing_as.user.username,

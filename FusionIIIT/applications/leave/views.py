@@ -1,24 +1,22 @@
-from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.forms.formsets import formset_factory
-from applications.leave.models import (LeaveType, Leave, ReplacementSegment,
-                                       LeaveSegment, LeavesCount, LeaveRequest,
-                                       LeaveMigration)
-from applications.leave.forms import (EmployeeCommonForm, LeaveSegmentForm,
-                                      AdminReplacementForm, AcademicReplacementForm,
-                                      BaseLeaveFormSet)
+from django.shortcuts import render
+
+# from applications.leave.models import (LeaveType, Leave, ReplacementSegment,
+#                                        LeaveSegment, LeavesCount, LeaveRequest,
+#                                        LeaveMigration)
+from applications.leave.forms import (AcademicReplacementForm,
+                                      AdminReplacementForm, BaseLeaveFormSet,
+                                      EmployeeCommonForm, LeaveSegmentForm)
 
 
 @login_required(login_url='/accounts/login')
 def leave(request):
 
     LeaveFormSet = formset_factory(LeaveSegmentForm, extra=0, max_num=3, min_num=1,
-                                   # initial_form_count=1,
                                    formset=BaseLeaveFormSet)
     AcadFormSet = formset_factory(AcademicReplacementForm, extra=0, max_num=3, min_num=1)
-                                  # initial_form_count=1)# (form_kwargs={'user': request.user})
     AdminFormSet = formset_factory(AdminReplacementForm, extra=0, max_num=3, min_num=1)
-                                   # initial_form_count=1)# (form_kwargs={'user': request.user})
     common_form = EmployeeCommonForm()
 
     context = {}
@@ -34,11 +32,9 @@ def leave(request):
                                       form_kwargs={'user': request.user})
         common_form = EmployeeCommonForm(request.POST)
 
-        # if leave_form_set.is_valid() and academic_form_set.is_valid() \
-            # and admin_form_set.is_valid() and common_form.is_valid():
-        # print(leave_form_set)
         if leave_form_set.is_valid() and academic_form_set.is_valid() \
-            and admin_form_set.is_valid() and common_form.is_valid():
+           and admin_form_set.is_valid() and common_form.is_valid():
+
             print('hey worked')
 
     else:
@@ -51,6 +47,5 @@ def leave(request):
 
         if user_type == 'staff':
             context.update()
-
 
     return render(request, "leaveModule/leave.html", context)
