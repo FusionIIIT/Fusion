@@ -9,4 +9,4 @@ install:
   - pip install -r requirements.txt
 script:
   - flake8 . --exclude manage.py,__pycache__,migrations --max-line-length=100
-  - isort
+  - timeout 10s isort
