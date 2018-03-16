@@ -16,7 +16,8 @@ class EmployeeCommonForm(forms.Form):
 class LeaveSegmentForm(forms.Form):
 
     try:
-        LEAVE_TYPES = list((leave_type.id, leave_type.name) for leave_type in LeaveType.objects.all())
+        LEAVE_TYPES = list((leave_type.id, leave_type.name)
+                           for leave_type in LeaveType.objects.all())
     except:
         LEAVE_TYPES = []
 

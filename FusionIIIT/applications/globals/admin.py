@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from .models import (DepartmentInfo, Designation, ExtraInfo, Faculty, Feedback,
-                     Issue, IssueImage, Staff)
+                     Issue, IssueImage, Staff, HoldsDesignation)
 
 
 admin.site.register(IssueImage)
