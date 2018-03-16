@@ -15,7 +15,10 @@ class EmployeeCommonForm(forms.Form):
 
 class LeaveSegmentForm(forms.Form):
 
-    LEAVE_TYPES = list((leave_type.id, leave_type.name) for leave_type in LeaveType.objects.all())
+    try:
+        LEAVE_TYPES = list((leave_type.id, leave_type.name) for leave_type in LeaveType.objects.all())
+    except:
+        LEAVE_TYPES = []
 
     leave_type = forms.ChoiceField(label='Leave Type', choices=LEAVE_TYPES)
     start_date = forms.DateField(label='From')

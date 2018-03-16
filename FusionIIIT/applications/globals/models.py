@@ -62,7 +62,7 @@ class ExtraInfo(models.Model):
         return int(timedelta.days / 365)
 
     def __str__(self):
-        return '{} - {}'.format(self.id, self.user.username)
+        return '{} - {}'.format(self.unique_id, self.user.username)
 
 
 class HoldsDesignation(models.Model):
