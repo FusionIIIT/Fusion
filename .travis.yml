@@ -1,7 +1,5 @@
 language: python
 dist: precise
-cache:
-  - pip
 python:
   - 3.6
 install:
