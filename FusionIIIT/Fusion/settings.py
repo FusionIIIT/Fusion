@@ -52,8 +52,7 @@ EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'
 
 # email of sender
-# TODO: Remove Ramlal!
-EMAIL_HOST_USER = 'ramlalfff@gmail.com'
+EMAIL_HOST_USER = 'erp@iiitdmj.ac.in'
 
 # password of sender
 EMAIL_HOST_PASSWORD = ''
@@ -73,14 +72,24 @@ ACCOUNT_EMAIL_CONFIRMATION_HMAC = True
 ACCOUNT_EMAIL_VERIFICATION = 'optional'
 
 ACCOUNT_EMAIL_SUBJECT_PREFIX = 'Fusion: '
-DEFAULT_FROM_EMAIL = 'ramlalfff@gmail.com'
+DEFAULT_FROM_EMAIL = 'erp@iiitdmj.ac.in'
 
-SERVER_EMAIL = 'ramlalfff@gmail.com'
+SERVER_EMAIL = 'erp@iiitdmj.ac.in'
 
 ACCOUNT_LOGOUT_REDIRECT_URL = '/accounts/login/'
 ACCOUNT_USERNAME_MIN_LENGTH = 3
 
 SOCIALACCOUNT_ADAPTER = 'applications.globals.adapters.MySocialAccountAdapter'
+
+
+# CELERY STUFF
+BROKER_URL = 'redis://localhost:6379'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Asia/Calcutta'
+
 
 # Application definition
 
@@ -92,13 +101,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
+    'applications.globals.apps.GlobalsConfig',
     'applications.academic_procedures.apps.AcademicProceduresConfig',
     'applications.academic_information.apps.AcademicInformationConfig',
     'applications.central_mess.apps.CentralMessConfig',
     'applications.complaint_system.apps.ComplaintSystemConfig',
     'applications.file_tracking.apps.FileTrackingConfig',
     'applications.finance_accounts.apps.FinanceAccountsConfig',
-    'applications.globals.apps.GlobalsConfig',
     'applications.health_center.apps.HealthCenterConfig',
     'applications.leave.apps.LeaveConfig',
     'applications.online_cms.apps.OnlineCmsConfig',
@@ -147,16 +156,24 @@ WSGI_APPLICATION = 'Fusion.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
+# DATABASES = {
+#     'default':
+#         {
+#             'ENGINE': 'django.db.backends.mysql',
+#             'NAME': 'fusion',
+#             'USER': 'root',
+#             'PASSWORD': '',
+#             'HOST': '127.0.0.1',
+#             'PORT': '3306',
+#         },
+# }
+
+# We will use sqlite for development, so we don't waste our time resolving mysql errors.
 DATABASES = {
-    'default':
-        {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'fusion',
-            'USER': 'root',
-            'PASSWORD': '',
-            'HOST': '127.0.0.1',
-            'PORT': '3306',
-        },
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
 }
 
 
