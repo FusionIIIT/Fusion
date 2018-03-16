@@ -81,6 +81,7 @@ class ExtraInfo(models.Model):
     def __str__(self):
         return '{} - {}'.format(self.id, self.user.username)
 
+
 class HoldsDesignation(models.Model):
     user = models.ForeignKey(User, related_name='holds_designations', on_delete=models.CASCADE)
     working = models.ForeignKey(User, related_name='current_designation')
@@ -88,7 +89,7 @@ class HoldsDesignation(models.Model):
     held_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return '{} - {}'.format(self.user.username,self.designation)
+        return '{} - {}'.format(self.user.username, self.designation)
 
 
 # TODO : ADD additional staff related fields when needed
