@@ -1,14 +1,14 @@
 from django.contrib.auth.models import User
 from django.db import models
 
-from applications.globals.models import HoldsDesignation
+from applications.globals.models import HoldsDesignation, Designation
 
 
 class Constants:
 
     REPLACEMENT_TYPES = (
         ('academic', 'Academic Replacement'),
-        ('administratice', 'Administrative Replacement')
+        ('administrative', 'Administrative Replacement')
     )
 
     LEAVE_PERMISSIONS = (
@@ -31,9 +31,10 @@ class Constants:
 class LeaveType(models.Model):
     name = models.CharField(max_length=40, null=False)
     max_in_year = models.IntegerField(default=2)
+    requires_proof = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.name
+        return f'{self.name}, Max: {self.max_in_year}'
 
 
 class LeavesCount(models.Model):
@@ -58,14 +59,12 @@ class Leave(models.Model):
     applicant = models.ForeignKey(User, related_name='all_leaves',
                                   on_delete=models.CASCADE)
     purpose = models.CharField(max_length=500, default='', blank=True)
-    address = models.CharField(max_length=100, default='', blank=True)
     status = models.CharField(max_length=20, default='pending', choices=Constants.STATUS)
-    station_start_date = models.DateField(null=True)
-    station_end_date = models.DateField(null=True)
+    is_station = models.BooleanField(default=False)
 
     @property
     def is_station(self):
-        return self.station_start_date
+        return self.is_station
 
     def relacements_accepted(self):
         return not self.replace_segments.filter(status=False).exists()
@@ -95,7 +94,10 @@ class LeaveSegment(models.Model):
     leave = models.ForeignKey(Leave, related_name='leave_segments', on_delete=models.CASCADE)
     leave_type = models.ForeignKey(LeaveType, on_delete=models.SET_NULL, null=True)
     start_date = models.DateField()
+    start_half = models.BooleanField(default=False)
     end_date = models.DateField()
+    end_half = models.BooleanField(default=False)
+
 
 
 class LeaveRequest(models.Model):
@@ -109,6 +111,16 @@ class LeaveRequest(models.Model):
     def __str__(self):
         return '{} requested {}, {}'.format(self.leave.applicant.username,
                                             self.requested_from.username, self.permission)
+
+"""
+# Take care of `null` fields in back-end logic
+"""
+class LeaveAdministrators(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    authority = models.ForeignKey(Designation, null=True,
+                                  related_name='sanc_authority_of', on_delete=models.SET_NULL)
+    officer = models.ForeignKey(Designation, null=True,
+                                related_name='sanc_officer_of', on_delete=models.SET_NULL)
 
 
 class LeaveMigration(models.Model):

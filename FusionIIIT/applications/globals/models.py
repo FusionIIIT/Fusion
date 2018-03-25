@@ -2,10 +2,8 @@
 from django.contrib.auth.models import User
 from django.db import models
 
-# Class definations:
 
-
-# # Class for various choices on the enumerations
+# Class for various choices on the enumerations
 class Constants:
     SEX_CHOICES = (
         ('M', 'Male'),
@@ -70,13 +68,18 @@ class ExtraInfo(models.Model):
     id = models.CharField(max_length=20, primary_key=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     sex = models.CharField(max_length=2, choices=Constants.SEX_CHOICES, default='M')
-    age = models.IntegerField(default=18)
+    date_of_birth = models.DateField(null=True)
     address = models.TextField(max_length=1000, default="")
-    phone_no = models.BigIntegerField()
+    phone_no = models.BigIntegerField(null=True)
     user_type = models.CharField(max_length=20, choices=Constants.USER_CHOICES)
     department = models.ForeignKey(DepartmentInfo, on_delete=models.CASCADE, null=True, blank=True)
-    profile_picture = models.ImageField(null=True, blank=True)
+    profile_picture = models.ImageField(null=True, blank=True, upload_to='globals/profile_pictures')
     about_me = models.TextField(default='', max_length=1000, blank=True)
+
+    @property
+    def age(self):
+        timedelta = datetime.date.today() - self.date_of_birth
+        return int(timedelta.days / 365)
 
     def __str__(self):
         return '{} - {}'.format(self.id, self.user.username)

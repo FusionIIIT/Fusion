@@ -12,12 +12,7 @@
         $(function(){
 
             var add = function(row){
-                $(row).find('.rangestart').each(function() {
-                    $(this).calendar({
-                        type: 'date',
-                    });
-                });
-                $(row).find('.rangeend').each(function() {
+                $(row).find('.date').each(function() {
                     $(this).calendar({
                         type: 'date',
                     });
@@ -27,10 +22,7 @@
                 });
             };
             var refresh = function(){
-                $(document).find('.rangestart').each(function() {
-                    $(this).calendar('refresh');
-                });
-                $(document).find('.rangeend').each(function() {
+                $(document).find('.date').each(function() {
                     $(this).calendar('refresh');
                 });
             };
@@ -120,32 +112,41 @@
         <div class="ui divider"></div>
         <br>
         <div class="all-container">
-            <form class="ui large form" method="post" autocomplete="off">
+            <form class="ui large form" method="post" autocomplete="off" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div id="leave_form">
+                    {% if leave_form_set.non_form_errors %}
+                        {% for error in leave_form_set.non_form_errors %}
+                            <div class="ui red message">
+                                {{ error }}
+                            </div>
+                        {% endfor %}
+
+                    {% endif %}
+
                     {% for form in leave_form_set %}
                         <div id="{{ form.prefix }}-row" class="leave-form-container">
                             <div class="two fields" style="align-left: 10px;">
                                 <div class="field">
-                                    <label>Leave From:</label>
-                                    <div class="ui calendar rangestart" id="rangestart">
-                                        <div class="ui input left icon">
-                                            <i class="calendar icon"></i>
-                                            {# {% render_field form.start_date %} #}
-                                            {{ form.start_date }}
-                                        </div>
+
+                                    <div class="ui calendar date" id="date">
+                                        {% render_field form.start_date _icon='calendar' _align='left' placeholder='Click to select date'%}
                                     </div>
                                 </div>
 
                                 <div class="field">
-                                    <label>Leave To:</label>
-                                    <div class="ui calendar rangeend" id="rangeend">
-                                        <div class="ui input left icon">
-                                            <i class="calendar icon"></i>
-                                            {# {% render_field form.end_date %} #}
-                                            {{ form.end_date }}
-                                        </div>
+                                    <div class="ui calendar date" id="date">
+                                        {% render_field form.end_date _icon='calendar' _align='left' placeholder='Click to select date'%}
                                     </div>
+                                </div>
+                            </div>
+
+                            <div class="two fields" style="align-left: 10px;">
+                                <div class="field">
+                                    {% render_field form.start_half %}
+                                </div>
+                                <div class="field">
+                                    {% render_field form.end_half %}
                                 </div>
                             </div>
                             {% render_field form.leave_type %}
@@ -154,7 +155,7 @@
                     {% endfor %}
                     <br>
                     <div class="button-holder">
-                        <div id="leave_next" class="massive ui animated button" tabindex="0">
+                        <div id="leave_next" class="massive ui animated submit button" tabindex="0">
                             <div class="visible content">Next</div>
                             <div class="hidden content">
                                 <i class="right arrow icon"></i>
@@ -170,30 +171,17 @@
                     <div id="acad_form">
                         {% for form in acad_form_set %}
 
-
-
-
                             <div id="{{ form.prefix }}-row" class="acad-form-container">
                                 <div class="two fields" style="align-left: 10px;">
                                     <div class="field">
-                                        <label>Leave From:</label>
-                                        <div class="ui calendar rangestart" id="rangestart">
-                                            <div class="ui input left icon">
-                                                <i class="calendar icon"></i>
-                                                {# {% render_field form.start_date %} #}
-                                                {{ form.acad_start_date }}
-                                            </div>
+                                        <div class="ui calendar date" id="date">
+                                            {% render_field form.acad_start_date _icon='calendar' _align='left' placeholder='Click to select date'%}
                                         </div>
                                     </div>
 
                                     <div class="field">
-                                        <label>Leave To:</label>
-                                        <div class="ui calendar rangeend" id="rangeend">
-                                            <div class="ui input left icon">
-                                                <i class="calendar icon"></i>
-                                                {# {% render_field form.end_date %} #}
-                                                {{ form.acad_end_date }}
-                                            </div>
+                                        <div class="ui calendar date" id="date">
+                                            {% render_field form.acad_end_date _icon='calendar' _align='left' placeholder='Click to select date'%}
                                         </div>
                                     </div>
                                 </div>
@@ -215,24 +203,14 @@
 
                                 <div class="two fields" style="align-left: 10px;">
                                     <div class="field">
-                                        <label>Leave From:</label>
-                                        <div class="ui calendar rangestart" id="rangestart">
-                                            <div class="ui input left icon">
-                                                <i class="calendar icon"></i>
-                                                {# {% render_field form.start_date %} #}
-                                                {{ form.admin_start_date }}
-                                            </div>
+                                        <div class="ui calendar date" id="date">
+                                            {% render_field form.admin_start_date _icon='calendar' _align='left' placeholder='Click to select date'%}
                                         </div>
                                     </div>
 
                                     <div class="field">
-                                        <label>Leave To:</label>
-                                        <div class="ui calendar rangeend" id="rangeend">
-                                            <div class="ui input left icon">
-                                                <i class="calendar icon"></i>
-                                                {# {% render_field form.end_date %} #}
-                                                {{ form.admin_end_date }}
-                                            </div>
+                                        <div class="ui calendar date" id="date">
+                                            {% render_field form.admin_end_date _icon='calendar' _align='left' placeholder='Click to select date'%}
                                         </div>
                                     </div>
                                 </div>
@@ -261,7 +239,7 @@
 
                     {% render_field common_form.purpose %}
                     {% render_field common_form.is_station %}
-                    {% render_field common_form.station_leave_info %}
+                    {% render_field common_form.station_leave_info _no_required='True' %}
                     <span id="common_pre" class="massive red ui animated button" tabindex="0">
                         <div class="visible content">Go Back</div>
                         <div class="hidden content">

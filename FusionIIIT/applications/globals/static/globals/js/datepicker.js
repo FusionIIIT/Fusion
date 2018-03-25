@@ -4,3 +4,6 @@ $('.rangestart').calendar({
 $('.rangeend').calendar({
     type: 'date',
 });
+$('.date').calendar({
+    type: 'date',
+});

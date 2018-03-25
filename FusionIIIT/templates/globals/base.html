@@ -26,7 +26,13 @@
     {% block navBar %}
     {% endblock %}
 {% endblock %}
-
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
 </body>
 
 <script type="text/javascript" src="{% static 'globals/js/semantic.min.js' %}"></script>
@@ -34,6 +40,7 @@
 <script type="text/javascript" src="{% static 'globals/js/tab.js' %}"></script>
 
 <script>
+
     $(document).ready(function() {
         $('#new-notification')
             .popup({
