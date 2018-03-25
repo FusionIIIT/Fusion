@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 
-from applications.globals.models import HoldsDesignation, Designation
+from applications.globals.models import Designation, HoldsDesignation
 
 
 class Constants:
@@ -99,7 +99,6 @@ class LeaveSegment(models.Model):
     end_half = models.BooleanField(default=False)
 
 
-
 class LeaveRequest(models.Model):
     leave = models.ForeignKey(Leave, on_delete=models.CASCADE)
     requested_from = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -112,10 +111,11 @@ class LeaveRequest(models.Model):
         return '{} requested {}, {}'.format(self.leave.applicant.username,
                                             self.requested_from.username, self.permission)
 
-"""
-# Take care of `null` fields in back-end logic
-"""
+
 class LeaveAdministrators(models.Model):
+    """
+    # Take care of `null` fields in back-end logic
+    """
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     authority = models.ForeignKey(Designation, null=True,
                                   related_name='sanc_authority_of', on_delete=models.SET_NULL)

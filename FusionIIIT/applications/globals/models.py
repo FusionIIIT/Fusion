@@ -1,10 +1,10 @@
-# imports
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils import timezone
 
 
-# Class for various choices on the enumerations
 class Constants:
+    # Class for various choices on the enumerations
     SEX_CHOICES = (
         ('M', 'Male'),
         ('F', 'Female'),
@@ -78,7 +78,7 @@ class ExtraInfo(models.Model):
 
     @property
     def age(self):
-        timedelta = datetime.date.today() - self.date_of_birth
+        timedelta = timezone.localtime(timezone.now()).date() - self.date_of_birth
         return int(timedelta.days / 365)
 
     def __str__(self):

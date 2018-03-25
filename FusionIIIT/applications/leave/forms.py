@@ -1,13 +1,13 @@
 from django import forms
+from django.contrib.auth.models import User
+from django.db.models import Q
 from django.forms import ValidationError as VE
 from django.forms.formsets import BaseFormSet
-
-from django.contrib.auth.models import User
-from applications.leave.models import LeaveType, LeavesCount, LeaveSegment
-from django.db.models import Q
-from .helpers import get_user_choices
-
 from django.utils import timezone
+
+from applications.leave.models import LeavesCount, LeaveSegment, LeaveType
+
+from .helpers import get_user_choices
 
 
 class EmployeeCommonForm(forms.Form):
@@ -33,7 +33,7 @@ class LeaveSegmentForm(forms.Form):
     end_half = forms.BooleanField(label='Half Day at end', required=False)
 
     def clean(self, *args, **kwargs):
-        super(__class__, self).clean(*args, **kwargs)
+        super(LeaveSegmentForm, self).clean(*args, **kwargs)
         data = self.cleaned_data
         errors = dict()
         if data['start_date'] < data['end_date']:
@@ -147,10 +147,10 @@ class BaseLeaveFormSet(BaseFormSet):
         if 'user' in kwargs:
             self.user = kwargs.pop('user')
 
-        super(__class__, self).__init__(*args, **kwargs)
+        super(BaseLeaveFormSet, self).__init__(*args, **kwargs)
 
     def clean(self):
-        super(__class__, self).clean()
+        super(BaseLeaveFormSet, self).clean()
         curr_year = timezone.now().year
         leave_counts = LeavesCount.objects.filter(user=self.user, year=curr_year)
         mapping = dict()

@@ -1,13 +1,13 @@
-from django.shortcuts import render
 from django.contrib import messages
+from django.contrib.auth.models import User
 from django.forms.formsets import formset_factory
-from applications.leave.models import (LeaveType, Leave, ReplacementSegment,
-                                       LeaveSegment, LeavesCount, LeaveRequest,
-                                       LeaveMigration)
-from applications.leave.forms import (EmployeeCommonForm, LeaveSegmentForm,
-                                      AdminReplacementForm, AcademicReplacementForm,
-                                      BaseLeaveFormSet)
+from django.shortcuts import redirect, render, reverse
 
+from applications.leave.forms import (AcademicReplacementForm,
+                                      AdminReplacementForm, BaseLeaveFormSet,
+                                      EmployeeCommonForm, LeaveSegmentForm)
+from applications.leave.models import (Leave, LeaveSegment, LeaveType,
+                                       ReplacementSegment)
 
 LeaveFormSet = formset_factory(LeaveSegmentForm, extra=0, max_num=3, min_num=1,
                                formset=BaseLeaveFormSet)
@@ -52,7 +52,7 @@ def handle_faculty_leave_application(request):
             )
             segments.append(leave_segment)
 
-        for form in acad_form_set:
+        for form in academic_form_set:
             data = form.cleaned_data
             rep_user = User.objects.get(username=data.get('acad_rep'))
             rep = ReplacementSegment(
@@ -94,7 +94,7 @@ def handle_faculty_leave_application(request):
 
     context = {
         'leave_form_set': leave_form_set,
-        'acad_form_set': acad_form_set,
+        'acad_form_set': academic_form_set,
         'admin_form_set': admin_form_set,
         'common_form': common_form,
     }

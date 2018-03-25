@@ -1,10 +1,10 @@
 from django.contrib.auth.decorators import login_required
-from django.forms.formsets import formset_factory
-from django.shortcuts import render
 
-from .handlers import (handle_staff_leave_application, handle_faculty_leave_application,
-                       handle_student_leave_application, send_faculty_leave_form,
-                       send_staff_leave_form, send_student_leave_form)
+from .handlers import (handle_faculty_leave_application,
+                       handle_staff_leave_application,
+                       handle_student_leave_application,
+                       send_faculty_leave_form, send_staff_leave_form,
+                       send_student_leave_form)
 
 
 @login_required(login_url='/accounts/login')
@@ -14,7 +14,7 @@ def leave(request):
 
     if request.method == 'POST':
 
-        reponse = None
+        response = None
 
         if user_type == 'faculty':
             response = handle_faculty_leave_application(request)
@@ -24,7 +24,6 @@ def leave(request):
             response = handle_student_leave_application(request)
 
         return response
-
 
     if user_type == 'faculty':
         response = send_faculty_leave_form(request)
