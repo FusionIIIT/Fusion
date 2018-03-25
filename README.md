@@ -7,7 +7,7 @@
 
 ## Requirements
 
-Python 3.5  
+Python 3.6  
 Django==1.11.4+  
 And additional requirements are in **requirements.txt**  
 
