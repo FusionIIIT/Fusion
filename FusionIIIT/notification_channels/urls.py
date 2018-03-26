@@ -1,5 +1,6 @@
 from django.conf.urls import url
-from notification_channels.views import (notifications, read_all)
+
+from notification_channels.views import notifications, read_all
 
 app_name = 'notifications'
 

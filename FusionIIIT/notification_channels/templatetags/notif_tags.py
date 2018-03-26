@@ -1,5 +1,6 @@
 from django import template
 from django.contrib.contenttypes.models import ContentType
+
 from notification_channels.models import Notification
 
 register = template.Library()
