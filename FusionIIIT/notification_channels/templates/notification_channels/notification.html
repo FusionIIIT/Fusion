@@ -1,0 +1,11 @@
+<div class="item" {% if notification.description %}title="{{ notification.description }}"{% endif %}>
+	<div class="content">
+		<a class="ui header" href="{{ notification.reference_url }}">
+			<h4 style="color: {% if notification.read %}grey{% else %}black{% endif %};">{{ notification }}</h4>
+		</a>
+		<div class="description">
+			{{ notification.timestamp }} ago.
+		</div>
+	</div>
+</div>
+<div class="ui divider"></div>

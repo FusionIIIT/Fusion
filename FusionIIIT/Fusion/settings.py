@@ -101,7 +101,7 @@ INSTALLED_APPS = [
     'applications.globals.apps.GlobalsConfig',
     'applications.health_center.apps.HealthCenterConfig',
     'applications.leave.apps.LeaveConfig',
-    'applications.notification_channels.apps.NotificationChannelsConfig',
+    'notification_channels.apps.NotificationChannelsConfig',
     'applications.online_cms.apps.OnlineCmsConfig',
     'applications.placement_cell.apps.PlacementCellConfig',
     'applications.scholarships.apps.ScholarshipsConfig',

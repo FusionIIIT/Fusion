@@ -1,5 +1,5 @@
 {% load static %}
-
+{% load notif_tags %}
 {% block navBar %}
     {% include 'dashboard/sidenavbar.html' %}
 
@@ -48,24 +48,6 @@
                                             Leave
                                         </span>
                                     </a>
-
-                                    <a class="item" data-tab="complaintModule">
-                                        <span style="color: #000;">
-                                            Complaint
-                                        </span>
-                                    </a>
-
-                                    <a class="item" data-tab="messModule">
-                                        <span style="color: #000;">
-                                            Mess
-                                        </span>
-                                    </a>
-
-                                    <a class="item" data-tab="placementModule">
-                                        <span style="color: #000;">
-                                            Placement
-                                        </span>
-                                    </a>
                                 </div>
                             </div>
 
@@ -73,6 +55,7 @@
                                 <div class="ui active tab" data-tab="leaveModule">
                                     <div class="ui animated fluid list"
                                          id="new-message-list" style="min-width: 20vw; max-height: 28.5vh; overflow-y: auto;">
+                                         {% all_notifs request.user %}
                                     </div>
                                 </div>
 
