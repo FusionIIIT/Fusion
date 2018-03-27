@@ -81,7 +81,7 @@
                             <div class="field">
                               {{ form3.ctc.errors }}
                                 <label for="{{ form3.ctc.id_for_label }}">
-                                    CTC
+                                    CTC (LPA)
                                 </label>
 
                                 <div class="ui large input">
@@ -153,7 +153,7 @@
                         </td>
 
                         <td>
-                            &#8377; {{ student.record_id.ctc }}
+                            {{ student.record_id.ctc }}
                         </td>
 
                         {% if profile.designation.name != 'student' %}
@@ -271,22 +271,6 @@
                     <div class="ui divider"></div>
                     <br>
 
-                    <div class="ui stackable pagination menu">
-                                      {% for student in pbirecord %}
-                               {% if forloop.counter0|divisibleby:10 %}
-                                   <span align="right>"><a class="{% if forloop.counter0 == 0 %}active {% endif %}item" data-tab="student-{{ forloop.counter0 }}">
-                                       {% widthratio forloop.counter|add:10 10 1 %}
-                    </a></span>
-                               {% endif %}
-                               {% endfor %}
-
-                           </div>
-              {% for student in pbirecord %}
-
-                           {% if forloop.counter0|divisibleby:10 %}
-                           <div class="ui {% if forloop.counter0 == 0 %}active {% endif %} tab segment" data-tab="student-{{ forloop.counter0 }}">
-
-
                 <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;">
                     <thead>
                     <tr>
@@ -301,7 +285,7 @@
                     </thead>
 
                     <tbody>
-                    {% endif %}
+                  {% for student in pbirecord %}
                       {% if student.record_id.placement_type == 'PBI' %}
                     <tr>
                         <td>
@@ -339,17 +323,12 @@
                         {% endif %}
                     </tr>
                     {% endif %}
-                      {% if forloop.counter0|add:1|divisibleby:10 %}
-                    </tbody>
-                </table></div>
-                <br>
-                {% endif %}
                 {% endfor %}
-                   {% if not pbirecord.all.count|divisibleby:10 %}
+
                    </tbody>
                       </table>
-                          </div>
-               {% endif %}
+
+
 
             </div>
 
@@ -459,21 +438,6 @@
                     <div class="ui divider"></div>
                     <br>
 
-                    <div class="ui stackable pagination menu">
-                                {% for student in higherrecord %}
-                               {% if forloop.counter0|divisibleby:10 %}
-                                   <span align="right>"><a class="{% if forloop.counter0 == 0 %}active {% endif %}item" data-tab="student-{{ forloop.counter0 }}">
-                                       {% widthratio forloop.counter|add:10 10 1 %}
-                    </a></span>
-                               {% endif %}
-                               {% endfor %}
-
-                           </div>
-            {% for student in higherrecord %}
-
-                           {% if forloop.counter0|divisibleby:10 %}
-                           <div class="ui {% if forloop.counter0 == 0 %}active {% endif %} tab segment" data-tab="student-{{ forloop.counter0 }}">
-
 
                 <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;">
                     <thead>
@@ -489,7 +453,8 @@
                     </thead>
 
                     <tbody>
-                      {% endif %}
+                      {% for student in higherrecord %}
+
                       {% if student.record_id.placement_type == 'HIGHER STUDIES' %}
                     <tr>
                         <td>
@@ -528,21 +493,17 @@
                         {% endif %}
                     </tr>
                     {% endif %}
-                  {% if forloop.counter0|add:1|divisibleby:10 %}
-                    </tbody>
-                </table></div>
-
-                {% endif %}
                 {% endfor %}
-         {% if not higherrecord.all.count|divisibleby:10 %}
          </tbody>
             </table>
-                </div>
-                {% endif %}
 
                 {% endif %}
 
             </div>
+
+
+
+
         </div>
     </div>
 

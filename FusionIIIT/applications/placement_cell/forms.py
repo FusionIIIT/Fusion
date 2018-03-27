@@ -158,8 +158,8 @@ class SearchStudentRecord(forms.Form):
     rollno = forms.IntegerField(label="rollno", required=False)
     programme = forms.ChoiceField(choices = Con.PROGRAMME, required=False,
                                   label="programme", widget=forms.Select(attrs={'style': "height:45px"}))
-    department = forms.ModelChoiceField(queryset=DepartmentInfo.objects.all(), required=False,
-                                        label="department", widget=forms.Select(attrs={'style': "height:45px"}))
+    department = forms.ChoiceField(choices = Constants.DEP, required=False,
+                                  label="department", widget=forms.Select(attrs={'style': "height:45px"}))
     cpi = forms.DecimalField(label="cpi", required=False)
     skill = forms.ModelMultipleChoiceField(required=False, widget=forms.SelectMultiple(),
                                            queryset=Skill.objects.all(), label="skill")

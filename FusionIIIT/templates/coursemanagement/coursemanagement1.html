@@ -4,18 +4,14 @@
         width: 100%;
         height: 80vh;
     }
-
     /*timer css starts*/
-
     body {
         font-family: 'Roboto Slab', serif;
     }
-
     .heading {
         text-align: center;
         font-size: 80px;
     }
-
     #clock {
         display: block;
         width: 500px;
@@ -27,7 +23,6 @@
         background-color: white;
         box-shadow: 2px 2px 5px 1px gray;
     }
-
     .block {
         display: inline-block;
         width: 16%;
@@ -37,15 +32,12 @@
         text-align: center;
         background-color: orange;
     }
-
     .digit {
         display: block;
         font-size: 30px;
         background-color: #fff;
     }
-
     /*timer css ends*/
-
 </style>
 
 {% comment %}The grid starts here!{% endcomment %}
@@ -64,39 +56,26 @@
         {% comment %}The Tab-Menu starts here!{% endcomment %}
         <!-- <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
-
                 <a class="active item" data-tab="first">
                     View Courses
                     <i class="right floated chevron right icon"></i>
                 </a>
-
                 <a class="item" data-tab="second">
                     Submit Assignment
                     <i class="right floated chevron right icon"></i>
                 </a>
-
                 <a class="item" data-tab="third">
                     View Performance
                     <i class="right floated chevron right icon"></i>
                 </a>
-
                 <a class="item" data-tab="fourth">
                     Assessment
                     <i class="right floated chevron right icon"></i>
                 </a>
-
                 <a class="item" data-tab="fifth">
                     Add Content
                     <i class="right floated chevron right icon"></i>
                 </a>
-
-
-
-
-
-
-
-
             </div> -->
         {% comment %}The Tab-Menu ends here!{% endcomment %}
 
@@ -111,23 +90,6 @@
                 <h1 class="active item" data-tab="coursedetails">
                     Basic Course Details
                 </h1>
-                <!--
-                    <a class="item" data-tab="assignment">
-                        Assignment
-                    </a>
-
-                    <a class="item" data-tab="videos">
-                        Videos
-                    </a>
-                    <a class="item" data-tab="slides">
-                        Slides
-                    </a>
-                     <a class="item" data-tab="time-table">
-                        Time-Table/Quiz
-                    </a>
-                    <a class="item" data-tab="quiz">
-                        Quizzes
-                    </a> -->
             </div>
 
 
@@ -641,30 +603,7 @@
 
     </div>
     {% comment %}The central-rail segment ends here!{% endcomment %} {% comment %}The right-rail segment starts here!{% endcomment %}
-    <!-- <div class="three wide column">
-            <div class="row">
 
-            </div>
-                {% comment %}The Instructor Note:{% endcomment %}
-                {% block note %}
-                    {% include 'coursemanagement/note.html' %}
-                {% endblock %}
-
-            <div class="row">
-                {% comment %}The comments:{% endcomment %}
-                {% block comments %}
-                    {% include 'coursemanagement/comments.html' %}
-                {% endblock %}
-            </div>
-
-        </div>
-        {% comment %}The right-rail segment ends here!{% endcomment %}
-
-        {% comment %}The right-margin segment!{% endcomment %}
-        <div class="column"></div>
-
-
-    </div> -->
     {% comment %}The grid ends here!{% endcomment %} {% endblock %} {% block javascript %}
     <script type="text/javascript" src="{% static 'globals/js/editProfile.js' %}"></script>
     <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
@@ -684,13 +623,11 @@
     $(document).ready(function() {
         $('table').tablesort();
     });
-
 </script>
 
 <script>
     function toggleContent() {
         $('.modulesContent').toggle();
-
         if ($('.modulesContent').is(':visible')) {
             $('#toggleIcon').removeClass("chevron down");
             $('#toggleIcon').addClass("chevron up");
@@ -699,12 +636,10 @@
             $('#toggleIcon').addClass("chevron down");
         }
     }
-
     $('#enter').click(function() {
         alert('Do not close');
         window.open('/quiz/{{contest.pk}}/live/', 'myWindow', "width=1500, height=1000");
     });
-
 </script>
 
 

@@ -1,7 +1,7 @@
 {% load static %}
 {% block finalregister %}
 
-    {% comment %}The tab menu starts here!{% endcomment %}
+    
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="complainthistory">
             Final Registration
@@ -10,7 +10,8 @@
 
     <div class="ui active tab" data-tab="complainthistory">
         <div class="ui vertical segment">
-            {% if final_count %}
+            {% if frd %}
+                {% if final_count %}
               <B><CENTER>  You have already registered for next semester </B></CENTER>
             {% else %}
             {% if pre_register %}
@@ -100,6 +101,9 @@
             {% else %}
               <B><CENTER>   You have not pre-registered yet!!! </B></CENTER>
             {% endif %}
+            {% endif %}
+            {% else %}
+                <B><CENTER>  Final Registration date hasn't come yet </B></CENTER>
             {% endif %}
         </div>
     </div>

@@ -1,24 +1,24 @@
 {% load static %} {% block assessment %}
 <div class="ui pointing secondary menu">
-    <a class="item actve" data-tab="assignment">
+    <a class="item active" data-tab="assignment">
             Assignment
         </a>
 </div>
-<div class="ui active tab segment" data-tab="assignment">
+<div class="ui active tab segment" data-tab="assignment" style="overflow:scroll;overflow-y:hidden">
     <h4 class="ui dividing header">Software Engineering Course</h4>
 
     <div class="ui top attached tabular menu">
       {% for assi in assignment %}
-        <a class="item active" data-tab="{{forloop.counter}}">{{assi.assignment_name}}</a>
+        <a class="item tabheading" data-pk="{{forloop.counter}}" id="tab{{forloop.counter}}" data-tab="{{forloop.counter}}">{{assi.assignment_name}}</a>
       {% endfor %}
     </div>
     {% for assi in assignment %}
-    <div class="ui bottom attached active tab segment" data-tab="{{forloop.counter}}">
+    <div class="ui bottom attached tab tabdata segment" data-pk="{{forloop.counter}}" id="tabdata{{forloop.counter}}" data-tab="{{forloop.counter}}">
         <table class="ui very basic collapsing celled table">
             <thead>
                 <tr>
                     <th>Student</th>
-                    <th>Total Marks & Feedback</th>
+                    <th>Total Marks &amp; Feedback</th>
                     <th>Download Assignment</th>
                     <th>Marks</th>
                     <th>Feedback</th>
@@ -27,6 +27,7 @@
             <tbody>
               {% for student_assi in student_assignment %}
                 {% if student_assi %}
+                {% if assi.pk == student_assi.0.assignment_id.pk %}
                 {% for sa in student_assi %}
                 <tr>
                     <td>
@@ -71,6 +72,7 @@
                 </tr>
                 {% endfor %}
                 {% endif %}
+                {% endif %}
                 {% endfor %}
             </tbody>
         </table>
@@ -78,7 +80,7 @@
     {% endfor %}
 </div>
 <script>
-    
+
 </script>
 
 {% endblock %}

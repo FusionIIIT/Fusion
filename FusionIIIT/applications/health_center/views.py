@@ -54,14 +54,18 @@ def compounder_view(request):
             elif 'end' in request.POST:
                 pk = request.POST.get('id')
                 Ambulance_request.objects.filter(id=pk).update(end_date=datetime.now())
-                return HttpResponseRedirect("/healthcenter/compounder")
+                amb = Ambulance_request.objects.filter(id=pk)
+                for f in amb:
+                    dateo = f.end_date
+                data = {'datenow': dateo}
+                return JsonResponse(data)
             elif 'discharge' in request.POST:
                 pk = request.POST.get('id')
                 Hospital_admit.objects.filter(id=pk).update(discharge_date=datetime.now())
-                hosp=Hospital_admit.objects.filter(id=pk)
+                hosp = Hospital_admit.objects.filter(id=pk)
                 for f in hosp:
-                    dateo=f.discharge_date
-                data={'datenow':dateo}
+                    dateo = f.discharge_date
+                data = {'datenow': dateo}
                 return JsonResponse(data)
             elif 'add_stock' in request.POST:
                 medicine = request.POST.get('medicine_id')
@@ -75,7 +79,7 @@ def compounder_view(request):
                 quantity = (Stock.objects.get(id=medicine)).quantity
                 quantity = quantity + qty
                 Stock.objects.filter(id=medicine).update(quantity=quantity)
-                data={'status':1}
+                data = {'status': 1}
                 return JsonResponse(data)
             elif 'edit' in request.POST:
                 doctor = request.POST.get('doctor')
@@ -109,7 +113,17 @@ def compounder_view(request):
                     quantity=quantity,
                     date=datetime.now()
                 )
-                data={'status':1}
+                data = {'status': 1}
+                return JsonResponse(data)
+            elif 'user_p' in request.POST:
+                app = Appointment.objects.filter(user_id=request.POST.get('user_p'),
+                                                 date=datetime.now())
+                print(app)
+                if app:
+                    s = 1
+                else:
+                    s = 0
+                data = {'status': s}
                 return JsonResponse(data)
             elif 'admission' in request.POST:
                 user = request.POST.get('user_id')
@@ -129,7 +143,7 @@ def compounder_view(request):
                      discharge_date=None,
                      reason=reason
                  )
-                data={'status':1}
+                data = {'status': 1}
                 return JsonResponse(data)
             elif 'medicine_name' in request.POST:
                 user_id = request.POST.get('user')
@@ -190,12 +204,12 @@ def compounder_view(request):
                     doctor = Doctor.objects.get(id=doctor_id)
                 details = request.POST.get('details')
                 tests = request.POST.get('tests')
-                appointment_id = request.POST.get('appointment')
-                if appointment_id == "":
-                    appointment = None
+                app = Appointment.objects.filter(user_id=user_id, date=datetime.now())
+                print(app)
+                if app:
+                    appointment = Appointment.objects.get(user_id=user_id, date=datetime.now())
                 else:
-                    appointment = Appointment.objects.get(id=appointment_id)
-                print("fnkejsfn")
+                    appointment = None
                 Prescription.objects.create(
                     user_id=user,
                     doctor_id=doctor,
@@ -204,7 +218,6 @@ def compounder_view(request):
                     test=tests,
                     appointment=appointment
                 )
-                print("fnkejsfn")
                 query = Medicine.objects.filter(patient=user)
                 prescribe = Prescription.objects.all().last()
                 for medicine in query:
@@ -233,8 +246,9 @@ def compounder_view(request):
             all_hospitals = Hospital_admit.objects.all().order_by('-admission_date')
             all_ambulances = Ambulance_request.objects.all().order_by('-date_request')
             appointments_approve = Appointment.objects.filter(approval=None).order_by('date')
-            a = Appointment.objects.filter(approval=True, date=datetime.now()).order_by('-date')
-            appointments_today = a
+            appointments_today = Appointment.objects.filter(approval=True, date=datetime.now())
+            a = Appointment.objects.filter(approval=True)
+            appointments_future = a.filter(date__gt=datetime.now()).order_by('date')
             users = ExtraInfo.objects.filter(user_type='student')
             doctors = Doctor.objects.all()
             inventories = Stockinventory.objects.all().order_by('-date')
@@ -244,7 +258,8 @@ def compounder_view(request):
                           {'inventories': inventories, 'days': days, 'users': users,
                            'stocks': stocks, 'appointments_approve': appointments_approve,
                            'all_hospitals': all_hospitals, 'all_ambulances': all_ambulances,
-                           'appointments_today': appointments_today, 'doctors': doctors,
+                           'appointments_today': appointments_today,
+                           'appointments_future': appointments_future, 'doctors': doctors,
                            'all_complaints': all_complaints})
     elif usertype == 'student':
         return HttpResponseRedirect("/healthcenter/student")
@@ -335,8 +350,8 @@ def student_view(request):
             user_id = ExtraInfo.objects.get(user=request.user)
             hospitals = Hospital_admit.objects.filter(user_id=user_id).order_by('-admission_date')
             appointments = Appointment.objects.filter(user_id=user_id).order_by('-date')
-            prescription = Prescription.objects.filter(user_id=user_id).order_by('-date')
             ambulances = Ambulance_request.objects.filter(user_id=user_id).order_by('-date_request')
+            prescription = Prescription.objects.filter(user_id=user_id).order_by('-date')
             medicines = Prescribed_medicine.objects.all()
             complaints = Complaint.objects.filter(user_id=user_id).order_by('-date')
             doctors = Doctor.objects.all()

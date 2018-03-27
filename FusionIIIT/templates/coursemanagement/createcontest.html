@@ -67,21 +67,36 @@ Create Contest
                 </div>
 
             </div>
-
-            <label>Start Date</label> {{ form.startdate }}
-
-            <div class="ui calendar field" id='example6'>
+            <div class="two fields">
+              <div class="ui calendar field" id="example2">
+                <label>Start Date</label>
+                <div class="ui input left icon">
+                  {{ form.startdate }}
+                </div>
+              </div>
+              <div class="ui calendar field" id='example6'>
                 <label>Start Time</label>
                 <div class="ui input left icon">
-                    <i class="hourglass empty icon"></i> {{ form.starttime}}
+                  <i class="hourglass empty icon"></i>
+                  {{ form.starttime}}
                 </div>
+              </div>
             </div>
-            <label>End Date</label> {{ form.enddate }}
-            <div class="ui calendar field" id='example7'>
+            <div class="two fields">
+              <div class="ui calendar field" id="example3">
+                <label>End Date</label>
+                <div class="ui input left icon">
+                  {{ form.enddate }}
+                </div>
+              </div>
+
+              <div class="ui calendar field"  id='example7'>
                 <label>End Time</label>
                 <div class="ui input left icon">
-                    <i class="hourglass full icon"></i> {{ form.endtime}}
+                  <i class="hourglass full icon"></i>
+                  {{ form.endtime}}
                 </div>
+              </div>
             </div>
             <div class="ui calendar field">
                 <label>Description</label>
@@ -102,12 +117,6 @@ Create Contest
                 </div>
             </div>
             <div class="ui field">
-                <label>Marks per Question</label>
-                <div class="ui input">
-                    {{ form.per_question_score }}
-                </div>
-            </div>
-            <div class="ui field">
 
                 <label>Enable Penalty</label>
                 {{form.negative_marks}}
@@ -116,16 +125,9 @@ Create Contest
             <input type="submit" class="ui primary button" value="Submit" />
         </form>
         </div>
-        
-    </div>
-<!--
-    <div class="three wide column">
-        <div class="row">
 
-            {% block note %} {% include 'coursemanagement/note.html' %} {% endblock %}
-        </div>
     </div>
--->
+
     <div class="column"></div>
 
 </div>
@@ -145,21 +147,20 @@ Create Contest
 
 {% endif %}
 <script>
-    $('#example2').calendar({
-        type: 'date'
-    });
-    $('#example3').calendar({
-        type: 'time'
-    });
-    $('#example6').calendar({
-        ampm: false,
-        type: 'time'
-    });
-    $('#example7').calendar({
-        ampm: false,
-        type: 'time'
-    });
-
+$('#example2').calendar({
+type: 'date'
+});
+$('#example3').calendar({
+type: 'date'
+});
+$('#example6').calendar({
+  ampm: false,
+  type: 'time'
+});
+$('#example7').calendar({
+  ampm: false,
+  type: 'time'
+});
 </script>
 
 <script type="text/javascript">

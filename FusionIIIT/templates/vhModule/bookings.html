@@ -7,7 +7,7 @@
         Requests
     </a>
 
-    <a class="item" data-tab="active-bookings" href="{% url 'visitorhostel:get_booking_requests' %}">
+    <a class="item" data-tab="active-bookings">
         Active Bookings
     </a>
 
@@ -73,8 +73,9 @@
 
                     <tbody>
                         {% for booking in active_bookings %}
-                        <tr onclick=bookingDetailsModal('{{ booking.id }}')>
-                            <td>
+
+                        <tr>
+                            <td onclick=bookingDetailsModal('{{ booking.id }}')>
                                 <h4 class="ui image header">
                                     <div class="content">
                                         {{ booking.intender }}
@@ -84,11 +85,19 @@
                                     </div>
                                 </h4>
                             </td>
-                            <td>{{ booking.booking_from }}</td>
-                            <td>{{ booking.booking_to }}</td>
-                            <td>{{ booking.visitor_category }}</td>
+                            <td onclick=bookingDetailsModal('{{ booking.id }}')>{{ booking.booking_from }}</td>
+                            <td onclick=bookingDetailsModal('{{ booking.id }}')>{{ booking.booking_to }}</td>
+                            <td onclick=bookingDetailsModal('{{ booking.id }}')>{{ booking.visitor_category }}</td>
                             <td>
-
+                                {% if booking.status == 'CheckedIn' %}
+                                <div class="ui large red button center floated"  onclick="checkOutModal('{{ booking.id }}')">
+                                    Check Out
+                                </div>
+                                {% else  %}
+                                <div class="ui large green button center floated"  onclick="checkInModal('{{ booking.id }}')">
+                                    Check In
+                                </div>
+                                {% endif %}
                             </td>
                         </tr>
                         {% endfor %}
@@ -138,10 +147,15 @@
             </div>
         </div>
     </div>
+</div>
 
 
 {% include 'vhModule/check-in-modal.html' %}
 
 {% include 'vhModule/booking-request-action-modal.html' %}
+
+{% include 'vhModule/booking-details.html' %}
+
+{% include 'vhModule/check-out-modal.html' %}
 
 {% endblock %}

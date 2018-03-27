@@ -147,49 +147,4 @@
         </div>
     </div><!--The contact details card ends here!-->
 
-   {% if placementstatus %}
-    <!--The noticeboard card starts here!-->
-    <div class="ui fluid card">
-        <div class="content">
-            <div class="ui header">Activity</div>
-            <div class="ui divider"></div>
-
-            {% for ps in placementstatus %}
-            {% if ps.invitation != 'PENDING' and ps.invitation != 'Pending' %}
-            {% if ps.placed != 'Placed' and ps.placed != 'PLACED' %}
-            <span>
-              <div class="ui segments">
-                <div class="ui horizontal segments">
-                  <div class="ui segment">
-                    {{ ps.notify_id.placement_type }}
-                    {{ ps.notify_id.timestamp }}
-                    <!--form method="post" class="ui form" role="form">
-                      {% csrf_token %}
-                    <input value="Dismiss" name="submitstudentdismiss" type="submit" class="ui hidden red mini button right floated" hidden="hidden"/>
-                  </form-->
-                </div>
-                  </div>
-                  <div class="ui secondary segment">
-                    <p>{{ ps.notify_id.company_name }} ,<b> CTC: {{ ps.notify_id.ctc }}</b></p>
-                    <p>{{ ps.notify_id.description }} </p>
-                  </div>
-                  {% if ps.invitation == 'ACCEPTED' or ps.invitation == 'Accepted' %}
-                  <div class="ui secondary green inverted segment">
-                    <p>Invitation was <b>{{ ps.invitation}}.</b></p>
-                  </div>
-                  {% endif %}
-                  {% if ps.invitation == 'REJECTED' or ps.invitation == 'Rejected' %}
-                  <div class="ui secondary red inverted segment">
-                    <p>Invitation was <b>{{ ps.invitation}}.</b></p>
-                  </div>
-                  {% endif %}
-              </div>
-            </span><br>
-            {% endif %}
-            {% endif %}
-            {% endfor %}
-
-        </div>
-    </div><!--The noticeboard details card ends here!-->
-    {% endif %}
 {% endblock %}

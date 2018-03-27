@@ -57,9 +57,130 @@
         </div>
     </div>
     {% endcomment %}
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}
+            The left-rail segment starts here!
+        {% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu starts here!{% endcomment %}
+            <div class="ui huge fluid vertical pointing menu"
+                 style="max-width: 320px;">
+                 {% for c in current %}
+                 {% if c.designation.name == 'student' %}
+                <a class="active item" data-tab="first">
+                    Profile
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="second">
+                    Skills & Technologies
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="third">
+                    Education & Courses
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="fourth">
+                    Work Experience
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="fifth">
+                    Achievements
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="sixth">
+                    Publications
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+                {% endfor %}
+              </div>
+              {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+          </div>
+          <div class="eight wide column">
+                  {% for c in current %}
+                  {% if c.designation.name == 'student' %}
+                    {% comment %}The Details start here!{% endcomment %}
+                    <div class="ui active tab segment" data-tab="first">
+                        {% block profile %}
+                            {% include 'placementModule/profile.html' %}
+                        {% endblock %}
+                    </div>
+                    {% comment %}The Personal Details end here!{% endcomment %}
+
+
+                    {% comment %}The Skills & Technologies start here!{% endcomment %}
+                    <div class="ui tab segment" data-tab="second">
+                        {% block skills %}
+                            {% include 'placementModule/skills.html' %}
+                        {% endblock %}
+                    </div>
+                    {% comment %}The Skills & Technologies end here!{% endcomment %}
+
+                    {% comment %}The Education tab starts here!{% endcomment %}
+                    <div class="ui tab segment" data-tab="third">
+                        {% block education %}
+                            {% include 'placementModule/education.html' %}
+                        {% endblock %}
+                    </div>
+                    {% comment %}The Education tab ends here!{% endcomment %}
+
+                    {% comment %}The Education tab starts here!{% endcomment %}
+                    <div class="ui tab segment" data-tab="fourth">
+                        {% block workexperience %}
+                            {% include 'placementModule/workexperience.html' %}
+                        {% endblock %}
+                    </div>
+                    {% comment %}The Education tab ends here!{% endcomment %}
+
+                    {% comment %}The Achievements tab starts here!{% endcomment %}
+                    <div class="ui tab segment" data-tab="fifth">
+                        {% block achievements %}
+                            {% include 'placementModule/achievements.html' %}
+                        {% endblock %}
+                    </div>
+                    {% comment %}The Achievements tab ends here!{% endcomment %}
+
+                    {% comment %}The Achievements tab starts here!{% endcomment %}
+                    <div class="ui tab segment" data-tab="sixth">
+                        {% block publications %}
+                            {% include 'placementModule/publications.html' %}
+                        {% endblock %}
+                    </div>
+                    {% comment %}The Achievements tab ends here!{% endcomment %}
+                    {% endif %}
+                    {% endfor %}
+                </div>
+
+
+
+                <div class="three wide column">
+                  {% comment %}The Modules:{% endcomment %}
+                  {% block modules %}
+                      {% include 'dashboard/modules.html' %}
+                  {% endblock %}
+              </div>
+
 
 {% endblock %}
-
 
 {% block javascript %}
     <script type="text/javascript" src="{% static 'globals/js/tab.js' %}"></script>

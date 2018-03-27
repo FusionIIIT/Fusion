@@ -151,7 +151,7 @@ DATABASES = {
     'default':
         {
             'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'fusion',
+            'NAME': 'fusion2',
             'USER': 'root',
             'PASSWORD': '1',
             'HOST': '127.0.0.1',

@@ -16,12 +16,12 @@ urlpatterns = [
     url(r'^reject-booking/', views.reject_booking, name = 'reject_booking'),
     url(r'^check-in/', views.check_in, name = 'check_in'),
     url(r'^check-out/', views.check_out, name = 'check_out'),
-    url(r'^recordmeal/', views.record_meal, name = 'record_meal'),
+    url(r'^record-meal/', views.record_meal, name = 'record_meal'),
     url(r'^bill/', views.bill_generation, name = 'bill_generation'),
     url(r'^room-availability/', views.room_availabity, name = 'room_availabity'),
     url(r'^add-to-inventory/', views.add_to_inventory, name = 'add_to_inventory'),
     url(r'^update-inventory/', views.update_inventory, name = 'update_inventory'),
     url(r'^edit-room-status/', views.edit_room_status, name = 'edit_room_status'),
     url(r'^booking-details/', views.booking_details, name = 'booking_details'),
-
+    url(r'^forward-booking/', views.forward_booking, name = 'forward_booking'),
 ]

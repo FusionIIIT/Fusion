@@ -31,11 +31,17 @@ class Constants:
     )
     PLACED_TYPE = (
         ('NOT PLACED', 'Not Placed'),
-        ('PLACED', 'Placed')
+        ('PLACED', 'Placed'),
     )
     DEBAR_TYPE = (
         ('NOT DEBAR', 'Not Debar'),
         ('DEBAR', 'Debar'),
+    )
+    DEP = (
+        ('',''),
+        ('CSE', 'CSE'),
+        ('ME','ME'),
+        ('ECE','ECE')
     )
 
 

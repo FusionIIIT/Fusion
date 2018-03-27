@@ -10,8 +10,11 @@
 
     <div class="ui active tab" data-tab="complainthistory">
         <div class="ui vertical segment">
-          {% if show_list %}
-        <form id='add_course_form' action='/academic-procedures/register/' method='post'>
+        {% if adc_flag %}
+        {% if pre_register %}
+            {% if final_r %}
+                {% if show_list %}
+                    <form id='add_course_form' action='/academic-procedures/register/' method='post'>
             <table class="ui very basic collapsing celled sortable table"
                    style="padding-left: 2.5%;
                                                           padding-right: 2.5%;
@@ -49,7 +52,7 @@
 
                     {% csrf_token %}
                             {% for items in show_list %}
-                                    <tr>
+                            <tr>
                             <td>
                             </td>
                             <td>
@@ -95,6 +98,15 @@
         </form>
         {% else %}<B><CENTER>
             NO COURSES TO ADD </B></CENTER>
+        {% endif %}
+        {% else %}
+            <B><center>You need to Register to add Course</center></B>
+        {% endif %}
+        {% else %}
+            <B><center>You need to Register to add Course</center></B>
+        {% endif %}
+        {% else %}
+            <b><center>You have to wait for the date</center></b>
         {% endif %}
         </div>
 

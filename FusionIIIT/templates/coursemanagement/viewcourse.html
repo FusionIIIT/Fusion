@@ -4,6 +4,8 @@
 <link href="http://vjs.zencdn.net/5.8.8/video-js.css" rel="stylesheet">
 <script src="http://vjs.zencdn.net/ie8/1.1.2/videojs-ie8.min.js"></script>
 -->
+
+
 {% block title %}
     Course Management
 {% endblock %}
@@ -48,7 +50,11 @@
                 <a class="item sidetab" data-tab="fifth" data-num="15">
                   Assessment
                   <i class="right floated chevron right icon"></i>
-              </a>
+                </a>
+                <a class="item sidetab" data-tab="sixth" data-num="16">
+                  Question Bank
+                  <i class="right floated chevron right icon"></i>
+                </a>
               {% endif %}
             </div>
         </div>
@@ -230,8 +236,9 @@
                               <label><br></label>
                               <!-- <a href="/ocms/quiz/{{quiz.pk}}" > -->
                               {% if Lecturer is 0 %}
+                              <!-- if the student have not give n the quiz already then only show the enter button -->
                                 {% if quiz.pk not in quizs_pk %}
-                                <div class="ui primary button disabled quiz_btn" data-start="{{quiz.start_time|date:'Y-m-d'}}" data-pk="{{quiz.pk}}"id="quiz{{quiz.pk}}">
+                                <div class="ui primary button disabled quiz_btn" data-start="{{quiz.start_time|date:'Y-m-d H:i:s'}}" data-pk="{{quiz.pk}}"id="quiz{{quiz.pk}}">
                                  Enter
                                  <i class="arrow right icon"></i>
                                </div>
@@ -265,7 +272,7 @@
 
                 </div>
                 <div class="ui tab" id="2" data-tab="assignment" style="display:none">
-                <div class="ui pointing secondary menu">
+                  <div class="ui pointing secondary menu">
 <!--
                     <a class="active item assitabs" data-number="21" data-tab="practice">
                      Practice
@@ -275,20 +282,9 @@
                     <a class="active item assitabs" data-number="21" data-tab="submitassignment">
                      Submit
                    </a>
-                </div>
-
-<!--
-                <div class="ui active tab segment box" id="21" data-tab="practice">
-
-                    <h4 class="ui dividing header">Practice</h4>
-
-                </div>
--->
-
-                <div class="ui active tab segment box" id="21" data-tab="submitassignment">
-
+                 </div>
+                 <div class="ui active tab segment box" id="21" data-tab="submitassignment">
                     <h4 class="ui dividing header">Submitable Assignments </h4>
-
                     <table class="ui fixed single line sortable celled table">
                         <thead>
                             <tr>
@@ -311,45 +307,53 @@
                             {% endfor %}
                         </tbody>
                     </table>
-
                 </div>
-
-            </div>
-                <div class="ui tab segment" id="3" data-tab="videos" style="display:none">
-                    <div class="ui four column grid">
-                        <div class="row">
-                            {% for video in videos %}
-                            <div class="column">
-                                <div class="container">
-                                    <img src="{{video.video_url}}-Small.png" />
-                                    <div class="play-icon modal-btn" data-pk="{{forloop.counter}}"><svg width="60" height="42" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> <g> <title>Videos</title> <g id="icomoon-ignore"/>
-                    <use x="5.397434" y="-68.326835" transform="matrix(0.15880563740596462,0,0,0.1590301359360811,-34.233496722840435,-44.6817534019825) " id="icon" xlink:href="#svg_1"/> <path id="svg_4" d="m24,8.380953l0.190475,22.761904l16.952381,-11.333332l-17.142857,-11.428572z" stroke-linecap="null" stroke-linejoin="null" stroke-width="5" stroke="null" fill="#ffffff"/> <path id="relleno" d="m24.285713,8.666666l0,22.666666l17.238094,-11.523809l-17.238094,-11.142857z" stroke-linecap="null" stroke-linejoin="null" stroke-width="5" stroke="null" fill="#ffffff"/> </g> <defs> <svg id="svg_1" viewBox="0 0 944 1024" height="1024" width="944" xmlns:xlink="http://www.w3.org/1999/xlink"> <g id="icomoon-ignore"/> <path id="play-svg" d="m589.426025,406.15799c0,-31.289978 -25.345032,-56.652985 -56.618042,-56.652985h-265.616974c-31.27301,0 -56.618011,25.359985 -56.618011,56.652985v151.894989c0,31.290039 25.345001,56.653015 56.618011,56.653015h265.616974c31.273987,0 56.618042,-25.361023 56.618042,-56.653015v-151.894989l0,0zm-227.311035,140.032013v-142.677002l108.192017,71.339996l-108.19101,71.339996l-0.001007,-0.002991z"/> </svg> </defs>
-                                        </svg>
-                                    </div>
-                                    <h4>{{video.video_name}}</h4>
-                                </div>
-                                <div class="ui modal" id="vid_modal{{forloop.counter}}">
-                                    <i class="close icon"></i>
-                                    <div class="header">
-                                        {{video.video_name}}
-                                    </div>
-                                    <video width="400" id="videoPlayer" onclick="play_pause(this)"  loop controls="" style="height:35em;width:50em">
-                                      <source src="{{video.video_url}}.mp4" type="video/mp4">
-                                        Your browser does not support HTML5 video.
-                                    </video>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        </div>
+              </div>
+              <div class="ui tab segment" id="3" data-tab="videos" style="display:none">
+                  <div class="ui four column grid">
+                    <div class="row" style="margin-left:20px">
+                        <h4 class="ui dividing header">{{course.course_name}}</h4><br>
                     </div>
-                </div>
+                    {% if videos %}
+                      <div class="row">
+                          {% for video in videos %}
+                          <div class="column">
+                              <div class="container">
+                                  <img src="{{video.video_url}}-Small.png" />
+                                  <div class="play-icon modal-btn" data-pk="{{forloop.counter}}"><svg width="60" height="42" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> <g> <title>Videos</title> <g id="icomoon-ignore"/>
+                  <use x="5.397434" y="-68.326835" transform="matrix(0.15880563740596462,0,0,0.1590301359360811,-34.233496722840435,-44.6817534019825) " id="icon" xlink:href="#svg_1"/> <path id="svg_4" d="m24,8.380953l0.190475,22.761904l16.952381,-11.333332l-17.142857,-11.428572z" stroke-linecap="null" stroke-linejoin="null" stroke-width="5" stroke="null" fill="#ffffff"/> <path id="relleno" d="m24.285713,8.666666l0,22.666666l17.238094,-11.523809l-17.238094,-11.142857z" stroke-linecap="null" stroke-linejoin="null" stroke-width="5" stroke="null" fill="#ffffff"/> </g> <defs> <svg id="svg_1" viewBox="0 0 944 1024" height="1024" width="944" xmlns:xlink="http://www.w3.org/1999/xlink"> <g id="icomoon-ignore"/> <path id="play-svg" d="m589.426025,406.15799c0,-31.289978 -25.345032,-56.652985 -56.618042,-56.652985h-265.616974c-31.27301,0 -56.618011,25.359985 -56.618011,56.652985v151.894989c0,31.290039 25.345001,56.653015 56.618011,56.653015h265.616974c31.273987,0 56.618042,-25.361023 56.618042,-56.653015v-151.894989l0,0zm-227.311035,140.032013v-142.677002l108.192017,71.339996l-108.19101,71.339996l-0.001007,-0.002991z"/> </svg> </defs>
+                                      </svg>
+                                  </div>
+                                  <h4>{{video.video_name}}</h4>
+                              </div>
+                              <div class="ui modal" id="vid_modal{{forloop.counter}}">
+                                  <i class="close icon"></i>
+                                  <div class="header">
+                                      {{video.video_name}}
+                                  </div>
+                                  <video width="400" id="videoPlayer" onclick="play_pause(this)"  loop controls="" style="height:35em;width:50em">
+                                    <source src="{{video.video_url}}.mp4" type="video/mp4">
+                                      Your browser does not support HTML5 video.
+                                  </video>
+                              </div>
+                          </div>
+                          {% endfor %}
+                      </div>
+                      {% else %}
+                      <div class="row" style="margin-left:20px">
+                          <h4 class="ui  header">No videos</h4><br>
+                      </div>
+                      {% endif %}
+                  </div>
+              </div>
 
                 <div class="ui tab segment" id="4" data-tab="slides" style="display:none">
                     <div class="ui four column grid">
+
                         <div class="row" style="margin-left:20px">
                             <h4 class="ui dividing header">{{course.course_name}}</h4><br>
                         </div>
-
+                        {% if slides %}
                         <div class="row">
 
                             {% for slide in slides %}
@@ -362,6 +366,11 @@
                             {% endfor %}
 
                         </div>
+                        {% else %}
+                        <div class="row" style="margin-left:20px">
+                            <h4 class="ui header">No slides</h4><br>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
 
@@ -403,7 +412,11 @@
             <div class="ui tab segment" id="14" data-tab="fourth" style="display:none">
                 {% block addcontent %} {% include 'coursemanagement/addcontent.html' %} {% endblock %}
             </div>
+
+            <div class="ui tab segment" id="16" data-tab="sixth" style="display:none">
+                {% block questionbank %} {% include 'coursemanagement/questionbank.html' %} {% endblock %}
         </div>
+      </div>
         <div class="three wide column">
             <div class="row" style="margin-top:1em;">
                 {% block comments %} {% include 'coursemanagement/comments.html' %} {% endblock %}
@@ -421,24 +434,54 @@
      <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'globals/js/editProfile.js' %}"></script>
     <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
-   
+
     <script type="text/javascript" src="{% static 'globals/js/semantic.min.js' %}"></script>
     <!-- <script>
         $(document).ready(function() {
             $('table').tablesort();
         });
     </script> -->
-    
+    <script type="text/javascript">
+      $(document).ready(function() {
+      var prevassessmenttab = 1;
+      $('#tab1').addClass('active');
+      $('#tabdata1').addClass('active');
+      $('.tabheading').click(function(){
+        pk = $(this).attr('data-pk');
+        $('#tab'+prevassessmenttab).removeClass('active');
+        $('#tab'+pk).addClass('active');
+        $('#tabdata'+prevassessmenttab).removeClass('active');
+        $('#tabdata'+pk).addClass('active');
+
+        prevassessmenttab = pk;
+      });
+      var vptab = 'assignmenttab';
+      $('#assignmenttab').addClass('active');
+      $('#assignmenttabdata').addClass('active');
+      $('.vptab').click(function(){
+        id = $(this).attr('id');
+        $('#'+vptab).removeClass('active');
+        $('#'+id).addClass('active');
+        $('#'+vptab+"data").removeClass('active');
+        $('#'+id+"data").addClass('active');
+
+        vptab = id;
+      });
+      });
+
+
+    </script>
+
     <script>
          $(".pointing.pagination.menu")
             .tab()
         ;
-        
-    
+
+
     function assess_student(element){
       if(event.key === 'Enter') {
         var pk=element.getAttribute("data-assign");
-                
+
         var csrf = $('input[name=csrfmiddlewaretoken]').val();
         // alert(pk);
         $.ajax({
@@ -459,18 +502,7 @@
         });
       }
     }
-//    function play_pause(element){
-//      var vid = document.getElementById("videoPlayer");
-//       var button = document.getElementById("play");
-//    if (vid.paused) {
-//          vid.play();
-////          button.textContent = "||";
-//       } else {
-//          vid.pause();
-////          button.textContent = ">";
-//       }
-//      
-//    }
+
     function assess_feedback(element){
       if(event.key === 'Enter') {
         var pk=element.getAttribute("data-feedback");
@@ -486,7 +518,7 @@
             },
             success: function(data) {
                 alert(data);
-                
+
             },
             error: function(data, err) {
                 alert(err.message);
@@ -494,28 +526,64 @@
         });
       }
     }
+
+    $('.qbremove').click(function(){
+      var pk=$(this).attr('data-pk');
+      var csrf = $('input[name=csrfmiddlewaretoken]').val();
+
+      $.ajax({
+          type: 'POST',
+          url: '/ocms/{{course.course_id}}/remove_bank',
+          data: {
+              'pk': pk,
+              'csrfmiddlewaretoken': csrf
+          },
+          success: function(data) {
+            alert(data.message);
+            var x = document.getElementById("qb"+pk);
+            x.style.display = "none";
+            if(data.qb == 0)
+            {
+              var y = document.getElementById("qbtable");
+              y.style.display="none";
+              $('<div class="row" style="margin-left:20px"><h4 class="ui header">No Question Banks added till Now</h4><br></div>').insertBefore('#create_qbank');
+
+            }
+          },
+          error: function(data, err) {
+              alert(err.message);
+          }
+      });
+    });
+
+    $('#create_qbank').click(function(){
+      var x = document.getElementById("qbank");
+      if(x.style.display === "none")
+        x.style.display = "block";
+      else {
+        x.style.display = "none";
+      }
+    });
+
     $(document).ready(function(){
       var quiz_btn=document.getElementsByClassName('quiz_btn');
       for (i = 0; i < quiz_btn.length; i++) {
-
-          var re = window.setInterval(fun,1000);
+          var re = window.setInterval(fun, 1000);
           var pk = quiz_btn[i].getAttribute('data-pk');
-          // alert(pk+"pk")
           var start = new Date(quiz_btn[i].getAttribute('data-start'));
-
           function fun()
           {
             if({{Lecturer}} == "0"){
               var now=new Date();
-              if (start < now)
-              {
+              // alert(start+''+now);
+              if (start < now){
                 $('#quiz'+pk).removeClass('disabled');
               }
             }
-
           }
-          }
+        }
       });
+
       $('.remove_quiz').click(function(){
         var pk=$(this).attr('data-pk');
         var csrf = $('input[name=csrfmiddlewaretoken]').val();
@@ -536,7 +604,29 @@
             }
         });
       });
+      $('.dustbin').click(function(){
+        var id = $(this).attr('id');
+        var pk = $(this).attr('data-pk');
+        var list = id.split('_');
+        var type = list[1];
+        var number = list[2];
+        $.ajax({
+            type: 'POST',
+            url: '/ocms/{{course.course_id}}/delete/',
+            data: {
+                'type': type,
+                'pk':pk,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(data) {
+                alert(data.msg);
+            },
+            error: function(data, err) {
+                alert("err");
+            }
+        });
 
+      });
       $('.quiz_btn').click(function(){
           var pk=$(this).attr('data-pk');
           alert('Do not close');
@@ -568,6 +658,7 @@
           y.style.display = "block";
           ini1 = "result"+num;
         });
+
     $('.tabs').click(function() {
         event.preventDefault();
         var x = document.getElementById(ini);
@@ -579,6 +670,7 @@
         x.removeClass = "active";
         ini = num;
     });
+
 
         var assini = 21;
     $('.assitabs').click(function() {
@@ -952,11 +1044,12 @@
             }
         });
     });
-        
-       
-    
+
+
+
 </script>
 
 
 
 {% endblock %}
+>>>>>>> cead69955c163798dcb5d30c8fa5b6356b5ecfaf

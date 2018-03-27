@@ -10,6 +10,9 @@
 
     <div class="ui active tab" data-tab="complainthistory">
         <div class="ui vertical segment">
+        {% if adc_flag %}
+        {% if pre_register %}
+        {% if final_r %}
         {% if courses_list %}
         <form id='drop_courses' action='/academic-procedures/dropCourse/' method='POST'>
         {% csrf_token %}
@@ -96,6 +99,15 @@
         </form>
         {% else %}
           <B> YOU HAVE NOT REGISTERED YET</B>
+        {% endif %}
+        {% else %}
+            <B><center>You need to Register to add Course</center></B>
+        {% endif %}
+        {% else %}
+            <B><center>You need to Register to add Course</center></B>
+        {% endif %}
+        {% else %}
+            <b><center>You have to wait for the date</center></b>
         {% endif %}
         </div>
     </div>

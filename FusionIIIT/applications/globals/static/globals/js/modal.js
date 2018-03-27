@@ -32,11 +32,35 @@ function modalGoldmedal(){
         ;
     });
 }
-/*
 
-function modalAvailability(){
-    $('#availability')
-        .modal('show')
-    ;
+function modalAddItem(){
+    $(document).ready(function() {
+        $('#addItemModal')
+          .modal('show')
+        ;
+    });
 }
-*/
+
+function bookingRequestModal(id){
+    $(document).ready(function() {
+        $('#booking-request-'.concat(id)).modal('show');
+    });
+}
+
+function bookingDetailsModal(id){
+    $(document).ready(function() {
+        $('#booking-details-'.concat(id)).modal('show');
+    });
+}
+
+function checkInModal (id) {
+    $(document).ready(function() {
+        $('#check-in-modal-'.concat(id)).modal('show');
+    });
+}
+
+function checkOutModal(id) {
+    $(document).ready(function() {
+        $('#check-out-modal-'.concat(id)).modal('show');
+    });
+}

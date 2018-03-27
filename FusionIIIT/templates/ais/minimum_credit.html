@@ -1,0 +1,64 @@
+{% load static %}
+{% block min_cred %}
+<Center><strong><h2>Set Minimum Credits</h2></strong></Center>
+<form action="/aims/set_min_cred/" id="set_min_cred">
+    {% csrf_token %}
+    <div class="ui form">
+        <table class="ui celled table">
+        <tr>
+            <td>Semester 1:</td>
+            <td><input type="text" name="sem_1" placeholder="Enter Here..."></td>
+        </tr>
+        <tr>
+            <td>Semester 2:</td>
+            <td><input type="text" name="sem_2" placeholder="Enter Here..."></td>
+        </tr>
+        <tr>
+            <td>Semester 3:</td>
+            <td><input type="text" name="sem_3" placeholder="Enter Here..."></td>
+        </tr>
+        <tr>
+            <td>Semester 4:</td>
+            <td><input type="text" name="sem_4" placeholder="Enter Here..."></td>
+        </tr>
+        <tr>
+            <td>Semester 5:</td>
+            <td><input type="text" name="sem_5" placeholder="Enter Here..."></td>
+        </tr>
+        <tr>
+            <td>Semester 6:</td>
+            <td><input type="text" name="sem_6" placeholder="Enter Here..."></td>
+        </tr>
+        <tr>
+            <td>Semester 7:</td>
+            <td><input type="text" name="sem_7" placeholder="Enter Here..."></td>
+        </tr>
+        <tr>
+            <td>Semester 8:</td>
+            <td><input type="text" name="sem_8" placeholder="Enter Here..."></td>
+        </tr>
+    </table>
+    </div>
+    <button class="ui button black create_btn" type="submit">Submit</button>
+</form>
+{% endblock %}
+
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+
+    $(function() {
+    $("#set_min_cred").submit(function(event) {
+            event.preventDefault();
+            var friendForm = $(this);
+            var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
+            posting.done(function(data) {
+                alert('Credit Updated');
+                window.location = "/aims/";
+            });
+            posting.fail(function(data) {
+                alert('Credit Updated');
+                window.location = "/aims/";
+            });
+        });
+    });
+</script>

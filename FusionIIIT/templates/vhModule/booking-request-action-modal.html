@@ -32,7 +32,7 @@
                 <div class="ui calendar" id="rangestart2">
                     <div class="ui input left icon">
                         <i class="calendar icon"></i>
-                        <input type="text" class="date-selector" name="booking-from" value="{{ booking.booking_from }}" readonly>
+                        <input type="text" class="date-selector" name="booking-from" value="{{ booking.booking_from }}" readonly="">
                     </div>
                 </div>
             </div>
@@ -42,7 +42,7 @@
                 <div class="ui calendar" id="rangeend2">
                     <div class="ui input left icon">
                         <i class="calendar icon"></i>
-                        <input type="text" value="{{ booking.booking_to }}" class="date-selector" name="booking-to" readonly>
+                        <input type="text" value="{{ booking.booking_to }}" class="date-selector" name="booking-to" readonly="">
                     </div>
                 </div>
             </div>
@@ -52,13 +52,13 @@
             <div class="three fields">
 
                 <div class="field">
-                    <label>Category:</label>
+                    <label>Category (required*)</label>
 
                     <div class="ui fluid search selection dropdown">
-                        <input name="category" type="hidden" required="">
+                        <input name="category-{{ booking.id }}" type="hidden" required="">
                         <i class="dropdown icon"></i>
 
-                        <div class="default text">{{ booking.visitor_category}}</div>
+                        <div class="default text">{{ booking.visitor_category }}</div>
 
                         <div class="menu">
                             <div class="item" data-value="A">
@@ -89,8 +89,8 @@
                 </div>
 
                 <div class="field">
-                    <label>Rooms</label>
-                    <select name="alloted-rooms" multiple="" class="ui fluid dropdown">
+                    <label>Rooms (required*)</label>
+                    <select name="alloted-rooms-{{ booking.id }}" multiple="" class="ui fluid dropdown">
                         {% for key, values in available_rooms.items %}
                             {% if key == booking.id %}
                                 {% for room in values %}
@@ -106,22 +106,34 @@
         <div class="field">
             <label>Purpose Of Visit</label>
             <div class="ui fluid input">
-                <input rows="2" value="{{ booking.purpose }}" readonly></textarea>
+                <input rows="2" value="{{ booking.purpose }}" readonly >
             </div>
         </div>
 
-        <input type="hidden" name="booking-id" value="{{ booking.id }}">
+        <input type="hidden" name="booking-id-{{ booking.id }}" value="{{ booking.id }}"">
         <input type="hidden" name="csrf" value="{{ csrf_token }}">
 
-        {% if user_designation == 'VhIncharge' or user_designation == 'VhCaretaker' %}
+        {% if user_designation == 'VhIncharge'  %}
         <div class="field">
             <label></label>
-            <div class="ui large red button right floated" id="reject-booking">
+            <div class="ui large red button right floated" id="reject-booking" onclick="reject_booking('{{ booking.id }}')">
                 Reject
             </div>
-            <div class="ui large green button right floated" id="confirm-booking">
+            <div class="ui large green button right floated" id="confirm-booking" onclick="confirm_booking('{{ booking.id }}')">
                 Confirm
             </div>
+            <div class="ui large green button right floated" id="farward-booking" onclick="forward_booking('{{ booking.id }}')">
+                Forward
+            </div>
+        </div>
+        {% endif %}
+        {% if user_designation == 'VhCaretaker' and booking.status == "Forward" %}
+        <div class="field">
+            <label></label>
+            <div class="ui large green button right floated" id="confirm-booking" onclick="confirm_booking('{{ booking.id }}')">
+                Confirm
+            </div>
+
         </div>
         {% endif %}
 
@@ -142,5 +154,6 @@
 </div>
 
 {% endfor %}
+
 
 {% endblock %}

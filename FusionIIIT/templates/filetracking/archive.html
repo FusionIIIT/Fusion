@@ -5,7 +5,7 @@
     <div class="ui pointing secondary menu">
         <h3>
             <a class="active item" data-tab="archive">
-            Archive
+            Finished Files
             </a>
         </h3>
 
@@ -16,17 +16,26 @@
     <table class="ui very basic celled sortable table">
         <thead>
         <tr>
-            <th>From</th>
             <th>File ID</th>
             <th>Title</th>
-            <th>Date</th>
-            <th>Download File</th>
+            <th>Upload Date</th>
             <th>View File</th>
         </tr>
         </thead>
 
         <tbody>
+            {% for j in arch %}
+        <tr>
 
+            <td>{{j.ref_id}}  </td>
+            <td>{{j.subject}}</td>
+            <td>{{j.upload_date}}</td>
+            <td><a href="{% url 'filetracking:finish' j.ref_id %}"><button class="ui primary button">
+                          View
+                </button></a></td>
+        </tr>
+
+        {% endfor %}
 
         </tbody>
 

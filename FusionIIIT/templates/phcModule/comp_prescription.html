@@ -9,6 +9,9 @@
         <a class="item" data-tab="hospitaladmit">
             Hospital Admission
         </a>
+        <!-- <a class="item" data-tab="prescriptions_past">
+            Prescriptions
+        </a> -->
     </div>
     {% comment %}the prescribe tab starts here {% endcomment %}
     <div class="ui active tab" data-tab="prescribe">
@@ -18,8 +21,9 @@
 
             <form class="ui form" method="POST">{% csrf_token %}
                 <p id="usr"></p>
+                <p id="appo"></p>
                 <div class="two fields">
-                  <div class="field">
+                  <!-- <div class="field">
                       <label>Appointment</label>
                       <select class="ui search fluid dropdown" id="appointment" name="appointment">
                         <option value="" disabled selected>--SELECT--</option>
@@ -27,10 +31,10 @@
                         <option value="{{appointment.id}}">{{appointment.user_id.id}}</option>
                         {% endfor %}
                       </select>
-                   </div>
+                   </div> -->
                   <div class="field">
                       <label>Patient</label>
-                      <select class="ui search fluid dropdown" id="user" name="user" required="true">
+                      <select class="ui search fluid" id="user" name="user" required="true">
                         <option value="" disabled selected>--SELECT--</option>
                         {% for user in users %}
                         <option value="{{user.id}}">{{user.id}}-{{user.user}}</option>
@@ -133,6 +137,25 @@
             </form></div></div>
             <script src="{% static 'globals/js/jquery.min.js' %}"></script>
             <script type="text/javascript">
+                  $('#user').change(function()
+                  {
+                      $.ajax({
+                      type:'post',
+                      url:'/healthcenter/compounder/',
+                      data: {
+                      csrfmiddlewaretoken: '{{ csrf_token }}',
+                      user_p: $("#user").val(),
+                      },
+                      success: function(data){
+                        if(data.status==0)
+                          $('#appo').html('Appointment not there');
+                        else
+                          $('#appo').html('Approved Appointment ');
+                    }
+                   });
+                 });
+
+
                   $('#medicine').click(function(e){
                                                         var user = document.getElementById('user').value;
                                                         var quantity = document.getElementById('quantity').value;
@@ -165,7 +188,7 @@
                                                                $('#sched').empty();
                                                               $.each(data, function(key, value) {
                                                                $('#sched').append("<tr><td>" + value.medicine + "</td><td>" +
-                                                               value.quantity + "</td><td>" + value.times + "</td><td>" + value.days + "</td></tr>");
+                                                               value.quantity + "</td><td>" + value.days + "</td><td>" + value.times + "</td></tr>");
                                                              });
                                                         }
                                                       });
@@ -189,7 +212,7 @@
                                                       doctor:$("#doctor").val(),
                                                       details:$("#details").val(),
                                                       tests:$("#tests").val(),
-                                                      appointment:$("#appointment").val(),
+                                                      // appointment:$("#appointment").val(),
                                                       prescribe:$("#prescribe").val()
                                                     },
                                                       success: function(data){
@@ -209,9 +232,85 @@
 
         <div class="extra content"></div>
     {% comment %}the compounder prescription tab ends here {% endcomment %}
-{% endblock %}
+
+<!--
+{% comment %}the doctor appointment tab starts here {% endcomment %}
+<div class="ui tab" data-tab="prescriptions_past">
+    <div class="ui vertical segment">
+        <div class="field">
+              <div class="field">
+                  <label>Patient</label>
+                  <select id="patient_a" class="ui search fluid " name="patient" required="true">
+                    <option value="" disabled selected>--SELECT--</option>
+                    {% for user in users %}
+                    <option value="{{user.id}}">{{user.id}}-{{user.user}}</option>
+                    {% endfor %}
+                  </select>
+              </div>
+              <!-- on selection of day the schedule of the day displays in the table -->
+              <!-- <table  class="ui very basic collapsing celled small fluid sortable table"
+                     style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;">
+                  <thead>
+                    <tr>
+                        <th class="two wide">
+                            Treated<br> By
+                        </th>
+
+                        <th class="two wide" >
+                            Date
+                        </th>
+
+                        <th class="wide">
+                              Details
+                        </th>
+                        <th class="wide">
+                              Test
+                        </th>
+
+                        <th class="four wide">
+                          <table>
+
+                            <tr><td>Medicine</td><td>D</td><td>T</td></tr>
+
+                          </table>
+                        </th>
+                        <th class="two wide">
+                            Feedback
+                        </th>
+
+                    </tr>
+
+                  </thead>
 
 
+                  <tbody id="prescripts">
+
+                  </tbody>
+                  <script type="text/javascript">
+                          $('#patient_a').change(function()
+                          {
+                              $.ajax({
+                              type:'post',
+                              url:'/healthcenter/compounder/',
+                              data: {
+                              csrfmiddlewaretoken: '{{ csrf_token }}',
+                              patient_a:$("#patient_a").val(),
+                              },
+                              success: function(data){
+                                 $('#prescripts').empty();
+                                 var response=JSON.stringify(data);
+                                $.each(data, function(key, value) {
+                                  $('#prescripts').append("<tr><td>" + value.doctor + "</td><td>" + value.details + "</td><td>" + value.date + "</td><td>" + value.test + "</td></tr>");
+                            });
+}
+                           });
+                         });
+                  </script>
+              </table>
+    </div>
+  </div>
+</div>
+{% comment %}the view schedule tab ends here {% endcomment %} --> -->
 
 <div class="ui tab" data-tab="hospitaladmit">
   <p id="hospital"></p>
@@ -284,7 +383,7 @@
                                               var hospital_doctor = document.getElementById('hospital_doctor').value;
                                               var description = document.getElementById('description').value;
                                               if ( adm_Date==""||doc==""|| hospital_name==""||hospital_doctor==""||description=="") {
-                                                  $('#hospital').html('Enter the date.');
+                                                  $('#hospital').html('Enter valid details.');
                                                   return false;
                                               }
                                               var admit = new Date(adm_Date);
@@ -328,3 +427,4 @@
 </div>
   <br>
   <div class="extra segment"></div>
+{% endblock %}

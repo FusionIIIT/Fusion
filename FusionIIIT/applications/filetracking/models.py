@@ -10,9 +10,14 @@ class File(models.Model):
     description = models.CharField(max_length=400, null=True, blank=True)
     upload_date = models.DateTimeField(auto_now_add=True)
     upload_file = models.FileField(blank=True)
+    complete_flag = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'File'
+
+    def __str__(self):
+        return str(self.ref_id)
+
 
 
 class Tracking(models.Model):
@@ -22,7 +27,6 @@ class Tracking(models.Model):
     receive_date = models.DateTimeField(auto_now_add=True)
     forward_date = models.DateTimeField(auto_now_add=True)
     remarks = models.CharField(max_length=250, null=True, blank=True)
-    forward_flag = models.BooleanField(default=False)
     upload_file = models.FileField(blank=True)
 
     class Meta:

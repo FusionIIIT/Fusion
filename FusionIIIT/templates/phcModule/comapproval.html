@@ -6,13 +6,16 @@
             Approve
         </a>
         <a class="item" data-tab="viewappointments">
-            View Appointments
+            Today Appointments
         </a>
         <a class="item" data-tab="viewambulance">
-            View Ambulance
+            Ambulance
         </a>
         <a class="item" data-tab="viewhospitaladmission">
-            View Hospital_Admission
+            Hospital_Admission
+        </a>
+        <a class="item" data-tab="futureappointments">
+            <center>Future<br>Appointments</center>
         </a>
 
     </div>
@@ -83,14 +86,52 @@
                 </td>
 
                 <form method='POST'>{% csrf_token %}
-                <input type="hidden" name="id" value={{appointment.id}} />
-                <td><input type="submit" name="approve" class="ui primary right floated button" value="Approve"/>
-                <br><br><input type="submit" name="disapprove" class="ui primary right floated button" value="Disapprove"/></td>
+                <input type="hidden" id="app_id" value={{appointment.id}} />
+                <td><input type="button" id="approve" class="ui primary right floated button" value="Approve"/>
+                <br><br><input type="button" id="disapprove" class="ui primary right floated button" value="Disapprove"/></td>
                 </form>
             </tr>
             {% endfor %}
             </tbody>
         </table>
+        <script type="text/javascript">
+              $('#approve').click(function(e)
+                                                  {
+                                                    $.ajax({
+                                                      type:'post',
+                                                      url:'/healthcenter/compounder/',
+                                                      data: {
+                                                      csrfmiddlewaretoken: '{{ csrf_token }}',
+                                                      id:$("#app_id").val(),
+                                                      approve:$("#approve").val()
+                                                    },
+                                                      success: function(data){
+                                                        alert("approved appointment");
+                                                        document.getElementById("approve").style.visibility='hidden';
+                                                        document.getElementById("disapprove").style.visibility='hidden';
+                                                    }
+                                                  });
+                                                });
+            </script>
+            <script type="text/javascript">
+                  $('#disapprove').click(function(e)
+                                                      {
+                                                        $.ajax({
+                                                          type:'post',
+                                                          url:'/healthcenter/compounder/',
+                                                          data: {
+                                                          csrfmiddlewaretoken: '{{ csrf_token }}',
+                                                          id:$("#app_id").val(),
+                                                          disapprove:$("#disapprove").val()
+                                                        },
+                                                          success: function(data){
+                                                            alert("disapproved appointment");
+                                                            document.getElementById("approve").style.visibility='hidden';
+                                                            document.getElementById("disapprove").style.visibility='hidden';
+                                                        }
+                                                      });
+                                                    });
+                </script>
     </div>
     {% comment %}the compounder approval tab ends here {% endcomment %}
 
@@ -223,8 +264,8 @@
 
                   {% if ambulance.end_date == None %}
                   <form method='POST'>{% csrf_token %}
-                  <input type="hidden" name="id" value={{ambulance.id}} />
-                  <td><input class="ui small right floated primary button" type="submit" name="end" value="End"/></td>
+                  <input type="hidden" id="end_id" name="id" value={{ambulance.id}} />
+                  <td><p id="end_p"></p><input class="ui small right floated primary button" type="button" id="end" name="end" value="End"/></td>
                   </form>
                   {% else %}
                      <td>{{ambulance.end_date}}</td>
@@ -235,6 +276,25 @@
               {% endfor %}
               </tbody>
           </table>
+          <script type="text/javascript">
+                $('#end').click(function(e)
+                                                    {
+                                                      $.ajax({
+                                                        type:'post',
+                                                        url:'/healthcenter/compounder/',
+                                                        data: {
+                                                        csrfmiddlewaretoken: '{{ csrf_token }}',
+                                                        id:$("#end_id").val(),
+                                                        end:$("#end").val()
+                                                      },
+                                                        success: function(data){
+                                                          alert("ended ambulance service");
+                                                          $('#end_p').html(data.datenow);
+                                                          document.getElementById("end").style.visibility='hidden';
+                                                      }
+                                                    });
+                                                  });
+              </script>
       </div>
     </div>
     {% comment %}the view ambulance tab ends here {% endcomment %}
@@ -346,7 +406,7 @@
                                                             discharge:$("#discharge").val()
                                                           },
                                                             success: function(data){
-                                                              alert("discharged");
+                                                              alert("discharged from hospital");
                                                               $('#disc_p').html(data.datenow);
                                                               document.getElementById("discharge").style.visibility='hidden';
                                                           }
@@ -358,4 +418,72 @@
       </div>
 
       {% comment %}the view hospital admission tab ends here {% endcomment %}
+      {% comment %}the view appointments tab starts here {% endcomment %}
+      <div class="ui tab" data-tab="futureappointments">
+          <table class="ui very basic collapsing celled large sortable table"
+                 style="padding-left: 2.5%;padding-right: 2.5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
+              <thead>
+              <tr>
+                  <th class="four wide">
+                      User
+                  </th>
+
+                  <th class="two wide">
+                      Doctor
+                  </th>
+
+                  <th class="four wide">
+                      Description
+                  </th>
+                  <th>
+                      Date
+                  </th>
+                  <th>
+                      From Time
+                  </th>
+
+                  <th >
+                      To Time
+
+                    </th>
+              </tr>
+              </thead>
+
+              <tbody>
+                {% for appointment_f in appointments_future%}
+              <tr>
+                  <td>
+                      <h4 class="ui image header">
+                          <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                          <div class="content">
+                            {{appointment_f.user_id}}
+                          </div>
+                      </h4>
+                  </td>
+
+                  <td>
+                      {{appointment_f.doctor_id}}
+                  </td>
+
+                  <td>
+                      {{appointment_f.description}}
+                  </td>
+                  <td>
+                      {{appointment_f.date}}
+                  </td>
+                  <td>
+                      {{appointment_f.schedule.from_time}}
+                  </td>
+
+                  <td>
+                      {{appointment.schedule.to_time}}
+                  </td>
+
+              </tr>
+              {% endfor %}
+              </tbody>
+          </table>
+      </div>
+      {% comment %}the view appointments tab ends here {% endcomment %}
+
 {% endblock %}

@@ -34,7 +34,7 @@
             {% comment %}The Tab-Menu starts here!{% endcomment %}
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
-                 {% for c in current %}
+                <!-- {% for c in current %}
                  {% if c.designation.name == 'student' %}
                 <a class="active item" data-tab="first">
                     Profile
@@ -66,11 +66,15 @@
                     <i class="right floated chevron right icon"></i>
                 </a>
                 {% endif %}
-                {% endfor %}
+                {% endfor %}-->
+                 <a class="active item" data-tab="twelth">
+                     Placement Activity / Schedule
+                     <i class="right floated chevron right icon"></i>
+                 </a>
 
                 {% for c in current2 %}
                 {% if c.designation.name == 'placement officer' %}
-                <a class="active item" data-tab="ninth">
+                <a class="item" data-tab="ninth">
                     Student Records
                     <i class="right floated chevron right icon"></i>
                 </a>
@@ -84,7 +88,7 @@
 
                 {% for c in current1 %}
                 {% if c.designation.name == 'placement chairman' %}
-                <a class="active item" data-tab="ninth">
+                <a class="item" data-tab="ninth">
                     Student Records
                     <i class="right floated chevron right icon"></i>
                 </a>
@@ -112,8 +116,6 @@
             The left-rail segment ends here!
         {% endcomment %}
 
-
-
         {% comment %}
             The central-rail segment starts here!
         {% endcomment %}
@@ -121,7 +123,7 @@
           {% for c in current %}
           {% if c.designation.name == 'student' %}
             {% comment %}The Details start here!{% endcomment %}
-            <div class="ui active tab segment" data-tab="first">
+            <div class="ui tab segment" data-tab="first">
                 {% block profile %}
                     {% include 'placementModule/profile.html' %}
                 {% endblock %}
@@ -190,12 +192,17 @@
                     {% include 'placementModule/placementstatistics.html' %}
                 {% endblock %}
             </div>
+            <div class="ui active tab segment" data-tab="twelth">
+                {% block activity %}
+                    {% include 'placementModule/activity.html' %}
+                {% endblock %}
+            </div>
             {% comment %}The Placement Visits tab ends here!{% endcomment %}
 
 
             {% if current == None %}
             {% comment %}The Placement Statistics tab starts here!{% endcomment %}
-            <div class="ui active tab segment" data-tab="ninth">
+            <div class="ui tab segment" data-tab="ninth">
                 {% block studentrecords %}
                     {% include 'placementModule/studentrecords.html' %}
                 {% endblock %}

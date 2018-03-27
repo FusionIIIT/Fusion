@@ -44,7 +44,7 @@ class Register(models.Model):
         db_table = 'Register'
 
     def __str__(self):
-        return str(self.r_id)
+        return str(self.course_id)
 
 
 class Thesis(models.Model):
@@ -74,7 +74,7 @@ class BranchChange(models.Model):
     c_id = models.AutoField(primary_key=True)
     branches = models.ForeignKey(DepartmentInfo, on_delete=models.CASCADE)
     user = models.ForeignKey(Student, on_delete=models.CASCADE)
-    applied_date = models.DateField(default=datetime.datetime.now())
+    applied_date = models.DateField(default=datetime.datetime.now)
 
     def __str__(self):
         return str(self.user) + " " + str(self.branches)
@@ -86,3 +86,11 @@ class CoursesMtech(models.Model):
 
     def __str__(self):
         return str(self.c_id)
+
+
+class MinimumCredits(models.Model):
+    semester = models.IntegerField()
+    credits = models.IntegerField()
+
+    def __str__(self):
+        return "Semester: " + str(self.semester)+" Credits:" + str(self.credits)

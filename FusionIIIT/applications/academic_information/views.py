@@ -1,15 +1,22 @@
+import datetime
 import json
 
+from itertools import chain
+from xhtml2pdf import pisa
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
+from django.template.loader import get_template
+from io import BytesIO
+
 
 from applications.globals.models import Designation, ExtraInfo, HoldsDesignation
 
 from .forms import AcademicTimetableForm, ExamTimetableForm, MinuteForm
-from .models import (Course, Exam_timetable, Grades, Meeting, Student,
-                     Student_attendance, Timetable)
+from .models import (Course, Instructor, Exam_timetable, Grades, Meeting, Student,
+                     Student_attendance, Timetable, Calendar)
+from applications.academic_procedures.models import MinimumCredits, Register
 
 
 def homepage(request):
@@ -29,6 +36,29 @@ def homepage(request):
     minuteForm = MinuteForm()
     examTtForm = ExamTimetableForm()
     acadTtForm = AcademicTimetableForm()
+    calendar = Calendar.objects.all()
+    opt_courses = Course.objects.all().filter(optional=True)
+    course_list = sem_for_generate_sheet()
+    get_course_list = Course.objects.all().filter(sem = course_list[0])
+    get_course_list_1 = Course.objects.all().filter(sem = course_list[1])
+    get_course_list_2 = Course.objects.all().filter(sem = course_list[2])
+    get_course_list_3 = Course.objects.all().filter(sem = course_list[3])
+
+    get_courses = list(chain(get_course_list, get_course_list_1, get_course_list_2, get_course_list_3))
+    if(course_list[0]==1):
+        course_list = [2, 4, 6, 8]
+    get_course_list = Course.objects.all().filter(sem = course_list[0])
+    get_course_list_1 = Course.objects.all().filter(sem = course_list[1])
+    get_course_list_2 = Course.objects.all().filter(sem = course_list[2])
+    get_course_list_3 = Course.objects.all().filter(sem = course_list[3])
+
+    this_sem_courses = list(chain(get_course_list, get_course_list_1, get_course_list_2, get_course_list_3))
+
+
+    print("Courses>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>.", get_courses)
+
+    # print("Courses>>>>>>>>>>>.", courses)
+    # print(calendar)
     try:
         senator_des = Designation.objects.get(name='senate')
         convenor_des = Designation.objects.get(name='Convenor')
@@ -77,6 +107,10 @@ def homepage(request):
          'courses': courses,
          'exam': exam_t,
          'timetable': timetable,
+         'academic_calendar': calendar,
+         'opt_courses': opt_courses,
+         'next_sem_course': get_courses,
+         'this_sem_course': this_sem_courses,
     }
     return render(request, "ais/ais.html", context)
 
@@ -621,3 +655,221 @@ def delete_exam_timetable(request):
         t = Exam_timetable.objects.get(exam_time_table=data)
         t.delete()
         return HttpResponse("TimeTable Deleted")
+
+def add_calendar(request):
+    if request.method == "POST":
+        print("Requested Method: ", request.POST)
+        from_date = request.POST.getlist('from_date')
+        to_date = request.POST.getlist('to_date')
+        desc = request.POST.getlist('description')[0]
+        print(from_date, to_date, desc)
+        from_date = from_date[0].split('-')
+        from_date = [int(i) for i in from_date]
+        from_date = datetime.datetime(*from_date).date()
+        to_date = to_date[0].split('-')
+        to_date = [int(i) for i in to_date]
+        to_date = datetime.datetime(*to_date).date()
+        print(from_date, to_date, desc)
+        c = Calendar(
+            from_date=from_date,
+            to_date=to_date,
+            description=desc)
+        print(c)
+        c.save()
+        return HttpResponse("Calendar Added")
+
+def update_calendar(request):
+    if request.method == "POST":
+        print("Requested Method: ", request.POST)
+        from_date = request.POST.getlist('from_date')
+        to_date = request.POST.getlist('to_date')
+        desc = request.POST.getlist('description')[0]
+        prev_desc = request.POST.getlist('prev_desc')[0]
+        print(from_date, to_date, desc, prev_desc)
+        from_date = from_date[0].split('-')
+        from_date = [int(i) for i in from_date]
+        from_date = datetime.datetime(*from_date).date()
+        to_date = to_date[0].split('-')
+        to_date = [int(i) for i in to_date]
+        to_date = datetime.datetime(*to_date).date()
+        get_calendar_details = Calendar.objects.all().filter(description=prev_desc).first()
+        get_calendar_details.description = desc
+        get_calendar_details.from_date = from_date
+        get_calendar_details.to_date = to_date
+        get_calendar_details.save()
+        return HttpResponseRedirect('/academic-procedures/')
+
+def add_optional(request):
+    if request.method == "POST":
+        print(request.POST)
+        choices = request.POST.getlist('choice')
+        for i in choices:
+            course = Course.objects.all().filter(course_id=i).first()
+            course.acad_selection = True
+            course.save()
+        courses = Course.objects.all()
+        for i in courses:
+            if i.course_id not in choices:
+                i.acad_selection = False
+                i.save()
+        return HttpResponseRedirect('/academic-procedures/')
+
+def add_course(request):
+    if request.method == "POST":
+        print(request.POST)
+        c_id = request.POST.getlist('course_id')[0]
+        c_name = request.POST.getlist('course_name')[0]
+        c_opt = request.POST.getlist('course_optional')[0]
+        c_sem = request.POST.getlist('course_semester')[0]
+        c_cred = request.POST.getlist('course_credit')[0]
+        print("Credit>>>>>>>>>>", c_cred)
+        c_check = True if c_opt == "on" else False
+        c_save = Course(course_id=c_id,
+            course_name=c_name,
+            sem=c_sem,
+            credits=c_cred,
+            optional=c_check)
+        c_save.save()
+        return HttpResponse("Worked")
+
+def min_cred(request):
+    if request.method=="POST":
+        sem_cred = []
+        sem_cred.append(0)
+        for i in range(1, 10):
+            sem = "sem_"+"1"
+            sem_cred.append(request.POST.getlist(sem)[0])
+
+        for i in range(1, 9):
+            sem = MinimumCredits.objects.all().filter(semester=i).first()
+            sem.credits = sem_cred[i+1]
+            sem.save()
+        return HttpResponse("Worked")
+
+#Generate Attendance Sheet
+def sem_for_generate_sheet():
+    now = datetime.datetime.now()
+    year, month = now.year, int(now.month)
+    sem = 'odd'
+
+    if month >= 7 and month <= 12:
+        return [2, 4, 6, 8]
+    else:
+        return [1, 3, 5, 7]
+
+
+def generatexlsheet(request):
+    idd = str(request.POST['year'])
+    f_key = Course.objects.get(course_name = str(idd))
+    course_id = str(f_key.course_id)
+    obj = Register.objects.all().filter(course_id = f_key)
+    ans = []
+    for i in obj:
+        k = []
+        k.append(i.student_id.id.id)
+        k.append(i.student_id.id.user.first_name)
+        k.append(i.student_id.id.user.last_name)
+        k.append(i.student_id.id.department)
+        ans.append(k)
+    ans.sort()
+    import io
+    output = io.BytesIO()
+    from xlsxwriter.workbook import Workbook
+
+    book = Workbook(output,{'in_memory':True})
+    title = book.add_format({'bold': True,
+                                'font_size': 22,
+                                'align': 'center',
+                                'valign': 'vcenter'})
+    subtitle = book.add_format({'bold': True,
+                                'font_size': 15,
+                                'align': 'center',
+                                'valign': 'vcenter'})
+    normaltext = book.add_format({'bold': False,
+                                'font_size': 15,
+                                'align': 'center',
+                                'valign': 'vcenter'})
+    sheet = book.add_worksheet()
+
+    title_text = ((str(course_id)+" : "+str(str(idd))))
+    #width = len(title_text)
+    sheet.set_default_row(25)
+
+    sheet.merge_range('A2:E2', title_text, title)
+    sheet.write_string('A3',"Sl. No",subtitle)
+    sheet.write_string('B3',"Roll No",subtitle)
+    sheet.write_string('C3',"Name",subtitle)
+    sheet.write_string('D3',"Discipline",subtitle)
+    sheet.write_string('E3','Signature',subtitle)
+    sheet.set_column('A:A',20)
+    sheet.set_column('B:B',20)
+    sheet.set_column('C:C',60)
+    sheet.set_column('D:D',15)
+    sheet.set_column('E:E',30)
+    k = 4
+    num = 1
+    for i in ans:
+        sheet.write_number('A'+str(k),num,normaltext)
+        num+=1
+        z,b,c = str(i[0]),i[1],i[2]
+        name = str(b)+" "+str(c)
+        temp = str(i[3]).split()
+        dep = str(temp[len(temp)-1])
+        sheet.write_string('B'+str(k),z,normaltext)
+        sheet.write_string('C'+str(k),name,normaltext)
+        sheet.write_string('D'+str(k),dep,normaltext)
+        k+=1
+    book.close()
+    output.seek(0)
+    response = HttpResponse(output.read(),content_type = 'application/vnd.ms-excel')
+    st = 'attachment; filename = ' + course_id + '.xlsx'
+    response['Content-Disposition'] = st
+    return response
+
+
+'''
+def render_to_pdf(template_src, context_dict):
+    template = get_template(template_src)
+    html = template.render(context_dict)
+    result = BytesIO()
+    pdf = pisa.pisaDocument(BytesIO(html.encode("UTF-8")), result)
+    if not pdf.err:
+        return HttpResponse(result.getvalue(), content_type='application/pdf')
+    return HttpResponse('We had some errors<pre>%s</pre>' % escape(html))
+'''
+
+
+def generate_preregistration_report(request):
+    sem = sem_for_generate_sheet();
+    # EDIT HERE ON DEPLOYMENT
+    sem = [2, 4, 6, 8]
+    print(sem)
+    # END EDIT HERE
+    obj1 = Register.objects.filter(semester=sem[0])
+    obj2 = Register.objects.filter(semester=sem[1])
+    obj3 = Register.objects.filter(semester=sem[2])
+    obj4 = Register.objects.filter(semester=sem[3])
+    obj = list(chain(obj1, obj2, obj3, obj4))
+
+    data = []
+    m = 1
+    for i in obj:
+        z = []
+        z.append(m)
+        m += 1
+        z.append(i.student_id.id.user.username)
+        z.append(str(i.student_id.id.user.first_name)+" "+str(i.student_id.id.user.last_name))
+        z.append(i.student_id.id.department.name)
+        z.append(i.course_id.credits)
+        z.append(i.course_id.course_id)
+        z.append(i.course_id.course_name)
+        try:
+            p = Instructor.objects.get(course_id = i.course_id)
+            z.append(p.instructor_id)
+        except:
+            z.append("Dr. Atul Gupta")
+        data.append(z)
+    data.sort()
+    print(data)
+    context = {'dict':data }
+    return render(request,'ais/generate_preregistration_report.html', context)

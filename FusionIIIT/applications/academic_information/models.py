@@ -65,7 +65,8 @@ class Course(models.Model):
     sem = models.IntegerField()
     credits = models.IntegerField()
     optional = models.BooleanField(default=False)
-
+    acad_selection = models.BooleanField(default=False)
+    
     class Meta:
         db_table = 'Course'
         unique_together = ('course_id', 'course_name', 'sem')

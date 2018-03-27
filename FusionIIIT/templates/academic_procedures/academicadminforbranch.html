@@ -32,11 +32,16 @@
             <div class="ui divider"></div>
 
             {% comment %}The Tab-Menu starts here!{% endcomment %}
-            <div class="ui huge fluid vertical pointing menu"
-                 style="max-width: 320px;">
-
-                 <a class=" item" href="/aims">
-                     Academic/Examination Time Tables
+                 <div class="ui huge fluid vertical pointing menu"
+                      style="max-width: 320px;
+                             height: 400px;
+                             overflow: scroll;">
+                 <a class="item" href="/aims" >
+                     Generate Student List
+                     <i class="right floated chevron right icon"></i>
+                 </a>
+                 <a class="item" href="/aims" >
+                     Time table
                      <i class="right floated chevron right icon"></i>
                  </a>
 
@@ -61,11 +66,23 @@
                  </a>
 
                  <a class="item" href="/academic-procedures/acad_person/">
-                       Verify Grades
+                       Verify Registered Courses
                      <i class="right floated chevron right icon"></i>
                  </a>
                 <a class="active item" data-tab="first">
                     Approve Branch Change
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <a class="item" href="/aims">
+                    Select Optional Courses
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <a class="item"  href="/aims">
+                    Add Course
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <a class="item" href="/aims">
+                    Set Minimum Credit
                     <i class="right floated chevron right icon"></i>
                 </a>
 

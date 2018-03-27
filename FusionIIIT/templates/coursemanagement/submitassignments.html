@@ -68,43 +68,37 @@
         </div>
     </form>
     <br>
-    <h4 class="ui dividing header">Submitted Assignments </h4>
-
+    <div style="overflow:scroll;height:20em;overflow-x:hidden;">
     <table class="ui fixed single line sortable celled table">
         <thead>
             <tr>
-                <th class="sorted ascending" style="width: 20%;">Sr.</th>
-                <th class="" style="width: 30%;">Name</th>
-                <th class="" style="width: 25%;">Assignment File</th>
-                <th class="" style="width:25%">Actions</th>
+                <th class="sorted ascending" style="width: 7%;">Sr.</th>
+                <th class="" style="width: 83%;">Name</th>
+                <th class="" style="width:10%">Action</th>
             </tr>
         </thead>
 
         <tbody>
-            <tr>
-                <td>1.</td>
-                <td>Assignment's Name</td>
-                <td>File URL</td>
-                <td><i class="edit icon" style="font-size:1.3vw;color:blue"></i><br>
-                    <i class="trash outline icon" style="font-size:1.3vw;color:red;"></i></td>
-            </tr>
-            <tr>
-                <td>2.</td>
-                <td>Assignment's Name</td>
-                <td>File URL</td>
-                <td><i class="edit icon" style="font-size:1.3vw;color:blue"></i><br>
-                    <i class="trash outline icon" style="font-size:1.3vw;color:red;"></i></td>
-            </tr>
-            <tr>
-                <td>3.</td>
-                <td>Assignment's Name</td>
-                <td>File URL</td>
-                <td><i class="edit icon" style="font-size:1.3vw;color:blue"></i><br>
-                    <i class="trash outline icon" style="font-size:1.3vw;color:red;"></i></td>
-            </tr>
-        </tbody>
-    </table>
 
+            {% for assi in assignment %}
+              {% for sa in student_assignment %}
+                {% if sa.0.assignment_id.pk == assi.pk %}
+                  {% for s in sa %}
+                    {% if request.user.username == s.student_id.id.user.username %}
+                <tr>
+                  <td></td>
+                  <td>{{assi.assignment_name}}</td>
+                  <td> <a href="#"><i class="trash dustbin outline icon" data-pk="{{s.pk}}" id="dustbin_stuassignment_{{forloop.counter}}"style="font-size:1.3vw;color:red;"></i></a> </td>
+                </tr>
+                    {% endif %}
+                  {% endfor %}
+                {% endif %}
+            {% endfor %}
+            {% endfor %}
+        </tbody>
+
+    </table>
+  </div>
 </div>
 {% else %}
 <div class="ui pointing secondary menu">
@@ -167,42 +161,29 @@
         </div>
     </form>
     <br>
-    <h4 class="ui dividing header">Uploaded Assignments </h4>
-
-    <table class="ui fixed single line sortable celled table">
+    <div style="overflow:scroll;height:20em; overflow-x:hidden;">
+    <table class="ui fixed single line sortable celled table" style="overflow:scroll;height:100px;">
         <thead>
             <tr>
-                <th class="sorted ascending" style="width: 20%;">Sr.</th>
-                <th class="" style="width: 30%;">Name</th>
-                <th class="" style="width: 25%;">Assignment File</th>
-                <th class="" style="width:25%">Actions</th>
+                <th class="sorted ascending" style="width: 7%;">Sr.</th>
+                <th class="" style="width: 83%;">Name</th>
+                <th class="" style="width:10%">Action</th>
             </tr>
         </thead>
 
         <tbody>
+
+            {% for assi in assignment %}
             <tr>
-                <td>1.</td>
-                <td>Assignment's Name</td>
-                <td>File URL</td>
-                <td><i class="edit icon" style="font-size:1.3vw;color:blue"></i><br>
-                    <i class="trash outline icon" style="font-size:1.3vw;color:red;"></i></td>
+                <td>{{forloop.counter}}</td>
+                <td>{{assi.assignment_name}}</td>
+                <td> <a href="#"><i class="trash dustbin outline icon" data-pk="{{assi.pk}}" id="dustbin_lecassignment_{{forloop.counter}}"style="font-size:1.3vw;color:red;"></i></a></td>
             </tr>
-            <tr>
-                <td>2.</td>
-                <td>Assignment's Name</td>
-                <td>File URL</td>
-                <td><i class="edit icon" style="font-size:1.3vw;color:blue"></i><br>
-                    <i class="trash outline icon" style="font-size:1.3vw;color:red;"></i></td>
-            </tr>
-            <tr>
-                <td>3.</td>
-                <td>Assignment's Name</td>
-                <td>File URL</td>
-                <td><i class="edit icon" style="font-size:1.3vw;color:blue"></i><br>
-                    <i class="trash outline icon" style="font-size:1.3vw;color:red;"></i></td>
-            </tr>
+            {% endfor %}
         </tbody>
+
     </table>
+  </div>
 
 </div>
 

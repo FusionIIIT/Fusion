@@ -106,7 +106,7 @@
             <tr>
                 <th class="four wide">Student</th>
                 <th class="six wide">Company</th>
-                <th class="two wide">CTC</th>
+                <th class="two wide">CTC (LPA)</th>
                 <th class="two wide">Invitation</th>
                 <th class="two wide">Delete</th>
             </tr>
@@ -133,7 +133,7 @@
                 </td>
 
                 <td>
-                   &#8377; {{ student.notify_id.ctc }}
+                    {{ student.notify_id.ctc }}
                 </td>
 
                 <td>
@@ -191,13 +191,7 @@
                               <div class="four wide field">
                                 {{ form9.year.errors }}
                                   <label for="{{ form9.year.id_for_label }}">Year</label>
-                                  <!--select class="ui search fluid large dropdown">
-                                      <option value="">Select</option>
-                                      <option value="2015">2015</option>
-                                      <option value="2016">2016</option>
-                                      <option value="2017">2017</option>
-                                      <option value="2018">2018</option>
-                                  </select-->
+
                                   {{ form9.year }}
                               </div>
 
@@ -256,7 +250,7 @@
                      {% endif %}
                      {% endfor %}
 
-                 </div>
+          </div>
             {% for student in placementstatus %}
 
                  {% if forloop.counter0|divisibleby:10 %}
@@ -268,7 +262,7 @@
           <tr>
             <th class="four wide">Student</th>
             <th class="six wide">Company</th>
-            <th class="two wide">CTC</th>
+            <th class="two wide">CTC (LPA)</th>
             <th class="two wide">Invitation</th>
             <th class="two wide">Delete</th>
           </tr>
@@ -295,7 +289,7 @@
               </td>
 
               <td>
-                 &#8377; {{ student.notify_id.ctc }}
+                 {{ student.notify_id.ctc }}
               </td>
 
               <td>
@@ -318,7 +312,7 @@
 
       {% endif %}
       {% endfor %}
-      {% if not consymps.all.count|divisibleby:10 %}
+      {% if not placementstatus.all.count|divisibleby:10 %}
       </tbody>
         </table>
             </div>

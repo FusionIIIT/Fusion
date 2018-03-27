@@ -12,7 +12,7 @@
          style="padding-left: 3.5%;
                 padding-right: 3.5%;">
 
-        <form  method="POST" class="ui large form">
+        <form  method="POST" class="ui large form" action="{% url 'mess:invitation' %}">
             {% csrf_token %}
 
             {% comment %} The invitation form  starts here! {% endcomment %}
@@ -44,7 +44,7 @@
                 </div>
                  <div class="field">
                     <label>Place</label>
-                                <select  name="venue" class="ui search fluid dropdown" required="true" id="venue">
+                                <select  name="venue" class="ui fluid dropdown" required="true" id="venue">
                                     <option value="Cm1">Central Mess I</option>
                                     <option value="Cm2">Central Mess II</option>
                                 </select>
@@ -59,7 +59,7 @@
 
             <div class="field">
                                 <label><br></label>
-                                <button class="ui primary right floated button" onclick="return invitation()">
+                                <button class="ui primary right floated button">
                                     Submit
                                 </button>
 
@@ -73,7 +73,6 @@
         <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
                 <thead>
                 <tr>
-                    <!-- <th>App Date</th> -->
                     <th>Meeting Date</th>
                     <th>Venue</th>
                     <th>Agenda</th>
@@ -95,7 +94,7 @@
     </div>
     </div>
 
-<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<!-- <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
 
 <script type="text/javascript">
 
@@ -133,7 +132,7 @@
         return false;
         }
 
-</script>    
+</script>     -->
 
 {% endblock %}
 {% endblock %}

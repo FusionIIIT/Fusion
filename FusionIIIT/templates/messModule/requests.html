@@ -4,7 +4,7 @@
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="messchange">
-            Mess Change
+            Mess Registration
         </a>
 
         <a class="item" data-tab="spfood">
@@ -37,6 +37,7 @@
                     {% if current_date < mess_reg.end_reg %}
                     <div class="two fields">
                         <div class="field">
+                            <input type="date" id="date" name="date" value="{{mess_reg.end_reg}}" hidden>
                             <label>Choose Mess:</label>
                             <select class="ui search fluid dropdown" name="mess_type" id="mess_type">
                                     <option value="mess2">Veg Mess</option>

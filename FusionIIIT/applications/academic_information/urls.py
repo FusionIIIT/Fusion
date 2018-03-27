@@ -7,6 +7,7 @@ app_name = 'academic_information'
 
 urlpatterns = [
     url(r'^$', views.homepage, name='homepage'),
+    url(r'^generateSheet$',views.generatexlsheet, name = 'generatexlsheet'),
     url(r'^senator/$', views.senator, name='senator'),
     url(r'^deleteSenator/(?P<pk>[0-9]+)$', views.deleteSenator, name='deleteSenator'),
     url(r'^add_convenor/$', views.add_convenor, name='add_convenor'),
@@ -28,4 +29,10 @@ urlpatterns = [
     url(r'^delete_exam_timetable', views.delete_exam_timetable, name='delete_exam_timetable'),
     url(r'^add_timetable', views.add_timetable, name="add_timetable"),
     url(r'^delete_timetable', views.delete_timetable, name='delete_timetable'),
+    url(r'^add_calendar', views.add_calendar, name='Add Calendar'),
+    url(r'^update_calendar', views.update_calendar, name='Add Calendar'),
+    url(r'^select_opt', views.add_optional, name="Add Optional"),
+    url(r'^add_course', views.add_course, name="Add Course"),
+    url(r'^set_min_cred', views.min_cred, name="Minimum Credit"),
+    url(r'^generate_preregistration_report',views.generate_preregistration_report, name = "generate_preregistration_report")
 ]

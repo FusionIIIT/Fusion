@@ -1,6 +1,7 @@
 import datetime
 import json
 
+from itertools import chain
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -15,7 +16,7 @@ from applications.globals.models import (DepartmentInfo, Designation,
                                          ExtraInfo, Faculty, HoldsDesignation)
 
 from .models import (BranchChange, CoursesMtech, FinalRegistrations, Register,
-                     Thesis)
+                     Thesis, MinimumCredits)
 
 
 @login_required(login_url='/accounts/login')
@@ -42,10 +43,13 @@ def academic_procedures(request):
     print (desig_id)
     temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
     acadadmin = temp.working
-    print (temp.working)
+    print (temp)
+    print(user_details)
     k = str(user_details).split()
+    print("Temp variable", k)
+
     final_user = k[2]
-    print (final_user)
+    print ("Final User", final_user)
 
     print (str(acadadmin) == str(final_user))
     # print(acadadmin, user_details)
@@ -64,21 +68,50 @@ def academic_procedures(request):
     for i in obj1:
         if(i.programme[0] == "M" or i.programme[0] == "P"):
             pgflag = 1
-    # Written by ANURAAG
+
     change_branch_flag = 1
-    # END (ANURAAG)
+
     student = Student.objects.all().filter(id=user_details.id).first()
     # Fuction Call to get the current semster of the Student
     user_sem = get_user_semester(user_details.id)
     # print(student.programme)
     if student.programme == 'PhD':
         return HttpResponseRedirect('/academic-procedures/PhD/')
-    registered_or_not = Register.objects.all().filter(student_id=student).first()
+    registered_or_not = Register.objects.all().filter(student_id=student, semester = (user_sem + 1)).first()
+    # Get the pre-registration and final-registration date
+    regflag = True
+    if(registered_or_not):
+        regflag = True
+    else:
+        regflag = False
+    pre_registration_date = Calendar.objects.all().filter(description="Pre Registration").first()
+    final_registration_date = Calendar.objects.all().filter(description="Physical Reporting at the Institute").first()
+    # print("Pre-Registration", pre_registration_date, final_registration_date)
+    prd_start_date = pre_registration_date.from_date
+    prd_end_date = pre_registration_date.to_date
+    frd_start_date = final_registration_date.from_date
+    frd_end_date   = final_registration_date.to_date
+    prd, frd = False, False
+    current_date = datetime.datetime.now().date()
+    if current_date>=prd_start_date and current_date<=prd_end_date:
+        prd = True
+    if current_date>=frd_start_date and current_date<=frd_end_date:
+        frd = True
+    # print(prd, frd)
+    # Get add/drop course date
+    add_drop_course = Calendar.objects.all().filter(description="Last Date for Adding/Dropping of course").first()
+    print(add_drop_course)
+    adc_start_date = add_drop_course.from_date
+    adc_end_date = add_drop_course.to_date
+    adc_flag = False
+    if current_date>=adc_start_date and current_date<=adc_end_date:
+        adc_flag = True
     # Function call to get the current user's branch
     user_branch = get_user_branch(user_details)
-    # user_sem = 2
-    get_courses = Course.objects.all().filter(sem=(user_sem+1))
-    # print(get_courses, user_sem)
+    get_courses = Course.objects.all().filter(sem=(user_sem+1), optional=False)
+    get_sel_courses = Course.objects.all().filter(sem=(user_sem+1), optional=True, acad_selection=True)
+    # get_courses = get_courses + get_sel_courses
+    get_courses = list(chain(get_courses, get_sel_courses))
     # Fucntion Call to get the courses related to the branch
     branch_courses = get_branch_courses(get_courses, user_branch)
     calendar = Calendar.objects.all()
@@ -88,7 +121,8 @@ def academic_procedures(request):
             'current_user': current_user,
             'year': yearr,
             'user_sem': user_sem,
-            'check_pre_register': registered_or_not
+            'check_pre_register': registered_or_not,
+            'regflag':regflag,
             }
     final_register = Register.objects.all().filter(student_id=user_details.id)
     final_register_count = FinalRegistrations.objects.all().filter(
@@ -97,13 +131,20 @@ def academic_procedures(request):
     # print("branchh Cousr",branch_courses, final_register)
     show_list = get_course_to_show(branch_courses, final_register)
     # print(show_list)
-    pre_register_found = Register.objects.all().filter(student_id=user_details.id).first()
+    pre_register_found = Register.objects.all().filter(student_id=user_details.id, semester=(user_sem+1)).first()
     pre_register = True
-    currently_registered = get_currently_registered_courses(user_details.id, user_sem)
-    if (pre_register_found) is None:
-        pre_register = False
+    # Final Registration Found or not
+    final_register_found = FinalRegistrations.objects.all().filter(student_id=user_details.id).first()
+    final_register_1 = True
+    if final_register_found is None:
+        final_register_1 = False
     else:
+        final_register_1 = True
+    currently_registered = get_currently_registered_courses(user_details.id, user_sem)
+    if (pre_register_found):
         pre_register = True
+    else:
+        pre_register = False
 
     # print(pre_register_found)
     # Branch Change Code starts here
@@ -111,14 +152,14 @@ def academic_procedures(request):
     # ENDCHANGE BY ANURAAG
     show_list = get_course_to_show(branch_courses, final_register)
     # print(show_list)
-    pre_register_found = Register.objects.all().filter(student_id=user_details.id).first()
-    pre_register = True
-    # print(final_register)
-    if (pre_register_found) is None:
-        pre_register = False
-    else:
-        pre_register = True
-    # print(pre_register_found)
+    # pre_register_found = Register.objects.all().filter(student_id=user_details.id).first()
+    # pre_register = True
+    # # print(final_register)
+    # if (pre_register_found) is None:
+    #     pre_register = False
+    # else:
+    #     pre_register = True
+    # # print(pre_register_found)
 
     if(pgflag == 1):
         specialization = ""
@@ -133,10 +174,9 @@ def academic_procedures(request):
         show_list = get_course_to_show_pg(add_courses, final_register)
 
     details['change_branch_flag'] = change_branch_flag
-    # ENDCHANGE BY ANURAAG
+    # Get the Minimum Credits
+    minimum_credit = MinimumCredits.objects.all().filter(semester=(user_sem+1)).first()
 
-    # print("yoyo\n")
-    # print(calendar)
     return render(
                   request, '../templates/academic_procedures/academic.html',
                   {'details': details,
@@ -148,7 +188,12 @@ def academic_procedures(request):
                    'change_branch': change_branch,
                    'add_course': add_course,
                    'show_list': show_list,
-                   'pre_register': pre_register}
+                   'pre_register': pre_register,
+                   'prd': prd,
+                   'frd': frd,
+                   'final_r': final_register_1,
+                   'adc_flag': adc_flag,
+                   'mincr': minimum_credit,}
         )
 
 
@@ -162,9 +207,8 @@ def get_currently_registered_courses(user_details, user_sem):
     #            ans2.append(j)
     ans = []
     for i in obj1:
-        if i.semester == user_sem:
-            obj2 = Course.objects.get(course_name=i.course_id)
-            ans.append(obj2)
+        obj2 = Course.objects.get(course_name=i.course_id)
+        ans.append(obj2)
     # print(ans)
     return ans
 

@@ -61,6 +61,7 @@
                       doctor:$("#doc").val(),
                       },
                       success: function(JSON){
+                        $("#date").empty();
                         $.each(JSON, function(key, value) {
                        $("#date").append("<option value="+value.pk +">" + value.fields.date+"-------"+value.fields.from_time+"-"+value.fields.to_time+"</option>");
                    });
@@ -84,10 +85,10 @@
                      },
                      success: function(data){
                        if (data.status == 1){
+                         alert("Appointment requested.Check history for the status of appointment. ")
                          document.getElementById("doc").value=""
                          document.getElementById("date").value=""
                          document.getElementById("description").value=""
-
                        }
                    }
                   });
@@ -149,16 +150,20 @@
                                                     var start = new Date(startDate);
                                                     var end=new Date(endDate);
                                                     var today = new Date();
+
                                                     $('#stdt').html('');
                                                     $('#endt').html('');
                                                     if ( start < today ) {
                                                         $('#stdt').html('You cannot enter a date before today!.');
                                                         return false;
                                                     }
+                                                    if(endDate!="")
+                                                    {
                                                     if ( end < start ) {
                                                         $('#endt').html('You cannot enter a date before start date!.');
                                                         return false;
                                                     }
+                                                  }
                                                     $.ajax({
                                                       type:'post',
                                                       url:'/healthcenter/student/',
@@ -170,6 +175,7 @@
                                                       amb_submit:$("#amb_submit").val()
                                                     },
                                                       success: function(data){
+                                                      alert("Ambulance requested.");
                                                       document.getElementById("start_date").value="";
                                                       document.getElementById("end_date").value="";
                                                       document.getElementById("reason").value="";

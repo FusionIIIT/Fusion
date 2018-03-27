@@ -27,15 +27,16 @@
                         </thead>
 
                         <tbody>
-                            {% for guest in meals %}
-                            <form id="form{{guest.visitor.id}}">
+                            {% for key, value in active_visitors.items %}
+
+                            <form id="form{{visitor.visitor.id}}">
                                 <tr>
                                     <td>
                                         <h4 class="ui image header">
                                             <div class="content">
-                                                {{ guest.visitor_name }}
+                                                {{ value.visitor_name }}
                                                 <div class="sub header">
-                                                    {{guest.visitor_email}}
+                                                    {{ value.visitor_email }}
                                                 </div>
                                             </div>
                                         </h4>
@@ -43,43 +44,44 @@
 
                                     <td>
                                         <div class="ui checkbox">
-                                            <input type="checkbox" value="1" name="food{{guest.id}}">
+                                            <input type="checkbox" value="1" name="food{{value.id}}">
                                             <label></label>
                                         </div>
                                     </td>
 
                                     <td>
                                         <div class="ui checkbox">
-                                            <input type="checkbox" value="2" name="food{{guest.id}}">
+                                            <input type="checkbox" value="2" name="food{{value.id}}">
                                             <label></label>
                                         </div>
                                     </td>
 
                                     <td>
                                         <div class="ui checkbox">
-                                            <input type="checkbox" value="3" name="food{{guest.id}}">
+                                            <input type="checkbox" value="3" name="food{{value.id}}">
                                             <label></label>
                                         </div>
                                     </td>
 
                                     <td>
                                         <div class="ui checkbox">
-                                            <input type="checkbox" value="4" name="food{{guest.id}}">
+                                            <input type="checkbox" value="4" name="food{{value.id}}">
                                             <label></label>
                                         </div>
                                     </td>
 
                                     <td>
                                         <div class="ui checkbox">
-                                            <input type="checkbox" value="5" name="food{{guest.id}}">
+                                            <input type="checkbox" value="5" name="food{{value.id}}">
                                             <label></label>
                                         </div>
                                     </td>
-                                    <input type="hidden" value="{{ guest.id }}" name="id">
+                                    <input type="hidden" value="{{ value.id }}" name="id">
+                                    <input type="hidden" value="{{ key }}" name="meal-booking-id">
                                     <td>
                                         <div class="field">
                                             <label></label>
-                                            <button class="ui primary right floated button bookameal-submit" id="btn{{guest.id}}" data-pk="{{guest.id}}">
+                                            <button class="ui primary right floated button bookameal-submit" id="btn{{value.id}}" data-pk="{{value.id}}">
                                                 Update
                                             </button>
                                         </div>

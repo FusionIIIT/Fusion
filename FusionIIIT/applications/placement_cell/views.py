@@ -524,8 +524,10 @@ def placement(request):
                                                       )),
                                                     programme=programme,
                                                     cpi__gte=cpi)).filter(Q(pk__in=StudentPlacement.objects.filter(Q(debar=debar, placed_type=placed_type)).values('unique_id_id')))
+                st = students
         else:
-            students = Student.objects.all()
+            st = Student.objects.all()
+            students = ''
             if 'getcvsubmit' in request.POST:
                 ee =[]
             else:
@@ -539,10 +541,8 @@ def placement(request):
                     sr = StudentPlacement.objects.get(Q(pk=spid))
                     sr.debar = "NOT DEBAR"
                     sr.save()
-        qq = students.values('id_id')
+        qq = st.values('id_id')
         q = list(qq)
-        #for t in qq:
-        #    q.extend(t['id_id'])
         request.session['q'] = q
         if 'getcvsubmit' in request.POST:
             form1 = SearchStudentRecord(request.POST)
@@ -667,7 +667,7 @@ def placement(request):
                 studentr.save()
                 placementr.save()
     else:
-        students = Student.objects.all()
+        students = ''
     form1 = SearchStudentRecord(initial={})
     form = AddChairmanVisit(initial={})
     form5 = AddSchedule(initial={})
@@ -795,7 +795,10 @@ def cv(request, username):
     import datetime
     now = datetime.datetime.now()
     if int(str(profile.id)[:2]) == 20:
-        roll = 1+now.year-int(str(profile.id)[:4])
+        if (now.month>4):
+          roll = 1+now.year-int(str(profile.id)[:4])
+        else:
+          roll = now.year-int(str(profile.id)[:4])
     else:
         roll = 1+(now.year)-int("20"+str(profile.id)[0:2])
     student = get_object_or_404(Student, Q(id=profile.id))

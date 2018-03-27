@@ -13,6 +13,18 @@
                 {% csrf_token %}
                 <div class="field">
                     <div class="eight wide field">
+                        <label>Award</label>
+                        <select class="ui fluid search large dropdown" name="award" >
+                            <option selected hidden>Select</option>
+                            <option value="Notional Prizes">Notional Prizes</option>
+                            <option value="Chairman Gold Medal">Chairman Gold Medal</option>
+                            <option value="Academic Performance Proficiency Medal">Academic Performance Proficiency Medal</option>
+                         </select>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <div class="eight wide field">
                         <label>Year</label>
                         <select class="ui fluid search large dropdown" name="year" >
                                 <option selected hidden>Select</option>
@@ -23,17 +35,18 @@
                             </select>
                     </div>
                 </div>
+
                      <div class="field">
                           <div class="eight wide field">
                             <label>SPI</label>
-                            <input type="text" name="spi" value="8.5" class="ui large input" readonly>
+                            <input type="text" name="spi" placeholder="8.5" class="ui large input">
                         </div>
                      </div>
 
                      <div class="field">
                           <div class="eight wide field">
                             <label>CPI</label>
-                            <input  class="ui large input" name="cpi" value="8.5" type="text" readonly>
+                            <input  class="ui large input" name="cpi" placeholder="8.5" type="text">
                         </div>
                      </div>
 

@@ -41,28 +41,17 @@
                     Room Availability
                     <i class="right floated chevron right icon"></i>
                 </a>
-                {% endif %}
 
-                {% if user_designation == 'VhIncharge' or user_designation == 'VhCaretaker' %}
                 <a class=" item" data-tab="fourth" id="bookameal">
                     Meals Record
                     <i class="right floated chevron right icon"></i>
                 </a>
-                {% endif %}
 
-                {% if user_designation == 'VhIncharge' or user_designation == 'VhCaretaker' %}
                 <a class="item" data-tab="fifth">
                     Inventory
                     <i class="right floated chevron right icon"></i>
                 </a>
                 {% endif %}
-
-                <a class="item" data-tab="sixth">
-
-                    Guest Check-Out
-
-                    <i class="right floated chevron right icon"></i>
-                </a>
             </div>
         </div>
 
@@ -83,7 +72,7 @@
 
             <div class="ui tab segment" data-tab="third">
                 {% block bookaroom %}
-                    {% include 'vhModule/room-availability.html' %}
+                    {% include 'vhModule/room-availability1.html' %}
                 {% endblock %}
             </div>
 

@@ -20,11 +20,13 @@ from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
 def mess(request):
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
-    holds_designations = HoldsDesignation.objects.get(user=user)
-    desig = holds_designations.designation.name
+    holds_designations = HoldsDesignation.objects.filter(user=user)
+    desig = holds_designations
+    print(desig)
+
     form = MinuteForm()
     current_date = date.today()
-    mess_reg = Mess_reg.objects.get()
+    mess_reg = Mess_reg.objects.last()
     count1 = 0
     count2 = 0
     count3 = 0
@@ -93,8 +95,9 @@ def mess(request):
                 count8 += 1
 
         for bill in monthly_bill:
+
             for z in data:
-                if z.order_date.strftime("%b") == bill.month:
+                if z.order_date.strftime("%B") == bill.month:
                     nonveg_total_bill = nonveg_total_bill + z.dish.price
                     bill.nonveg_total_bill = nonveg_total_bill
 
@@ -103,7 +106,9 @@ def mess(request):
 
             for r in rebates:
                 if r.status == '2':
-                    if r.start_date.strftime("%b") == bill.month:
+                    print(bill.month)
+                    print(r.start_date.strftime("%B"))
+                    if r.start_date.strftime("%B") == bill.month:
                         rebate_count = rebate_count + abs((r.end_date - r.start_date).days) + 1
                         bill.rebate_count = rebate_count
 
@@ -222,7 +227,9 @@ def placeorder(request):
 
         stu = Messinfo.objects.get(student_id=student)
         if stu.mess_option == 'mess1':
-            dish = Nonveg_menu.objects.get(dish=request.POST.get("dish"), order_interval=request.POST.get('interval'))
+            dish = Nonveg_menu.objects.get(
+                                           dish=request.POST.get("dish"),
+                                           order_interval=request.POST.get('interval'))
             order_interval = dish.order_interval
             order_date = datetime.datetime.now().date()
             nonveg_obj = Nonveg_data(student_id=student, order_date=order_date,
@@ -286,89 +293,109 @@ def vacasubmit(request):
 def menusubmit(request):
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
-    holds_designations = HoldsDesignation.objects.get(user=user)
-    desig = holds_designations.designation.name
-    if desig == 'mess_convener':
+    holds_designations = HoldsDesignation.objects.filter(user=user)
+    desig = holds_designations
+    for d in desig:
+        
+        if d.designation.name == 'mess_convener':
 
-        dish = Menu.objects.get(dish=request.POST.get("dish"))
-        newdish = request.POST.get("newdish")
-        reason = request.POST.get("reason")
-        app_obj = Menu_change_request(dish=dish, request=newdish, reason=reason)
-        app_obj.save()
-        return HttpResponseRedirect("/mess")
+            dish = Menu.objects.get(dish=request.POST.get("dish"))
+            newdish = request.POST.get("newdish")
+            reason = request.POST.get("reason")
+            app_obj = Menu_change_request(dish=dish, request=newdish, reason=reason)
+            app_obj.save()
+            return HttpResponseRedirect("/mess")
 
-    else:
-        message = "you can't apply for this application."
-        context = {
-                   'message': message
-        }
-
-        return render(request, 'mess.html', context)
+    return render(request, 'mess.html', context)
 
 
 @login_required
 def response(request, ap_id):
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
-    holds_designations = HoldsDesignation.objects.get(user=user)
-    desig = holds_designations.designation.name
+    holds_designations = HoldsDesignation.objects.filter(user=user)
+    desig = holds_designations
     
-    if desig == 'mess_manager':
-        application = Menu_change_request.objects.get(pk=ap_id)
+    for d in desig:
+        if d.designation.name == 'mess_manager':
+            application = Menu_change_request.objects.get(pk=ap_id)
 
-        if(request.POST.get('submit') == 'approve'):
-            application.status = 2
-            meal = application.dish
-            obj = Menu.objects.get(dish=meal.dish)
-            obj.dish = application.request
-            obj.save()
+            if(request.POST.get('submit') == 'approve'):
+                application.status = 2
+                meal = application.dish
+                obj = Menu.objects.get(dish=meal.dish)
+                obj.dish = application.request
+                obj.save()
 
-        elif(request.POST.get('submit') == 'reject'):
-            application.status = 0
+            elif(request.POST.get('submit') == 'reject'):
+                application.status = 0
 
-        else:
-            application.status = 1
+            else:
+                application.status = 1
 
         application.save()
 
-        return HttpResponseRedirect("/mess")
+    return HttpResponseRedirect("/mess")
 
 
 @login_required
 def processvacafood(request, ap_id):
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
-    holds_designations = HoldsDesignation.objects.get(user=user)
-    desig = holds_designations.designation.name
+    holds_designations = HoldsDesignation.objects.filter(user=user)
+    desig = holds_designations
 
-    if desig == 'mess_manager':
-        applications = Vacation_food.objects.get(pk=ap_id)
+    for d in desig:
+        if d.designation.name == 'mess_manager':
+            applications = Vacation_food.objects.get(pk=ap_id)
 
-        if(request.POST.get('submit') == 'approve'):
-            applications.status = '2'
+            if(request.POST.get('submit') == 'approve'):
+                applications.status = '2'
 
-        elif(request.POST.get('submit') == 'reject'):
-            applications.status = '0'
+            elif(request.POST.get('submit') == 'reject'):
+                applications.status = '0'
 
-        else:
-            applications.status = '1'
+            else:
+                applications.status = '1'
 
-        applications.save()
-        return HttpResponseRedirect("/mess")
+            applications.save()
+    return HttpResponseRedirect("/mess")
 
 
 @login_required
 @transaction.atomic
 def regsubmit(request):
+    i = 0
+    j = 0
+    month_1 = ['January', 'February', 'March', 'April', 'May', 'June']
+    month_2 = ['July', 'August', 'September', 'October', 'November', 'December']
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
 
     if extrainfo.user_type == 'student':
         student = Student.objects.get(id=extrainfo)
         mess = request.POST.get('mess_type')
-        messinfo_obj = Messinfo(student_id=student, mess_option=mess)
-        # when registered for a new sem flush bill
-        messinfo_obj.save()
+        mess_info_inst = Messinfo.objects.get(student_id=student)
+        mess_info_inst.mess_option = mess
+        mess_info_inst.save()
+        mess_reg = Mess_reg.objects.last()
+        
+        if Monthly_bill.objects.filter(student_id=student):
+            return HttpResponseRedirect("/mess")
+
+        else:            
+
+            if mess_reg.end_reg.strftime("%B") in month_1:
+                while i<=5:
+                    monthly_bill_obj = Monthly_bill(student_id=student, month=month_1[i])
+                    monthly_bill_obj.save()
+                    i = i+1
+
+            else:
+                while j<=5:
+                    monthly_bill_obj = Monthly_bill(student_id=student, month=month_2[j])
+                    monthly_bill_obj.save()
+                    j = j+1
 
         return HttpResponseRedirect("/mess")
 
@@ -381,21 +408,19 @@ def regsubmit(request):
 def regadd(request):
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
-    holds_designations = HoldsDesignation.objects.get(user=user)
-    desig = holds_designations.designation.name
+    holds_designations = HoldsDesignation.objects.filter(user=user)
+    desig = holds_designations    
 
-    if desig == 'mess_manager':
+    for d in desig:
+        if d.designation.name == 'mess_manager':
 
-        sem = request.POST.get('sem')
-        start_reg = request.POST.get('start_date')
-        end_reg = request.POST.get('end_date')
-        mess_reg_obj = Mess_reg(sem=sem, start_reg=start_reg, end_reg=end_reg)
-        mess_reg_obj.save()
+            sem = request.POST.get('sem')
+            start_reg = request.POST.get('start_date')
+            end_reg = request.POST.get('end_date')
+            mess_reg_obj = Mess_reg(sem=sem, start_reg=start_reg, end_reg=end_reg)
+            mess_reg_obj.save()
 
-        return HttpResponseRedirect("/mess")
-
-    else:
-        return redirect('mess')
+            return HttpResponseRedirect("/mess")
 
 
 @transaction.atomic
@@ -438,10 +463,10 @@ def invitation(request):
     time = request.POST.get('time')
     invitation_obj = Mess_meeting(meet_date=date, agenda=agenda, venue=venue, meeting_time=time)
     invitation_obj.save()
-    data = {
-            'status': 1,
-    }
-    return JsonResponse(data)
+    # data = {
+    #         'status': 1,
+    # }
+    return HttpResponseRedirect("/mess")
 
 
 def responserebate(request, ap_id):

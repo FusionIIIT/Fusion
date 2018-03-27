@@ -19,28 +19,22 @@ from applications.academic_information.models import (Course, Instructor,
 from applications.academic_procedures.models import Register
 from applications.globals.models import ExtraInfo
 
-from .forms import QuestionFormObjective, QuizForm
-from .helpers import semester
+from .forms import QuizForm
+from .helpers import create_thumbnail, semester
 from .models import (Assignment, CourseDocuments, CourseVideo, Forum,
-                     ForumReply, Quiz, QuizQuestion, QuizResult, StudentAnswer,
-                     StudentAssignment)
-
-
-def create_thumbnail(course, row, name, ext, attach_str, thumb_time, thumb_size):
-    filepath = settings.MEDIA_ROOT + '/online_cms/' + course.course_id + '/vid/' + name + ext
-#    video_name = row.video_name[:-4]
-    filename = settings.MEDIA_ROOT + '/online_cms/' + course.course_id + '/vid/'
-    filename = filename + name.replace(' ', '-') + '-' + attach_str + '.png'
-    process = 'ffmpeg -y -i ' + filepath + ' -vframes ' + str(1) + ' -an -s '
-    process = process + thumb_size + ' -ss ' + str(thumb_time) + ' ' + filename
-    subprocess.call(process, shell=True)
+                     ForumReply, Question, QuestionBank, Quiz, QuizQuestion,
+                     QuizResult, StudentAnswer, StudentAssignment, Topics)
 
 
 @login_required
 def viewcourses(request):
+    '''
+    desc: Shows all the courses under the user
+    '''
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
     if extrainfo.user_type == 'student':
+        print(extrainfo)
         student = Student.objects.get(id=extrainfo)
         roll = student.id.id[:4]
         register = Register.objects.filter(student_id=student, semester=semester(roll))
@@ -60,22 +54,34 @@ def viewcourses(request):
 
 @login_required
 def course(request, course_code):
+    '''
+    desc: Home page for each courses for Student/Faculty
+    '''
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
     if extrainfo.user_type == 'student':
         student = Student.objects.get(id=extrainfo)
         roll = student.id.id[:4]
         course = Course.objects.filter(course_id=course_code, sem=semester(roll))
-        print (course)
-        print ("ERROR.................................")
         instructor = Instructor.objects.get(course_id=course[0])
         videos = CourseVideo.objects.filter(course_id=course[0])
         slides = CourseDocuments.objects.filter(course_id=course[0])
         quiz = Quiz.objects.filter(course_id=course)
+        assignment = Assignment.objects.filter(course_id=course[0])
+        student = Student.objects.filter(id=extrainfo)
+        stu_ass = StudentAssignment.objects.filter
+        student_assignment = []
+        for assi in assignment:
+            sa = StudentAssignment.objects.filter(assignment_id=assi, student_id=student)
+            student_assignment.append(sa)
+        '''
+        marks to store the marks of quizes of student
+        marks_pk to store the quizs taken by student
+        quizs=>quizs that are not over
+        '''
         marks = []
         quizs = []
         marks_pk = []
-        assignment = Assignment.objects.filter(course_id=course[0])
         for q in quiz:
             qs = QuizResult.objects.filter(quiz_id=q, student_id=student)
             qs_pk = QuizResult.objects.filter(
@@ -104,18 +110,15 @@ def course(request, course_code):
                        'extrainfo': extrainfo,
                        'answers': answers,
                        'assignment': assignment,
+                       'student_assignment': student_assignment,
                        'Lecturer': lec})
 
     else:
-        print(extrainfo)
         instructor = Instructor.objects.filter(instructor_id=extrainfo)
-        print(instructor)
         for ins in instructor:
             if ins.course_id.course_id == course_code:
                 course = ins.course_id
         lec = 1
-        print("EOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOo")
-        print(course)
         videos = CourseVideo.objects.filter(course_id=course)
         slides = CourseDocuments.objects.filter(course_id=course)
         quiz = Quiz.objects.filter(course_id=course)
@@ -139,6 +142,7 @@ def course(request, course_code):
             fr1 = ForumReply.objects.filter(forum_ques=comment)
             if not fr:
                 answers[comment] = fr1
+        qb = QuestionBank.objects.filter(instructor_id=extrainfo, course_id=course)
         return render(request, 'coursemanagement/viewcourse.html',
                       {'instructor': instructor,
                        'extrainfo': extrainfo,
@@ -150,7 +154,8 @@ def course(request, course_code):
                        'answers': answers,
                        'assignment': assignment,
                        'student_assignment': student_assignment,
-                       'Lecturer': lec
+                       'Lecturer': lec,
+                       'questionbank': qb
                        })
 
 
@@ -159,8 +164,6 @@ def upload_assignment(request, course_code):
     extrainfo = ExtraInfo.objects.get(user=request.user)
     if extrainfo.user_type == "student":
         student = Student.objects.get(id=extrainfo)
-#        roll = student.id.id[:4]
-#        course = Course.objects.filter(course_id=course_code, sem=semester(roll))
         try:
             doc = request.FILES.get('img')
             assi_name = request.POST.get('assignment_topic')
@@ -180,7 +183,6 @@ def upload_assignment(request, course_code):
         fs.save(name + file_extenstion, doc)
         uploaded_file_url = "/media/online_cms/" + course_code + "/assi/" + assign.assignment_name
         uploaded_file_url = uploaded_file_url + "/" + student.id.id + "/" + name + file_extenstion
-#        index = uploaded_file_url.rfind('/')
         sa = StudentAssignment(
          student_id=student,
          assignment_id=assign,
@@ -195,7 +197,6 @@ def upload_assignment(request, course_code):
 
 @login_required
 def add_document(request, course_code):
-    #    CHECK FOR ERRORS IN UPLOADING
     extrainfo = ExtraInfo.objects.get(user=request.user)
     if extrainfo.user_type == "faculty":
         instructor = Instructor.objects.filter(instructor_id=extrainfo)
@@ -219,8 +220,6 @@ def add_document(request, course_code):
         fs.save(filename + file_extenstion, doc)
         uploaded_file_url = "/media/online_cms/" + course_code + "/doc/" + filename
         uploaded_file_url = uploaded_file_url + file_extenstion
-#        index = uploaded_file_url.rfind('/')
-
         CourseDocuments.objects.create(
             course_id=course,
             upload_time=datetime.now(),
@@ -234,10 +233,36 @@ def add_document(request, course_code):
 
 
 @login_required
-def add_videos(request, course_code):
+def delete(request, course_code):
+    data_type = request.POST.get('type')
+    course = Course.objects.get(course_id=course_code)
+    pk = request.POST.get('pk')
+    if data_type == 'video':
+        video = CourseVideo.objects.get(pk=pk, course_id=course)
+        url = video.video_url
+        video.delete()
+    elif data_type == 'slide':
+        slide = CourseDocuments.objects.get(pk=pk, course_id=course)
+        url = slide.document_url
+        slide.delete()
+    elif data_type == 'stuassignment':
+        stu_assi = StudentAssignment.objects.get(pk=pk)
+        url = stu_assi.upload_url
+        stu_assi.delete()
+    elif data_type == 'lecassignment':
+        lec_assi = Assignment.objects.get(pk=pk)
+        url = lec_assi.assignment_url
+        lec_assi.delete()
+    cmd = "rm "+url
+    subprocess.call(cmd, shell=True)
+    data = { 'msg': 'Data Deleted successfully'}
+    return HttpResponse(json.dumps(data), content_type='application/json')
 
-    # CHECK FOR ERRORS IN UPLOADING
+
+@login_required
+def add_videos(request, course_code):
     extrainfo = ExtraInfo.objects.get(user=request.user)
+
     if extrainfo.user_type == "faculty":
         instructor = Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
@@ -260,8 +285,6 @@ def add_videos(request, course_code):
         fs.save(filename+file_extenstion, vid)
         uploaded_file_url = "/media/online_cms/" + course_code + "/vid/" + filename
         uploaded_file_url = uploaded_file_url + file_extenstion
-#        index = uploaded_file_url.rfind('/')
-
         video = CourseVideo.objects.create(
             course_id=course,
             upload_time=datetime.now(),
@@ -295,7 +318,6 @@ def forum(request, course_code):
         lec = 1
     else:
         lec = 0
-#    question = {}
     answers = collections.OrderedDict()
     for comment in comments:
         fr = ForumReply.objects.filter(forum_reply=comment)
@@ -361,7 +383,6 @@ def ajax_new(request, course_code):
 
     data = {'pk': f.pk, 'question': f.comment, 'replier': f.commenter_id.user.username,
             'time': time, 'name': name}
-    print(f.pk)
     return HttpResponse(json.dumps(data), content_type='application/json')
 
 
@@ -388,16 +409,15 @@ def ajax_remove(request, course_code):
     data = {'message': 'deleted'}
     return HttpResponse(json.dumps(data), content_type='application/json')
 
+
 @login_required
 def add_assignment(request, course_code):
-    #    CHECK FOR ERRORS IN UPLOADING
     extrainfo = ExtraInfo.objects.get(user=request.user)
     if extrainfo.user_type == "faculty":
         instructor = Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.course_id.course_id == course_code:
                 course = ins.course_id
-#        description = request.POST.get('description')
         try:
             assi = request.FILES.get('img')
             name = request.POST.get('name')
@@ -412,6 +432,7 @@ def add_assignment(request, course_code):
             subprocess.call(cmd, shell=True)
         fs = FileSystemStorage(full_path, url)
         fs.save(filename+file_extenstion, assi)
+        print(request.POST.get('myDate'))
         uploaded_file_url = "/media/online_cms/" + course_code + "/assi/"
         uploaded_file_url = uploaded_file_url + name + "/" + name + file_extenstion
         name = request.POST.get('name')
@@ -427,6 +448,142 @@ def add_assignment(request, course_code):
         return HttpResponse("not found")
 
 
+@login_required
+def edit_bank(request, course_code, qb_code):
+    user = request.user
+    extrainfo = ExtraInfo.objects.get(user=user)
+    lec = 1
+    if extrainfo.user_type == "faculty":
+        instructor = Instructor.objects.filter(instructor_id=extrainfo)
+        for ins in instructor:
+            if ins.course_id.course_id == course_code:
+                course = ins.course_id
+        qb = QuestionBank.objects.filter(id=qb_code)
+        topics = Topics.objects.filter(course_id=course)
+        Topic = {}
+        if qb:
+            questions = Question.objects.filter(question_bank=qb[0]).values_list('topic', flat=True)
+            counter = dict(collections.Counter(questions))
+            for topic in topics:
+                if topic.pk in counter.keys():
+                    Topic[topic] = counter[topic.pk]
+                else:
+                    Topic[topic] = 0
+            context = {
+                'Lecturer': lec,
+                'questionbank': qb[0],
+                'topics': Topic,
+                'course': course
+                }
+            return render(request, 'coursemanagement/create_bank.html', context)
+        else:
+            return HttpResponse("Unauthorized")
+
+
+@login_required
+def create_bank(request, course_code):
+    user = request.user
+    extrainfo = ExtraInfo.objects.get(user=user)
+    if extrainfo.user_type == "faculty":
+        instructor = Instructor.objects.filter(instructor_id=extrainfo)
+        for ins in instructor:
+            if ins.course_id.course_id == course_code:
+                course = ins.course_id
+        qb = QuestionBank.objects.create(instructor_id=extrainfo,
+                                         course_id=course, name=request.POST.get('qbname'))
+        return redirect('/ocms/' + course_code + '/edit_bank/'+str(qb.id))
+
+
+@login_required
+def remove_bank(request, course_code):
+    user = request.user
+    extrainfo = ExtraInfo.objects.get(user=user)
+    if extrainfo.user_type == "faculty":
+        instructor = Instructor.objects.filter(instructor_id=extrainfo)
+        for ins in instructor:
+            if ins.course_id.course_id == course_code:
+                course = ins.course_id
+        qb = QuestionBank.objects.get(id=request.POST.get('pk'))
+        qb.delete()
+        qb = QuestionBank.objects.filter(instructor_id=extrainfo, course_id=course)
+        data = {'message': "Removed", 'qb': len(qb)}
+        return HttpResponse(json.dumps(data), content_type='application/json')
+
+
+@login_required
+def add_question(request, course_code, qb_code, topic_id):
+    user = request.user
+    extrainfo = ExtraInfo.objects.get(user=user)
+    if extrainfo.user_type == "faculty":
+        qb = QuestionBank.objects.filter(pk=qb_code)
+        topic = Topics.objects.get(id=request.POST.get('topic'))
+        try:
+            filename, file_extenstion = os.path.splitext(request.FILES['image'].name)
+            image = request.FILES['image']
+            topic_name = topic.topic_name.replace(" ", "_")[:-2]
+            full_path = settings.MEDIA_ROOT + "/online_cms/" + course_code
+            full_path = full_path + "/qb/" + qb_code + "/" + topic_name + "/"
+            url = settings.MEDIA_URL + filename
+            if not os.path.isdir(full_path):
+                cmd = "mkdir " + full_path
+                subprocess.call(cmd, shell=True)
+            fs = FileSystemStorage(full_path, url)
+            fs.save(image.name, image)
+            uploaded_file_url = "/media/online_cms/" + course_code
+            uploaded_file_url = uploaded_file_url + "/qb/" + qb_code + "/"
+            uploaded_file_url = uploaded_file_url + topic_name + "/" + image.name
+        except:
+            uploaded_file_url = None
+
+        Question.objects.create(
+            question_bank=qb[0],
+            topic=topic,
+            image=uploaded_file_url,
+            question=request.POST.get('problem-statement'),
+            options1=request.POST.get('option1'),
+            options2=request.POST.get('option2'),
+            options3=request.POST.get('option3'),
+            options4=request.POST.get('option4'),
+            options5=request.POST.get('option5'),
+            answer=request.POST.get('answer'),
+            marks=request.POST.get('score')
+        )
+        return redirect('/ocms/' + course_code + '/edit_bank/'+str(qb[0].id))
+
+
+@login_required
+def remove_question(request, course_code, qb_code, topic_id):
+    user = request.user
+    extrainfo = ExtraInfo.objects.get(user=user)
+    if extrainfo.user_type == "faculty":
+        question = Question.objects.get(pk=request.POST.get('pk'))
+        question.delete()
+        data = {'message': 'question deleted'}
+        return HttpResponse(json.dumps(data), content_type='application/json')
+
+
+@login_required
+def edit_qb_topics(request, course_code, qb_code, topic_id):
+    user = request.user
+    extrainfo = ExtraInfo.objects.get(user=user)
+    lec = 1
+    if extrainfo.user_type == "faculty":
+        instructor = Instructor.objects.filter(instructor_id=extrainfo)
+        for ins in instructor:
+            if ins.course_id.course_id == course_code:
+                course = ins.course_id
+        qb = QuestionBank.objects.filter(pk=qb_code)
+        topic = Topics.objects.get(id=topic_id)
+        questions = Question.objects.filter(question_bank=qb[0], topic=topic)
+        context = {
+            'Lecturer': lec,
+            'questionbank': qb[0],
+            'topic': topic,
+            'questions': questions,
+            'course': course
+        }
+        return render(request, 'coursemanagement/topicwisequestion.html', context)
+
 
 @login_required
 def quiz(request, quiz_id):
@@ -436,8 +593,14 @@ def quiz(request, quiz_id):
         # student = Student.objects.get(id=extrainfo)
         quiz = Quiz.objects.get(pk=quiz_id)
         length = quiz.number_of_question
+        rules = quiz.rules
+        rules = [z.encode('ascii', 'ignore') for z in rules.split('/')]
         ques_pk = QuizQuestion.objects.filter(quiz_id=quiz).values_list('pk', flat=True)
-        random_ques_pk = random.sample(list(ques_pk), length)
+        print(len(list(ques_pk)), length)
+        try:
+            random_ques_pk = random.sample(list(ques_pk), length)
+        except:
+            random_ques_pk = ques_pk
         shuffed_questions = []
         for x in random_ques_pk:
             shuffed_questions.append(QuizQuestion.objects.get(pk=x))
@@ -450,7 +613,8 @@ def quiz(request, quiz_id):
         seconds = seconds % 60
         return render(request, 'coursemanagement/quiz.html',
                       {'contest': quiz, 'ques': shuffed_questions,
-                       'days': days, 'hours': hours, 'minutes': minutes, 'seconds': seconds})
+                       'days': days, 'hours': hours, 'minutes': minutes,
+                       'seconds': seconds, 'rules': rules})
     else:
         return HttpResponse("unautherized Access!!It will be reported!!")
 
@@ -461,8 +625,10 @@ def ajax_q(request, quiz_code):
     extrainfo = ExtraInfo.objects.get(user=user)
     student = Student.objects.get(id=extrainfo)
     q = request.POST.get('question')
-    ques = QuizQuestion.objects.get(pk=q)
-    quiz_id = Quiz.objects.get(pk=ques.quiz_id.pk)
+    question = Question.objects.get(pk=q)
+    quiz_id = Quiz.objects.get(pk=quiz_code)
+    ques = QuizQuestion.objects.get(question=question, quiz_id=quiz_id)
+
     ans = int(request.POST.get('answer'))
     lead = StudentAnswer.objects.filter(quiz_id=quiz_id, question_id=ques, student_id=student)
     if lead:
@@ -484,11 +650,10 @@ def submit(request, quiz_code):
     stu_ans = StudentAnswer.objects.filter(student_id=student, quiz_id=quiz)
     score = 0
     for s_ans in stu_ans:
-        if s_ans.question_id.answer == s_ans.choice:
-            score += s_ans.question_id.marks
+        if s_ans.question_id.question.answer == s_ans.choice:
+            score += s_ans.question_id.question.marks
         else:
-            score -= (s_ans.quiz_id.negative_marks * s_ans.question_id.marks)
-    # quiz_res=QuizResult.objects.filter(quiz_id=quiz,student_id=request.user)
+            score -= (s_ans.quiz_id.negative_marks * s_ans.question_id.question.marks)
     quiz_res = QuizResult(
         quiz_id=quiz,
         student_id=student,
@@ -499,42 +664,6 @@ def submit(request, quiz_code):
     data = {'message': 'you have submitted, cant enter again now', 'score': quiz_res.score}
     return HttpResponse(json.dumps(data), content_type="application/json")
 
-#@login_required
-#def create_prac_quiz(request, course_code):
-#    extrainfo = ExtraInfo.objects.get(user=request.user)
-#    print("tatti")
-#    if extrainfo.user_type == 'faculty':
-#        instructor = Instructor.objects.filter(instructor_id=extrainfo)
-#        for ins in instructor:
-#            if ins.course_id.course_id == course_code:
-#                course = ins.course_id
-#        form = PracticeQuizForm(request.POST or None)
-#        errors = None
-#        if form.is_valid():
-#            total_score = form.cleaned_data[
-#                'number_of_questions'] * form.cleaned_data[
-#                'per_question_score']
-#            description = form.cleaned_data['description']
-#            obj = Practice.objects.create(
-#                course_id=course,
-#                prac_quiz_name=form.cleaned_data['name'],
-#                description=description,
-#                number_of_question=form.cleaned_data['number_of_questions'],
-#                negative_marks=form.cleaned_data['negative_marks'],
-#                total_score=total_score
-#                            )
-#            # print "Done"
-#            return redirect('/ocms/' + course_code + '/edit_prac_quiz/' + str(obj.pk))
-#            '''except:
-#                return HttpResponse('Unexpected Error')'''
-#        if form.errors:
-#            errors = form.errors
-#        print("ASDAS")
-#        return render(request, 'coursemanagement/create_practice_contest.html',
-#                      {'form': form, 'errors': errors})
-#
-#    else:
-#        return HttpResponse("unautherized Access!!It will be reported!!")
 
 @login_required
 def create_quiz(request, course_code):
@@ -562,9 +691,6 @@ def create_quiz(request, course_code):
             days, seconds = duration.days, duration.seconds
             hours = days * 24 + seconds // 3600
             minutes = (seconds % 3600) // 60
-            total_score = form.cleaned_data[
-                'number_of_questions'] * form.cleaned_data[
-                'per_question_score']
             description = form.cleaned_data['description'].replace('\r\n', '/')
             rules = form.cleaned_data['rules'].replace('\r\n', '/')
             obj = Quiz.objects.create(
@@ -579,7 +705,6 @@ def create_quiz(request, course_code):
                 d_day=days,
                 d_hour=hours,
                 d_minute=minutes,
-                total_score=total_score
                             )
             # print "Done"
             return redirect('/ocms/' + course_code + '/edit_quiz/' + str(obj.pk))
@@ -631,156 +756,147 @@ def edit_quiz_details(request, course_code, quiz_code):
     else:
         return HttpResponse("unautherized Access!!It will be reported!!")
 
-#@login_required
-#def edit_prac_quiz(request, course_code, quiz_code):
-#    extrainfo = ExtraInfo.objects.get(user=request.user)
-#    if extrainfo.user_type == 'faculty':
-#        instructor = Instructor.objects.filter(instructor_id=extrainfo)
-#        for ins in instructor:
-#            if ins.course_id.course_id == course_code:
-#                course = ins.course_id
-#        # errors = None
-#        practice = Practice.objects.get(pk=quiz_code)
-#        if request.method == 'POST':
-#            print (practice)
-#            form = QuestionFormObjective(request.POST, request.FILES)
-#            if(form.is_valid()):
-#
-#
-#                options1 = form.cleaned_data['option1']
-#                options2 = form.cleaned_data['option2']
-#                options3 = form.cleaned_data['option3']
-#                options4 = form.cleaned_data['option4']
-#                options5 = form.cleaned_data['option5']
-#                question = form.cleaned_data['problem_statement']
-#                marks = form.cleaned_data['score']
-#                answer = form.cleaned_data['answer']
-#                try:
-#                    filename, file_extenstion = os.path.splitext(request.FILES['image'].name)
-#                    image = request.FILES['image']
-#                    full_path = settings.MEDIA_ROOT + "/online_cms/" + course_code
-#                    full_path = full_path + "/practice_quiz/" + quiz_code + "/"
-#                    url = settings.MEDIA_URL + filename
-#                    if not os.path.isdir(full_path):
-#                        cmd = "mkdir " + full_path
-#                        subprocess.call(cmd, shell=True)
-#                    fs = FileSystemStorage(full_path, url)
-#                    fs.save(image.name, image)
-#                    uploaded_file_url = "/media/online_cms/" + course_code
-#                    uploaded_file_url = uploaded_file_url + "/practice_quiz/" + quiz_code + "/" + image.name
-#                    PracticeQuestion.objects.create(prac_quiz_id=practice, image=uploaded_file_url,
-#                                            question=question,
-#                                            answer=answer,
-#                                            options1=options1, options2=options2,
-#                                            options3=options3, options4=options4,
-#                                            options5=options5)
-#                except:
-#                    PracticeQuestion.objects.create(prac_quiz_id=quiz,
-#                                            question=question,
-#                                            answer=answer,
-#                                            options1=options1, options2=options2,
-#                                            options3=options3, options4=options4,
-#                                            options5=options5)
-#
-#                practice.total_score += form.cleaned_data['score']
-#                practice.save()
-#                PracticeQuestion.objects.filter(prac_quiz_id=quiz)
-#                # print obj3
-#                # return render(request,'/quiz/'+'edit_contest/'+str(obj.pk),
-##                {'form1': form1 ,'form2':form2,'obj':obj3})
-#                return redirect('/ocms/' + course_code + '/edit_prac_quiz/' + str(quiz.pk))
-#            elif(form.errors):
-#                form.errors
-#        else:
-#            form1 = QuizForm()
-#            form = QuestionFormObjective()
-#            questions = PracticeQuestion.objects.filter(prac_quiz_id=practice)
-#            description = Practice.description
-#            print(description,'asdasd')
-#            return render(request, 'coursemanagement/edit_practice_contest.html',
-#                          {'form1': form1, 'form': form, 'details': practice,
-#                           'course': course, 'questions': questions,
-#                           'description': description})
-#    else:
-#        return HttpResponse("unautherized Access!!It will be reported!!")
 
 @login_required
 def edit_quiz(request, course_code, quiz_code):
     extrainfo = ExtraInfo.objects.get(user=request.user)
     if extrainfo.user_type == 'faculty':
+        lec = 1
         instructor = Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.course_id.course_id == course_code:
                 course = ins.course_id
         # errors = None
         quiz = Quiz.objects.get(pk=quiz_code)
-        if request.method == 'POST':
-            form = QuestionFormObjective(request.POST, request.FILES)
-            if(form.is_valid()):
-
-
-                options1 = form.cleaned_data['option1']
-                options2 = form.cleaned_data['option2']
-                options3 = form.cleaned_data['option3']
-                options4 = form.cleaned_data['option4']
-                options5 = form.cleaned_data['option5']
-                question = form.cleaned_data['problem_statement']
-                marks = form.cleaned_data['score']
-                answer = form.cleaned_data['answer']
-                try:
-                    filename, file_extenstion = os.path.splitext(request.FILES['image'].name)
-                    image = request.FILES['image']
-                    full_path = settings.MEDIA_ROOT + "/online_cms/" + course_code
-                    full_path = full_path + "/quiz/" + quiz_code + "/"
-                    url = settings.MEDIA_URL + filename
-                    if not os.path.isdir(full_path):
-                        cmd = "mkdir " + full_path
-                        subprocess.call(cmd, shell=True)
-                    fs = FileSystemStorage(full_path, url)
-                    fs.save(image.name, image)
-                    uploaded_file_url = "/media/online_cms/" + course_code
-                    uploaded_file_url = uploaded_file_url + "/quiz/" + quiz_code + "/" + image.name
-                    QuizQuestion.objects.create(quiz_id=quiz, image=uploaded_file_url,
-                                            question=question,
-                                            answer=answer,
-                                            options1=options1, options2=options2,
-                                            options3=options3, options4=options4,
-                                            options5=options5)
-                except:
-                    QuizQuestion.objects.create(quiz_id=quiz,
-                                            question=question,
-                                            answer=answer,
-                                            options1=options1, options2=options2,
-                                            options3=options3, options4=options4,
-                                            options5=options5)
-
-                # print uploaded_file_url
-
-
-                # print "HOGAYA"
-                quiz.total_score += form.cleaned_data['score']
-                quiz.save()
-                QuizQuestion.objects.filter(quiz_id=quiz)
-                # print obj3
-                # return render(request,'/quiz/'+'edit_contest/'+str(obj.pk),
-#                {'form1': form1 ,'form2':form2,'obj':obj3})
-                return redirect('/ocms/' + course_code + '/edit_quiz/' + str(quiz.pk))
-            elif(form.errors):
-                form.errors
-        else:
-            form1 = QuizForm()
-            form = QuestionFormObjective()
-            questions = QuizQuestion.objects.filter(quiz_id=quiz)
-            description = quiz.description
-            description = [z.encode('ascii', 'ignore') for z in description.split('/')]
-            rules = quiz.rules
-            rules = [z.encode('ascii', 'ignore') for z in rules.split('/')]
-            return render(request, 'coursemanagement/editcontest.html',
-                          {'form1': form1, 'form': form, 'details': quiz,
-                           'course': course, 'questions': questions,
-                           'description': description, 'rules': rules})
+        questions = QuizQuestion.objects.filter(quiz_id=quiz)
+        topic_list = []
+        for q in questions:
+            topic_list.append(q.question.topic)
+        counter = dict(collections.Counter(topic_list))
+        form = QuizForm()
+        questions_left = quiz.number_of_question - len(questions)
+        description = quiz.description
+        description = [z.encode('ascii', 'ignore') for z in description.split('/')]
+        rules = quiz.rules
+        rules = [z.encode('ascii', 'ignore') for z in rules.split('/')]
+        questionbank = QuestionBank.objects.filter(instructor_id=extrainfo, course_id=course)
+        topic = Topics.objects.filter(course_id=course)
+        return render(request, 'coursemanagement/editcontest.html',
+                      {'details': quiz, 'questionbank': questionbank, 'topics': topic,
+                       'course': course, 'lecturer': lec, 'form': form,
+                       'counter': counter, 'questions': questions, 'description': description,
+                       'rules': rules, 'questions_left': questions_left})
     else:
         return HttpResponse("unautherized Access!!It will be reported!!")
+
+
+@login_required
+def edit_quiz_topic(request, course_code, quiz_code, topic_id):
+    user = request.user
+    extrainfo = ExtraInfo.objects.get(user=user)
+    lec = 1
+    if extrainfo.user_type == "faculty":
+        instructor = Instructor.objects.filter(instructor_id=extrainfo)
+        for ins in instructor:
+            if ins.course_id.course_id == course_code:
+                course = ins.course_id
+        quiz_question = QuizQuestion.objects.filter(quiz_id=quiz_code)
+        quest = []
+        quiz = Quiz.objects.get(pk=quiz_code)
+        for q in quiz_question:
+            if str(q.question.topic.pk) == topic_id:
+                quest.append(q.question)
+
+        topic = Topics.objects.get(id=topic_id)
+        return render(request, 'coursemanagement/topicwisequiz.html',
+                      {'Lecturer': lec, 'questions': quest,
+                       'quiz': quiz, 'topic': topic, 'course': course})
+
+
+@login_required
+def remove_quiz_question(request, course_code, quiz_code, topic_id):
+    user = request.user
+    extrainfo = ExtraInfo.objects.get(user=user)
+    if extrainfo.user_type == "faculty":
+        question = Question.objects.get(pk=request.POST.get('pk'))
+        question_remove = QuizQuestion.objects.get(question=question, quiz_id=quiz_code)
+        question_remove.delete()
+        data = {'message': 'question deleted'}
+        return HttpResponse(json.dumps(data), content_type='application/json')
+
+
+@login_required
+def add_question_topicwise(request, course_code, quiz_id):
+    extrainfo = ExtraInfo.objects.get(user=request.user)
+    if extrainfo.user_type == 'faculty':
+        instructor = Instructor.objects.filter(instructor_id=extrainfo)
+        for ins in instructor:
+            if ins.course_id.course_id == course_code:
+                course = ins.course_id
+        ques_bank = request.POST.get('qbank')
+        quiz = Quiz.objects.get(pk=quiz_id)
+        topic = request.POST.get('topic')
+        questions = Question.objects.filter(question_bank=ques_bank, topic=topic)
+        questions_already_present = QuizQuestion.objects.filter(quiz_id=quiz_id)
+        question_already_present = []
+        for ques in questions_already_present:
+            question_already_present.append(ques.question)
+        temp = []
+        if questions_already_present:
+            for question in questions:
+                if question not in question_already_present:
+                    temp.append(question)
+                print('x')
+            questions = temp
+        context = {
+                    'questions': questions,
+                    'course': course,
+                    'details': quiz
+                    }
+        return render(request, 'coursemanagement/select_question.html', context)
+
+
+@login_required
+def add_questions_to_quiz(request, course_code, quiz_id):
+    extrainfo = ExtraInfo.objects.get(user=request.user)
+    if extrainfo.user_type == 'faculty':
+        questions_selected = request.POST.getlist('questions_selected')
+        quiz = Quiz.objects.get(pk=quiz_id)
+        for questions in questions_selected:
+            question = Question.objects.get(pk=int(questions))
+            QuizQuestion.objects.create(
+                quiz_id=quiz,
+                question=question
+            )
+        return redirect('/ocms/' + course_code + '/edit_quiz/' + quiz_id)
+
+
+@login_required
+def preview_quiz(request, course_code, quiz_code):
+    extrainfo = ExtraInfo.objects.get(user=request.user)
+    if extrainfo.user_type == 'faculty':
+        instructor = Instructor.objects.filter(instructor_id=extrainfo)
+        for ins in instructor:
+            if ins.course_id.course_id == course_code:
+                course = ins.course_id
+    quiz = Quiz.objects.get(pk=quiz_code)
+    questions = QuizQuestion.objects.filter(quiz_id=quiz)
+
+    total_marks = 0
+    for q in questions:
+        total_marks = total_marks + q.question.marks
+    rules = quiz.rules
+    rules = [z.encode('ascii', 'ignore') for z in rules.split('/')]
+
+    print(total_marks)
+    context = {
+        'contest': quiz,
+        'course': course,
+        'rules': rules,
+        'questions': questions,
+        'totalmarks': total_marks,
+    }
+    return render(request, 'coursemanagement/preview_quiz.html', context)
 
 
 @login_required
@@ -796,17 +912,14 @@ def remove_quiz(request, course_code):
 @login_required
 def ajax_assess(request, course_code):
     sa = StudentAssignment.objects.get(pk=request.POST.get('pk'))
-#    print(sa,"qwerty")
     sa.score = request.POST.get('marks')
     sa.save()
-#    print(sa,"qwerty")
     return HttpResponse("Marks uploaded")
 
 
 @login_required
 def ajax_feedback(request, course_code):
     sa = StudentAssignment.objects.get(pk=request.POST.get('pk'))
-#    print(sa,"qwerty")
     sa.feedback = request.POST.get('feedback')
     sa.save()
 #    print(sa,"qwerty")

@@ -19,7 +19,7 @@
             <th>File ID</th>
             <th>Title</th>
             <th>Date</th>
-            <th>Download File</th>
+            <th>View File</th>
         </tr>
         </thead>
 
@@ -31,9 +31,8 @@
             <td>{{i.file_id.ref_id}}</td>
             <td>{{i.file_id.subject}}</td>
             <td>{{i.receive_date}}</td>
-            <td>
-                <a href="/media/{{i.upload_file}}" download><button class="ui primary button">
-                          Download
+            <td><a href="{% url 'filetracking:forward' i.file_id.ref_id %}"><button class="ui primary button">
+                          View
                 </button></a>
             </td>
 

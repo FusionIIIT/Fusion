@@ -35,192 +35,130 @@
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
 
-            {% if info.user_type == 'student' and desig == 'student' %}
-                <a class="active item" data-tab="first">
-                    Feedback
-                    <i class="right floated chevron right icon"></i>
-                </a>
+            {% for d in desig %}
+                {% if info.user_type == 'student' and d.designation.name == 'student' %}
+                    <a class="active item" data-tab="first">
+                        Feedback
+                        <i class="right floated chevron right icon"></i>
+                    </a>
 
-                <a class="item" data-tab="second">
-                    Apply For Leave
-                    <i class="right floated chevron right icon"></i>
-                </a>
+                    <a class="item" data-tab="second">
+                        Apply For Leave
+                        <i class="right floated chevron right icon"></i>
+                    </a>
 
-                <a class="item" data-tab="third">
-                    Apply For Vacation Food
-                    <i class="right floated chevron right icon"></i>
-                </a>
+                    <a class="item" data-tab="third">
+                        Apply For Vacation Food
+                        <i class="right floated chevron right icon"></i>
+                    </a>
 
-                <a class="item" data-tab="fourth">
-                    Menu | Bill | Payment Details
-                    <i class="right floated chevron right icon"></i>
-                </a>
+                    <a class="item" data-tab="fourth">
+                        Menu | Bill | Payment Details
+                        <i class="right floated chevron right icon"></i>
+                    </a>
 
-                <a class="item" data-tab="fifth">
-                    Special Food Request | Choose mess
-                    <i class="right floated chevron right icon"></i>
-                </a>
+                    <a class="item" data-tab="fifth">
+                        Special Food Request | Choose mess
+                        <i class="right floated chevron right icon"></i>
+                    </a>
                 
-                {% if messinfo.mess_option == 'mess1' %}
-                <a class="item" data-tab="sixth">
-                    Apply For Nonveg | ChecK History
-                    <i class="right floated chevron right icon"></i>
-                </a>
-                {% endif %}
-                
-
-            {% elif info.user_type == 'student' and desig == 'mess_committee' %}
-
-                <a class="active item" data-tab="first">
-                    Feedback
-                    <i class="right floated chevron right icon"></i>
-                </a>
-
-                <a class="item" data-tab="second">
-                    Apply For Leave
-                    <i class="right floated chevron right icon"></i>
-                </a>
-
-                <a class="item" data-tab="third">
-                    Apply For Vacation Food
-                    <i class="right floated chevron right icon"></i>
-                </a>
-
-                <a class="item" data-tab="fourth">
-                    Menu | Bill | Payment Details
-                    <i class="right floated chevron right icon"></i>
-                </a>
-
-                <a class="item" data-tab="fifth">
-                    Special Food Request | Choose mess
-                    <i class="right floated chevron right icon"></i>
-                </a>
-
-                {% if messinfo.mess_option == 'mess1' %}
-                <a class="item" data-tab="sixth">
-                    Apply For Nonveg | ChecK History
-                    <i class="right floated chevron right icon"></i>
-                </a>
+                    {% if messinfo.mess_option == 'mess1' %}
+                    <a class="item" data-tab="sixth">
+                        Apply For Nonveg | ChecK History
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    {% endif %}
                 {% endif %}
 
-                <a class="item" data-tab="fifteenth">
-                    Meeting information
-                </a>
+                {% if info.user_type == 'student' and d.designation.name == 'mess_committee' %}
+                    <a class="item" data-tab="fifteenth">
+                        Meeting information
+                    </a>
 
-                <a class="item" data-tab="tenth">
-                    Meeting Minutes
-                    <i class="right floated chevron right icon"></i>
-                </a>
-
-            {% elif info.user_type == 'student' and desig == 'mess_convener' %}   
-                
-                <a class="active item" data-tab="first">
-                    Feedback
-                    <i class="right floated chevron right icon"></i>
-                </a>
-
-                <a class="item" data-tab="second">
-                    Apply For Leave
-                    <i class="right floated chevron right icon"></i>
-                </a>
-
-                <a class="item" data-tab="third">
-                    Apply For Vacation Food
-                    <i class="right floated chevron right icon"></i>
-                </a>
-
-                <a class="item" data-tab="fourth">
-                    Menu | Bill | Payment Details
-                    <i class="right floated chevron right icon"></i>
-                </a>
-
-                <a class="item" data-tab="fifth">
-                    Special Food Request | Choose mess
-                    <i class="right floated chevron right icon"></i>
-                </a>
-
-                {% if messinfo.mess_option == 'mess1' %}
-                <a class="item" data-tab="sixth">
-                    Apply For Nonveg | ChecK History
-                    <i class="right floated chevron right icon"></i>
-                </a>
+                    <a class="item" data-tab="tenth">
+                        Meeting Minutes
+                        <i class="right floated chevron right icon"></i>
+                    </a>
                 {% endif %}
 
-                <a class="item" data-tab="eighth">
-                    Change Menu
-                    <i class="right floated chevron right icon"></i>
-                </a>
+                {% if info.user_type == 'student' and d.designation.name == 'mess_convener' %}   
+                    <a class="item" data-tab="eighth">
+                        Change Menu
+                        <i class="right floated chevron right icon"></i>
+                    </a>
 
-                <a class="item" data-tab="ninth">
-                    Meeting Invitation
-                    <i class="right floated chevron right icon"></i>
-                </a>
+                    <a class="item" data-tab="ninth">
+                        Meeting Invitation
+                        <i class="right floated chevron right icon"></i>
+                    </a>
 
-                <a class="item" data-tab="eleventh">
-                    View Special Food Request
-                    <i class="right floated chevron right icon"></i>
-                </a>
+                    <a class="item" data-tab="eleventh">
+                        View Special Food Request
+                        <i class="right floated chevron right icon"></i>
+                    </a>
 
-                <a class="item" data-tab="seventeenth">
-                    Publish Minutes
-                    <i class="right floated chevron right icon"></i>
-                </a>
+                    <a class="item" data-tab="seventeenth">
+                        Publish Minutes
+                        <i class="right floated chevron right icon"></i>
+                    </a>
 
-                <a class="item" data-tab="forteenth">
-                    View Feedback
-                    <i class="right floated chevron right icon"></i>
-                </a>
+                    <a class="item" data-tab="forteenth">
+                        View Feedback
+                        <i class="right floated chevron right icon"></i>
+                    </a>
 
-                <a class="item" data-tab="sixteenth">
-                    Feedback Statistics
-                    <i class="right floated chevron right icon"></i>
-                </a>
+                    <a class="item" data-tab="sixteenth">
+                        Feedback Statistics
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                {% endif %}
 
-            {% elif info.user_type == 'staff' and desig == 'mess_manager' %}
-                <a class="item" data-tab="seventh">
-                    Respond To Requests
-                    <i class="right floated chevron right icon"></i>
-                </a>
+                {% if info.user_type == 'staff' and d.designation.name == 'mess_manager' %}
+                    <a class="item" data-tab="seventh">
+                        Respond To Requests
+                        <i class="right floated chevron right icon"></i>
+                    </a>
 
-                <a class="item" data-tab="thirteenth">
-                    View Menu
-                    <i class="right floated chevron right icon"></i>
-                </a>
+                    <a class="item" data-tab="thirteenth">
+                        View Menu
+                        <i class="right floated chevron right icon"></i>
+                    </a>
 
-                <a class="item" data-tab="twelfth">
-                    Start Registration
-                    <i class="right floated chevron right icon"></i>
-                </a>
+                    <a class="item" data-tab="twelfth">
+                        Start Registration
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                {% endif %}
 
-            {% elif info.user_type == 'faculty' and desig == 'mess_warden' %}
+                {% if info.user_type == 'faculty' and d.designation.name == 'mess_warden' %}
 
-                <a class="item" data-tab="thirteenth">
-                    View Menu
-                    <i class="right floated chevron right icon"></i>
-                </a>
+                    <a class="item" data-tab="thirteenth">
+                        View Menu
+                        <i class="right floated chevron right icon"></i>
+                    </a>
 
-                <a class="item" data-tab="fifteenth">
-                    Meeting information
-                    <i class="right floated chevron right icon"></i>
-                 </a>
+                    <a class="item" data-tab="fifteenth">
+                        Meeting information
+                        <i class="right floated chevron right icon"></i>
+                     </a>
 
-                <a class="item" data-tab="tenth">
-                    Meeting Minutes
-                    <i class="right floated chevron right icon"></i>
-                </a>
+                    <a class="item" data-tab="tenth">
+                        Meeting Minutes
+                        <i class="right floated chevron right icon"></i>
+                    </a>
 
-                <a class="item" data-tab="sixteenth">
-                    Feedback Statistics
-                    <i class="right floated chevron right icon"></i>
-                </a>
+                    <a class="item" data-tab="sixteenth">
+                        Feedback Statistics
+                        <i class="right floated chevron right icon"></i>
+                    </a>
 
-                <a class="item" data-tab="forteenth">
-                    View Feedback
-                    <i class="right floated chevron right icon"></i>
-                </a>
+                    <a class="item" data-tab="forteenth">
+                        View Feedback
+                        <i class="right floated chevron right icon"></i>
+                    </a>
 
-            {% endif %}
-
+                {% endif %}
+            {% endfor %}   
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
 

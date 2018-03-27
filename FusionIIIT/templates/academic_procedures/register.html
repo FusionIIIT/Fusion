@@ -10,17 +10,15 @@
 
     <div class="ui active tab" data-tab="complainthistory">
     <div class="ui vertical segment">
-
-
-
-            {% if details.check_pre_register %}
+        {% if prd %}
+            {% if details.regflag %}
               <B><CENTER>   You have already registered </B></CENTER>
             {% else %}
             <table class="ui very basic collapsing celled sortable table"
                    style="padding-left: 2.5%;
                                                           padding-right: 2.5%;
                                                           padding-top: 1%;
-                                                          padding-bottom: 1.5%;
+                                                           padding-bottom: 1.5%;
                                                           margin: auto;">
                 <thead>
 
@@ -50,8 +48,9 @@
 
                 <tbody>
 
-                    <form id='student_register' action='/academic-procedures/register/' method='post'>
+                    <form id='student_register' action='/academic-procedures/register/'>
                     {% csrf_token %}
+                    <input type="text" hidden="true" id="mincr" value="{{mincr.credits}}">
                     {% for items in courses_list %}
                         <tr>
                             <td>
@@ -78,9 +77,9 @@
                              </td>
                              <td><B>
                 {% if items.optional %}
-                    <input name="choice" type="checkbox" value="{{ items.course_id }}">
+                    <input name="choice" type="checkbox" value="{{ items.course_id }}" data-valuetwo="{{items.credits}}">
                 {% else %}
-                    <input name="choice" type="checkbox" value="{{ items.course_id }}" onclick="return false;" checked hidden="True">
+                    <input name="choice" type="checkbox" value="{{ items.course_id }}" data-valuetwo="{{items.credits}}" onclick="return false;" checked hidden="True">
                       <div style="color:red;"> (Compulsory)   </div>
                 {% endif %}
                 <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
@@ -100,7 +99,13 @@
             </div>
             </form>
              {% endif %}
-        </div>
+             {% else %}
+                <B><CENTER>   Pre Registration date hasn't come yet </B></CENTER>
+             {% endif %}
+
+
+
+    </div>
     </div>
 
 
@@ -112,19 +117,34 @@
 $(function() {
     $("#student_register").submit(function(event) {
 
-        event.preventDefault();
-        var friendForm = $(this);
+        var inp = document.getElementsByTagName("input");
+        var count = 0;
+        for(var i=0; i<inp.length;i++){
+            if(inp[i].type=="checkbox" && inp[i].checked==true){
+                count = count + parseInt(inp[i].getAttribute("data-valuetwo"));
+            }
+        }
+        var min = parseInt(document.getElementById("mincr").value);
 
-        var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
-        // if success:
-        posting.done(function(data) {
-            alert('You have successfully registered');
-            window.location = "/academic-procedures/main/";
-        });
-        // if failure
-        posting.fail(function(data) {
-            alert('Registration Failed');
-            window.location = "/academic-procedures/main/";
-        });
+        if (count <= min){
+            alert("You Can't Register as Minimum Credits: " + min);
+            window.location = "/academic-procedures/main/"
+        }else{
+             event.preventDefault();
+            var friendForm = $(this);
+
+            var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
+            // if success:
+            posting.done(function(data) {
+                alert('You have successfully registered');
+                window.location = "/academic-procedures/main/";
+            });
+            // if failure
+            posting.fail(function(data) {
+                alert('Registration Failed');
+                window.location = "/academic-procedures/main/";
+            });
+            }
     });
 });
+</script>

@@ -1,0 +1,119 @@
+{% block activity %}
+{% if current %}
+        {% for c in current %}
+        {% if c.designation.name == 'student' %}
+           {% if placementstatus %}
+            <!--The noticeboard card starts here!-->
+
+                <div class="content">
+                    <div class="ui header">Activity / Schedule</div>
+                    <div class="ui divider"></div>
+
+                    {% for ps in placementstatus %}
+                    {% if ps.invitation != 'PENDING' and ps.invitation != 'Pending' %}
+                    {% if ps.placed != 'Placed' and ps.placed != 'PLACED' %}
+                    <span>
+                      <div class="ui segments">
+                        <div class="ui horizontal segments">
+                          <div class="ui segment">
+                            {{ ps.notify_id.placement_type }}
+                            {{ ps.notify_id.timestamp }}
+
+                        </div>
+                          </div>
+                          <div class="ui secondary segment">
+                            <p>{{ ps.notify_id.company_name }} ,<b> CTC: {{ ps.notify_id.ctc }}</b></p>
+                            <p>{{ ps.notify_id.description }} </p>
+                          </div>
+                          {% if ps.invitation == 'ACCEPTED' or ps.invitation == 'Accepted' %}
+                          <div class="ui secondary green inverted segment">
+                            <p>Invitation was <b>{{ ps.invitation}}.</b></p>
+                          </div>
+                          {% endif %}
+                          {% if ps.invitation == 'REJECTED' or ps.invitation == 'Rejected' %}
+                          <div class="ui secondary red inverted segment">
+                            <p>Invitation was <b>{{ ps.invitation}}.</b></p>
+                          </div>
+                          {% endif %}
+                      </div>
+                    </span><br>
+                    {% endif %}
+                    {% endif %}
+                    {% endfor %}
+
+                </div>
+
+            {% endif %}
+            {% endif %}
+            {% endfor %}
+
+            {% for c1 in current1 %}
+            {% if c1.designation.name == 'placement chairman' %}
+               {% if schedules %}
+
+                    <div class="content">
+                        <div class="ui header">Activity / Schedule</div>
+                        <div class="ui divider"></div>
+
+                      {% for sch in schedules %}
+                      <span>
+                        <div class="ui segments">
+                          <div class="ui horizontal segments">
+                            <div class="ui segment">
+                              <strong><h3>{{ sch.notify_id.placement_type }} | {{ sch.notify_id.company_name }}</h3></strong><br>
+                              Time of Message: {{ sch.notify_id.timestamp }}
+
+                          </div>
+                            </div>
+                            <div class="ui secondary segment">
+                              <p><b> CTC (LPA): {{ sch.notify_id.ctc }}</b></p>
+                              <p><b>{{ sch.title }} </b>| {{ sch.notify_id.description }} </p>
+                              <p>Date/Time & Location: {{ sch.placement_date }} | {{ sch.time }} | {{ sch.location }}</p>
+                              <p>Job Description: {{ sch.description }}</p>
+                            </div>
+                        </div>
+                      </span><br>
+                      {% endfor %}
+
+                    </div>
+
+                {% endif %}
+                {% endif %}
+                {% endfor %}
+                {% for c1 in current2 %}
+                {% if c1.designation.name == 'placement officer' %}
+                {% if schedules %}
+
+                     <div class="content">
+                         <div class="ui header">Activity / Schedule</div>
+                         <div class="ui divider"></div>
+
+                       {% for sch in schedules %}
+                       <span>
+                         <div class="ui segments">
+                           <div class="ui horizontal segments">
+                             <div class="ui segment">
+                               <strong><h3>{{ sch.notify_id.placement_type }} | {{ sch.notify_id.company_name }}</h3></strong><br>
+                               Time of Message: {{ sch.notify_id.timestamp }}
+
+                           </div>
+                             </div>
+                             <div class="ui secondary segment">
+                               <p><b> CTC (LPA): {{ sch.notify_id.ctc }}</b></p>
+                               <p><b>{{ sch.title }} </b>| {{ sch.notify_id.description }} </p>
+                               <p>Date/Time & Location: {{ sch.placement_date }} | {{ sch.time }} | {{ sch.location }}</p>
+                               <p>Job Description: {{ sch.description }}</p>
+                             </div>
+                         </div>
+                       </span><br>
+                       {% endfor %}
+
+                     </div>
+
+                 {% endif %}
+                    {% endif %}
+                    {% endfor %}
+{% else %}
+<CENTER>  <B> No Placement Activities Scheduled for now</B> </CENTER>
+{% endif %}
+{% endblock %}

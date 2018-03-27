@@ -42,7 +42,8 @@ BOOKING_STATUS = (
     ("Rejected" , 'Rejected'),
     ("Canceled" , 'Canceled'),
     ("CheckedIn" , 'CheckedIn'),
-    ("Complete", 'Complete')
+    ("Complete", 'Complete'),
+    ("Forward", 'Forward')
     )
 
 class UserDetail(models.Model):
