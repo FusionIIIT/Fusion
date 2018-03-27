@@ -12,8 +12,6 @@
     <link rel="stylesheet" type="text/css" href="{% static 'globals/css/semantic.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'globals/css/mediaquery.css' %}">
 
-    <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"> </script>
-    <script type="text/javascript" src="{% static 'globals/js/jquery.formset.js' %}"> </script>
     {% block css %}
     {% endblock %}
 
@@ -26,21 +24,15 @@
     {% block navBar %}
     {% endblock %}
 {% endblock %}
-{% if messages %}
-    <ul class="messages">
-        {% for message in messages %}
-            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-        {% endfor %}
-    </ul>
-{% endif %}
+
 </body>
 
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'globals/js/semantic.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'globals/js/dropdown.js' %}"></script>
 <script type="text/javascript" src="{% static 'globals/js/tab.js' %}"></script>
 
 <script>
-
     $(document).ready(function() {
         $('#new-notification')
             .popup({
@@ -60,10 +52,6 @@
 
 <script>
     $(document).ready(function(){
-        newNotification();
-        newNotification();
-        newNotification();
-
         $('.ui.accordion').accordion('refresh');
         $('.ui.sidebar')
         //.sidebar('toggle')
@@ -123,3 +111,4 @@
 {% endblock %}
 
 </html>
+

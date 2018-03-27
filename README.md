@@ -31,7 +31,7 @@ And additional requirements are in **requirements.txt**
      * origin    https://github.com/YOUR_USERNAME/FusionIIIT.git (push)
      * upstream  https://github.com/3Peers/FusionIIIT.git (fetch)
      * upstream  https://github.com/3Peers/FusionIIIT.git (push)
-     
+
 ## Syncing with Fork:
 
  * `$ git fetch upstream`
