@@ -15,6 +15,7 @@ def index(request):
     context = {}
     return render(request, "globals/index1.html", context)
 
+
 @login_required(login_url=LOGIN_URL)
 def about(request):
     teams = {
