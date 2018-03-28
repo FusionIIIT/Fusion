@@ -1,8 +1,23 @@
+from functools import wraps
+
+from django.contrib.auth.decorators import login_required
 from django.utils import timezone
+
+# from applications.globals.models import Designation
+
+
+def get_object_or_none(model, **kwargs):
+    try:
+        obj = model.objects.get(**kwargs)
+    except:
+        obj = None
+    return obj
 
 
 def critical_section(critical_view):
 
+    @login_required(login_url='/accounts/login')
+    @wraps
     def wrapper(request, *args, **kwargs):
         now = timezone.now()
         timeout = 600

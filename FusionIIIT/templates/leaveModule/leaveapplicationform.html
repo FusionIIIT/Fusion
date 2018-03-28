@@ -1,7 +1,109 @@
+{% load semanticui %}
 <div class="ui container">
+    <style media="screen">
+
+        .button-holder{
+            float: right;
+        }
+    </style>
+
+    <script type="text/javascript">
+
+        $(function(){
+
+            var add = function(row){
+                $(row).find('.date').each(function() {
+                    $(this).calendar({
+                        type: 'date',
+                    });
+                });
+                $(row).find('.dropdown').each(function(i){
+                    $(this).dropdown('refresh');
+                });
+            };
+            var refresh = function(){
+                $(document).find('.date').each(function() {
+                    $(this).calendar('refresh');
+                });
+            };
+
+            var update = function(row) {
+                // alert(row.html());
+
+                add(document);
+                refresh();
+                add(document);
+                refresh();
+            };
+            $('.leave-form-container').formset({
+                formCssClass: "dynamic-leave-form",
+                addText: "Add Leave Segment",
+                addCssClass: "leave-add-row",
+                deleteCssClass: "leave-delete-row",
+                deleteText: "Remove Leave Segment",
+                prefix: "{{ leave_form_set.prefix }}",
+                added: update,
+                // removed: update,
+            });
+            $('.acad-form-container').formset({
+                formCssClass: "dynamic-acad-form",
+                addText: "Add Replacement",
+                deleteText: "Remove Replacement",
+                addCssClass: "acad-add-row",
+                deleteCssClass: "acad-delete-row",
+                prefix: "{{ acad_form_set.prefix }}",
+                added: update,
+            });
+            $('.admin-form-container').formset({
+                formCssClass: "dynamic-admin-form",
+                addText: "Add Replacement",
+                deleteText: "Remove Replacement",
+                addCssClass: "admin-add-row",
+                deleteCssClass: "admin-delete-row",
+                prefix: "{{ admin_form_set.prefix }}",
+                added: update,
+            });
+        });
+
+        $(document).on('click','#leave_next', function(e){
+            e.preventDefault();
+            // alert("Woah, this worked");
+            $("#leave_form").fadeOut(function(){
+                $("#replacements").fadeIn();
+            });
+        });
+        $(document).on('click','#rep_next', function(e){
+            e.preventDefault();
+            // alert("Woah, this worked");
+            $("#replacements").fadeOut(function(){
+                $("#common_form").fadeIn();
+            });
+        });
+
+        $(document).on('click','#common_pre', function(e){
+            e.preventDefault();
+            // alert("Woah, this worked");
+            $("#common_form").fadeOut(function(){
+                $("#replacements").fadeIn();
+            });
+        });
+
+        $(document).on('click','#rep_pre', function(e){
+            e.preventDefault();
+            // alert("Woah, this worked");
+            $("#replacements").fadeOut(function(){
+                $("#leave_form").fadeIn();
+            });
+        });
+
+        $(document).on('click', '#submit', function(){
+            $('#submit-btn').click();
+        });
+
+    </script>
     <div class="ui vertical stripe team segment"
-         style="padding-left: 3.5%;
-                padding-right: 3.5%;">
+         style="height: 70vh; padding-left: 3.5%;
+                padding-right: 3.5%; overflow-y: scroll; overflow-x: hidden;">
 
         <div class="ui header">
             Leave Application Form:
@@ -9,179 +111,159 @@
 
         <div class="ui divider"></div>
         <br>
-
-        <form class="ui large form">
-
-            {% comment %} The ApplyLeave conatianer starts here! {% endcomment %}
-            <div id="applyLeave">
-                {% comment %}The form row starts here!{% endcomment %}
-                <div class="two fields">
-                    <div class="field">
-                        <label>Leave From:</label>
-                        <div class="ui calendar" id="rangestart">
-                            <div class="ui input left icon">
-                                <i class="calendar icon"></i>
-                                <input type="text" placeholder="From">
+        <div class="all-container">
+            <form class="ui large form" method="post" autocomplete="off" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div id="leave_form">
+                    {% if leave_form_set.non_form_errors %}
+                        {% for error in leave_form_set.non_form_errors %}
+                            <div class="ui red message">
+                                {{ error }}
                             </div>
-                        </div>
-                    </div>
+                        {% endfor %}
 
-                    <div class="field">
-                        <label>Leave To:</label>
-                        <div class="ui calendar" id="rangeend">
-                            <div class="ui input left icon">
-                                <i class="calendar icon"></i>
-                                <input type="text" placeholder="To">
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                    {% endif %}
 
-                <div class="two fields">
-                    <div class="twelve wide field">
-                        {% comment %}The Dropdown field starts here!{% endcomment %}
-                        <label>Leave Type</label>
+                    {% for form in leave_form_set %}
+                        <div id="{{ form.prefix }}-row" class="leave-form-container">
+                            <div class="two fields" style="align-left: 10px;">
+                                <div class="field">
 
-                        <div class="ui fluid search selection dropdown">
-                            <input name="Leave Type" type="hidden">
-                            <i class="dropdown icon"></i>
-
-                            <div class="default text">Select Leave</div>
-
-                            <div class="menu">
-                                <div class="item" data-value="CL">
-                                    Casual Leave
-                                </div>
-
-                                <div class="item" data-value="COL">
-                                    Commuted Leave
-                                </div>
-
-                                <div class="item" data-value="EL">
-                                    Earned Leave
-                                </div>
-
-                                <div class="item" data-value="RH">
-                                    Restricted Holiday
-                                </div>
-
-                                <div class="item" data-value="SCL">
-                                    Sp. Casual Leave
-                                </div>
-
-                                <div class="item" data-value="VL">
-                                    Vacation Leave
-                                </div>
-                            </div>
-                        </div>
-                        {% comment %}The Dropdown field ends here!{% endcomment %}
-                    </div>
-
-                    <div class="four wide field">
-                        <label>Station Leave:</label>
-                        <div class="ui toggle checkbox"
-                             style="margin-top: 8px;">
-                            <label>Required</label>
-                            <input tabindex="0" class="hidden" type="checkbox" id="chkAddress" onchange="ShowHideDiv()">
-                        </div>
-                    </div>
-
-                </div>
-
-                <div class="fields">
-                    <div class="sixteen wide field" id="leaveAddress" style="display: none;">
-                        <label>Leave Address:</label>
-                        <textarea class="ui textarea" rows="2"></textarea>
-                    </div>
-                </div>
-
-                <div>
-                    <div class="fields">
-
-                        {% comment %}Academic Responsibilities start here!{% endcomment %}
-                        <div class="eight wide field">
-                            <label>Academic Responsibilities:</label>
-                            <div class="ui fluid search selection dropdown">
-                                <input name="Select" type="hidden">
-                                <i class="dropdown icon"></i>
-
-                                <div class="default text">Select</div>
-
-                                <div class="menu">
-                                    <div class="item" data-value="aojha">
-                                        Aparajita Ojha
-                                    </div>
-
-                                    <div class="item" data-value="pkhanna">
-                                        Preeti Khanna
-                                    </div>
-                                    <div class="item" data-value="mkbajpai">
-                                        Manish Bajpai
-                                    </div>
-
-                                    <div class="item" data-value="vkjain">
-                                        Vinod K. Jain
+                                    <div class="ui calendar date" id="date">
+                                        {% render_field form.start_date _icon='calendar' _align='left' placeholder='Click to select date'%}
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                        {% comment %}Academic Responsibilities end here!{% endcomment %}
 
-                        {% comment %}Administrative Responsibilities start here!{% endcomment %}
-                        <div class="eight wide field">
-                            <label>Administrative Responsibilities:</label>
-                            <div class="ui fluid search selection dropdown">
-                                <input name="Select" type="hidden">
-                                <i class="dropdown icon"></i>
-
-                                <div class="default text">Select</div>
-
-                                <div class="menu">
-                                    <div class="item" data-value="aojha">
-                                        Aparajita Ojha
-                                    </div>
-
-                                    <div class="item" data-value="pkhanna">
-                                        Preeti Khanna
-                                    </div>
-                                    <div class="item" data-value="mkbajpai">
-                                        Manish Bajpai
-                                    </div>
-
-                                    <div class="item" data-value="vkjain">
-                                        Vinod K. Jain
+                                <div class="field">
+                                    <div class="ui calendar date" id="date">
+                                        {% render_field form.end_date _icon='calendar' _align='left' placeholder='Click to select date'%}
                                     </div>
                                 </div>
                             </div>
 
+                            <div class="two fields" style="align-left: 10px;">
+                                <div class="field">
+                                    {% render_field form.start_half %}
+                                </div>
+                                <div class="field">
+                                    {% render_field form.end_half %}
+                                </div>
+                            </div>
+                            {% render_field form.leave_type %}
+                            {% render_field form.document %}
                         </div>
-                        {% comment %}Administrative Responsibilities end here!{% endcomment %}
+                    {% endfor %}
+                    <br>
+                    <div class="button-holder">
+                        <div id="leave_next" class="massive ui animated submit button" tabindex="0">
+                            <div class="visible content">Next</div>
+                            <div class="hidden content">
+                                <i class="right arrow icon"></i>
+                            </div>
+                        </div>
                     </div>
+
                 </div>
-                {% comment %}The Resposibilities end here!{% endcomment %}
+                <div id="replacements" hidden>
+                    <div class="ui header">
+                        Academic Responsibilities:
+                    </div>
+                    <div id="acad_form">
+                        {% for form in acad_form_set %}
 
-                <br>
+                            <div id="{{ form.prefix }}-row" class="acad-form-container">
+                                <div class="two fields" style="align-left: 10px;">
+                                    <div class="field">
+                                        <div class="ui calendar date" id="date">
+                                            {% render_field form.acad_start_date _icon='calendar' _align='left' placeholder='Click to select date'%}
+                                        </div>
+                                    </div>
 
-                {% comment %}Leave Purpose starts here!{% endcomment %}
-                <div class="fields">
-                    <div class="twelve wide field">
-                        <label>Leave Purpose:</label>
-                        <div class="ui fluid input">
-                            <input name="leavePurpose">
-                        </div>
+                                    <div class="field">
+                                        <div class="ui calendar date" id="date">
+                                            {% render_field form.acad_end_date _icon='calendar' _align='left' placeholder='Click to select date'%}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% render_field form.acad_rep %}
+                            </div>
+
+
+
+                        {% endfor %}
+                    </div>
+                    <hr><hr>
+                    <div class="ui header">
+                        Administrative Responsibilities:
+                    </div>
+                    <div id="admin_form">
+
+                        {% for form in admin_form_set %}
+                            <div id="{{ form.prefix }}-row" class="admin-form-container">
+
+                                <div class="two fields" style="align-left: 10px;">
+                                    <div class="field">
+                                        <div class="ui calendar date" id="date">
+                                            {% render_field form.admin_start_date _icon='calendar' _align='left' placeholder='Click to select date'%}
+                                        </div>
+                                    </div>
+
+                                    <div class="field">
+                                        <div class="ui calendar date" id="date">
+                                            {% render_field form.admin_end_date _icon='calendar' _align='left' placeholder='Click to select date'%}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% render_field form.admin_rep %}
+
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="button-holder">
+                        <span id="rep_pre" class="green massive ui animated button" tabindex="0">
+                            <div class="visible content">Back</div>
+                            <div class="hidden content">
+                                <i class="white left arrow icon"></i>
+                            </div>
+                        </span>
+                        <span id="rep_next" class="massive red ui animated button" tabindex="0">
+                            <div class="visible content">Next</div>
+                            <div class="hidden content">
+                                <i class="white right arrow icon"></i>
+                            </div>
+                        </span>
                     </div>
 
-                    <div class="four wide field">
-                        <label><br></label>
-                        <div class="ui large fluid primary button">
-                            Submit
-                        </div>
-                    </div>
                 </div>
-                {% comment %}Leave Purpose ends here!{% endcomment %}
-                <br>
-            </div>
-        </form>
+                <div id="common_form" hidden>
+
+                    {% render_field common_form.purpose %}
+                    {% render_field common_form.is_station %}
+                    {% render_field common_form.station_leave_info _no_required='True' %}
+                    <span id="common_pre" class="massive red ui animated button" tabindex="0">
+                        <div class="visible content">Go Back</div>
+                        <div class="hidden content">
+                            <i class="white left arrow icon"></i>
+                        </div>
+                    </span>
+
+                    {{ leave_form_set.management_form }}
+                    {{ admin_form_set.management_form }}
+                    {{ acad_form_set.management_form }}
+
+                    <button id="submit-btn" type="submit" hidden> </button>
+                    <span id="submit" class="massive green ui animated button" tabindex="0">
+                        <div class="visible content">Submit</div>
+                        <div class="hidden content">
+                            <i class="white right arrow icon"></i>
+                        </div>
+                    </span>
+                </div>
+
+
+            </form>
+        </div>
+
     </div>
 
     <div class="extra content">
@@ -270,3 +352,4 @@
         leaveAddress.style.display = chkAddress.checked ? "block" : "none";
     }
 </script>
+

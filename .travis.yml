@@ -1,12 +1,10 @@
 language: python
 dist: precise
-cache:
-  - pip
 python:
-  - 3.5
+  - 3.6
 install:
   - pip install -U setuptools
   - pip install -r requirements.txt
 script:
   - flake8 . --exclude manage.py,__pycache__,migrations --max-line-length=100
-  - isort
+  - timeout 10s isort
