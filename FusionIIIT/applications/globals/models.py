@@ -49,6 +49,16 @@ class Constants:
             ("other", "Other than the ones listed"),
         )
 
+    TITLE_CHOICES = (
+        ("Mr.", "Mr."),
+        ("Mrs.", "Mrs."),
+        ("Ms.", "Ms."),
+        ("Dr.", "Dr."),
+        ("Professor", "Prof."),
+        ("Shreemati", "Shreemati"),
+        ("Shree", "Shree")
+    )
+
 
 class Designation(models.Model):
     name = models.CharField(max_length=20, unique=True, blank=False, default='student')
@@ -67,6 +77,7 @@ class DepartmentInfo(models.Model):
 class ExtraInfo(models.Model):
     id = models.CharField(max_length=20, primary_key=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    title = models.CharField(max_length=20, choices=Constants.TITLE_CHOICES, default='Dr.')
     sex = models.CharField(max_length=2, choices=Constants.SEX_CHOICES, default='M')
     date_of_birth = models.DateField(null=True)
     address = models.TextField(max_length=1000, default="")

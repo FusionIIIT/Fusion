@@ -1,10 +1,10 @@
 from django.contrib.auth.decorators import login_required
-
+from django.http import HttpResponse
 from .handlers import (handle_faculty_leave_application,
                        handle_staff_leave_application,
                        handle_student_leave_application,
                        send_faculty_leave_form, send_staff_leave_form,
-                       send_student_leave_form)
+                       send_student_leave_form, process_staff_faculty_application)
 
 
 @login_required(login_url='/accounts/login')
@@ -33,3 +33,13 @@ def leave(request):
         response = send_student_leave_form(request)
 
     return response
+
+
+@login_required(login_url='/accounts/login')
+def process_request(request):
+    return process_staff_faculty_application(request)
+
+
+@login_required(login_url='/accounts/login')
+def get_leave_requests(request):
+    return HttpResponse('Hey Works')

@@ -16,6 +16,41 @@
     </div>
 
 
+    <div class="process-modal ui basic modal">
+        <div class="ui icon header">
+            <i class="check green icon"></i>
+            Status:
+        </div>
+        <div class="content">
+            <p></p>
+        </div>
+        <div class="actions">
+            <div class="ui green ok inverted button">
+                <i class="checkmark icon"></i>
+                Ok
+            </div>
+        </div>
+    </div>
+
+    <div class="fail-modal ui basic modal">
+        <div class="ui icon header">
+            <i class="close red icon"></i>
+            Some Error occured:
+        </div>
+        <div class="content">
+            <p>Please let us know <a href="/issue">here</a>. Add screenshot and as much detail as possible. <br>
+            We appreciate your patience. Thank you. </p>
+        </div>
+        <div class="actions">
+            <div class="ui green ok inverted button">
+                <i class="checkmark icon"></i>
+                Ok
+            </div>
+        </div>
+    </div>
+
+
+
     {% comment %}The grid starts here!{% endcomment %}
     <div class="ui stackable doubling grid">
 
@@ -52,12 +87,6 @@
                         Leave Status
                         <i class="right floated chevron right icon"></i>
                     </a>
-                    {% comment %}
-                        <a class="item" data-tab="third">
-                            Leave Balance
-                            <i class="right floated chevron right icon"></i>
-                        </a>
-                    {% endcomment %}
 
                     <a class="item" data-tab="fourth">
                         Approve

@@ -7,15 +7,23 @@ from django.utils import timezone
 
 from applications.leave.models import LeavesCount, LeaveSegment, LeaveType
 
-from .helpers import get_user_choices
+from .helpers import get_user_choices, get_leave_days, get_special_leave_count
 
 
 class EmployeeCommonForm(forms.Form):
 
     purpose = forms.CharField(widget=forms.TextInput)
     is_station = forms.BooleanField(initial=False, required=False)
-    station_leave_info = forms.CharField(widget=forms.Textarea, required=False)
+    leave_info = forms.CharField(label='Information', widget=forms.Textarea, required=False)
 
+    def clean(self):
+        super(EmployeeCommonForm, self).clean()
+        data = self.cleaned_data
+
+        if data.get('is_station') and not data.get('leave_info'):
+            raise VE({'leave_info': ['If there is a station leave, provide details about it.']})
+
+        return self.cleaned_data
 
 class LeaveSegmentForm(forms.Form):
 
@@ -36,12 +44,40 @@ class LeaveSegmentForm(forms.Form):
         super(LeaveSegmentForm, self).clean(*args, **kwargs)
         data = self.cleaned_data
         errors = dict()
+
+        def check_special_leave_overlap(start_date, end_date, leave_type_id):
+            leave_type = LeaveType.objects.get(id=leave_type_id)
+            if leave_type.name.lower() in ['restricted', 'vacation']:
+                count = get_special_leave_count(start_date, end_date, leave_type.name.lower())
+                if count < 0:
+                    return 'The period for this leave doesn\'t match with holiday calendar' \
+                           '. Check Academic Calendar.'
+
+            return ''
+
         if data['start_date'] < data['end_date']:
-            pass
+            error = check_special_leave_overlap(data.get('start_date'), data.get('end_date'),
+                                                data.get('leave_type'))
+
+            if error:
+                if 'leave_type' in errors:
+                    errors['leave_type'].append(error)
+                else:
+                    errors['leave_type'] = [error,]
+
         elif data['start_date'] == data['end_date']:
             if data['start_half'] and data['end_half']:
                 errors['start_half'] = ['Invalid Input']
                 errors['end_half'] = ['Invalid Input']
+
+            else:
+                error = check_special_leave_overlap(data.get('start_date'), data.get('end_date'),
+                                                    data.get('leave_type'))
+                if error:
+                    if 'leave_type' in errors:
+                        errors['leave_type'].append(error)
+                    else:
+                        errors['leave_type'] = [error,]
         else:
             errors['start_date'] = ['Start date must not be more than End date.']
 
@@ -82,17 +118,35 @@ class AdminReplacementForm(forms.Form):
         super(AdminReplacementForm, self).__init__(*args, **kwargs)
 
         USER_CHOICES = get_user_choices(self.user)
-
+        # print(USER_CHOICES)
         self.fields['admin_rep'] = forms.ChoiceField(label='Administrative Responsibility To: ',
                                                      choices=USER_CHOICES)
 
     def clean(self):
+        super(AdminReplacementForm, self).clean()
         data = self.cleaned_data
 
         start_date, end_date = data['admin_start_date'], data['admin_end_date']
 
+        errors = dict()
+
         if start_date > end_date:
-            raise VE({'admin_start_date': ['Start Date must not be more than End Date']})
+            errors['admin_start_date'] = ['Start Date must not be more than End Date']
+
+        now = timezone.localtime(timezone.now()).date()
+        if data['admin_start_date'] < now:
+            error = 'You have inserted past date.'
+            if 'admin_start_date' in errors:
+                errors['admin_start_date'].append(error)
+            else:
+                errors['admin_start_date'] = error
+
+        if data['admin_end_date'] < now:
+            error = 'You have inserted past date.'
+            if 'admin_end_date' in errors:
+                errors['admin_end_date'].append(error)
+            else:
+                errors['admin_end_date'] = error
 
         rep_user = User.objects.get(username=data['admin_rep'])
 
@@ -101,7 +155,10 @@ class AdminReplacementForm(forms.Form):
                                        Q(start_date__range=[start_date, end_date]) |
                                        Q(end_date__range=[start_date, end_date])).exists():
 
-            raise VE({'admin_rep': ['User may be on leave in this period.']})
+            errors['admin_rep'] = [f'{rep_user.get_full_name()} may be on leave in this period.']
+
+        if errors.keys():
+            raise VE(errors)
 
         return self.cleaned_data
 
@@ -122,12 +179,28 @@ class AcademicReplacementForm(forms.Form):
                                                     choices=USER_CHOICES)
 
     def clean(self):
+        super(AcademicReplacementForm, self).clean()
         data = self.cleaned_data
-
+        errors = dict()
         start_date, end_date = data['acad_start_date'], data['acad_end_date']
 
         if start_date > end_date:
-            raise VE({'acad_start_date': ['Start Date must not be more than End Date']})
+            errors['acad_start_date'] = ['Start Date must not be more than End Date']
+
+        now = timezone.localtime(timezone.now()).date()
+        if data['acad_start_date'] < now:
+            error = 'You have inserted past date.'
+            if 'acad_start_date' in errors:
+                errors['acad_start_date'].append(error)
+            else:
+                errors['acad_start_date'] = error
+
+        if data['acad_end_date'] < now:
+            error = 'You have inserted past date.'
+            if 'acad_end_date' in errors:
+                errors['acad_end_date'].append(error)
+            else:
+                errors['acad_end_date'] = error
 
         rep_user = User.objects.get(username=data['acad_rep'])
 
@@ -136,7 +209,7 @@ class AcademicReplacementForm(forms.Form):
                                        Q(start_date__range=[start_date, end_date]) |
                                        Q(end_date__range=[start_date, end_date])).exists():
 
-            raise VE({'acad_rep': ['User may be on leave in this period.']})
+            errors['acad_rep'] = [f'{rep_user.get_full_name()} may be on leave in this period.']
 
         return self.cleaned_data
 
@@ -158,21 +231,19 @@ class BaseLeaveFormSet(BaseFormSet):
             # if form.is_valid():
             try:
                 data = form.cleaned_data
-                leave_type = data.get('leave_type')
-                count = (data.get('end_date') - data.get('start_date')).days + 1
-                if data.get('start_half'):
-                    count -= 0.5
-                if data.get('end_half'):
-                    count -= 0.5
+                leave_type = LeaveType.objects.get(id=data.get('leave_type'))
+                count = get_leave_days(data.get('start_date'), data.get('end_date'),
+                                       leave_type, data.get('start_half'), data.get('end_half'))
+
                 if leave_type in mapping.keys():
                     mapping[leave_type] += count
                 else:
                     mapping[leave_type] = count
-            except TypeError:
+            except:
                 pass
 
         for key, value in mapping.items():
-            tp = leave_counts.get(leave_type__id=key)
+            tp = leave_counts.get(leave_type=key)
             if tp.remaining_leaves < value:
                 raise VE(f'There are only {tp.remaining_leaves} {tp.leave_type.name} '
                          f'Leaves remaining and you have filled {value}.')

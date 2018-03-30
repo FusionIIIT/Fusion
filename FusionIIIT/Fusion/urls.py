@@ -6,6 +6,8 @@ from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     url(r'^', include('applications.globals.urls')),
+    url(r'^admin/', admin.site.urls),
+    url(r'^accounts/', include('allauth.urls')),
     url(r'^eis/', include('applications.eis.urls')),
     url(r'^mess/', include('applications.central_mess.urls')),
     url(r'^complaint/', include('applications.complaint_system.urls')),
@@ -18,16 +20,16 @@ urlpatterns = [
     url(r'^spacs/', include('applications.scholarships.urls')),
     url(r'^office/', include('applications.office_module.urls')),
     url(r'^visitorhostel/', include('applications.visitor_hostel.urls')),
-    url(r'^admin/', admin.site.urls),
-    url(r'^accounts/', include('allauth.urls')),
     url(r'^ocms/', include('applications.online_cms.urls')),
-    url(r'^login/', auth_views.login, name='login'),
-    url(r'^logout/', auth_views.logout, name='logout'),
     url(r'^academic-procedures/', include('applications.academic_procedures.urls',
                                           namespace='procedures')),
-
 ]
 
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+    import debug_toolbar
+    urlpatterns = [
+        url(r'^__debug__/', include(debug_toolbar.urls)),
+    ] + urlpatterns

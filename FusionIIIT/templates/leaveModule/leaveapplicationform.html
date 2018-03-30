@@ -12,7 +12,7 @@
         $(function(){
 
             var add = function(row){
-                $(row).find('.date').each(function() {
+                $(row).find('.date.calendar').each(function() {
                     $(this).calendar({
                         type: 'date',
                     });
@@ -22,7 +22,7 @@
                 });
             };
             var refresh = function(){
-                $(document).find('.date').each(function() {
+                $(document).find('.date.calendar').each(function() {
                     $(this).calendar('refresh');
                 });
             };
@@ -64,7 +64,6 @@
                 added: update,
             });
         });
-
         $(document).on('click','#leave_next', function(e){
             e.preventDefault();
             // alert("Woah, this worked");
@@ -128,16 +127,11 @@
                         <div id="{{ form.prefix }}-row" class="leave-form-container">
                             <div class="two fields" style="align-left: 10px;">
                                 <div class="field">
-
-                                    <div class="ui calendar date" id="date">
-                                        {% render_field form.start_date _icon='calendar' _align='left' placeholder='Click to select date'%}
-                                    </div>
+                                        {% render_field form.start_date _icon='calendar' _align='left' placeholder='Click to select date' %}
                                 </div>
 
                                 <div class="field">
-                                    <div class="ui calendar date" id="date">
                                         {% render_field form.end_date _icon='calendar' _align='left' placeholder='Click to select date'%}
-                                    </div>
                                 </div>
                             </div>
 
@@ -155,7 +149,7 @@
                     {% endfor %}
                     <br>
                     <div class="button-holder">
-                        <div id="leave_next" class="massive ui animated submit button" tabindex="0">
+                        <div id="leave_next" class="ui primary animated button" tabindex="0">
                             <div class="visible content">Next</div>
                             <div class="hidden content">
                                 <i class="right arrow icon"></i>
@@ -165,34 +159,31 @@
 
                 </div>
                 <div id="replacements" hidden>
-                    <div class="ui header">
-                        Academic Responsibilities:
-                    </div>
-                    <div id="acad_form">
-                        {% for form in acad_form_set %}
 
-                            <div id="{{ form.prefix }}-row" class="acad-form-container">
-                                <div class="two fields" style="align-left: 10px;">
-                                    <div class="field">
-                                        <div class="ui calendar date" id="date">
+                    {% if acad_form_set %}
+                        <div class="ui header">
+                            Academic Responsibilities:
+                        </div>
+
+                        <div id="acad_form">
+                            {% for form in acad_form_set %}
+
+                                <div id="{{ form.prefix }}-row" class="acad-form-container">
+                                    <div class="two fields" style="align-left: 10px;">
+                                        <div class="field">
                                             {% render_field form.acad_start_date _icon='calendar' _align='left' placeholder='Click to select date'%}
                                         </div>
-                                    </div>
 
-                                    <div class="field">
-                                        <div class="ui calendar date" id="date">
+                                        <div class="field">
                                             {% render_field form.acad_end_date _icon='calendar' _align='left' placeholder='Click to select date'%}
                                         </div>
                                     </div>
+                                    {% render_field form.acad_rep %}
                                 </div>
-                                {% render_field form.acad_rep %}
-                            </div>
-
-
-
-                        {% endfor %}
-                    </div>
-                    <hr><hr>
+                            {% endfor %}
+                        </div>
+                        <hr><hr>
+                    {% endif %}
                     <div class="ui header">
                         Administrative Responsibilities:
                     </div>
@@ -203,15 +194,11 @@
 
                                 <div class="two fields" style="align-left: 10px;">
                                     <div class="field">
-                                        <div class="ui calendar date" id="date">
-                                            {% render_field form.admin_start_date _icon='calendar' _align='left' placeholder='Click to select date'%}
-                                        </div>
+                                        {% render_field form.admin_start_date _icon='calendar' _align='left' placeholder='Click to select date'%}
                                     </div>
 
                                     <div class="field">
-                                        <div class="ui calendar date" id="date">
-                                            {% render_field form.admin_end_date _icon='calendar' _align='left' placeholder='Click to select date'%}
-                                        </div>
+                                        {% render_field form.admin_end_date _icon='calendar' _align='left' placeholder='Click to select date'%}
                                     </div>
                                 </div>
                                 {% render_field form.admin_rep %}
@@ -220,13 +207,13 @@
                         {% endfor %}
                     </div>
                     <div class="button-holder">
-                        <span id="rep_pre" class="green massive ui animated button" tabindex="0">
+                        <span id="rep_pre" class="ui primary animated button" tabindex="0">
                             <div class="visible content">Back</div>
                             <div class="hidden content">
                                 <i class="white left arrow icon"></i>
                             </div>
                         </span>
-                        <span id="rep_next" class="massive red ui animated button" tabindex="0">
+                        <span id="rep_next" class="ui primary animated button" tabindex="0">
                             <div class="visible content">Next</div>
                             <div class="hidden content">
                                 <i class="white right arrow icon"></i>
@@ -239,8 +226,8 @@
 
                     {% render_field common_form.purpose %}
                     {% render_field common_form.is_station %}
-                    {% render_field common_form.station_leave_info _no_required='True' %}
-                    <span id="common_pre" class="massive red ui animated button" tabindex="0">
+                    {% render_field common_form.leave_info _no_required='True' %}
+                    <span id="common_pre" class="primary ui animated button" tabindex="0">
                         <div class="visible content">Go Back</div>
                         <div class="hidden content">
                             <i class="white left arrow icon"></i>
@@ -252,7 +239,7 @@
                     {{ acad_form_set.management_form }}
 
                     <button id="submit-btn" type="submit" hidden> </button>
-                    <span id="submit" class="massive green ui animated button" tabindex="0">
+                    <span id="submit" class="primary green ui animated button" tabindex="0">
                         <div class="visible content">Submit</div>
                         <div class="hidden content">
                             <i class="white right arrow icon"></i>
@@ -270,85 +257,23 @@
         <br>
         <br>
 
-        <div class="ui six equal width blue small stackable statistics"
+        <div class="ui five equal width blue small stackable statistics"
              style="margin: auto;">
+            {% for bal in leave_balance %}
+                <div class="ui statistic">
+                    <div class="value">
+                        {{ bal.remaining_leaves }}
+                    </div>
 
-            <div class="ui statistic">
-                <div class="value">
-                    8
+                    <div class="label">
+                        <i class="plane icon"></i>
+                        {{ bal.leave_type.name }}
+                    </div>
                 </div>
-
-                <div class="label">
-                    <i class="plane icon"></i>
-                    CL&ensp;
-                </div>
-            </div>
-
-            <div class="ui statistic">
-                <div class="value">
-                    20
-                </div>
-
-                <div class="label">
-                    <i class="plane icon"></i>
-                    COL&ensp;
-                </div>
-            </div>
-
-            <div class="ui statistic">
-                <div class="value">
-                    30
-                </div>
-
-                <div class="label">
-                    <i class="plane icon"></i>
-                    EL
-                </div>
-            </div>
-
-            <div class="ui statistic">
-                <div class="value">
-                    2
-                </div>
-
-                <div class="label">
-                    <i class="plane icon"></i>
-                    RH
-                </div>
-            </div>
-
-            <div class="ui statistic">
-                <div class="value">
-                    2
-                </div>
-
-                <div class="label">
-                    <i class="plane icon"></i>
-                    Sp. CL&ensp;
-                </div>
-            </div>
-
-            <div class="ui statistic">
-                <div class="value">
-                    60
-                </div>
-
-                <div class="label">
-                    <i class="plane icon"></i>
-                    VL
-                </div>
-            </div>
+            {% endfor %}
 
         </div>
 
     </div>
 
 </div>
-
-<script type="text/javascript">
-    function ShowHideDiv() {
-        var chkAddress = document.getElementById("chkAddress");
-        var leaveAddress = document.getElementById("leaveAddress");
-        leaveAddress.style.display = chkAddress.checked ? "block" : "none";
-    }
-</script>

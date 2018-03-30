@@ -6,7 +6,8 @@ from applications.globals.models import ExtraInfo
 class Constants:
     HOLIDAY_TYPE = (
         ('restricted', 'restricted'),
-        ('closed', 'closed')
+        ('closed', 'closed'),
+        ('vacation', 'vacation')
     )
 
     ATTEND_CHOICES = (

@@ -12,14 +12,17 @@ class Constants:
     )
 
     LEAVE_PERMISSIONS = (
-        ('sanc_auth', 'sanc_auth'),
-        ('sanc_off', 'sanc_off'),
+        ('intermediary', 'Intermediary Staff'),
+        ('sanc_auth', 'Leave Sanctioning Authority'),
+        ('sanc_off', 'Leave Sanctioning Officer'),
     )
 
     STATUS = (
         ('pending', 'Pending'),
         ('accepted', 'Accepted'),
-        ('rejected', 'Rejected')
+        ('rejected', 'Rejected'),
+        ('forwarded', 'Forwarded'),
+        ('auto rejected', 'Auto Rejected')
     )
 
     MIGRATION_CHOICES = (
@@ -32,6 +35,7 @@ class LeaveType(models.Model):
     name = models.CharField(max_length=40, null=False)
     max_in_year = models.IntegerField(default=2)
     requires_proof = models.BooleanField(default=False)
+    authority_forwardable = models.BooleanField(default=False)
 
     def __str__(self):
         return f'{self.name}, Max: {self.max_in_year}'
@@ -41,11 +45,11 @@ class LeavesCount(models.Model):
     user = models.ForeignKey(User, related_name='leave_balance', on_delete=models.CASCADE)
     year = models.IntegerField(default=2015)
     leave_type = models.ForeignKey(LeaveType, on_delete=models.CASCADE)
-    remaining_leaves = models.IntegerField(default=2)
+    remaining_leaves = models.FloatField(default=2.0)
 
     def save(self, *args, **kwargs):
         if self.year < 2015 or self.remaining_leaves < 2:
-            raise ValueError('Year must be greater than 2015 and remaining leaves more than 0')
+            raise ValueError('Year must be greater than 2018 and remaining leaves more than 0')
         super(LeavesCount, self).save(*args, **kwargs)
 
     def __str__(self):
@@ -60,28 +64,31 @@ class Leave(models.Model):
                                   on_delete=models.CASCADE)
     purpose = models.CharField(max_length=500, default='', blank=True)
     status = models.CharField(max_length=20, default='pending', choices=Constants.STATUS)
+    timestamp = models.DateTimeField(auto_now=True, null=True)
     is_station = models.BooleanField(default=False)
 
     @property
-    def is_station(self):
-        return self.is_station
+    def to_forward(self):
+        for segment in self.segments.all():
+            if segment.leave_type.authority_forwardable:
+                return True
+        return False
 
     def relacements_accepted(self):
-        return not self.replace_segments.filter(status=False).exists()
+        return not self.replace_segments.filter(status='pending').exists()
 
-    def generate_reqeusts(self):
+    def generate_requests(self):
         pass
 
     def __str__(self):
-        return '{} applied for {} to {}, status: {}'.format(self.applicant.username,
-                                                            self.start_date, self.end_date,
+        return '{} applied, status: {}'.format(self.applicant.username,
                                                             self.status)
 
 
 # TODO: Add more fields
 class ReplacementSegment(models.Model):
     leave = models.ForeignKey(Leave, related_name='replace_segments', on_delete=models.CASCADE)
-    replacer = models.ForeignKey(User, on_delete=models.CASCADE)
+    replacer = models.ForeignKey(User, related_name='rep_requests', on_delete=models.CASCADE)
     replacement_type = models.CharField(max_length=20, default='academic',
                                         choices=Constants.REPLACEMENT_TYPES)
     start_date = models.DateField()
@@ -91,8 +98,9 @@ class ReplacementSegment(models.Model):
 
 
 class LeaveSegment(models.Model):
-    leave = models.ForeignKey(Leave, related_name='leave_segments', on_delete=models.CASCADE)
+    leave = models.ForeignKey(Leave, related_name='segments', on_delete=models.CASCADE)
     leave_type = models.ForeignKey(LeaveType, on_delete=models.SET_NULL, null=True)
+    document = models.FileField(upload_to='leave/leave_documents/', null=True)
     start_date = models.DateField()
     start_half = models.BooleanField(default=False)
     end_date = models.DateField()
@@ -100,8 +108,9 @@ class LeaveSegment(models.Model):
 
 
 class LeaveRequest(models.Model):
-    leave = models.ForeignKey(Leave, on_delete=models.CASCADE)
-    requested_from = models.ForeignKey(User, on_delete=models.CASCADE)
+    leave = models.ForeignKey(Leave, related_name='leave_requests', on_delete=models.CASCADE)
+    requested_from = models.ForeignKey(User, related_name='all_leave_requests',
+                                       on_delete=models.CASCADE)
     remark = models.CharField(max_length=50, blank=True, null=True)
     permission = models.CharField(max_length=20, default='sanc_auth',
                                   choices=Constants.LEAVE_PERMISSIONS)
@@ -116,11 +125,15 @@ class LeaveAdministrators(models.Model):
     """
     # Take care of `null` fields in back-end logic
     """
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, related_name='leave_admins', on_delete=models.CASCADE)
     authority = models.ForeignKey(Designation, null=True,
                                   related_name='sanc_authority_of', on_delete=models.SET_NULL)
     officer = models.ForeignKey(Designation, null=True,
                                 related_name='sanc_officer_of', on_delete=models.SET_NULL)
+
+    @property
+    def is_one_level(self):
+        return self.authority == self.officer
 
 
 class LeaveMigration(models.Model):
