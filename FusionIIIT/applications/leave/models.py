@@ -36,6 +36,9 @@ class LeaveType(models.Model):
     max_in_year = models.IntegerField(default=2)
     requires_proof = models.BooleanField(default=False)
     authority_forwardable = models.BooleanField(default=False)
+    for_faculty = models.BooleanField(default=True)
+    for_staff = models.BooleanField(default=True)
+    for_student = models.BooleanField(default=False)
 
     def __str__(self):
         return f'{self.name}, Max: {self.max_in_year}'
@@ -65,6 +68,7 @@ class Leave(models.Model):
     purpose = models.CharField(max_length=500, default='', blank=True)
     status = models.CharField(max_length=20, default='pending', choices=Constants.STATUS)
     timestamp = models.DateTimeField(auto_now=True, null=True)
+    extra_info = models.CharField(max_length=200, blank=True, null=True, default='')
     is_station = models.BooleanField(default=False)
 
     @property
@@ -116,6 +120,10 @@ class LeaveRequest(models.Model):
                                   choices=Constants.LEAVE_PERMISSIONS)
     status = models.CharField(max_length=20, default='pending', choices=Constants.STATUS)
 
+    @property
+    def by_student(self):
+        return self.leave.applicant.extrainfo.usertype == 'student'
+
     def __str__(self):
         return '{} requested {}, {}'.format(self.leave.applicant.username,
                                             self.requested_from.username, self.permission)
@@ -134,6 +142,9 @@ class LeaveAdministrators(models.Model):
     @property
     def is_one_level(self):
         return self.authority == self.officer
+
+    def __str__(self):
+        return f'{self.user}, auth: {self.authority}, off: {self.officer}'
 
 
 class LeaveMigration(models.Model):

@@ -45,34 +45,36 @@
                                         {% endfor %}
 
                                     </ul>
-                                    <br>
-                                    <b> Replacements </b>
-                                    <ul>
-                                        {% for rep in leave.replace_segments.all %}
-                                            <li>
-                                                {{ rep.get_replacement_type_display }}
-                                                from <b> {{ rep.start_date }} </b> to <b> {{ rep.end_date }} </b>
-                                            </li>
-                                            <ul>
+                                    {% if request.user.extrainfo.user_type != 'student' %}
+                                        <br>
+                                        <b> Replacements </b>
+                                        <ul>
+                                            {% for rep in leave.replace_segments.all %}
                                                 <li>
-                                                    <b> Replacer: </b> {{ rep.replacer.get_full_name }}
-                                                    <b>
-                                                        ({% if rep.status == 'accepted' %}
-                                                            <span style='color: green;'> Accepted </span>
-                                                        {% elif 'rejected' in rep.status %}
-                                                            <span style='color: red;'> {{ rep.status }} </span>
-                                                            <ul>
-                                                                <li> Remark: {{ rep.remark }} </li>
-                                                            </ul>
-                                                        {% else %}
-                                                            <span style='color: orange;'> Pending </span>
-                                                        {% endif %})
-                                                    </b>
+                                                    {{ rep.get_replacement_type_display }}
+                                                    from <b> {{ rep.start_date }} </b> to <b> {{ rep.end_date }} </b>
                                                 </li>
-                                            </ul>
-                                        {% endfor %}
+                                                <ul>
+                                                    <li>
+                                                        <b> Replacer: </b> {{ rep.replacer.get_full_name }}
+                                                        <b>
+                                                            ({% if rep.status == 'accepted' %}
+                                                                <span style='color: green;'> Accepted </span>
+                                                            {% elif 'rejected' in rep.status %}
+                                                                <span style='color: red;'> {{ rep.status }} </span>
+                                                                <ul>
+                                                                    <li> Remark: {{ rep.remark }} </li>
+                                                                </ul>
+                                                            {% else %}
+                                                                <span style='color: orange;'> Pending </span>
+                                                            {% endif %})
+                                                        </b>
+                                                    </li>
+                                                </ul>
+                                            {% endfor %}
 
-                                    </ul>
+                                        </ul>
+                                    {% endif %}
                                     <br>
                                     <b> Status </b>
                                     <ul>

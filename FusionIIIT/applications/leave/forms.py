@@ -10,6 +10,54 @@ from applications.leave.models import LeavesCount, LeaveSegment, LeaveType
 from .helpers import get_leave_days, get_special_leave_count, get_user_choices
 
 
+class StudentApplicationForm(forms.Form):
+
+    STUDENT_LEAVE_CHOICES = (
+        ('Casual', 'Casual'),
+        ('Medical', 'Medical')
+    )
+
+    leave_type = forms.ChoiceField(label='Leave Type', choices=STUDENT_LEAVE_CHOICES)
+    start_date = forms.DateField(label='From')
+    end_date = forms.DateField(label='To')
+    purpose = forms.CharField(label='Purpose', widget=forms.TextInput)
+    address = forms.CharField(label='Address')
+    document = forms.FileField(label='Related Document', required=False)
+
+    def __init__(self, *args, **kwargs):
+        if 'user' in kwargs:
+            self.user = kwargs.pop('user')
+        super(StudentApplicationForm, self).__init__(*args, **kwargs)
+
+    def clean(self, *args, **kwargs):
+        super(StudentApplicationForm, self).clean(*args, **kwargs)
+        data = self.cleaned_data
+        errors = dict()
+        today = timezone.localtime(timezone.now()).date()
+        if data.get('start_date') < today:
+            errors['start_date'] = ['Past Dates are not allowed']
+        if data.get('end_date') < today:
+            errors['end_date'] = ['Past Dates are not allowed']
+
+        if data.get('start_date') > data.get('end_date'):
+            if 'start_date' in errors:
+                errors['start_date'].append('Start Date must be less than End Date')
+            else:
+                errors['start_date'] = ['Start Date must be less than End Date']
+
+        leave_type = LeaveType.objects.get(name=data.get('leave_type'))
+        count = get_leave_days(data.get('start_date'), data.get('end_date'),
+                               leave_type, False, False)
+
+        remaining_leaves = LeavesCount.objects.get(user=self.user, leave_type=leave_type) \
+                                              .remaining_leaves
+        if remaining_leaves < count:
+            errors['leave_type'] = f'You have only {remaining_leaves} {leave_type.name} leaves' \
+                                    ' remaining.'
+
+        raise VE(errors)
+
+
 class EmployeeCommonForm(forms.Form):
 
     purpose = forms.CharField(widget=forms.TextInput)

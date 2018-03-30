@@ -14,8 +14,72 @@
     <div id="instructions">
         {% include 'leaveModule/instructions.html' %}
     </div>
+    <div class="ui fullscreen request-modal modal">
+        <i class="close icon"></i>
+        <div class="header">
+            Processing Leave Application
+        </div>
+        <div class="content">
+            <div class="ui form">
+                <h4 class="ui dividing header">Please Add a remark</h4>
+                <input type="hidden" class="process-type" value="reject" />
+                <input class="rep" type="hidden" value="" />
+                <input class="stud" type="hidden" value="" />
+                <input class="id" type="hidden" value="" />
+                <div class="field">
+                    <div class="field">
+                        <textarea class="remark" placeholder="Enter Remark"> </textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="actions">
+            <div id="send" class="ui button">Send</div>
+            <div class="ui cancel button">Cancel</div>
+        </div>
+    </div>
 
+    <script type="text/javascript">
 
+        $('#send').on('click', function(e) {
+            e.preventDefault();
+            var id = $('.request-modal .id').val().split(' '),
+                remark = $('.request-modal .remark').val(),
+                rep = $('.request-modal .rep').val(),
+                process_type = $('.request-modal .process-type').val(),
+                stud = $('.request-modal .stud').val();
+            if (remark !== '') {
+                $.ajax({
+                    type: 'get',
+                    url: '/leave/process-request/',
+                    data: {
+                        id: id[0],
+                        rep: rep,
+                        stud: stud,
+                        status: process_type,
+                        remark: remark,
+                    },
+                    success: function(data) {
+                        if(rep !== ''){ $('.lrepbox-' + id[1]).remove(); }
+                        else { $('.leave-request-'+id).remove(); }
+                        $('.request-modal').modal('hide');
+                        // alert(data.message);
+                        $('.process-modal p').html('<center>'+data.message+'</center>');
+                        $('.process-modal').modal('show');
+                    },
+                    error: function(data, err) {
+                        if(err) {
+                            $('.request-modal').modal('hide');
+                            $('.fail-modal').modal('show');
+                        }
+                    }
+                });
+            } else {
+                $('.request-modal textarea').css({'border': 'solid 2px red'});
+            }
+        });
+
+    </script>
     <div class="process-modal ui basic modal">
         <div class="ui icon header">
             <i class="check green icon"></i>
@@ -87,11 +151,12 @@
                         Leave Status
                         <i class="right floated chevron right icon"></i>
                     </a>
-
-                    <a class="item" data-tab="fourth">
-                        Approve
-                        <i class="right floated chevron right icon"></i>
-                    </a>
+                    {% if request.user.extrainfo.user_type != 'student' %}
+                        <a class="item" data-tab="fourth">
+                            Approve
+                            <i class="right floated chevron right icon"></i>
+                        </a>
+                    {% endif %}
                 </div>
                 {% comment %}The Tab-Menu ends here!{% endcomment %}
 
@@ -132,11 +197,13 @@
 
 
                 {% comment %}The Approve Leave starts here!{% endcomment %}
-                <div class="ui tab segment" data-tab="fourth">
-                    {% block approveleave %}
-                            {% include 'leaveModule/leaveapprove.html' %}
-                    {% endblock %}
-                </div>
+                {% if request.user.extrainfo.user_type != 'student' %}
+                    <div class="ui tab segment" data-tab="fourth">
+                        {% block approveleave %}
+                                {% include 'leaveModule/leaveapprove.html' %}
+                        {% endblock %}
+                    </div>
+                {% endif %}
                 {% comment %}The Approve Leave ends here!{% endcomment %}
 
 
@@ -145,23 +212,25 @@
         {% comment %}The central-rail segment endss here!{% endcomment %}
 
         {% comment %}The right-rail segment starts here!{% endcomment %}
-        <div class="three wide column">
-            <div class="ui row">
-                <div id="textSegmentDiv">
-                    <div class="ui active large text loader"
-                         id="loader">
-                        Loading ...
-                    </div>
+        {% if request.user.extrainfo.user_type != 'student' %}
+            <div class="three wide column">
+                <div class="ui row">
+                    <div id="textSegmentDiv">
+                        <div class="ui active large text loader"
+                             id="loader">
+                            Loading ...
+                        </div>
 
-                    <div id="textLoader" style="max-height: 87.5vh; overflow-y: auto; overflow-x: hidden;">
-                        {% block replacement %}
-                            {% include 'leaveModule/replacementrequest.html' %}
-                        {%  endblock %}
-                    </div>
+                        <div id="textLoader" style="max-height: 87.5vh; overflow-y: auto; overflow-x: hidden;">
+                            {% block replacement %}
+                                {% include 'leaveModule/replacementrequest.html' %}
+                            {%  endblock %}
+                        </div>
 
+                    </div>
                 </div>
             </div>
-        </div>
+        {% endif %}
         {% comment %}The right-rail segment ends here!{% endcomment %}
 
         {% comment %}The right-margin segment!{% endcomment %}

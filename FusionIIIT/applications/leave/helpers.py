@@ -89,7 +89,8 @@ def get_leaves(leave):
 def restore_leave_balance(leave):
     to_restore = get_leaves(leave)
     for key, value in to_restore.items():
-        count = LeavesCount.objects.get(leave_type=key.leave_type, year=key.start_date.year)
+        count = LeavesCount.objects.get(user=leave.applicant, leave_type=key.leave_type,
+                                        year=key.start_date.year)
         count.remaining_leaves += value
         count.save()
 
@@ -97,6 +98,7 @@ def restore_leave_balance(leave):
 def deduct_leave_balance(leave):
     to_deduct = get_leaves(leave)
     for key, value in to_deduct.items():
-        count = LeavesCount.objects.get(leave_type=key.leave_type, year=key.start_date.year)
+        count = LeavesCount.objects.get(user=leave.applicant, leave_type=key.leave_type,
+                                        year=key.start_date.year)
         count.remaining_leaves -= value
         count.save()

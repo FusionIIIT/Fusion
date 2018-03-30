@@ -53,23 +53,28 @@
 
                     </ul>
                     <br>
-                    <b> Replacements </b>
-                    <ul>
-                        {% for rep in req.leave.replace_segments.all %}
-                            <li>
-                                {% if rep.replacement_type == 'academic' %}
-                                    Academic Replacement
-                                {% else %}
-                                    Administrative Replacement
-                                {% endif %}
-                                from <b> {{ rep.start_date }} </b> to <b> {{ rep.end_date }} </b>
-                            </li>
-                            <ul>
-                                <li><b> Replacer: </b> {{ rep.replacer.get_full_name }} </li>
-                            </ul>
-                        {% endfor %}
+                    {% if req.leave.applicant.extrainfo.user_type != 'student' %}
+                        <b> Replacements </b>
+                        <ul>
+                            {% for rep in req.leave.replace_segments.all %}
+                                <li>
+                                    {% if rep.replacement_type == 'academic' %}
+                                        Academic Replacement
+                                    {% else %}
+                                        Administrative Replacement
+                                    {% endif %}
+                                    from <b> {{ rep.start_date }} </b> to <b> {{ rep.end_date }} </b>
+                                </li>
+                                <ul>
+                                    <li><b> Replacer: </b> {{ rep.replacer.get_full_name }} </li>
+                                </ul>
+                            {% endfor %}
 
-                    </ul>
+                        </ul>
+                    {% else %}
+                        <b> Student's Application </b>
+                    {% endif %}
+
                 </div>
                 <div class="actions">
                     <div class="ui green positive button">
@@ -84,7 +89,10 @@
                 <td> {{ req.leave.applicant.get_full_name }} </td>
 
                 <td> <button type="button" data="{{ req.id }}" class="medium ui button request-detail"> Details </button> </td>
-                {% if req.permission == 'sanc_auth' and req.leave.to_forward and not req.leave.applicant.leave_admins.is_one_level %}
+                {% if req.leave.applicant.extrainfo.user_type == 'student' %}
+                <td><button type="button" data="{{ req.id }}" class="medium green ui button stud-request-accept"> Accept </button></td>
+                <td><button type="button" data="{{ req.id }}" class="medium red ui button stud-request-reject"> Reject </button></td>
+                {% elif req.permission == 'sanc_auth' and req.leave.to_forward and not req.leave.applicant.leave_admins.is_one_level %}
                     <td></td>
                     <td> <button type="button" data="{{ req.id }}" class="medium ui button request-forward"> Forward </button> </td>
                 {% elif req.permission == 'intermediary' %}
@@ -142,12 +150,48 @@
             });
         });
 
+
+        $('.stud-request-accept').on('click', function(e){
+            e.preventDefault();
+            var id = $(this).attr('data');
+            $.ajax({
+                type: 'get',
+                url: '/leave/process-request/',
+                data: {
+                    id: id,
+                    stud: 'something',
+                    remark: 'No Remark',
+                    status: 'accept'
+                },
+                success: function(data) {
+                    $('.leave-request-'+id).remove();
+                    $('.process-modal p').html('<center>'+data.message+'</center>');
+                    $('.process-modal').modal('show');
+                },
+                error: function(data, err) {
+                    $('.fail-modal').modal('show');
+                }
+            });
+        });
+
         $('.request-reject').on('click', function(e){
             e.preventDefault();
             var id = $(this).attr('data');
             $('.request-modal .id').val(id);
             $('.request-modal textarea').val('');
             $('.request-modal .rep').val('');
+            $('.request-modal .stud').val('');
+            $('.request-modal .process-type').val('reject');
+            $('.request-modal').modal('show');
+        });
+
+        $('.stud-request-reject').on('click', function(e){
+            e.preventDefault();
+            var id = $(this).attr('data');
+            $('.request-modal .id').val(id);
+            $('.request-modal textarea').val('');
+            $('.request-modal .rep').val('');
+            $('.request-modal .stud').val('something');
             $('.request-modal .process-type').val('reject');
             $('.request-modal').modal('show');
         });

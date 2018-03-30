@@ -6,7 +6,8 @@ from django.http import JsonResponse
 from django.shortcuts import redirect, render, reverse
 
 from .forms import (AcademicReplacementForm, AdminReplacementForm,
-                    BaseLeaveFormSet, EmployeeCommonForm, LeaveSegmentForm)
+                    BaseLeaveFormSet, EmployeeCommonForm, LeaveSegmentForm,
+                    StudentApplicationForm)
 from .helpers import deduct_leave_balance, restore_leave_balance
 from .models import (HoldsDesignation, Leave, LeaveRequest, LeaveSegment,
                      LeaveType, ReplacementSegment)
@@ -94,6 +95,7 @@ def handle_faculty_leave_application(request):
         data = common_form.cleaned_data
         leave.purpose = data.get('purpose')
         leave.is_station = data.get('is_station')
+        leave.extra_info = data.get('leave_info')
         leave.save()
         for segment in segments:
             segment.leave = leave
@@ -139,7 +141,7 @@ def handle_staff_leave_application(request):
 
     if leave_valid and admin_valid and common_valid:
         leave = Leave(
-            applicant=request.user
+            applicant=request.user,
         )
         segments = list()
         type_of_leaves = LeaveType.objects.all()
@@ -156,6 +158,7 @@ def handle_staff_leave_application(request):
         data = common_form.cleaned_data
         leave.purpose = data.get('purpose')
         leave.is_station = data.get('is_station')
+        leave.extra_info = data.get('leave_info')
         leave.save()
         for segment in segments:
             segment.leave = leave
@@ -188,8 +191,45 @@ def handle_staff_leave_application(request):
     return render(request, 'leaveModule/leave.html', context)
 
 
+@transaction.atomic
 def handle_student_leave_application(request):
-    pass
+
+    form = StudentApplicationForm(request.POST, user=request.user)
+
+    if form.is_valid():
+        data = form.cleaned_data
+        leave = Leave.objects.create(
+            applicant=request.user,
+            purpose=data.get('purpose'),
+            extra_info=data.get('leave_info'),
+        )
+
+        leave_type = LeaveType.objects.get(name=data.get('leave_type'))
+
+        LeaveSegment.objects.create(
+            leave=leave,
+            leave_type=leave_type,
+            document=data.get('document'),
+            start_date=data.get('start_date'),
+            end_date=data.get('end_date')
+        )
+        requested_from = request.user.leave_admins.authority.designees.first().user
+        LeaveRequest.objects.create(
+            leave=leave,
+            requested_from=requested_from
+        )
+        deduct_leave_balance(leave)
+        messages.add_message(request, messages.SUCCESS, 'Successfully Submitted !')
+        return redirect('leave:leave')
+
+    leave_balance = request.user.leave_balance.all()
+    user_leave_applications = Leave.objects.filter(applicant=request.user).order_by('-timestamp')
+    context = {
+        'leave_balance': leave_balance,
+        'user_leave_applications': user_leave_applications,
+        'form': form,
+    }
+    return render(request, 'leaveModule/leave.html', context)
 
 
 def send_faculty_leave_form(request):
@@ -233,7 +273,16 @@ def send_staff_leave_form(request):
 
 
 def send_student_leave_form(request):
-    pass
+    leave_balance = request.user.leave_balance.all()
+    user_leave_applications = Leave.objects.filter(applicant=request.user).order_by('-timestamp')
+    form = StudentApplicationForm(initial={}, user=request.user)
+    context = {
+        'leave_balance': leave_balance,
+        'user_leave_applications': user_leave_applications,
+        'form': form,
+    }
+
+    return render(request, 'leaveModule/leave.html', context)
 
 
 @transaction.atomic
@@ -382,5 +431,30 @@ def process_staff_faculty_application(request):
             return officer_processing(request, leave_request)
 
 
+@transaction.atomic
 def process_student_application(request):
-    pass
+    leave_request = LeaveRequest.objects.get(id=request.GET.get('id'))
+    if request.user == leave_request.requested_from:
+        status = request.GET.get('status')
+
+        if status == 'accept':
+            leave_request.status = 'accepted'
+            leave_request.remark = 'No remark'
+            leave_request.save()
+            leave_request.leave.status = 'accepted'
+            leave_request.leave.save()
+            response = JsonResponse({'status': 'success', 'message': 'Successfully Accepted'})
+
+        else:
+            leave_request.status = 'rejected'
+            leave_request.remark = request.GET.get('remark')
+            leave_request.save()
+            leave_request.leave.status = 'rejected'
+            leave_request.leave.save()
+            restore_leave_balance(leave_request.leave)
+            response = JsonResponse({'status': 'success', 'message': 'Successfully Rejected'})
+
+    else:
+        response = JsonResponse({'status': 'failure', 'message': 'Unauthorized'}, status=401)
+
+    return response

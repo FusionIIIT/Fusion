@@ -29,105 +29,45 @@
             {% comment %}A single card starts here!{% endcomment %}
         {% endfor %}
 
-
-
-        <div class="ui fullscreen request-modal modal">
-            <i class="close icon"></i>
-            <div class="header">
-                Processing Leave Application
-            </div>
-            <div class="content">
-                <div class="ui form">
-                    <h4 class="ui dividing header">Please Add a remark</h4>
-                    <input type="hidden" class="process-type" value="reject" />
-                    <input class="rep" type="hidden" value="" />
-                    <input class="id" type="hidden" value="" />
-                    <div class="field">
-                        <div class="field">
-                            <textarea class="remark" placeholder="Enter Remark"> </textarea>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="actions">
-                <div id="send" class="ui button">Send</div>
-                <div class="ui cancel button">Cancel</div>
-            </div>
-        </div>
-
         <script type="text/javascript">
-            $('.rep-accept').on('click', function(e){
-                var id = $(this).attr('data');
-                $.ajax({
-                    type: 'get',
-                    url: '/leave/process-request/',
-                    data: {
-                        id: id,
-                        rep: true,
-                        status: 'accept',
-                        remark: 'No Remark',
-                    },
-                    success: function(data) {
-                        $('.repbox-' + id).remove();
-                        // modal.modal('hide');
-                        $('.process-modal p').html('<center>'+data.message+'</center>');
-                        $('.process-modal').modal('show');
-                    },
-                    error: function(data, err) {
-                        if(err) {
-                            // modal.modal('hide');
-                            $('.fail-modal').modal('show');
-                        }
-                    }
-                });
-                // });
-            });
 
-            $('#send').on('click', function(e) {
-                e.preventDefault();
-                var id = $('.request-modal .id').val().split(' '),
-                    remark = $('.request-modal .remark').val(),
-                    rep = $('.request-modal .rep').val(),
-                    process_type = $('.request-modal .process-type').val();
-                if (remark !== '') {
-                    $.ajax({
-                        type: 'get',
-                        url: '/leave/process-request/',
-                        data: {
-                            id: id[0],
-                            rep: rep,
-                            status: process_type,
-                            remark: remark,
-                        },
-                        success: function(data) {
-                            if(rep !== ''){ $('.lrepbox-' + id[1]).remove(); }
-                            else { $('.leave-request-'+id).remove(); }
-                            $('.request-modal').modal('hide');
-                            // alert(data.message);
-                            $('.process-modal p').html('<center>'+data.message+'</center>');
-                            $('.process-modal').modal('show');
-                        },
-                        error: function(data, err) {
-                            if(err) {
-                                $('.request-modal').modal('hide');
-                                $('.fail-modal').modal('show');
-                            }
-                        }
-                    });
-                } else {
-                    $('.request-modal textarea').css({'border': 'solid 2px red'});
+        $('.rep-accept').on('click', function(e){
+            var id = $(this).attr('data');
+            $.ajax({
+                type: 'get',
+                url: '/leave/process-request/',
+                data: {
+                    id: id,
+                    rep: true,
+                    status: 'accept',
+                    remark: 'No Remark',
+                },
+                success: function(data) {
+                    $('.repbox-' + id).remove();
+                    // modal.modal('hide');
+                    $('.process-modal p').html('<center>'+data.message+'</center>');
+                    $('.process-modal').modal('show');
+                },
+                error: function(data, err) {
+                    if(err) {
+                        // modal.modal('hide');
+                        $('.fail-modal').modal('show');
+                    }
                 }
             });
+            // });
+        });
 
-            $('.rep-reject').on('click', function(e){
-                var modal = $('.request-modal.modal');
-                var id = $(this).attr('data');
-                $('.request-modal textarea').val('');
-                $('.request-modal .id').val(id);
-                $('.request-modal .rep').val('something');
-                $('.request-modal .process-type').val('reject');
-                modal.modal('show');
-            });
+        $('.rep-reject').on('click', function(e){
+            var modal = $('.request-modal.modal');
+            var id = $(this).attr('data');
+            $('.request-modal textarea').val('');
+            $('.request-modal .id').val(id);
+            $('.request-modal .stud').val('');
+            $('.request-modal .rep').val('something');
+            $('.request-modal .process-type').val('reject');
+            modal.modal('show');
+        });
         </script>
 
     </div>
