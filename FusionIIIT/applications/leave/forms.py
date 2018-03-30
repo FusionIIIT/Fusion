@@ -7,7 +7,7 @@ from django.utils import timezone
 
 from applications.leave.models import LeavesCount, LeaveSegment, LeaveType
 
-from .helpers import get_user_choices, get_leave_days, get_special_leave_count
+from .helpers import get_leave_days, get_special_leave_count, get_user_choices
 
 
 class EmployeeCommonForm(forms.Form):
@@ -24,6 +24,7 @@ class EmployeeCommonForm(forms.Form):
             raise VE({'leave_info': ['If there is a station leave, provide details about it.']})
 
         return self.cleaned_data
+
 
 class LeaveSegmentForm(forms.Form):
 
@@ -63,7 +64,7 @@ class LeaveSegmentForm(forms.Form):
                 if 'leave_type' in errors:
                     errors['leave_type'].append(error)
                 else:
-                    errors['leave_type'] = [error,]
+                    errors['leave_type'] = [error, ]
 
         elif data['start_date'] == data['end_date']:
             if data['start_half'] and data['end_half']:
@@ -77,7 +78,7 @@ class LeaveSegmentForm(forms.Form):
                     if 'leave_type' in errors:
                         errors['leave_type'].append(error)
                     else:
-                        errors['leave_type'] = [error,]
+                        errors['leave_type'] = [error, ]
         else:
             errors['start_date'] = ['Start date must not be more than End date.']
 

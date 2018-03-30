@@ -5,13 +5,11 @@ from django.forms.formsets import formset_factory
 from django.http import JsonResponse
 from django.shortcuts import redirect, render, reverse
 
-from .forms import (AcademicReplacementForm,
-                    AdminReplacementForm, BaseLeaveFormSet,
-                    EmployeeCommonForm, LeaveSegmentForm)
-from .models import (Leave, LeaveSegment, LeaveType,
-                     ReplacementSegment, HoldsDesignation,
-                     LeaveRequest)
+from .forms import (AcademicReplacementForm, AdminReplacementForm,
+                    BaseLeaveFormSet, EmployeeCommonForm, LeaveSegmentForm)
 from .helpers import deduct_leave_balance, restore_leave_balance
+from .models import (HoldsDesignation, Leave, LeaveRequest, LeaveSegment,
+                     LeaveType, ReplacementSegment)
 
 LeaveFormSet = formset_factory(LeaveSegmentForm, extra=0, max_num=3, min_num=1,
                                formset=BaseLeaveFormSet)
@@ -44,6 +42,7 @@ def add_acad_rep_segment(form):
         end_date=data.get('acad_end_date')
     )
     return rep
+
 
 def add_admin_rep_segment(form):
     data = form.cleaned_data
@@ -329,6 +328,7 @@ def officer_processing(request, leave_request):
     leave.save()
     return JsonResponse({'status': 'success', 'message': message})
 
+
 @transaction.atomic
 def process_staff_faculty_application(request):
     is_replacement_request = request.GET.get('rep')
@@ -344,7 +344,7 @@ def process_staff_faculty_application(request):
             if status == 'accept':
                 # return JsonResponse({'status': 'success', 'message': 'Successfully Accepted'})
                 rep_request.status = 'accepted'
-                rep_remark = request.GET.get('remark')
+                rep_request.remark = request.GET.get('remark')
                 rep_request.save()
                 if rep_request.leave.relacements_accepted():
                     leave_intermediary = HoldsDesignation.objects.get(
@@ -358,14 +358,14 @@ def process_staff_faculty_application(request):
 
             else:
                 rep_request.status = 'rejected'
-                rep_remark = request.GET.get('remark')
+                rep_request.remark = request.GET.get('remark')
                 rep_request.save()
                 leave = rep_request.leave
                 leave.status = 'rejected'
                 leave.remark = 'Replacement Request rejected.'
                 leave.save()
                 leave.replace_segments.filter(status='pending') \
-                                             .update(status='auto rejected')
+                                      .update(status='auto rejected')
 
                 restore_leave_balance(leave)
                 return JsonResponse({'status': 'success', 'message': 'Successfully Rejected'})

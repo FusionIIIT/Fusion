@@ -82,7 +82,7 @@ class Leave(models.Model):
 
     def __str__(self):
         return '{} applied, status: {}'.format(self.applicant.username,
-                                                            self.status)
+                                               self.status)
 
 
 # TODO: Add more fields
