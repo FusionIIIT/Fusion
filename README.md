@@ -8,7 +8,7 @@
 ## Requirements
 
 Python 3.6  
-Django==1.11.4+  
+Django==1.11.4  
 And additional requirements are in **requirements.txt**  
 
 ## How to run it?
@@ -54,6 +54,7 @@ And additional requirements are in **requirements.txt**
   * File Tracking System  
   * Health Centre Mangement  
   * Visitor's Hostel Management  
+  * Leave Module  
 
 ## Contribution
 
