@@ -106,7 +106,7 @@ class Holiday(models.Model):
     holiday_date = models.DateField()
     holiday_name = models.CharField(max_length=40)
     holiday_type = models.CharField(default='restricted', max_length=30,
-                                    choices=Constants.HOLIDAY_TYPE),
+                                    choices=Constants.HOLIDAY_TYPE)
 
     class Meta:
         db_table = 'Holiday'
