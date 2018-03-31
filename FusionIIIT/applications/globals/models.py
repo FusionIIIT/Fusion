@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
-
+import datetime
 
 class Constants:
     # Class for various choices on the enumerations
@@ -85,7 +85,7 @@ class ExtraInfo(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=20, choices=Constants.TITLE_CHOICES, default='Dr.')
     sex = models.CharField(max_length=2, choices=Constants.SEX_CHOICES, default='M')
-    date_of_birth = models.DateField(null=True)
+    date_of_birth = models.DateField(default=datetime.date(1997, 4, 23))
     address = models.TextField(max_length=1000, default="")
     phone_no = models.BigIntegerField(null=True)
     user_type = models.CharField(max_length=20, choices=Constants.USER_CHOICES)
@@ -95,7 +95,7 @@ class ExtraInfo(models.Model):
 
     @property
     def age(self):
-        timedelta = timezone.localtime(timezone.now()).date() - self.date_of_birth
+        timedelta = timezone.now().date() - self.date_of_birth
         return int(timedelta.days / 365)
 
     def __str__(self):
