@@ -94,7 +94,7 @@ CELERY_TIMEZONE = 'Asia/Calcutta'
 CELERY_BEAT_SCHEDULE = {
     'leave-migration-task': {
         'task': 'applications.leave.tasks.execute_leave_migrations',
-        'schedule': crontab(minute='*/1')
+        'schedule': crontab(minute='1', hour='0')
     }
 }
 
