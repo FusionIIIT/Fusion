@@ -146,13 +146,12 @@ class Previous_winner(models.Model):
         db_table = 'Previous_winner'
 
 
+
 class Release(models.Model):
     startdate = models.DateField(default=datetime.date.today)
     enddate = models.DateField()
-    award_id = models.ForeignKey(Award_and_scholarship)
-    venue = models.CharField(max_length=50)
-    time = models.CharField(max_length=10, choices=Constants.time)
-    batch = models.CharField(max_length=10, choices=Constants.batch)
+    award = models.CharField(default='',max_length=25)
+    remarks = models.TextField(max_length=500,default='')
 
     class Meta:
         db_table = 'Release'
@@ -173,7 +172,11 @@ class Director_silver(models.Model):
     inside_achievements = models.TextField(max_length=1000, null=True)
     justification = models.TextField(max_length=1000, null=True)
     outside_achievements = models.TextField(max_length=1000, null=True)
-
+    correspondence_address = models.CharField(max_length=100, null=True)
+    financial_assistance = models.TextField(max_length=1000, null=True)
+    grand_total = models.IntegerField(null=True)
+    nearest_policestation = models.CharField(max_length=25, null=True)
+    nearest_railwaystation = models.CharField(max_length=25, null=True)
 
     class Meta:
         db_table = 'Director_silver'
@@ -191,11 +194,11 @@ class Proficiency_dm(models.Model):
     correspondence_address = models.TextField(max_length=150, null=True)
     no_of_students = models.IntegerField(default=1)
     date = models.DateField(default=datetime.date.today)
-    roll_no1 = models.IntegerField(null=True)
-    roll_no2 = models.IntegerField(null=True)
-    roll_no3 = models.IntegerField(null=True)
-    roll_no4 = models.IntegerField(null=True)
-    roll_no5 = models.IntegerField(null=True)
+    roll_no1 = models.IntegerField(default=0)
+    roll_no2 = models.IntegerField(default=0)
+    roll_no3 = models.IntegerField(default=0)
+    roll_no4 = models.IntegerField(default=0)
+    roll_no5 = models.IntegerField(default=0)
     financial_assistance = models.TextField(max_length=1000 ,null=True)
     brief_description = models.TextField(max_length=1000 ,null=True)
     justification = models.TextField(max_length=1000 ,null=True)
@@ -208,6 +211,11 @@ class Proficiency_dm(models.Model):
     cse_percentage = models.IntegerField(null=True)
     mech_percentage = models.IntegerField(null=True)
     design_percentage = models.IntegerField(null=True)
+    correspondence_address = models.CharField(max_length=100, null=True)
+    financial_assistance = models.TextField(max_length=1000, null=True)
+    grand_total = models.IntegerField(null=True)
+    nearest_policestation = models.CharField(max_length=25, null=True)
+    nearest_railwaystation = models.CharField(max_length=25, null=True)
 
     class Meta:
         db_table = 'Proficiency_dm'
@@ -240,7 +248,11 @@ class Director_gold(models.Model):
     other_activities = models.TextField(max_length=1000 ,null=True)
     justification = models.TextField(max_length=1000 ,null=True)
     grand_total = models.IntegerField(null=True)
-        
+    correspondence_address = models.CharField(max_length=100, null=True)
+    financial_assistance = models.TextField(max_length=1000, null=True)
+    grand_total = models.IntegerField(null=True)
+    nearest_policestation = models.CharField(max_length=25, null=True)
+    nearest_railwaystation = models.CharField(max_length=25, null=True)
 
     class Meta:
         db_table = 'Director_gold'

@@ -6,16 +6,6 @@ from applications.globals.models import ExtraInfo
 
 
 class Constants:
-    SPECIALIZATION = (
-            ('0', 'Cardiology'),
-            ('1', 'Oncology'),
-            ('2', 'Gynaecology'),
-            ('3', 'Radiology'),
-            ('4', 'General Practitioner'),
-            ('5', 'Primary Care Physician'),
-            ('6', 'Opthomology'),
-            ('7', 'Dental'),
-    )
     DAYS_OF_WEEK = (
         (0, 'Monday'),
         (1, 'Tuesday'),
@@ -30,7 +20,7 @@ class Constants:
 class Doctor(models.Model):
     doctor_name = models.CharField(max_length=50)
     doctor_phone = models.CharField(max_length=10)
-    specialization = models.CharField(max_length=10, choices=Constants.SPECIALIZATION)
+    specialization = models.CharField(max_length=100)
 
     def __str__(self):
         return self.doctor_name
@@ -87,7 +77,6 @@ class Appointment(models.Model):
     user_id = models.ForeignKey(ExtraInfo)
     doctor_id = models.ForeignKey(Doctor)
     description = models.CharField(max_length=50)
-    approval = models.NullBooleanField()
     schedule = models.ForeignKey(Schedule, null=True, blank=True)
     date = models.DateField()
 
@@ -98,11 +87,10 @@ class Appointment(models.Model):
 class Prescription(models.Model):
     user_id = models.ForeignKey(ExtraInfo)
     doctor_id = models.ForeignKey(Doctor, null=True, blank=True)
-    feedback = models.CharField(max_length=100, null=True, blank=True)
     details = models.CharField(max_length=100)
     date = models.DateField()
     test = models.CharField(max_length=200, null=True, blank=True)
-    test_file = models.FileField(upload_to='Administrator/health_center/', null=True, blank=True)
+    test_file = models.FileField(upload_to='healthcenter/', null=True, blank=True)
     appointment = models.ForeignKey(Appointment, null=True, blank=True)
 
     def __str__(self):

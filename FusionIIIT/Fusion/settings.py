@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 
 import os
 
+from celery.schedules import crontab
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -52,8 +53,8 @@ EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'
 
 # email of sender
-# TODO: Remove Ramlal!
-EMAIL_HOST_USER = 'ramlalfff@gmail.com'
+
+EMAIL_HOST_USER = 'erp@iiitdmj.ac.in'
 
 # password of sender
 EMAIL_HOST_PASSWORD = ''
@@ -73,32 +74,34 @@ ACCOUNT_EMAIL_CONFIRMATION_HMAC = True
 ACCOUNT_EMAIL_VERIFICATION = 'optional'
 
 ACCOUNT_EMAIL_SUBJECT_PREFIX = 'Fusion: '
-DEFAULT_FROM_EMAIL = 'ramlalfff@gmail.com'
 
-SERVER_EMAIL = 'ramlalfff@gmail.com'
+DEFAULT_FROM_EMAIL = 'erp@iiitdmj.ac.in'
+
+SERVER_EMAIL = 'erp@iiitdmj.ac.in'
 
 ACCOUNT_LOGOUT_REDIRECT_URL = '/accounts/login/'
 ACCOUNT_USERNAME_MIN_LENGTH = 3
 
 SOCIALACCOUNT_ADAPTER = 'applications.globals.adapters.MySocialAccountAdapter'
 
+
+# CELERY STUFF
+# CELERY_BROKER_URL = 'redis://localhost:6379'
+# CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Asia/Calcutta'
+CELERY_BEAT_SCHEDULE = {
+    'leave-migration-task': {
+        'task': 'applications.leave.tasks.execute_leave_migrations',
+        'schedule': crontab(minute='1', hour='0')
+    }
+}
+
 # Application definition
 
 INSTALLED_APPS = [
-    'applications.globals.apps.GlobalsConfig',
-    'applications.academic_information.apps.AcademicInformationConfig',
-    'applications.academic_procedures.apps.AcademicProceduresConfig',
-    'applications.central_mess.apps.CentralMessConfig',
-    'applications.complaint_system.apps.ComplaintSystemConfig',
-    'applications.filetracking.apps.FileTrackingConfig',
-    'applications.finance_accounts.apps.FinanceAccountsConfig',
-    'applications.health_center.apps.HealthCenterConfig',
-    'applications.leave.apps.LeaveConfig',
-    'applications.online_cms.apps.OnlineCmsConfig',
-    'applications.placement_cell.apps.PlacementCellConfig',
-    'applications.scholarships.apps.ScholarshipsConfig',
-    'applications.visitor_hostel.apps.VisitorHostelConfig',
-    'applications.eis.apps.EisConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -106,11 +109,26 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
+    'applications.globals',
+    'applications.eis',
+    'applications.academic_procedures',
+    'applications.academic_information',
+    'applications.leave',
+    'applications.central_mess',
+    'applications.complaint_system',
+    'applications.filetracking',
+    'applications.finance_accounts',
+    'applications.health_center',
+    'notification_channels',
+    'applications.online_cms',
+    'applications.placement_cell',
+    'applications.scholarships',
+    'applications.visitor_hostel',
     'allauth.account',
     'allauth.socialaccount',
     'allauth',
-    'semanticuiforms',
     'allauth.socialaccount.providers.google',
+    'semanticuiforms',
 ]
 
 MIDDLEWARE = [
@@ -184,13 +202,13 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Kolkata'
 
 USE_I18N = True
 
 USE_L10N = False
 
-USE_TZ = True
+USE_TZ = False
 
 SITE_ID = 1
 # Static files (CSS, JavaScript, Images)
@@ -202,3 +220,16 @@ STATIC_URL = '/static/'
 STATIC_ROOT = '/static'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
+
+
+if DEBUG:
+    MIDDLEWARE += (
+        'debug_toolbar.middleware.DebugToolbarMiddleware',
+    )
+    INSTALLED_APPS += (
+        'debug_toolbar',
+    )
+    INTERNAL_IPS = ('127.0.0.1',)
+    DEBUG_TOOLBAR_CONFIG = {
+        'INTERCEPT_REDIRECTS': False,
+    }

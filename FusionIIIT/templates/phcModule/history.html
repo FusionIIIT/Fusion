@@ -50,9 +50,6 @@
 
                       </table>
                     </th>
-                    <th class="two wide">
-                        Feedback
-                    </th>
 
                 </tr>
                 </thead>
@@ -75,10 +72,11 @@
                     </td>
 
                     <td>
-                      {{pre.details}}
+                        {{pre.details}}
                     </td>
                     <td>
                         {{pre.test}}
+
                     </td>
 
                     <td>
@@ -90,52 +88,12 @@
                         {% endfor%}
                       </table>
                     </td>
-
-                    <form method='POST' enctype="multipart/form-data">{% csrf_token %}
-
-                      {% if pre.feedback == None %}
-
-                      <td>
-                         <textarea class="ui textarea" cols="10" rows="1" id="pre_feed" name="pre_feed"></textarea>
-                         <br>
-                      <p id="update_feedback"></p>
-                      <input type="button" id="submit_feed" name="submit_feed" class="ui small left floated primary button" value="Submit"/>
-                      <input type="hidden" id="feed_id" name="feed_id" value="{{pre.id}}"/>
-
-                      <br>
-                        </td>
-                      {%else%}
-                        <td>{{pre.feedback}}
-                        </td>
-                      {% endif %}
-                    </form>
-
                 </tr>
                 {% endfor %}
-                <script type="text/javascript">
-                      $('#submit_feed').on('click',function(e){
-                           e.preventDefault();
-                           $.ajax({
-                           type:'post',
-                           url:'/healthcenter/student/',
-                           data: {
-                           csrfmiddlewaretoken: '{{ csrf_token }}',
-                           id:$("#feed_id").val(),
-                           pre_feed:$("#pre_feed").val(),
-                           submit_feed:$("#submit_feed").val(),
-                           },
-                           success: function(data){
-                             alert("feedback submitted");
-                             $('#update_feedback').html(data.feedback);
-                             document.getElementById("pre_feed").style.visibility='hidden';
-                             document.getElementById("submit_feed").style.visibility='hidden';
-                          }
-                         });
-                      });
 
-                    </script>
                 </tbody>
             </table>
+
         </div>
     </div>
 
@@ -301,10 +259,6 @@
                     <th class="four wide">
                         To Time
                     </th>
-
-                    <th class="four wide">
-                        Status
-                    </th>
                 </tr>
                 </thead>
 
@@ -333,15 +287,6 @@
                     <td>
                       {{appointment.schedule.to_time}}
                     </td>
-
-
-                    {% if  appointment.approval == None %}
-                    <td>Not yet updated</td>
-                    {% elif appointment.approval == True%}
-                    <td>Confirmed</td>
-                    {% else %}
-                    <td>Doctor not available</td>
-                    {% endif %}
                 </tr>
                 {% endfor %}
                 </tbody>

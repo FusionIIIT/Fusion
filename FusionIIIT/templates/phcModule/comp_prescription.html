@@ -3,56 +3,36 @@
 {% block comp_prescription %}
     {% comment %}the compounder prescription tab starts here {% endcomment %}
     <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="prescribe">
+        <a class="active item" data-tab="prescribe_app">
+            Prescribe Appointment
+        </a>
+        <a class="item" data-tab="prescribe">
             Prescribe
         </a>
         <a class="item" data-tab="hospitaladmit">
             Hospital Admission
         </a>
-        <!-- <a class="item" data-tab="prescriptions_past">
-            Prescriptions
-        </a> -->
     </div>
     {% comment %}the prescribe tab starts here {% endcomment %}
-    <div class="ui active tab" data-tab="prescribe">
+    <div class="ui active tab" data-tab="prescribe_app">
         <div class="ui vertical stripe team segment"
              style="padding-left: 3.5%;
                 padding-right: 3.5%;">
 
             <form class="ui form" method="POST">{% csrf_token %}
                 <p id="usr"></p>
-                <p id="appo"></p>
-                <div class="two fields">
-                  <!-- <div class="field">
-                      <label>Appointment</label>
-                      <select class="ui search fluid dropdown" id="appointment" name="appointment">
-                        <option value="" disabled selected>--SELECT--</option>
-                        {% for appointment in appointments_today %}
-                        <option value="{{appointment.id}}">{{appointment.user_id.id}}</option>
-                        {% endfor %}
-                      </select>
-                   </div> -->
+
                   <div class="field">
                       <label>Patient</label>
                       <select class="ui search fluid" id="user" name="user" required="true">
                         <option value="" disabled selected>--SELECT--</option>
-                        {% for user in users %}
-                        <option value="{{user.id}}">{{user.id}}-{{user.user}}</option>
+                        {% for a in appointments_today %}
+                        <option value="{{a.id}}">{{a.user_id.id}}-{{a.user_id.user}}</option>
                         {% endfor %}
                       </select>
 
                    </div>
 
-                   <div class="field">
-                       <label>Doctor</label>
-                       <select class="ui search fluid dropdown" name="doctor" id="doctor" required="true">
-                         <option value="" disabled selected>--SELECT--</option>
-                         {% for doctor in doctors %}
-                         <option value="{{doctor.id}}">{{doctor.doctor_name}}</option>
-                         {% endfor %}
-                       </select>
-                    </div>
-                </div>
 
                 <div class="field">
                     <label>Detail of Disease</label>
@@ -137,25 +117,6 @@
             </form></div></div>
             <script src="{% static 'globals/js/jquery.min.js' %}"></script>
             <script type="text/javascript">
-                  $('#user').change(function()
-                  {
-                      $.ajax({
-                      type:'post',
-                      url:'/healthcenter/compounder/',
-                      data: {
-                      csrfmiddlewaretoken: '{{ csrf_token }}',
-                      user_p: $("#user").val(),
-                      },
-                      success: function(data){
-                        if(data.status==0)
-                          $('#appo').html('Appointment not there');
-                        else
-                          $('#appo').html('Approved Appointment ');
-                    }
-                   });
-                 });
-
-
                   $('#medicine').click(function(e){
                                                         var user = document.getElementById('user').value;
                                                         var quantity = document.getElementById('quantity').value;
@@ -209,16 +170,13 @@
                                                       data: {
                                                       csrfmiddlewaretoken: '{{ csrf_token }}',
                                                       user:$("#user").val(),
-                                                      doctor:$("#doctor").val(),
                                                       details:$("#details").val(),
                                                       tests:$("#tests").val(),
-                                                      // appointment:$("#appointment").val(),
                                                       prescribe:$("#prescribe").val()
                                                     },
                                                       success: function(data){
                                                         if (data.status == 1){
                                                           alert("prescribed medicine");
-                                                          document.getElementById("doctor").value="";
                                                           document.getElementById("details").value="";
                                                           document.getElementById("tests").value="";
                                                           $('#sched').empty();
@@ -232,85 +190,192 @@
 
         <div class="extra content"></div>
     {% comment %}the compounder prescription tab ends here {% endcomment %}
+    {% comment %}the prescribe tab starts here {% endcomment %}
+    <div class="ui tab" data-tab="prescribe">
+        <div class="ui vertical stripe team segment"
+             style="padding-left: 3.5%;
+                padding-right: 3.5%;">
 
-<!--
-{% comment %}the doctor appointment tab starts here {% endcomment %}
-<div class="ui tab" data-tab="prescriptions_past">
-    <div class="ui vertical segment">
-        <div class="field">
-              <div class="field">
-                  <label>Patient</label>
-                  <select id="patient_a" class="ui search fluid " name="patient" required="true">
-                    <option value="" disabled selected>--SELECT--</option>
-                    {% for user in users %}
-                    <option value="{{user.id}}">{{user.id}}-{{user.user}}</option>
-                    {% endfor %}
-                  </select>
-              </div>
-              <!-- on selection of day the schedule of the day displays in the table -->
-              <!-- <table  class="ui very basic collapsing celled small fluid sortable table"
-                     style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;">
-                  <thead>
+            <form class="ui form" method="POST">{% csrf_token %}
+                <p id="usr_b"></p>
+                <div class="two fields">
+                  <div class="field">
+                      <label>Patient</label>
+                      <div class="ui fluid large input">
+                          <input placeholder="Patient Id" id="patient_b" name="patient_b" type="text">
+                      </div>
+                   </div>
+
+                   <div class="field">
+                       <label>Doctor</label>
+                       <select class="ui search fluid dropdown" name="doctor_b" id="doctor_b" required="true">
+                         <option value="" disabled selected>--SELECT--</option>
+                         {% for doctor in doctors %}
+                         <option value="{{doctor.id}}">{{doctor.doctor_name}}</option>
+                         {% endfor %}
+                       </select>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>Detail of Disease</label>
+                    <textarea name="details" id="details_b" rows="2"></textarea>
+                </div>
+
+                <div class="two fields">
+                  <div class="field">
+                      <label>Medicine</label>
+
+                        <select class="ui search fluid dropdown" id="medicine_id_b" name="medicine_id_b" required="true">
+                        <option value="" disabled selected>--SELECT--</option>
+                        {% for medicine in stocks %}
+                        <option value="{{medicine.id}}">{{medicine.medicine_name}}</option>
+                        {% endfor %}
+                      </select>
+                  </div>
+
+                   <div class="field">
+                     <label>Quantity</label>
+                     <div class="ui fluid large input">
+                         <input placeholder="Quantity" id="quantity_b" name="quantity_b" type="number">
+
+                     </div>
+                  </div>
+                    <div class="field">
+                      <label>No of days</label>
+                      <div class="ui fluid large input">
+                          <input placeholder="No of days" id="days_b" name="days_b" type="number">
+
+                      </div>
+                     </div>
+                     <div class="field">
+                       <label>Times per day</label>
+                       <div class="ui fluid large input">
+                           <input placeholder="No of times per day" id="times_b" name="times_b" type="number">
+
+                       </div>
+                      </div>
+                     <div class="field">
+                         <label><br></label>
+                         <input type="button" id="medicine_b" name="medicine_b" value="Add"class="ui small left floated primary button" />
+
+                     </div>
+                </div>
+                <table  class="ui very basic collapsing celled small fluid sortable table"
+                       style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;">
+                    <thead>
                     <tr>
                         <th class="two wide">
-                            Treated<br> By
+                            Medicine
                         </th>
 
                         <th class="two wide" >
-                            Date
+                            Quantity
                         </th>
 
                         <th class="wide">
-                              Details
+                            Days
                         </th>
                         <th class="wide">
-                              Test
+                            Times
                         </th>
-
-                        <th class="four wide">
-                          <table>
-
-                            <tr><td>Medicine</td><td>D</td><td>T</td></tr>
-
-                          </table>
-                        </th>
-                        <th class="two wide">
-                            Feedback
-                        </th>
-
                     </tr>
+                    </thead>
 
-                  </thead>
+                    <tbody id="sched_b">
+
+                    </tbody>
+                </table>
+                <div class="field">
+                    <label>Tests Suggested</label>
+                    <textarea rows="2" id="tests_b" name="extra_meds"></textarea>
+                </div>
+                <div class="field">
+                    <label><br></label>
+                    <input type="button" id="prescribe_b" name="prescribe" value="Submit"class="ui large right floated primary button" />
+                </div>
 
 
-                  <tbody id="prescripts">
 
-                  </tbody>
-                  <script type="text/javascript">
-                          $('#patient_a').change(function()
-                          {
-                              $.ajax({
-                              type:'post',
-                              url:'/healthcenter/compounder/',
-                              data: {
-                              csrfmiddlewaretoken: '{{ csrf_token }}',
-                              patient_a:$("#patient_a").val(),
-                              },
-                              success: function(data){
-                                 $('#prescripts').empty();
-                                 var response=JSON.stringify(data);
-                                $.each(data, function(key, value) {
-                                  $('#prescripts').append("<tr><td>" + value.doctor + "</td><td>" + value.details + "</td><td>" + value.date + "</td><td>" + value.test + "</td></tr>");
-                            });
-}
-                           });
-                         });
-                  </script>
-              </table>
-    </div>
-  </div>
-</div>
-{% comment %}the view schedule tab ends here {% endcomment %} --> -->
+            </form></div></div>
+            <script src="{% static 'globals/js/jquery.min.js' %}"></script>
+            <script type="text/javascript">
+                  $('#medicine_b').click(function(e){
+                                                        var user = document.getElementById('patient_b').value;
+                                                        var quantity = document.getElementById('quantity_b').value;
+                                                        var medicine = document.getElementById('medicine_id_b').value;
+                                                        var days = document.getElementById('days_b').value;
+                                                        var times = document.getElementById('times_b').value;
+                                                        if(user=="" || days=="" || days<0 || times=="" || times<0 || quantity=="" || quantity<0)
+                                                        {
+                                                        $('#usr_b').html("Enter Valid Information");
+                                                        return false;
+                                                        }
+                                                        $.ajax({
+                                                          type:'post',
+                                                          url:'/healthcenter/compounder/',
+                                                          data: {
+                                                          csrfmiddlewaretoken: '{{ csrf_token }}',
+                                                          user:$("#patient_b").val(),
+                                                          quantity:$("#quantity_b").val(),
+                                                          medicine_name_b:$("#medicine_id_b").val(),
+                                                          days:$("#days_b").val(),
+                                                          times:$("#times_b").val()
+                                                        },
+                                                          success: function(data){
+                                                              alert("added medicine");
+                                                              document.getElementById("quantity_b").value="";
+                                                              document.getElementById("medicine_id_b").value="";
+                                                              document.getElementById("days_b").value="";
+                                                              document.getElementById("times_b").value="";
+                                                              var response=JSON.stringify(data);
+                                                               $('#sched_b').empty();
+                                                              $.each(data, function(key, value) {
+                                                               $('#sched_b').append("<tr><td>" + value.medicine + "</td><td>" +
+                                                               value.quantity + "</td><td>" + value.days + "</td><td>" + value.times + "</td></tr>");
+                                                             });
+                                                        }
+                                                      });
+                                                    });
+    </script>
+    <script type="text/javascript">
+                    $('#prescribe_b').click(function(e){
+                                                    var user = document.getElementById('patient_b').value;
+                                                    var details = document.getElementById('details_b').value;
+                                                    if(user=="" || details=="")
+                                                    {
+                                                    $('#usr_b').html("Improve");
+                                                    return false;
+                                                    }
+                                                    $.ajax({
+                                                      type:'post',
+                                                      url:'/healthcenter/compounder/',
+                                                      data: {
+                                                      csrfmiddlewaretoken: '{{ csrf_token }}',
+                                                      user:$("#patient_b").val(),
+                                                      doctor:$("#doctor_b").val(),
+                                                      details:$("#details_b").val(),
+                                                      tests:$("#tests_b").val(),
+                                                      // appointment:$("#appointment").val(),
+                                                      prescribe_b:$("#prescribe_b").val()
+                                                    },
+                                                      success: function(data){
+                                                        if (data.status == 1){
+                                                          alert("prescribed medicine");
+                                                          document.getElementById("doctor_b").value="";
+                                                          document.getElementById("details_b").value="";
+                                                          document.getElementById("tests_b").value="";
+                                                          $('#sched_b').empty();
+                                                        }
+                                                    },
+                                                  });
+                                                  });
+              </script>
+
+
+
+        <div class="extra content"></div>
+    {% comment %}the compounder prescription tab ends here {% endcomment %}
 
 <div class="ui tab" data-tab="hospitaladmit">
   <p id="hospital"></p>

@@ -15,69 +15,44 @@
     <div class="ui active tab" data-tab="viewschedule">
         <div class="ui vertical segment">
             <div class="field">
-                  <div class="field">
-                      <label>Day</label>
-                      <select id="day" class="ui search fluid " name="day" required="true">
-                        <option value="" disabled selected>--SELECT--</option>
-                        {% for p,day in days %}
-                        <option value="{{p}}">{{day}}</option>
-                        {% endfor %}
-                      </select>
-                  </div>
-                  <!-- on selection of day the schedule of the day displays in the table -->
-                  <table  class="ui very basic collapsing celled small fluid sortable table"
+                  <table  border=1 class="ui very basic celled small fluid table"
                          style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;">
                       <thead>
-                      <tr>
-                          <th class="two wide">
-                              Doctor
-                          </th>
 
-                          <th class="two wide" >
-                              From Time
-                          </th>
+                        <tr>
+                          <th>Schedule</th>
+                          {% for d in doctors %}
+                          <th>{{d.doctor_name}}</th>
+                          {% endfor %}
+                        <tr>
 
-                          <th class="wide">
-                                To Time
-                          </th>
-                          <th class="wide">
-                                Room
-                          </th>
-                      </tr>
+                          {% for p,day in days %}
+
+                          <tr>
+                            <td>{{day}}</td>
+                            {% for s in schedule %}
+
+
+                            {% if s.day == p %}
+                            {% for d in doctors %}
+                            {% if s.doctor_id.id == d.id %}
+                            <td>{{s.from_time}}--{{s.to_time}}</td>
+                            {% endif %}
+                            {% endfor %}
+
+                            {% endif %}
+                            {% endfor %}
+                          </tr>
+
+                          {% endfor %}
                       </thead>
-
-                      <tbody id="sche">
-
-                      </tbody>
-                      <script type="text/javascript">
-                              $('#day').change(function()
-                              {
-                                  $.ajax({
-                                  type:'post',
-                                  url:'/healthcenter/compounder/',
-                                  data: {
-                                  csrfmiddlewaretoken: '{{ csrf_token }}',
-                                  day:$("#day").val(),
-                                  },
-                                  success: function(data){
-                                     $('#sche').empty();
-                                     var response=JSON.stringify(data);
-                                    $.each(data, function(key, value) {
-                                      $('#sche').append("<tr><td>" + value.doctor + "</td><td>" + value.from_time + "</td><td>" + value.to_time + "</td><td>" + value.room + "</td></tr>");
-                                });
-}
-                               });
-                             });
-                      </script>
                   </table>
         </div>
       </div>
     </div>
     {% comment %}the view schedule tab ends here {% endcomment %}
-
     {% comment %}the edit schedule tab starts here {% endcomment %}
     <div class="ui tab" data-tab="editschedule">
-      <p id="valid_sche"></p>
       <div class="ui vertical segment">
         <form class="ui form" method="POST" style="padding: 8px; padding-left: 24px; padding-right: 24px;">{% csrf_token %}
             <div class="field">

@@ -20,7 +20,11 @@ from Fusion.settings import LOGIN_URL
 
 def index(request):
     context = {}
-    return render(request, "globals/index1.html", context)
+    print(request.user)
+    if(str(request.user)!="AnonymousUser"):
+        return HttpResponseRedirect('/dashboard/')
+    else:
+        return render(request, "globals/index1.html", context)
 
 
 def login(request):
@@ -95,7 +99,7 @@ def about(request):
                             'devTitle': 'Database Designer'
                             },
 
-                   'dev4': {'devName': 'Pranjul Mishra',
+                   'dev4': {'devName': 'Pranjul Shukla',
                             'devImage': 'zlatan.jpg',
                             'devTitle': 'Developer'
                             },

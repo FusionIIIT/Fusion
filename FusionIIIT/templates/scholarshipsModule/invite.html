@@ -15,11 +15,10 @@
                 <div class="two fields">
                     <div class="six wide field">
                         <label>Type</label>
-                        <select class="ui fluid search selection large dropdown" name="type">
-                                <option selected hidden>Select</option> 
-                                {% for award in awards %}
-                                <option value="{{award.id}}">{{award.award_name}}</option>
-                                {% endfor %}
+                        <select class="ui fluid search selection large dropdown" name="type" required>
+                                <option value="">Select</option> 
+                                <option value="Convocation Medals">Convocation Medals</option>
+                                <option value="Mcm Scholarship">Mcm Scholarship</option>
                             </select>
                     </div>
 
@@ -28,55 +27,31 @@
 
                 <div class="two fields">
                     <div class="field">
-                        <label>From</label>
+                        <label>Start date</label>
                        
                             <div class="ui input large left icon">
                                 <i class="calendar icon"></i>
-                                <input type="text" name="From" placeholder="YYYY-MM-DD">
+                                <input type="text" name="From" placeholder="YYYY-MM-DD" required>
                             </div>
                         
                     </div>
 
                     <div class="field">
-                        <label>To</label>
+                        <label>End Date</label>
                         
                             <div class="ui input large left icon">
                                 <i class="calendar icon"></i>
-                                <input type="text" name="To" placeholder="YYYY-MM-DD">
+                                <input type="text" name="To" placeholder="YYYY-MMM-DD" required>
                             </div>
                         </div>
                     
                 </div>
-
-                <div class="three fields">
-                    <div class="eight wide field">
-                            <label>Batch</label>
-                            <select class="ui fluid search large dropdown" name="batch" >
-                                <option selected hidden>Select</option>
-                                {% for p,v in ch %}
-                                <option value="{{p}}">{{v}}</option>
-                                {% endfor %}
-    
-                            </select>
+                <div class="field">
+                    <div class="sixteen wide field">
+                        <label>Remarks:</label>
+                           <textarea rows="3" name="remarks"></textarea>
                     </div>
-
-                    <div class="four wide field">
-                            <label>Time</label>
-                            <select class="ui fluid search large dropdown" name="time">
-                                <option selected hidden>Select</option>
-                                {% for t,v in time %}
-                                <option value="{{t}}">{{v}}</option>
-                                {% endfor %}
-                            </select>
-                    </div>
-
-                    
-                        <div class="field">
-                            <label>Venue</label>
-                            <input type="text" name="venue" placeholder="Venue">
-                            
-                    </div>
-                </div>
+               </div>
 
                 <div class="field">
                     <label><br></label>

@@ -30,23 +30,23 @@
             {% comment %}The user image card ends here!{% endcomment %}
 
             <div class="ui divider"></div>
-
+            
             {% comment %}The Tab-Menu starts here!{% endcomment %}
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
 
                 <a class="active item" data-tab="first">
-                    Winners
+                    Previous Awards Winner
                     <i class="right floated chevron right icon"></i>
                 </a>
 
                 <a class="item" data-tab="second">
-                    Invite
+                    Invite Award Applications
                     <i class="right floated chevron right icon"></i>
                 </a>
 
                 <a class="item" data-tab="third">
-                        Notional prize
+                        Announce Award
                         <i class="right floated chevron right icon"></i>
                 </a>
 
@@ -120,7 +120,7 @@
                     {% comment %}The Publications browse catalogue starts here!{% endcomment %}
                     <div class="ui tab segment" data-tab="five">
                         {% block browsecat %}
-                            {% include 'scholarshipsModule/browse.html' %}
+                            {% include 'scholarshipsModule/browse1.html' %}
                         {% endblock %}
                     </div>
                     <div class="ui tab segment" data-tab="six">
@@ -138,9 +138,20 @@
         {% comment %}The right-rail segment starts here!{% endcomment %}
         <div class="three wide column">
             <div class="row">
-                {% comment %}
-                    TODO: the right rail!
-                {% endcomment %}
+                
+                {% if messages %}
+                <div class="field">
+                <div class="ui positive message">
+                  <i class="close icon"></i>
+                    <div class="header">
+                        {% for message in messages %}
+                        {{ message }}
+                        {% endfor %}
+                    </div>
+                </div>
+                </div>
+                {% endif %}
+
             </div>
         </div>
         {% comment %}The right-rail segment ends here!{% endcomment %}
@@ -149,9 +160,11 @@
         <div class="column"></div>
 
     </div>
-    {% comment %}The grid ends here!{% endcomment %}
-
+ 
+   
 {% endblock %}
+
+
 
 {% block javascript %}
     <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
@@ -159,5 +172,14 @@
     <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
     <script type="text/javascript" src="{% static 'globals/js/editProfile.js' %}"></script>
     <script type="text/javascript" src="{% static 'globals/js/modal.js' %}"></script>
-
+    <script>
+            $('.message .close')
+      .on('click', function() {
+        $(this)
+          .closest('.message')
+          .transition('fade')
+        ;
+      })
+    ;
+        </script>
 {% endblock javascript %}

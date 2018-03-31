@@ -6,7 +6,8 @@ from applications.globals.models import ExtraInfo
 class Constants:
     HOLIDAY_TYPE = (
         ('restricted', 'restricted'),
-        ('closed', 'closed')
+        ('closed', 'closed'),
+        ('vacation', 'vacation')
     )
 
     ATTEND_CHOICES = (
@@ -66,7 +67,7 @@ class Course(models.Model):
     credits = models.IntegerField()
     optional = models.BooleanField(default=False)
     acad_selection = models.BooleanField(default=False)
-    
+
     class Meta:
         db_table = 'Course'
         unique_together = ('course_id', 'course_name', 'sem')
@@ -103,8 +104,9 @@ class Calendar(models.Model):
 
 class Holiday(models.Model):
     holiday_date = models.DateField()
-    holiday_type = models.CharField(max_length=30, choices=Constants.HOLIDAY_TYPE),
     holiday_name = models.CharField(max_length=40)
+    holiday_type = models.CharField(default='restricted', max_length=30,
+                                    choices=Constants.HOLIDAY_TYPE),
 
     class Meta:
         db_table = 'Holiday'

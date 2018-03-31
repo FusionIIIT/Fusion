@@ -12,4 +12,4 @@ admin.site.register(Release),
 admin.site.register(Proficiency_dm),
 admin.site.register(Director_silver),
 admin.site.register(Director_gold),
-admin.site.register(Notional_prize)
+admin.site.register(Notional_prize),

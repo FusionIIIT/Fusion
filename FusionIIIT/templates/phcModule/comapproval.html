@@ -2,10 +2,7 @@
 
 {% block comapproval %}
     <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="compounderapproval">
-            Approve
-        </a>
-        <a class="item" data-tab="viewappointments">
+        <a class="active item" data-tab="viewappointments">
             Today Appointments
         </a>
         <a class="item" data-tab="viewambulance">
@@ -15,128 +12,14 @@
             Hospital_Admission
         </a>
         <a class="item" data-tab="futureappointments">
-            <center>Future<br>Appointments</center>
+            Future Appointments
         </a>
 
     </div>
-    {% comment %}the compounder approval tab starts here {% endcomment %}
-    <div class="ui active tab" data-tab="compounderapproval">
-        <table class="ui very basic collapsing celled large sortable table"
-               style="padding-left: 2.5%;padding-right: 2.5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
-            <thead>
-            <tr>
-                <th class="four wide">
-                    User
-                </th>
 
-                <th class="two wide">
-                    Doctor
-                </th>
-
-                <th class="four wide">
-                    Description
-                </th>
-
-                <th>
-                    Date
-                </th>
-                <th>
-                    From<br>Time
-                </th>
-
-                <th class="three wide">
-                    To<br>Time
-                </th>
-
-                <th>
-                    Action
-                </th>
-
-            </tr>
-            </thead>
-
-            <tbody>
-              {% for appointment in appointments_approve%}
-            <tr>
-                <td>
-                    <h4 class="ui image header">
-                        <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
-                        <div class="content">
-                          {{appointment.user_id}}
-                        </div>
-                    </h4>
-                </td>
-
-                <td>
-                    {{appointment.doctor_id}}
-                </td>
-
-                <td>
-                    {{appointment.description}}
-                </td>
-
-                <td>
-                    {{appointment.date}}
-                </td>
-                <td>
-                    {{appointment.schedule.from_time}}
-                </td>
-                <td>
-                    {{appointment.schedule.to_time}}
-                </td>
-
-                <form method='POST'>{% csrf_token %}
-                <input type="hidden" id="app_id" value={{appointment.id}} />
-                <td><input type="button" id="approve" class="ui primary right floated button" value="Approve"/>
-                <br><br><input type="button" id="disapprove" class="ui primary right floated button" value="Disapprove"/></td>
-                </form>
-            </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-        <script type="text/javascript">
-              $('#approve').click(function(e)
-                                                  {
-                                                    $.ajax({
-                                                      type:'post',
-                                                      url:'/healthcenter/compounder/',
-                                                      data: {
-                                                      csrfmiddlewaretoken: '{{ csrf_token }}',
-                                                      id:$("#app_id").val(),
-                                                      approve:$("#approve").val()
-                                                    },
-                                                      success: function(data){
-                                                        alert("approved appointment");
-                                                        document.getElementById("approve").style.visibility='hidden';
-                                                        document.getElementById("disapprove").style.visibility='hidden';
-                                                    }
-                                                  });
-                                                });
-            </script>
-            <script type="text/javascript">
-                  $('#disapprove').click(function(e)
-                                                      {
-                                                        $.ajax({
-                                                          type:'post',
-                                                          url:'/healthcenter/compounder/',
-                                                          data: {
-                                                          csrfmiddlewaretoken: '{{ csrf_token }}',
-                                                          id:$("#app_id").val(),
-                                                          disapprove:$("#disapprove").val()
-                                                        },
-                                                          success: function(data){
-                                                            alert("disapproved appointment");
-                                                            document.getElementById("approve").style.visibility='hidden';
-                                                            document.getElementById("disapprove").style.visibility='hidden';
-                                                        }
-                                                      });
-                                                    });
-                </script>
-    </div>
-    {% comment %}the compounder approval tab ends here {% endcomment %}
 
     {% comment %}the view appointments tab starts here {% endcomment %}
-    <div class="ui tab" data-tab="viewappointments">
+    <div class="ui active tab" data-tab="viewappointments">
         <table class="ui very basic collapsing celled large sortable table"
                style="padding-left: 2.5%;padding-right: 2.5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
             <thead>

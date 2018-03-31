@@ -36,7 +36,7 @@
                  style="max-width: 320px;">
 
                 <a class="active item" data-tab="first">
-                    Winners
+                    Previous Award Winners
                     <i class="right floated chevron right icon"></i>
                 </a>
 
@@ -46,20 +46,20 @@
 
                
                 <a class="item" data-tab="two">
-                    About_spacs
+                    Spacs Members Details
                     <i class="right floated chevron right icon"></i>
                 </a>
                 <a class="item" data-tab="three">
-                    Awards
+                    Apply for Awards
                     <i class="right floated chevron right icon"></i>
                 </a>
                 
                 <a class="item" data-tab="four">
-                        View Status
+                        View Application Status
                         <i class="right floated chevron right icon"></i>
                 </a>
                 <a class="item" data-tab="five">
-                    Browse Catalogue
+                    Browse Award Catalogue
                     <i class="right floated chevron right icon"></i>
                 </a>
                 
@@ -95,7 +95,7 @@
                 {% comment %}The Publications about spacs  starts here!{% endcomment %}
                     <div class="ui tab segment" data-tab="two">
                             {% block aboutspacs %}
-                                {% include 'scholarshipsModule/aboutspacs.html' with con=con assis=assis hd=hd hd1=hd1 %}
+                                {% include 'scholarshipsModule/aboutspacs.html' %}
                             {% endblock %}
                     </div>
                     {% comment %}The Publications about spacs  ends here!{% endcomment %}
@@ -103,7 +103,7 @@
                     {% comment %}The Publications awards  starts here!{% endcomment %}
                         <div class="ui tab segment" data-tab="three">
                                 {% block awards %}
-                                    {% include 'scholarshipsModule/awards.html' with mcm=mcm gold=gold silver=silver dandm=dandm source=source mother_occ=mother_occ awards=awards %}
+                                    {% include 'scholarshipsModule/applyNew.html' with mcm=mcm gold=gold silver=silver dandm=dandm source=source mother_occ=mother_occ awards=awards %}
                                 {% endblock %}
                         </div>
                             {% comment %}The Publications about awards ends here!{% endcomment %}
@@ -126,12 +126,23 @@
 
         {% comment %}The right-rail segment starts here!{% endcomment %}
         <div class="three wide column">
-            <div class="row">
-                {% comment %}
-                    TODO: the right rail!
-                {% endcomment %}
+                <div class="row">
+                    
+                    {% if messages %}
+                    <div class="field">
+                    <div class="ui positive message">
+                      <i class="close icon"></i>
+                        <div class="header">
+                            {% for message in messages %}
+                            {{ message }}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    </div>
+                    {% endif %}
+    
+                </div>
             </div>
-        </div>
         {% comment %}The right-rail segment ends here!{% endcomment %}
 
         {% comment %}The right-margin segment!{% endcomment %}
@@ -147,4 +158,14 @@
     <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
     <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
     <script type="text/javascript" src="{% static 'globals/js/modal.js' %}"></script>
+    <script>
+            $('.message .close')
+      .on('click', function() {
+        $(this)
+          .closest('.message')
+          .transition('fade')
+        ;
+      })
+    ;
+        </script>
 {% endblock %}

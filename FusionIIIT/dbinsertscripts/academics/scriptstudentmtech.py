@@ -95,5 +95,5 @@ from feed_data import Data; data = Data('data.xlsx');
 data.create_departments(data.get_departments());
 data.create_designations(data.get_designations());
 data.create_users();
-exec(open('dbinsertscripts/acacemics/scriptstudentmtech.py').read())
+exec(open('dbinsertscripts/academics/scriptstudentmtech.py').read())
 """

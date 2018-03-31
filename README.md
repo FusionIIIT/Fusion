@@ -7,14 +7,14 @@
 
 ## Requirements
 
-Python 3.5  
+Python 3.6  
 Django==1.11.4+  
 And additional requirements are in **requirements.txt**  
 
 ## How to run it?
 
   * Install virtualenv `$ sudo apt install python-virtualenv`  
-  * Create a virtual environment `$ virtualenv env -p python3`  
+  * Create a virtual environment `$ virtualenv env -p python3.6`  
   * Activate the env: `$ source env/bin/activate`  
   * Install the requirements: `$ pip install -r requirements.txt`  
   * Change directory to FusionIIIT `$ cd FusionIIIT`
@@ -31,7 +31,7 @@ And additional requirements are in **requirements.txt**
      * origin    https://github.com/YOUR_USERNAME/FusionIIIT.git (push)
      * upstream  https://github.com/3Peers/FusionIIIT.git (fetch)
      * upstream  https://github.com/3Peers/FusionIIIT.git (push)
-     
+
 ## Syncing with Fork:
 
  * `$ git fetch upstream`
