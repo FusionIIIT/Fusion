@@ -34,7 +34,7 @@
         $('.rep-accept').on('click', function(e){
             var id = $(this).attr('data');
             $.ajax({
-                type: 'get',
+                type: 'post',
                 url: '/leave/process-request/',
                 data: {
                     id: id,

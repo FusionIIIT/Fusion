@@ -1,5 +1,5 @@
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 
 from .handlers import (handle_faculty_leave_application,
                        handle_staff_leave_application,
@@ -39,10 +39,12 @@ def leave(request):
 
 @login_required(login_url='/accounts/login')
 def process_request(request):
-    if request.GET.get('stud'):
-        return process_student_application(request)
+    if request.is_ajax():
+        if request.POST.get('stud'):
+            return process_student_application(request)
 
-    return process_staff_faculty_application(request)
+        return process_staff_faculty_application(request)
+    return JsonResponse({'status': 'Failed'}, status=400)
 
 
 @login_required(login_url='/accounts/login')

@@ -3,8 +3,6 @@ from functools import wraps
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 
-# from applications.globals.models import Designation
-
 
 def get_object_or_none(model, **kwargs):
     try:
@@ -30,3 +28,7 @@ def critical_section(critical_view):
         # page, to reauthenticate the user.
 
     return wrapper
+
+
+def designation_filter(view):
+    pass

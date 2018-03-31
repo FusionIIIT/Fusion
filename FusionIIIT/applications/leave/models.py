@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 
-from applications.globals.models import Designation, HoldsDesignation
+from applications.globals.models import Designation
 
 
 class Constants:
@@ -148,12 +148,16 @@ class LeaveAdministrators(models.Model):
 
 
 class LeaveMigration(models.Model):
-    type_migration = models.CharField(max_length=10, default='delete',
+    type_migration = models.CharField(max_length=10, default='transfer',
                                       choices=Constants.MIGRATION_CHOICES)
-    date = models.DateField(null=False)
-    replacee = models.ForeignKey(User, on_delete=models.CASCADE, related_name='replacings')
-    replacing_as = models.ForeignKey(HoldsDesignation, on_delete=models.CASCADE)
+    on_date = models.DateField(null=False)
+    replacee = models.ForeignKey(User, on_delete=models.CASCADE,
+                                 related_name='replacee_migrations')
+    replacer = models.ForeignKey(User, related_name='replacer_migrations',
+                                 on_delete=models.CASCADE)
+    replacement_type = models.CharField(max_length=20, default='academic',
+                                        choices=Constants.REPLACEMENT_TYPES)
 
     def __str__(self):
-        return '{} : {}, type => {}'.format(self.replacee.username, self.replacing_as.user.username,
+        return '{} : {}, type => {}'.format(self.replacee.username, self.replacer.username,
                                             self.type_migration)

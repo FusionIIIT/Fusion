@@ -3,7 +3,7 @@ import datetime
 from django.contrib.auth.models import User
 from django.db.models import Q
 
-from .models import LeavesCount
+from .models import LeaveMigration, LeaveRequest, LeavesCount
 
 
 def get_user_choices(user):
@@ -102,3 +102,37 @@ def deduct_leave_balance(leave):
                                         year=key.start_date.year)
         count.remaining_leaves -= value
         count.save()
+
+
+def get_pending_leave_requests(user):
+    users = list(x.user for x in user.current_designation.all())
+    requests = LeaveRequest.objects.filter(Q(requested_from__in=users), Q(status='pending'))
+    return requests
+
+
+def get_processed_leave_requests(user):
+    pass
+
+
+def create_migrations(leave):
+    migrations = []
+    applicant = leave.applicant
+    for rep_segment in leave.replace_segments.all():
+        mig_transfer = LeaveMigration(
+            type_migration='transfer',
+            on_date=rep_segment.start_date,
+            replacee=applicant,
+            replacer=rep_segment.replacer,
+            replacement_type=rep_segment.replacement_type
+        )
+        mig_revert = LeaveMigration(
+            type_migration='revert',
+            on_date=rep_segment.end_date + datetime.timedelta(days=1),
+            replacee=applicant,
+            replacer=rep_segment.replacer,
+            replacement_type=rep_segment.replacement_type
+        )
+
+        migrations += [mig_transfer, mig_revert]
+
+    LeaveMigration.objects.bulk_create(migrations)

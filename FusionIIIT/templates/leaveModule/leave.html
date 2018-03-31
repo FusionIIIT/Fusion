@@ -11,9 +11,6 @@
     {% block navBar %}
         {% include 'dashboard/navbar.html' %}
     {% endblock %}
-    <div id="instructions">
-        {% include 'leaveModule/instructions.html' %}
-    </div>
     <div class="ui fullscreen request-modal modal">
         <i class="close icon"></i>
         <div class="header">
@@ -43,6 +40,7 @@
 
         $('#send').on('click', function(e) {
             e.preventDefault();
+            $(this).html('<i class="notched black circle loading icon"></i>');
             var id = $('.request-modal .id').val().split(' '),
                 remark = $('.request-modal .remark').val(),
                 rep = $('.request-modal .rep').val(),
@@ -50,7 +48,7 @@
                 stud = $('.request-modal .stud').val();
             if (remark !== '') {
                 $.ajax({
-                    type: 'get',
+                    type: 'post',
                     url: '/leave/process-request/',
                     data: {
                         id: id[0],
@@ -249,9 +247,6 @@
 
     <script>
         $(document).ready(function(){
-
-            $('#instructions .modal').modal('show');
-
             $('table').tablesort();
             $("#textLoader").toggle();
             $("#replacement-card").toggle();

@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.db import transaction
+from django.db.models import Q
 from django.forms.formsets import formset_factory
 from django.http import JsonResponse
 from django.shortcuts import redirect, render, reverse
@@ -8,7 +9,8 @@ from django.shortcuts import redirect, render, reverse
 from .forms import (AcademicReplacementForm, AdminReplacementForm,
                     BaseLeaveFormSet, EmployeeCommonForm, LeaveSegmentForm,
                     StudentApplicationForm)
-from .helpers import deduct_leave_balance, restore_leave_balance
+from .helpers import (create_migrations, deduct_leave_balance,
+                      get_pending_leave_requests, restore_leave_balance)
 from .models import (HoldsDesignation, Leave, LeaveRequest, LeaveSegment,
                      LeaveType, ReplacementSegment)
 
@@ -110,10 +112,12 @@ def handle_faculty_leave_application(request):
         return redirect(reverse('leave:leave'))
 
     rep_segments = request.user.rep_requests.filter(status='pending')
-    leave_requests = request.user.all_leave_requests.filter(status='pending')
+    leave_requests = get_pending_leave_requests(request.user)
     leave_balance = request.user.leave_balance.all()
     user_leave_applications = Leave.objects.filter(applicant=request.user).order_by('-timestamp')
+    processed_requests = request.user.all_leave_requests.filter(~Q(status='pending'))
     context = {
+        'processed_requests': processed_requests,
         'leave_form_set': leave_form_set,
         'acad_form_set': academic_form_set,
         'admin_form_set': admin_form_set,
@@ -172,11 +176,13 @@ def handle_staff_leave_application(request):
         messages.add_message(request, messages.SUCCESS, 'Successfully Submitted !')
         return redirect(reverse('leave:leave'))
 
-    leave_requests = request.user.all_leave_requests.filter(status='pending')
+    leave_requests = get_pending_leave_requests(request.user)
     rep_segments = request.user.rep_requests.filter(status='pending')
     leave_balance = request.user.leave_balance.all()
     user_leave_applications = Leave.objects.filter(applicant=request.user).order_by('-timestamp')
+    processed_requests = request.user.all_leave_requests.filter(~Q(status='pending'))
     context = {
+        'processed_requests': processed_requests,
         'leave_form_set': leave_form_set,
         'acad_form_set': None,
         'admin_form_set': admin_form_set,
@@ -234,10 +240,12 @@ def handle_student_leave_application(request):
 
 def send_faculty_leave_form(request):
     rep_segments = request.user.rep_requests.filter(status='pending')
-    leave_requests = request.user.all_leave_requests.filter(status='pending')
+    leave_requests = get_pending_leave_requests(request.user)
     leave_balance = request.user.leave_balance.all()
     user_leave_applications = Leave.objects.filter(applicant=request.user).order_by('-timestamp')
+    processed_requests = request.user.all_leave_requests.filter(~Q(status='pending'))
     context = {
+        'processed_requests': processed_requests,
         'leave_form_set': LeaveFormSet(prefix='leave_form', user=request.user),
         'acad_form_set': AcadFormSet(prefix='acad_form', form_kwargs={'user': request.user}),
         'admin_form_set': AdminFormSet(prefix='admin_form', form_kwargs={'user': request.user}),
@@ -255,9 +263,11 @@ def send_faculty_leave_form(request):
 def send_staff_leave_form(request):
     rep_segments = request.user.rep_requests.filter(status='pending')
     leave_balance = request.user.leave_balance.all()
-    leave_requests = request.user.all_leave_requests.filter(status='pending')
+    leave_requests = get_pending_leave_requests(request.user)
     user_leave_applications = Leave.objects.filter(applicant=request.user).order_by('-timestamp')
+    processed_requests = request.user.all_leave_requests.filter(~Q(status='pending'))
     context = {
+        'processed_requests': processed_requests,
         'leave_form_set': LeaveFormSet(prefix='leave_form', user=request.user),
         'acad_form_set': None,
         'admin_form_set': AdminFormSet(prefix='admin_form', form_kwargs={'user': request.user}),
@@ -287,8 +297,8 @@ def send_student_leave_form(request):
 
 @transaction.atomic
 def intermediary_processing(request, leave_request):
-    status = request.GET.get('status')
-    remark = request.GET.get('remark')
+    status = request.POST.get('status')
+    remark = request.POST.get('remark')
     leave_request.remark = remark
     leave = leave_request.leave
     if status == 'forward':
@@ -316,8 +326,8 @@ def intermediary_processing(request, leave_request):
 
 @transaction.atomic
 def authority_processing(request, leave_request):
-    status = request.GET.get('status')
-    remark = request.GET.get('remark')
+    status = request.POST.get('status')
+    remark = request.POST.get('remark')
     leave_request.remark = remark
     leave = leave_request.leave
 
@@ -327,6 +337,7 @@ def authority_processing(request, leave_request):
 
         leave.status = 'accepted'
         leave.save()
+        create_migrations(leave)
         message = 'Successfully Accepted'
 
     elif status == 'forward':
@@ -357,8 +368,8 @@ def authority_processing(request, leave_request):
 
 @transaction.atomic
 def officer_processing(request, leave_request):
-    status = request.GET.get('status')
-    remark = request.GET.get('remark')
+    status = request.POST.get('status')
+    remark = request.POST.get('remark')
     leave_request.remark = remark
     leave = leave_request.leave
 
@@ -366,24 +377,26 @@ def officer_processing(request, leave_request):
         leave_request.status = 'accepted'
         leave.status = 'accepted'
         message = 'Successfully Accepted'
-
+        leave.save()
+        create_migrations(leave)
     else:
         leave_request.status = 'rejected'
         leave.status = 'rejected'
         leave.remark = 'Rejected by Leave Sanctioning Officer'
+        leave.save()
         message = 'Successfully Rejected'
 
     leave_request.save()
-    leave.save()
+    # leave.save()
     return JsonResponse({'status': 'success', 'message': message})
 
 
 @transaction.atomic
 def process_staff_faculty_application(request):
-    is_replacement_request = request.GET.get('rep')
+    is_replacement_request = request.POST.get('rep')
 
-    status = request.GET.get('status')
-    id = request.GET.get('id')
+    status = request.POST.get('status')
+    id = request.POST.get('id')
 
     if is_replacement_request:
 
@@ -393,7 +406,7 @@ def process_staff_faculty_application(request):
             if status == 'accept':
                 # return JsonResponse({'status': 'success', 'message': 'Successfully Accepted'})
                 rep_request.status = 'accepted'
-                rep_request.remark = request.GET.get('remark')
+                rep_request.remark = request.POST.get('remark')
                 rep_request.save()
                 if rep_request.leave.relacements_accepted():
                     leave_intermediary = HoldsDesignation.objects.get(
@@ -407,7 +420,7 @@ def process_staff_faculty_application(request):
 
             else:
                 rep_request.status = 'rejected'
-                rep_request.remark = request.GET.get('remark')
+                rep_request.remark = request.POST.get('remark')
                 rep_request.save()
                 leave = rep_request.leave
                 leave.status = 'rejected'
@@ -433,9 +446,9 @@ def process_staff_faculty_application(request):
 
 @transaction.atomic
 def process_student_application(request):
-    leave_request = LeaveRequest.objects.get(id=request.GET.get('id'))
+    leave_request = LeaveRequest.objects.get(id=request.POST.get('id'))
     if request.user == leave_request.requested_from:
-        status = request.GET.get('status')
+        status = request.POST.get('status')
 
         if status == 'accept':
             leave_request.status = 'accepted'
@@ -447,7 +460,7 @@ def process_student_application(request):
 
         else:
             leave_request.status = 'rejected'
-            leave_request.remark = request.GET.get('remark')
+            leave_request.remark = request.POST.get('remark')
             leave_request.save()
             leave_request.leave.status = 'rejected'
             leave_request.leave.save()

@@ -59,9 +59,15 @@ class Constants:
         ("Shree", "Shree")
     )
 
+    DESIGNATIONS = (
+        ('academic', 'Academic Designation'),
+        ('administrative', 'Administrative Designation')
+    )
+
 
 class Designation(models.Model):
     name = models.CharField(max_length=20, unique=True, blank=False, default='student')
+    type = models.CharField(max_length=30, default='academic', choices=Constants.DESIGNATIONS)
 
     def __str__(self):
         return self.name

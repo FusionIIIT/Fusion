@@ -7,13 +7,10 @@ app_name = 'globals'
 urlpatterns = [
 
     url(r'^$', views.index, name='index'),
-
+    url(r'^temp', views.test_celery, name='test_celery'),
     url(r'^login/', views.login, name='login'),
-
     url(r'^dashboard/', views.dashboard, name='dashboard'),
-
     url(r'^about/', views.about, name='about'),
-
     # Feedback and issues url
     url(r'^feedback/$', views.feedback, name="feedback"),
     url(r'^issue/$', views.issue, name="issue"),
