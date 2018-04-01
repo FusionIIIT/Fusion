@@ -230,6 +230,8 @@ def placement(request):
             if 'profilesubmit' in request.POST:
                 about_me = request.POST.get('about')
                 date_of_birth = request.POST.get('dob')
+                if(date_of_birth is None):
+                    date_of_birth = date(1997, 4, 23)
                 address = request.POST.get('address')
                 contact = request.POST.get('contact')
                 fut = request.POST.get('fut')
@@ -262,8 +264,13 @@ def placement(request):
                 if form.is_valid():
                     skill = form.cleaned_data['skill']
                     skill_rating = form.cleaned_data['skill_rating']
+                    z = None
+                    try:
+                        z = Skill.objects.get(skill=skill)
+                    except:
+                        z = Skill.objects.create(skill=skill)
                     has_obj = Has.objects.create(unique_id=student,
-                                                 skill_id=Skill.objects.get(skill=skill),
+                                                 skill_id=Skill.objects.get(skill=z),
                                                  skill_rating = skill_rating)
                     has_obj.save()
             if 'achievementsubmit' in request.POST:
@@ -417,7 +424,7 @@ def placement(request):
                    'placementrecord':placementrecord, 'higherrecord':higherrecord, 'years':years,
                    'pbirecord':pbirecord, 'form10':form10, 'form11':form11, 'form12':form12,
                    'records':records, 'current':current}
-        return render(request, "placementModule/placement.html", context)
+        return render(request, "dashboard/dashboard.html", context)
     current1 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement chairman"))
     current2 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement officer"))
     if request.method == 'POST':
