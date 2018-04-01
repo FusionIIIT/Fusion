@@ -1,6 +1,6 @@
 # FusionIIIT
 
-**FusionIIIT** is the automation of various functionalities, modules and tasks of/for PDPM Indian Institute of Information Technology, Design and Manufacturing, Jabalpur being developed in python3.5 and using django webframework version 1.11.4  
+**FusionIIIT** is the automation of various functionalities, modules and tasks of/for PDPM Indian Institute of Information Technology, Design and Manufacturing, Jabalpur being developed in python3.6 and using django webframework version 1.11.4  
 
 [![Build Status](https://api.travis-ci.org/3Peers/FusionIIIT.svg?branch=master)](https://travis-ci.org/3Peers/FusionIIIT)
 
@@ -17,7 +17,7 @@ And additional requirements are in **requirements.txt**
   * Create a virtual environment `$ virtualenv env -p python3.6`  
   * Activate the env: `$ source env/bin/activate`  
   * Install the requirements: `$ pip install -r requirements.txt`
-  * Run the bash file ./initial_installation.sh
+  * Run the bash file `$ ./initial_installation.sh`
   * Change directory to FusionIIIT `$ cd FusionIIIT`
   * Make migrations `$ python manage.py makemigrations`  
   * Migrate the changes to the database `$ python manage.py migrate`  
