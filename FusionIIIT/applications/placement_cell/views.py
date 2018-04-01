@@ -229,7 +229,7 @@ def placement(request):
                     education_obj.save()
             if 'profilesubmit' in request.POST:
                 about_me = request.POST.get('about')
-                age = request.POST.get('age')
+                date_of_birth = request.POST.get('dob')
                 address = request.POST.get('address')
                 contact = request.POST.get('contact')
                 fut = request.POST.get('fut')
@@ -252,7 +252,7 @@ def placement(request):
                 studentplacement_obj.save()
                 extrainfo_obj = ExtraInfo.objects.get(user=user)
                 extrainfo_obj.about_me = about_me
-                extrainfo_obj.age = age
+                extrainfo_obj.date_of_birth = date_of_birth
                 extrainfo_obj.address = address
                 extrainfo_obj.phone_no = contact
                 extrainfo_obj.save()

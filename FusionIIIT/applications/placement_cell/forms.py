@@ -131,7 +131,7 @@ class AddProfile(forms.Form):
     about_me = forms.CharField(widget=forms.TextInput(attrs={'max_length': 250,
                                                               'class': 'field'}),
                                 label="about_me", required=False)
-    age = forms.IntegerField(label="age")
+    dob = forms.DateField(label="Date of Birth")
     address = forms.CharField(widget=forms.TextInput(attrs={'max_length': 250,
                                                           'class': 'form-control'}),
                             label="address")
