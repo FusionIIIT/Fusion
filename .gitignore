@@ -83,6 +83,7 @@ ENV/
 
 # DS
 .DS_Store
+._.DS_Store
 
 # docs
 docs/_build
