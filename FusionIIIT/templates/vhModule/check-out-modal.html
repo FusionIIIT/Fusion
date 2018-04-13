@@ -19,175 +19,144 @@
 
             <form class="ui large form">
                 <div id="checkout">
-                    <div class="field">
-                        <div class="two fields">
-                            <div class="field">
-                                <label>Name </label>
-                                <input  type="text" value=" {{ booking.intender }} " readonly >
-                            </div>
-
-                            <div class="field">
-                                <label>email</label>
-                                <input  type="email" value=" {{ booking.intender.email }} " readonly >
-                            </div>
-                        </div>
-
-
-                        {% for key, value in bills.items %}
-                        {% if key == booking.id %}
-                        <div class="two fields">
-                            <div class="field">
-                                <label>Room Bill </label>
-                                <input  type="text" value=" {{ value.room_bill }} " readonly >
-                            </div>
-
-                            <div class="field">
-                                <label>Mess Bill</label>
-                                <input  type="text" value=" {{ value.mess_bill }} " readonly >
-                            </div>
-                        </div>
+                    <div class="two fields">
                         <div class="field">
-                            <label>Total Amount</label>
-                            <div class="ui input">
-                                <input type="text" value=" {{ value.total_bill }} " readonly>
-                            </div>
+                            <label>Name </label>
+                            &nbsp;
+                            <input  type="text" value=" {{ booking.intender }} " readonly >
                         </div>
-                        {% endif %}
+
+                        <div class="field">
+                            <label>email</label>
+                            &nbsp;
+                            <input  type="email" value=" {{ booking.intender.email }} " readonly >
+                        </div>
+                    </div>
+
+
+                    {% for key, value in bills.items %}
+                    {% if key == booking.id %}
+
+                    <table class="ui sortable very basic celled table">
+                        <tbody>
+                        <tr>
+                            <td>
+                                <label>Room Bill </label>
+                            </td>
+                            <td>
+                                <input  type="text" value=" {{ value.room_bill }} " readonly >
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label>Mess Bill</label>
+                            </td>
+                            <td>
+                                <input  type="text" value=" {{ value.mess_bill }} " readonly >
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label>Total Amount</label>
+                            </td>
+                            <td>
+                                <input type="text" value=" {{ value.total_bill }} " readonly>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="title">
+                        <h1>Details</h1>
+                    </div>
+
+                    <div class="ui divider"></div>
+                    <h2>Visitors Details</h2>
+
+                    <table class="ui sortable very basic celled table">
+                        <thead>
+                        <tr>
+                            <th>
+                                Visitors
+                            </th>
+
+                            <th>
+                                Email
+                            </th>
+                            <th>
+                                Mobile No
+                            </th>
+
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        {% for visitor in booking.visitor.all %}
+                        <tr>
+                            <td>
+                                {{ visitor.visitor_name }}
+                            </td>
+
+                            <td>
+                                {{ visitor.visitor_email }}
+                            </td>
+
+                            <td>
+                                {{ visitor.visitor_phone }}
+                            </td>
+
+                        </tr>
                         {% endfor %}
 
+                        </tbody>
+                    </table>
 
+                    <h2>Room Details</h2>
+                    <div class="ui divider"></div>
 
-                    </div>
+                    <table class="ui sortable very basic celled table">
+                        <thead>
+                        <tr>
+                            <th>
+                                Room Type
+                            </th>
 
-                    <div class="ui accordion field">
-                        <div class="title">
-                            <i class="icon dropdown"></i>
-                            View Details
-                        </div>
+                            <th>
+                                Room No
+                            </th>
+                            <th>
+                                Floor
+                            </th>
 
-                        <div class="content fields" style="margin: 24px;">
-                            <div class="four fields">
-                                <!--<div class="field">-->
-                                    <!--<label>From</label>-->
-                                    <!--<div class="ui input">-->
-                                        <!--<input value="From" readonly>-->
-                                    <!--</div>-->
-                                <!--</div>-->
+                        </tr>
+                        </thead>
 
-                                <!--<div class="field">-->
-                                    <!--<label>To</label>-->
-                                    <!--<div class="ui input">-->
-                                        <!--<input value="To" readonly>-->
-                                    <!--</div>-->
-                                <!--</div>-->
+                        <tbody>
+                        {% for room in booking.rooms.all %}
+                        <tr>
+                            <td>
 
-                                <!--<div class="field">-->
-                                    <!--<label>Rate</label>-->
-                                    <!--<div class="ui input">-->
-                                        <!--<input value="&#8377; 100/day" >-->
-                                    <!--</div>-->
-                                <!--</div>-->
+                                {{ room.room_type }}
+                            </td>
 
-                                <!--<div class="field">-->
-                                    <!--<label>Total</label>-->
-                                    <!--<div class="ui input">-->
-                                        <!--<input value="Amount" readonly>-->
-                                    <!--</div>-->
-                                <!--</div>-->
-                            </div>
+                            <td>
+                               {{ room.room_number }}
+                            </td>
 
-                            <div class="ui divider"></div>
-                            <h1>Visitors Details</h1>
+                            <td>
+                               {{ room.room_floor }}
+                            </td>
+                        </tr>
 
-                            <table class="ui sortable very basic celled table">
-                                <thead>
-                                <tr>
-                                    <th>
-                                        Visitors
-                                    </th>
-
-                                    <th>
-                                        Email
-                                    </th>
-                                    <th>
-                                        Mobile No
-                                    </th>
-
-                                </tr>
-                                </thead>
-
-                                <tbody>
-                                {% for visitor in booking.visitor.all %}
-                                <tr>
-                                    <td>
-                                        {{ visitor.visitor_name }}
-                                    </td>
-
-                                    <td>
-                                        {{ visitor.visitor_email }}
-                                    </td>
-
-                                    <td>
-                                        {{ visitor.visitor_phone }}
-                                    </td>
-
-                                </tr>
-                                {% endfor %}
-
-                                </tbody>
-                            </table>
-
-                            <h1>Room Details</h1>
-                            <div class="ui divider"></div>
-
-                            <table class="ui sortable very basic celled table">
-                                <thead>
-                                <tr>
-                                    <th>
-                                        Room Type
-                                    </th>
-
-                                    <th>
-                                        Room No
-                                    </th>
-                                    <th>
-                                        Floor
-                                    </th>
-
-                                </tr>
-                                </thead>
-
-                                <tbody>
-                                {% for room in booking.rooms.all %}
-                                <tr>
-                                    <td>
-
-                                        {{ room.room_type }}
-                                    </td>
-
-                                    <td>
-                                       {{ room.room_number }}
-                                    </td>
-
-                                    <td>
-                                       {{ room.room_floor }}
-                                    </td>
-                                </tr>
-
-                                {% endfor %}
-                                </tbody>
-                            </table>
-
-
-
-                        </div>
-                    </div>
+                        {% endfor %}
+                        </tbody>
+                    </table>
 
                     <div class="three fields">
                         <div class="ten wide field"></div>
                         <div class="six wide field">
                             <label><br></label>
-                            <div class="ui large green right floated button" onclick="check_out('{{ booking.id }}')">
+                            <div class="ui large green right floated button" onclick="check_out('{{ booking.id }}', '{{ value.mess_bill }}' , '{{ value.room_bill }}')">
                                 Settle
                             </div>
                         </div>
@@ -198,6 +167,8 @@
                             </div>
                         </div> -->
                     </div>
+                     {% endif %}
+                     {% endfor %}
                 </div>
             </form>
         </div>

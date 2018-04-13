@@ -64,7 +64,7 @@ class StudentComplain(models.Model):
     status = models.IntegerField(default='0')
     remarks = models.CharField(max_length=300, default="Pending")
     flag = models.IntegerField(default='0')
-    reason = models.CharField(max_length=100, blank=True)
+    reason = models.CharField(max_length=100, blank=True, default="None")
     feedback = models.CharField(max_length=500, blank=True)
     worker_id = models.ForeignKey(Workers, blank=True, null=True)
 

@@ -13,6 +13,7 @@ urlpatterns = [
     url(r'^request-booking/' , views.request_booking , name ='request_booking'),
     url(r'^confirm-booking/' , views.confirm_booking , name ='confirm_booking'),
     url(r'^cancel-booking/', views.cancel_booking, name = 'cancel_booking'),
+    url(r'^cancel-booking-request/', views.cancel_booking_request, name = 'cancel_booking_request'),
     url(r'^reject-booking/', views.reject_booking, name = 'reject_booking'),
     url(r'^check-in/', views.check_in, name = 'check_in'),
     url(r'^check-out/', views.check_out, name = 'check_out'),

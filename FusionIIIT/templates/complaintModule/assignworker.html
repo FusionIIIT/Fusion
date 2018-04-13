@@ -105,16 +105,13 @@
                                 <h4><label>Specific Location</label>
                                     {{ detail.specific_location }}</h4>
                             </div>
-                            <div class="eight wide field">
-                                <h4><label>Details :</label>
-                                    {{ detail.details }}</h4>
-                            </div>
+
                             <div class="eight wide field">
                                 <h4><label>Status :</label>
                                     {% if detail.status == 0 %}
                                          <i class="large orange warning icon"></i>Yet to assign Worker
                                     {% elif detail.status == 1 %}
-                                        <i class="large orange add user icon"></i>Worker Assign
+                                        <i class="large orange add user icon"></i>Worker Assigned
                                     {% elif detail.status == 2 %}
                                         <i class="large green checkmark icon"></i>Completed
                                     {% elif detail.status == 3 %}
@@ -174,21 +171,18 @@
                             </div>
                             <div class="eight wide field">
                                 <h4><label>Specific Location :</label>
-                                    {{ detail.specific_location }}</h4>
+                                {{ detail.specific_location }}</h4>
                             </div>
-                            <div class="eight wide field">
-                                <h4><label>Details :</label>
-                                    {{ detail.details }}</h4>
-                            </div>
-                            <div class="eight wide field">
-                                <label>Choose particular caretaker from a drop down box :</label>
-                                    {% if detail.status != 3 %}
 
-                                        <H4>You have assign worker first go and remove worker from this complaint , then
-                                            <span style="color: red;">declined</span> this complaint
-                                            .</H4>
+                            <div class="eight wide field">
+
+                                    {% if detail.status != 0 %}
+
+                                        <H3>You have assigned a worker. First, remove the worker from this complaint then
+                                            <span style="color: red;">declined</span> this complaint.
+                                            .</H3>
                                     {% else %}
-
+                                        <label>Choose particular caretaker from a drop down box :</label>
                                         <select name="assign_caretaker">
                                             {% for i in total_caretaker %}
                                                 <option value="{{ i.id }}">{{ i.id }}-{{ i.staff_id }}-{{ i.area }}</option>

@@ -20,6 +20,34 @@ from applications.academic_procedures.models import MinimumCredits, Register
 
 
 def homepage(request):
+    """
+    This function is used to set up the homepage of the application.
+    It checkes the authentication of the user and also fetches the available
+    data from the databases to display it on the page.
+
+    @param:
+        request - contains metadata about the requested page
+
+    @variables:
+        senates - the extraInfo objects that holds the designation as a senator
+        students - all the objects in the Student class
+        Convenor - the extraInfo objects that holds the designation as a convenor
+        CoConvenor - the extraInfo objects that holds the designation as a coconvenor
+        meetings - the all meeting objects held in senator meetings
+        minuteForm - the form to add a senate meeting minutes
+        acadTtForm - the form to add academic calender
+        examTtForm - the form required to add exam timetable
+        Dean - the extraInfo objects that holds the designation as a dean
+        student - the students as a senator
+        extra - all the extraInfor objects
+        exam_t - all the exam timetable objects
+        timetable - all the academic timetable objects
+        calendar - all the academic calender objects
+        department - all the departments in the college
+        attendance - all the attendance objects of the students
+        context - the datas to be displayed in the webpage
+
+    """
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
@@ -118,6 +146,21 @@ def homepage(request):
 # ---------------------senator------------------
 @csrf_exempt
 def senator(request):
+    """
+    to add a new student senator
+
+    @param:
+        request - contains metadata about the requested page
+
+    @variables:
+        rollno - rollno of the student to become the senator
+        extraInfo - extraInfo object of the student with that rollno
+        s - designation object of senator
+        hDes - holdsDesignation object to store that the particualr student is holding the senator designation
+        student - the student object of the new senator
+        data - data of the student to be displayed in teh webpage
+
+    """
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
@@ -152,6 +195,19 @@ def senator(request):
 
 @csrf_exempt
 def deleteSenator(request, pk):
+    """
+    to remove a senator from the position
+
+    @param:
+        request - contains metadata about the requested page
+
+    @variables:
+        s - the designation object that contains senator
+        student - the list students that is a senator
+        hDes - the holdDesignation object that stores the
+               information that the particular student is a senator
+
+    """
     s = get_object_or_404(Designation, name="senate")
     student = get_object_or_404(ExtraInfo, id=pk)
     student.designation.remove(s)
@@ -163,6 +219,25 @@ def deleteSenator(request, pk):
 # ##########covenors and coconvenors##################
 @csrf_exempt
 def add_convenor(request):
+    """
+    to add a new student convenor/coconvenor
+
+    @param:
+        request - contains metadata about the requested page
+
+    @variables:
+        rollno - rollno of the student to become the convenor/coconvenor
+        extraInfo - extraInfo object of the student with that rollno
+        s - designation object of Convenor
+        p - designation object of Co Convenor
+        result - the data that contains where the student will become
+                 convenor or coconvenor
+        hDes - holdsDesignation object to store that the particualr student is
+               holding the convenor/coconvenor designation
+        student - the student object of the new convenor/coconvenor
+        data - data of the student to be displayed in the webpage
+
+    """
     s = Designation.objects.get(name='Convenor')
     p = Designation.objects.get(name='Co Convenor')
     if request.method == 'POST':
@@ -190,6 +265,22 @@ def add_convenor(request):
 
 @csrf_exempt
 def deleteConvenor(request, pk):
+    """
+    to remove a convenor/coconvenor from the position
+
+    @param:
+        request - contains metadata about the requested page
+        pk - the primary key of that particular student field
+
+    @variables:
+        s - the designation object that contains convenor
+        c - the designation object that contains co convenor
+        student - the student object with the given pk
+        hDes - the holdDesignation object that stores the
+               information that the particular student is a convenor/coconvenor to be deleted
+        data - data of the student to be hidden in the webpage
+
+    """
     s = get_object_or_404(Designation, name="Convenor")
     c = get_object_or_404(Designation, name="Co Convenor")
     student = get_object_or_404(ExtraInfo, id=pk)
@@ -211,6 +302,16 @@ def deleteConvenor(request, pk):
 # ##########Senate meeting Minute##################
 @csrf_exempt
 def addMinute(request):
+    """
+    to add a new senate meeting minute object to the database.
+
+    @param:
+        request - contains metadata about the requested page
+
+    @variables:
+        minForm - the form that contains all the information & file about the new minute
+
+    """
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
@@ -235,6 +336,17 @@ def addMinute(request):
 
 
 def deleteMinute(request):
+    """
+    to delete an existing senate meeting minute object from the database.
+
+    @param:
+        request - contains metadata about the requested page
+
+    @variables:
+        data - the id of the minute object to be deleted
+        t - the minute object received from id to be deleted
+
+    """
     minute = Meeting.objects.get(id=request.POST["delete"])
     minute.delete()
     return HttpResponse("Deleted")
@@ -244,6 +356,26 @@ def deleteMinute(request):
 # ##########Student basic profile##################
 @csrf_exempt
 def add_basic_profile(request):
+    """
+    It adds the basic profile information like username,password, name,
+    rollno, etc of a student
+
+    @param:
+        request - contains metadata about the requested page
+
+    @variables:
+        username - the new username of student
+        password - the new password of the student
+        name - the name of the student
+        roll - the rollno of the student
+        sex - the gender of the student
+        age - student's age
+        category - student's category
+        batch - the current batch of the student
+        programme - the programme the student is enrolled in
+        department - the department of the student
+
+    """
     if request.method == "POST":
         name = request.POST.get('name')
         roll = ExtraInfo.objects.get(id=request.POST.get('rollno'))
@@ -279,6 +411,19 @@ def add_basic_profile(request):
 
 @csrf_exempt
 def delete_basic_profile(request, pk):
+    """
+    Deletes the student from the database
+
+    @param:
+        request - contains metadata about the requested page
+        pk - the primary key of the student's record in the database table
+
+    @variables:
+        e - the extraInfo objects of the student
+        user - the User object of the student
+        s - the student object of the student
+
+    """
     if(Student.objects.get(id=pk)):
         Student.objects.get(id=pk).delete()
     else:
@@ -290,6 +435,23 @@ def delete_basic_profile(request, pk):
 
 # view to add attendance data to database
 def add_attendance(request):
+    """
+    to add/edit a student attendance to the database
+
+    @param:
+        request - contains metadata about the requested page
+
+    @variables:
+        course_id - the course id of the course for attendance entry from the user
+        rollno - the rollno of the particular student
+        total - the total no. of class
+        attended - no of class attended by the student
+        c_id - the course object from the course id
+        s_id - the student object retrieved from the rollno
+        check - checking whether data is already available. if true, it is overwritten
+        form - if not, a new addendance object field is created in the databse
+
+    """
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
@@ -356,6 +518,21 @@ def add_attendance(request):
 
 # view to fetch attendance data
 def get_attendance(request):
+    """
+    to fetch existing attendance list of a particular course and student from the database
+
+    @param:
+        request - contains metadata about the requested page
+
+    @variables:
+        current_user - the username of the logged in user
+        user_details - the details of the current user
+        desig_id - checking the designation of the current user
+        acadadmin - deatils of the acad admin
+        course_id - the attendance of which course we are taking
+        stud_data - the data of the student
+
+    """
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
@@ -402,6 +579,22 @@ def get_attendance(request):
 
 # view to delete attendance data
 def delete_attendance(request):
+    """
+    to delete the attendance of a particular student and course
+
+    @param:
+        request - contains metadata about the requested page
+
+    @variables:
+        current_user - the username of the logged in user
+        user_details - the details of the current user
+        desig_id - checking the designation of the current user
+        acadadmin - deatils of the acad admin
+        course_id - the attendance of which course we are taking
+        student_id - the id of the student object
+        student_attend - the attendance object of the particular student
+
+    """
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
@@ -426,6 +619,20 @@ def delete_attendance(request):
 
 
 def delete_advanced_profile(request):
+    """
+    to delete the advance information of the student
+
+    @param:
+        request - contains metadata about the requested page
+
+    @variables:
+        current_user - the username of the logged in user
+        user_details - the details of the current user
+        desig_id - checking the designation of the current user
+        acadadmin - deatils of the acad admin
+        s - the student object from the requested rollno
+
+    """
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
@@ -457,6 +664,23 @@ def delete_advanced_profile(request):
 
 
 def add_advanced_profile(request):
+    """
+    It adds the advance profile information like hall no, room no,
+    profile picture, about me etc of a student
+
+    @param:
+        request - contains metadata about the requested page
+
+    @variables:
+        father - father's name of the student
+        rollno - the rollno of the student required to check if the student is available
+        mother - mother's name of the student
+        add - student's address
+        cpi - student's cpi
+        hall - hall no of where the student stays
+        room no - hostel room no
+
+    """
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
@@ -492,6 +716,22 @@ def add_advanced_profile(request):
 
 
 def add_grade(request):
+    """
+    It adds the grade of the student
+
+    @param:
+        request - contains metadata about the requested page
+
+    @variables:
+        current_user - father's name of the student
+        user_details - the rollno of the student required to check if the student is available
+        desig_id - mother's name of the student
+        acadadmin - student's address
+        subject - subject of which the grade has to be added
+        sem - semester of the student
+        grade - grade to be added in the student
+        course - course ofwhich the grade is added
+    """
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
@@ -545,6 +785,22 @@ def add_grade(request):
 
 
 def delete_grade(request):
+    """
+    It deletes the grade of the student
+
+    @param:
+        request - contains metadata about the requested page
+
+    @variables:
+        current_user - father's name of the student
+        user_details - the rollno of the student required to check if the student is available
+        desig_id - mother 's name of the student
+        acadadmin - student's address
+        final_user - details of the user
+        sem - current semester of the student
+        data - tag whether to delete it or not
+        course - get the course details
+    """
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
@@ -577,6 +833,22 @@ def delete_grade(request):
 
 
 def add_course(request):
+    """
+    to add a course to the database
+
+    @param:
+        request - contains metadata about the requested page.
+
+    @variables:
+        c_id = course id to be added to the database.
+        c_name = course name to be added to the database.
+        c_opt = check if the course is optional or not.
+        c_sem = The semester for which the course belong.
+        c_cred = The credit of the course to be added to the database.
+        c_check = Check whether optional of subject is true or not.
+        c_save = Save a course instance to the databse.
+
+    """
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
@@ -620,6 +892,16 @@ def add_course(request):
 
 
 def add_timetable(request):
+    """
+    to add an entry to the academic calendar ppppppppppppppppppppppppppppppppppppppppppppppppppppp
+
+    @param:
+        request - contains metadata about the requested page.
+
+    @variables:
+        examTtForm - data of delete dictionary in post request
+        t - Object of  time table to be added
+    """
     acadTtForm = AcademicTimetableForm()
     if request.method == 'POST' and request.FILES:
         acadTtForm = AcademicTimetableForm(request.POST, request.FILES)
@@ -631,6 +913,16 @@ def add_timetable(request):
 
 
 def add_exam_timetable(request):
+    """
+    to add an entry to the academic calendar ppppppppppppppppppppppppppppppppppppppppppppppppppppp
+
+    @param:
+        request - contains metadata about the requested page.
+
+    @variables:
+        examTtForm - data of delete dictionary in post request
+        t - Object of Exam time table to be added
+    """
     examTtForm = ExamTimetableForm()
     if request.method == 'POST' and request.FILES:
         examTtForm = ExamTimetableForm(request.POST, request.FILES)
@@ -642,6 +934,16 @@ def add_exam_timetable(request):
 
 
 def delete_timetable(request):
+    """
+    to add an entry to the academic calendar ppppppppppppppppp
+
+    @param:
+        request - contains metadata about the requested page.
+
+    @variables:
+        data - data of delete dictionary in post request
+        t - Object of time table to be deleted
+    """
     if request.method == "POST":
         data = request.POST['delete']
         t = Timetable.objects.get(time_table=data)
@@ -650,6 +952,16 @@ def delete_timetable(request):
 
 
 def delete_exam_timetable(request):
+    """
+    to add an entry to the academic calendar ppppppppppppppppppppppppppppppppppppppppppppppppppppp
+
+    @param:
+        request - contains metadata about the requested page.
+
+    @variables:
+        data - data of delete dictionary in post request
+        t - Object of Exam time table to be deleted
+    """
     if request.method == "POST":
         data = request.POST['delete']
         t = Exam_timetable.objects.get(exam_time_table=data)
@@ -657,6 +969,18 @@ def delete_exam_timetable(request):
         return HttpResponse("TimeTable Deleted")
 
 def add_calendar(request):
+    """
+    to add an entry to the academic calendar
+
+    @param:
+        request - contains metadata about the requested page.
+
+    @variables:
+        from_date - The starting date for the academic calendar event.
+        to_date - The ending date for the academic caldendar event.
+        desc - Description for the academic calendar event.
+        c = object to save new event to the academic calendar.
+    """
     if request.method == "POST":
         print("Requested Method: ", request.POST)
         from_date = request.POST.getlist('from_date')
@@ -679,6 +1003,21 @@ def add_calendar(request):
         return HttpResponse("Calendar Added")
 
 def update_calendar(request):
+    """
+    to update an entry to the academic calendar
+
+    @param:
+        request - contains metadata about the requested page.
+
+    @variables:
+        from_date - The starting date for the academic calendar event.
+        to_date - The ending date for the academic caldendar event.
+        desc - Description for the academic calendar event.
+        prev_desc - Description for the previous event which is to be updated.
+        c = object to save new event to the academic calendar.
+        get_calendar_details = Get the object of the calendar instance from the database for the previous Description.
+
+    """
     if request.method == "POST":
         print("Requested Method: ", request.POST)
         from_date = request.POST.getlist('from_date')
@@ -700,6 +1039,16 @@ def update_calendar(request):
         return HttpResponseRedirect('/academic-procedures/')
 
 def add_optional(request):
+    """
+    acadmic admin to update the additional courses
+
+    @param:
+        request - contains metadata about the requested page.
+
+    @variables:
+        choices - selected addtional courses by the academic person.
+        course - Course details which is selected by the academic admin.
+    """
     if request.method == "POST":
         print(request.POST)
         choices = request.POST.getlist('choice')
@@ -714,25 +1063,18 @@ def add_optional(request):
                 i.save()
         return HttpResponseRedirect('/academic-procedures/')
 
-def add_course(request):
-    if request.method == "POST":
-        print(request.POST)
-        c_id = request.POST.getlist('course_id')[0]
-        c_name = request.POST.getlist('course_name')[0]
-        c_opt = request.POST.getlist('course_optional')[0]
-        c_sem = request.POST.getlist('course_semester')[0]
-        c_cred = request.POST.getlist('course_credit')[0]
-        print("Credit>>>>>>>>>>", c_cred)
-        c_check = True if c_opt == "on" else False
-        c_save = Course(course_id=c_id,
-            course_name=c_name,
-            sem=c_sem,
-            credits=c_cred,
-            optional=c_check)
-        c_save.save()
-        return HttpResponse("Worked")
 
 def min_cred(request):
+    """
+    to set minimum credit for a current semester that a student must take
+
+    @param:
+        request - contains metadata about the requested page.
+
+    @variables:
+        sem_cred = Get credit details from forms and the append it to an array.
+        sem - Get the object for the minimum credits from the database and the update it.
+    """
     if request.method=="POST":
         sem_cred = []
         sem_cred.append(0)
@@ -748,6 +1090,13 @@ def min_cred(request):
 
 #Generate Attendance Sheet
 def sem_for_generate_sheet():
+    """
+    This function generates semester grade sheet
+    @variables:
+        now - current datetime
+        year - current year
+        month - current month
+    """
     now = datetime.datetime.now()
     year, month = now.year, int(now.month)
     sem = 'odd'
@@ -759,6 +1108,32 @@ def sem_for_generate_sheet():
 
 
 def generatexlsheet(request):
+    """
+    to generate Course List of Registered Students
+
+    @param:
+        request - contains metadata about the requested page
+
+    @variables:
+        f_key -
+        idd - Dictionary value of post data year
+        course_id - Course object according to idd
+        obj - Registration object of the year in idd
+        ans - Formatted Array to be converted to xlsx
+        k -temporary array to add data to formatted array/variable
+        output - io Bytes object to write to xlsx file
+        book - workbook of xlsx file
+        title - formatting variable of title the workbook
+        subtitle - formatting variable of subtitle the workbook
+        normaltext - formatting variable for normal text
+        sheet - xlsx sheet to be rendered
+        titletext - formatting variable of title text
+        dep - temporary variables
+        z - temporary variables for final output
+        b - temporary variables for final output
+        c - temporary variables for final output
+        st - temporary variables for final output
+    """
     idd = str(request.POST['year'])
     f_key = Course.objects.get(course_name = str(idd))
     course_id = str(f_key.course_id)
@@ -827,19 +1202,27 @@ def generatexlsheet(request):
     return response
 
 
-'''
-def render_to_pdf(template_src, context_dict):
-    template = get_template(template_src)
-    html = template.render(context_dict)
-    result = BytesIO()
-    pdf = pisa.pisaDocument(BytesIO(html.encode("UTF-8")), result)
-    if not pdf.err:
-        return HttpResponse(result.getvalue(), content_type='application/pdf')
-    return HttpResponse('We had some errors<pre>%s</pre>' % escape(html))
-'''
 
 
 def generate_preregistration_report(request):
+    """
+    to generate preresgistration report after
+
+    @param:
+        request - contains metadata about the requested page
+
+    @variables:
+        sem - rollno of the student to become the senator
+        obj1 - All the registration details of 1st years
+        obj2 - All the registration details of 2nd years
+        obj3 - All the registration details of 3rd years
+        obj4 - All the registration details of 4th years
+        obj - All the registration details appended into one
+        data - Formated data for context
+        m - counter for Sl. No (in formated data)
+        z - temporary array to add data to variable data
+
+    """
     sem = sem_for_generate_sheet();
     # EDIT HERE ON DEPLOYMENT
     sem = [2, 4, 6, 8]

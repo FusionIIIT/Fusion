@@ -169,8 +169,8 @@ def convener_view(request):
         dandm = Proficiency_dm.objects.all()
         con = Designation.objects.get(name='spacsconvenor')
         assis = Designation.objects.get(name='spacsassistant')
-        hd = HoldsDesignation.objects.filter(user=request.user,designation=con)
-        hd1 = HoldsDesignation.objects.filter(user=request.user,designation=assis)
+        hd = HoldsDesignation.objects.get(designation=con)
+        hd1 = HoldsDesignation.objects.get(designation=assis)
         context={'mcm': mcm, 'source': source, 'time': time, 'ch': ch, 'awards': awards,
                    'spi': spi, 'student': student, 'winners': winners, 'release': release,
                    'gold': gold, 'silver': silver, 'dandm': dandm, 'con': con, 'assis': assis,
@@ -209,7 +209,6 @@ def student_view(request):
             loan_amount = request.POST.get('loan_amount')
             bank_name = request.POST.get('bank_name')
             income_certificate = request.FILES.get('income_certificate')
-            forms = request.FILES.get('forms')
             student = request.user.extrainfo.student
             annual_income = income_father + income_mother + income_other
             a = Award_and_scholarship.objects.get(award_name="Mcm").id
@@ -239,7 +238,6 @@ def student_view(request):
                 constructed_area=constructed_area,
                 school_fee=school_fee,
                 school_name=school_name,
-                forms=forms,
                 bank_name=bank_name,
                 loan_amount=loan_amount,
                 college_fee=college_fee,
@@ -342,11 +340,31 @@ def student_view(request):
             a = Award_and_scholarship.objects.get(award_name=award).id
             award_id = Award_and_scholarship.objects.get(id=a)
             student_id = request.user.extrainfo.student
-            roll_no1 = int(request.POST.get('roll_no1'))
-            roll_no2 = int(request.POST.get('roll_no2'))
-            roll_no3 = int(request.POST.get('roll_no3'))
-            roll_no4 = int(request.POST.get('roll_no4'))
-            roll_no5 = int(request.POST.get('roll_no5'))
+            try:
+                roll_no1 = int(request.POST.get('roll_no1'))
+            except:
+                roll_no1=0   
+            
+            try:
+                roll_no2 = int(request.POST.get('roll_no2'))
+            except:
+                roll_no2=0    
+            
+            try:
+                roll_no3 = int(request.POST.get('roll_no3'))
+            except:
+                roll_no3=0    
+            
+            try:
+                roll_no4 = int(request.POST.get('roll_no4'))
+            except:
+                roll_no4=0
+            
+            try:
+                roll_no5 = int(request.POST.get('roll_no5'))
+            except:
+                roll_no5=0
+        
             ece_topic = request.POST.get('ece_topic')
             cse_topic = request.POST.get('cse_topic')
             mech_topic = request.POST.get('mech_topic')
@@ -361,7 +379,8 @@ def student_view(request):
             financial_assistance=request.POST.get('financial_assistance')
             grand_total=request.POST.get('grand_total')
             nearest_policestation=request.POST.get('nps')
-            nearest_railwaystation=request.POST.get('nrs')            
+            nearest_railwaystation=request.POST.get('nrs')
+            
 
             Proficiency_dm.objects.create(
                 title_name=title_name,
@@ -411,8 +430,8 @@ def student_view(request):
         dandm = Proficiency_dm.objects.all()
         con = Designation.objects.get(name='spacsconvenor')
         assis = Designation.objects.get(name='spacsassistant')
-        hd = HoldsDesignation.objects.filter(user=request.user,designation=con)
-        hd1 = HoldsDesignation.objects.filter(user=request.user,designation=assis)
+        hd = HoldsDesignation.objects.get(designation=con)
+        hd1 = HoldsDesignation.objects.get(designation=assis)
         return render(request, 'scholarshipsModule/scholarships_student.html',
                   {'mcm': mcm, 'time': time, 'ch': ch, 'awards': awards, 'spi': spi,
                    'student': student, 'winners': winners, 'release': release,
@@ -477,8 +496,8 @@ def staff_view(request):
         winners = Previous_winner.objects.all()
         con = Designation.objects.get(name='spacsconvenor')
         assis = Designation.objects.get(name='spacsassistant')
-        hd = HoldsDesignation.objects.filter(user=request.user,designation=con)
-        hd1 = HoldsDesignation.objects.filter(user=request.user,designation=assis)
+        hd = HoldsDesignation.objects.get(designation=con)
+        hd1 = HoldsDesignation.objects.get(designation=assis)
 
         return render(request, 'scholarshipsModule/scholarships_staff.html',
                   {'mcm': mcm, 'student': student,

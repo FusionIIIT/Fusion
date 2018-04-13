@@ -1,8 +1,12 @@
 from django import forms
-from .models import Constants, Skill
+from .models import Constants, Skill, NotifyStudent
 from applications.globals.models import DepartmentInfo
 from applications.academic_information.models import Constants as Con
 
+
+class AddProfile(forms.ModelForm):
+
+    pic = forms.ImageField()
 
 class AddEducation(forms.Form):
 
@@ -131,7 +135,7 @@ class AddProfile(forms.Form):
     about_me = forms.CharField(widget=forms.TextInput(attrs={'max_length': 250,
                                                               'class': 'field'}),
                                 label="about_me", required=False)
-    dob = forms.DateField(label="Date of Birth")
+    age = forms.IntegerField(label="age")
     address = forms.CharField(widget=forms.TextInput(attrs={'max_length': 250,
                                                           'class': 'form-control'}),
                             label="address")
@@ -167,6 +171,11 @@ class SearchStudentRecord(forms.Form):
                               choices=Constants.DEBAR_TYPE)
     placed_type = forms.ChoiceField(widget=forms.Select(attrs={'style': "height:45px"}), label="placed_type", required=False,
                                     choices=Constants.PLACED_TYPE)
+
+
+class SendInvite(forms.Form):
+
+    company = forms.ModelChoiceField(required=True, queryset=NotifyStudent.objects.all(), label="company")
 
 
 class AddSchedule(forms.Form):

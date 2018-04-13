@@ -23,7 +23,7 @@
                 <thead>
                 <tr>
                     <th>
-                        Student ID
+                        Name
                     </th>
                     <th >
                         Register Date
@@ -54,7 +54,7 @@
                         <h4 class="ui image header">
                             <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
                             <div class="content">
-                                {{ a.complainer }}
+                                {{ a.complainer.user }}
                                 <div class="sub header">
                                 </div>
                             </div>
@@ -75,7 +75,7 @@
                     </td>
 
                     <td>
-                        {{ a.details }}
+                        <a href="./detail3/{{ a.id }}/"> Click here!</a>
                         {% if a.remarks != 'Pending' %}
                            ( {{ a.remarks }} )
                         {% endif %}

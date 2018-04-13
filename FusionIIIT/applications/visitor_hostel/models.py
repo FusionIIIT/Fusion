@@ -10,12 +10,6 @@ VISITOR_CATEGORY = (
     ('D', 'D'),
     )
 
-DESIGNATION = (
-    ('Intender', 'Intender'),
-    ('VhCaretaker', 'VhCaretaker'),
-    ('VhIncharge', 'VhIncharge')
-    )
-
 ROOM_TYPE = (
     ('SingleBed', 'SingleBed'),
     ('DoubleBed', 'DoubleBed'),
@@ -41,14 +35,11 @@ BOOKING_STATUS = (
     ("Pending" , 'Pending'),
     ("Rejected" , 'Rejected'),
     ("Canceled" , 'Canceled'),
+    ("CancelRequested" , 'CancelRequested'),
     ("CheckedIn" , 'CheckedIn'),
     ("Complete", 'Complete'),
     ("Forward", 'Forward')
     )
-
-class UserDetail(models.Model):
-    name= models.ForeignKey(User, on_delete=models.CASCADE)
-    designation = models.CharField(max_length=20, choices=DESIGNATION, default='Intender')
 
 
 class VisitorDetail(models.Model):
@@ -82,9 +73,10 @@ class BookingDetail(models.Model):
     booking_to = models.DateField()
     check_in = models.DateField(null=True, blank=True)
     check_out = models.DateField(null=True, blank=True)
-    status = models.CharField(max_length=10, choices=BOOKING_STATUS ,default ="Pending")
+    status = models.CharField(max_length=15, choices=BOOKING_STATUS ,default ="Pending")
     remark = models.CharField(max_length=40, blank=True, null=True)
     visitor = models.ManyToManyField(VisitorDetail)
+    image = models.FileField(null=True, blank=True, upload_to='VhImage/')
     rooms = models.ManyToManyField(RoomDetail)
 
 
@@ -102,7 +94,7 @@ class MealRecord(models.Model):
 
 class Bill(models.Model):
     booking = models.OneToOneField(BookingDetail, on_delete=models.CASCADE)
-    caretaker = models.OneToOneField(User, on_delete=models.CASCADE)
+    caretaker = models.ForeignKey(User, on_delete=models.CASCADE)
     meal_bill = models.IntegerField(default=0)
     room_bill = models.IntegerField(default=0)
     payment_status = models.BooleanField(default=False)

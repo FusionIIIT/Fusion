@@ -21,7 +21,7 @@ from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, DepartmentInfo, HoldsDesignation
 
 from .forms import (AddEducation, AddProfile, AddSkill, AddCourse, AddAchievement, AddProject,
-                    AddPublication, AddPatent, AddExperience, AddChairmanVisit,
+                    AddPublication, AddPatent, AddExperience, AddChairmanVisit, SendInvite,
                     SearchStudentRecord, AddSchedule, SearchPlacementRecord, SearchPbiRecord,
                     SearchHigherRecord, ManagePlacementRecord, ManagePbiRecord, ManageHigherRecord)
 from .models import (Achievement, Course, Education, Experience, Has, Project, Publication, Skill,
@@ -229,14 +229,11 @@ def placement(request):
                     education_obj.save()
             if 'profilesubmit' in request.POST:
                 about_me = request.POST.get('about')
-                date_of_birth = request.POST.get('dob')
-                if(date_of_birth is None):
-                    date_of_birth = date(1997, 4, 23)
+                age = request.POST.get('age')
                 address = request.POST.get('address')
                 contact = request.POST.get('contact')
-                fut = request.POST.get('fut')
+                pic = request.POST.get('pic')
                 # futu = request.POST.get('futu')
-                studentplacement_obj = StudentPlacement.objects.get(unique_id=profile.id)
                 # print(studentplacement_obj.future_aspect)
                 # print('fut=', fut)
                 # print('futu=', futu)
@@ -246,17 +243,12 @@ def placement(request):
                 # elif studentplacement_obj.future_aspect == "PLACEMENT":
                 #     if futu == None:
                 #         studentplacement_obj.future_aspect = "HIGHER STUDIES"
-                if(fut==None):
-                    studentplacement_obj.future_aspect="HIGHER STUDIES"
-                else:
-                    studentplacement_obj.future_aspect = "PLACEMENT"
-
-                studentplacement_obj.save()
                 extrainfo_obj = ExtraInfo.objects.get(user=user)
                 extrainfo_obj.about_me = about_me
-                extrainfo_obj.date_of_birth = date_of_birth
+                extrainfo_obj.age = age
                 extrainfo_obj.address = address
                 extrainfo_obj.phone_no = contact
+                extrainfo_obj.profile_picture = pic
                 extrainfo_obj.save()
                 profile = get_object_or_404(ExtraInfo, Q(user=user))
             if 'skillsubmit' in request.POST:
@@ -264,13 +256,8 @@ def placement(request):
                 if form.is_valid():
                     skill = form.cleaned_data['skill']
                     skill_rating = form.cleaned_data['skill_rating']
-                    z = None
-                    try:
-                        z = Skill.objects.get(skill=skill)
-                    except:
-                        z = Skill.objects.create(skill=skill)
                     has_obj = Has.objects.create(unique_id=student,
-                                                 skill_id=Skill.objects.get(skill=z),
+                                                 skill_id=Skill.objects.get(skill=skill),
                                                  skill_rating = skill_rating)
                     has_obj.save()
             if 'achievementsubmit' in request.POST:
@@ -424,7 +411,7 @@ def placement(request):
                    'placementrecord':placementrecord, 'higherrecord':higherrecord, 'years':years,
                    'pbirecord':pbirecord, 'form10':form10, 'form11':form11, 'form12':form12,
                    'records':records, 'current':current}
-        return render(request, "dashboard/dashboard.html", context)
+        return render(request, "placementModule/placement.html", context)
     current1 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement chairman"))
     current2 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement officer"))
     if request.method == 'POST':
@@ -453,6 +440,12 @@ def placement(request):
             rid = request.POST['deleteinvite']
             sr = PlacementStatus.objects.get(Q(pk=rid))
             sr.delete()
+        if 'deletesch' in request.POST:
+            hid = request.POST['deletesch']
+            hs = PlacementSchedule.objects.get(Q(pk=hid))
+            ps = NotifyStudent.objects.get(Q(pk=hs.notify_id.pk))
+            hs.delete()
+            ps.delete()
         if 'schedulesubmit' in request.POST:
             form5 = AddSchedule(request.POST)
             if form5.is_valid():
@@ -473,21 +466,30 @@ def placement(request):
                                                             description=description,
                                                             placement_date=placement_date,
                                                             location=location, time=time)
-                if 'q' not in request.session:
-                    stud = Student.objects.all()
-                else:
-                    q = request.session['q']
-                    p = []
-                    for w in q:
-                        p.append(w['id_id'])
-                        stud = Student.objects.filter(Q(id__in=p))
-                for student in stud:
-                    status = PlacementStatus.objects.create(notify_id=notify,
-                                                            unique_id=student,
-                                                            timestamp=timezone.now())
-                    status.save()
                 notify.save()
                 schedule.save()
+        if 'sendinvite' in request.POST:
+            form13 = SendInvite(request.POST)
+            if form13.is_valid():
+                if form13.cleaned_data['company']:
+                    comp = form13.cleaned_data['company']
+                    com = [comp.company_name, comp.placement_type]
+                    notify = NotifyStudent.objects.get(company_name=com[0],
+                                                       placement_type=com[1])
+                    if 'q' not in request.session:
+                        stud = Student.objects.all()
+                    else:
+                        q = request.session['q']
+                        p = []
+                        for w in q:
+                            p.append(w['id_id'])
+                            stud = Student.objects.filter(Q(id__in=p))
+                    for student in stud:
+                        status = PlacementStatus.objects.create(notify_id=notify,
+                                                                unique_id=student,
+                                                                timestamp=timezone.now())
+                        status.save()
+
         if 'recordsubmit' in request.POST:
             form1 = SearchStudentRecord(request.POST)
             if form1.is_valid():
@@ -684,6 +686,7 @@ def placement(request):
     form11 = ManagePlacementRecord(initial={})
     form9 = ManagePbiRecord(initial={})
     form10 = ManageHigherRecord(initial={})
+    form13 = SendInvite(initial={})
     chairmanvisit = ChairmanVisit.objects.all()
     notify = NotifyStudent.objects.all()
     schedules = PlacementSchedule.objects.all()
@@ -692,9 +695,9 @@ def placement(request):
     context = {'user': user, 'profile': profile, 'form':form, 'form1':form1, 'form5':form5,
                'chairmanvisits':chairmanvisit, 'students':students, 'schedules':schedules,
                'notify':notify, 'form2':form2, 'form3':form3, 'form4':form4, 'form9':form9,
-               'form10':form10, 'form11':form11, 'placementstatus':placementstatus,
+               'form10':form10, 'form11':form11, 'studentrecord':studentrecord, 'form13':form13,
                'placementrecord':placementrecord, 'higherrecord':higherrecord, 'years':years,
-               'pbirecord':pbirecord, 'studentrecord':studentrecord, 'records':records,
+               'pbirecord':pbirecord, 'placementstatus':placementstatus, 'records':records,
                'studentplacement':studentplacement, 'current1':current1, 'current2':current2}
     return render(request, "placementModule/placement.html", context)
 
@@ -807,7 +810,11 @@ def cv(request, username):
         else:
           roll = now.year-int(str(profile.id)[:4])
     else:
-        roll = 1+(now.year)-int("20"+str(profile.id)[0:2])
+        if (now.month>4):
+          roll = 1+(now.year)-int("20"+str(profile.id)[0:2])
+        else:
+          roll = (now.year)-int("20"+str(profile.id)[0:2])
+
     student = get_object_or_404(Student, Q(id=profile.id))
     studentplacement = get_object_or_404(StudentPlacement, Q(unique_id=student))
     skills = Has.objects.filter(Q(unique_id=student))

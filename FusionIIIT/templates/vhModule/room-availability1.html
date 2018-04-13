@@ -36,60 +36,6 @@
     <br>
     <div class="ui divider"></div>
     <div id="replace-this-div">
-    <!-- <div class="ui active tab" data-tab="roomstatus">
-        <div class="ui vertical segment">
-            <table class="ui structured celled sortable table" style="margin-bottom: 16px;">
-                <thead>
-                <tr>
-
-                    <th rowspan="2">Room Number</th>
-                    <th rowspan="2">Floor</th>
-                    <th rowspan="4"><center>Room Status</center></th>
-
-                </tr>
-                </thead>
-
-                <tbody>
-                    {% for instance in all_rooms_status %}
-                    <tr>
-                        <td>
-                            {{ instance.room }}
-                        </td>
-                        <td>
-                            {{ instance.room.room_floor }}
-                        </td>
-                        <td>
-                            <div class="field" style="display: none" id=select-{{instance.room.room_number}}>
-                                <div class="ui fluid search selection dropdown">
-                                    <input name="Select" type="hidden" onchange='submit_room_status("{{ instance.room.room_number }}")' id="input-{{instance.room.room_number}}">
-                                    <i class="dropdown icon"></i>
-
-                                    <div class="default text">{{ instance.status }}</div>
-                                    <div class="menu">
-                                        <div class="item" data-value="UnderMaintenance">
-                                            Under Maintenance
-                                        </div>
-
-                                        <div class="item" data-value="Available">
-                                            Available
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <span style="display: inline;" id=show-{{instance.room.room_number}} >
-                                {{ instance.status }}
-                            </span>
-                            <i class="edit icon" onclick="edit_room_status('{{ instance.room.room_number }}')" style="float: right;" id="submit-{{instance.room.room_number}}"></i>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            <br>
-            <br>
-        </div>
-    </div> -->
 </div>
 {% endblock %}
 

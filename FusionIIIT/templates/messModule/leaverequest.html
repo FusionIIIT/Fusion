@@ -123,9 +123,6 @@
                             <th>
                                 App_date
                             </th>
-                            <th>
-                                Student
-                            </th>
 
                             <th>
                                 Type
@@ -154,14 +151,6 @@
                         <tr>
                             <td>
                                 {{item.app_date}}
-                            </td>
-                            <td>
-                                <h4 class="ui image header">
-                                    <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
-                                    <div class="content">
-                                        {{item.student_id}}
-                                    </div>
-                                </h4>
                             </td>
 
                             <td>
@@ -213,7 +202,7 @@
 
     </div>
 {% endblock %}
-{%  endblock %}
+{% endblock %}
 
 
 {% block javascript %}
@@ -250,6 +239,7 @@
                 url: 'leave/',
                 dataType: 'json',
                 data: {
+                    'csrfmiddlewaretoken' : '{{ csrf_token }}',
                     'leave_type':$("#leave_type").val(),
                     'start_date':$("#start_date").val(),
                     'end_date':$("#end_date").val(),
@@ -268,6 +258,9 @@
                         document.getElementById('end_date').value="";
                         document.getElementById('purpose').value="";
                         
+                    }
+                    else{
+                        alert("Already applied for leaves in the respective dates"); 
                     }
                 },
                 error: function(data, err) {

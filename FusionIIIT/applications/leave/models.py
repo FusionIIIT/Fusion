@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
-
+from django.utils import timezone
 from applications.globals.models import Designation
 
 
@@ -39,6 +39,10 @@ class LeaveType(models.Model):
     for_faculty = models.BooleanField(default=True)
     for_staff = models.BooleanField(default=True)
     for_student = models.BooleanField(default=False)
+
+    @property
+    def is_station(self):
+        return self.name == 'Station'
 
     def __str__(self):
         return f'{self.name}, Max: {self.max_in_year}'
@@ -83,6 +87,19 @@ class Leave(models.Model):
 
     def generate_requests(self):
         pass
+
+    def get_current_leave_balance(self):
+        curr_year = timezone.now().year
+        balances = self.applicant.leave_balance.filter(year=curr_year)
+        return balances
+
+    @property
+    def yet_not_started(self):
+        for segment in self.segments.all():
+            today = timezone.now().date()
+            if segment.start_date <= today:
+                return False
+        return True
 
     def __str__(self):
         return '{} applied, status: {}'.format(self.applicant.username,
@@ -148,6 +165,7 @@ class LeaveAdministrators(models.Model):
 
 
 class LeaveMigration(models.Model):
+    leave = models.ForeignKey(Leave, related_name='all_migrations', on_delete=models.CASCADE)
     type_migration = models.CharField(max_length=10, default='transfer',
                                       choices=Constants.MIGRATION_CHOICES)
     on_date = models.DateField(null=False)

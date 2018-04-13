@@ -111,15 +111,13 @@
             </div>
 
             <input type="hidden" name="booking-id" value="{{ booking.id }}">
+            {% if user_designation == 'Intender' %}
         <div class="field">
-            <label></label>
-            <div class="ui large red button right floated" id="reject-booking">
-                Reject
-            </div>
-            <div class="ui large green button right floated" id="confirm-booking">
-                Confirm
+            <div class="ui large red button right floated" onclick="cancel_active_booking('{{ booking.id }}', '{{ booking.booking_from }}')">
+                Cancel
             </div>
         </div>
+        {% endif %}
         <br>
         <br>
     </form>

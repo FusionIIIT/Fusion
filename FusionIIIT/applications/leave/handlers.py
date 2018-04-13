@@ -201,7 +201,7 @@ def handle_staff_leave_application(request):
 @transaction.atomic
 def handle_student_leave_application(request):
 
-    form = StudentApplicationForm(request.POST, user=request.user)
+    form = StudentApplicationForm(request.POST, request.FILES, user=request.user)
 
     if form.is_valid():
         data = form.cleaned_data
@@ -470,5 +470,19 @@ def process_student_application(request):
 
     else:
         response = JsonResponse({'status': 'failure', 'message': 'Unauthorized'}, status=401)
+
+    return response
+
+
+def delete_leave_application(request):
+    leave_id = request.POST.get('id')
+    leave = request.user.all_leaves.filter(id=leave_id).first()
+    print(leave_id)
+    if leave and leave.applicant == request.user and leave.yet_not_started:
+        restore_leave_balance(leave)
+        leave.delete()
+        response = JsonResponse({'status': 'success', 'message': 'Successfully Deleted'})
+    else:
+        response = JsonResponse({'status': 'failed', 'message': 'Deletion Failed'}, status=400)
 
     return response

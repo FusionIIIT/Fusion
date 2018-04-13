@@ -1,8 +1,11 @@
-// Request Booking
+// Global date variable for today's date
 
-$('#request-booking-form-submit').on('click', function(event){
-    event.preventDefault();
+var d = new Date();
+var date = d.getFullYear() + "-" + (d.getMonth()+1) + "-" + d.getDate();
 
+// Date settings for Semantic UI
+
+$(document).ready(function(){
     var calendarOpts = {
         type: 'date',
         formatter: {
@@ -22,28 +25,66 @@ $('#request-booking-form-submit').on('click', function(event){
         }
     };
     $('.ui.calendar').calendar(calendarOpts);
+});
+
+// Request Booking
+
+function request_booking (event) {
+    event.preventDefault();
+
+    intender = $('input[name="intender"]').val();
+    category = $('input[name="visitor-category"]').val();
+    csrfmiddlewaretoken = $('input[name="csrf"]').val();
+    booking_from = $('input[name="request-booking-from"]').val();
+    booking_to = $('input[name="request-booking-to"]').val();
+    number_of_people = $('input[name="number-of-people"]').val();
+    number_of_rooms = $('input[name="number-of-rooms"]').val();
+    purpose_of_visit = $('input[name="purpose-of-visit"]').val();
+
+    if (new Date(booking_from) < new Date(date)) {
+        alertModal ('Oops! Those dates are not available for booking.');
+        return;
+    }
+
+    if (new Date(booking_from) >= new Date(booking_to)) {
+        alertModal ('Please check start date and end date!');
+        return;
+    }
+
+    if (number_of_people < 1) {
+        alertModal ("Oops! People can't be zero or negative in number.");
+        return;
+    }
+
+    if (number_of_rooms < 1) {
+        alertModal ("Oops! Number of rooms can't be zero or negative.");
+        return;
+    }
 
     $.ajax({
         type: 'POST',
         url: '/visitorhostel/request-booking/',
         data: {
-            'intender' : $('input[name="intender"]').val(),
-            'category' : $('input[name="visitor-category"]').val(),
-            'csrfmiddlewaretoken': $('input[name="csrf"]').val(),
-            'booking_from' : $('input[name="request-booking-from"]').val(),
-            'booking_to' : $('input[name="request-booking-to"]').val(),
-            'number-of-people' : $('input[name="number-of-people"]').val(),
-            'purpose-of-visit' : $('input[name="purpose-of-visit"]').val(),
+            'intender' : intender,
+            'category' : category,
+            'csrfmiddlewaretoken': csrfmiddlewaretoken,
+            'booking_from' : booking_from,
+            'booking_to' : booking_to,
+            'number-of-people' : number_of_people,
+            'purpose-of-visit' : purpose_of_visit,
+            'number-of-rooms' : number_of_rooms,
         },
         success: function(data) {
-            alert("Success");
-            $('#request-booking-form')[0].reset();
+            alertModal(" Congratulations! Your booking has been placed successfully\n Please wait for confirmation");
+            setTimeout(function() {
+                window.location.replace('http://localhost:8000/visitorhostel');
+            }, 1500);
         },
         error: function(data, err) {
-            alert('Something missing! PLease refill the form');
+            alertModal('Something missing! Please refill the form');
         }
     });
-});
+};
 
 // Meal Record
 
@@ -65,10 +106,10 @@ $('.bookameal-submit').click(function(event){
             'csrfmiddlewaretoken': $('input[name="csrf"]').val(),
         },
         success: function(data) {
-            alert('Success');
+            alertModal('Great! Meals recorded successfully');
         },
         error: function(data, err) {
-            alert('Something missing! PLease refill the form');
+            alertModal('Something missing! Please refill the form');
         }
     });
 });
@@ -102,19 +143,10 @@ function submit_inventory_form(id){
             $('#submit-'.concat(id)).fadeToggle();
         },
         error: function(data, err) {
-            alert('Something missing! PLease refill the form');
+            alertModal('Something missing! Please refill the form');
         }
     });
 };
-
-
-$('.plus').click(function(event){
-    event.preventDefault();
-    if($('#add-item-section')[0].style.display == 'none'){
-        $('#add-item-section')[0].style.display = 'block';
-        window.location.hash ='#add-item-section';
-    }
-});
 
 $('#add-more-items-inventory').click(function(event){
 
@@ -134,7 +166,7 @@ $('#add-more-items-inventory').click(function(event){
             $('.reset-this-form')[0].children[2].children[2].children[1].children[0].value = "";
         },
         error: function(data, err) {
-            alert('Something missing! PLease refill the form');
+            alertModal('Something missing! Please refill the form');
         }
     });
 
@@ -165,7 +197,7 @@ $('#add-item-form-submit').click(function(event){
             $('.reset-this-form')[0].children[2].children[2].children[1].children[0].value = "";
         },
         error: function(xhr, data, err) {
-            alert('Something missing! PLease refill the form');
+            alertModal('Something missing! Please refill the form');
         }
 
     });
@@ -201,7 +233,7 @@ function submit_room_status(id){
             $('#submit-'.concat(id)).fadeToggle();
         },
         error: function(data, err) {
-            alert('Something missing! PLease refill the form');
+            alertModal('Something missing! Please refill the form');
         }
     });
 };
@@ -210,21 +242,37 @@ function submit_room_status(id){
 
 function confirm_booking (id) {
 
-    id = id;
+    csrfmiddlewaretoken = $('input[name=csrf]').val();
+    category = $('input[name=category-'+id+']').val();
+    rooms = $('select[name=alloted-rooms-'+id+']').val();
+
+    if (category == 0) {
+        alertModal("Please fill the category to confirm.");
+        return;
+    }
+
+    if (rooms == 0) {
+        alertModal("Please fill the rooms to confirm booking.");
+        return;
+    }
+
     $.ajax({
         type: 'POST',
         url: '/visitorhostel/confirm-booking/',
         data: {
-            'booking-id' : $('input[name=booking-id-'+id+']').val(),
-            'csrfmiddlewaretoken': $('input[name=csrf]').val(),
-            'category' : $('input[name=category-'+id+']').val(),
-            'rooms' : $('select[name=alloted-rooms-'+id+']').val(),
+            'booking-id' : id,
+            'csrfmiddlewaretoken': csrfmiddlewaretoken,
+            'category' : category,
+            'rooms' : rooms,
         },
         success: function(data) {
-            alert("Success");
+            alertModal("This booking has been confirmed");
+            setTimeout(function() {
+                window.location.replace('http://localhost:8000/visitorhostel');
+            }, 1500);
         },
         error: function(data, err) {
-            alert('Something missing! PLease refill the form');
+            alertModal('Something missing! Please refill the form');
         }
     });
 };
@@ -233,19 +281,103 @@ function confirm_booking (id) {
 
 function reject_booking (id) {
 
-    id = id;
+    remarks = $('input[name=cancellation-remarks-'+id+']').val();
+    if (remarks == '') {
+        alertModal("Please fill in why you want to reject this booking in remarks.");
+        return;
+    }
+
     $.ajax({
         type: 'POST',
         url: '/visitorhostel/reject-booking/',
         data: {
             'booking-id' : $('input[name=booking-id-'+id+']').val(),
             'csrfmiddlewaretoken': $('input[name="csrf"]').val(),
+            'remark' : remarks,
         },
         success: function(data) {
-            alert("Rejected");
+            alertModal("This booking has been rejected");
+            setTimeout(function() {
+                window.location.replace('http://localhost:8000/visitorhostel');
+            }, 1500);
         },
         error: function(data, err) {
-            alert('Something missing! PLease refill the form');
+            alertModal('Something missing! Please refill the form');
+        }
+    });
+};
+
+// Cancel Booking
+
+function cancel_booking (id) {
+
+    $.ajax({
+        type: 'POST',
+        url: '/visitorhostel/cancel-booking/',
+        data: {
+            'booking-id' : $('input[name=booking-id-'+id+']').val(),
+            'csrfmiddlewaretoken': $('input[name="csrf"]').val(),
+            'charges' : $('input[name=charges-'+id+']').val(),
+        },
+        success: function(data) {
+            alertModal("This booking has been cancelled.");
+            setTimeout(function() {
+                window.location.replace('http://localhost:8000/visitorhostel');
+            }, 1500);
+        },
+        error: function(data, err) {
+            alertModal('Something missing! Please refill the form');
+        }
+    });
+};
+
+// Forward Booking
+
+function forward_booking (id) {
+    id=id;
+    $.ajax({
+        type: 'POST',
+        url: '/visitorhostel/forward-booking/',
+        data: {
+            'csrfmiddlewaretoken' : $('input[name="csrf"]').val(),
+            'id' : id,
+        },
+        success: function(data) {
+            alertModal("This booking has been forwarded");
+            setTimeout(function() {
+                window.location.replace('http://localhost:8000/visitorhostel');
+            }, 1500);
+        },
+        error: function(data, err) {
+            alertModal('Something missing! Please refill the form');
+        }
+    });
+}
+
+// Cancel Active Booking
+
+function cancel_active_booking (id, booking_from) {
+
+    if (new Date(date) <= new Date(booking_from)){
+        alertModal('Cannot cancel as booking start date has arrived!');
+    }
+
+
+    $.ajax({
+        type: 'POST',
+        url: '/visitorhostel/cancel-booking-request/',
+        data: {
+            'booking-id' : id,
+            'csrfmiddlewaretoken': $('input[name="csrf"]').val(),
+        },
+        success: function(data) {
+            alertModal("Your cancellation request has been placed.\n Please await confirmation.");
+            setTimeout(function() {
+                window.location.replace('http://localhost:8000/visitorhostel');
+            }, 1500);
+        },
+        error: function(data, err) {
+            alertModal('Something missing! Please refill the form');
         }
     });
 };
@@ -267,78 +399,93 @@ $("#update-inventory-submit").click(function(e){
             'data' : data
         },
         success: function(data) {
-            alert("Success");
+            alertModal("Congratulations! Inventory is updated successfully");
         },
         error: function(data, err) {
-            alert('Something missing! PLease refill the form');
+            alertModal('Something missing! PLease refill the form');
         }
     });
 });
 
 // Submit Visitor Details
 
-function submit_visitor_details (id, i) {
-    id = id;
-    i = i;
-    $.ajax({
-        type: 'POST',
-        url: '/visitorhostel/check-in/',
-        data: {
-            'booking-id' : id,
-            'csrfmiddlewaretoken' : $('input[name="csrf"]').val(),
-            'name' : $('input[name=visitor-name-'+id+'-'+i+']').val(),
-            'phone' : $('input[name=phone-'+id+'-'+i+']').val(),
-            'email' : $('input[name=email-'+id+'-'+i+']').val(),
-            'address' : $('input[name=address-'+id+'-'+i+']').val()
-        },
-        success: function(data) {
-            alert("Success");
-        },
-        error: function(data, err) {
-            alert('Something missing! PLease refill the form');
+function submit_visitor_details (id) {
+    vis_length = $('input[name=length-'+id+']').val();
+    var temp = parseInt(vis_length);
+    for (var i=1; i<=vis_length+1; i++) {
+        csrfmiddlewaretoken = $('input[name="csrf"]').val();
+        name = $('input[name=visitor-name-'+id+'-'+i+']').val();
+        phone = $('input[name=phone-'+id+'-'+i+']').val();
+        email = $('input[name=email-'+id+'-'+i+']').val();
+        address = $('input[name=address-'+id+'-'+i+']').val();
+
+        if (name == '') {
+            alertModal("You didn't fill a visitor name! Please refill the form.");
+            return;
         }
-    });
+
+        if (phone == '') {
+            alertModal("You didn't fill a visitor's phone number. Please fill the form again.");
+            return;
+        }
+    }
+
+    for (var j=1; j<=temp+1; j++) {
+        csrfmiddlewaretoken = $('input[name="csrf"]').val();
+        name = $('input[name=visitor-name-'+id+'-'+j+']').val();
+        phone = $('input[name=phone-'+id+'-'+j+']').val();
+        email = $('input[name=email-'+id+'-'+j+']').val();
+        address = $('input[name=address-'+id+'-'+j+']').val();
+
+        $.ajax({
+            type: 'POST',
+            url: '/visitorhostel/check-in/',
+            data: {
+                'booking-id' : id,
+                'csrfmiddlewaretoken' : csrfmiddlewaretoken,
+                'name' : name,
+                'phone' : phone,
+                'email' : email,
+                'address' : address
+            },
+            success: function(data) {
+                alertModal("Great! Visitor's details have been recorded successfully");
+            },
+            error: function(data, err) {
+                alertModal('Something missing! Please refill the form');
+            }
+        });
+    }
+    setTimeout(function() {
+        window.location.replace('http://localhost:8000/visitorhostel');
+    }, 1500);
 }
 
 // Check Out
 
-function check_out (id) {
+function check_out (id , mess_bill , room_bill) {
     $.ajax({
         type: 'POST',
         url: '/visitorhostel/check-out/',
         data: {
             'csrfmiddlewaretoken' : $('input[name="csrf"]').val(),
             'id' : id,
+            'mess_bill' : mess_bill,
+            'room_bill' : room_bill,
         },
         success: function(data) {
-            alert("Checked Out");
+            alertModal("Visitor has Checked Out ");
+            setTimeout(function() {
+                window.location.replace('http://localhost:8000/visitorhostel');
+            }, 1500);
         },
         error: function(data, err) {
-            alert('Something missing! PLease refill the form');
+            alertModal('Something missing! Please refill the form');
         }
     });
 }
 
 function find_available_rooms () {
-    var calendarOpts = {
-        type: 'date',
-        formatter: {
-            date: function (date, settings) {
-                if (!date) return '';
-                var day = date.getDate() + '';
-                if (day.length < 2) {
-                    day = '0' + day;
-                }
-                var month = (date.getMonth() + 1) + '';
-                if (month.length < 2) {
-                    month = '0' + month;
-                }
-                var year = date.getFullYear();
-                return year + '-' + month + '-' + day;
-            }
-        }
-    };
-    $('.ui.calendar').calendar(calendarOpts);
     $.ajax({
         type: 'POST',
         url: '/visitorhostel/room-availability/',
@@ -352,27 +499,56 @@ function find_available_rooms () {
             $('#replace-this-div').html(data);
         },
         error: function(data, err) {
-            alert('Something missing! PLease refill the form');
+            alertModal('Something missing! Please refill the form');
         }
     });
 }
 
-// Forward Booking
 
-function forward_booking (id) {
-    id=id;
-    $.ajax({
-        type: 'POST',
-        url: '/visitorhostel/forward-booking/',
-        data: {
-            'csrfmiddlewaretoken' : $('input[name="csrf"]').val(),
-            'id' : id,
-        },
-        success: function(data) {
-            alert("Forwarded")
-        },
-        error: function(data, err) {
-            alert('Something missing! PLease refill the form');
-        }
-    });
+// Various Modals
+
+function modalAddItem(){
+    $('#addItemModal').modal('show');
 }
+
+function bookingRequestModal(id){
+    $('#booking-request-'.concat(id)).modal('show');
+}
+
+function cancellationRequestModal(id) {
+    $('#cancellation-request-'.concat(id)).modal('show');
+}
+
+function bookingDetailsModal(id){
+    $('#booking-details-'.concat(id)).modal('show');
+}
+
+function checkInModal (id, booking_from) {
+    if (new Date(booking_from) > new Date(date)) {
+        alertModal ('Cannot check in as booking start date yet not reached.');
+        return;
+    }
+    $('#check-in-modal-'.concat(id)).modal('show');
+}
+
+function checkOutModal(id) {
+    $('#check-out-modal-'.concat(id)).modal('show');
+}
+
+function alertModal(alert) {
+    $('#append-alert').html(alert);
+    $('#alert-modal').modal('show');
+}
+
+function requestModal() {
+    $('#requestModal').modal('show');
+}
+
+// Information Tooltip on Categories
+
+$('.info.circle.icon')
+  .popup({
+    inline: true
+  })
+;
+

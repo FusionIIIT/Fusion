@@ -18,7 +18,7 @@
         <div class="ui vertical segment">
 
             {% comment %}Form Tag starts here!{% endcomment %}
-            <form method="POST" action="vacasubmit/">
+            <form method="POST">
                 {% csrf_token %}
                 {% comment %}The add a new skill Accordian starts here!{% endcomment %}
                 <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
@@ -39,22 +39,32 @@
                     <div class="two fields">
                         <div class="field">
                             <label>Leave From:</label>
-                            <input type="date" name="start_date" id="start_date">
+                            <div class="ui calendar" id="rangestart">
+                                <div class="ui input left icon">
+                                    <i class="calendar icon"></i>
+                                    <input name="start_date" type="text" placeholder="From" required="true" id="sdate">
+                                </div>
+                            </div>
                         </div>
 
                         <div class="field">
                             <label>Leave To:</label>
-                            <input type="date" name="end_date" id="end_date">
+                            <div class="ui calendar" id="rangestart">
+                                <div class="ui input left icon">
+                                    <i class="calendar icon"></i>
+                                    <input name="end_date" type="text" placeholder="To" required="true" id="edate">
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <div class="field">
                         <label>Purpose:</label>
-                        <textarea rows="2" name="purpose" id="purpose"></textarea>
+                        <textarea rows="2" name="purpose" id="purpose1"></textarea>
                     </div>
 
                     <div class="field">
-                        <button class="ui primary button right floated" type="submit" name="submit">
+                        <button class="ui primary button right floated" onclick="return vacarequest()">
                             Submit
                         </button>
                     </div>
@@ -93,10 +103,6 @@
                             </th>
 
                             <th>
-                                Student
-                            </th>
-
-                            <th>
                                 From
                             </th>
 
@@ -121,15 +127,6 @@
                         <tr>
                             <td>
                                 {{req.app_date}}
-                            </td>
-                            <td>
-                                <h4 class="ui image header">
-                                    <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
-                                    <div class="content">
-                                        {{req.student_id}}
-                                    
-                                    </div>
-                                </h4>
                             </td>
 
                             <td>
@@ -180,27 +177,52 @@
 {% endblock %}
 {% endblock %}
 
-<!-- {% block javascript %}
+{% block javascript %}
 <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
 
 <script>
         function vacarequest(){
+
+            event.preventDefault();
+
+            var calendarOpts = {
+                type: 'date',
+                formatter: {
+                date: function (date, settings) {
+                    if (!date) return '';
+                    var day = date.getDate() + '';
+                    if (day.length < 2) {
+                        day = '0' + day;
+                    }
+                    var month = (date.getMonth() + 1) + '';
+                     if (month.length < 2) {
+                        month = '0' + month;
+                }
+                var year = date.getFullYear();
+                return year + '-' + month + '-' + day;
+            }
+        }
+    };
+    $('.ui.calendar').calendar(calendarOpts);
+
+
             $.ajax({
                 type: 'POST',
                 url: 'vacasubmit/',
                 dataType: 'json',
                 data: {
-                    'start_date':$("#start_date").val(),
-                    'end_date':$("#end_date").val(),
-                    'purpose':$("#purpose").val()
+                    'csrfmiddlewaretoken' : '{{ csrf_token }}',
+                    'start_date':$("#sdate").val(),
+                    'end_date':$("#edate").val(),
+                    'purpose':$("#purpose1").val()
                 },          
                 success: function(data) {
                     if(data.status){
                         alert("Data Inserted Successfully");
 
-                        document.getElementById('start_date').value="";
-                        document.getElementById('end_date').value="";
-                        document.getElementById('purpose').value="";
+                        document.getElementById('sdate').value="";
+                        document.getElementById('edate').value="";
+                        document.getElementById('purpose1').value="";
                     }
                 },
                 error: function(data, err) {
@@ -213,4 +235,4 @@
 
 
 </script>
-{% endblock %} -->
+{% endblock %}

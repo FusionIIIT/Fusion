@@ -62,7 +62,7 @@
                         <h4 class="ui image header">
                             <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
                             <div class="content">
-                                 {{ a.complainer }}
+                                 {{ a.complainer.user }}
                                 <div class="sub header">
                                 </div>
                             </div>
@@ -81,7 +81,7 @@
                         {{ a.specific_location }}
                     </td>
                     <td>
-                        {{ a.details }}
+                        <a href="./detail2/{{ a.id }}/"> Click here!</a>
                     </td>
                     <td>
                           <i class="large green checkmark icon"></i>

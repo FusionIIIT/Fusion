@@ -36,7 +36,7 @@
                     {% if item.feedback_type == 'Food' %}
                 <tr>
                     <td>{{item.fdate}}</td>
-                    <td>{{item.student_id}}</td>
+                    <td>{{item.student_id.id}}</td>
                     <td>{{item.feedback_type}}</td>
                     <td>{{item.description}}</td>
                 </tr>
@@ -66,7 +66,7 @@
                     {% if item.feedback_type == 'Cleanliness' %}
                 <tr>
                     <td>{{item.fdate}}</td>
-                    <td>{{item.student_id}}</td>
+                    <td>{{item.student_id.id}}</td>
                     <td>{{item.feedback_type}}</td>
                     <td>{{item.description}}</td>
                 </tr>
@@ -96,7 +96,7 @@
                     {% if item.feedback_type == 'Maintenance' %}
                 <tr>
                     <td>{{item.fdate}}</td>
-                    <td>{{item.student_id}}</td>
+                    <td>{{item.student_id.id}}</td>
                     <td>{{item.feedback_type}}</td>
                     <td>{{item.description}}</td>
                 </tr>
@@ -126,7 +126,7 @@
                     {% if item.feedback_type == 'Others' %}
                 <tr>
                     <td>{{item.fdate}}</td>
-                    <td>{{item.student_id}}</td>
+                    <td>{{item.student_id.id}}</td>
                     <td>{{item.feedback_type}}</td>
                     <td>{{item.description}}</td>
                 </tr>

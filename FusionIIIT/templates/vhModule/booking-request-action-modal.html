@@ -5,10 +5,10 @@
 <div class="ui modal booking" id='booking-request-{{ booking.id }}'>
   <div class="header">Booking Request Action</div>
   <div class="scrolling content">
-    <form class="ui large form">
+    <form class="ui large form" id="behen-ka-bhai">
         <div class="field">
             <label>Name</label>
-            <input type="text" value="{{ booking.intender }}" readonly>
+            <input type="text" value="{{ booking.intender.name }}" readonly>
         </div>
 
         <div class="field">
@@ -88,13 +88,13 @@
                     </div>
                 </div>
 
-                <div class="field">
+                <div class="field" id="alloted-rooms-{{ booking.id }}" >
                     <label>Rooms (required*)</label>
-                    <select name="alloted-rooms-{{ booking.id }}" multiple="" class="ui fluid dropdown">
+                    <select name="alloted-rooms-{{ booking.id }}" multiple="" class="ui fluid dropdown" required="">
                         {% for key, values in available_rooms.items %}
                             {% if key == booking.id %}
                                 {% for room in values %}
-                                <option value='{{ room }}'>{{ room }}</option>
+                                    <option value='{{ room }}'>{{ room }}</option>
                                 {% endfor %}
                             {% endif %}
                         {% endfor %}
@@ -107,6 +107,12 @@
             <label>Purpose Of Visit</label>
             <div class="ui fluid input">
                 <input rows="2" value="{{ booking.purpose }}" readonly >
+            </div>
+        </div>
+        <div class="field">
+            <label>Remarks (required*)</label>
+            <div class="ui fluid input">
+                <input type="text" name="cancellation-remarks-{{ booking.id }}" required="">
             </div>
         </div>
 
@@ -141,7 +147,7 @@
         {%  if booking.status == 'Pending' or booking.status == 'Confirmed' %}
         <div class="field">
             <label></label>
-            <div class="ui large red button right floated" id="cancel-booking">
+            <div class="ui large red button right floated" id="cancel-booking" onclick="cancel_booking('{{ booking.id }}')">
                 Cancel
             </div>
         </div>
@@ -154,6 +160,4 @@
 </div>
 
 {% endfor %}
-
-
 {% endblock %}

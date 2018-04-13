@@ -6,6 +6,8 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, redirect, render
+from django.core.files.storage import FileSystemStorage
+
 from PIL import Image
 
 from applications.globals.forms import IssueForm, WebFeedbackForm
@@ -13,7 +15,7 @@ from applications.globals.models import Feedback, Issue, IssueImage, ExtraInfo, 
 from applications.placement_cell.models import (Achievement, Course, Education, Experience, Has,
                                                 Project, Publication, Skill, Patent)
 from applications.academic_information.models import Student
-from applications.placement_cell.forms import (AddEducation, AddProfile, AddSkill, AddCourse,
+from applications.placement_cell.forms import (AddEducation, AddProfile, AddSkill, AddCourse, AddProfile,
                                                AddAchievement, AddProject, AddPublication, AddPatent, AddExperience)
 from Fusion.settings import LOGIN_URL
 
@@ -261,7 +263,7 @@ def dashboard(request):
     profile = get_object_or_404(ExtraInfo, Q(user=user))
     if(str(request.user.extrainfo.user_type)=='faculty'):
         return HttpResponseRedirect('/eis/profile')
-    print(str(request.user.extrainfo.department))
+    #             print(str(request.user.extrainfo.department))
     if(str(request.user.extrainfo.department)=='department: Academics'):
         return HttpResponseRedirect('/aims')
     current = HoldsDesignation.objects.filter(Q(working=user, designation__name="student"))
@@ -290,31 +292,18 @@ def dashboard(request):
                 age = request.POST.get('age')
                 address = request.POST.get('address')
                 contact = request.POST.get('contact')
-                fut = request.POST.get('fut')
-                # futu = request.POST.get('futu')
-                studentplacement_obj = StudentPlacement.objects.get(unique_id=profile.id)
-                # print(studentplacement_obj.future_aspect)
-                # print('fut=', fut)
-                # print('futu=', futu)
-                # if studentplacement_obj.future_aspect == "HIGHER STUDIES":
-                #     if futu == 2:
-                #         studentplacement_obj.future_aspect = "PLACEMENT"
-                # elif studentplacement_obj.future_aspect == "PLACEMENT":
-                #     if futu == None:
-                #         studentplacement_obj.future_aspect = "HIGHER STUDIES"
-                if(fut==None):
-                    studentplacement_obj.future_aspect="HIGHER STUDIES"
-                else:
-                    studentplacement_obj.future_aspect = "PLACEMENT"
-
-                studentplacement_obj.save()
                 extrainfo_obj = ExtraInfo.objects.get(user=user)
                 extrainfo_obj.about_me = about_me
-                extrainfo_obj.age = age
+                # extrainfo_obj.age = age
                 extrainfo_obj.address = address
                 extrainfo_obj.phone_no = contact
                 extrainfo_obj.save()
                 profile = get_object_or_404(ExtraInfo, Q(user=user))
+            if 'picsubmit' in request.POST:
+                form = AddProfile(request.POST, request.FILES)
+                extrainfo_obj = ExtraInfo.objects.get(user=user)
+                extrainfo_obj.profile_picture = form.cleaned_data["pic"]
+                extrainfo_obj.save()
             if 'skillsubmit' in request.POST:
                 form = AddSkill(request.POST)
                 if form.is_valid():
@@ -450,6 +439,7 @@ def dashboard(request):
         form6 = AddProject(initial={})
         form7 = AddPatent(initial={})
         form8 = AddExperience(initial={})
+        form14 = AddProfile()
         skills = Has.objects.filter(Q(unique_id=student))
         education = Education.objects.filter(Q(unique_id=student))
         course = Course.objects.filter(Q(unique_id=student))
@@ -461,13 +451,14 @@ def dashboard(request):
         context = {'user': user, 'profile': profile, 'skills': skills,
                    'educations': education, 'courses': course, 'experiences': experience,
                    'projects': project, 'achievements': achievement, 'publications': publication,
-                   'patent': patent, 'form': form, 'form1': form1,
+                   'patent': patent, 'form': form, 'form1': form1, 'form14': form14,
                    'form5': form5, 'form6': form6, 'form7': form7, 'form8': form8,
                    'form10':form10, 'form11':form11, 'form12':form12, 'current':current}
         return render(request, "dashboard/dashboard.html", context)
     else:
         context = {}
         return render(request, "dashboard/dashboard.html", context)
+
 
 @login_required(login_url=LOGIN_URL)
 def logout_view(request):

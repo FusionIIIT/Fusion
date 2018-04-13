@@ -107,20 +107,20 @@
                 <div class="field">
                     <label>Specific Location</label>
                     <div class="ui large input">
-                        <input placeholder="Specific Location" name="specific_location">
+                        <input placeholder="Specific Location" name="specific_location" required>
                     </div>
                 </div>
 
                 <div class="field">
                     <label>Complaint Details</label>
-                    <textarea rows="2" name="details"></textarea>
+                    <textarea rows="2" name="details" required></textarea>
                 </div>
                     Complaint Will be Register with your User ID : {{ comp_id }}
                 <input type="text" name="comp_id" style="visibility: hidden;" value="{{ comp_id }}" >
 
                 <br>
 
-                <button class="ui large primary button right floated">
+                <button class="ui large primary button right floated" onclick= "myfunction()">
                     Submit
                 </button>
 
@@ -134,4 +134,24 @@
         </div>
     </div>
 
+    <script>
+    function myfunction() {
+        alert("Complaint Successfully Launched");
+    }
+            </script>
+{#                {% endif %}#}
+
+{#       {%  if messages %}#}
+{#                 <ul class = "messages">#}
+{#                    {%  for message in messages %}#}
+{#                    <li{% if message.tags %} class = "{{ message.tags }}"{%  endif %}>{{ message }}</li>#}
+{#                    {%  endfor %}#}
+{#                 </ul>#}
+{#       {%  endif %}#}
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
 {% endblock %}

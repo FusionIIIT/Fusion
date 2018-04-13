@@ -212,7 +212,7 @@ class NotifyStudent(models.Model):
     timestamp = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return '{} - {}'.format(self.company_name, self.timestamp)
+        return '{} - {}'.format(self.company_name, self.placement_type)
 
 
 class PlacementStatus(models.Model):

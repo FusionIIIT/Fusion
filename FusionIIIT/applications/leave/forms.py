@@ -39,6 +39,11 @@ class StudentApplicationForm(forms.Form):
         if data.get('end_date') < today:
             errors['end_date'] = ['Past Dates are not allowed']
 
+        lt = LeaveType.objects.filter(name=data.get('leave_type')).first()
+
+        if lt.requires_proof and not data.get('document'):
+            errors['document'] = [f'{lt.name} Leave requires document proof']
+
         if data.get('start_date') > data.get('end_date'):
             if 'start_date' in errors:
                 errors['start_date'].append('Start Date must be less than End Date')
@@ -277,10 +282,11 @@ class BaseLeaveFormSet(BaseFormSet):
         leave_counts = LeavesCount.objects.filter(user=self.user, year=curr_year)
         mapping = dict()
         for form in self.forms:
-            # if form.is_valid():
             try:
                 data = form.cleaned_data
                 leave_type = LeaveType.objects.get(id=data.get('leave_type'))
+                if leave_type.is_station:
+                    continue
                 count = get_leave_days(data.get('start_date'), data.get('end_date'),
                                        leave_type, data.get('start_half'), data.get('end_half'))
 
@@ -289,7 +295,7 @@ class BaseLeaveFormSet(BaseFormSet):
                 else:
                     mapping[leave_type] = count
             except:
-                pass
+                raise VE('Some error occured, please contact admin.')
 
         for key, value in mapping.items():
             tp = leave_counts.get(leave_type=key)

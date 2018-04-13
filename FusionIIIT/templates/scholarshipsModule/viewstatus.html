@@ -53,8 +53,9 @@
                                 {% if winner.student.id == request.user.extrainfo.student.id %}
                                     
                         <tr>
+                            {% if winner.status != 'ACCEPT' %}
                             <td>
-                                Mcm
+                                {{winner.award_id}}
                             </td>
                                 
                             <td>
@@ -68,6 +69,7 @@
                             <td>
                                 {{winner.status}}
                             </td>
+                            {% endif %}
                         </tr>
                                 {% endif %}
                             
@@ -76,8 +78,9 @@
                              {% for winner in dandm %}
                                 {% if winner.student.id == request.user.extrainfo.student.id %}
                         <tr>
+                            {% if winner.status != 'ACCEPT' %}
                             <td>
-                                Proficiency
+                                {{winner.award_id}}
                             </td>
                                 
                             <td>
@@ -91,14 +94,16 @@
                             <td>
                                 {{winner.status}}
                             </td>
+                            {% endif %} 
                         </tr>
                                 {% endif %}
                             {% endfor %}
                              {% for winner in gold %}
                                 {% if winner.student.id == request.user.extrainfo.student.id %}
                         <tr>
+                            {% if winner.status != 'ACCEPT' %}
                             <td>
-                                Gold
+                                {{winner.award_id}}
                             </td>
                                 
                             <td>
@@ -112,14 +117,16 @@
                             <td>
                                 {{winner.status}}
                             </td>
+                            {% endif %}
                         </tr>
                                 {% endif %}
                             {% endfor %}
                              {% for winner in silver %}
                                 {% if winner.student.id == request.user.extrainfo.student.id %}
                         <tr>
+                            {% if winner.status != 'ACCEPT' %}
                             <td>
-                                Silver
+                                {{winner.award_id}}
                             </td>
                                 
                             <td>
@@ -133,6 +140,7 @@
                             <td>
                                 {{winner.status}}
                             </td>
+                            {% endif %}
                         </tr>
                                 {% endif %}
                             {% endfor %}

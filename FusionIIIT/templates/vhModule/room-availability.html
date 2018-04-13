@@ -3,13 +3,19 @@
 
     <div class="ui active tab" data-tab="roomstatus">
         <div class="ui vertical segment">
+            <div class="field">
+                <label>Number of Available Rooms</label>
+                <div class="ui fluid input">
+                    <input type="text" value="{{ available_rooms|length }}">
+                </div>
+            </div>
+            <br>
             <table class="ui structured celled sortable table" style="margin-bottom: 16px;">
                 <thead>
                 <tr>
 
                     <th rowspan="2">Room Number</th>
                     <th rowspan="2">Floor</th>
-                    <th rowspan="4"><center>Room Status</center></th>
 
                 </tr>
                 </thead>
@@ -22,10 +28,6 @@
                         </td>
                         <td>
                             {{ room.room_floor }}
-                        </td>
-                        <td>
-                            {{ room.status }}
-
                         </td>
                     </tr>
                     {% endfor %}

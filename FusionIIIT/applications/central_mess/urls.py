@@ -21,4 +21,5 @@ urlpatterns = [
     url(r'^placerequest', views.placerequest, name='placerequest'),
     url(r'^(?P<ap_id>[0-9]+)/responserebate/', views.responserebate, name='responserebate'),
     url(r'^(?P<ap_id>[0-9]+)/responsespl/', views.responsespl, name='responsespl'),
+    url(r'^updatecost', views.updatecost, name='updatecost'),
 ]

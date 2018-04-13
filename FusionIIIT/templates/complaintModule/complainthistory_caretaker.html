@@ -79,7 +79,7 @@
                         <h4 class="ui image header">
                             <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
                             <div class="content">
-                                <a href="./{{ a.id }}/"> {{ a.complainer }}</a>
+                                <a href="./{{ a.id }}/"> {{ a.complainer.user }}</a>
                                 <div class="sub header">
 
                                 </div>
@@ -104,10 +104,7 @@
                     </td>
 
                     <td>
-                        {{ a.details }}&ensp;&ensp;&ensp;&ensp;&ensp;
-                        {% if a.remarks != 'Pending' %}
-                           ( {{ a.remarks }} )
-                        {% endif %}
+                        <a href="./detail2/{{ a.id }}/"> Click here!</a>
                     </td>
 
                     <td>
@@ -225,7 +222,7 @@
                         <h4 class="ui image header">
                             <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
                             <div class="content">
-                                {{ a.complainer }}
+                                {{ a.complainer.user }}
                                 <div class="sub header">
 
                                 </div>
@@ -245,7 +242,7 @@
                     </td>
 
                     <td>
-                        {{ a.details }}
+                        <a href="./detail2/{{ a.id }}/"> Click here!</a>
                     </td>
                     <td>
                         {{ a.delay.days }} day

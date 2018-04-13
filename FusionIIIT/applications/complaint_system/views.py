@@ -2,16 +2,29 @@ from datetime import date, datetime, timedelta
 
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, render_to_response
 
 from applications.globals.models import ExtraInfo, User
 
 from .models import Caretaker, StudentComplain, Supervisor, Workers
 from django.contrib.auth import authenticate, login
+from django.contrib import messages
 
 
 @login_required
 def assign_worker(request, comp_id1):
+    """
+    The function is used to assign workers to complaints.
+    @param:
+            request - trivial.
+            comp_idl - id of the complaint which the user intends to support/unsupport.
+
+    @variables:
+            type - takes the value either assign or redirect.
+            a - To handle error.
+            y - Foreign key .
+            context - Holds data needed to make necessary changes in the template.
+    """
     if request.method == 'POST':
         type = request.POST.get('submit', '')
         a = get_object_or_404(User, username=request.user.username)
@@ -66,6 +79,19 @@ def assign_worker(request, comp_id1):
 
 @login_required
 def check(request):
+    """
+    The function is used to check the type of user .
+    There are three types of users student,staff or faculty.
+    @param:
+            request - trivial.
+
+
+    @variables:
+            issue - The issue object.
+            supported - True if the user's intention is to support the issue.
+            support_count - Total supporters of the above issue.
+            context - Holds data needed to make necessary changes in the template.
+    """
     if request.user.is_authenticated:
         a = get_object_or_404(User, username=request.user.username)
         # a = User.objects.get(username=request.user.username)
@@ -84,7 +110,20 @@ def check(request):
 
 
 @login_required
+
 def user(request):
+    """
+    The function is used to register a complaint
+    @param:
+            request - trivial.
+
+
+    @variables:
+            issue - The issue object.
+            supported - True if the user's intention is to support the issue.
+            support_count - Total supporters of the above issue.
+            context - Holds data needed to make necessary changes in the template.
+    """
     a = get_object_or_404(User, username=request.user.username)
     y = ExtraInfo.objects.all().filter(user=a).first()
     comp_id = y.id
@@ -104,7 +143,8 @@ def user(request):
 
         x.save()
         history = StudentComplain.objects.filter(complainer=y).order_by('-id')
-        j = '1'
+        j = 1
+
         for i in history:
             i.serial_no = j
             j = j+1
@@ -118,6 +158,7 @@ def user(request):
         # y = ExtraInfo.objects.get(id=comp_id)
         history = StudentComplain.objects.filter(complainer=y).order_by('-id')
         j = 1
+
         for i in history:
             i.serial_no = j
             j = j+1
@@ -127,6 +168,18 @@ def user(request):
 
 @login_required
 def save_comp(request):
+    """
+    The function is used to save the complaint entered by the user
+    @param:
+            request - trivial.
+
+
+    @variables:
+            issue - The issue object.
+            supported - True if the user's intention is to support the issue.
+            support_count - Total supporters of the above issue.
+            context - Holds data needed to make necessary changes in the template.
+    """
     if request.method == 'POST':
         comp_id = request.POST.get('comp_id', '')
         comp_type = request.POST.get('complaint_type', '')
@@ -158,11 +211,24 @@ def save_comp(request):
                             complaint_finish=complaint_finish)
 
         x.save()
+       # messages.info(request,'Complaint successfully launched.')
+        # return HttpResponseRedirect('/complaint/user/')
         return HttpResponseRedirect('/complaint/user/')
-
 
 @login_required
 def caretaker(request):
+    """
+    The function is used to display details to the caretaker such as registered complaints and allows to assign workers
+    @param:
+            request - trivial.
+
+
+    @variables:
+            issue - The issue object.
+            supported - True if the user's intention is to support the issue.
+            support_count - Total supporters of the above issue.
+            context - Holds data needed to make necessary changes in the template.
+    """
     current_user = get_object_or_404(User, username=request.user.username)
     y = ExtraInfo.objects.all().filter(user=current_user).first()
 
@@ -173,7 +239,6 @@ def caretaker(request):
         age = request.POST.get('age', '')
 
         y = ExtraInfo.objects.get(id=y.id)
-    
         a = Caretaker.objects.get(staff_id=y)
         x = Workers(caretaker_id=a,
                     name=name,
@@ -222,7 +287,7 @@ def caretaker(request):
             i.serial_no = j
             j=j+1
             if i.status != 0:
-                if i.complaint_finish < date.today():
+                if i.complaint_finish < date.today() and i.status!=2:
                     i.delay = date.today() - i.complaint_finish
                     overduecomplaint.append(i)
 
@@ -234,6 +299,19 @@ def caretaker(request):
 
 @login_required
 def changestatus(request, complaint_id, status):
+    """
+    The function is used by caretaker to change the status of a complaint.
+    @param:
+            request - trivial.
+            complaint_id - used to get complaint_id registered.
+            status-used to get the current status of complaints
+
+    @variables:
+            issue - The issue object.
+            supported - True if the user's intention is to support the issue.
+            support_count - Total supporters of the above issue.
+            context - Holds data needed to make necessary changes in the template.
+    """
     if status == '3':
         StudentComplain.objects.filter(id=complaint_id).\
             update(status=status, worker_id='')
@@ -250,6 +328,18 @@ def changestatus(request, complaint_id, status):
 
 @login_required
 def removew(request, work_id):
+    """
+    The function is used by caretaker to remove workers.
+    @param:
+            request - trivial.
+            work_id - id of the issue object which the user intends to support/unsupport.
+
+    @variables:
+            issue - The issue object.
+            supported - True if the user's intention is to support the issue.
+            support_count - Total supporters of the above issue.
+            context - Holds data needed to make necessary changes in the template.
+    """
     worker = Workers.objects.get(id=work_id)
     temp = StudentComplain.objects.filter(worker_id=worker).count()
     if temp == 0:
@@ -262,6 +352,18 @@ def removew(request, work_id):
 
 @login_required
 def submitfeedback(request, complaint_id):
+    """
+    The function is used by the complaintant to enter feedback after the complaint has been resolved
+    @param:
+            request - trivial.
+            complaint_id - id of the registerd complaint.
+
+    @variables:
+            issue - The issue object.
+            supported - True if the user's intention is to support the issue.
+            support_count - Total supporters of the above issue.
+            context - Holds data needed to make necessary changes in the template.
+    """
     if request.method == 'POST':
         feedback = request.POST.get('feedback', '')
         rating = request.POST.get('rating', '')
@@ -294,6 +396,18 @@ def deletecomplaint(request, comp_id1):
 
 @login_required
 def supervisor(request):
+    """
+    The function is used to display all registered complaints to the supervisor
+    @param:
+            request - trivial.
+
+
+    @variables:
+            issue - The issue object.
+            supported - True if the user's intention is to support the issue.
+            support_count - Total supporters of the above issue.
+            context - Holds data needed to make necessary changes in the template.
+    """
     current_user = get_object_or_404(User, username=request.user.username)
     y = ExtraInfo.objects.all().filter(user=current_user).first()
 
@@ -306,7 +420,7 @@ def supervisor(request):
     overduecomplaint = []
     for i in all_complaint:
         if i.status != 0:
-            if i.complaint_finish < date.today():
+            if i.complaint_finish < date.today() and i.status!=2:
                 i.delay = date.today() - i.complaint_finish
                 overduecomplaint.append(i)
 
@@ -333,3 +447,18 @@ def login1(request):
             return HttpResponse("<h1>wrong user credentials</h1>")
     else:
         return HttpResponseRedirect('/login/')
+
+@login_required
+def detail(request, detailcomp_id1):
+    detail = StudentComplain.objects.get(id=detailcomp_id1)
+    return render(request, "complaintModule/complaint_user_detail.html", {"detail": detail,})
+
+@login_required
+def detail2(request, detailcomp_id1):
+    detail2 = StudentComplain.objects.get(id=detailcomp_id1)
+    return render(request, "complaintModule/complaint_caretaker_detail.html", {"detail2": detail2,})
+
+@login_required
+def detail3(request, detailcomp_id1):
+    detail3 = StudentComplain.objects.get(id=detailcomp_id1)
+    return render(request, "complaintModule/complaint_supervisor_detail.html", {"detail3": detail3,})

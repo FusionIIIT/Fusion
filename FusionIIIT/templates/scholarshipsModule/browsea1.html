@@ -62,7 +62,7 @@
                                 <form method='POST'>
                                     {% csrf_token %}
                                     <input type="hidden" name="id" value="{{winner.id}}"/>
-                                    <a href="/media/{{winner.relevant_document}}" download><button type='button' class="ui blue button" name="Form">Files</button>
+                                    <a href="/media/{{winner.income_certificate}}" download><button type='button' class="ui blue button" name="Form">Files</button>
                                     </a>    
                                 </form>
                         </td>
@@ -121,6 +121,7 @@
                             <thead>
                             <tr>
                                 <th>Student ID</th>
+                                <th>Award</th>
                                 <th>Title</th> 
                                 <th>CPI</th>
                                 <th>Number of Students</th>
@@ -136,6 +137,11 @@
                                 <td>
                                     <div class="content">
                                             {{winner.student.id}}
+                                    </div>   
+                                </td>
+                                <td>
+                                    <div class="content">
+                                            {{winner.award_id}
                                     </div>   
                                 </td>
                                 <td>
@@ -201,6 +207,7 @@
                         <thead>
                         <tr>
                             <th>Student ID</th>
+                            <th>Award</th>
                             <th>CPI</th>
                             <th>File</th>
                             <th>Verify</th>
@@ -216,7 +223,11 @@
                                         {{winner.student.id}}
                                 </div>   
                             </td>
-                            
+                              <td>
+                                <div class="content">
+                                        {{winner.award_id}}
+                                </div>   
+                            </td>
                             <td>
                                 <div class="content">
                                         {{winner.student.cpi}}

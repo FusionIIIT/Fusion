@@ -1,5 +1,5 @@
 import datetime
-from datetime import time
+from datetime import time, timedelta
 
 from django import forms
 
@@ -29,7 +29,7 @@ class QuizForm(forms.Form):
         sdate = self.cleaned_data.get("startdate")
         stime = self.cleaned_data.get("starttime")
         print(sdate, "sdate")
-        today = datetime.datetime.now()
+        today = datetime.datetime.now() - timedelta(1)
         print(today, "today")
         k1 = stime.hour
         k2 = stime.minute

@@ -31,6 +31,30 @@ def main(request):
 
 @login_required(login_url='/accounts/login')
 def academic_procedures(request):
+    '''
+        This function does the following things:
+        1. Checks whether the User is Academic Admin or not.
+        2. Gets the current semster of the Student.
+        3. Gets the pre-registration and final-registration date.
+        4. Gets add/drop course date.
+        5. Gets the current user's branch.
+        6. Get all the courses related to the user's branch.
+        7. Checks whether Final Registration is done or not.
+        8. Brange change is implemented here.
+
+        @param:
+                request - trivial.
+
+        @variables:
+                desig_id - Finds the Acad admin whose designation is "Upper Division Clerk"
+                student - Details of the currently logged in user.
+                user_sem - Curent semester of the current user.
+                registered_or_not - Checks whether the logged in student has registered or not.
+                pre_registration_date - Gets the Pre-registration Date form the Academic Calendar.
+                minimum_credit - Minimum Credits required to apply for branch change.
+                branch_courses - Gets the current semester courses branchwise.
+                add_courses - Courses for the next semester for which the student can apply.
+    '''
     current_user = get_object_or_404(User, username=request.user.username)
     print(current_user)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
@@ -198,6 +222,17 @@ def academic_procedures(request):
 
 
 def get_currently_registered_courses(user_details, user_sem):
+    '''
+        This function fetches the currently registered courses from the database and store
+        them into list ans.
+        @param:
+                user_details - Has the details of the logged in user(student).
+                user_sem - Has the semester of the user(student).
+
+        @variables:
+                obj1 - Gets all the registered courses of the logged in user(student).
+                ans - has the registered courses details of the logged in user.
+    '''
     obj1 = Register.objects.all().filter(student_id=user_details, semester=user_sem)
     # obj2 = Register.objects.all()
     # ans2 = []
@@ -214,6 +249,15 @@ def get_currently_registered_courses(user_details, user_sem):
 
 
 def get_course_to_show_pg(initial_courses, final_register):
+    '''
+        This function fetches the PG courses from the database and store them into list x.
+        @param:
+                initial_courses - The courses that the registered PG student has already selected.
+                final_register - Finally registered courses of the user.
+
+        @variables:
+                x - The courses that are not being finally registered.
+    '''
     x = []
     print(initial_courses, final_register)
     for i in initial_courses:
@@ -229,6 +273,15 @@ def get_course_to_show_pg(initial_courses, final_register):
 
 
 def get_course_to_show(branch, final_register):
+    '''
+        This function fetches the UG courses from the database and store them into list x.
+        @param:
+                branch - Branch of the user.
+                final_register - finally registered courses.
+
+        @variables:
+                total_course - The courses that are not being finally registered.
+    '''
     x = []
     for i in final_register:
         x.append(i.course_id)
@@ -240,6 +293,15 @@ def get_course_to_show(branch, final_register):
 
 
 def get_pg_course(usersem, specialization):
+    '''
+        This function fetches the PG Spcialization courses from the database and store them into list result.
+        @param:
+                usersem - Current semester of the user.
+                specialization - has the specialization of the logged in PG student.
+
+        @variables:
+                result - The selected Specialization courses.
+    '''
     usersem = 2
     obj = CoursesMtech.objects.filter(specialization=specialization)
     obj3 = CoursesMtech.objects.filter(specialization="all")
@@ -260,6 +322,16 @@ def get_pg_course(usersem, specialization):
 
 @login_required(login_url='/accounts/login')
 def drop_course(request):
+    '''
+        This function drops the course that were added after pre-registration.
+        @param:
+                request - trivial
+
+        @variables:
+                c_id - course id of the dropped course.
+                user_id - logged in user ID.
+                instance - Deletes the selected to be dropped course and deletes it from the database.
+    '''
     # current_user = get_object_or_404(User, username=request.user.username)
     if request.method == 'POST':
         try:
@@ -283,6 +355,16 @@ def drop_course(request):
 
 
 def get_add_course(branch, final):
+    '''
+        This function shows the courses that were added after pre-registration.
+        @param:
+                branch - Branch of the Logged in student.
+                final - all the added courses after pre-registration.
+
+        @variables:
+                x - all the added courses after pre-registration.
+                total_course - al the remaining courses that were not added.
+    '''
     x = []
     for i in final:
         x.append(i.course_id)
@@ -295,6 +377,19 @@ def get_add_course(branch, final):
 
 # function to get user semester
 def get_user_semester(roll_no):
+    '''
+        This function is used to get the current semester of the user.
+        @param:
+                roll_no - roll number of the logged in user.
+
+        @variables:
+                roll - roll number of the logged in user.
+                now - today's date
+                year - current year.
+                month - current month
+                user_year - user's academic year.
+                sem - logged in user's semester.
+    '''
     roll = str(roll_no)
     roll = int(roll[:4])
     now = datetime.datetime.now()
@@ -312,6 +407,15 @@ def get_user_semester(roll_no):
 
 
 def get_branch_courses(courses, branch):
+    '''
+        This function is used to get the branch wise courses and return them into course_list.
+        @param:
+                courses - all the branchwise courses.
+                branch - user's branch
+
+        @variables:
+                course_list - all the courses of the current(logged in) user.
+    '''
     course_list = []
     # print(branch)
     for course in courses:
@@ -328,10 +432,29 @@ def get_branch_courses(courses, branch):
 
 
 def get_user_branch(user_details):
+    '''
+        This function retuns the branch of the user.
+        @param:
+                user_details - all the details of the logged in user.
+
+    '''
     return user_details.department.name
 
 
 def register(request):
+    '''
+        This function is used to pre-register the courses of the logged in user the entry in the database is store by variable list 'p'.
+        @param:
+                request - trivial
+
+        @variables:
+                current_user - logged in user's details.
+                values_length - selected courses by the user.
+                sem - user's next semester.
+                course_id - details of the selected courses.
+                student_id - details of the current user.
+                p - object to save data in the database.
+    '''
     if request.method == 'POST':
         try:
             # print(request.POST)
@@ -374,6 +497,17 @@ def register(request):
 
 
 def final_register(request):
+    '''
+        This function is used to register finally the courses of the logged in user the entry in the database is store by variable list 'p'.
+        @param:
+                request - trivial
+
+        @variables:
+                current_user - details of the current user.
+                extraInfo_user - gets the user details from the extrainfo model.
+                user_sem - user's semester
+                p - object to save data in the database.
+    '''
     if request.method == 'POST':
         current_user = get_object_or_404(User, username=request.user.username)
         extraInfo_user = ExtraInfo.objects.all().filter(user=current_user).first()
@@ -393,6 +527,20 @@ def final_register(request):
 
 @login_required(login_url='/accounts/login')
 def apply_branch_change(request):
+    '''
+        This function is used to verify the details to apply for the branch change. It checks the requirement and tells the user if he/she can change the branch or not.
+        @param:
+                request - trivial
+
+        @variables:
+                branches - selected branches by the user.
+                student - details of the logged in user.
+                extraInfo_user - gets the user details from the extrainfo model.
+                cpi_data - cpi of the logged in user.
+                semester - user's semester.
+                label_for_change - boolean variable to check the eligibility.
+
+    '''
     # Get all the departments
     # branch_list = DepartmentInfo.objects.all()
     branches = ['CSE', 'ME', 'ECE']
@@ -425,6 +573,17 @@ def apply_branch_change(request):
 
 
 def branch_change_request(request):
+    '''
+        This function is used to apply the branch change request.
+        @param:
+                request - trivial
+
+        @variables:
+                current_user - details of the current user.
+                student - details of the logged in student.
+                extraInfo_user - gets the user details from the extrainfo model.
+                department - user's branch.
+    '''
     if request.method == 'POST':
         current_user = get_object_or_404(User, username=request.user.username)
         extraInfo_user = ExtraInfo.objects.all().filter(user=current_user).first()
@@ -446,6 +605,34 @@ def branch_change_request(request):
 
 @login_required(login_url='/accounts/login')
 def acad_person(request):
+    '''
+        Function for academic user
+        @param:
+                request - trivial
+
+        @variables:
+                current_user - get request user of curent variable
+                user_details - taking his details from ExtraInfo
+                desig_id - taking his details from Designation
+                temp - temporary variable for getting information of real academic uservso that tha can be matched with the current user
+                acadadmin - temporary variable for getting information of real academic user
+                k - temporary variable
+                year - today's year
+                month - today's month
+                available_cse_seats - available cse seats
+                available_ece_seats - available ece seats
+                available_me_seats - available me seats
+                total_cse_seats - total cse seats
+                total_ece_seats - total ece seats
+                total_me_seats - totala me seats
+                initial_branch - temporary variable to store branch change request
+                change_branch - final variable to change branch
+                available_seats - temporary variable to save available seats
+                applied_by - id of the applied student
+                cpi - cpi of the student
+                lists - combining arrays applied_by
+                context - final context variable to be shown on html page
+    '''
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
@@ -533,6 +720,16 @@ def acad_person(request):
 
 @login_required(login_url='/acounts/login')
 def approve_branch_change(request):
+    '''
+        This function is used to approve the branch change requests from acad admin's frame.
+        @param:
+                request - trivial
+
+        @variables:
+                choices - list of students who applied for the branch change.
+                branches - selected brances by the student.
+                get_student - updating the student's branch after approval.
+    '''
     if request.method == 'POST':
         values_length = 0
         for key, values in request.POST.lists():
@@ -569,6 +766,15 @@ def approve_branch_change(request):
 
 # Function returning Branch , Banch data which was required many times
 def get_batch_query_detail(month, year):
+    '''
+        This function is used to get the batch's detail simply return branch which is required often.
+        @param:
+                month - current month
+                year - current year.
+
+        @variables:
+                query_option1 - year to be shown on students course sho page acad admin
+    '''
     stream1 = "B.Tech "
     stream2 = "M.Tech "
     query_option1 = {}
@@ -596,7 +802,16 @@ def get_batch_query_detail(month, year):
 # view when Admin drops a user course
 @login_required(login_url='/accounts/login')
 def dropcourseadmin(request):
+    '''
+        This function is used to get the view when Acad Admin drops any course of any student.
+        @param:
+                request - trivial
 
+        @variables:
+                data - user's id.
+                rid - Registration ID of Registers table
+                response_data -
+    '''
     data = request.GET.get('id')
     data = data.split("+")
     rid = data[0]
@@ -609,6 +824,20 @@ def dropcourseadmin(request):
 # view where Admin verifies the registered courses of every student
 @login_required(login_url='/accounts/login')
 def verify_course(request):
+    '''
+        This function is used to get the view when Acad Admin verifies the registered courses of every student.
+        @param:
+                request - trivial
+
+        @variables:
+                current_user - details of current user.
+                desig_id - Finds the Acad admin whose designation is "Upper Division Clerk".
+                acadadmin - details of the acad person(logged in).
+                roll_no - roll number of all the students.
+                year - current year.
+                month - current month.
+                date - current date.
+    '''
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
@@ -670,6 +899,18 @@ def verify_course(request):
 # view to generate all list of students
 @login_required(login_url='/accounts/login')
 def student_list(request):
+    '''
+        This function is used to generate all list of students.
+        @param:
+                request - trivial
+
+        @variables:
+                query_option1 -
+                query_option2 -
+                dep_id -
+                year - current year
+                month - current month
+    '''
     if(request.POST):
         # Branch Stream Year options
         # print (request.POST)
@@ -729,7 +970,18 @@ def student_list(request):
 
 
 def acad_branch_change(request):
+    '''
+        This function is used to approve the branch changes requested by the students.
+        @param:
+                request - trivial
 
+        @variables:
+                current_user - logged in user
+                desig_id - Finds the Acad admin whose designation is "Upper Division Clerk".
+                acadadmin - details of the logged in acad admin.
+                user_details - details of the logged in user.
+                change_queries - gets all the details of branch changes from the database.
+    '''
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
@@ -814,15 +1066,33 @@ def acad_branch_change(request):
 
 @login_required(login_url='/accounts/login')
 def phd_details(request):
+    '''
+        This function is used to extract the details of the PHD details.
+        @param:
+                request - trivial
+
+        @variables:
+                current_user - logged in user
+                student - details of the logged in student.
+                thesis - gets the thesis details of the PhD student.
+                faculty - gets the chosen faculty's details.
+                user_details - details of the logged in user.
+                total_thesis - total number of applied thesis.
+    '''
     # print(request.user.username)
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     student = Student.objects.all().filter(id=user_details.id).first()
     thesis = Thesis.objects.all().filter(student_id=student).first()
-    Professor = Designation.objects.all().filter(name='Professor')
+    #Professor = Designation.objects.all().filter(name='Professor')
     # print(user_details.department.name)
-    faculty = ExtraInfo.objects.all().filter(department=user_details.department,
-                                             designation=Professor)
+    #faculty = ExtraInfo.objects.all().filter(department=user_details.department,
+    #                                         designation='Professor')
+    f1 = HoldsDesignation.objects.filter(designation=Designation.objects.get(name = "Assistant Professor"))
+    f2 = HoldsDesignation.objects.filter(designation=Designation.objects.get(name = "Professor"))
+    f3 = HoldsDesignation.objects.filter(designation=Designation.objects.get(name = "Associate Professor"))
+
+    faculty = list(chain(f1,f2,f3))
     # print(Professor,faculty)
     faculties_list = []
     for i in faculty:
@@ -845,6 +1115,19 @@ def phd_details(request):
 
 
 def add_thesis(request):
+    '''
+        This function is used to add thesis topic for the post graduate students in the database by using the list vaiable 'p'.
+        @param:
+                request - trivial
+
+        @variables:
+                student - details of the logged in student.
+                thesis - gets the thesis details of the PhD student.
+                faculty - gets the chosen faculty's details.
+                user_details - details of the logged in user.
+                fac - object to get all the faculties.
+                p - thesis object to save the details in the database.
+    '''
     if request.method == 'POST':
         # print (request.POST)
         faculty = request.POST.get('faculty')

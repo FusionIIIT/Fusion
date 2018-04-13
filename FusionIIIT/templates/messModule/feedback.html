@@ -56,7 +56,7 @@
 
                     <div class="field">
                         <label>Description:</label>
-                        <textarea rows="2" id="description" name="description"></textarea>
+                        <textarea rows="2" id="description" name="description" required="true"></textarea>
                     </div>
                     
                     <div class="field">
@@ -115,6 +115,7 @@
                 url: 'submit/',
                 dataType: 'json',
                 data: {
+                    'csrfmiddlewaretoken' : '{{ csrf_token }}',
                     'feedback_type':$("#feedback_type").val(),
                     'description':$("#description").val(),
                 },                

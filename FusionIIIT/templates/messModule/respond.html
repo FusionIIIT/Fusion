@@ -15,9 +15,6 @@
         </a>
     </div>
 
-    {% comment %}
-        TODO: Add notification counters!
-    {% endcomment %}
 
     <div class="ui active tab" data-tab="respondtoleaverequests">
         <div class="ui vertical segment">
@@ -65,7 +62,7 @@
                         <h4 class="ui image header">
                             <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
                             <div class="content">
-                                {{item.student_id}}
+                                {{item.student_id.id}}
                                 <!-- <div class="sub header">
                                     2015121
                                 </div> -->
