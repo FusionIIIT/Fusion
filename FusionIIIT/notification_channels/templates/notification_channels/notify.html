@@ -1,4 +1,15 @@
 {% load notif_tags %}
-{% for notif in notifications %}
-	{% get_notification notif %}
-{% endfor %}
+<div class="row">
+    <h3 class="ui dividing header" style="margin: auto; margin-top: 8px;">Notifications</h3>
+</div>
+
+<div class="row">
+    <div class="ui active tab" data-tab="Leave" style="margin-left: 20px;">
+        <div class="ui animated fluid list"
+             id="new-message-list" style="min-width: 20vw; max-height: 28.5vh; overflow-y: auto;">
+            {% for notif in notifications %}
+				{% get_notification notif %}
+			{% endfor %}
+        </div>
+    </div>
+</div>

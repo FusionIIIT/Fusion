@@ -17,6 +17,7 @@
     <script type="text/javascript" src="{% static 'globals/js/jquery.formset.js' %}"> </script>
     <script type="text/javascript" src="{% static 'globals/js/semantic-notify.js' %}"> </script>
     <script type="text/javascript" src="{% static 'globals/js/ajax-post.js' %}"></script>
+    <script type="text/javascript" src="{% static 'notification_channels/notifications.js' %}"></script>
     {% block css %}
     {% endblock %}
 
@@ -74,9 +75,6 @@
 
 <script>
     $(document).ready(function(){
-        newNotification();
-        newNotification();
-        newNotification();
 
         $('.ui.accordion').accordion('refresh');
         $('.ui.sidebar')

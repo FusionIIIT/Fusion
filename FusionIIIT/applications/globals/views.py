@@ -592,6 +592,20 @@ def view_issue(request, id):
 
 @login_required(login_url=LOGIN_URL)
 def support_issue(request, id):
+    """
+    The function is used to get support votes on any issue from different users.
+    It adds the user to a ManyToManyField of the issue of supporters if he intends to
+    support the issue and remove it if he wants to withdraw his vote(reffered as unsupport).
+    @param:
+            request - trivial.
+            id - id of the issue object which the user intends to support/unsupport.
+
+    @variables:
+            issue - The issue object.
+            supported - True if the user's intention is to support the issue.
+            support_count - Total supporters of the above issue.
+            context - Holds data needed to make necessary changes in the template.
+    """
     issue = get_object_or_404(Issue, id=id)
     supported = True
     if request.user in issue.support.all():

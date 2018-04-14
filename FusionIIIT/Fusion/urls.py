@@ -6,6 +6,7 @@ from django.contrib import admin
 urlpatterns = [
     url(r'^', include('applications.globals.urls')),
     url(r'^admin/', admin.site.urls),
+    url(r'^notifications/', include('notification_channels.urls')),
     url(r'^accounts/', include('allauth.urls')),
     url(r'^eis/', include('applications.eis.urls')),
     url(r'^mess/', include('applications.central_mess.urls')),
