@@ -93,14 +93,14 @@ class NotificationManager(models.Manager):
         elif generator and generator in notif.generator.all():
             notif.delete()
 
-    def seen(self, seen=True):
-        queryset = super(NotificationManager, self).get_queryset()
+    def seen(self, seen=True, *args, **kwargs):
+        queryset = super(NotificationManager, self).get_queryset().filter(**kwargs)
         queryset.update(seen=seen)
         for qry in queryset:
             qry.activities.all().update(seen=seen)
 
-    def read(self, read=True):
-        queryset = super(NotificationManager, self).get_queryset()
+    def read(self, read=True, *args, **kwargs):
+        queryset = super(NotificationManager, self).get_queryset().filter(**kwargs)
         queryset.update(read=read)
         for qry in queryset:
             qry.activities.all().update(read=read)
