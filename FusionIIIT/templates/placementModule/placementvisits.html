@@ -14,7 +14,7 @@
     <div class="ui active tab" data-tab="addvisit">
         <div class="ui vertical segment">
             {% comment %}Form Tag starts here!{% endcomment %}
-            <form>
+              <form method="post" class="ui form" role="form">
                 {% comment %}The add a new skill Accordian starts here!{% endcomment %}
                 <div class="ui active accordion field">
                     <div class="title">
@@ -22,92 +22,78 @@
                         Add a new Placement Visit!
                     </div>
 
+                    {{ form.non_field_errors }}
                     <div class="active content">
                         <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                            {% csrf_token %}
                             <div class="two fields">
                                 <div class="field">
-                                    <label>
+                                  {{ form.company_name.errors }}
+                                    <label for="{{ form.company_name.id_for_label }}">
                                         Company Name
                                     </label>
 
                                     <div class="ui large input">
-                                        <input>
+                                        {{ form.company_name }}
                                     </div>
                                 </div>
 
                                 <div class="field">
-                                    <label>
+                                  {{ form.visiting_date.errors }}
+                                    <label for="{{ form.visiting_date.id_for_label }}">
                                         Date:
                                     </label>
-
-                                    {% comment %}
-                                        TODO: Add a calendar ui!
-                                    {% endcomment %}
-                                    <div class="ui calendar" id="">
-                                        <div class="ui input left icon">
+                                    <div class="ui calendar" id="rangestart">
+                                        <div class="ui input large left icon">
                                             <i class="calendar icon"></i>
-                                            <input type="text" placeholder="Date">
+                                            {{ form.visiting_date }}
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
                             {% comment %} A new row starts here!{% endcomment %}
-                            <div class="two fields">
-                                <div class="field">
-                                    <label>
-                                        Location
-                                    </label>
-
-                                    <div class="ui large input">
-                                        <input>
-                                    </div>
-                                </div>
-
-                                <div class="field">
-                                    <label>City</label>
-                                    <div class="ui input">
-                                        <input>
-                                    </div>
+                            <div class="field">
+                                {{ form.description.errors }}
+                                <label>Description:</label>
+                                <div class="ui fluid large input">
+                                    <!--textarea rows="2"></textarea-->
+                                    {{ form.description }}
                                 </div>
                             </div>
 
                             {% comment %} A new row starts here!{% endcomment %}
-                            <div class="field">
-                                <label>Description:</label>
-                                <div class="ui fluid large input">
-                                    <textarea rows="2"></textarea>
+                            <div class="two fields">
+                                <div class="field">
+                                  {{ form.location.errors }}
+                                    <label for="{{ form.location.id_for_label }}">
+                                        Location
+                                    </label>
+
+                                    <div class="ui fluid large input">
+                                        {{ form.location }}
+                                    </div>
+                                </div>
+
+                                {% comment %}A new row starts here!{% endcomment %}
+                                <div class="field" style="margin-top: 25px">
+                                    <button name="visitsubmit" value="visitsubmit" class="ui large primary button right floated" type="submit">
+                                        Submit
+                                    </button>
                                 </div>
                             </div>
 
-                            {% comment %}A new row starts here!{% endcomment %}
-                            <div class="field">
-                                <button class="ui large primary button right floated" type="submit">
-                                    Submit
-                                </button>
-                            </div>
                         </div>
                     </div>
                 </div>
                 {% comment %}The add a new skill Accordian ends here!{% endcomment %}
             </form>
             {% comment %}Form Tag ends here!{% endcomment %}
-
-            <br>
-            <br>
-
-            <div class="ui divider"></div>
-
         </div>
     </div>
 
-    {% comment %}
-        TODO: You people should add a contact detail of the company here itself maybe phone# or email!
-    {% endcomment %}
-
     <div class="ui tab" data-tab="managevisit">
         <div class="ui vertical segment">
-
             {% comment %}
                 TODO: can add a list also instead like mess module!
             {% endcomment %}
@@ -116,88 +102,46 @@
                 <thead>
                     <tr>
                         <th class="two wide">Date</th>
-                        <th class="five wide">Company Name</th>
+                        <th class="three wide">Company Name</th>
                         {% comment %}
                             TODO: Concatinate city and location here!
                         {% endcomment %}
                         <th class="three wide">Location</th>
                         <th class="five wide">Description</th>
-                        <th class="one wide">Edit</th>
+                        <th class="two wide">Delete</th>
                     </tr>
                 </thead>
                 <tbody>
+                  {% for chairmanvisit in chairmanvisits %}
                     <tr>
                         <td>
-                           10<sup>th</sup> Aug'17
+                            {{ chairmanvisit.visiting_date }}
                         </td>
 
                         <td>
-                            Oracle India Ltd.
+                            {{ chairmanvisit.company_name }}
                         </td>
 
                         <td>
-                            Bangalore.
+                            {{ chairmanvisit.location }}
                         </td>
 
                         <td>
-                            ...
+                            {{ chairmanvisit.description }}
                         </td>
 
+                        {% if profile.designation.name == 'placement chairman' %}
                         <td>
-                            <div class="ui inverted circular icon button" style="margin: auto;">
-                                <i class="wrench black icon"></i>
-                            </div>
+                          <form method="post" class="ui form" role="form">
+                            {% csrf_token %}
+                            <button name="deletevisit" value="{{ chairmanvisit.pk }}" class="ui inverted circular icon button" style="margin: auto;">
+                                  Delete<i class="delete red icon"></i>
+                            </button>
+                            </form>
                         </td>
+                        {% endif %}
                     </tr>
-
-                    <tr>
-                        <td>
-                           10<sup>th</sup> Aug'17
-                        </td>
-
-                        <td>
-                            Oracle India Ltd.
-                        </td>
-
-                        <td>
-                            Bangalore.
-                        </td>
-
-                        <td>
-                            ...
-                        </td>
-
-                        <td>
-                            <div class="ui inverted circular icon button" style="margin: auto;">
-                                <i class="wrench black icon"></i>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td>
-                           10<sup>th</sup> Aug'17
-                        </td>
-
-                        <td>
-                            Oracle India Ltd.
-                        </td>
-
-                        <td>
-                            Bangalore.
-                        </td>
-
-                        <td>
-                            ...
-                        </td>
-
-                        <td>
-                            <div class="ui inverted circular icon button" style="margin: auto;">
-                                <i class="wrench black icon"></i>
-                            </div>
-                        </td>
-                    </tr>
-
+                    {% endfor %}
                 </tbody>
             </table>
         </div>

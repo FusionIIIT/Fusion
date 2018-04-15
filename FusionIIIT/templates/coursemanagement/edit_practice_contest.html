@@ -1,0 +1,241 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+{% block title %}
+Edit Contest
+{% endblock %}
+{% block css %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.4/semantic.min.css" rel="stylesheet" type="text/css" />
+<link href="https://cdn.rawgit.com/mdehoog/Semantic-UI-Calendar/76959c6f7d33a527b49be76789e984a0a407350b/dist/calendar.min.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+
+{% endblock %}
+{% block body %}
+{% block navBar %}
+    {% include 'dashboard/navbar.html' %}
+{% endblock %}
+<div>
+
+    <div class="ui grid">
+        <div class="centered fourteen wide column" style="margin-top:10em;margin-bottom:10em">
+            <h2 class="ui center aligned icon header">
+                <i class=" circular file text icon"></i> {{details.prac_quiz_name}}
+            </h2>
+            <div class="ui segment centered fourteen wide column" style="margin-top:5em;margin-bottom:10em">
+                <div class="ui huge list">
+                    <div class="item">
+                        <div class="header">Description</div>
+                        {{description}}
+                    </div>
+                    
+
+                    <div class="item">
+                        <div class="header">Number of Questions <a class="edit_contest" data-id="edit3"> <i class="edit icon"></i></a></div>
+                        {{details.number_of_question}}
+                    </div>
+                  <form class="ui form"  id='edit3' style="display:none">
+                    <div class="ui field" >
+                        <label>Number Of Questions</label>
+                        <div class="ui input" onkeydown="submit_on_enter()">
+                            {{ form1.number_of_questions }}
+                        </div>
+                    </div>
+                    <a class="ui primary button form_submit" data-id="edit3" id="submit_edit3">Submit</a>
+                  </form>
+
+                    <div class="item">
+                        <div class="header">Total Score <a class="edit_contest" data-id="edit4"> <i class="edit icon"></i></a></div>
+                        {{details.total_score}}
+                    </div>
+                    <form class="ui form"  id='edit4' style="display:none">
+                    <div class="ui field">
+                        <label>Marks per Question</label>
+                        <div class="ui input"  onkeydown="submit_on_enter()~">
+                            {{ form1.per_question_score }}
+                        </div>
+                    </div>
+                    <a class=" ui primary button form_submit"data-id="edit4" id="submit_edit4">Submit</a>
+                  </form>
+
+                </div>
+
+
+
+                {% for question in questions %}
+                <div class="ui segment">
+                    <div class="ui big list">
+                        <div class="item">
+                            <div class="header">Q>{{question.question}}</div>
+                            {% if question.options1 %}<span>(1){{question.options1}}</span>{% endif %}<br> {% if question.options2 %}<span>(2){{question.options2}}</span>{% endif %}<br> {% if question.options3 %}<span>(3){{question.options3}}</span>{% endif %}<br> {% if question.options4 %}<span>(4){{question.options4}}</span>{% endif %}<br> {% if question.options5 %}<span>(5){{question.options5}}</span>{% endif %}<br>
+                        </div>
+                    
+                        <div class="item">
+                            <div class="header">Answer:</div>
+                            {{question.answer}}
+                        </div>
+                        {% if question.image %}
+                        <div class="item">
+                            <div class="header">Image</div>
+                            <img src="{{ question.image }}" style="height:400px;width:600px" />
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+
+                <a id="showbox">
+                    <div class="ui primary button">
+                        Add a question
+                    </div>
+                </a>
+
+                <div class="ui segment" id="ques_div" style="display:none">
+                    <form class="ui large form" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <label>Problem Statement</label>
+                        <div class="field">
+                            <div class="ui input left icon">
+                                <i class="comments icon"></i> {{ form.problem_statement }}
+                            </div>
+                        </div>
+                        <label>Upload Image</label> {{ form.image }}
+                        <br>
+                        <label>Option 1</label>
+                        <div class="field">
+                            <div class="ui input left icon">
+                                <i class="percent icon"></i> {{ form.option1 }}
+                            </div>
+                        </div>
+                        <label>Option 2</label>
+                        <div class="field">
+                            <div class="ui input left icon">
+                                <i class="percent icon"></i> {{ form.option2 }}
+                            </div>
+                        </div>
+                        <label>Option 3</label>
+                        <div class="field">
+                            <div class="ui input left icon">
+                                <i class="percent icon"></i> {{ form.option3 }}
+                            </div>
+                        </div>
+                        <label>Option 4</label>
+                        <div class="field">
+                            <div class="ui input left icon">
+                                <i class="percent icon"></i> {{ form.option4 }}
+                            </div>
+                        </div>
+                        <label>Option 5</label>
+                        <div class="field">
+                            <div class="ui input left icon">
+                                <i class="percent icon"></i> {{ form.option5 }}
+                            </div>
+                        </div>
+                        <label>Answer</label>
+                        <div class="field">
+                            <div class="ui input left icon">
+                                <i class="percent icon"></i> {{ form.answer }}
+                            </div>
+                        </div>
+                        <label>Score</label>
+                        <div class="field">
+                            <div class="ui input left icon">
+                                <i class="percent icon"></i> {{ form.score }}
+                            </div>
+                        </div>
+                        <input type="submit" class="ui primary button" value="Submit" />
+
+                    </form>
+
+                </div>
+                <a class="ui blue button" href="/ocms/{{course.course_id}}/">
+                 Done!
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+
+   $('.edit_contest').click(function(){
+     id=$(this).attr('data-id');
+     $('#'+id).toggle();
+   })
+   function submit_on_enter()
+   {
+    //  alert(event.keycode);
+     if (event.keyCode == 13)
+       event.returnValue = false;
+       event.keyCode = 0;
+       return false;
+   }
+ function showbox() {
+        var x = document.getElementById("ques_div");
+        if (x.style.display === "none") {
+            x.style.display = "block";
+        } else {
+            x.style.display = "none";
+        }
+       }
+
+       $('#showbox').click(function(){
+        console.log("madar");
+        showbox();
+       });
+
+  $('.form_submit').click(function(){
+    event.preventDefault();
+      var data = new FormData();
+    var pk=$(this).attr('data-id');
+    var other_data = $('#'+pk).serializeArray();
+    $.each(other_data, function(key, input) {
+        // alert(input.name);
+        data.append(input.name, input.value);
+    });
+    data.append('number',pk);
+    data.append('csrfmiddlewaretoken','{{csrf_token}}');
+    $.ajax({
+        url: "/ocms/{{course.course_id}}/edit_quiz_details/{{details.pk}}/",
+        processData: false,
+        contentType: false,
+        type: 'POST',
+        data: data,
+        success: function(data) {
+            alert(data);
+            location.reload();
+        },
+        error: function(data, err) {
+            alert(err.message);
+        }
+    });
+  });
+  $(document).ready(function(){
+    $('.ui.accordion').accordion('refresh');
+
+    });
+  $('.ui.sidebar')
+      .sidebar('attach events', '#navbar #sidebartrigger')
+      // .sidebar('setting', 'transition', 'overlay')
+      // .sidebar('toggle')
+  ;
+  $('.special.cards .image').dimmer({
+    on: 'hover'
+  });
+
+  </script>
+
+
+
+{% endblock %} {% block Javascript %}
+
+
+<script src="https://cdn.rawgit.com/mdehoog/Semantic-UI-Calendar/76959c6f7d33a527b49be76789e984a0a407350b/dist/calendar.min.js"></script>
+
+
+
+<script type="text/javascript">
+  $(.edit_contest).click(function(){
+
+  });
+</script>
+
+
+{% endblock %}

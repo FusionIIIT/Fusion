@@ -14,71 +14,86 @@
         <a class="item" data-tab="hospitalhistory">
             Hospital
         </a>
-        <a class="item" data-tab="compounderhistory">
-            Compounder
+        <a class="item" data-tab="appointmenthistory">
+            Appointments
+        </a>
+        <a class="item" data-tab="complainthistory">
+            Feedback
         </a>
     </div>
 
     <div class="ui active tab" data-tab="prescriptionhistory">
-        <div class="ui vertical segment" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
-            <table class="ui very basic collapsing celled large fluid sortable table"
-                   style="padding-left: 2.5%;padding-right: 2.5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
+        <div class="ui vertical segment" >
+            <table class="ui very basic collapsing celled small fluid table"
+                  style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;" >
                 <thead>
                 <tr>
-                    <th class="four wide">
-                        Treated By
+                    <th class="two wide">
+                        Treated<br> By
                     </th>
 
-                    <th>
+                    <th class="two wide" >
                         Date
                     </th>
 
-                    <th>
-                        Time
+                    <th class="wide">
+                          Details
+                    </th>
+                    <th class="wide">
+                          Test
                     </th>
 
                     <th class="four wide">
-                        Cause/Symptoms
+                      <table>
+
+                        <tr><td>Medicine</td><td>D</td><td>T</td></tr>
+
+                      </table>
                     </th>
 
-                    <th class="four wide">
-                        Medicine(s) Prescribed
-                    </th>
                 </tr>
                 </thead>
 
                 <tbody>
+                {% for pre in prescription %}
                 <tr>
+
                     <td>
                         <h4 class="ui image header">
                             <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
-                            <div class="content">
-                                Zlatan Ibrahimovic
-                                <div class="sub header">
-                                    gmail@zlatan.com
-                                </div>
-                            </div>
                         </h4>
+                              {{pre.doctor_id}}
+
+
                     </td>
 
                     <td>
-                        23<sup>rd</sup> Nov'17
+                        {{pre.date}}
                     </td>
 
                     <td>
-                        10:08 pm
+                        {{pre.details}}
+                    </td>
+                    <td>
+                        {{pre.test}}
+
                     </td>
 
                     <td>
-                        Was sarcastic all the time!
-                    </td>
-
-                    <td>
-                        Fukitol, Masticate more than 32 times.
+                      <table>
+                        {% for medicine in medicines %}
+                            {% if medicine.prescription_id.id == pre.id %}
+                                  <tr><td>{{medicine.medicine_id}}</td><td>{{medicine.days}}</td><td>{{medicine.times}}</td></tr>
+                            {% endif %}
+                        {% endfor%}
+                      </table>
                     </td>
                 </tr>
+                {% endfor %}
+
                 </tbody>
             </table>
+
         </div>
     </div>
 
@@ -92,76 +107,48 @@
                                                           margin: auto;">
                 <thead>
                 <tr>
-                    <th class="four wide">
-                        Patient
-                    </th>
 
                     <th class="three wide">
                         Cause
                     </th>
 
                     <th>
-                        Type
+                      Requested Date
                     </th>
 
                     <th>
-                        From
+                        Start Date
                     </th>
 
                     <th>
-                        To
+                      End Date
                     </th>
 
-                    <th>
-                        Time From
-                    </th>
 
-                    <th>
-                        Time To
-                    </th>
                 </tr>
                 </thead>
 
                 <tbody>
-
+                {% for  ambulance in ambulances%}
                 <tr>
                     <td>
-                        <h4 class="ui image header">
-                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
-                            <div class="content">
-                                Zlatan Ibrahimovic
-                                <div class="sub header">
-                                    2015207
-                                </div>
-                            </div>
-                        </h4>
+                        {{ambulance.reason}}
                     </td>
 
                     <td>
-                        Leg Injury
+                        {{ambulance.date_request}}
                     </td>
 
                     <td>
-                        Casual
+                        {{ambulance.start_date}}
                     </td>
 
                     <td>
-                        23 Oct'17
+                        {{ambulance.end_date}}
                     </td>
 
-                    <td>
-                        28 Oct'17
-                    </td>
-
-                    <td>
-                        9:00 A.M.
-                    </td>
-
-                    <td>
-                        10:00 A.M.
-                    </td>
                 </tr>
-
+                {% endfor %}
                 </tbody>
             </table>
         </div>
@@ -186,80 +173,79 @@
                     </th>
 
                     <th>
-                        From
+                        Admission Date
                     </th>
 
                     <th>
-                        To
+                        Discharge Date
                     </th>
 
                     <th class="three wide">
-                        Cause
+                      Reason
                     </th>
 
-                    <th>
-                        Payment
-                    </th>
                 </tr>
                 </thead>
 
                 <tbody>
-
+                {% for hospital in hospitals %}
                 <tr>
+
                     <td>
                         <h4 class="ui image header">
                             <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
                             <div class="content">
-                                Zlatan Ibrahimovic
-                                <div class="sub header">
-                                    gmail@zlatan.com
-                                </div>
+                              {% if hospital.doctor_id == None %}
+
+                              {% else %}
+                                {{hospital.doctor_id}}
+                              {% endif %}
                             </div>
                         </h4>
                     </td>
 
                     <td>
-                        Jabalpur Hospital
+                        {{hospital.hospital_name}}
                     </td>
 
                     <td>
-                        23 Nov'17
+                        {{hospital.admission_date}}
                     </td>
 
                     <td>
-                        30 Nov'17
+                      {% if hospital.discharge_date == None %}
+                          Not yet discharged
+                      {% else %}
+                        {{hospital.discharge_date}}
+                      {% endif %}
                     </td>
 
                     <td>
-                        Hunger Games!
+                        {{hospital.reason}}
                     </td>
 
-                    <td>
-                        <i class="large green checkmark icon"></i>
-                    </td>
+
                 </tr>
-
+                  {% endfor %}
                 </tbody>
             </table>
         </div>
-        <br>
-        <div class="extra content">
-            <div class="" style="text-align: center;">
-                <i class="large green checkmark icon"></i> : Approved &ensp;&ensp;&ensp;&ensp;&ensp;
-                <i class="large orange warning icon"></i> : In Progress &ensp;&ensp;&ensp;&ensp;&ensp;
-                <i class="large red x icon"></i> : Cancelled
-            </div>
-        </div>
+
     </div>
 
-    <div class="ui tab" data-tab="compounderhistory">
+    <div class="ui tab" data-tab="appointmenthistory">
         <div class="ui vertical segment" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
-            <table class="ui very basic collapsing celled large fluid sortable table"
+            <table class="ui very basic collapsing celled small fluid sortable table"
                    style="padding-left: 2.5%;padding-right: 2.5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
                 <thead>
                 <tr>
+
                     <th class="four wide">
-                        Treated By
+                        Doctor
+                    </th>
+
+                    <th>
+                        Description
                     </th>
 
                     <th>
@@ -267,49 +253,90 @@
                     </th>
 
                     <th>
-                        Time
+                        From Time
                     </th>
 
                     <th class="four wide">
-                        Cause/Symptoms
-                    </th>
-
-                    <th class="four wide">
-                        Medicine(s) Prescribed
+                        To Time
                     </th>
                 </tr>
                 </thead>
 
                 <tbody>
+                  {% for appointment in appointments %}
                 <tr>
                     <td>
                         <h4 class="ui image header">
                             <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
                             <div class="content">
-                                Zlatan Ibrahimovic
-                                <div class="sub header">
-                                    gmail@zlatan.com
-                                </div>
+                              {{appointment.doctor_id}}
                             </div>
                         </h4>
                     </td>
 
                     <td>
-                        23<sup>rd</sup> Nov'17
+                      {{appointment.description}}
+                    </td>
+                    <td>
+                      {{appointment.date}}
+                    </td>
+                    <td>
+                      {{appointment.schedule.from_time}}
                     </td>
 
                     <td>
-                        10:08 pm
-                    </td>
-
-                    <td>
-                        Was sarcastic all the time!
-                    </td>
-
-                    <td>
-                        Fukitol, Masticate more than 32 times.
+                      {{appointment.schedule.to_time}}
                     </td>
                 </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="ui tab" data-tab="complainthistory">
+        <div class="ui vertical segment" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+            <table class="ui very basic collapsing celled large fluid sortable table"
+                   style="padding-left: 2.5%;padding-right: 2.5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
+                <thead>
+                <tr>
+                    <th class="four wide">
+                      Feedback
+                    </th >
+
+                    <th class="six wide">
+                      Response
+                    </th>
+
+                    <th class="four wide">
+                        Date
+                    </th>
+
+                </tr>
+                </thead>
+
+                <tbody>
+                  {% for complaint in complaints %}
+                <tr>
+
+                    <td>
+                        {{complaint.complaint}}
+                    </td>
+
+                    <td>
+                       {% if complaint.feedback == None %}
+
+                        {% else %}
+                        {{complaint.feedback}}
+                      {% endif %}
+                    </td>
+
+                    <td>
+                        {{complaint.date}}
+                    </td>
+
+
+                </tr>
+                {% endfor %}
                 </tbody>
             </table>
         </div>

@@ -1,0 +1,41 @@
+{% block roomstatus %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+
+    <div class="ui active tab" data-tab="roomstatus">
+        <div class="ui vertical segment">
+            <div class="field">
+                <label>Number of Available Rooms</label>
+                <div class="ui fluid input">
+                    <input type="text" value="{{ available_rooms|length }}">
+                </div>
+            </div>
+            <br>
+            <table class="ui structured celled sortable table" style="margin-bottom: 16px;">
+                <thead>
+                <tr>
+
+                    <th rowspan="2">Room Number</th>
+                    <th rowspan="2">Floor</th>
+
+                </tr>
+                </thead>
+
+                <tbody>
+                    {% for room in available_rooms %}
+                    <tr>
+                        <td>
+                            {{ room }}
+                        </td>
+                        <td>
+                            {{ room.room_floor }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <br>
+            <br>
+        </div>
+    </div>
+{% endblock %}
+

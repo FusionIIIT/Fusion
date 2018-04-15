@@ -83,6 +83,7 @@ ENV/
 
 # DS
 .DS_Store
+._.DS_Store
 
 # docs
 docs/_build
@@ -96,5 +97,6 @@ FusionIIIT/media
 # ignoring settings.py
 FusionIIIT/Fusion/settings.py
 
-# vim swap file
-*.swp
+
+# dbinsertscripts
+FusionIIIT/dbinsertscripts

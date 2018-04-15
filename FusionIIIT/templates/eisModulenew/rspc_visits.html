@@ -1,0 +1,136 @@
+{% load static %}
+
+{% block visits %}
+    <link rel="stylesheet" type="text/css" href="{% static 'fusion/semantic-ui/components/flag.min.css' %}">
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="foreign">
+            Foreign Visits
+        </a>
+
+        <a class="item" data-tab="indian">
+            Indian University Visits
+        </a>
+    </div>
+
+
+    {% comment %}The Foreign Visit segment starts here!{% endcomment %}
+    <div class="ui active tab segment" data-tab="foreign">
+
+        <h4 class="ui dividing header">Report:</h4>
+        <div class="ui pointing pagination menu">
+                {% for fvisit in fvisits %}
+                {% if forloop.counter0|divisibleby:30 %}
+                    <span align="right>"><a class="{% if forloop.counter0 == 0 %}active {% endif %}item" data-tab="fvisit-{{ forloop.counter0 }}">
+                        {% widthratio forloop.counter|add:30 30 1 %}
+     </a></span>
+                {% endif %}
+                {% endfor %}
+
+            </div>
+     {% for fvisit in fvisits %}
+
+            {% if forloop.counter0|divisibleby:30 %}
+            <div class="ui {% if forloop.counter0 == 0 %}active {% endif %} tab segment" data-tab="fvisit-{{ forloop.counter0 }}">
+        <table class="ui fixed sortable celled table">
+            <thead>
+            <tr>
+              <!--  <th class="sorted ascending">Sr.</th>
+                <th class="">Country</th>
+                <th class="">Place</th>
+                <th class="">From - To</th>
+                <th class="">Purpose</th>
+                <th class="">Action</th-->
+
+                      <th class="sorted ascending" style="width: 7%;">Sr.</th>
+                <th class="" style="width: 13%;" >Country</th>
+                <th class="" style="width: 20%;">Place </th>
+                <th class="" style="width: 25%;">From-TO</th>
+                 <th style="width:25%">Purpose</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            {% endif %}
+            <tr id="r1">
+                <td id="fvisits{{ forloop.counter }}Z"><div style="display: none;">{{ fvisit.id }}</div>{{ forloop.counter }}.</td>
+                <td id="fvisits{{ forloop.counter }}A">
+                    <i class="{{ fvisit.country.lower }} flag"></i>{{ fvisit.countryfull }}
+                </td>
+                <td id="fvisits{{ forloop.counter }}B">{{ fvisit.place }}</td>
+                <td id="fvisits{{ forloop.counter }}C">{{ fvisit.start_date }} - {{ fvisit.end_date }}</td>
+                <td id="fvisits{{ forloop.counter }}D">{{ fvisit.purpose }}</td>
+            </tr>              {% if forloop.counter0|add:1|divisibleby:30 %}
+
+
+            </tbody>
+        </table>
+    </div>
+          {% endif %}
+            {% endfor %}
+     {% if not fvisits.all.count|divisibleby:30 %}
+     </tbody>
+        </table>
+            </div>
+ {% endif %}
+    </div>
+    {% comment %}The Foreign Visit segment ends here!{% endcomment %}
+
+
+
+    {% comment %}The Indian University Visit segment starts here!{% endcomment %}
+    <div class="ui tab segment" data-tab="indian">
+
+        <h4 class="ui dividing header">Report:</h4>
+        <div class="ui pointing pagination menu">
+                {% for ivisit in ivisits %}
+                {% if forloop.counter0|divisibleby:30 %}
+                    <span align="right>"><a class="{% if forloop.counter0 == 0 %}active {% endif %}item" data-tab="ivisit-{{ forloop.counter0 }}">
+                        {% widthratio forloop.counter|add:30 30 1 %}
+     </a></span>
+                {% endif %}
+                {% endfor %}
+
+            </div>
+     {% for ivisit in ivisits %}
+
+            {% if forloop.counter0|divisibleby:30 %}
+            <div class="ui {% if forloop.counter0 == 0 %}active {% endif %} tab segment" data-tab="ivisit-{{ forloop.counter0 }}">
+        <table class="ui fixed sortable celled table">
+            <thead>
+            <tr>
+
+                   <th class="sorted ascending" style="width: 7%;">Sr.</th>
+
+                <th class="" style="width: 28%;">Place </th>
+                <th class="" style="width: 30%;">From-TO</th>
+                 <th style="width:25%">Purpose</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            {% endif %}
+            <tr id="r2">
+                <td id="ivisits{{ forloop.counter }}Z"><div style="display: none;">{{ ivisit.id }}</div>{{ forloop.counter }}.</td>
+                <td id="ivisits{{ forloop.counter }}A">{{ ivisit.place }}</td>
+                <td id="ivisits{{ forloop.counter }}B">{{ ivisit.start_date }} - {{ ivisit.end_date }}</td>
+                <td id="ivisits{{ forloop.counter }}C">{{ ivisit.purpose }}</td>
+
+            </tr>
+            {% if forloop.counter0|add:1|divisibleby:30 %}
+
+
+            </tbody>
+        </table>
+    </div>
+          {% endif %}
+            {% endfor %}
+     {% if not ivisits.all.count|divisibleby:30 %}
+     </tbody>
+        </table>
+            </div>
+ {% endif %}
+    </div>
+    {% comment %}The Indian University visit segment ends here!{% endcomment %}
+{% endblock %}

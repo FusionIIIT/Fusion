@@ -7,350 +7,374 @@
             Search
         </a>
 
-        <a class="item" data-tab="pastrecords">
-            Past Records
+        <a class="item" data-tab="placementschedule">
+            Placement Schedule
         </a>
     </div>
 
     <div class="ui active tab" data-tab="search">
-        <form>
+        <form method="post" class="ui form" role="form">
             {% comment %}The add a new skill Accordian starts here!{% endcomment %}
             <div class="ui active accordion field">
                 <div class="title">
                     <i class="icon dropdown"></i>
                     Search a Student!
                 </div>
-
+                {{ form1.non_field_errors }}
                 <div class="active content">
                     <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                      {% csrf_token %}
                         <div class="two fields">
                             <div class="field">
+                              {{ form1.name.errors }}
                                 <label>
                                     Name
                                 </label>
 
                                 <div class="ui large input">
-                                    <input placeholder="Name">
+                                    {{ form1.name }}
                                 </div>
                             </div>
 
                             <div class="field">
+                              {{ form1.rollno.errors }}
                                 <label>
-                                    Roll Number
+                                    Roll Number or Year
                                 </label>
 
                                 <div class="ui large input">
-                                    <input placeholder="Roll Number">
+                                    {{ form1.rollno }}
                                 </div>
                             </div>
-                        </div>
-
-                        <div class="three fields">
-                            <div class="field">
-                                <label>
-                                    Year
-                                </label>
-
-                                <select class="ui search fluid large dropdown">
-                                    <option value="">Select</option>
-                                    <option value="2015">2015</option>
-                                    <option value="2016">2016</option>
-                                    <option value="2017">2017</option>
-                                    <option value="2018">2018</option>
-                                </select>
-                            </div>
 
                             <div class="field">
-                                <label>
-                                    Discipline
-                                </label>
-
-                                <select class="ui search fluid large dropdown">
-                                    <option value="">Select</option>
-                                    <option value="btech">B.Tech.</option>
-                                    <option value="mtech">M.Tech.</option>
-                                    <option value="bdes">B.Des.</option>
-                                    <option value="mdes">M.Des.</option>
-                                </select>
-                            </div>
-
-                            <div class="field">
-                                <label>
-                                    Department
-                                </label>
-
-                                <select class="ui search fluid large dropdown">
-                                    <option value="">Select</option>
-                                    <option value="CSE">CSE</option>
-                                    <option value="ECE">ECE</option>
-                                    <option value="ME">ME</option>
-                                    <option value="DES">DES</option>
-                                </select>
-                            </div>
-
-                            <div class="field">
+                              {{ form1.cpi.errors }}
                                 <label>
                                     Min. CPI
                                 </label>
 
-                                <select class="ui search fluid large dropdown">
-                                    <option value="">Select</option>
-                                    <option value="6.0">6.0</option>
-                                    <option value="6.5">6.5</option>
-                                    <option value="7.0">7.0</option>
-                                    <option value="7.5">7.5</option>
-                                    <option value="8.0">8.0</option>
-                                    <option value="8.5">8.5</option>
-                                    <option value="9.0">9.0</option>
-                                </select>
+                                {{ form1.cpi }}
                             </div>
+                        </div>
+
+                        <div class="three fields">
+
+                            <div class="field">
+                              {{ form1.programme.errors }}
+                                <label>
+                                    Programme
+                                </label>
+
+                                {{ form1.programme }}
+                            </div>
+
+                            <div class="field">
+                              {{ form1.department.errors }}
+                                <label>
+                                    Department
+                                </label>
+
+                                {{ form1.department }}
+                            </div>
+
+                            <div class="field">
+                              {{ form1.debar.errors }}
+                                <label>Debarred</label>
+                                {{ form1.debar }}
+                            </div>
+
+                            <div class="field">
+                              {{ form1.placed_type.errors }}
+                                <label>Placed</label>
+                                {{ form1.placed_type }}
+                            </div>
+
                         </div>
 
                         <div class="two fields">
-                            <div class="twelve wide field">
+                            <!--<div class="field">
+                              {{ form1.skill.errors }}
                                 <label>Skills</label>
-                                <select class="ui fluid search dropdown" multiple="">
-                                    <option value="">Select</option>
-                                    <option value="skill1">Skill #1</option>
-                                    <option value="skill2">Skill #2</option>
-                                    <option value="skill3">Skill #3</option>
-                                </select>
-                            </div>
-
-                            <div class="four wide field">
-                                <label><br></label>
-                                <div class="ui toggle checkbox">
-                                    <input name="public" type="checkbox">
-                                    <label>Debarred?</label>
-                                </div>
+                                {{ form1.skill }}
+                            </div>-->
+                            <div class="field"></div>
+                            <div class="field" style="padding-top:40px">
+                                <button name="recordsubmit" value="recordsubmit" class="ui large primary button right floated" type="submit">
+                                    Search
+                                </button>
                             </div>
                         </div>
 
-                        <br>
-
-                        <div class="field">
-                            <button class="ui large primary button right floated" type="submit">
-                                Submit
-                            </button>
+                        {% comment %}
+                        <br><div class="ui divider"></div><br>
+                        <div class="three fields">
+                          <div class="two wide field"></div>
+                          <div class="fields">
+                            <div class="ui slider checkbox">
+                            <input type="checkbox" name="achievementcheck" value=1 checked="">
+                            <label>Achievements</label>
+                            </div>
+                          </div>
+                            <br><br>
+                          <div class="fields">
+                            <div class="ui slider checkbox">
+                            <input type="checkbox" name="educationcheck" value=1 checked="">
+                            <label>Education</label>
+                            </div>
+                          </div>
+                          <div class="fields">
+                            <div class="ui slider checkbox">
+                            <input type="checkbox" name="publicationcheck" value=1 checked="">
+                            <label>Publications</label>
+                            </div>
+                          </div>
                         </div>
+                            <br><br>
+                        <div class="three fields">
+                          <div class="two wide field"></div>
+                          <div class="fields">
+                             <div class="ui slider checkbox">
+                             <input type="checkbox" name="internshipcheck" value=1 checked="">
+                             <label>Internships</label>
+                             </div>
+                           </div>
+                             <br><br>
+                           <div class="fields">
+                             <div class="ui slider checkbox">
+                             <input type="checkbox" name="projectcheck" value=1 checked="">
+                             <label>Projects</label>
+                             </div>
+                           </div>
+                            <br><br>
+                          <div class="fields">
+                            <div class="ui slider checkbox">
+                            <input type="checkbox" name="patentcheck" value=1 checked="">
+                            <label>Patents</label>
+                            </div>
+                          </div>
+                       </div>
+                            <br><br>
+
+                       <div class="three fields">
+                         <div class="two wide field"></div>
+                         <div class="fields">
+                            <div class="ui slider checkbox">
+                            <input type="checkbox" name="coursecheck" value=1 checked="">
+                            <label>Courses</label>
+                            </div>
+                          </div>
+                            <br><br>
+                          <div class="fields">
+                            <div class="ui slider checkbox">
+                            <input type="checkbox" name="skillcheck" value=1 checked="">
+                            <label>Skills</label>
+                            </div>
+                          </div><br>
+                          <div class="field">
+                              <button name="getcvsubmit" value="getcvsubmit" class="ui large primary button right floated" type="submit">
+                                  Get CVs
+                              </button>
+                          </div>
+                      </div>
+
+                      {% endcomment %}
+
+
                     </div>
                 </div>
             </div>
             {% comment %}The add a new skill Accordian ends here!{% endcomment %}
         </form>
         {% comment %}Form Tag ends here!{% endcomment %}
+</div>
 
-        <br>
-        <br>
-        <div class="ui divider"></div>
-        <br>
-        {% comment %}
-                TODO: Add a max-height to it!
-            {% endcomment %}
-        <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;">
-            <thead>
-            <tr>
-                <th>Student</th>
-                <th>CPI</th>
-                <th>Department</th>
-                <th>Discipline</th>
-                <th>View Profile</th>
-                <th>Placed?</th>
-                <th>Debarred?</th>
-            </tr>
-            </thead>
 
-            <tbody>
-            <tr>
-                <td>
-                    <h4 class="ui image header">
-                        <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
-                        <div class="content">
-                            Zlatan Ibrahimovic
-                            <div class="sub header">
-                                2015121
-                            </div>
-                        </div>
-                    </h4>
-                </td>
-
-                <td>
-                    7.0
-                </td>
-
-                <td>
-                    BTech
-                </td>
-
-                <td>
-                    CSE
-                </td>
-
-                <td>
-                    {% comment %}
-                            <a class="ui inverted circular icon button" target="_blank" href="{% url 'placement:cv' username %}" style="margin: auto;">
-                        {% endcomment %}
-                    <a class="ui inverted huge circular icon button" target="_blank" href="{% url 'placement:placement' %}" style="margin: auto;">
-                        <i class="attach black icon"></i>
-                    </a>
-                </td>
-
-                <td>
-                    Yes
-                </td>
-
-                <td>
-                    No
-                </td>
-            </tr>
-            </tbody>
-        </table>
-        <div class="ui divider"></div>
-
-    </div>
-
-    <div class="ui tab" data-tab="pastrecords">
+    <div class="ui tab" data-tab="placementschedule">
         <div class="ui vertical segment">
 
-            <div class="ui three item menu">
-                <a class="active item" data-tab="Placement">Placement</a>
-                <a class="item" data-tab="PBI">PBI</a>
-                <a class="item" data-tab="HigherStudies">Higher Studies</a>
-            </div>
-
-            <div class="ui active tab" data-tab="Placement">
-                <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;">
-                    <thead>
-                    <tr>
-                        <th class="four wide">Student</th>
-                        <th class="two wide">Year</th>
-                        <th class="six wide">Company</th>
-                        <th class="two wide">CTC</th>
-                    </tr>
-                    </thead>
-
-                    <tbody>
-                    <tr>
-                        <td>
-                            <h4 class="ui image header">
-                                <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
-                                <div class="content">
-                                    Zlatan Ibrahimovic
-                                    <div class="sub header">
-                                        2015121
+            {% comment %}Form Tag starts here!{% endcomment %}
+            <form method="post" class="ui form" role="form" >
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui accordion field">
+                    <div class="title">
+                        <i class="icon dropdown"></i>
+                        Add a new Event!
+                    </div>
+                    {{ form5.non_field_errors }}
+                    <div class="content">
+                        <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                          {% csrf_token %}
+                            <div class="three fields">
+                                <div class="eight wide field">
+                                  {{ form5.company_name.errors }}
+                                    <label>Company Name:</label>
+                                    <div class="ui fluid large input">
+                                        {% comment %}The Institute Name input!{% endcomment %}
+                                        {{ form5.company_name }}
                                     </div>
                                 </div>
-                            </h4>
-                        </td>
 
-                        <td>
-                            2015
-                        </td>
-
-                        <td>
-                            Manchester United FC
-                        </td>
-
-                        <td>
-                            &#8377; 12,00,000
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-
-                <br>
-                <div class="ui divider"></div>
-            </div>
-
-            <div class="ui tab" data-tab="PBI">
-                <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;">
-                    <thead>
-                    <tr>
-                        <th class="four wide">Student</th>
-                        <th class="two wide">Year</th>
-                        <th class="six wide">Company</th>
-                        <th class="two wide">CTC</th>
-                    </tr>
-                    </thead>
-
-                    <tbody>
-                    <tr>
-                        <td>
-                            <h4 class="ui image header">
-                                <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
-                                <div class="content">
-                                    Zlatan Ibrahimovic
-                                    <div class="sub header">
-                                        2015121
+                                <div class="four wide field">
+                                  {{ form5.placement_date.errors }}
+                                    <label for="{{ form.placement_date.id_for_label }}">
+                                      Date:</label>
+                                    <div class="ui calendar" id="rangestart">
+                                        <div class="ui input large left icon">
+                                            <i class="calendar icon"></i>
+                                            {{ form5.placement_date }}
+                                        </div>
                                     </div>
                                 </div>
-                            </h4>
-                        </td>
 
-                        <td>
-                            2015
-                        </td>
-
-                        <td>
-                            Manchester United FC
-                        </td>
-
-                        <td>
-                            &#8377; 50,000
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-
-                <br>
-                <div class="ui divider"></div>
-            </div>
-
-            <div class="ui tab" data-tab="HigherStudies">
-
-                <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;">
-                    <thead>
-                    <tr>
-                        <th class="four wide">Student</th>
-                        <th class="two wide">Exam</th>
-                        <th class="six wide">University</th>
-                        <th class="two wide">Score</th>
-                    </tr>
-                    </thead>
-
-                    <tbody>
-                    <tr>
-                        <td>
-                            <h4 class="ui image header">
-                                <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
-                                <div class="content">
-                                    Zlatan Ibrahimovic
-                                    <div class="sub header">
-                                        2015121
+                                <div class="four wide field">
+                                  {{ form5.location.errors }}
+                                    <label>Location:</label>
+                                    <div class="ui fluid large input">
+                                        {% comment %}The Location input!{% endcomment %}
+                                        {{ form5.location }}
                                     </div>
                                 </div>
-                            </h4>
-                        </td>
+                            </div>
+                            <div class="three fields">
+                                <div class="five wide field">
+                                  {{ form5.ctc.errors }}
+                                    <label>CTC in Lpa:</label>
+                                    <div class="ui fluid large input">
+                                        {% comment %}The Institute Name input!{% endcomment %}
+                                        {{ form5.ctc }}
+                                    </div>
+                                </div>
+                                <div class="five wide field">
+                                  {{ form5.time.errors }}
+                                    <label>Time:</label>
+                                    <div class="ui fluid large input">
+                                        {% comment %}The Institute Name input!{% endcomment %}
+                                        {{ form5.time }}
+                                    </div>
+                                </div>
+                            <div class="six wide field">
+                              {{ form5.placement_type.errors }}
+                                <label>Placement Type:</label>
+                                <div class="ui fluid large input">
+                                    {% comment %}The Location input!{% endcomment %}
+                                    {{ form5.placement_type }}
+                                </div>
+                            </div>
+                        </div>
+                            <div class="field">
+                              {{ form5.description.errors }}
+                                <label>
+                                    Description
+                                </label>
 
-                        <td>
-                            GRE
-                        </td>
+                                <div class="ui fluid large input">
+                                        {% comment %}The Location input!{% endcomment %}
+                                        {{ form5.description }}
+                                </div>
+                            </div>
+                            <div class="field">
+                                <button name="schedulesubmit" value="schedulesubmit" class="ui right floated large primary button" type="submit">
+                                    Submit
+                                </button>
+                            </div>
 
-                        <td>
-                            Manchester United FC
-                        </td>
+                            <br>
+                            <br>
 
-                        <td>
-                            340
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-
-                <br>
-                <div class="ui divider"></div>
-            </div>
+                        </div>
+                    </div>
+                </div>
+                {% comment %}The add a new Achievement Accordian ends here!{% endcomment %}
+            </form>
+            {% comment %}Form Tag ends here!{% endcomment %}
         </div>
     </div>
+
+
+
+    {% if students %}
+    <br>
+    <br>
+    <div class="ui divider"></div>
+
+    <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;">
+        <thead>
+        <tr>
+            <th>Student</th>
+            <th>CPI</th>
+            <th>Department</th>
+            <th>Discipline</th>
+            <th>View Profile</th>
+            <th>Placed</th>
+            <th>Debarred?</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        {% for student in students %}
+        <tr>
+            <td>
+                    <div class="content">
+                        {{ student.id.user.first_name }} {{ student.id.user.last_name }}
+                        <div class="sub header">
+                            {{ student.id.id }}
+                        </div>
+                    </div>
+            </td>
+
+            <td>
+                {{ student.cpi }}
+            </td>
+
+            <td>
+                {{ student.programme }}
+            </td>
+
+            <td>
+                {{ student.id.department.name }}
+            </td>
+
+            <td>
+                <a class="ui inverted huge circular icon button" target="_blank" href="/placement/cv/{{ student.id.user.username }}/" style="margin: auto;">
+                    <i class="attach black icon"></i>
+                </a>
+            </td>
+
+            <td>
+              {% for sp in studentplacement %}
+              {% if sp.unique_id == student %}
+              {% if sp.placed_type == "PLACED" %}
+              Yes
+              {% else %}
+              No
+              {% endif %}
+              {% endif %}
+              {% endfor %}
+            </td>
+
+            <td>
+              <form method="post" class="ui form" role="form">
+                {% csrf_token %}
+                {% for sp in studentplacement %}
+                {% if sp.unique_id == student %}
+                {% if sp.debar == "DEBAR" %}
+                <button name="undebar" type="submit" class="ui green mini button right floated" value="{{ sp.pk }}">
+                Undebar</button>
+                {% else %}
+                <button name="debar" type="submit" class="ui red mini button right floated" value="{{ sp.pk }}">
+                Debar</button>
+                {% endif %}
+                {% endif %}
+                {% endfor %}
+              </form>
+            </td>
+        </tr>
+      {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="ui divider"></div>
+    {% endif %}
+
 
 {% endblock %}

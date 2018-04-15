@@ -1,0 +1,758 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Course Management
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}
+            The left-rail segment starts here!
+        {% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu starts here!{% endcomment %}
+            <div class="ui huge fluid vertical pointing menu"
+                 style="max-width: 320px;">
+
+                <a class="active item" data-tab="first">
+                    View Courses
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="second">
+                    Submit Assignment
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="third">
+                    View Performance
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="fourth">
+                    Assessment
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="fifth">
+                    Add Content
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+            </div>
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+
+
+        {% comment %}
+            The central-rail segment starts here!
+        {% endcomment %}
+
+        <div class="eight wide column">
+            {% comment %}The view courses start here!{% endcomment %}
+            <div class="ui active tab segment" data-tab="first">
+                  {% comment %}The CSS starts here!{% endcomment %}
+      <style>
+      #pdf_modal iframe{
+         width:100%;
+        height:80vh;
+           }
+           video {
+              position: relative;
+              left: 50%;
+              transform: translateX(-50%);
+              margin-bottom: 4em;
+          }
+
+    /*timer css starts*/
+                  body{
+              font-family: 'Roboto Slab', serif;
+            }
+            .heading{
+            text-align:center;
+              font-size:80px;
+            }
+            #clock{
+              display:block;
+              width:500px;
+              margin-left:auto;
+              margin-right:auto;
+              margin-top:20px;
+              padding:20px;
+              text-align:center;
+              background-color:white;
+              box-shadow:2px 2px 5px 1px gray;
+            }
+            .block{
+              display:inline-block;
+              width:16%;
+              margin:1px;
+              padding:5px;
+              font-size:20px;
+              text-align:center;
+              background-color:orange;
+            }
+            .digit{
+              display:block;
+              font-size:30px;
+              background-color:#fff;
+            }
+    /*timer css ends*/
+            .play-icon{
+            cursor: pointer;
+            position: absolute;
+            top : 50%;
+            left : 50%;
+            transform: translate(-50%, -50%);
+            }
+
+            svg:hover #play-svg{
+            fill: #CC181E;
+            }
+
+
+     </style>
+
+       {% comment %}The CSS starts here!{% endcomment %}
+           <style>
+           #pdf_modal iframe{
+              width:100%;
+             height:80vh;
+                }
+         /*timer css starts*/
+                       body{
+                   font-family: 'Roboto Slab', serif;
+                 }
+                 .heading{
+                 text-align:center;
+                   font-size:80px;
+                 }
+                 #clock{
+                   display:block;
+                   width:500px;
+                   margin-left:auto;
+                   margin-right:auto;
+                   margin-top:20px;
+                   padding:20px;
+                   text-align:center;
+                   background-color:white;
+                   box-shadow:2px 2px 5px 1px gray;
+                 }
+                 .block{
+                   display:inline-block;
+                   width:16%;
+                   margin:1px;
+                   padding:5px;
+                   font-size:20px;
+                   text-align:center;
+                   background-color:orange;
+                 }
+                 .digit{
+                   display:block;
+                   font-size:30px;
+                   background-color:#fff;
+                 }
+         /*timer css ends*/
+
+
+          </style>
+
+        {% comment %}The CSS ends  here!{% endcomment %}
+
+         {% comment %}The tab menu starts here!{% endcomment %}
+         <div class="ui pointing secondary menu">
+             <a class="active item" data-tab="assignment">
+                 Assignment
+             </a>
+
+             <a class="item" data-tab="videos">
+                 Videos
+             </a>
+             <a class="item" data-tab="slides">
+                 Slides
+             </a>
+              <a class="item" data-tab="time-table">
+                 Time-Table/Quiz
+             </a>
+             <a class="item" data-tab="quiz">
+                 Quizzes
+             </a>
+         </div>
+
+
+         {% comment %}The  Basic Course details  segment starts here!{% endcomment %}
+         <!-- <div class="ui active tab" data-tab="coursedetails">
+            <br> <br>
+                 <table class="ui orange table">
+                           <thead>
+                             <tr><th>Name Of the Courses</th>
+                             <th>Course Code</th>
+                             <th>Instructor</th>
+                           </tr></thead><tbody>
+                             <tr>
+                               <td>Software Engineering</td>
+                               <td>CS-308</td>
+                               <td>Atul Gupta</td>
+                             </tr>
+                             <tr>
+                               <td>Computer Networks</td>
+                               <td>CS-305</td>
+                               <td>Vinod Kumar Jain</td>
+                             </tr>
+                             <tr>
+                               <td>Operating Systems</td>
+                               <td>CS-306</td>
+                               <td>Manish Kumar Bajpai</td>
+                             </tr>
+                           </tbody>
+                         </table>
+
+         </div> -->
+
+         {% comment %}The Basic Course details segment ends here!{% endcomment %}
+
+
+
+         {% comment %}The Assignment segment starts here!{% endcomment %}
+
+         <div class="ui active tab" data-tab="assignment">
+
+           <p> </p>
+           <div class="ui form">
+
+       <div class="grouped fields">
+         <label for="fruit">1)   From the following which quality deals with maintaining the quality of the software product?</label>
+         <div class="field">
+           <div class="ui radio checkbox">
+             <input type="radio" name="fruit" checked="" tabindex="0" class="hidden">
+             <label>Apples</label>
+           </div>
+         </div>
+         <div class="field">
+           <div class="ui radio checkbox">
+             <input type="radio" name="fruit" tabindex="0" class="hidden">
+             <label>Oranges</label>
+           </div>
+         </div>
+         <div class="field">
+           <div class="ui radio checkbox">
+             <input type="radio" name="fruit" tabindex="0" class="hidden">
+             <label>Pears</label>
+           </div>
+         </div>
+         <div class="field">
+           <div class="ui radio checkbox">
+             <input type="radio" name="fruit" tabindex="0" class="hidden">
+             <label>Grapefruit</label>
+           </div>
+         </div>
+       </div>
+     </div>
+
+         </div>
+         {% comment %}The assignment ends here!{% endcomment %}
+
+
+         {% comment %}The video  segment starts here!{% endcomment %}
+         <div class="ui tab segment" data-tab="videos">
+              <!-- <h4 class="ui dividing header">Software Engineering Videos</h4> -->
+            <div class="ui four column grid">
+               <div class="row">
+                 {% for video in videos %}
+            <div class="column">
+              <div class="container">
+                <img src="{{video.video_url}}-Small.png" >
+                </img>
+                <div class="play-icon modal-btn" data-pk="{{forloop.counter}}"><svg width="60" height="42" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> <g> <title>Videos</title> <g id="icomoon-ignore"/>
+                <use x="5.397434" y="-68.326835" transform="matrix(0.15880563740596462,0,0,0.1590301359360811,-34.233496722840435,-44.6817534019825) " id="icon" xlink:href="#svg_1"/> <path id="svg_4" d="m24,8.380953l0.190475,22.761904l16.952381,-11.333332l-17.142857,-11.428572z" stroke-linecap="null" stroke-linejoin="null" stroke-width="5" stroke="null" fill="#ffffff"/> <path id="relleno" d="m24.285713,8.666666l0,22.666666l17.238094,-11.523809l-17.238094,-11.142857z" stroke-linecap="null" stroke-linejoin="null" stroke-width="5" stroke="null" fill="#ffffff"/> </g> <defs> <svg id="svg_1" viewBox="0 0 944 1024" height="1024" width="944" xmlns:xlink="http://www.w3.org/1999/xlink"> <g id="icomoon-ignore"/> <path id="play-svg" d="m589.426025,406.15799c0,-31.289978 -25.345032,-56.652985 -56.618042,-56.652985h-265.616974c-31.27301,0 -56.618011,25.359985 -56.618011,56.652985v151.894989c0,31.290039 25.345001,56.653015 56.618011,56.653015h265.616974c31.273987,0 56.618042,-25.361023 56.618042,-56.653015v-151.894989l0,0zm-227.311035,140.032013v-142.677002l108.192017,71.339996l-108.19101,71.339996l-0.001007,-0.002991z"/> </svg> </defs> </svg>
+              </div>
+              <h4>{{video.video_name}}</h4>
+            </div>
+
+              <div class="ui modal" id="vid_modal{{forloop.counter}}">
+                <i class="close icon"></i>
+                <div class="header">
+                  {{video.video_name}}
+                </div>
+                <video width="400" controls style="height:35em;width:50em">
+                  <source src="{{video.video_url}}.mp4" type="video/mp4">
+
+                  Your browser does not support HTML5 video.
+                </video>
+              </div>
+            </div>
+            {% endfor %}
+               </div>
+             </div>
+           </div>
+
+
+
+
+         {% comment %}The video segment ends here!{% endcomment %}
+
+
+         {% comment %}The slides segment starts here!{% endcomment %}
+
+         <div class="ui tab segment" data-tab="slides">
+             <h4 class="ui dividing header">Software Engineering  Slides</h4>
+
+             <div class="ui four column grid">
+               <div class="row">
+                 {% for slide in slides %}
+             <div class="column">
+                <div id='pdf_modal' class="ui sixteen wide column fullscreen modal">
+             <!-- <iframe src="http://jasonczaja.com/blog/wp-content/uploads/2009/01/jason_czaja_resume-791x1024.png"></iframe> -->
+               </div>
+
+                <button class="ui primary button">
+                       <a id='visualize' style="color:white;">{{slide.document_name}}</a>
+               </button>
+             {% endfor %}
+               </div>
+
+             </div>
+         </div>
+</div>
+</div>
+         {% comment %}The Slides segment ends here!{% endcomment %}
+
+
+         {% comment %}The time-table segment starts here!{% endcomment %}
+
+              <div class="ui tab segment" data-tab="time-table">
+                     <h4 class="ui dividing header">Quiz Time Table</h4>
+                     <table class="ui single line table">
+                       <thead>
+                         <tr>
+                           <th>Quiz Name</th>
+                           <th>Date</th>
+                           <th>Time</th>
+                         </tr>
+                       </thead>
+                       <tbody>
+                         {% for quiz in quizs %}
+                         <tr>
+                           <td>{{quiz.quiz_name}}</td>
+                           <td>{{quiz.start_time |date:'Y-m-d'}}</td>
+                           <td>{{quiz.start_time |date:'H:i'}}</td>
+
+                         </tr>
+                         {% endfor %}
+                       </tbody>
+                     </table>
+
+              </div>
+
+         {% comment %}The time-table segment ends here!{% endcomment %}
+
+           {% comment %}The quiz segment starts here!{% endcomment %}
+              <div class="ui tab segment" data-tab="quiz">
+                <div id="clock">
+
+                       <div class="block">
+                         <span class="digit" id="hours"></span>
+                         Hours
+                       </div>
+
+                       <div class="block">
+                         <span class="digit" id="minutes"></span>
+                         Minutes
+                       </div>
+
+                       <div class="block">
+                         <span class="digit" id="seconds"></span>
+                         Seconds
+                       </div>
+
+                </div>
+
+                 <br> <br>
+                <div class="grouped fields">
+                 <label for="fruit">1)From the following which quality deals with maintaining the quality of the software product?</label>
+
+                 <div class="field">
+                   <div class="ui radio checkbox">
+                     <input type="radio" name="fruit" checked="" tabindex="0" class="hidden">
+                     <label>Apples</label>
+                   </div>
+                 </div>
+                 <div class="field">
+                   <div class="ui radio checkbox">
+                     <input type="radio" name="fruit" tabindex="0" class="hidden">
+                     <label>Oranges</label>
+                   </div>
+                 </div>
+                 <div class="field">
+                   <div class="ui radio checkbox">
+                     <input type="radio" name="fruit" tabindex="0" class="hidden">
+                     <label>Pears</label>
+                   </div>
+                 </div>
+                 <div class="field">
+                   <div class="ui radio checkbox">
+                     <input type="radio" name="fruit" tabindex="0" class="hidden">
+                     <label>Grapefruit</label>
+                   </div>
+                 </div>
+       </div>
+              </div>
+
+
+             {% comment %}The quiz segment ends here!{% endcomment %}
+
+
+        {% comment %}The quiz segment ends here!{% endcomment %}
+            </div>
+            {% comment %}The view courses end here!{% endcomment %}
+
+
+            {% comment %}The submit assignment starts here!{% endcomment %}
+
+            <div class="ui tab segment" data-tab="second">
+                {% block submitassignments %}
+                    {% include 'coursemanagement/submitassignments.html' %}
+                {% endblock %}
+            </div>
+
+            {% comment %}The submit assignment ends here!{% endcomment %}
+
+
+            {% comment %}The view performance starts here!{% endcomment %}
+
+            <div class="ui tab segment" data-tab="third">
+                {% block viewperformance %}
+                    {% include 'coursemanagement/viewperformance.html' %}
+                {% endblock %}
+            </div>
+
+            {% comment %}The view performance ends here!{% endcomment %}
+
+
+            {% comment %}The assessment starts here!{% endcomment %}
+
+            <div class="ui tab segment" data-tab="fourth">
+                {% block assessment %}
+                    {% include 'coursemanagement/assessment.html' %}
+                {% endblock %}
+            </div>
+
+            {% comment %}The assessment ends here!{% endcomment %}
+
+            {% comment %}The add contents  starts here!{% endcomment %}
+            {% comment %}
+                <div class="ui tab segment" data-tab="fifth">
+                    {% block addcontent %}
+                        {% include 'coursemanagement/addcontent.html' %}
+                    {% endblock %}
+                </div>
+            {% endcomment %}
+
+            {% comment %}The add content ends here!{% endcomment %}
+        </div>
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            <div class="row">
+
+
+                {% comment %}The Instructor Note:{% endcomment %}
+                {% block note %}
+                    {% include 'coursemanagement/note.html' %}
+                {% endblock %}
+              </div>
+            <div class="row">
+                {% comment %}The comments:{% endcomment %}
+                {% block comments %}
+                    {% include 'coursemanagement/comments.html' %}
+                {% endblock %}
+            </div>
+
+        </div>
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+    </div>
+    {% comment %}The grid ends here!{% endcomment %}
+
+
+
+{% endblock %}
+
+{% block javascript %}
+    <script type="text/javascript" src="{% static 'fusion/js/editProfile.js' %}"></script>
+    <script type="text/javascript" src="{% static 'fusion/js/tablesort.js' %}"></script>
+    <script type="text/javascript" src="{% static 'fusion/js/jquery.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'fusion/js/semantic.min.js' %}"></script>
+    <script>
+        $(document).ready(function() {
+            $('table').tablesort();
+        });
+    </script>
+
+    <!-- <script type="text/javascript">
+      $('#videos').click(function(){
+          $.ajax({
+            type:'POST',
+            url:'/ocms/{{course.course_id}}/videos',
+            data:{'csrfmiddlewaretoken':'{{ csrf_token }}'},
+            success:function(data){
+              $('#question'+pk).hide();
+            },
+            error: function(data,err){
+              alert(err);
+            }
+          });
+      });
+    </script> -->
+
+    <script>
+        function toggleContent() {
+            $('.modulesContent').toggle();
+            if($('.modulesContent').is(':visible')){
+                $('#toggleIcon').removeClass("chevron down");
+                $('#toggleIcon').addClass("chevron up");
+            }
+            else if(!$('.modulesContent').is(':visible')){
+                $('#toggleIcon').removeClass("chevron up");
+                $('#toggleIcon').addClass("chevron down");
+            }
+        }
+    </script>
+    <script>
+             $('.url.example .ui.embed').embed();
+              $(document).ready(function()
+            {
+                $('#visualize').click(function()
+                {
+                    $('#pdf_modal').modal('show').height('80%');
+                });
+            });
+              /*JS  of timer starts*/
+                          $(document).ready(function(){
+              var deadline = new Date("2017/11/01");
+              function updateClock(){
+              var today = Date();
+              var diff = Date.parse(deadline) - Date.parse(today);
+                if(diff<=0){
+                  clearInterval(interval);
+                }
+                else{
+              var seconds = Math.floor((diff/1000)%60);
+              var minutes = Math.floor((diff/1000/60)%60);
+              var hours = Math.floor((diff/1000/60/60)%24);
+              var days = Math.floor(diff/(1000*60*60*24)%30.5);
+              var months = Math.floor(diff/(1000*60*60*24*30.5)%12);
+                 $("#months").text(('0'+months).slice(-2));
+                 $("#days").text(('0'+days).slice(-2));
+                 $("#hours").text(('0'+hours).slice(-2));
+                 $("#minutes").text(('0'+minutes).slice(-2));
+                 $("#seconds").text(('0'+seconds).slice(-2));
+                }//EOF ELSE
+              }//EOF FUNCTION
+             var interval = setInterval(updateClock,1000);
+            });//EOF DOCUMENT.READY
+              /*JS mof timer ends*/
+              $('.modal-btn').click(function(){
+                pk = $(this).attr('data-pk');
+                $('#vid_modal'+pk)
+                  .modal('show');
+                });
+    </script>
+    <script type="text/javascript">
+      //reseting the form
+      function resetForm($form1) {
+          $form1.find('input:text, input:password').val('');
+      }
+
+      //on clicking enter submit text in the new added text box
+      function key_down(input_r){
+
+          var pk=input_r.getAttribute('data-pk');
+          if(event.keyCode == 13){
+              alert(pk);
+              $("#button_r"+pk).click();
+          }
+      }
+
+      // submitting a new question
+      $('.submit_new').click(function(event){
+        event.preventDefault();
+        var parent = $(this).parent();
+        var question= $('input[name=new_comment]').val();
+        var csrf = $('input[name=csrfmiddlewaretoken]').val();
+        $.ajax({
+          type:'POST',
+          url:'/ocms/{{course.course_id}}/ajax_new',
+          data:{'question': question, 'csrfmiddlewaretoken':csrf},
+          success:function(data){
+            resetForm($('#new'));
+            $('<div class="question"id="question'+data.pk+'"><div class="comment comment_q" id="comment'+data.pk+'"><a class="avatar"><img src="{% static "globals/img/zlatan.jpg" %}"></a><div class="content" data-pk="'+data.pk+'" id="question'+data.pk+'"><a class="author">'+data.name+'</a><div class="metadata"><span class="date">'+data.time+'</span></div><div class="text"><p>'+data.question+'</p></div><div class="actions" ><a class="reply remove_q" onclick="func_q(this)" data-pk="'+data.pk
+            +'" id = "remove' + data.pk + '"name = "remove'+data.pk+'">remove</a></div></div></div><div class="comments answer" style="padding:10px"><div class="ui form field" style="margin-bottom:10px"><input type="text" onkeydown="key_down(this)" id="reply_n_'+data.pk+'" data-pk="'+data.pk+'" name="comment'+data.pk+'" placeholder="Enter Your Comment"></div><input type="submit" id="button_r'+data.pk+'" onclick="reply_q(this)" class="ui blue submit button submit_r" data-pk="'+data.pk+'" name="submit" value="Reply"></input></div>').insertBefore(parent);
+          },
+          error: function(data,err){
+            alert(err.message);
+          }
+        });
+      });
+      // submittin a new reply
+      $('.submit_r').click(function(event){
+        var parent=$(this).parent();
+        event.preventDefault();
+        pk=$(this).attr('data-pk');
+        alert("asdasd");
+        var reply= $('input[name=comment'+pk+']').val();
+        var csrf = $('input[name=csrfmiddlewaretoken]').val();
+        $.ajax({
+          type:'POST',
+          url:'/ocms/{{course.course_id}}/ajax_reply',
+          data:{ 'question':pk,'reply': reply,'csrfmiddlewaretoken':csrf},
+          success:function(data){
+            resetForm($('#'+pk));
+            $('<div class="comment comment_r" id="comment'+data.pk+'"><a class="avatar"><img src="{% static "globals/img/zlatan.jpg" %}"></a><div class="content"><a class="author">'+data.replier+'</a><div class="metadata"><span class="date">'+data.time+'</span></div><div class="text">'+data.reply+'</div><div class="actions"><a class="reply remove_r"data-user="'+data.pk+'"data-pk="'+data.pk+'"  onclick="func(this)" id="remove' + data.pk + '"name="remove' + data.pk + '">remove</a></div></div></div>').insertBefore(parent);
+          },
+          error: function(data,err){
+            alert(err);
+          }
+        });
+      });
+      //submitting a new reply to a newly posted question using ajax
+      function reply_q(current){
+        var pk=current.getAttribute('data-pk');
+        var parent=current.parentNode.lastChild.previousSibling;
+        var p=$(parent);
+        var reply= $('input[name=comment'+pk+']').val();
+        $.ajax({
+          type:'POST',
+          url:'/ocms/{{course.course_id}}/ajax_reply',
+          data:{ 'question':pk,'reply': reply,'csrfmiddlewaretoken':'{{ csrf_token }}'},
+          success:function(data){
+            $('#reply_n_'+pk).val("");
+            $('<div class="comment comment_r" id="comment'+data.pk+'"><a class="avatar"><img src="{% static "globals/img/zlatan.jpg" %}"></a><div class="content"><a class="author">'+data.name+'</a><div class="metadata"><span class="date">'+data.time+'</span></div><div class="text">'+data.reply+'</div><div class="actions"><a class="reply remove_r"data-user="'+data.pk+'"data-pk="'+data.pk+'" onclick="func(this)" id="remove'+data.pk+'"name="remove'+data.pk+'">remove</a></div></div></div>').insertBefore(p);
+
+          },
+          error: function(data,err){
+            alert(err);
+          }
+        });
+      }
+      //to check if a user is autherized to delete a comment
+      function check_user(user){
+        if({{Lecturer}})
+        {
+            return 1;
+        }
+        else {
+          if (user == {{ user.pk }})
+            return 1;
+          else
+          {
+            alert("you are not authourized to remove the comment");
+            return 0;
+          }
+
+        }
+      }
+      //removing a old reply
+      $('.remove_r').click(function(){
+        pk = $(this).attr('data-pk');
+        user = $(this).attr('data-user');
+        if(check_user(user))
+          {
+            $.ajax({
+              type:'POST',
+              url:'/ocms/{{course.course_id}}/ajax_remove',
+              data:{ 'question':pk,'csrfmiddlewaretoken':'{{ csrf_token }}'},
+              success:function(data){
+                $('#comment'+pk).hide();
+              },
+              error: function(data,err){
+                alert(err);
+              }
+            });
+          }
+      });
+      //removing a old question
+      $('.remove_q').click(function(){
+        pk = $(this).attr('data-pk');
+        user = $(this).attr('data-user');
+        if(check_user(user))
+          {
+              $.ajax({
+              type:'POST',
+              url:'/ocms/{{course.course_id}}/ajax_remove',
+              data:{ 'question':pk,'csrfmiddlewaretoken':'{{ csrf_token }}'},
+              success:function(data){
+                $('#question'+pk).hide();
+              },
+              error: function(data,err){
+                alert(err);
+              }
+            });
+          }
+      });
+      // deletng the reply just created
+      function func(btn){
+        var pk = btn.getAttribute('data-pk');
+        $.ajax({
+          type:'POST',
+          url:'/ocms/{{course.course_id}}/ajax_remove',
+          data:{ 'question':pk,'csrfmiddlewaretoken':'{{ csrf_token }}'},
+          success:function(data){
+            btn.parentNode.parentNode.parentNode.style.display="none";
+          },
+          error: function(data,err){
+            alert(err);
+          }
+        });
+      }
+
+      //deleting a question just created
+      function func_q(btn){
+        var pk=btn.getAttribute('data-pk');
+        $.ajax({
+          type:'POST',
+          url:'/ocms/{{course.course_id}}/ajax_remove',
+          data:{ 'question':pk,'csrfmiddlewaretoken':'{{ csrf_token }}'},
+          success:function(data){
+            btn.parentNode.parentNode.parentNode.parentNode.style.display="none";
+          },
+          error: function(data,err){
+            alert(err);
+          }
+        });
+      }
+    </script>
+   {% comment %}The comments  ends here!{% endcomment %}
+
+{% endblock %}

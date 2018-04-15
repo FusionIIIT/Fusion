@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
-
+import datetime
 
 class Constants:
     # Class for various choices on the enumerations
@@ -66,7 +66,9 @@ class Constants:
 
 
 class Designation(models.Model):
-    name = models.CharField(max_length=20, unique=True, blank=False, default='student')
+    name = models.CharField(max_length=50, unique=True, blank=False, default='student')
+    full_name = models.CharField(max_length=100, default='Computer Science and Engineering')
+
     type = models.CharField(max_length=30, default='academic', choices=Constants.DESIGNATIONS)
 
     def __str__(self):
@@ -85,13 +87,18 @@ class ExtraInfo(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=20, choices=Constants.TITLE_CHOICES, default='Dr.')
     sex = models.CharField(max_length=2, choices=Constants.SEX_CHOICES, default='M')
-    date_of_birth = models.DateField(null=True)
+    date_of_birth = models.DateField(default=datetime.date(1970, 1, 1))
     address = models.TextField(max_length=1000, default="")
-    phone_no = models.BigIntegerField(null=True)
+    phone_no = models.BigIntegerField(null=True, default=9999999999)
     user_type = models.CharField(max_length=20, choices=Constants.USER_CHOICES)
     department = models.ForeignKey(DepartmentInfo, on_delete=models.CASCADE, null=True, blank=True)
     profile_picture = models.ImageField(null=True, blank=True, upload_to='globals/profile_pictures')
-    about_me = models.TextField(default='', max_length=1000, blank=True)
+    about_me = models.TextField(default='NA', max_length=1000, blank=True)
+
+    @property
+    def age(self):
+        timedelta = timezone.now().date() - self.date_of_birth
+        return int(timedelta.days / 365)
 
     @property
     def age(self):

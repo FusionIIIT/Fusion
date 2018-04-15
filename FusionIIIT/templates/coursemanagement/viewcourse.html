@@ -1,0 +1,1055 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+<!--
+<link href="http://vjs.zencdn.net/5.8.8/video-js.css" rel="stylesheet">
+<script src="http://vjs.zencdn.net/ie8/1.1.2/videojs-ie8.min.js"></script>
+-->
+
+
+{% block title %}
+    Course Management
+{% endblock %}
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    <div class="ui stackable doubling grid">
+
+        <div class="column"></div>
+
+        <div class="three wide column">
+            {% block usercard %} {% include 'globals/usercard.html' %} {% endblock %}
+
+            <div class="ui divider"></div>
+
+
+            <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+
+                <a class="active item sidetab" data-tab="first" data-num="11">
+                  View Courses
+                  <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item sidetab" data-tab="second" data-num="12">
+                  Assignments
+                  <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item sidetab" data-tab="third" data-num="13">
+                  View Performance
+                  <i class="right floated chevron right icon"></i>
+                </a>
+                {% if Lecturer == 1 %}
+                <a class="item sidetab" data-tab="fourth" data-num="14">
+                  Add Content
+                  <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item sidetab" data-tab="fifth" data-num="15">
+                  Assessment
+                  <i class="right floated chevron right icon"></i>
+                </a>
+                <a class="item sidetab" data-tab="sixth" data-num="16">
+                  Question Bank
+                  <i class="right floated chevron right icon"></i>
+                </a>
+              {% endif %}
+            </div>
+        </div>
+
+        <div class="eight wide column">
+            <div class="ui active tab segment" id="11" data-tab="first" style="display:block">
+                <style>
+                    #pdf_modal iframe {
+                        width: 100%;
+                        height: 80vh;
+                    }
+
+                    video {
+                        position: relative;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        margin-bottom: 4em;
+                    }
+
+                    /*timer css starts*/
+
+                    body {
+                        font-family: 'Roboto Slab', serif;
+                    }
+
+                    .heading {
+                        text-align: center;
+                        font-size: 80px;
+                    }
+
+                    #clock {
+                        display: block;
+                        width: 500px;
+                        margin-left: auto;
+                        margin-right: auto;
+                        margin-top: 20px;
+                        padding: 20px;
+                        text-align: center;
+                        background-color: white;
+                        box-shadow: 2px 2px 5px 1px gray;
+                    }
+
+                    .block {
+                        display: inline-block;
+                        width: 16%;
+                        margin: 1px;
+                        padding: 5px;
+                        font-size: 20px;
+                        text-align: center;
+                        background-color: orange;
+                    }
+
+                    .digit {
+                        display: block;
+                        font-size: 30px;
+                        background-color: #fff;
+                    }
+
+                    /*timer css ends*/
+
+                    .play-icon {
+                        cursor: pointer;
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                    }
+
+                    svg:hover #play-svg {
+                        fill: #CC181E;
+                    }
+
+                </style>
+
+
+                <style>
+                    #pdf_modal iframe {
+                        width: 100%;
+                        height: 80vh;
+                    }
+
+                    /*timer css starts*/
+
+                    body {
+                        font-family: 'Roboto Slab', serif;
+                    }
+
+                    .heading {
+                        text-align: center;
+                        font-size: 80px;
+                    }
+
+                    #clock {
+                        display: block;
+                        width: 500px;
+                        margin-left: auto;
+                        margin-right: auto;
+                        margin-top: 20px;
+                        padding: 20px;
+                        text-align: center;
+                        background-color: white;
+                        box-shadow: 2px 2px 5px 1px gray;
+                    }
+
+                    .block {
+                        display: inline-block;
+                        width: 16%;
+                        margin: 1px;
+                        padding: 5px;
+                        font-size: 20px;
+                        text-align: center;
+                        background-color: orange;
+                    }
+
+                    .digit {
+                        display: block;
+                        font-size: 30px;
+                        background-color: #fff;
+                    }
+
+                    /*timer css ends*/
+
+                </style>
+
+
+                <div class="ui pointing secondary menu">
+                    <a class="active item tabs" data-num="1" data-tab="quiz">
+                     Quiz
+                 </a>
+
+                  <a class="item tabs" data-num="2" data-tab="assignment">
+                   Assignment
+                 </a>
+                  <a class="item tabs" data-num="3" data-tab="videos">
+                     Videos
+                  </a>
+                  <a class="item tabs" data-num="4" data-tab="slides">
+                     Slides
+                 </a>
+                  <a class="item tabs" data-num="5" data-tab="time-table">
+                     Time-Table/Quiz
+                  </a>
+                </div>
+                <div class="ui tab segment" id="1" data-tab="quiz" style="display:block">
+                  <h4 class="ui dividing header">Quiz's</h4>
+
+                  <table class="ui very basic collapsing celled table">
+                    <thead>
+                      <tr>
+                        <th>Quiz-Name</th>
+                        <th>Start-Time</th>
+                        <th>End-Time</th>
+                        <th>Duration</th>
+                        <th>Penalty</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for quiz in fut_quiz %}
+                      <tr>
+                        <td>
+                          {{quiz.quiz_name}}
+                        </td>
+                        <td>
+                          {{quiz.start_time}}
+                        </td>
+                        <td>
+                          {{quiz.end_time}}
+                        </td>
+                        <td>
+                        {% if quiz.d_day != '0' %}  {{quiz.d_day}} days {% endif %}{{quiz.d_hour}} hours {% if quiz.d_minute != '0' %}{{quiz.d_minute}} minutes{% endif %}
+                        </td>
+                        <td>
+                          {{quiz.negative_marks}}
+                        </td>
+                        <td>
+                          <div class="fields">
+                            <div class="one wide field">
+                              <label><br></label>
+                              <!-- <a href="/ocms/quiz/{{quiz.pk}}" > -->
+                              {% if Lecturer is 0 %}
+                              <!-- if the student have not give n the quiz already then only show the enter button -->
+                                {% if quiz.pk not in quizs_pk %}
+                                <div class="ui primary button disabled quiz_btn" data-start="{{quiz.start_time|date:'Y-m-d H:i:s'}}" data-pk="{{quiz.pk}}"id="quiz{{quiz.pk}}">
+                                 Enter
+                                 <i class="arrow right icon"></i>
+                               </div>
+                               {% else %}
+                               <div class="ui primary button disabled " data-start="{{quiz.start_time|date:'Y-m-d'}}" data-pk="{{quiz.pk}}"id="quiz{{quiz.pk}}">
+                                Finished
+
+                              </div>
+                               {% endif %}
+                               {% else %}
+                               <a class="remove_quiz" style="margin-bottom:10px;padding-left:10px" id="quiz{{quiz.pk}}" data-pk="{{quiz.pk}}"><i class="remove large icon"></i></a>
+                               <br>
+                               <a class="ui blue button" href="/ocms/{{course.course_id}}/edit_quiz/{{quiz.pk}}">
+                                Edit Quiz
+                               </a>
+                               {% endif %}
+                             <!-- </a> -->
+                           </div>
+                         </div>
+                        </td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                    </table>
+                    {% if Lecturer is 1 %}
+                    <a class="ui blue button" href="/ocms/{{course.course_id}}/create_quiz/">
+                     Create a New Quiz
+                    </a>
+                    {% endif %}
+
+
+                </div>
+                <div class="ui tab" id="2" data-tab="assignment" style="display:none">
+                  <div class="ui pointing secondary menu">
+<!--
+                    <a class="active item assitabs" data-number="21" data-tab="practice">
+                     Practice
+                   </a>
+-->
+
+                    <a class="active item assitabs" data-number="21" data-tab="submitassignment">
+                     Submit
+                   </a>
+                 </div>
+                 <div class="ui active tab segment box" id="21" data-tab="submitassignment">
+                    <h4 class="ui dividing header">Submitable Assignments </h4>
+                    <table class="ui fixed single line sortable celled table">
+                        <thead>
+                            <tr>
+                                <th class="sorted ascending" style="width: 20%;">Sr.</th>
+                                <th class="" style="width: 30%;">Assignment Name</th>
+                                <th class="" style="width: 25%;">Last Submit Date</th>
+                                <th class="" style="width:25%">Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                          {% for assi in assignment %}
+                            <tr>
+                                <td>{{forloop.counter}}</td>
+                                <td>{{assi.assignment_name}}</td>
+                                <td>{{assi.submit_date}}</td>
+                                <td> <a href="{{assi.assignment_url}}"> <i class="download icon" style="font-size:1.3vw;color:blue"></i></a><br>
+                                  </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+              </div>
+              <div class="ui tab segment" id="3" data-tab="videos" style="display:none">
+                  <div class="ui four column grid">
+                    <div class="row" style="margin-left:20px">
+                        <h4 class="ui dividing header">{{course.course_name}}</h4><br>
+                    </div>
+                    {% if videos %}
+                      <div class="row">
+                          {% for video in videos %}
+                          <div class="column">
+                              <div class="container">
+                                  <img src="{{video.video_url}}-Small.png" />
+                                  <div class="play-icon modal-btn" data-pk="{{forloop.counter}}"><svg width="60" height="42" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> <g> <title>Videos</title> <g id="icomoon-ignore"/>
+                  <use x="5.397434" y="-68.326835" transform="matrix(0.15880563740596462,0,0,0.1590301359360811,-34.233496722840435,-44.6817534019825) " id="icon" xlink:href="#svg_1"/> <path id="svg_4" d="m24,8.380953l0.190475,22.761904l16.952381,-11.333332l-17.142857,-11.428572z" stroke-linecap="null" stroke-linejoin="null" stroke-width="5" stroke="null" fill="#ffffff"/> <path id="relleno" d="m24.285713,8.666666l0,22.666666l17.238094,-11.523809l-17.238094,-11.142857z" stroke-linecap="null" stroke-linejoin="null" stroke-width="5" stroke="null" fill="#ffffff"/> </g> <defs> <svg id="svg_1" viewBox="0 0 944 1024" height="1024" width="944" xmlns:xlink="http://www.w3.org/1999/xlink"> <g id="icomoon-ignore"/> <path id="play-svg" d="m589.426025,406.15799c0,-31.289978 -25.345032,-56.652985 -56.618042,-56.652985h-265.616974c-31.27301,0 -56.618011,25.359985 -56.618011,56.652985v151.894989c0,31.290039 25.345001,56.653015 56.618011,56.653015h265.616974c31.273987,0 56.618042,-25.361023 56.618042,-56.653015v-151.894989l0,0zm-227.311035,140.032013v-142.677002l108.192017,71.339996l-108.19101,71.339996l-0.001007,-0.002991z"/> </svg> </defs>
+                                      </svg>
+                                  </div>
+                                  <h4>{{video.video_name}}</h4>
+                              </div>
+                              <div class="ui modal" id="vid_modal{{forloop.counter}}">
+                                  <i class="close icon"></i>
+                                  <div class="header">
+                                      {{video.video_name}}
+                                  </div>
+                                  <video width="400" id="videoPlayer" onclick="play_pause(this)"  loop controls="" style="height:35em;width:50em">
+                                    <source src="{{video.video_url}}.mp4" type="video/mp4">
+                                      Your browser does not support HTML5 video.
+                                  </video>
+                              </div>
+                          </div>
+                          {% endfor %}
+                      </div>
+                      {% else %}
+                      <div class="row" style="margin-left:20px">
+                          <h4 class="ui  header">No videos</h4><br>
+                      </div>
+                      {% endif %}
+                  </div>
+              </div>
+
+                <div class="ui tab segment" id="4" data-tab="slides" style="display:none">
+                    <div class="ui four column grid">
+
+                        <div class="row" style="margin-left:20px">
+                            <h4 class="ui dividing header">{{course.course_name}}</h4><br>
+                        </div>
+                        {% if slides %}
+                        <div class="row">
+
+                            {% for slide in slides %}
+                            <div class="column">
+                                <button class="ui primary button" style="mae">
+                                 <a id='visualize' href="{{slide.document_url}}"style="color:white;">{{slide.document_name}}</a>
+                               </button>
+
+                            </div>
+                            {% endfor %}
+
+                        </div>
+                        {% else %}
+                        <div class="row" style="margin-left:20px">
+                            <h4 class="ui header">No slides</h4><br>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="ui tab segment" id="5" data-tab="time-table" style="display:none">
+                    <h4 class="ui dividing header">Quiz Time Table</h4>
+                    <table class="ui single line table">
+                        <thead>
+                            <tr>
+                                <th>Quiz Name</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                        </thead>
+                        <tbody>
+                            {% for quiz in fut_quiz %}
+                            <tr>
+                                <td>{{quiz.quiz_name}}</td>
+                                <td>{{quiz.start_time |date:'Y-m-d'}}</td>
+                                <td>{{quiz.start_time |date:'H:i'}}</td>
+
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="ui tab segment" id="12" data-tab="second" style="display:none">
+                {% block submitassignments %} {% include 'coursemanagement/submitassignments.html' %} {% endblock %}
+            </div>
+            <div class="ui tab segment" id="13" data-tab="third" style="display:none">
+                {% block viewperformance %} {% include 'coursemanagement/viewperformance.html' %} {% endblock %}
+            </div>
+
+
+            <div class="ui tab segment" id="15" data-tab="fifth" style="display:none">
+                {% block assessment %} {% include 'coursemanagement/assessment.html' %} {% endblock %}
+            </div>
+
+
+            <div class="ui tab segment" id="14" data-tab="fourth" style="display:none">
+                {% block addcontent %} {% include 'coursemanagement/addcontent.html' %} {% endblock %}
+            </div>
+
+            <div class="ui tab segment" id="16" data-tab="sixth" style="display:none">
+                {% block questionbank %} {% include 'coursemanagement/questionbank.html' %} {% endblock %}
+        </div>
+      </div>
+        <div class="three wide column">
+            <div class="row" style="margin-top:1em;">
+                {% block comments %} {% include 'coursemanagement/comments.html' %} {% endblock %}
+            </div>
+
+        </div>
+
+        <div class="column"></div>
+
+    </div>
+
+{% endblock %}
+
+{% block javascript %}
+     <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/editProfile.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+
+    <script type="text/javascript" src="{% static 'globals/js/semantic.min.js' %}"></script>
+    <!-- <script>
+        $(document).ready(function() {
+            $('table').tablesort();
+        });
+    </script> -->
+    <script type="text/javascript">
+      $(document).ready(function() {
+      var prevassessmenttab = 1;
+      $('#tab1').addClass('active');
+      $('#tabdata1').addClass('active');
+      $('.tabheading').click(function(){
+        pk = $(this).attr('data-pk');
+        $('#tab'+prevassessmenttab).removeClass('active');
+        $('#tab'+pk).addClass('active');
+        $('#tabdata'+prevassessmenttab).removeClass('active');
+        $('#tabdata'+pk).addClass('active');
+
+        prevassessmenttab = pk;
+      });
+      var vptab = 'assignmenttab';
+      $('#assignmenttab').addClass('active');
+      $('#assignmenttabdata').addClass('active');
+      $('.vptab').click(function(){
+        id = $(this).attr('id');
+        $('#'+vptab).removeClass('active');
+        $('#'+id).addClass('active');
+        $('#'+vptab+"data").removeClass('active');
+        $('#'+id+"data").addClass('active');
+
+        vptab = id;
+      });
+      });
+
+
+    </script>
+
+    <script>
+         $(".pointing.pagination.menu")
+            .tab()
+        ;
+
+
+    function assess_student(element){
+      if(event.key === 'Enter') {
+        var pk=element.getAttribute("data-assign");
+
+        var csrf = $('input[name=csrfmiddlewaretoken]').val();
+        // alert(pk);
+        $.ajax({
+            type: 'POST',
+            url: '/ocms/{{course.course_id}}/ajax_assess',
+            data: {
+                'pk': pk,
+                'marks':element.value,
+                'csrfmiddlewaretoken': csrf
+            },
+            success: function(data) {
+                alert(data);
+                $('#score'+pk).text(element.value);
+            },
+            error: function(data, err) {
+                alert(err.message);
+            }
+        });
+      }
+    }
+
+    function assess_feedback(element){
+      if(event.key === 'Enter') {
+        var pk=element.getAttribute("data-feedback");
+        var csrf = $('input[name=csrfmiddlewaretoken]').val();
+        // alert(pk);
+        $.ajax({
+            type: 'POST',
+            url: '/ocms/{{course.course_id}}/ajax_feedback',
+            data: {
+                'pk': pk,
+                'feedback':element.value,
+                'csrfmiddlewaretoken': csrf
+            },
+            success: function(data) {
+                alert(data);
+
+            },
+            error: function(data, err) {
+                alert(err.message);
+            }
+        });
+      }
+    }
+
+    $('.qbremove').click(function(){
+      var pk=$(this).attr('data-pk');
+      var csrf = $('input[name=csrfmiddlewaretoken]').val();
+
+      $.ajax({
+          type: 'POST',
+          url: '/ocms/{{course.course_id}}/remove_bank',
+          data: {
+              'pk': pk,
+              'csrfmiddlewaretoken': csrf
+          },
+          success: function(data) {
+            alert(data.message);
+            var x = document.getElementById("qb"+pk);
+            x.style.display = "none";
+            if(data.qb == 0)
+            {
+              var y = document.getElementById("qbtable");
+              y.style.display="none";
+              $('<div class="row" style="margin-left:20px"><h4 class="ui header">No Question Banks added till Now</h4><br></div>').insertBefore('#create_qbank');
+
+            }
+          },
+          error: function(data, err) {
+              alert(err.message);
+          }
+      });
+    });
+
+    $('#create_qbank').click(function(){
+      var x = document.getElementById("qbank");
+      if(x.style.display === "none")
+        x.style.display = "block";
+      else {
+        x.style.display = "none";
+      }
+    });
+
+    $(document).ready(function(){
+      var quiz_btn=document.getElementsByClassName('quiz_btn');
+      for (i = 0; i < quiz_btn.length; i++) {
+          var re = window.setInterval(fun, 1000);
+          var pk = quiz_btn[i].getAttribute('data-pk');
+          var start = new Date(quiz_btn[i].getAttribute('data-start'));
+          function fun()
+          {
+            if({{Lecturer}} == "0"){
+              var now=new Date();
+              // alert(start+''+now);
+              if (start < now){
+                $('#quiz'+pk).removeClass('disabled');
+              }
+            }
+          }
+        }
+      });
+
+      $('.remove_quiz').click(function(){
+        var pk=$(this).attr('data-pk');
+        var csrf = $('input[name=csrfmiddlewaretoken]').val();
+        $.ajax({
+            type: 'POST',
+            url: '/ocms/{{course.course_id}}/remove_quiz',
+            data: {
+                'pk': pk,
+                'csrfmiddlewaretoken': csrf
+            },
+            success: function(data) {
+              alert(data);
+              location.reload();
+
+            },
+            error: function(data, err) {
+                alert(err.message);
+            }
+        });
+      });
+      $('.dustbin').click(function(){
+        var id = $(this).attr('id');
+        var pk = $(this).attr('data-pk');
+        var list = id.split('_');
+        var type = list[1];
+        var number = list[2];
+        $.ajax({
+            type: 'POST',
+            url: '/ocms/{{course.course_id}}/delete/',
+            data: {
+                'type': type,
+                'pk':pk,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(data) {
+                alert(data.msg);
+            },
+            error: function(data, err) {
+                alert("err");
+            }
+        });
+
+      });
+      $('.quiz_btn').click(function(){
+          var pk=$(this).attr('data-pk');
+          alert('Do not close');
+          window.open('/ocms/quiz/'+pk,'myWindow', "width=1500, height=1000");
+        });
+              function toggleContent() {
+            $('.modulesContent').toggle();
+            if($('.modulesContent').is(':visible')){
+                $('#toggleIcon').removeClass("chevron down");
+                $('#toggleIcon').addClass("chevron up");
+            }
+            else if(!$('.modulesContent').is(':visible')){
+                $('#toggleIcon').removeClass("chevron up");
+                $('#toggleIcon').addClass("chevron down");
+            }
+        }
+        var ini = 1;
+        var ini1 = "result1";
+        $('.per').click(function(){
+          // alert("ASD");
+          event.preventDefault();
+          var x = document.getElementById(ini1);
+
+          num = $(this).attr('data-tab');
+          var y = document.getElementById("result"+num);
+          x.style.display = "none";
+          x.removeClass = "active";
+          y.addClass = "active";
+          y.style.display = "block";
+          ini1 = "result"+num;
+        });
+
+    $('.tabs').click(function() {
+        event.preventDefault();
+        var x = document.getElementById(ini);
+        num = $(this).attr('data-num');
+        var y = document.getElementById(num);
+        x.style.display = "none";
+        y.style.display = "block";
+        y.addClass = "active";
+        x.removeClass = "active";
+        ini = num;
+    });
+
+
+        var assini = 21;
+    $('.assitabs').click(function() {
+        event.preventDefault();
+        var x = document.getElementById(assini);
+        num = $(this).attr('data-number');
+        var y = document.getElementById(num);
+        x.style.display = "none";
+        y.style.display = "block";
+        y.addClass = "active";
+        x.removeClass = "active";
+        assini = num;
+    });
+
+    var sideini = 11;
+    $('.sidetab').click(function() {
+        event.preventDefault();
+        var x = document.getElementById(sideini);
+        num = $(this).attr('data-num');
+        var y = document.getElementById(num);
+        x.style.display = "none";
+        y.style.display = "block";
+        y.addClass = "active";
+        x.removeClass = "active";
+        sideini = num;
+    });
+    </script>
+    <script>
+       $('.url.example .ui.embed').embed();
+       $(document).ready(function(){
+          $('#visualize').click(function(){
+              $('#pdf_modal').modal('show').height('80%');
+          });
+        });
+        /*JS  of timer starts*/
+      $(document).ready(function(){
+        var deadline = new Date("2017/11/01");
+        function updateClock(){
+          var today = Date();
+          var diff = Date.parse(deadline) - Date.parse(today);
+          if(diff<=0){
+            clearInterval(interval);
+          }
+          else{
+            var seconds = Math.floor((diff/1000)%60);
+            var minutes = Math.floor((diff/1000/60)%60);
+            var hours = Math.floor((diff/1000/60/60)%24);
+            var days = Math.floor(diff/(1000*60*60*24)%30.5);
+            var months = Math.floor(diff/(1000*60*60*24*30.5)%12);
+               $("#months").text(('0'+months).slice(-2));
+               $("#days").text(('0'+days).slice(-2));
+               $("#hours").text(('0'+hours).slice(-2));
+               $("#minutes").text(('0'+minutes).slice(-2));
+               $("#seconds").text(('0'+seconds).slice(-2));
+          }//EOF ELSE
+        }//EOF FUNCTION
+       var interval = setInterval(updateClock,1000);
+      });//EOF DOCUMENT.READY
+      /*JS mof timer ends*/
+      $('.modal-btn').click(function(){
+        pk = $(this).attr('data-pk');
+        $('#vid_modal'+pk)
+          .modal('show');
+      });
+    </script>
+
+    <script type="text/javascript">
+      //reseting the form
+      function resetForm($form1) {
+          $form1.find('input:text, input:password').val('');
+      }
+
+      //on clicking enter submit text in the new added text box
+      function key_down(input_r){
+
+          var pk=input_r.getAttribute('data-pk');
+          if(event.keyCode == 13){
+              $("#button_r"+pk).click();
+          }
+      }
+
+      // submitting a new question
+      $('.submit_new').click(function(event) {
+        event.preventDefault();
+        var parent = $(this).parent();
+        var question = $('input[name=new_comment]').val();
+        var csrf = $('input[name=csrfmiddlewaretoken]').val();
+        if (question != "") {
+            $.ajax({
+                type: 'POST',
+                url: '/ocms/{{course.course_id}}/ajax_new',
+                data: {
+                    'question': question,
+                    'csrfmiddlewaretoken': csrf
+                },
+                success: function(data) {
+                    resetForm($('#new'));
+                    $('<div class="question"id="question' + data.pk + '"><div class="comment comment_q" id="comment' + data.pk + '"><a class="avatar"><img src="{% static "globals/img/zlatan.jpg" %}"></a><div class="content" data-pk="' + data.pk + '" id="question' + data.pk + '"><a class="author">' + data.name + '</a><div class="metadata"><span class="date">' + data.time + '</span></div><div class="text"><p>' + data.question + '</p></div><div class="actions" ><a class="reply remove_q" onclick="func_q(this)" data-pk="' + data.pk +
+                        '" id = "remove' + data.pk + '"name = "remove' + data.pk + '">remove</a></div></div></div><div class="comments answer" style="padding:10px"><div class="ui form field" style="margin-bottom:10px"><input type="text" onkeydown="key_down(this)" id="reply_n_' + data.pk + '" data-pk="' + data.pk + '" name="comment' + data.pk + '" placeholder="Enter Your Comment"></div><input type="submit" id="button_r' + data.pk + '" onclick="reply_q(this)" class="ui blue submit button submit_r" data-pk="' + data.pk + '" name="submit" value="Reply"></input></div>').insertBefore(parent);
+                },
+                error: function(data, err) {
+                    alert("err");
+                }
+            });
+        } else {
+            $('input[name=new_comment]').css('border-color', '#C80000');
+            setTimeout(function() {
+                $('input[name=new_comment]').css('border-color', 'rgba(34,36,38,0.15)')
+            }, 1000);
+        }
+
+    });
+    // submittin a new reply
+      $('.submit_r').click(function(event){
+        var parent=$(this).parent();
+        event.preventDefault();
+        pk=$(this).attr('data-pk');
+        var reply= $('input[name=comment'+pk+']').val();
+        var csrf = $('input[name=csrfmiddlewaretoken]').val();
+        if (reply != "") {
+          $.ajax({
+            type:'POST',
+            url:'/ocms/{{course.course_id}}/ajax_reply',
+            data:{ 'question':pk,
+                   'reply': reply,
+                   'csrfmiddlewaretoken':csrf
+            },
+            success:function(data){
+                resetForm($('#'+pk));
+                $('<div class="comment comment_r" id="comment'+data.pk+'"><a class="avatar"><img src="{% static "globals/img/zlatan.jpg" %}"></a><div class="content"><a class="author">'+data.replier+'</a><div class="metadata"><span class="date">'+data.time+'</span></div><div class="text">'+data.reply+'</div><div class="actions"><a class="reply remove_r"data-user="'+data.pk+'"data-pk="'+data.pk+'"  onclick="func(this)" id="remove' + data.pk + '"name="remove' + data.pk + '">remove</a></div></div></div>').insertBefore(parent);
+            },
+            error: function(data,err){
+              alert(err);
+            }
+          });
+        }
+        else {
+            $('input[name=comment' + pk + ']').css('border-color', '#C80000');
+            setTimeout(function() {
+                $('input[name=comment' + pk + ']').css('border-color', 'rgba(34,36,38,0.15)')
+            }, 1000);
+        }
+      });
+      //submitting a new reply to a newly posted question using ajax
+      function reply_q(current){
+        var pk = current.getAttribute('data-pk');
+        var parent = current.parentNode.lastChild.previousSibling;
+        var p = $(parent);
+        var reply = $('input[name=comment'+pk+']').val();
+        if (reply != "") {
+          $.ajax({
+            type:'POST',
+            url:'/ocms/{{course.course_id}}/ajax_reply',
+            data:{ 'question':pk,'reply': reply,'csrfmiddlewaretoken':'{{ csrf_token }}'},
+            success:function(data){
+              $('#reply_n_'+pk).val("");
+              $('<div class="comment comment_r" id="comment'+data.pk+'"><a class="avatar"><img src="{% static "globals/img/zlatan.jpg" %}"></a><div class="content"><a class="author">'+data.replier+'</a><div class="metadata"><span class="date">'+data.time+'</span></div><div class="text">'+data.reply+'</div><div class="actions"><a class="reply remove_r"data-user="'+data.pk+'"data-pk="'+data.pk+'" onclick="func(this)" id="remove'+data.pk+'"name="remove'+data.pk+'">remove</a></div></div></div>').insertBefore(p);
+
+            },
+            error: function(data,err){
+              alert(err);
+            }
+          });
+        }else {
+            $('input[name=comment' + pk + ']').css('border-color', '#C80000');
+            setTimeout(function() {
+                $('input[name=comment' + pk + ']').css('border-color', 'rgba(34,36,38,0.15)')
+            }, 1000);
+        }
+      }
+      //to check if a user is autherized to delete a comment
+      function check_user(user){
+        if({{Lecturer}})
+        {
+            return 1;
+        }
+        else {
+          if (user == {{ user.pk }})
+            return 1;
+          else
+          {
+            alert("you are not authourized to remove the comment");
+            return 0;
+          }
+
+        }
+      }
+      //removing a old reply
+      $('.remove_r').click(function(){
+        pk = $(this).attr('data-pk');
+        user = $(this).attr('data-user');
+        if(check_user(user))
+          {
+            $.ajax({
+              type:'POST',
+              url:'/ocms/{{course.course_id}}/ajax_remove',
+              data:{ 'question':pk,'csrfmiddlewaretoken':'{{ csrf_token }}'},
+              success:function(data){
+                $('#comment'+pk).hide();
+              },
+              error: function(data,err){
+                alert(err);
+              }
+            });
+          }
+      });
+      //removing a old question
+      $('.remove_q').click(function(){
+        pk = $(this).attr('data-pk');
+        user = $(this).attr('data-user');
+        if(check_user(user))
+          {
+              $.ajax({
+              type:'POST',
+              url:'/ocms/{{course.course_id}}/ajax_remove',
+              data:{ 'question':pk,'csrfmiddlewaretoken':'{{ csrf_token }}'},
+              success:function(data){
+                $('#question'+pk).hide();
+              },
+              error: function(data,err){
+                alert(err);
+              }
+            });
+          }
+      });
+      // deletng the reply just created
+      function func(btn){
+        var pk = btn.getAttribute('data-pk');
+        $.ajax({
+          type:'POST',
+          url:'/ocms/{{course.course_id}}/ajax_remove',
+          data:{ 'question':pk,'csrfmiddlewaretoken':'{{ csrf_token }}'},
+          success:function(data){
+            btn.parentNode.parentNode.parentNode.style.display="none";
+          },
+          error: function(data,err){
+            alert(err);
+          }
+        });
+      }
+
+      //deleting a question just created
+      function func_q(btn){
+        var pk=btn.getAttribute('data-pk');
+        $.ajax({
+          type:'POST',
+          url:'/ocms/{{course.course_id}}/ajax_remove',
+          data:{ 'question':pk,'csrfmiddlewaretoken':'{{ csrf_token }}'},
+          success:function(data){
+            btn.parentNode.parentNode.parentNode.parentNode.style.display="none";
+          },
+          error: function(data,err){
+            alert(err);
+          }
+        });
+      }
+    </script>
+    <script>
+    $(document).ready(function() {
+        $('table').tablesort();
+    });
+
+    $('#submit_vid').click(function() {
+        var data = new FormData();
+        var img = $('#vid')[0].files;
+        for (var i = 0; i < img.length; i++) {
+            data.append("img", img[i]);
+        }
+        data.append('img', img);
+        var other_data = $('#form1').serializeArray();
+        $.each(other_data, function(key, input) {
+            data.append(input.name, input.value);
+        });
+        $('#load_submit_vid').show();
+        $.ajax({
+            url: "/ocms/{{course.course_id}}/add_video",
+            processData: false,
+            contentType: false,
+            type: 'POST',
+            data: data,
+            success: function(data) {
+                $('#load_submit_vid').hide();
+                alert(data);
+            },
+            error: function(data, err) {
+                alert(err.message);
+            }
+        });
+    });
+    $('#submit_doc').click(function() {
+        var data = new FormData();
+        var img = $('#doc')[0].files;
+        for (var i = 0; i < img.length; i++) {
+            data.append("img", img[i]);
+        }
+        data.append('img', img);
+        var other_data = $('#form2').serializeArray();
+        $.each(other_data, function(key, input) {
+            data.append(input.name, input.value);
+        });
+        $('#load_submit_doc').show();
+        $.ajax({
+            url: "/ocms/{{course.course_id}}/add_documents",
+            processData: false,
+            contentType: false,
+            type: 'POST',
+            data: data,
+            success: function(data) {
+                $('#load_submit_doc').hide();
+                alert(data);
+            },
+            error: function(data, err) {
+                alert(err.message);
+            }
+        });
+    });
+
+    $('#add_assignment').click(function() {
+        var data = new FormData();
+        var img = $('#assignment')[0].files;
+        for (var i = 0; i < img.length; i++) {
+            data.append("img", img[i]);
+        }
+        data.append('img', img);
+        var other_data = $('#form4').serializeArray();
+        $.each(other_data, function(key, input) {
+            data.append(input.name, input.value);
+        });
+        $('#load_add_assignment').show();
+        $.ajax({
+            url: "/ocms/{{course.course_id}}/add_assignment",
+            processData: false,
+            contentType: false,
+            type: 'POST',
+            data: data,
+            success: function(data) {
+                $('#load_add_assignment').hide();
+                alert(data);
+            },
+            error: function(data, err) {
+                alert(err.message);
+            }
+        });
+    });
+
+    $('#submit_assign').click(function() {
+        var data = new FormData();
+        var img = $('#assign')[0].files
+        var selectedValue = $('#assign_topic').val();
+        for (var i = 0; i < img.length; i++) {
+            data.append("img", img[i]);
+        }
+        var other_data = $('#form3').serializeArray();
+        $.each(other_data, function(key, input) {
+            data.append(input.name, input.value);
+        });
+        $('#load_submit_assign').show();
+        data.append('assignment_topic',selectedValue);
+        $.ajax({
+            url: "/ocms/{{course.course_id}}/upload_assignment",
+            processData: false,
+            contentType: false,
+            type: 'POST',
+            data: data,
+            success: function(data) {
+                $('#load_submit_assign').hide();
+                alert(data);
+            },
+            error: function(data, err) {
+                alert(err.message);
+            }
+        });
+    });
+
+
+
+</script>
+
+
+
+{% endblock %}
+>>>>>>> cead69955c163798dcb5d30c8fa5b6356b5ecfaf

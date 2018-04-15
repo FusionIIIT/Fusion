@@ -1,0 +1,71 @@
+{% load static %}
+{% block complainthistory %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="complainthistory">
+            Add Thesis Topic
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="complainthistory">
+        <div class="ui vertical segment">
+        {% if context.total_thesis %}
+        <B>
+            You can only have one thesis per semester
+          </B>
+        {% else %}
+            <form action='/academic-procedures/addThesis/' method='post'>
+            {% csrf_token %}
+
+            <div class="ui fluid icon input">
+              <input placeholder="Enter Thesis Topic" name='thesis' type="text">
+              <br>
+                <div class="ui selection dropdown">
+                  <input name="faculty" type="hidden">
+                  <i class="dropdown icon"></i>
+                  <div class="default text">Mentor</div>
+                  <div class="menu">
+                    {% for i in faculty %}
+                        <div class="item" value="{{ i }}">{{ i }}</div>
+                    {% endfor %}
+                  </div>
+                </div>
+            <br>
+              <input type="text" hidden="True" name='student' value="{{student.id.user.username}}">
+            </div>
+            <br>
+            <div class="ui divider"></div>
+            <br>
+            <center> <button class="ui primary button">Add Thesis</button></center>
+
+        </form>
+        {% endif %}
+
+        </div>
+    </div>
+
+{% endblock %}
+
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+/*
+$(function() {
+    $("#add_course_form").submit(function(event) {
+
+        event.preventDefault();
+        var friendForm = $(this);
+
+        var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
+        posting.done(function(data) {
+            alert('Course Added Successful');
+            window.location = "/academic-procedures/main/";
+        });
+        posting.fail(function(data) {
+            alert('Failed to add');
+            window.location = "/academic-procedures/main/";
+        });
+    });
+});
+*/
+</script>

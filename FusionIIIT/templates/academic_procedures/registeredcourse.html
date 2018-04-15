@@ -1,0 +1,99 @@
+{% load static %}
+{% block finalregister %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="complainthistory">
+            Registered Courses
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="complainthistory">
+        <div class="ui vertical segment">
+            {% if final_count %}
+                <B> <CENTER> You have already registered for next semester </B></CENTER>
+            {% else %}
+            <table class="ui very basic collapsing celled sortable table"
+                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                <thead>
+                <tr>
+                    <th>
+                        #
+                    </th>
+
+                    <th>
+                        Course ID
+                    </th>
+
+                    <th>
+                        Course Name
+                    </th>
+
+                    <th>
+                        Credits
+                    </th>
+                    <th>
+                        Semester
+                    </th>
+                    <th>
+                        Selected
+                    </th>
+
+                </tr>
+                </thead>
+
+                <tbody>
+
+
+                    {% for items in courses_list %}
+                        <tr>
+                            <td>
+                            </td>
+                            <td>
+                              {{ items.course_id }}
+                              {% if items.optional %}
+                            <B>      (optional)</B>
+
+                              {% endif %}
+                                <input type="text" name='course_id' value='{{ items.course_id}}' hidden="True">
+                            </td>
+                            <td>
+                                {{ items.course_name}}
+                                <input type="text" name='course_name' value='{{ items.course_name}}' hidden="True">
+                            </td>
+                            <td>
+                              {{ items.semester }}
+                                <input type="text" name='semester' value='{{ items.sem}}' hidden="True">
+                             </td>
+                             <td>
+                                {{items.credits}}
+                                <input type="text" name='credits' value='{{ items.credits}}' hidden="True">
+                             </td>
+                             <td>
+                                <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
+                                {% for x in final_register %}
+                                    {% if items.course_id == x.course_id.course_id %}
+                                    <B>    Yes </B>
+
+                                    {% endif %}
+                                {% endfor %}
+
+                             </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <br>
+            <div class="ui divider"></div>
+
+
+            {% endif %}
+        </div>
+    </div>
+
+{% endblock %}

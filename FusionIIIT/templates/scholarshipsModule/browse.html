@@ -1,0 +1,349 @@
+{% load static %}
+{% block awards %}
+
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="awards">
+            Awards And Scholarships
+        </a>
+    </div>
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui active tab" data-tab="awards">
+        <div class="ui vertical segment">
+
+            <div class="ui styled accordion">
+                <div class="title">
+                    <i class="dropdown icon"></i>
+                    Awards
+                </div>
+
+                <div class="content">
+                    <button class="ui blue button" onclick="modalGoldmedal()">Gold</button>
+                    <button class="ui blue button" onclick="modalDandm()">DandM</button>
+                    <button class="ui blue button" onclick="modalSilver()">Silver</button>
+                </div>
+
+                <div class="title">
+                    <i class="dropdown icon"></i>
+                    Scholarships
+                </div>
+
+                <div class="content">
+                    <button class="ui blue button" onclick="modalMcm()">MCM</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="ui modal" id="dandm">
+        <div class="ui pointing secondary menu">
+            <a class="active item" data-tab="browsecat">
+                Submitted Applications
+            </a>
+        </div>
+        
+        <div class="ui active tab" data-tab="browsecat">
+            <div class="ui vertical segment">
+                    <form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;">
+                            {% csrf_token %}
+                <table class="ui striped table">
+                        
+                    <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Title</th> 
+                        <th>CPI</th>
+                        <th>Number of Students</th>
+                        <th>File</th>
+                        <th>Accept</th>
+                        <th>Reject</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                            {% for winner in dandm %}
+                            {% if winner.status == 'COMPLETE' %}
+                    <tr>
+                        <td>
+                            <div class="content">
+                                    {{winner.student.id}}
+                            </div>   
+                        </td>
+                        <td>
+                            <div class="content">
+                                    {{winner.title_name}}
+                            </div>   
+                        </td>
+                        
+                        <td>
+                            <div class="content">
+                                    {{winner.student.cpi}}
+                            </div>   
+                        </td>
+                        <td>
+                            <div class="content">
+                                    {{winner.no_of_students}}
+                            </div>   
+                        </td>
+                        <td>
+                        <form method='POST'>
+                                {% csrf_token %}
+                                <input type="hidden" name="id" value="{{winner.id}}"/>
+                                <a href="/media/{{winner.relevant_document}}" download><button type='button' class="ui blue button" name="Form">Files</button>
+                                </a>    
+                            </form>
+                        </td>
+                        <td>
+                            <form method='POST'>
+                                {% csrf_token %}
+                                <input type="hidden" name="id" value="{{winner.student}}"/>
+                            <button class="ui blue button" name="Accept_dm" value="{{winner.id}}">Accept</button>
+                                </form>
+                        </td>
+                        <td>
+                            <form method='POST'>
+                                {%csrf_token %}
+                                <input type="hidden" name="id" value="{{winner.student}}"/>
+                            <button class="ui blue button" name="Reject_dm" value="{{winner.id}}">Reject</button>
+                            </form>
+                        </td>
+                        
+                    </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+                </form>
+            </div>
+        
+            <div class="ui divider"></div>
+        </div>
+    </div>
+
+    <div class="ui modal" id="mcm">
+        <div class="ui pointing secondary menu">
+            <a class="active item" data-tab="browsecat">
+                Submitted Applications
+            </a>
+        </div>
+        
+        <div class="ui active tab" data-tab="browsecat">
+            <div class="ui vertical segment">
+                    <form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;">
+                            {% csrf_token %}
+                <table class="ui striped table">
+                        
+                    <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Category</th>
+                        <th>Annual Income</th>
+                        <th>CPI</th>
+                        <th>File</th>
+                        <th>Accept</th>
+                        <th>Reject</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                            {% for winner in mcm %}
+                            {% if winner.status == 'COMPLETE' %}
+                    <tr>
+                        <td>
+                            <div class="content">
+                                    {{winner.student.id}}
+                            </div>   
+                        </td>
+                        <td>
+                            <div class="content">
+                                    {{winner.student.category}}
+                            </div>   
+                        </td>
+                        <td>
+                            <div class="content">
+                                    {{winner.annual_income}}
+                            </div>   
+                        </td>
+                        <td>
+                            <div class="content">
+                                    {{winner.student.cpi}}
+                            </div>   
+                        </td>
+                       
+                        <td>
+                                <form method='POST'>
+                                    {% csrf_token %}
+                                    <input type="hidden" name="id" value="{{winner.id}}"/>
+                                    <a href="/media/{{winner.relevant_document}}" download><button type='button' class="ui blue button" name="Form">Files</button>
+                                    </a>    
+                                </form>
+                        </td>
+                        <td>
+                            <form method='POST'>
+                                {% csrf_token %}
+                                <input type="hidden" name="id" value="{{winner.id}}"/>
+                            <button class="ui blue button" name="Accept_mcm" value="{{winner.id}}">Accept</button>
+                                </form>
+                        </td>
+                        <td>
+                            <form method='POST'>
+                                {%csrf_token %}
+                                <input type="hidden" name="id" value="{{winner.id}}"/>
+                            <button class="ui blue button" name="Reject_mcm" value="{{winner.id}}">Reject</button>
+                            </form>
+                        </td>
+                        
+                    </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+                </form>
+            </div>
+        
+            <div class="ui divider"></div>
+        </div>
+    </div>
+
+
+    <div class="ui modal" id="silver">
+        <div class="ui pointing secondary menu">
+            <a class="active item" data-tab="browsecat">
+                Submitted Applications
+            </a>
+        </div>
+        
+        <div class="ui active tab" data-tab="browsecat">
+            <div class="ui vertical segment">
+                    <form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;">
+                            {% csrf_token %}
+                <table class="ui striped table">
+                        
+                    <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>CPI</th>
+                        <th>File</th>
+                        <th>Accept</th>
+                        <th>Reject</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                            {% for winner in silver %}
+                            {% if winner.status == 'COMPLETE' %}
+                    <tr>
+                        <td>
+                            <div class="content">
+                                    {{winner.student.id}}
+                            </div>   
+                        </td>
+                        
+                        <td>
+                            <div class="content">
+                                    {{winner.student.cpi}}
+                            </div>   
+                        </td>
+                        <td>
+                                <form method='POST'>
+                                        {% csrf_token %}
+                                        <input type="hidden" name="id" value="{{winner.id}}"/>
+                                        <a href="/media/{{winner.relevant_document}}" download><button type='button' class="ui blue button" name="Form">Files</button>
+                                        </a>    
+                                    </form>
+                        <td>
+                            <form method='POST'>
+                                {% csrf_token %}
+                                <input type="hidden" name="id" value="{{winner.id}}"/>
+                            <button class="ui blue button" name="Accept_silver" value="{{winner.id}}">Accept</button>
+                                </form>
+                        </td>
+                        <td>
+                            <form method='POST'>
+                                {%csrf_token %}
+                                <input type="hidden" name="id" value="{{winner.id}}"/>
+                            <button class="ui blue button" name="Reject_silver"  value="{{winner.id}}">Reject</button>
+                            </form>
+                        </td>
+                        
+                    </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+                </form>
+            </div>
+        
+            <div class="ui divider"></div>
+        </div>
+        
+    </div>
+
+    <div class="ui modal" id="goldmedal">
+        <div class="ui pointing secondary menu">
+            <a class="active item" data-tab="browsecat">
+                Submitted Applications
+            </a>
+        </div>
+        
+        <div class="ui active tab" data-tab="browsecat">
+            <div class="ui vertical segment">
+                    <form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;">
+                            {% csrf_token %}
+                <table class="ui striped table">
+                        
+                    <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>CPI</th>
+                        <th>File</th>
+                        <th>Accept</th>
+                        <th>Reject</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                            {% for winner in gold %}
+                            {% if winner.status == 'COMPLETE' %}
+                    <tr>
+                        <td>
+                            <div class="content">
+                                    {{winner.student.id}}
+                            </div>   
+                        </td>
+                        
+                        <td>
+                            <div class="content">
+                                    {{winner.student.cpi}}
+                            </div>   
+                        </td>
+                        <td>
+                        <form method='POST'>
+                                {% csrf_token %}
+                                <input type="hidden" name="id" value="{{winner.id}}"/>
+                                <a href="/media/{{winner.relevant_document}}" download><button type='button' class="ui blue button" name="Form">Files</button>
+                                </a>    
+                            </form>
+                        </td>
+                        <td>
+                            <form method='POST'>
+                                {% csrf_token %}
+                                <input type="hidden" name="id" value="{{winner.id}}"/>
+                            <button class="ui blue button" name="Accept_gold" value="{{winner.id}}">Accept</button>
+                                </form>
+                        </td>
+                        <td>
+                            <form method='POST'>
+                                {%csrf_token %}
+                                <input type="hidden" name="id" value="{{winner.id}}"/>
+                            <button class="ui blue button" name="Reject_gold" value="{{winner.id}}">Reject</button>
+                            </form>
+                        </td>
+                        
+                    </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+                </form>
+            </div>
+        
+            <div class="ui divider"></div>
+        </div>
+    </div>
+{% endblock %}

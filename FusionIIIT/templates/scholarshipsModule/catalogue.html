@@ -1,0 +1,349 @@
+{% load static %}
+{% block catalog %}
+
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="catalog">
+            Catalog
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="catalog">
+
+        <div class="ui vertical segment">
+
+            <div class="ui stackable doubling grid">
+                <div class="six wide column">
+                    <div class="ui secondary vertical pointing menu">
+                        <div id="select_award">
+                            <a class="active item" data-tab="Mcm" >
+                                Mcm
+                            </a>
+
+                            <a class="item" data-tab="D&M Proficiency Gold Medal">
+                                D&M Proficiency
+                            </a>
+
+                            <a class="item" data-tab="Director Gold Medal">
+                                Director Gold Medal
+                            </a>
+
+                            <a class="item" data-tab="Director Silver Medal Cultural">
+                                Director Silver Medal Cultural
+                            </a>
+                            <a class="item" data-tab="Director Silver Medal Games and Sports">
+                                Director Silver Medal Games and Sports
+                            </a>
+                            <a class="item" data-tab="IIITDM Proficiency Prizes">
+                                IIITDM Proficiency Prizes
+                            </a>
+                            <a class="item" data-tab="Chairman Gold Medal">
+                                Chairman Gold Medal
+                            </a>
+                            <a class="item" data-tab="Academic Performance Proficiency Silver Medal">
+                                Academic Performance Proficiency Silver Medal
+                            </a>
+                            <a class="item" data-tab="Notional Prizes">
+                                Notional Prizes
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ten wide column">
+                    <form class="ui form" id="award1">{% csrf_token %}
+                        <div class="ui active tab" data-tab="Mcm">
+                            <h4 class="ui dividing header" style="margin-bottom: 16px;">
+                                Mcm
+
+                                <input type="button"
+                                       class="editButton ui red mini button right floated" onclick="editCatalogue()" value = "Edit"/>
+                            </h4>
+
+                            <span class="aboutSpan">
+                                Sample Data about the Award!
+                            </span>
+
+                            <div class="textarea">
+                                <textarea rows=5  style="width: 100%;"  class="aboutTextarea" hidden></textarea>
+                            </div>
+                        </div>
+
+                        <div class="ui tab" data-tab="D&M Proficiency Gold Medal">
+                            <h4 class="ui dividing header" style="margin-bottom: 16px;">
+                                D&M Proficiency Gold Medal
+
+                                <input type="button"
+                                       class="editButton ui red mini button right floated" onclick="editCatalogue()" value = "Edit"/>
+                            </h4>
+
+                            <span class="aboutSpan">
+                                Sample Data about the Award!
+                            </span>
+
+                            <div class="textarea">
+                                <textarea rows=5  style="width: 100%;"  class="aboutTextarea" hidden></textarea>
+                            </div>
+                        </div>
+
+                        <div class="ui tab" data-tab="Director Gold Medal">
+                            <h4 class="ui dividing header" style="margin-bottom: 16px;">
+                                Director Gold Medal
+
+                                <input type="button"
+                                       class="editButton ui red mini button right floated" onclick="editCatalogue()" value = "Edit"/>
+                            </h4>
+
+                            <span class="aboutSpan">
+                                Sample Data about the Award!
+                            </span>
+
+                            <div class="textarea">
+                                <textarea rows=5  style="width: 100%;"  class="aboutTextarea" hidden></textarea>
+                            </div>
+                        </div>
+
+                        <div class="ui tab" data-tab="Director Silver Medal Cultural">
+                            <h4 class="ui dividing header" style="margin-bottom: 16px;">
+                                Director Silver Medal Cultural
+
+                                <input type="button"
+                                       class="editButton ui red mini button right floated" onclick="editCatalogue()" value = "Edit"/>
+                            </h4>
+
+                            <span class="aboutSpan">
+                                Sample Data about the Award!
+                            </span>
+
+                            <div class="textarea">
+                                <textarea rows=5  style="width: 100%;"  class="aboutTextarea" hidden></textarea>
+                            </div>
+                        </div>
+
+                        
+
+                        <div class="ui tab" data-tab="Director Silver Medal Games and Sports">
+                                <h4 class="ui dividing header" style="margin-bottom: 16px;">
+                                        Director Silver Medal Games and Sports
+    
+                                    <input type="button"
+                                           class="editButton ui red mini button right floated" onclick="editCatalogue()" value = "Edit"/>
+                                </h4>
+    
+                                <span class="aboutSpan">
+                                    Sample Data about the Award!
+                                </span>
+    
+                                <div class="textarea">
+                                    <textarea rows=5  style="width: 100%;"  class="aboutTextarea" hidden></textarea>
+                                </div>
+                            </div>
+
+                        <div class="ui tab" data-tab="IIITDM Proficiency Prizes">
+                            <h4 class="ui dividing header" style="margin-bottom: 16px;">
+                                IIITDM Proficiency Prizes
+
+                                <input type="button"
+                                       class="editButton ui red mini button right floated" onclick="editCatalogue()" value = "Edit"/>
+                            </h4>
+
+                            <span class="aboutSpan">
+                                Sample Data about the Award!
+                            </span>
+
+                            <div class="textarea">
+                                <textarea rows=5  style="width: 100%;"  class="aboutTextarea" hidden></textarea>
+                            </div>
+                        </div>
+
+                        <div class="ui tab" data-tab="Chairaman Gold Medal">
+                            <h4 class="ui dividing header" style="margin-bottom: 16px;">
+                                Chairaman Gold Medal
+
+                                <input type="button"
+                                       class="editButton ui red mini button right floated" onclick="editCatalogue()" value = "Edit"/>
+                            </h4>
+
+                            <span class="aboutSpan">
+                                Sample Data about the Award!
+                            </span>
+
+                            <div class="textarea">
+                                <textarea rows=5  style="width: 100%;"  class="aboutTextarea" hidden></textarea>
+                            </div>
+                        </div>
+
+                        <div class="ui tab" data-tab="Academic Performance Proficiency Silver Medal">
+                            <h4 class="ui dividing header" style="margin-bottom: 16px;">
+                                Academic Performance Proficiency Silver Medal
+
+                                <input type="button"
+                                       class="editButton ui red mini button right floated" onclick="editCatalogue()" value = "Edit"/>
+                            </h4>
+
+                            <span class="aboutSpan">
+                                Sample Data about the Award!
+                            </span>
+
+                            <div class="textarea">
+                                <textarea rows=5  style="width: 100%;"  class="aboutTextarea" hidden></textarea>
+                            </div>
+                        </div>
+
+                        <div class="ui tab" data-tab="Notional Prizes">
+                            <h4 class="ui dividing header" style="margin-bottom: 16px;">
+                                Notional Prizes
+                                <input type="button"
+                                       class="editButton ui red mini button right floated" onclick="editCatalogue()" value = "Edit"/>
+                            </h4>
+
+                            <span class="aboutSpan">
+                                Sample Data about the Award!
+                            </span>
+
+                            <div class="textarea">
+                                <textarea rows=5  style="width: 100%;"  class="aboutTextarea" hidden></textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                </div>
+                <div class="column"></div>
+            </div>
+
+        </div>
+
+
+
+{% endblock %}
+
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+
+        <script>
+
+
+
+function editCatalogue() {
+
+    var currentTab=$("#award1").find(".active").filter('.tab');
+    var award_name=currentTab.data('tab');
+    var button =  currentTab.find(".editButton");
+    var buttonValue =button.val();
+    var aboutSpan = currentTab.find(".aboutSpan");
+    var aboutSpanData = aboutSpan.text().trim();
+    textbox=currentTab.find(".aboutTextarea");
+    textData=textbox.val().trim();
+
+
+
+    if(buttonValue === "Edit"){
+        button.val("Save");
+
+        textbox.val(aboutSpanData);
+        textbox.show();
+        aboutSpan.hide();
+    }
+
+    else if(buttonValue==="Save") {
+        button.val("Edit");
+
+        $.ajax({
+
+                url: '/spacs/convener_catalogue/',
+                type: 'POST',                                               // sending POST request through ajax
+                data: {
+                    award_name:award_name,
+                    catalog_content:textData,
+                    csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+
+                },
+                success: function (response) {                              // if data added successfully
+                    if(response.result==='Success'){
+
+                    }
+                    else{
+                                                  // otherwise print unsuccessful message
+                    }
+
+                }
+        });
+        aboutSpanData = textData;
+        aboutSpan.text(aboutSpanData);
+        textbox.hide();
+        aboutSpan.show();
+    }
+}
+
+$("#catalogue_clicked").on('click',function () {
+    var currentTab=$("#award1").find(".active").filter(".tab");
+    var award_name=currentTab.data('tab');
+
+    var aboutSpan = currentTab.find(".aboutSpan");
+    var aboutSpanData = aboutSpan.text().trim();
+
+
+
+    $.ajax({
+
+                url: '/spacs/convener_catalogue/',
+                type: 'GET',                                               // sending POST request through ajax
+                data: {
+                    award_name:award_name
+
+                },
+                success: function (response) {                              // if data added successfully
+                    if(response.result==='Success'){
+
+                        aboutSpanData=response.catalog;
+                        aboutSpan.text(aboutSpanData);
+
+                    }
+                    else{
+                        alert(response.result);                            // otherwise print unsuccessful message
+                    }
+
+                }
+        });
+});
+
+
+$('#select_award').on('click','.item',function (event) {
+    var award_name=$(this).data('tab');
+    var currentTab=$("#award1").find(".active").filter(".tab");
+
+
+    var aboutSpan = currentTab.find(".aboutSpan");
+    var aboutSpanData = aboutSpan.text().trim();
+
+
+
+    $.ajax({
+
+                url: '/spacs/convener_catalogue/',
+                type: 'GET',                                               // sending POST request through ajax
+                data: {
+                    award_name:award_name
+
+                },
+                success: function (response) {                              // if data added successfully
+                    if(response.result==='Success'){
+
+                        aboutSpanData=response.catalog;
+                        aboutSpan.text(aboutSpanData);
+
+                    }
+                    else{
+                        alert(response.result);                            // otherwise print unsuccessful message
+                    }
+
+                }
+        });
+});
+
+
+    </script>
+
+{% endblock javascript %}
+

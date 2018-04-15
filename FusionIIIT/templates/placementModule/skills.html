@@ -11,34 +11,37 @@
         TODO: Add a proper JS logic for Skills!
         {% endcomment %}
 
-        <form class="ui form">
+        <form method="post" class="ui form" role="form">
             {% comment %}The add a new skill Accordian starts here!{% endcomment %}
             <div class="ui active accordion field">
                 <div class="title">
                     <i class="icon dropdown"></i>
                     Add a new Skill/Technology
                 </div>
-
+                {{ form10.non_field_errors }}
                 <div class="active content fields">
+                  {% csrf_token %}
                     <div class="two fields">
                         <div class="one wide field"></div>
                         <div class="eight wide field">
-                            <label>Skill/Technology:</label>
-                            <input placeholder="Skill/Technology"
-                                   class="ui fluid input"
-                                   type="text">
+                          {{ form10.skill.errors }}
+                          <label for="{{ form.skill.id_for_label }}">
+                            Skill/Technology:
+                          </label>
+                          {{ form10.skill }}
                         </div>
 
                         <div class="four wide field">
-                            <label>Rate:</label>
-                            <input placeholder="Rate"
-                                   class="ui fluid input"
-                                   type="text">
+                          {{ form10.skill_rating.errors }}
+                          <label for="{{ form10.skill_rating.id_for_label }}">
+                            Rate:
+                          </label>
+                            {{ form10.skill_rating }}
                         </div>
 
                         <div class="two wide field">
                             <label><br></label>
-                            <button class="ui primary button">Add</button>
+                            <button name="skillsubmit" value="skillsubmit" class="ui primary button" type="submit">Add</button>
                         </div>
                     </div>
                 </div>
@@ -56,38 +59,21 @@
                 <div class="two wide column"></div>
 
                 <div class="ten wide column">
-                    <div class="ui indicating large progress" data-value="{{ skill.skill_rating }}" data-total="100" id="example1">
-                        <div class="bar">
-                            <div class="progress"></div>
-                        </div>
-                        <div class="label">
-                            <div class="ui mini statistic">
-                                <div class="value">
-                                    {{ skill.skill_id.skill }}
-                                </div>
+                    <div class="ui indicating large progress active" data-percent="{{ skill.skill_rating }}">
+                              <div class="bar" style="width: {{ skill.skill_rating }}%;">
+                                <div class="progress">{{ skill.skill_rating }}%</div>
+                              </div>
+                              <div class="label">{{ skill.skill_id.skill }}</div>
                             </div>
-                        </div>
-                    </div>
                 </div>
-
-                {% comment %}Edit starts here! {% endcomment %}
                 <div class="two wide column">
-                    <div class="ui buttons">
-                        <button class="ui green basic button" onclick="increment()">
-                            <i class="plus icon green"></i>
-                        </button>
-
-                        <button class="ui red basic button" onclick="decrement()">
-                            <i class="minus icon red"></i>
-                        </button>
-                    </div>
-                </div>
-                {% comment %}Edit ends here! {% endcomment %}
-
-                {% comment %}The Right margin starts here!{% endcomment %}
-                <div class="two wide column"></div>
-                {% comment %}The Right margin ends here!{% endcomment %}
-
+                <form method="post" class="ui form" role="form">
+                  {% csrf_token %}
+                  <button name="deleteskill" value="{{ skill.pk }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
+                      <i class="delete red icon"></i>
+                  </button>
+                  </form>
+                  </div>
             </div>
             {% comment %}A skill row ends here!{% endcomment %}
             {% endfor %}

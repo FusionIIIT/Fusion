@@ -11,22 +11,27 @@
                        id="editButton"
                        class="ui red mini button right floated" onclick="editFirst()"
                        value = "Edit">
-                </input>
+                <form action="{% url 'eis:persinfo' %}" method="post" id="editForm">
+                    <input type="hidden" id="saveButton" value="Submit" class="ui red mini button right floated hidden" hidden name="saveButton" onclick="editSave();">
+                    {% csrf_token %}
+                    <input type="text" name="saveAbout" value="" id="saveAbout" hidden>
+                    <input type="text" name="saveEdu" value="" id="saveEdu" hidden>
+                    <input type="text" name="saveInt" value=""  id="saveInt" hidden>
+                    <input type="text" name="saveContact" value="" id="saveContact" hidden>
+                </form>
             </div>
 
             <div class="ui divider"></div>
 
             <span id="aboutSpan">
-                I am interested in investigating and developing intelligent methods and tools in the area of software engineering, computer vision, information extraction, and other domains. Currently, some of the work I am engaged in include Identifying patterns in requirements, design and coding using NLP as well as through model transformation approaches. Some other work include the study the dataset characteristics and suitability of a given dataset to provide an acceptable solution of a Machine Learning problem.
+                {{ pers.about }}
             </span>
-
             <div class="textarea">
                 <textarea rows=5
-                          type="text"
+                          type="textarea"
                           style="width: 100%;"
-                          id="aboutTextarea" hidden></textarea>
-            </div>
-        </div>
+                          id="aboutTextarea" hidden name="about">
+                </textarea></div></div>
     </div>
     <!--About Me card ends here!-->
 
@@ -54,12 +59,12 @@
 
                         <tr>
                             <td>
-                                Pension Fund #
+                                PF #
                             </td>
 
                             <td>
                                 <span id="pfSpan">
-                                    PF# XXXXXXXXX
+                                    PF# {{ pf }}
                                 </span>
                             </td>
                         </tr>
@@ -71,15 +76,15 @@
 
                             <td>
                                 <span id="educationSpan">
-                                    PhD, IIT Kanpur
+                                    {{ pers.education }}
                                 </span>
 
                                 <div class="textarea">
                                     <textarea rows=3
                                               type="text"
                                               style="width: 100%;"
-                                              id="educationTextarea" hidden></textarea>
-                                </div>
+                                              id="educationTextarea" hidden name="education">
+                                    </textarea></div>
                             </td>
                         </tr>
 
@@ -90,15 +95,15 @@
 
                             <td>
                                 <span id="interestSpan">
-                                    Software Engineering, Machine Learning, Data Science, and NLP.
+                                    {{ pers.interest }}
                                 </span>
 
                                 <div class="textarea">
                                     <textarea rows=3
                                               type="text"
                                               style="width: 100%;"
-                                              id="interestTextarea" hidden></textarea>
-                                </div>
+                                              id="interestTextarea" hidden name="interest">
+                                    </textarea> </div>
                             </td>
                         </tr>
 
@@ -127,12 +132,12 @@
                                 <a>
                                     <i class="phone icon" id="contactIcon"></i>
                                         <span id="contactSpan">
-                                            +91 - 7612632139
+                                            {{ pers.contact }}
                                         </span>
                                 </a>
 
                                 <div class="ui fluid input">
-                                    <input type="text" id="contactInput" hidden>
+                                    <input type="text" id="contactInput" hidden name="contact">
                                 </div>
                             </td>
 
@@ -147,7 +152,7 @@
                                         <i class="mail icon" id="mailIcon"></i>
 
                                         <span id="mailSpan">
-                                            {{ userEmail }}
+                                            {{ request.user.email }}
                                         </span>
                                     </a>
 
@@ -162,7 +167,7 @@
                                 <td>
                                     <a href="https://www.linkedin.com/" target="_blank">
                                         <i class="blue linkedin icon"></i>
-                                        {{ userFirstName }} {{ userLastName }}
+                                        {{ request.user.first_name }}&nbsp;{{ request.user.last_name }}
                                     </a>
                                 </td>
                             </tr>
@@ -175,7 +180,7 @@
                                 <td>
                                     <a href="https://www.github.com/" target="_blank">
                                         <i class="teal github icon"></i>
-                                        {{ userFirstName }} {{ userLastName }}
+                                        {{ request.user.first_name }}&nbsp;{{ request.user.last_name }}
                                     </a>
                                 </td>
                             </tr>
@@ -185,4 +190,5 @@
             </span>
         </div>
     </div><!--The contact details card ends here!-->
+
 {% endblock %}

@@ -11,14 +11,18 @@
     <div class="ui active tab" data-tab="resolvecomplaint">
         <div class="ui vertical segment">
             <table class="ui very basic collapsing celled sortable table"
-                   style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
+                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
                 <thead>
                 <tr>
                     <th>
                         Student
                     </th>
 
-                    <th>
+                    <th class="one wide column">
                         Date
                     </th>
 
@@ -26,11 +30,11 @@
                         Type
                     </th>
 
-                    <th class="one wide column">
+                    <th>
                         Location
                     </th>
 
-                    <th class="two wide column">
+                    <th>
                         Specific Location
                     </th>
 
@@ -38,116 +42,90 @@
                         Details
                     </th>
 
-                    <th>
-                        Resolve
-                    </th>
-
-                    <th class="one wide column">
+                    <th class="four wide column">
                         Status
+                    </th>
+                    <th class="two large column">
+                        Worker Name
+                    </th>
+                    <th class="two large column">
+                        Feedback
                     </th>
                 </tr>
                 </thead>
 
+                {% for a in history %}
+                    {% if a.status == 2 %}
                 <tbody>
                 <tr>
                     <td>
                         <h4 class="ui image header">
                             <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
                             <div class="content">
-                                Zlatan Ibrahimovic
+                                 {{ a.complainer.user }}
                                 <div class="sub header">
-                                    2015121
                                 </div>
                             </div>
                         </h4>
                     </td>
-
                     <td>
-                        14 Oct'17
+                        {{ a.complaint_date }}
                     </td>
-
                     <td>
-                        Type #1
+                        {{ a.complaint_type }}
                     </td>
-
                     <td>
-                        Location #1
+                        {{ a.location }}
                     </td>
-
                     <td>
-                        Specific Location #1
+                        {{ a.specific_location }}
                     </td>
-
                     <td>
-                        ...
+                        <a href="./detail2/{{ a.id }}/"> Click here!</a>
                     </td>
-
                     <td>
-                        <div class="ui inverted circular icon button" style="margin: auto;">
-                            <i class="wrench black icon"></i>
-                        </div>
+                          <i class="large green checkmark icon"></i>
                     </td>
-
                     <td>
-                        <i class="large orange warning icon"></i>
+                        <b>{{ a.worker_id }}</b>
                     </td>
-                </tr>
-
-                <tr>
                     <td>
-                        <h4 class="ui image header">
-                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
-                            <div class="content">
-                                Zlatan Ibrahimovic
-                                <div class="sub header">
-                                    2015121
-                                </div>
+                        {{ a.feedback }}
+                        {% if a.feedback != '' %}
+                            <td>
+                            <div class="field">
+                                <center>
+                                    <a href="./deletecomplaint/{{ a.id }}">
+                                    <button class="ui green icon button" data-tooltip="Click here to delete complaint" >
+                                        <i class="send icon"></i>
+                                    </button>
+                                    </a>
+                                </center>
                             </div>
-                        </h4>
-                    </td>
-
-                    <td>
-                        13 Oct'17
-                    </td>
-
-                    <td>
-                        Type #2
-                    </td>
-
-                    <td>
-                        Location #2
-                    </td>
-
-                    <td>
-                        Specific Location #2
-                    </td>
-
-                    <td>
-                        ...
-                    </td>
-
-                    <td>
-                        <div class="ui inverted circular icon button" style="margin: auto;">
-                            <i class="wrench black icon"></i>
-                        </div>
-                    </td>
-
-                    <td>
-                        <i class="large orange warning icon"></i>
+                            </td>
+                        {% else %}
+                            <td>
+                                <button class="ui disabled button">Delete</button>
+                            </td>
+                        {% endif %}
                     </td>
                 </tr>
+
 
                 </tbody>
+                    {% endif %}
+                {% endfor %}
             </table>
 
             <br>
             <div class="ui divider"></div>
 
+
+
             <div class="extra content">
                 <div class="" style="text-align: center;">
-                    <i class="large green checkmark icon"></i> : Approved &ensp;&ensp;&ensp;&ensp;&ensp;
-                    <i class="large orange warning icon"></i> : Pending &ensp;&ensp;&ensp;&ensp;&ensp;
-                    <i class="large red x icon"></i> : Declined
+                    <i class="large green checkmark icon"></i> : Completed &ensp;&ensp;&ensp;&ensp;&ensp;
+
                 </div>
             </div>
 

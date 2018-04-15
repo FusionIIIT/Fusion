@@ -1,0 +1,157 @@
+{% extends 'filetracking/filetracking.html' %}
+{% load static %}
+
+{% block filetracking_tab %}
+    {% comment %}the compounder prescription tab starts here {% endcomment %}
+    <div class="ui pointing secondary menu">
+        <h3>
+            <a class="active item">
+            Note Sheet
+            </a>
+        </h3>
+    </div>
+    {% comment %}the ambulance schedule tab starts here {% endcomment %}
+    <div class="ui active tab" data-tab="composefile">
+        <div class="ui vertical segment" style="padding-left: 3.5%; padding-right: 3.5%;">
+
+            <form class="ui large form" method="POST" enctype="multipart/form-data" id="form1">
+            {% csrf_token %}
+
+                <div class="field">
+                        {% comment %}The Dropdown field starts here!{% endcomment %}
+                        <div class="ui fluid card">
+                            <div class="content" style=" background-color: #f4f4f4;">
+                                <center><span class="ui header">File Details</span></center>
+                                    <div class="ui divider"></div>
+
+                                        <div class="ui very relaxed fluid selection list" style=" background-color: #f4f4f4; padding-left: 18px; padding-top: 4px; padding-bottom: 0px; height: 200px; overflow-y: auto;">
+                                            <div class="item">
+                                                <img class="ui mini circular image" src="{% static 'globals/img/zlatan.jpg' %}">
+                                                <div class="content" style="text-indent: 5em;">
+
+                                                    <a class="header"><span>Uploader -</span>
+                                                        <span class="meta" style="color: #1B1C1D">{{file.uploader}}</span>
+                                                    </a>
+
+                                                    <a class="header"><span>File ID -</span>
+                                                        <span class="meta" style="color: #1B1C1D;">{{file.ref_id}}</span>
+                                                    </a>
+
+                                                    <a class="header"><span>Subject -</span>
+                                                        <span class="meta" style="color: #1B1C1D">{{file.subject}}</span>
+                                                    </a>
+
+                                                    <a class="header"><span>Date -</span>
+                                                        <span class="meta" style="color: #1B1C1D">{{file.upload_date}}</span>
+                                                    </a>
+
+                                                </div>
+
+                                                <div class="ui divider"></div>
+                                                <a class="header"><center>File Description</center></a>
+                                                <div class="description">
+                                                    <pre>{{file.description}}<br></pre>
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+
+                                            <a href="/media/{{file.upload_file}}" target="_">
+                                                <span class="header" style="color: #1B1C1D"><b>Attachments :&nbsp&nbsp</b><u>{{file.upload_file}}</u></span>
+                                            </a>
+
+
+
+                            </div>
+                        </div>
+
+                        <div class="ui fluid card">
+                             <div class="content" style=" background-color: #f4f4f4;">
+                             <center><span class="ui header">File Flow</span></center>
+                             <div class="ui divider"></div>
+
+
+                                 <div class="ui very relaxed fluid selection list" style=" background-color: #f4f4f4; padding-left: 18px; padding-top: 4px; padding-bottom: 0px; height: 200px; overflow-y: auto;">
+
+                                     <div class="item">
+                                            {% if track %}
+
+                                                 <div class="content" style="text-indent: 5em">
+                                                 {% for t in track %}
+                                                        <img class="ui mini circular image" src="{% static 'globals/img/zlatan.jpg' %}">
+
+                                                        <a class="header"><span>Sender &nbsp &nbsp &nbsp-&nbsp</span>
+                                                            <span class="meta" style="color: #1B1C1D">{{t.current_id}}</span>
+                                                        </a>
+
+                                                        <a class="header"><span>Receiver &nbsp-&nbsp</span>
+                                                            <span class="meta" style="color: #1B1C1D">{{t.receiver_id}}</span>
+                                                        </a>
+
+                                                        <a class="header"><span>Receive Date &nbsp&nbsp&nbsp-&nbsp</span>
+                                                            <span class="meta" style="color: #1B1C1D">{{t.receive_date}}</span>
+                                                        </a>
+
+                                                        <a class="header"><span>Forward Date &nbsp -&nbsp</span>
+                                                            <span class="meta" style="color: #1B1C1D">{{t.forward_date}}</span>
+                                                        </a>
+
+                                                        <a class="header">
+                                                            <span>Remarks &nbsp &nbsp- </span>
+                                                            <pre class="meta" style="color: #1B1C1D">{{t.remarks}}</pre>
+                                                        </a>
+
+                                                        <a class="download icon">
+                                                            <a href="/media/{{t.upload_file}}" class="header" target="_">
+                                                                <span>Attachments -</span>
+                                                                <u class="meta" style="color: #1B1C1D">{{t.upload_file}}</u>
+                                                            </a>
+                                                        </a>
+                                                        <br>
+                                                        <div class="ui divider"></div>
+
+                                                 {% endfor %}
+                                            {% else %}<center style="color: dimgrey">FileFlow is possible only when file is forwarded to other employee.</center>
+                                            {% endif %}
+
+
+                                                </div>
+
+
+
+                                            </div>
+                                        </div>
+
+
+
+                                </div>
+                        </div>
+                </div>
+
+                <br>
+
+            <br>
+            <br>
+
+            </form>
+
+            <br>
+
+        </div>
+
+
+        <br>
+        <div class="extra content"></div>
+    </div>
+    {% comment %}the compounder prescription tab ends here {% endcomment %}
+{% endblock %}
+
+
+<script type="text/javascript">
+    function ShowHideDiv() {
+        var chkAddress = document.getElementById("chkAddress");
+        var leaveAddress = document.getElementById("leaveAddress");
+        leaveAddress.style.display = chkAddress.checked ? "block" : "none";
+    }
+</script>

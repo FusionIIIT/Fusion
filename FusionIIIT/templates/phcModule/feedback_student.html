@@ -1,0 +1,65 @@
+{% load static %}
+{% block feedback %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="lodgecomplaint">
+            Feedback
+        </a>
+
+    </div>
+
+    <div class="ui active tab" data-tab="lodgecomplaint">
+        <div class="ui vertical segment">
+
+            {% comment %}Form Tag starts here!{% endcomment %}
+            <form method='POST'>{% csrf_token %}
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                    <div class="ui header">
+                        The Feedback form
+                    </div>
+
+                    <br>
+                    <div class="field">
+                        <label>Feedback:</label>
+                        <textarea rows="3" id='feedback' name='feedback' ></textarea>
+                    </div>
+
+                    <div class="field">
+                        <label><br></label>
+                            <input type='button' id='feed_submit' name='feed_submit' value="Submit" class="ui primary right floated button" >
+                    </div>
+                </div>
+            </form>
+            {% comment %}Form Tag ends here!{% endcomment %}
+            <script type="text/javascript">
+
+                  $('#feed_submit').on('click',function(e){
+                       e.preventDefault();
+                       $.ajax({
+                       type:'post',
+                       url:'/healthcenter/student/',
+                       data: {
+                       csrfmiddlewaretoken: '{{ csrf_token }}',
+                       feedback:$("#feedback").val(),
+                       feed_submit:$("#feed_submit").val(),
+                       },
+                       success: function(data){
+                         if (data.status == 1){
+                           alert("feedback submitted")
+                           document.getElementById("feedback").value=""
+                         }
+                     }
+                   });
+                 });
+
+                </script>
+            <br>
+            <br>
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+
+{% endblock %}

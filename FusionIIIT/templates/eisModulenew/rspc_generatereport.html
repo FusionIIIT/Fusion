@@ -1,0 +1,363 @@
+{% load static %}
+
+{% block generatereport %}
+    <div class="stackable doubling ui internally celled grid">
+        <div class="column">
+            <div class="ui fluid card" style="padding-top: 12px; padding-bottom: 24px; max-width: 18vw;">
+                <a class="ui top attached black label">
+                    <span class="ui inverted header">Report</span>
+                </a>
+                <br><br>
+                <form method="post" action="{% url 'eis:rspc_generate_report' %}"  target="_blank">
+                    {% csrf_token %}
+
+                    <center>
+                        <div class="content">
+                           <input type="submit" id="generate" class="ui primary button" value = "Generate!">
+                        </div>
+                    </center>
+                    <br>
+                    <div class="ui  grid">
+                    <div class="row">
+
+                        <div class=" one wide column">
+
+                          </div>
+
+                        <div class=" seven wide column" >
+                         <div class="ui fluid search selection dropdown">
+                            <input type="hidden" name="smonth" value="1"  required>
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Start Month</div>
+                            <div class="menu">
+                                {% for i in "xxxxxxxxxxxx" %}
+                                <div class="item" data-value="{{ forloop.counter }}">{{ forloop.counter }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        </div>
+
+
+
+                            <div class=" seven wide column">
+                                 <div class="ui fluid search selection dropdown">
+                                    <input type="hidden" name="syear" value='1990' required>
+                                    <i class="dropdown icon"></i>
+                                    <div class="default text">End Year</div>
+                                    <div class="menu">
+                                        <div class="item" data-value="2018">2018</div>
+                                        <div class="item" data-value="2017">2017</div>
+                                        <div class="item" data-value="2016">2016</div>
+                                        <div class="item" data-value="2015">2015</div>
+                                        <div class="item" data-value="2014">2014</div>
+                                        <div class="item" data-value="2013">2013</div>
+                                        <div class="item" data-value="2012">2012</div>
+                                        <div class="item" data-value="2011">2011</div>
+                                        <div class="item" data-value="2010">2010</div>
+                                        <div class="item" data-value="2009">2009</div>
+                                        <div class="item" data-value="2008">2008</div>
+                                        <div class="item" data-value="2007">2007</div>
+                                        <div class="item" data-value="2006">2006</div>
+                                        <div class="item" data-value="2005">2005</div>
+                                        <div class="item" data-value="2004">2004</div>
+                                        <div class="item" data-value="2003">2003</div>
+                                        <div class="item" data-value="2002">2002</div>
+                                        <div class="item" data-value="2001">2001</div>
+                                        <div class="item" data-value="2000">2000</div>
+                                        <div class="item" data-value="1999">1999</div>
+                                        <div class="item" data-value="1998">1998</div>
+                                        <div class="item" data-value="1997">1997</div>
+                                        <div class="item" data-value="1996">1996</div>
+                                        <div class="item" data-value="1995">1995</div>
+                                        <div class="item" data-value="1994">1994</div>
+                                        <div class="item" data-value="1993">1993</div>
+                                        <div class="item" data-value="1992">1992</div>
+                                        <div class="item" data-value="1991">1991</div>
+                                        <div class="item" data-value="1990">1990</div>
+                                    </div>
+                                </div>
+                           </div>
+                      </div>
+
+                       <div class="row ">
+                           <div class=" seven wide column">
+
+                           </div>
+                           <div class=" one wide column">
+                               <h5>TO</h5>
+                           </div>
+
+                       </div>
+
+
+                            <div class="row">
+
+                        <div class=" one wide column">
+
+                          </div>
+
+                        <div class=" seven wide column" >
+                         <div class="ui fluid search selection dropdown">
+                            <input type="hidden" name="lmonth" value="12"  required>
+                            <i class="dropdown icon"></i>
+                            <div class="default text">End Month</div>
+                            <div class="menu">
+                                  {% for i in "xxxxxxxxxxxx" %}
+                                <div class="item" data-value="{{ forloop.counter }}">{{ forloop.counter }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        </div>
+
+
+
+                            <div class=" seven wide column">
+                                 <div class="ui fluid search selection dropdown">
+                                    <input type="hidden" name="lyear" value='{% now "Y" %}' required>
+                                    <i class="dropdown icon"></i>
+                                    <div class="default text">End Year</div>
+                                    <div class="menu">
+                                        <div class="item" data-value="2018">2018</div>
+                                        <div class="item" data-value="2017">2017</div>
+                                        <div class="item" data-value="2016">2016</div>
+                                        <div class="item" data-value="2015">2015</div>
+                                        <div class="item" data-value="2014">2014</div>
+                                        <div class="item" data-value="2013">2013</div>
+                                        <div class="item" data-value="2012">2012</div>
+                                        <div class="item" data-value="2011">2011</div>
+                                        <div class="item" data-value="2010">2010</div>
+                                        <div class="item" data-value="2009">2009</div>
+                                        <div class="item" data-value="2008">2008</div>
+                                        <div class="item" data-value="2007">2007</div>
+                                        <div class="item" data-value="2006">2006</div>
+                                        <div class="item" data-value="2005">2005</div>
+                                        <div class="item" data-value="2004">2004</div>
+                                        <div class="item" data-value="2003">2003</div>
+                                        <div class="item" data-value="2002">2002</div>
+                                        <div class="item" data-value="2001">2001</div>
+                                        <div class="item" data-value="2000">2000</div>
+                                        <div class="item" data-value="1999">1999</div>
+                                        <div class="item" data-value="1998">1998</div>
+                                        <div class="item" data-value="1997">1997</div>
+                                        <div class="item" data-value="1996">1996</div>
+                                        <div class="item" data-value="1995">1995</div>
+                                        <div class="item" data-value="1994">1994</div>
+                                        <div class="item" data-value="1993">1993</div>
+                                        <div class="item" data-value="1992">1992</div>
+                                        <div class="item" data-value="1991">1991</div>
+                                        <div class="item" data-value="1990">1990</div>
+                                    </div>
+                                </div>
+                           </div>
+                      </div>
+
+
+
+                    <div class="row ">
+                          <div class="column" style="margin-left: 50px;">
+
+                             <div class="ui checkbox">
+                              <input type="checkbox" name="journal_select" value="journal" checked>
+                              <label>Journal Publication</label>
+                            </div>
+
+                          </div>
+                    </div>
+
+                    <div class="row ">
+                          <div class="column" style="margin-left: 50px;">
+
+                             <div class="ui checkbox">
+                              <input type="checkbox" name="conference_select" value="conference" checked>
+                              <label>Conference Publication</label>
+                            </div>
+                          </div>
+                    </div>
+
+                    <div class="row ">
+                          <div class="column" style="margin-left: 50px;">
+
+                            <div class="ui checkbox">
+                              <input type="checkbox" name="books_select" value="books" checked>
+                              <label> Published Books</label>
+                            </div>
+
+                          </div>
+
+                    </div>
+
+                    <div class="row ">
+                          <div class="column" style="margin-left: 50px;">
+
+                             <div class="ui checkbox">
+                            <center>  <input type="checkbox" name="projects_select" value="projects" checked>
+                              <label>Research Projects</label></center>
+                            </div>
+
+                          </div>
+
+                    </div>
+
+                    <div class="row ">
+                          <div class="column" style="margin-left: 50px;">
+
+                             <div class="ui checkbox">
+                              <center><input type="checkbox" name="consultancy_select" value="consultancy" checked>
+                              <label>Consultancy Projects</label></center>
+                            </div>
+
+                          </div>
+
+                    </div>
+
+                    <div class="row ">
+                          <div class="column" style="margin-left: 50px;">
+
+                             <div class="ui checkbox">
+                             <center> <input type="checkbox" name="phds_select" value="phds" checked>
+                              <label>Phd Thesis</label></center>
+                            </div>
+
+                          </div>
+
+                    </div>
+
+                    <div class="row ">
+                          <div class="column" style="margin-left: 50px;">
+
+                             <div class="ui checkbox">
+                             <center> <input type="checkbox" name="mtechs_select" value="mtechs" checked>
+                              <label> M.Tech / M.Des Thesis</label></center>
+                            </div>
+
+                          </div>
+
+                    </div>
+
+                    <div class="row ">
+                          <div class="column" style="margin-left: 50px;">
+
+                             <div class="ui checkbox">
+                              <center> <input type="checkbox" name="awards_select" value="awards" checked>
+                              <label> Achievements</label></center>
+                            </div>
+
+                          </div>
+
+                    </div>
+
+                    <div class="row ">
+                          <div class="column" style="margin-left: 50px;">
+
+                             <div class="ui checkbox">
+                              <center> <input type="checkbox" name="patents_select" value="patents" checked>
+                              <label>Patents</label></center>
+                            </div>
+
+                          </div>
+
+                    </div>
+
+                    <div class="row ">
+                          <div class="column" style="margin-left: 50px;">
+
+                             <div class="ui checkbox">
+                              <center> <input type="checkbox" name="techtransfers_select" value="techtransfers" checked>
+                              <label>Technology Transfers</label></center>
+                            </div>
+
+                          </div>
+
+                    </div>
+
+                    <div class="row ">
+                          <div class="column" style="margin-left: 50px;">
+
+                             <div class="ui checkbox">
+                              <center> <input type="checkbox" name="talks_select" value="talks" checked>
+                              <label>Expert Lectures/Invited Talk</label></center>
+                            </div>
+
+                          </div>
+
+                    </div>
+
+                    <div class="row ">
+                          <div class="column" style="margin-left: 50px;">
+
+                             <div class="ui checkbox">
+                               <center><input type="checkbox" name="keynotes_select" value="keynotes" checked>
+                              <label>Keynotes/Planery Address</label></center>
+                            </div>
+
+                          </div>
+
+                    </div>
+
+                    <div class="row ">
+                          <div class="column" style="margin-left: 50px;">
+
+                             <div class="ui checkbox">
+                              <center> <input type="checkbox" name="consymps_select" value="consymps" checked>
+                              <label>Conference/Symposium</label></center>
+                            </div>
+
+                          </div>
+
+                    </div>
+
+                    <div class="row ">
+                          <div class="column" style="margin-left: 50px;">
+
+                             <div class="ui checkbox">
+                              <center> <input type="checkbox" name="chairs_select" value="chairs" checked>
+                              <label>Session Chaired</label></center>
+                            </div>
+
+                          </div>
+
+                    </div>
+
+                    <div class="row ">
+                          <div class="column" style="margin-left: 50px;">
+
+                             <div class="ui checkbox">
+                              <center> <input type="checkbox" name="fvisits_select" value="fvisits" checked>
+                              <label>Foreign Visits</label></center>
+                            </div>
+
+                          </div>
+
+                    </div>
+
+                    <div class="row ">
+                          <div class="column" style="margin-left: 50px;">
+
+                             <div class="ui checkbox">
+                               <center><input type="checkbox" name="ivisits_select" value="ivisits" checked>
+                              <label>Indian Visit</label></center>
+                            </div>
+
+                          </div>
+
+                    </div>
+
+
+                         <div class="row ">
+                              <div class="column" style="margin-left: 50px;">
+
+                                 <div class="ui checkbox">
+                                  <center> <input type="checkbox" name="events_select" value="events" checked>
+                                  <label> Event Organised</label></center>
+                                </div>
+
+                              </div>
+
+                      </div>
+              </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock%}

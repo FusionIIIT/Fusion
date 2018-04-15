@@ -1,0 +1,63 @@
+{% load static %}
+{% block registration %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="ui active item" data-tab="messchange">
+            Mess Change
+        </a>
+    </div>
+    
+    <div class="ui active tab" data-tab="messchange">
+        <div class="ui vertical segment">
+
+            {% comment %}Form Tag starts here!{% endcomment %}
+
+            {% if current_date < mess_reg.end_reg %}
+            Registration ongoing till {{mess_reg.end_reg}}
+
+            {% else %}
+            <form method="post" action="{% url 'mess:regadd' %}">
+                {% csrf_token %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+
+                    <br>
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Choose Sem:</label>
+                            <select class="ui search fluid dropdown" name="sem">
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="field">
+                        <label>Start date:</label>
+                        <input type="date" name="start_date">
+                    </div>
+
+                    <div class="field">
+                        <label>End date:</label>
+                        <input type="date" name="end_date">
+                    </div>
+
+                    <div class="field">
+                        <button class="ui primary button right floated" type="submit" name="submit">
+                            Submit
+                        </button>
+                    </div>
+                </div>
+            </form>
+            
+            {% endif %}
+            {% comment %}Form Tag ends here!{% endcomment %}
+
+            <br>
+            <br>
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+{% endblock %}

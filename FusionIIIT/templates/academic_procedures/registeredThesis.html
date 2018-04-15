@@ -1,0 +1,56 @@
+{% load static %}
+{% block complainthistory %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="complainthistory">
+            Add Course(s)
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="complainthistory">
+        <div class="ui vertical segment">
+            {% if context.total_thesis %}
+                <table class="ui very basic collapsing celled sortable table"
+                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                    <thead>
+                        <tr>
+                            <th>
+                                #
+                            </th>
+
+                            <th>
+                                Thesis Topic
+                            </th>
+
+                            <th>
+                                Supervisor
+                            </th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        <tr>
+                            <td>
+                            </td>
+                            <td>
+                                {{ context.thesis.topic }}
+                            </td>
+                            <td>
+                                {{ context.thesis.supervisor_id.id.user.first_name}} {{context.thesis.supervisor_id.id.user.last_name }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            {% else %}
+                You haven't Registered, yet
+            {% endif %}
+        </div>
+    </div>
+
+{% endblock %}

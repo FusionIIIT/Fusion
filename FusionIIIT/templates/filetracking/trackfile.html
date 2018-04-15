@@ -1,0 +1,104 @@
+{% extends 'filetracking/filetracking.html' %}
+{% load static %}
+
+{% block filetracking_tab %}
+    <div class="ui pointing secondary menu">
+        <h3>
+            <a class="active item" data-tab="trackfile">
+            Track File
+            </a>
+        </h3>
+    </div>
+
+    {% comment %}The Technology segment starts here!{% endcomment %}
+
+    <div class="ui vertical stripe team segment" style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+
+        <br>
+
+        <div class="ui fluid card">
+            <div class="content">
+                <div class="ui header">File Details</div>
+                <div class="ui divider"></div>
+
+                 <span>
+                    <div class="ui very relaxed fluid selection list" style="padding-left: 24px; padding-top: 16px; padding-bottom: 16px; max-height: 70vh; overflow-y: auto;">
+                    <div class="item">
+                        <img class="ui mini circular image" src="{% static 'globals/img/zlatan.jpg' %}">
+                            <div class="content">
+                                <a class="header">{{file.ref_id}}</a>
+                                <span class="meta">{{file.uploader}}</span>
+                                <div class="description">
+                                    {{file.subject}}
+                                </div>
+                        </div>
+
+                        <div class="right floated content">
+                        <span class="meta">{{file.upload_date}}</span>
+                        </div>
+                    </div>
+                    </div>
+                </span>
+            </div>
+        </div>
+
+        <div class="ui fluid card">
+            <div class="content">
+                <div class="ui header">Tracking Status</div>
+                <div class="ui divider"></div>
+
+            <span>
+                <table class="ui celled table">
+            <thead>
+            <tr>
+                <th>Employee ID</th>
+                <th>Received Date</th>
+                <th>Sent Date</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr>
+                <td>
+                    <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                            <div class="content">
+                                {{file.sender}}
+                            </div>
+                    </h4>
+                </td>
+                <td>Source</td>
+                <td>{{file.upload_date }}</td>
+
+            </tr>
+
+            <tr>
+                {% for i in receivefile %}
+                <td>
+                    <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                            <div class="content">
+                                {{i.sender}}
+                            </div>
+                    </h4>
+                </td>
+                <td>{{i.receive_date}}</td>
+                <td>{{i.receive_date}}</td>
+                {% endfor %}
+
+            </tr>
+
+            </tbody>
+
+                </table>
+                </span>
+            </div>
+        </div>
+
+    </div>
+    {% comment %}The Technology segment ends here!{% endcomment %}
+
+    <br>
+
+{% endblock %}

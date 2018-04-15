@@ -1,0 +1,135 @@
+{% load static %}
+{% block complainthistory %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="complainthistory">
+            Complaint History
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="complainthistory">
+        <div class="ui vertical segment">
+            <table class="ui very basic collapsing celled sortable table"
+                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                <thead>
+                <tr>
+                    <th>
+                        S.no
+                    </th>
+
+                    <th class="three wide column">
+                        Date
+                    </th>
+
+                    <th>
+                        Type
+                    </th>
+
+                    <th>
+                        Location
+                    </th>
+
+                    <th>
+                        Specific Location
+                    </th>
+
+                    <th class="three wide column">
+                        Details
+                    </th>
+
+                    <th class="one wide column">
+                        Status
+                    </th>
+                    <th class="three wide column">
+                        Worker Name
+                    </th>
+                </tr>
+                </thead>
+
+                {% for a in history %}
+
+                <tbody>
+                <tr>
+                    <td>
+                        <h4 class="ui image header">
+
+                            <div class="content">
+                                {{ a.serial_no }}
+                                <div class="sub header">
+
+                                </div>
+                            </div>
+                        </h4>
+                    </td>
+
+                    <td>
+                        {{ a.complaint_date }}
+                    </td>
+
+                    <td>
+                        {{ a.complaint_type }}
+                    </td>
+
+                    <td>
+                        {{ a.location }}
+                    </td>
+
+                    <td>
+                        {{ a.specific_location }}
+                    </td>
+
+                    <td>
+                        <a href="./detail/{{ a.id }}/"> Click here!</a>
+                    </td>
+
+                    <td>
+                        {% if a.status == 0 %}
+                             <i class="large orange warning icon"></i>
+
+                        {% elif a.status == 1 %}
+                             <i class="large orange add user icon"></i>
+
+                        {% elif a.status == 2 %}
+                             <i class="large green checkmark icon"></i>
+
+                        {% elif a.status == 3 %}
+                             <i class="large red x icon"></i>
+
+                            {% endif %}
+                    </td>
+                    <td>
+                        {% if a.worker_id == NULL %}
+                            NOT ASSIGN
+                        {% else %}
+                            {{ a.worker_id }}
+                        {% endif %}
+                    </td>
+                </tr>
+                
+
+                </tbody>
+
+                {% endfor %}
+            </table>
+
+            <br>
+            <div class="ui divider"></div>
+
+            <div class="extra content">
+                <div class="" style="text-align: center;">
+                    <i class="large orange warning icon"></i> : Pending &ensp;&ensp;&ensp;&ensp;&ensp;
+                    <i class="large orange add user icon"></i> : Assign Worker &ensp;&ensp;&ensp;&ensp;&ensp;
+                    <i class="large green checkmark icon"></i> : Completed &ensp;&ensp;&ensp;&ensp;&ensp;
+                    <i class="large red x icon"></i> : Declined &ensp;&ensp;&ensp;&ensp;&ensp;
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+{% endblock %}

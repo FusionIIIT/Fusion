@@ -1,553 +1,210 @@
 {% load static %}
 {% block senate %}
-    
-     <div class="ui pointing secondary menu">
+
+
+
+    <div class="ui pointing secondary menu">
         <a class="active item" data-tab="cse">
-          CSE
+          SENATORS
         </a>
-        <a class=" item" data-tab="ece">
-            ECE
-        </a>
-         <a class=" item" data-tab="mech">
-            MECH
-        </a>
-          <a class=" item" data-tab="design">
-            DESIGN
-        </a>
-          <a class=" item" data-tab="office">
+        <a class=" item" data-tab="office">
             OFFICE BEARERS
         </a>
-           <a class=" item" data-tab="minutes">
-             Senate Minutes
+        <a class=" item" data-tab="minutes">
+             MINUTES
         </a>
-       
-    </div>
-
- <div class="ui active tab segment" data-tab="cse">
-
-       <h4 class="ui dividing header">Edit Members</h4>
-
-       <form class="ui form">
-            <div class="field">
-                 <div class="three fields">
-                    <div class="field">
-                        <label>Name</label>
-                         <input placeholder="Name" type="text">
-                    </div>
-
-                    <div class="field">
-                        <label>Programme</label>
-                            <div class="ui fluid search selection dropdown">
-                                    <input type="hidden">
-                                    <i class="dropdown icon"></i>
-                                    <div class="default text">Programme</div>
-                                    <div class="menu">
-                                        <div class="item" data-value="B.Tech">B.Tech</div>
-                                        <div class="item" data-value="M.Tech">M.Tech</div>
-                                        <div class="item" data-value="Phd.">Phd.</div>
-                                       
-                                        
-                                      
-                                        
-                                    </div>
-                                </div>
-                    </div>
-                
-                 <div class="field">
-                        <label>Roll Number</label>
-                        <input placeholder="Roll Number" type="text">
-                    </div>
-                    
-                </div>
-            </div>
-             <div class="fields">
-                   
-
-                    <div class="one wide field">
-                        <label><br></label>
-                        <div class="ui primary button">
-                            Save
-                            <i class="ui save icon right floated"></i>
-                        </div>
-                    </div> 
-                </div>
-        </form>  
-
-          <table class="ui single line table">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Programme</th>
-                      <th>Roll Number</th>
-                      <th>Action</th>
-                      
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                       <td>Prajwal </td>
-                      <td>B.Tech </td>
-                      <td>2015183</td>
-                      <td><i class="refresh icon" style="font-size:1.3vw"></i><i class="trash outline icon" style="font-size:1.3vw"></i></td>
-                     
-                    </tr>
-                    <tr>
-                     
-
-                    </tr>
-                    <tr>
-                     
-
-                    </tr>
-                  </tbody>
-                </table>
 
     </div>
 
+<div class="ui active tab segment" data-tab="cse">
 
-    <div class="ui  tab segment" data-tab="ece">
-
-        <h4 class="ui dividing header">Edit Members</h4>
-
-       <form class="ui form">
-            <div class="field">
-                 <div class="three fields">
-                    <div class="field">
-                        <label>Name</label>
-                         <input placeholder="Name" type="text">
-                    </div>
-
-                    <div class="field">
-                        <label>Programme</label>
-                            <div class="ui fluid search selection dropdown">
-                                    <input type="hidden">
-                                    <i class="dropdown icon"></i>
-                                    <div class="default text">Programme</div>
-                                    <div class="menu">
-                                        <div class="item" data-value="B.Tech">B.Tech</div>
-                                        <div class="item" data-value="M.Tech">M.Tech</div>
-                                        <div class="item" data-value="Phd.">Phd.</div>
-                                       
-                                        
-                                      
-                                        
-                                    </div>
-                                </div>
-                    </div>
-                
-                 <div class="field">
-                        <label>Roll Number</label>
-                        <input placeholder="Roll Number" type="text">
-                    </div>
-                    
-                </div>
-            </div>
-             <div class="fields">
-                   
-
-                    <div class="one wide field">
-                        <label><br></label>
-                        <div class="ui primary button">
-                            Save
-                            <i class="ui save icon right floated"></i>
-                        </div>
-                    </div> 
-                </div>
-        </form>  
-
-          <table class="ui single line table">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Programme</th>
-                      <th>Roll Number</th>
-                      <th>Action</th>
-                      
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                       <td>Prajwal </td>
-                      <td>B.Tech </td>
-                      <td>2015183</td>
-                      <td><i class="refresh icon" style="font-size:1.3vw"></i><i class="trash outline icon" style="font-size:1.3vw"></i></td>
-                    </tr>
-                    <tr>
-                     
-
-                    </tr>
-                    <tr>
-                     
-
-                    </tr>
-                  </tbody>
-                </table>
+<h4 class="ui dividing header">Edit Members</h4>
 
 
+    <form class="ui form" method="POST" id="senate-member">
+    {% csrf_token %}
+        <div class="field">
+            <label>Roll Number</label>
+            <input placeholder="Roll Number" type="text" name="Roll Number" id = "rollno">
+        </div>
+        <div class="fields">
+        <div class="one wide field">
+            <label><br></label>
+                <input type="submit" value="Save" />
+        </div>
+        </div>
+    </form>
+
+    <table class="ui single line table">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Programme</th>
+        <th>Roll Number</th>
+        <th>Action</th>
+    </tr>
+    </thead>
+    <tbody>
+        {% if senates %}
+        {% for senate in senates%}
+        <tr>
+        <td>{{senate.user.username}} </td>
+        {% for s in students %}
+        {% if s.id == senate %}
+            <td>{{s.programme}} </td>
+            <td>{{senate.id}}</td>
+        {% endif %}
+        {% endfor %}
+        <!-- for deleting -->
+        <td><form method="POST" action="{% url 'academic_information:deleteSenator' %}">{% csrf_token %}<button type="submit" name= "delete" value="{{senate.id}}"> Delete </button></form></td>
+        </tr>
+        {% endfor %}
+        {% endif %}
+    </tbody>
+    </table>
     </div>
+    {% block javascript %}
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js" type="text/javascript"></script>
+    {% endblock %}
+    <script type="text/javascript">
+                                  // Submit post on submit
+                                  $(document).ready(function() {
+
+                                      $('#senate-member').on('submit', function(event){
+                                          event.preventDefault();
+                                          create_member();
+                                      });
+                                  });
+
+                                  function create_member() {
+                                      $.ajax({
+                                          type : "POST", // http method
+                                          url : "senator/", // the endpoint
+                                          dataType: 'json',
+                                          data : {
+                                              'rollno' : $('#rollno').val()
+                                          },
+                                          // data sent with the post request
+                                          // handle a successful response
+                                          success : function(data) {
+                                              alert("Data Entered")
+                                          },
+                                          error : function(data) {
+                                              alert("Unexpected Error Occured")
+                                          }
+                                      });
+                                  };
+        </script>
 
 
-    <div class="ui  tab segment" data-tab="mech">
+    <!-- office bearers -->
+    <div class="ui  tab segment" data-tab="office">
 
-        <h4 class="ui dividing header">Edit Members</h4>
+    <!-- Dean -->
+    <h4 class="ui dividing header"> Faculty Members</h4>
+    <table class="ui single line table">
+    <thead>
+        <tr>
+        <th>Name</th>
+        <th>Designation</th>
+        <th>Discipline</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+        <td>{{Dean.user.username}}</td>
+        <td>DEAN</td>
+        <td>{{Dean.department}}</td>
+        </tr>
+    </tbody>
+    </table>
 
-       <form class="ui form">
+    <!-- students -->
+    <h4 class="ui dividing header">Edit Students</h4>
+    <form class="ui form" method="POST" action="{% url 'academic_information:add_convenor' %}">
+            {% csrf_token %}
+        <div class="field">
+            <div class="three fields">
+
             <div class="field">
-                 <div class="three fields">
-                    <div class="field">
-                        <label>Name</label>
-                         <input placeholder="Name" type="text">
-                    </div>
+                <label>Roll Number</label>
+                <input placeholder="Roll Number" type="text" name="Roll Number">
+            </div>
 
-                    <div class="field">
-                        <label>Programme</label>
-                            <div class="ui fluid search selection dropdown">
-                                    <input type="hidden">
-                                    <i class="dropdown icon"></i>
-                                    <div class="default text">Programme</div>
-                                    <div class="menu">
-                                        <div class="item" data-value="B.Tech">B.Tech</div>
-                                        <div class="item" data-value="M.Tech">M.Tech</div>
-                                        <div class="item" data-value="Phd.">Phd.</div>
-                                       
-                                        
-                                      
-                                        
-                                    </div>
-                                </div>
-                    </div>
-                
-                 <div class="field">
-                        <label>Roll Number</label>
-                        <input placeholder="Roll Number" type="text">
-                    </div>
-                    
+            <div class="field">
+                <label>Designation</label>
+                <div class="ui fluid search selection dropdown">
+                <input type="hidden" name="Designation">
+                    <i class="dropdown icon"></i>
+                    <div class="default text">Designation</div>
+                    <div class="menu">
+                    <div class="item" data-value="Convenor" name="Convenor">Convenor</div>
+                    <div class="item" data-value="Co_Convenor" name="Co Convenor">Co_Convenor</div>
                 </div>
             </div>
-             <div class="fields">
-                   
-
-                    <div class="one wide field">
-                        <label><br></label>
-                        <div class="ui primary button">
-                            Save
-                            <i class="ui save icon right floated"></i>
-                        </div>
-                    </div> 
-                </div>
-        </form>  
-
-          <table class="ui single line table">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Programme</th>
-                      <th>Roll Number</th>
-                      <th>Action </th>
-                      
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                       <td>Prajwal </td>
-                      <td>B.Tech </td>
-                      <td>2015183</td>
-                      <td><i class="refresh icon" style="font-size:1.3vw"></i><i class="trash outline icon" style="font-size:1.3vw"></i></td>
-                     
-                    </tr>
-                    <tr>
-                     
-
-                    </tr>
-                    <tr>
-                     
-
-                    </tr>
-                  </tbody>
-                </table>
-
-
-    </div>
-
-
-    <div class="ui  tab segment" data-tab="design">
-
-        <h4 class="ui dividing header">Edit Members</h4>
-
-       <form class="ui form">
-            <div class="field">
-                 <div class="three fields">
-                    <div class="field">
-                        <label>Name</label>
-                         <input placeholder="Name" type="text">
-                    </div>
-
-                    <div class="field">
-                        <label>Programme</label>
-                            <div class="ui fluid search selection dropdown">
-                                    <input type="hidden">
-                                    <i class="dropdown icon"></i>
-                                    <div class="default text">Programme</div>
-                                    <div class="menu">
-                                        <div class="item" data-value="B.Tech">B.Des</div>
-                                        <div class="item" data-value="M.Tech">M.Des</div>
-                                        <div class="item" data-value="Phd.">Phd.</div>
-                                       
-                                        
-                                      
-                                        
-                                    </div>
-                                </div>
-                    </div>
-                
-                 <div class="field">
-                        <label>Roll Number</label>
-                        <input placeholder="Roll Number" type="text">
-                    </div>
-                    
-                </div>
             </div>
-             <div class="fields">
-                   
 
+            <div class="fields">
                     <div class="one wide field">
-                        <label><br></label>
-                        <div class="ui primary button">
-                            Save
-                            <i class="ui save icon right floated"></i>
-                        </div>
-                    </div> 
-                </div>
-        </form>  
-
-          <table class="ui single line table">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Programme</th>
-                      <th>Roll Number</th>
-                      <th>Action</th>
-                      
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                       <td>Meru </td>
-                      <td>B.Des </td>
-                      <td>2015183</td>
-                      <td><i class="refresh icon" style="font-size:1.3vw"></i><i class="trash outline icon" style="font-size:1.3vw"></i></td>
-                    </tr>
-                    <tr>
-                     
-
-                    </tr>
-                    <tr>
-                     
-
-                    </tr>
-                  </tbody>
-                </table>
-
-
-    </div>
-
-
-      <div class="ui  tab segment" data-tab="office">
-
-        <h4 class="ui dividing header">Edit Faculty Members</h4>
-
-       <form class="ui form">
-            <div class="field">
-                 <div class="three fields">
-                    <div class="field">
-                        <label>Name</label>
-                         <input placeholder="Name" type="text">
+                    <label><br></label>
+                        <input type="submit" value="update" />
                     </div>
-
-                    <div class="field">
-                        <label>Designation</label>
-                            <div class="ui fluid search selection dropdown">
-                                    <input type="hidden">
-                                    <i class="dropdown icon"></i>
-                                    <div class="default text">Designation</div>
-                                    <div class="menu">
-                                        <div class="item" data-value="B.Tech">B.Des</div>
-                                        <div class="item" data-value="M.Tech">M.Des</div>
-                                        <div class="item" data-value="Phd.">Phd.</div>
-                                       
-                                        
-                                      
-                                        
-                                    </div>
-                                </div>
-                    </div>
-                
-                 <div class="field">
-                        <label>Discipline</label>
-                        <input placeholder="Roll Number" type="text">
-                    </div>
-                    
-                </div>
             </div>
-             <div class="fields">
-                   
 
-                    <div class="one wide field">
-                        <label><br></label>
-                        <div class="ui primary button">
-                            Save
-                            <i class="ui save icon right floated"></i>
-                        </div>
-                    </div> 
-                </div>
-        </form>
-
-
-          <h4 class="ui dividing header">Edit Students</h4>
-
-       <form class="ui form">
-            <div class="field">
-                 <div class="three fields">
-                    <div class="field">
-                        <label>Name</label>
-                         <input placeholder="Name" type="text">
-                    </div>
-
-                    <div class="field">
-                        <label>Designation</label>
-                            <div class="ui fluid search selection dropdown">
-                                    <input type="hidden">
-                                    <i class="dropdown icon"></i>
-                                    <div class="default text">Designation</div>
-                                    <div class="menu">
-                                        <div class="item" data-value="B.Tech">B.Des</div>
-                                        <div class="item" data-value="M.Tech">M.Des</div>
-                                        <div class="item" data-value="Phd.">Phd.</div>
-                                       
-                                        
-                                      
-                                        
-                                    </div>
-                                </div>
-                    </div>
-                
-                 <div class="field">
-                        <label>Roll Number</label>
-                        <input placeholder="Roll Number" type="text">
-                    </div>
-                    
-                </div>
             </div>
-             <div class="fields">
-                   
+        </div>
+    </form>
 
-                    <div class="one wide field">
-                        <label><br></label>
-                        <div class="ui primary button">
-                            Save
-                            <i class="ui save icon right floated"></i>
-                        </div>
-                    </div> 
-                </div>
-        </form> 
+    <h4 class="ui dividing header"> Students</h4>
+    <table class="ui single line table">
+    <thead>
+        <tr>
+        <th>Name</th>
+        <th>Designation</th>
+        <th>Roll Number</th>
+        <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+        {% if Convenor %}
+        {% for Convenor in Convenor %}
+        <td>{{Convenor.user.username}}</td>
+        <td>Convener</td>
+        <td>{{Convenor.id}}</td>
+        <td><form method="POST" action="{% url 'academic_information:delete1' %}">{% csrf_token %}<button type="submit" name= "delete" value="{{Convenor.id}}"> Delete </button></form></td>
+        </tr>
+        {% endfor %}
+        {% endif %}
 
+        <tr>
+        {% if CoConvenor %}
+        {% for CoConvenor in CoConvenor %}
+        <td>{{CoConvenor.user.username}}</td>
+        <td>Convener</td>
+        <td>{{CoConvenor.id}}</td>
+        <td><form method="POST" action="{% url 'academic_information:delete2' %}">{% csrf_token %}<button type="submit" name= "delete" value="{{CoConvenor.id}}"> Delete </button></form></td>
+        {% endfor %}
+        {% endif %}
+        </tr>
+    </tbody>
+    </table>
+</div>
 
-      <h4 class="ui dividing header"> Faculty Members</h4>
-          <table class="ui single line table">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Designation</th>
-                      <th>Discipline</th>
-                      <th>Action</th>
-                      
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                    <td>Prashant Kumar Jain</td>
-                    <td>Dean Students</td>
-                    <td>Mechanical</td>
-                      <td><i class="refresh icon" style="font-size:1.3vw"></i><i class="trash outline icon" style="font-size:1.3vw"></i></td>
-                    </tr>
-                    <tr>
-                     
+<!-- Minutes -->
 
-                    </tr>
-                    <tr>
-                     
-
-                    </tr>
-                  </tbody>
-                </table>
-
-
-                <h4 class="ui dividing header"> Students</h4>
-          <table class="ui single line table">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Designation</th>
-                      <th>Roll Number</th>
-                      <th>Action</th>
-                      
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                       <td>Arun Kumar</td>
-                       <td>Convener</td>
-                       <td>2014034</td>
-                      <td><i class="refresh icon" style="font-size:1.3vw"></i><i class="trash outline icon" style="font-size:1.3vw"></i></td>
-                    </tr>
-                    <tr>
-                     
-
-                    </tr>
-                    <tr>
-                     
-
-                    </tr>
-                  </tbody>
-                </table>
-
-
-    </div>
-
-  
     <div class="ui  tab segment" data-tab="minutes">
-             
-             <form class="ui form">
+        <form class="ui form" method="POST" enctype="multipart/form-data" id="minutes">
+            {% csrf_token %}
                   <div class="field">
                     <div class="three fields">
-                       
-
-                         <div class="field">
-
-                                <label>Date </label>
-                                <!-- <input placeholder="Date of Submission" type="text"> -->
-                                <!-- Code change starts -->
-                                 <div class="ui calendar" id="example1">
-                                    <div class="ui input left icon">
-                                      <i class="calendar icon"></i>
-                                      <input type="text" placeholder="Date/Time">
-                                    </div>
-                                  </div>
-                         </div>
-                          <div class="field">
-                             <label> Minutes</label>
-                             <input placeholder="Journal" type="file">
-                        </div>
-
+                            {{ form.as_p }}
                          <div class="field">
                            <label><br></label>
-                              <div class="ui primary button">
-                               Save
-                            <i class="ui save icon right floated"></i>
+                                <input type="submit" value="Save" />
                         </div>
                          </div>
                     </div>
-                   </div> 
              </form>
 
        <br> <br>
@@ -555,31 +212,34 @@
             <table class="ui single line table">
                   <thead>
                     <tr>
-                      <th>Sr no.</th>
+                      <th>File Name</th>
                       <th>Date</th>
                       <th>Minutes</th>
                       <th>Action</th>
-                      
+
                     </tr>
                   </thead>
-                  
-
 
                 <tbody>
+                    {% if meetings %}
+                    {% for meeting in meetings %}
                   <tr>
-                    <td>1.</td>
-                    <td>October 5, 2017 2:00 AM</td>
-                    <td><a href="#">
+                    <td>{{ meeting.minutes_file.name }}</td>
+                    <td>{{meeting.date}}</td>
+                    <td><a href="{{ meeting.minutes_file.url }}">
                       <div class="ui primary button">
                                Open PDF
-                           
+
                         </div>
                     </a>
                     </td>
-                    <td><i class="refresh icon" style="font-size:1.3vw"></i><i class="trash outline icon" style="font-size:1.3vw"></i></td>
+                    <td><form method="POST" action="{% url 'academic_information:deleteMinute' %}">{% csrf_token %}<button type="submit" name= "delete" value="{{meeting.id}}"> Delete </button></form></td>
                    </tr>
+                   {% endfor %}
+                   {% endif %}
                  </tbody>
-
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js" type="text/javascript"></script>
+<script src="{% static 'academic_information/scripts/minutes.js' %}" type="text/javascript"></script> -->
 
                    <tfoot>
                           <tr>
@@ -598,14 +258,10 @@
                                   </div>
                               </th>
                           </tr>
-                    </tfoot> 
+                    </tfoot>
               </table>
 
-    
+
  </div>
-
-
-   
-
 
 {% endblock %}

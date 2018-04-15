@@ -1,0 +1,87 @@
+{% load static %}
+{% block catalog %}
+
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="catalog">
+            Catalogue
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="catalog">
+        <div class="ui vertical segment">
+            <div class="ui floating dropdown labeled icon dropdown button" id="select_award_content">
+                <i class="search icon"></i>
+                <span class="text">Select Award </span>
+                <div class="menu">
+                    {% for award in awards %}
+                        <div class="item" data-value="{{ award.award_name }}">{{ award.award_name }}</div>
+                    {% endfor %}
+                </div>
+              </div>
+            </div>
+        </div>
+
+
+
+    </div>
+    <div class="ui vertical segment">
+        <div class="ui grid row">
+            <div class="twelve wide column centered">  <label class="ui header" id="content_heading">   </label> </div>
+        </div>
+        <div class="ui grid row">
+            <div class="two wide column"></div>
+            <div class="twelve wide column centered">
+                <div class="content" id="fill_content"> </div>
+            </div>
+
+        </div>
+
+    </div>
+
+{% endblock %}
+
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+
+    <script>
+
+    $('#select_award_content').on('click','.item',function(){
+
+        event.preventDefault();
+        var award_name=$(this).data('value');
+
+
+        $.ajax({
+
+                url: '/spacs/get_content/',
+                type: 'GET',
+                data: {
+                    award_name:award_name
+                },
+                success: function (response) {
+                    if(response.result==='Success'){
+                        $('#content_heading').text(award_name);
+                        $('#fill_content').text(response.content);
+
+                        console.log(response.result)
+                    }
+                    else{
+                        console.log(response.result);
+                    }
+
+                }
+        });
+
+
+
+    });
+
+
+
+    </script>
+
+
+
+{% endblock javascript %}

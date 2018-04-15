@@ -9,57 +9,43 @@
 
   <div class="ui active tab" data-tab="notionalprize">
         <div class="ui vertical segment">
-            <form class="ui form" style="padding-left: 36px; padding-right: 36px;">
+            <form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;">
+                {% csrf_token %}
                 <div class="field">
                     <div class="eight wide field">
                         <label>Year</label>
-                        <div class="ui fluid search selection large dropdown">
-                            <input name="" type="hidden">
-                            <i class="dropdown icon"></i>
-
-                            <div class="default text">Select</div>
-
-                            <div class="menu">
-                                <div class="item" data-value="y1">
-                                    UG-Firstyear
-                                </div>
-                                 <div class="item" data-value="y2">
-                                    UG-Firstyear
-                                </div>
-                                <div class="item" data-value="y3">
-                                    UG-Firstyear
-                                </div>
-                                <div class="item" data-value="y4">
-                                    UG-Fourthyear
-                                </div>
-                            </div>
-
-                        </div>
+                        <select class="ui fluid search large dropdown" name="year" >
+                                <option selected hidden>Select</option>
+                                {% for p,v in ch %}
+                                <option value="{{p}}">{{v}}</option>
+                                {% endfor %}
+    
+                            </select>
                     </div>
-
+                </div>
                      <div class="field">
                           <div class="eight wide field">
                             <label>SPI</label>
-                            <input type="text" value="9.0" class="ui large input" readonly>
+                            <input type="text" name="spi" value="8.5" class="ui large input" readonly>
                         </div>
                      </div>
 
                      <div class="field">
                           <div class="eight wide field">
                             <label>CPI</label>
-                            <input  class="ui large input" value="9.5" type="text" readonly>
+                            <input  class="ui large input" name="cpi" value="8.5" type="text" readonly>
                         </div>
                      </div>
 
                     <div class="field">
                     <label><br></label>
-                    <button class="ui primary large right floated button">
+                    <button type="submit" name="Email" class="ui primary large right floated button">
                         Email
                     </button>
                 </div>
                     <br>
                     <br>
-                </div>
+                
             </form>
              <div class="ui divider"></div>
         </div>
