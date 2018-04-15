@@ -34,6 +34,7 @@ class StudentApplicationForm(forms.Form):
         data = self.cleaned_data
         errors = dict()
         today = timezone.now().date()
+
         if data.get('start_date') < today:
             errors['start_date'] = ['Past Dates are not allowed']
         if data.get('end_date') < today:
@@ -137,6 +138,7 @@ class LeaveSegmentForm(forms.Form):
 
         now = timezone.now().date()
 
+
         if data['start_date'] < now:
             error = 'You have inserted past date in Start Date Field'
             if 'start_date' in errors:
@@ -187,7 +189,8 @@ class AdminReplacementForm(forms.Form):
         if start_date > end_date:
             errors['admin_start_date'] = ['Start Date must not be more than End Date']
 
-        now = timezone.now().date()
+        now = timezone.localtime(timezone.now()).date()
+
         if data['admin_start_date'] < now:
             error = 'You have inserted past date.'
             if 'admin_start_date' in errors:
@@ -242,6 +245,7 @@ class AcademicReplacementForm(forms.Form):
             errors['acad_start_date'] = ['Start Date must not be more than End Date']
 
         now = timezone.now().date()
+
         if data['acad_start_date'] < now:
             error = 'You have inserted past date.'
             if 'acad_start_date' in errors:
@@ -287,6 +291,7 @@ class BaseLeaveFormSet(BaseFormSet):
                 leave_type = LeaveType.objects.get(id=data.get('leave_type'))
                 if leave_type.is_station:
                     continue
+
                 count = get_leave_days(data.get('start_date'), data.get('end_date'),
                                        leave_type, data.get('start_half'), data.get('end_half'))
 

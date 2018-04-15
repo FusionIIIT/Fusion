@@ -27,6 +27,7 @@ class Mess_minutesAdmin(admin.ModelAdmin):
     list_display = ('meeting_date', 'mess_minutes')
 
 
+
 class MenuAdmin(admin.ModelAdmin):
     model = Menu
     fieldsets = [
@@ -47,6 +48,7 @@ class Mess_regAdmin(admin.ModelAdmin):
     list_display = ('start_reg', 'end_reg')
 
 
+
 class Monthly_billAdmin(admin.ModelAdmin):
     model = Monthly_bill
     fieldsets = [
@@ -61,6 +63,7 @@ class Monthly_billAdmin(admin.ModelAdmin):
         ]
     list_display = ('student_id', 'month', 'amount',
                     'nonveg_total_bill', 'rebate_count', 'rebate_amount', 'total_bill')
+
 
 
 class PaymentsAdmin(admin.ModelAdmin):
@@ -86,6 +89,7 @@ class RebateAdmin(admin.ModelAdmin):
                     'purpose', 'status')
 
 
+
 class Vacation_foodAdmin(admin.ModelAdmin):
     model = Vacation_food
     fieldsets = [
@@ -99,6 +103,7 @@ class Vacation_foodAdmin(admin.ModelAdmin):
                     'purpose', 'status')
 
 
+
 class Nonveg_menuAdmin(admin.ModelAdmin):
     model = Nonveg_menu
     fieldsets = [
@@ -107,6 +112,7 @@ class Nonveg_menuAdmin(admin.ModelAdmin):
         ('order_interval', {'fields': ['order_interval']}),
         ]
     list_display = ('dish', 'price', 'order_interval')
+
 
 
 class Nonveg_dataAdmin(admin.ModelAdmin):
@@ -120,6 +126,7 @@ class Nonveg_dataAdmin(admin.ModelAdmin):
     list_display = ('student_id', 'order_date', 'dish', 'order_interval')
 
 
+
 class Special_requestAdmin(admin.ModelAdmin):
     model = Special_request
     fieldsets = [
@@ -131,6 +138,7 @@ class Special_requestAdmin(admin.ModelAdmin):
         ]
     list_display = ('student_id', 'start_date', 'end_date',
                     'request', 'status')
+
 
 
 class Menu_change_requestAdmin(admin.ModelAdmin):
@@ -152,6 +160,7 @@ class Mess_meetingAdmin(admin.ModelAdmin):
         ('meeting_time', {'fields': ['meeting_time']}),
         ]
     list_display = ('meet_date', 'agenda', 'venue', 'meeting_time')
+
 
 
 class FeedbackAdmin(admin.ModelAdmin):

@@ -68,6 +68,7 @@ class Constants:
 class Designation(models.Model):
     name = models.CharField(max_length=50, unique=True, blank=False, default='student')
     full_name = models.CharField(max_length=100, default='Computer Science and Engineering')
+
     type = models.CharField(max_length=30, default='academic', choices=Constants.DESIGNATIONS)
 
     def __str__(self):
@@ -97,6 +98,11 @@ class ExtraInfo(models.Model):
     @property
     def age(self):
         timedelta = timezone.now().date() - self.date_of_birth
+        return int(timedelta.days / 365)
+
+    @property
+    def age(self):
+        timedelta = timezone.localtime(timezone.now()).date() - self.date_of_birth
         return int(timedelta.days / 365)
 
     def __str__(self):

@@ -13,6 +13,7 @@ class Constants:
         ('Incomplete', 'INCOMPLETE'),
         ('Reject', 'REJECT'),
         ('Accept', 'ACCEPT')
+
     )
     time = (
         ('0', '12 Midnight'),
@@ -118,6 +119,7 @@ class Mcm(models.Model):
     date = models.DateField(default=datetime.date.today)
     award_id = models.ForeignKey(Award_and_scholarship, default=4)
 
+
     class Meta:
         db_table = 'Mcm'
 
@@ -140,7 +142,6 @@ class Previous_winner(models.Model):
     student = models.ForeignKey(Student)
     year = models.IntegerField(default=datetime.datetime.now().year)
     award_id = models.ForeignKey(Award_and_scholarship)
-
 
     class Meta:
         db_table = 'Previous_winner'
@@ -177,6 +178,7 @@ class Director_silver(models.Model):
     grand_total = models.IntegerField(null=True)
     nearest_policestation = models.CharField(max_length=25, null=True)
     nearest_railwaystation = models.CharField(max_length=25, null=True)
+
 
     class Meta:
         db_table = 'Director_silver'
@@ -216,6 +218,7 @@ class Proficiency_dm(models.Model):
     grand_total = models.IntegerField(null=True)
     nearest_policestation = models.CharField(max_length=25, null=True)
     nearest_railwaystation = models.CharField(max_length=25, null=True)
+
 
     class Meta:
         db_table = 'Proficiency_dm'

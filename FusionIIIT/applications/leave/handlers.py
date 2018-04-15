@@ -15,6 +15,7 @@ from .models import (Leave, LeaveRequest, LeaveSegment,
                      LeaveType, ReplacementSegment)
 from applications.globals.models import HoldsDesignation
 
+
 LeaveFormSet = formset_factory(LeaveSegmentForm, extra=0, max_num=3, min_num=1,
                                formset=BaseLeaveFormSet)
 AcadFormSet = formset_factory(AcademicReplacementForm, extra=0, max_num=3, min_num=1)
@@ -202,6 +203,7 @@ def handle_staff_leave_application(request):
 def handle_student_leave_application(request):
 
     form = StudentApplicationForm(request.POST, request.FILES, user=request.user)
+
 
     if form.is_valid():
         data = form.cleaned_data

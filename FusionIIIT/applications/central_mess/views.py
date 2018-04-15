@@ -8,7 +8,7 @@ from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
 
-from django.contrib.auth.models import User 
+from django.contrib.auth.models import User
 from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, HoldsDesignation
 
@@ -297,7 +297,7 @@ def menusubmit(request):
     holds_designations = HoldsDesignation.objects.filter(user=user)
     desig = holds_designations
     for d in desig:
-        
+
         if d.designation.name == 'mess_convener':
 
             dish = Menu.objects.get(dish=request.POST.get("dish"))
@@ -316,7 +316,7 @@ def response(request, ap_id):
     extrainfo = ExtraInfo.objects.get(user=user)
     holds_designations = HoldsDesignation.objects.filter(user=user)
     desig = holds_designations
-    
+
     for d in desig:
         if d.designation.name == 'mess_manager':
             application = Menu_change_request.objects.get(pk=ap_id)
@@ -380,11 +380,11 @@ def regsubmit(request):
         mess_info_inst.mess_option = mess
         mess_info_inst.save()
         mess_reg = Mess_reg.objects.last()
-        
+
         if Monthly_bill.objects.filter(student_id=student):
             return HttpResponseRedirect("/mess")
 
-        else:            
+        else:
 
             if mess_reg.end_reg.strftime("%B") in month_1:
                 while i<=5:
@@ -410,7 +410,7 @@ def regadd(request):
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
     holds_designations = HoldsDesignation.objects.filter(user=user)
-    desig = holds_designations    
+    desig = holds_designations
 
     for d in desig:
         if d.designation.name == 'mess_manager':
@@ -427,7 +427,7 @@ def regadd(request):
 @transaction.atomic
 @csrf_exempt
 def leaverequest(request):
-    flag = 1 
+    flag = 1
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
     student = Student.objects.get(id=extrainfo)
@@ -458,7 +458,7 @@ def leaverequest(request):
         rebate_obj = Rebate(student_id=student, leave_type=leave_type, start_date=start_date,
                                 end_date=end_date, purpose=purpose)
         rebate_obj.save()
-    
+
     data = {
             'status': flag,
     }

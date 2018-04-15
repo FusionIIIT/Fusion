@@ -10,7 +10,6 @@ from .handlers import (handle_faculty_leave_application,
                        send_staff_leave_form, send_student_leave_form,
                        delete_leave_application)
 
-
 @login_required(login_url='/accounts/login')
 def leave(request):
 

@@ -1,0 +1,127 @@
+{% load static %}
+{% block feedback %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="feedback">
+            Feedback
+        </a>
+
+        <a class="item" data-tab="viewfeedback">
+            Status
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="feedback">
+        <div class="ui vertical segment">
+
+            {% comment %}Form Tag starts here!{% endcomment %}
+            <form>
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                    <div class="ui header">
+                        The Feedback form for PHC:
+                    </div>
+
+                    <br>
+
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Location</label>
+                            <input value="Primary Health Center" class="ui large input" readonly>
+                        </div>
+
+                        <div class="field">
+                            <label>Type:</label>
+                            <select class="ui search fluid dropdown">
+                                {% comment %}
+                                        TODO: A backend code to stop sending of empty values to database (SELECT OPTION)
+                                    {% endcomment %}
+                                <option value="">Select</option>
+                                <option value="Cleanliness">Cleanliness</option>
+                                <option value="Doctors">Doctors</option>
+                                <option value="Medicines">Medicines</option>
+                                <option value="Staff">Staff</option>
+                                <option value="Others">Others</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Description:</label>
+                        <textarea rows="3"></textarea>
+                    </div>
+
+                    <div class="field">
+                        <label><br></label>
+                        <button class="ui primary right floated button" type="submit">
+                            Submit
+                        </button>
+                    </div>
+                </div>
+            </form>
+            {% comment %}Form Tag ends here!{% endcomment %}
+
+            <br>
+            <br>
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="viewfeedback">
+        <div class="ui very relaxed fluid selection list" style="padding-left: 24px; padding-top: 16px; padding-bottom: 16px; max-height: 70vh; overflow-y: auto;">
+
+            <div class="item">
+                <img class="ui mini circular image" src="{% static 'globals/img/zlatan.jpg' %}">
+                <div class="content">
+                    <a class="header">Zlatan Ibrahimovic</a>
+                    <span class="meta">Medicines</span>
+
+                    <div class="description">
+                        Forgive and Forget mess food? I am neither Jesus nor do I have Alzheimer.
+                    </div>
+                </div>
+
+                <div class="right floated content">
+                    <span class="meta">August 10 '18</span>
+                </div>
+            </div>
+
+            <div class="item">
+                <img class="ui mini circular image" src="{% static 'globals/img/zlatan.jpg' %}">
+                <div class="content">
+                    <a class="header">Zlatan Ibrahimovic</a>
+                    <span class="meta">Medicines</span>
+
+                    <div class="description">
+                        Diarrhea: The original detox.
+                    </div>
+                </div>
+
+                <div class="right floated content">
+                    <span class="meta">August 09 '18</span>
+                </div>
+            </div>
+
+            <div class="item">
+                <img class="ui mini circular image" src="{% static 'globals/img/zlatan.jpg' %}">
+                <div class="content">
+                    <a class="header">Zlatan Ibrahimovic</a>
+                    <span class="meta">Cleanliness</span>
+
+                    <div class="description">
+                        Before you leave, take a minute to clean from the next time!
+                    </div>
+                </div>
+
+                <div class="right floated content">
+                    <span class="meta">August 08 '18</span>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="ui divider"></div>
+    </div>
+{% endblock %}

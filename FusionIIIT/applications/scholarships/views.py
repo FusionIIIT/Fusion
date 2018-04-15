@@ -72,7 +72,7 @@ def convener_view(request):
             )
             messages.success(request,award+' are invited successfully')
             return HttpResponseRedirect('/spacs/convener_view')
-        
+
         elif 'Accept_mcm' in request.POST:
             pk = request.POST.get('id')
             award = Mcm.objects.get(id=pk).award_id
@@ -176,7 +176,7 @@ def convener_view(request):
                    'gold': gold, 'silver': silver, 'dandm': dandm, 'con': con, 'assis': assis,
                     'hd': hd, 'hd1': hd1
                    }
-                   
+
         return render(request, 'scholarshipsModule/scholarships_convener.html',context)
 
 
@@ -343,28 +343,28 @@ def student_view(request):
             try:
                 roll_no1 = int(request.POST.get('roll_no1'))
             except:
-                roll_no1=0   
-            
+                roll_no1=0
+
             try:
                 roll_no2 = int(request.POST.get('roll_no2'))
             except:
-                roll_no2=0    
-            
+                roll_no2=0
+
             try:
                 roll_no3 = int(request.POST.get('roll_no3'))
             except:
-                roll_no3=0    
-            
+                roll_no3=0
+
             try:
                 roll_no4 = int(request.POST.get('roll_no4'))
             except:
                 roll_no4=0
-            
+
             try:
                 roll_no5 = int(request.POST.get('roll_no5'))
             except:
                 roll_no5=0
-        
+
             ece_topic = request.POST.get('ece_topic')
             cse_topic = request.POST.get('cse_topic')
             mech_topic = request.POST.get('mech_topic')
@@ -380,7 +380,7 @@ def student_view(request):
             grand_total=request.POST.get('grand_total')
             nearest_policestation=request.POST.get('nps')
             nearest_railwaystation=request.POST.get('nrs')
-            
+
 
             Proficiency_dm.objects.create(
                 title_name=title_name,
@@ -532,7 +532,7 @@ def convener_catalogue(request):
             context['result'] = 'Failure'
         return HttpResponse(json.dumps(context), content_type='convener_catalogue/json')
 
-    
+
 def get_winners(request):
     award_name = request.GET.get('award_name')
     batch_year = int(request.GET.get('batch'))
@@ -581,4 +581,3 @@ def get_content(request):
         context['result']='Failure'
 
     return HttpResponse(json.dumps(context), content_type='get_content/json')
-

@@ -94,3 +94,5 @@ class MinimumCredits(models.Model):
 
     def __str__(self):
         return "Semester: " + str(self.semester)+" Credits:" + str(self.credits)
+
+    

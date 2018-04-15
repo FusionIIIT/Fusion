@@ -1,0 +1,297 @@
+{% block applyform %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="clubmembershipform">
+            Club Membership Form
+        </a>
+
+        <a class="item" data-tab="coreteamform">
+            Core Team Form
+        </a>
+
+        <a class="item" data-tab="newclubform">
+            New Club Form
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="clubmembershipform">
+        <div class="ui vertical segment">
+            <form>
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Name</label>
+                            <input placeholder="Name" class="ui large input">
+                        </div>
+
+                        <div class="field">
+                            <label>Email</label>
+                            <input placeholder="Email" class="ui large input" type="email">
+                        </div>
+                    </div>
+
+                    <div class="three fields">
+                        <div class="field">
+                            <label>Roll Number</label>
+                            <input placeholder="Roll Number" class="ui large input">
+                        </div>
+
+                        <div class="field">
+                            <label>Category</label>
+                            <select class="ui search fluid dropdown">
+                                <option value="">Select</option>
+                                <option value="category1">Category #1</option>
+                                <option value="category2">Category #2</option>
+                                <option value="category3">Category #3</option>
+                                <option value="Others">Others</option>
+                            </select>
+                        </div>
+
+                        <div class="field">
+                            <label>Club</label>
+                            <select class="ui search fluid dropdown">
+                                <option value="">Select</option>
+                                <option value="club1">Club #1</option>
+                                <option value="club2">Club #2</option>
+                                <option value="club3">Club #3</option>
+                                <option value="Others">Others</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Achievements</label>
+                        <textarea rows="2"></textarea>
+                    </div>
+
+                    <div class="field">
+                        <button class="ui primary button right floated" type="submit">
+                            Submit
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <br>
+            <br>
+        </div>
+        <br>
+        <div class="extra content"></div>
+    </div>
+
+    <div class="ui tab" data-tab="coreteamform">
+        <div class="ui vertical segment">
+            <form>
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Name</label>
+                            <input value="Zlatan Ibrahimovic" class="ui large input" readonly>
+                        </div>
+
+                        <div class="field">
+                            <label>Email</label>
+                            <input value="gmail@zlatan.com" class="ui large input" type="email" readonly>
+                        </div>
+                    </div>
+
+                    <div class="four fields">
+                        <div class="field">
+                            <label>Roll Number</label>
+                            <input value="2015121" class="ui large input" readonly>
+                        </div>
+
+                        <div class="field">
+                            <label>Mobile Number</label>
+                            <input value="9876543210" class="ui large input" readonly>
+                        </div>
+
+                        <div class="field">
+                            <label>Program</label>
+                            <select class="ui search fluid dropdown">
+                                <option value="">Select</option>
+                                <option value="bdes">BDes</option>
+                                <option value="btech">BTech</option>
+                                <option value="mdes">MDes</option>
+                                <option value="mtech">MTech</option>
+                                <option value="phd">PhD</option>
+                            </select>
+                        </div>
+
+                        <div class="field">
+                            <label>Discipline</label>
+                            <select class="ui search fluid dropdown">
+                                <option value="">Select</option>
+                                <option value="cse">CSE</option>
+                                <option value="ece">ECE</option>
+                                <option value="me">ME</option>
+                                <option value="des">Design</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Post Applied</label>
+                            <select class="ui search fluid dropdown">
+                                <option value="">Select</option>
+                                <option value="post1">Post #1</option>
+                                <option value="post2">Post #2</option>
+                                <option value="post3">Post #3</option>
+                                <option value="Others">Others</option>
+                            </select>
+                        </div>
+
+                        <div class="field">
+                            <label>Post Applied</label>
+                            <select class="ui search fluid dropdown">
+                                <option value="">Select</option>
+                                <option value="post1">Post #1</option>
+                                <option value="post2">Post #2</option>
+                                <option value="post3">Post #3</option>
+                                <option value="Others">Others</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="inline six fields">
+                        <label>CPI</label>
+                        <div class="field"></div>
+
+                        <div class="field">
+                            <div class="ui large radio checkbox">
+                                <input name="frequency" type="radio">
+                                <label> > 6.0 </label>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <div class="ui large radio checkbox">
+                                <input name="frequency" type="radio">
+                                <label> < 6.0 </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Backlog Details (if any)</label>
+                        <textarea rows="2"></textarea>
+                    </div>
+
+                    <div class="field">
+                        <label>Previous Disciplinary Actions (if any)</label>
+                        <textarea rows="2"></textarea>
+                    </div>
+
+                    <div class="field">
+                        <button class="ui primary button right floated" type="submit">
+                            Submit
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <br>
+            <br>
+        </div>
+        <br>
+        <div class="extra content"></div>
+    </div>
+
+    <div class="ui tab" data-tab="newclubform">
+        <div class="ui vertical segment">
+            <form>
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                    <div class="three fields">
+                        <div class="eight wide field">
+                            <label>Club</label>
+                            <input placeholder="Club" class="ui large input">
+                        </div>
+
+                        <div class="four wide field">
+                            <label>Category</label>
+                            <select class="ui search fluid dropdown">
+                                <option value="">Select</option>
+                                <option value="category1">Category #1</option>
+                                <option value="category2">Category #2</option>
+                                <option value="category3">Category #3</option>
+                                <option value="Others">Others</option>
+                            </select>
+                        </div>
+
+                        <div class="four wide field">
+                            <label>Club</label>
+                            <select class="ui search fluid dropdown">
+                                <option value="">Select</option>
+                                <option value="club1">Club #1</option>
+                                <option value="club2">Club #2</option>
+                                <option value="club3">Club #3</option>
+                                <option value="Others">Others</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="three fields">
+                        <div class="six wide field">
+                            <label>Coordinator</label>
+                            <input placeholder="Coordinator" class="ui large input">
+                        </div>
+
+                        <div class="six wide field">
+                            <label>Email</label>
+                            <input placeholder="Email" class="ui large input" type="email">
+                        </div>
+
+                        <div class="four wide field">
+                            <label>Roll Number</label>
+                            <input placeholder="Roll Number" class="ui large input">
+                        </div>
+                    </div>
+
+
+                    <div class="three fields">
+                        <div class="six wide field">
+                            <label>Co - Coordinator</label>
+                            <input placeholder="Co - Coordinator" class="ui large input">
+                        </div>
+
+                        <div class="six wide field">
+                            <label>Email</label>
+                            <input placeholder="Email" class="ui large input" type="email">
+                        </div>
+
+                        <div class="four wide field">
+                            <label>Roll Number</label>
+                            <input placeholder="Roll Number" class="ui large input">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Attachments (if any)</label>
+                        <input class="ui input" type="file"></input>
+                    </div>
+
+                    <div class="field">
+                        <label>Details & Description</label>
+                        <textarea rows="2"></textarea>
+                    </div>
+
+                    <div class="field">
+                        <button class="ui primary button right floated" type="submit">
+                            Submit
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <br>
+            <br>
+        </div>
+        <br>
+        <div class="extra content"></div>
+    </div>
+{% endblock %}

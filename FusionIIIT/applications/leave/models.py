@@ -4,6 +4,7 @@ from django.utils import timezone
 from applications.globals.models import Designation
 
 
+
 class Constants:
 
     REPLACEMENT_TYPES = (
@@ -43,6 +44,7 @@ class LeaveType(models.Model):
     @property
     def is_station(self):
         return self.name == 'Station'
+
 
     def __str__(self):
         return f'{self.name}, Max: {self.max_in_year}'
@@ -100,6 +102,7 @@ class Leave(models.Model):
             if segment.start_date <= today:
                 return False
         return True
+
 
     def __str__(self):
         return '{} applied, status: {}'.format(self.applicant.username,

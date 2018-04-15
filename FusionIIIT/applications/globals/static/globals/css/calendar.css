@@ -1,195 +1,141 @@
-@import url('demo.css');
+/*!
+ * # Semantic UI 0.0.6 - Calendar
+ * http://github.com/semantic-org/semantic-ui/
+ *
+ *
+ * Released under the MIT license
+ * http://opensource.org/licenses/MIT
+ *
+ */
 
-@font-face {
-	font-family: 'fontawesome-selected';
-	src: url("../font/fontawesome-selected.eot");
-	src: url("../font/fontawesome-selected.eot?#iefix") format('embedded-opentype'), url("../font/fontawesome-selected.woff") format('woff'), url("../font/fontawesome-selected.ttf") format('truetype'), url("../font/fontawesome-selected.svg#fontawesome-selected") format('svg');
-	font-weight: normal;
-	font-style: normal;
-}
 
-.fc-calendar-container {
-	position: relative;
-	height: 200px;
-	width: 600px;
-}
+/*******************************
+            Popup
+*******************************/
 
-.fc-calendar {
-	width: 100%;
-	height: 100%;
-}
-
-.fc-calendar .fc-head {
-	height: 30px;
-	line-height: 30px;
-	background: #ccc;
-	color: #fff;
-}
-
-.fc-calendar .fc-body {
-	position: relative;
-	width: 100%;
-	height: 100%;
-	height: -moz-calc(100% - 30px);
-	height: -webkit-calc(100% - 30px);
-	height: calc(100% - 30px);
-	border: 1px solid #ddd;
-}
-
-.fc-calendar .fc-row {
-	width: 100%;
-	border-bottom: 1px solid #ddd;
-}
-
-.fc-four-rows .fc-row  {
-	height: 25%;
-}
-
-.fc-five-rows .fc-row  {
-	height: 20%;
-}
-
-.fc-six-rows .fc-row {
-	height: 16.66%;
-	height: -moz-calc(100%/6);
-	height: -webkit-calc(100%/6);
-	height: calc(100%/6);
-}
-
-.fc-calendar .fc-row > div,
-.fc-calendar .fc-head > div {
-	float: left;
-	height: 100%;
-	width:  14.28%; /* 100% / 7 */
-	width: -moz-calc(100%/7);
-	width: -webkit-calc(100%/7);
-	width: calc(100%/7);
-	position: relative;
-}
-
-/* IE 9 is rounding up the calc it seems */
-.ie9 .fc-calendar .fc-row > div,
-.ie9 .fc-calendar .fc-head > div {
-	width:  14.2%;
-}
-
-.fc-calendar .fc-row > div {
-	border-right: 1px solid #ddd;
-	padding: 4px;
-	overflow: hidden;
-	position: relative;
-}
-
-.fc-calendar .fc-head > div {
-	text-align: center;
-}
-
-.fc-calendar .fc-row > div > span.fc-date {
-	position: absolute;
-	width: 30px;
-	height: 20px;
-	font-size: 20px;
-	line-height: 20px;
-	font-weight: 700;
-	color: #ddd;
-	text-shadow: 0 -1px 0 rgba(255,255,255,0.8);
-	bottom: 5px;
-	right: 5px;
-	text-align: right;
-}
-
-.fc-calendar .fc-row > div > span.fc-weekday {
-	padding-left: 5px;
-	display: none;
-}
-
-.fc-calendar .fc-row > div.fc-today {
-	background: #fff4c3;
-}
-
-.fc-calendar .fc-row > div.fc-out {
-	opacity: 0.6;
-}
-
-.fc-calendar .fc-row > div:last-child,
-.fc-calendar .fc-head > div:last-child {
-	border-right: none;
-}
-
-.fc-calendar .fc-row:last-child {
-	border-bottom: none;
-}
-
-/*Notification css*/
-@import url(https://fonts.googleapis.com/css?family=Muli);
-*{transition:all 0.5s;-webkit-transition:all 0.5s;}
-
-.toggle{
-	font-size:30px;
-	border:1px solid black;
-	border-radius:30px;
-	display:inline-block;
-	height:/*40px*/ 10vw;
-	width:/*40px*/ 10vw;
-	cursor:pointer;
-}
-.ico{
-	margin-left:7px;
-	margin-top:-4px;
-}
-/*.toggle:hover{
-  -ms-transform: rotate(360deg);
-    -webkit-transform: rotate(360deg); 
-    transform: rotate(360deg);
-}*/
-.sideBar{
-	position:relative;
-	width: 20vw;
-	right:5vw;
-	margin-top:12px;
-	box-shadow:0px 0px 1px 2px black;
-	background-color:#1a1a1a;
-	border-left:1px solid black;
-    height: 85%;
-    max-height: 85%;
-    overflow-y: auto;
-    padding: 12px;
-}
-.sideBar h2{
-	color:white;
-	text-align:center;
-	font-family: 'Muli', sans-serif;
-}
-
-.sideBar.active{
-	right:0px;
-}
-.notibox{
-	color:white;
-	font-family: 'Muli', sans-serif;
-	background-color:#0d0d0d;
-	width:calc(100% - 60px);
-	padding:15px;
-	margin:15px;
-	border-radius:4px;
-	position:relative;
-}
-.cancel{
-	position:absolute;
-	right:7px;
-	top:10px;
-	cursor:pointer;
-	padding:3px;
-	padding-left:8px;
-	padding-right:8px;
-	border-radius:20px;
-}
-.cancel:hover{
-	color:black;
-	background-color:white;
-}
-.gone{
-	display:none;
+.ui.calendar .ui.popup {
+  max-width: none;
+  padding: 0;
+  border: none;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
 }
 
 
+/*******************************
+            Calendar
+*******************************/
+
+.ui.calendar .calendar:focus {
+  outline: 0;
+}
+
+
+/*******************************
+            Grid
+*******************************/
+
+.ui.calendar .ui.popup .ui.grid {
+  display: block;
+  white-space: nowrap;
+}
+.ui.calendar .ui.popup .ui.grid > .column {
+  width: auto;
+}
+
+
+/*******************************
+            Table
+*******************************/
+
+.ui.calendar .ui.table.year,
+.ui.calendar .ui.table.month,
+.ui.calendar .ui.table.minute {
+  min-width: 15em;
+}
+.ui.calendar .ui.table.day {
+  min-width: 18em;
+}
+.ui.calendar .ui.table.hour {
+  min-width: 20em;
+}
+.ui.calendar .ui.table tr th,
+.ui.calendar .ui.table tr td {
+  padding: 0.5em;
+  white-space: nowrap;
+}
+.ui.calendar .ui.table tr th {
+  border-left: none;
+}
+.ui.calendar .ui.table tr th .icon {
+  margin: 0;
+}
+.ui.calendar .ui.table tr th .icon {
+  margin: 0;
+}
+.ui.calendar .ui.table tr:first-child th {
+  position: relative;
+  padding-left: 0;
+  padding-right: 0;
+}
+.ui.calendar .ui.table.day tr:first-child th {
+  border: none;
+}
+.ui.calendar .ui.table.day tr:nth-child(2) th {
+  padding-top: 0.2em;
+  padding-bottom: 0.3em;
+}
+.ui.calendar .ui.table tr td {
+  padding-left: 0.1em;
+  padding-right: 0.1em;
+}
+.ui.calendar .ui.table tr .link {
+  cursor: pointer;
+}
+.ui.calendar .ui.table tr .prev.link {
+  width: 14.28571429%;
+  position: absolute;
+  left: 0;
+}
+.ui.calendar .ui.table tr .next.link {
+  width: 14.28571429%;
+  position: absolute;
+  right: 0;
+}
+.ui.calendar .ui.table tr .disabled {
+  pointer-events: none;
+  color: rgba(40, 40, 40, 0.3);
+}
+
+/*--------------
+     States
+---------------*/
+
+.ui.calendar .ui.table tr td.today {
+  font-weight: bold;
+}
+.ui.calendar .ui.table tr td.range {
+  background: rgba(0, 0, 0, 0.05);
+  color: rgba(0, 0, 0, 0.95);
+  box-shadow: none;
+}
+.ui.calendar .ui.table.inverted tr td.range {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  box-shadow: none;
+}
+.ui.calendar .calendar:focus .ui.table tbody tr td.focus,
+.ui.calendar .calendar.active .ui.table tbody tr td.focus {
+  box-shadow: inset 0 0 0 1px #85B7D9;
+}
+.ui.calendar .calendar:focus .ui.table.inverted tbody tr td.focus,
+.ui.calendar .calendar.active .ui.table.inverted tbody tr td.focus {
+  box-shadow: inset 0 0 0 1px #85B7D9;
+}
+
+
+/*******************************
+         Theme Overrides
+*******************************/
