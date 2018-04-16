@@ -63,3 +63,11 @@ def get_notifications(request):
 def get_type_sorted_notifs(request):
     context = type_sort_notifs(request.user.notifications)
     return render(request, "notification_channels/type_sorted_notifs.html", context)
+
+
+@login_required(login_url=login_url)
+def get_unseen_count(request):
+    context = {
+        "count": request.user.notifications.filter(seen=False).count(),
+    }
+    return HttpResponse(json.dumps(context), content_type="application/json")

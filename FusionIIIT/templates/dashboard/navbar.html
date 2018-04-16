@@ -28,7 +28,7 @@
                 </a>
 
                 <a class="item notification-button" id="new-notification">
-                    Notifications
+                    <i class="ui bell icon"></i>
                     <div class="ui teal label notification-label" data="all">{% get_unseen_notif_count request.user %}</div>
                 </a>
 
@@ -54,7 +54,6 @@
         </div>
 
         <div class="ui divider"></div>
-
 
         {% block data%}
         {% endblock %}

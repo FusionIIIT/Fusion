@@ -1,3 +1,4 @@
+from channels import Group
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -7,7 +8,7 @@ from django.db.models.signals import m2m_changed, post_delete
 from django.dispatch import receiver
 from django.utils import timezone
 from django.utils.timesince import timesince
-
+import json
 
 class NotificationManager(models.Manager):
 
@@ -52,6 +53,8 @@ class NotificationManager(models.Manager):
         if generator:
             notif.generator.add(generator)
         notif.save()
+        if getattr(settings, "NOTIFY_ON_CREATE", True):
+            notif.notify()
         return notif
 
     """ Discard notification deletes the notification or removes the generator for the """
@@ -204,6 +207,19 @@ class Notification(models.Model):
         self.read = read
         super(Notification, self).save()
 
+    def notify(self):
+        notif_type = "New Notification"
+        notif_str = self.__str__()
+        if self.notif_type:
+            notif_type = self.notif_type
+        data = {
+            "title": notif_type,
+            "message": notif_str,
+            "url": self.reference_url,
+        }
+        Group(self.recipient.username).send({
+                "text": json.dumps(data),
+            })
 
 """ Activities are to keep track of user's activity for mergeable and
     non-mergeable notifications for notification generators """
