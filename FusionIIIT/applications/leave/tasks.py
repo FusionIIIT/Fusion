@@ -13,8 +13,7 @@ from .models import LeaveMigration
 def execute_leave_migrations():
     today = timezone.now().date()
     # today = timezone.now()
-    migrations = LeaveMigration.objects.filter(
-        Q(on_date__lte=today)).order_by('on_date')
+    migrations = LeaveMigration.objects.filter(Q(on_date__lte=today)).order_by('on_date')
 
     for migration in migrations:
         if migration.type_migration == 'transfer':

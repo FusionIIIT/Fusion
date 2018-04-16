@@ -70,8 +70,7 @@ def generate_form(request):
     id = request.GET.get('id')
     leave = request.user.all_leaves.filter(id=id)
     if leave:
-        response = render(
-            request, 'leaveModule/generate_form.html', {'leave': leave.first()})
+        response = render(request, 'leaveModule/generate_form.html', {'leave': leave.first()})
     else:
         response = HttpResponseForbidden()
 

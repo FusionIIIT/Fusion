@@ -7,6 +7,7 @@ from .models import LeaveMigration, LeaveRequest, LeavesCount
 
 
 def get_user_choices(user):
+
     """
 
     # This Hacky way is to avoid an unrecognized error caused by following code:
@@ -54,6 +55,10 @@ def get_special_leave_count(start, end, leave_name):
 def get_leave_days(start, end, leave_type, start_half, end_half):
     count = 0.0
     leave_name = leave_type.name
+
+    # TODO: Remove this hard code and make it database dependent
+    # Maybe add one field in leave type, which tells that this has to be taken from
+    # academic calendar
     if leave_name.lower() in ['restricted', 'vacation']:
         count = get_special_leave_count(start, end, leave_name.lower())
     else:
@@ -72,9 +77,17 @@ def get_leave_days(start, end, leave_type, start_half, end_half):
 
 
 def get_leaves(leave):
+    """
+    @param - leave: Leave application object
+    This helper function returns a dictionary which maps from leave_type to number
+    of days of leaves of that particular leave type.
+    """
     mapping = dict()
 
     for segment in leave.segments.all():
+        if segment.leave_type.is_station:
+            continue
+
         count = get_leave_days(segment.start_date, segment.end_date, segment.leave_type,
                                segment.start_half, segment.end_half)
         if segment in mapping.keys():
@@ -92,6 +105,19 @@ def restore_leave_balance(leave):
                                         year=key.start_date.year)
         count.remaining_leaves += value
         count.save()
+        try:
+            if key.leave_type == 'Vacation':
+                count = LeavesCount.objects.get(user=leave.applicant, leave_type__name='Earned',
+                                                year=key.start_date.year)
+                count.remaining_leaves += value / 2
+                count.save()
+            elif key.leave_type == 'Earned':
+                count = LeavesCount.objects.get(user=leave.applicant, leave_type__name='Vacation',
+                                                year=key.start_date.year)
+                count.remaining_leaves += 2.0 * value
+                count.save()
+        except:
+            pass
 
 
 def deduct_leave_balance(leave):
@@ -101,12 +127,24 @@ def deduct_leave_balance(leave):
                                         year=key.start_date.year)
         count.remaining_leaves -= value
         count.save()
+        try:
+            if key.leave_type == 'Vacation':
+                count = LeavesCount.objects.get(user=leave.applicant, leave_type__name='Earned',
+                                                year=key.start_date.year)
+                count.remaining_leaves -= value / 2
+                count.save()
+            elif key.leave_type == 'Earned':
+                count = LeavesCount.objects.get(user=leave.applicant, leave_type__name='Vacation',
+                                                year=key.start_date.year)
+                count.remaining_leaves -= 2.0 * value
+                count.save()
+        except:
+            pass
 
 
 def get_pending_leave_requests(user):
     users = list(x.user for x in user.current_designation.all())
-    requests = LeaveRequest.objects.filter(
-        Q(requested_from__in=users), Q(status='pending'))
+    requests = LeaveRequest.objects.filter(Q(requested_from__in=users), Q(status='pending'))
     return requests
 
 
@@ -119,6 +157,7 @@ def create_migrations(leave):
     applicant = leave.applicant
     for rep_segment in leave.replace_segments.all():
         mig_transfer = LeaveMigration(
+            leave=leave,
             type_migration='transfer',
             on_date=rep_segment.start_date,
             replacee=applicant,
@@ -126,6 +165,7 @@ def create_migrations(leave):
             replacement_type=rep_segment.replacement_type
         )
         mig_revert = LeaveMigration(
+            leave=leave,
             type_migration='revert',
             on_date=rep_segment.end_date + datetime.timedelta(days=1),
             replacee=applicant,

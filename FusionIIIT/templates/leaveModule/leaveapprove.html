@@ -10,6 +10,143 @@
     <br>
     <div class="ui divider"></div>
 
+
+    {% for req in leave_requests %}
+        <div class="ui modal leave-req-detail-{{ req.id }}">
+            <div class="header">
+                Detail of Leave
+            </div>
+            <div class="scrolling content">
+                <b>Durations of Leave</b>
+                <ul>
+                    {% for segment in req.leave.segments.all %}
+                        <li> From {{ segment.start_date }} To {{ segment.end_date }} </li>
+                        <ul>
+                            <li><b>Type of Leave:</b> {{ segment.leave_type.name }} </li>
+                            <li> <b>Begin with Half Day:</b> {% if segment.start_half %} Yes {% else %} No {% endif %}
+                            <li> <b>End with Half Day:</b> {% if segment.end_half %} Yes {% else %} No {% endif %} </li>
+                        </ul>
+                    {% endfor %}
+
+                </ul>
+                <br>
+                {% if req.leave.applicant.extrainfo.user_type != 'student' %}
+                    <b> Replacements </b>
+                    <ul>
+                        {% for rep in req.leave.replace_segments.all %}
+                            <li>
+                                {% if rep.replacement_type == 'academic' %}
+                                    Academic Replacement
+                                {% else %}
+                                    Administrative Replacement
+                                {% endif %}
+                                from <b> {{ rep.start_date }} </b> to <b> {{ rep.end_date }} </b>
+                            </li>
+                            <ul>
+                                <li><b> Replacer: </b> {{ rep.replacer.get_full_name }} </li>
+                            </ul>
+                        {% endfor %}
+
+                    </ul>
+                {% else %}
+                    <b> Student's Application </b>
+                {% endif %}<br>
+                <b> Leave Balance (After Deduction of Pending Leaves): </b> <br><br>
+                <table border=1 style="text-align: center; width: 100%;">
+                    <thead>
+                        <th> Leave Type </th>
+                        <th> Remaining Leaves </th>
+                    </thead>
+                    <tbody>
+                        {% for lv_bal in req.leave.get_current_leave_balance %}
+                            {% if lv_bal.leave_type.name != 'Station' %}
+                                <tr>
+                                    <td> {{ lv_bal.leave_type.name }} </td>
+                                    <td> {{ lv_bal.remaining_leaves }} </td>
+                                </tr>
+                            {% endif %}
+
+                        {% endfor %}
+
+                    </tbody>
+                </table>
+            </div>
+            <div class="actions">
+                <div class="ui green positive button">
+                    Ok
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+
+    {% for req in processed_requests %}
+        <div class="ui modal leave-req-detail-{{ req.id }}">
+            <div class="header">
+                Detail of Leave
+            </div>
+            <div class="scrolling content">
+                <b>Durations of Leave</b>
+                <ul>
+                    {% for segment in req.leave.segments.all %}
+                        <li> From {{ segment.start_date }} To {{ segment.end_date }} </li>
+                        <ul>
+                            <li><b>Type of Leave:</b> {{ segment.leave_type.name }} </li>
+                            <li> <b>Begin with Half Day:</b> {% if segment.start_half %} Yes {% else %} No {% endif %}
+                            <li> <b>End with Half Day:</b> {% if segment.end_half %} Yes {% else %} No {% endif %} </li>
+                        </ul>
+                    {% endfor %}
+
+                </ul>
+                <br>
+                {% if req.leave.applicant.extrainfo.user_type != 'student' %}
+                    <b> Replacements </b>
+                    <ul>
+                        {% for rep in req.leave.replace_segments.all %}
+                            <li>
+                                {% if rep.replacement_type == 'academic' %}
+                                    Academic Replacement
+                                {% else %}
+                                    Administrative Replacement
+                                {% endif %}
+                                from <b> {{ rep.start_date }} </b> to <b> {{ rep.end_date }} </b>
+                            </li>
+                            <ul>
+                                <li><b> Replacer: </b> {{ rep.replacer.get_full_name }} </li>
+                            </ul>
+                        {% endfor %}
+
+                    </ul>
+                {% else %}
+                    <b> Student's Application </b>
+                {% endif %}<br>
+                <b> Leave Balance (After Deduction of Pending Leaves): </b> <br><br>
+                <table border=1 style="text-align: center; width: 100%;">
+                    <thead>
+                        <th> Leave Type </th>
+                        <th> Remaining Leaves </th>
+                    </thead>
+                    <tbody>
+                        {% for lv_bal in req.leave.get_current_leave_balance %}
+                            {% if lv_bal.leave_type.name != 'Station' %}
+                                <tr>
+                                    <td> {{ lv_bal.leave_type.name }} </td>
+                                    <td> {{ lv_bal.remaining_leaves }} </td>
+                                </tr>
+                            {% endif %}
+
+                        {% endfor %}
+
+                    </tbody>
+                </table>
+            </div>
+            <div class="actions">
+                <div class="ui green positive button">
+                    Ok
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+
     <table class="ui compact celled definition sortable table" style='text-align: center;'>
         {% if leave_requests.count %}
             <thead>
@@ -32,53 +169,6 @@
             </thead>
             <tbody>
             {% for req in leave_requests %}
-                <div class="ui modal leave-req-detail-{{ req.id }}">
-                    <div class="header">
-                        Detail of Leave
-                    </div>
-                    <div class="scrolling content">
-                        <b>Durations of Leave</b>
-                        <ul>
-                            {% for segment in req.leave.segments.all %}
-                                <li> From {{ segment.start_date }} To {{ segment.end_date }} </li>
-                                <ul>
-                                    <li><b>Type of Leave:</b> {{ segment.leave_type.name }} </li>
-                                    <li> <b>Begin with Half Day:</b> {% if segment.start_half %} Yes {% else %} No {% endif %}
-                                    <li> <b>End with Half Day:</b> {% if segment.end_half %} Yes {% else %} No {% endif %} </li>
-                                </ul>
-                            {% endfor %}
-
-                        </ul>
-                        <br>
-                        {% if req.leave.applicant.extrainfo.user_type != 'student' %}
-                            <b> Replacements </b>
-                            <ul>
-                                {% for rep in req.leave.replace_segments.all %}
-                                    <li>
-                                        {% if rep.replacement_type == 'academic' %}
-                                            Academic Replacement
-                                        {% else %}
-                                            Administrative Replacement
-                                        {% endif %}
-                                        from <b> {{ rep.start_date }} </b> to <b> {{ rep.end_date }} </b>
-                                    </li>
-                                    <ul>
-                                        <li><b> Replacer: </b> {{ rep.replacer.get_full_name }} </li>
-                                    </ul>
-                                {% endfor %}
-
-                            </ul>
-                        {% else %}
-                            <b> Student's Application </b>
-                        {% endif %}
-
-                    </div>
-                    <div class="actions">
-                        <div class="ui green positive button">
-                            Ok
-                        </div>
-                    </div>
-                </div>
                 <tr class="leave-request-{{ req.id }}">
                     <td class="collapsing">
                         {{ forloop.counter }}
@@ -130,53 +220,6 @@
             </thead>
             <tbody>
                 {% for req in processed_requests %}
-                <div class="ui modal leave-req-detail-{{ req.id }}">
-                    <div class="header">
-                        Detail of Leave
-                    </div>
-                    <div class="scrolling content">
-                        <b>Durations of Leave</b>
-                        <ul>
-                            {% for segment in req.leave.segments.all %}
-                            <li> From {{ segment.start_date }} To {{ segment.end_date }} </li>
-                            <ul>
-                                <li><b>Type of Leave:</b> {{ segment.leave_type.name }} </li>
-                                <li> <b>Begin with Half Day:</b> {% if segment.start_half %} Yes {% else %} No {% endif %}
-                                    <li> <b>End with Half Day:</b> {% if segment.end_half %} Yes {% else %} No {% endif %} </li>
-                                </ul>
-                                {% endfor %}
-
-                            </ul>
-                            <br>
-                            {% if req.leave.applicant.extrainfo.user_type != 'student' %}
-                            <b> Replacements </b>
-                            <ul>
-                                {% for rep in req.leave.replace_segments.all %}
-                                <li>
-                                    {% if rep.replacement_type == 'academic' %}
-                                    Academic Replacement
-                                    {% else %}
-                                    Administrative Replacement
-                                    {% endif %}
-                                    from <b> {{ rep.start_date }} </b> to <b> {{ rep.end_date }} </b>
-                                </li>
-                                <ul>
-                                    <li><b> Replacer: </b> {{ rep.replacer.get_full_name }} </li>
-                                </ul>
-                                {% endfor %}
-
-                            </ul>
-                            {% else %}
-                            <b> Student's Application </b>
-                            {% endif %}
-
-                        </div>
-                        <div class="actions">
-                            <div class="ui green positive button">
-                                Ok
-                            </div>
-                        </div>
-                    </div>
                     <tr class="leave-request-{{ req.id }}">
                         <td class="collapsing">
                             {{ forloop.counter }}

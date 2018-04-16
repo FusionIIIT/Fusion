@@ -282,7 +282,8 @@
         <div class="ui five equal width blue small stackable statistics"
              style="margin: auto;">
             {% for bal in leave_balance %}
-                <div class="ui statistic">
+	    	{% if not bal.leave_type.name == "Station" %}
+	    	<div class="ui statistic">
                     <div class="value">
                         {{ bal.remaining_leaves }}
                     </div>
@@ -292,6 +293,7 @@
                         {{ bal.leave_type.name }}
                     </div>
                 </div>
+		{% endif %}
             {% endfor %}
 
         </div>

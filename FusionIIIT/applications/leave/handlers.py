@@ -6,22 +6,19 @@ from django.forms.formsets import formset_factory
 from django.http import JsonResponse
 from django.shortcuts import redirect, render, reverse
 
-from applications.globals.models import HoldsDesignation
-
 from .forms import (AcademicReplacementForm, AdminReplacementForm,
                     BaseLeaveFormSet, EmployeeCommonForm, LeaveSegmentForm,
                     StudentApplicationForm)
 from .helpers import (create_migrations, deduct_leave_balance,
                       get_pending_leave_requests, restore_leave_balance)
-from .models import (Leave, LeaveRequest, LeaveSegment, LeaveType,
-                     ReplacementSegment)
+from .models import (Leave, LeaveRequest, LeaveSegment,
+                     LeaveType, ReplacementSegment)
+from applications.globals.models import HoldsDesignation
 
 LeaveFormSet = formset_factory(LeaveSegmentForm, extra=0, max_num=3, min_num=1,
                                formset=BaseLeaveFormSet)
-AcadFormSet = formset_factory(
-    AcademicReplacementForm, extra=0, max_num=3, min_num=1)
-AdminFormSet = formset_factory(
-    AdminReplacementForm, extra=0, max_num=3, min_num=1)
+AcadFormSet = formset_factory(AcademicReplacementForm, extra=0, max_num=3, min_num=1)
+AdminFormSet = formset_factory(AdminReplacementForm, extra=0, max_num=3, min_num=1)
 common_form = EmployeeCommonForm()
 
 
@@ -112,17 +109,14 @@ def handle_faculty_leave_application(request):
 
         deduct_leave_balance(leave)
 
-        messages.add_message(request, messages.SUCCESS,
-                             'Successfully Submitted !')
+        messages.add_message(request, messages.SUCCESS, 'Successfully Submitted !')
         return redirect(reverse('leave:leave'))
 
     rep_segments = request.user.rep_requests.filter(status='pending')
     leave_requests = get_pending_leave_requests(request.user)
     leave_balance = request.user.leave_balance.all()
-    user_leave_applications = Leave.objects.filter(
-        applicant=request.user).order_by('-timestamp')
-    processed_requests = request.user.all_leave_requests.filter(
-        ~Q(status='pending'))
+    user_leave_applications = Leave.objects.filter(applicant=request.user).order_by('-timestamp')
+    processed_requests = request.user.all_leave_requests.filter(~Q(status='pending'))
     context = {
         'processed_requests': processed_requests,
         'leave_form_set': leave_form_set,
@@ -180,17 +174,14 @@ def handle_staff_leave_application(request):
 
         deduct_leave_balance(leave)
 
-        messages.add_message(request, messages.SUCCESS,
-                             'Successfully Submitted !')
+        messages.add_message(request, messages.SUCCESS, 'Successfully Submitted !')
         return redirect(reverse('leave:leave'))
 
     leave_requests = get_pending_leave_requests(request.user)
     rep_segments = request.user.rep_requests.filter(status='pending')
     leave_balance = request.user.leave_balance.all()
-    user_leave_applications = Leave.objects.filter(
-        applicant=request.user).order_by('-timestamp')
-    processed_requests = request.user.all_leave_requests.filter(
-        ~Q(status='pending'))
+    user_leave_applications = Leave.objects.filter(applicant=request.user).order_by('-timestamp')
+    processed_requests = request.user.all_leave_requests.filter(~Q(status='pending'))
     context = {
         'processed_requests': processed_requests,
         'leave_form_set': leave_form_set,
@@ -210,8 +201,7 @@ def handle_staff_leave_application(request):
 @transaction.atomic
 def handle_student_leave_application(request):
 
-    form = StudentApplicationForm(
-        request.POST, request.FILES, user=request.user)
+    form = StudentApplicationForm(request.POST, request.FILES, user=request.user)
 
     if form.is_valid():
         data = form.cleaned_data
@@ -236,13 +226,11 @@ def handle_student_leave_application(request):
             requested_from=requested_from
         )
         deduct_leave_balance(leave)
-        messages.add_message(request, messages.SUCCESS,
-                             'Successfully Submitted !')
+        messages.add_message(request, messages.SUCCESS, 'Successfully Submitted !')
         return redirect('leave:leave')
 
     leave_balance = request.user.leave_balance.all()
-    user_leave_applications = Leave.objects.filter(
-        applicant=request.user).order_by('-timestamp')
+    user_leave_applications = Leave.objects.filter(applicant=request.user).order_by('-timestamp')
     context = {
         'leave_balance': leave_balance,
         'user_leave_applications': user_leave_applications,
@@ -255,10 +243,8 @@ def send_faculty_leave_form(request):
     rep_segments = request.user.rep_requests.filter(status='pending')
     leave_requests = get_pending_leave_requests(request.user)
     leave_balance = request.user.leave_balance.all()
-    user_leave_applications = Leave.objects.filter(
-        applicant=request.user).order_by('-timestamp')
-    processed_requests = request.user.all_leave_requests.filter(
-        ~Q(status='pending'))
+    user_leave_applications = Leave.objects.filter(applicant=request.user).order_by('-timestamp')
+    processed_requests = request.user.all_leave_requests.filter(~Q(status='pending'))
     context = {
         'processed_requests': processed_requests,
         'leave_form_set': LeaveFormSet(prefix='leave_form', user=request.user),
@@ -279,10 +265,8 @@ def send_staff_leave_form(request):
     rep_segments = request.user.rep_requests.filter(status='pending')
     leave_balance = request.user.leave_balance.all()
     leave_requests = get_pending_leave_requests(request.user)
-    user_leave_applications = Leave.objects.filter(
-        applicant=request.user).order_by('-timestamp')
-    processed_requests = request.user.all_leave_requests.filter(
-        ~Q(status='pending'))
+    user_leave_applications = Leave.objects.filter(applicant=request.user).order_by('-timestamp')
+    processed_requests = request.user.all_leave_requests.filter(~Q(status='pending'))
     context = {
         'processed_requests': processed_requests,
         'leave_form_set': LeaveFormSet(prefix='leave_form', user=request.user),
@@ -301,8 +285,7 @@ def send_staff_leave_form(request):
 
 def send_student_leave_form(request):
     leave_balance = request.user.leave_balance.all()
-    user_leave_applications = Leave.objects.filter(
-        applicant=request.user).order_by('-timestamp')
+    user_leave_applications = Leave.objects.filter(applicant=request.user).order_by('-timestamp')
     form = StudentApplicationForm(initial={}, user=request.user)
     context = {
         'leave_balance': leave_balance,
@@ -428,7 +411,7 @@ def process_staff_faculty_application(request):
                 rep_request.save()
                 if rep_request.leave.relacements_accepted():
                     leave_intermediary = HoldsDesignation.objects.get(
-                        designation__name='Leave Intermediary').user
+                                                    designation__name='Leave Intermediary').user
                     LeaveRequest.objects.create(
                         requested_from=leave_intermediary,
                         leave=rep_request.leave,
@@ -474,8 +457,7 @@ def process_student_application(request):
             leave_request.save()
             leave_request.leave.status = 'accepted'
             leave_request.leave.save()
-            response = JsonResponse(
-                {'status': 'success', 'message': 'Successfully Accepted'})
+            response = JsonResponse({'status': 'success', 'message': 'Successfully Accepted'})
 
         else:
             leave_request.status = 'rejected'
@@ -484,12 +466,10 @@ def process_student_application(request):
             leave_request.leave.status = 'rejected'
             leave_request.leave.save()
             restore_leave_balance(leave_request.leave)
-            response = JsonResponse(
-                {'status': 'success', 'message': 'Successfully Rejected'})
+            response = JsonResponse({'status': 'success', 'message': 'Successfully Rejected'})
 
     else:
-        response = JsonResponse(
-            {'status': 'failure', 'message': 'Unauthorized'}, status=401)
+        response = JsonResponse({'status': 'failure', 'message': 'Unauthorized'}, status=401)
 
     return response
 
@@ -501,10 +481,8 @@ def delete_leave_application(request):
     if leave and leave.applicant == request.user and leave.yet_not_started:
         restore_leave_balance(leave)
         leave.delete()
-        response = JsonResponse(
-            {'status': 'success', 'message': 'Successfully Deleted'})
+        response = JsonResponse({'status': 'success', 'message': 'Successfully Deleted'})
     else:
-        response = JsonResponse(
-            {'status': 'failed', 'message': 'Deletion Failed'}, status=400)
+        response = JsonResponse({'status': 'failed', 'message': 'Deletion Failed'}, status=400)
 
     return response
