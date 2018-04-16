@@ -119,6 +119,7 @@ $(document).ready(function(){
 		});
 	});
 
+
 	$(document).on("click", "a.read-all", function(event){
 		const url = "/notifications/read-all/"+$(this).attr("data")+"/";
 		const item = $(this);
@@ -135,4 +136,32 @@ $(document).ready(function(){
 			},
 		});
 	});
+
+
+	function mark_read(url){
+		$.ajax({
+			type: "GET",
+			url: url,
+			success:function(data){
+				console.log("success",data);	
+			},
+			error:function(data){
+				console.log("error",data)
+			},
+		});
+	}
+	
+
+	$(document).on("click", "a.notification-anchor", function(event){
+		const url = "/notifications/read/"+$(this).attr("data")+"/";
+		const item = $(this);
+		mark_read(url);
+		const redirect_url = item.attr("href");
+		if(redirect_url!="#"){
+			window.location = window.location.hostname + redirect_url;
+		}
+
+	});
+
+
 });

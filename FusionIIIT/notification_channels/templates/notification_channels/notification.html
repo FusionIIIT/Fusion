@@ -1,6 +1,6 @@
 <div class="item" {% if notification.description %}title="{{ notification.description }}"{% endif %}>
 	<div class="content">
-		<a class="ui header" href="{{ notification.reference_url }}">
+		<a class="ui header notification-anchor" href="{{ notification.reference_url }}" data="{{ notification.id }}">
 			<h4 style="color: {% if notification.read %}grey{% else %}blue{% endif %};">{{ notification }}</h4>
 		</a>
 		<div class="description">

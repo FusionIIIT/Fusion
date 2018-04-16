@@ -53,6 +53,21 @@ def mark_seen(request, id):
 
 
 @login_required(login_url=login_url)
+def mark_read(request, id):
+    notif = get_object_or_404(Notification, id=id)
+    context = {}
+    if request.user == notif.recipient:
+        notif.mark_read()
+        notif.mark_seen()
+        context['success'] = True
+        context['text'] = "Successfully marked as read"
+        return HttpResponse(json.dumps(context), content_type='application/json')
+    context['success'] = False
+    context['text'] = "Unauthorised to make these changes"
+    return HttpResponse(json.dumps(context), content_type='application/json')
+
+
+@login_required(login_url=login_url)
 def get_notifications(request):
     notifs = seen_or_x(Notification.objects.all())
     context = {"notifications": notifs}
