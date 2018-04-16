@@ -24,11 +24,10 @@ from Fusion.settings import LOGIN_URL
 def index(request):
     context = {}
     print(request.user)
-    if(str(request.user)!="AnonymousUser"):
+    if(str(request.user) != "AnonymousUser"):
         return HttpResponseRedirect('/dashboard/')
     else:
         return render(request, "globals/index1.html", context)
-
 
 
 @login_required(login_url=LOGIN_URL)
@@ -182,7 +181,7 @@ def about(request):
                             'devImage': 'zlatan.jpg',
                             'devTitle': 'Rollnum'
                             },
-                },
+               },
 
                'academics_b_Team': {
                    'dev1': {'devName': 'Mayank Saurabh',
@@ -446,6 +445,7 @@ def login(request):
     context = {}
     return render(request, "globals/login.html", context)
 
+
 def about(request):
 
     teams = {
@@ -670,23 +670,27 @@ def about(request):
                }
     return render(request, "globals/about.html", context)
 
+
 @login_required(login_url=LOGIN_URL)
 def dashboard(request):
     user = request.user
     profile = get_object_or_404(ExtraInfo, Q(user=user))
-    if(str(request.user.extrainfo.user_type)=='faculty'):
+    if(str(request.user.extrainfo.user_type) == 'faculty'):
         return HttpResponseRedirect('/eis/profile')
     #             print(str(request.user.extrainfo.department))
-    if(str(request.user.extrainfo.department)=='department: Academics'):
+    if(str(request.user.extrainfo.department) == 'department: Academics'):
         return HttpResponseRedirect('/aims')
-    current = HoldsDesignation.objects.filter(Q(working=user, designation__name="student"))
+    current = HoldsDesignation.objects.filter(
+        Q(working=user, designation__name="student"))
     if current:
         student = get_object_or_404(Student, Q(id=profile.id))
         if request.method == 'POST':
             if 'studentapprovesubmit' in request.POST:
-                status = PlacementStatus.objects.filter(pk=request.POST['studentapprovesubmit']).update(invitation='ACCEPTED', timestamp=timezone.now())
+                status = PlacementStatus.objects.filter(pk=request.POST['studentapprovesubmit']).update(
+                    invitation='ACCEPTED', timestamp=timezone.now())
             if 'studentdeclinesubmit' in request.POST:
-                status = PlacementStatus.objects.filter(Q(pk=request.POST['studentdeclinesubmit'])).update(invitation='REJECTED', timestamp=timezone.now())
+                status = PlacementStatus.objects.filter(Q(pk=request.POST['studentdeclinesubmit'])).update(
+                    invitation='REJECTED', timestamp=timezone.now())
             if 'educationsubmit' in request.POST:
                 form = AddEducation(request.POST)
                 if form.is_valid():
@@ -723,8 +727,9 @@ def dashboard(request):
                     skill = form.cleaned_data['skill']
                     skill_rating = form.cleaned_data['skill_rating']
                     has_obj = Has.objects.create(unique_id=student,
-                                                 skill_id=Skill.objects.get(skill=skill),
-                                                 skill_rating = skill_rating)
+                                                 skill_id=Skill.objects.get(
+                                                     skill=skill),
+                                                 skill_rating=skill_rating)
                     has_obj.save()
             if 'achievementsubmit' in request.POST:
                 form = AddAchievement(request.POST)
@@ -749,8 +754,7 @@ def dashboard(request):
                     publisher = form.cleaned_data['publisher']
                     publication_date = form.cleaned_data['publication_date']
                     publication_obj = Publication.objects.create(unique_id=student,
-                                                                 publication_title=
-                                                                 publication_title,
+                                                                 publication_title=publication_title,
                                                                  publisher=publisher,
                                                                  description=description,
                                                                  publication_date=publication_date)
@@ -866,12 +870,11 @@ def dashboard(request):
                    'projects': project, 'achievements': achievement, 'publications': publication,
                    'patent': patent, 'form': form, 'form1': form1, 'form14': form14,
                    'form5': form5, 'form6': form6, 'form7': form7, 'form8': form8,
-                   'form10':form10, 'form11':form11, 'form12':form12, 'current':current}
+                   'form10': form10, 'form11': form11, 'form12': form12, 'current': current}
         return render(request, "dashboard/dashboard.html", context)
     else:
         context = {}
         return render(request, "dashboard/dashboard.html", context)
-
 
 
 @login_required(login_url=LOGIN_URL)
@@ -962,7 +965,8 @@ def issue(request):
             for image in request.FILES.getlist('images'):
                 try:
                     Image.open(image)
-                    image = IssueImage.objects.create(image=image, user=request.user)
+                    image = IssueImage.objects.create(
+                        image=image, user=request.user)
                     issue.images.add(image)
                 except Exception as e:
                     pass
@@ -970,17 +974,20 @@ def issue(request):
             openissue = Issue.objects.filter(closed=False)
             closedissue = Issue.objects.filter(closed=True)
             form = IssueForm()
-            context = {"form": form, "openissue": openissue, "closedissue": closedissue, }
+            context = {"form": form, "openissue": openissue,
+                       "closedissue": closedissue, }
             return render(request, "globals/issue.html", context)
         openissue = Issue.objects.filter(closed=False)
         closedissue = Issue.objects.filter(closed=True)
         form = IssueForm(request.POST)
-        context = {"form": form, "openissue": openissue, "closedissue": closedissue, }
+        context = {"form": form, "openissue": openissue,
+                   "closedissue": closedissue, }
         return render(request, "globals/issue.html", context)
     openissue = Issue.objects.filter(closed=False)
     closedissue = Issue.objects.filter(closed=True)
     form = IssueForm()
-    context = {"form": form, "openissue": openissue, "closedissue": closedissue, }
+    context = {"form": form, "openissue": openissue,
+               "closedissue": closedissue, }
     return render(request, "globals/issue.html", context)
 
 
@@ -998,7 +1005,8 @@ def view_issue(request, id):
             for image in request.FILES.getlist('images'):
                 try:
                     Image.open(image)
-                    image = IssueImage.objects.create(image=image, user=request.user)
+                    image = IssueImage.objects.create(
+                        image=image, user=request.user)
                     issue.images.add(image)
                 except Exception as e:
                     pass

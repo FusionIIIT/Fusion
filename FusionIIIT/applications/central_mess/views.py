@@ -111,7 +111,8 @@ def mess(request):
                     print(bill.month)
                     print(r.start_date.strftime("%B"))
                     if r.start_date.strftime("%B") == bill.month:
-                        rebate_count = rebate_count + abs((r.end_date - r.start_date).days) + 1
+                        rebate_count = rebate_count + \
+                            abs((r.end_date - r.start_date).days) + 1
                         bill.rebate_count = rebate_count
 
                     else:
@@ -122,36 +123,36 @@ def mess(request):
             bill.save()
 
         context = {
-                   'menu': y,
-                   'messinfo': messinfo,
-                   'monthly_bill': monthly_bill,
-                   'payments': payments,
-                   'nonveg': x,
-                   'vaca': vaca_obj,
-                   'info': extrainfo,
-                   'feedback': feedback_obj,
-                   'feed': feed,
-                   'student': student,
-                   'data': data,
-                   'mess_reg': mess_reg,
-                   'current_date': current_date,
-                   'count': count,
-                   'rebates': rebates,
-                   'meeting': meeting,
-                   'minutes': minutes,
-                   'sprequest': sprequest,
-                   'splrequest': splrequest,
-                   'count1': count1,
-                   'count2': count2,
-                   'count3': count3,
-                   'count4': count4,
-                   'count5': count5,
-                   'count6': count6,
-                   'count7': count7,
-                   'count8': count8,
-                   'form': form,
-                   'desig': desig
-            }
+            'menu': y,
+            'messinfo': messinfo,
+            'monthly_bill': monthly_bill,
+            'payments': payments,
+            'nonveg': x,
+            'vaca': vaca_obj,
+            'info': extrainfo,
+            'feedback': feedback_obj,
+            'feed': feed,
+            'student': student,
+            'data': data,
+            'mess_reg': mess_reg,
+            'current_date': current_date,
+            'count': count,
+            'rebates': rebates,
+            'meeting': meeting,
+            'minutes': minutes,
+            'sprequest': sprequest,
+            'splrequest': splrequest,
+            'count1': count1,
+            'count2': count2,
+            'count3': count3,
+            'count4': count4,
+            'count5': count5,
+            'count6': count6,
+            'count7': count7,
+            'count8': count8,
+            'form': form,
+            'desig': desig
+        }
 
         return render(request, "messModule/mess.html", context)
 
@@ -163,14 +164,14 @@ def mess(request):
         x = Nonveg_menu.objects.all()
         leave = Rebate.objects.filter(status='1')
         context = {
-                   'menu': y,
-                   'newmenu': newmenu,
-                   'vaca_all': vaca_all,
-                   'info': extrainfo,
-                   'leave': leave,
-                   'current_date': current_date,
-                   'mess_reg': mess_reg,
-                   'desig': desig,
+            'menu': y,
+            'newmenu': newmenu,
+            'vaca_all': vaca_all,
+            'info': extrainfo,
+            'leave': leave,
+            'current_date': current_date,
+            'mess_reg': mess_reg,
+            'desig': desig,
         }
 
         return render(request, "messModule/mess.html", context)
@@ -229,8 +230,8 @@ def placeorder(request):
         stu = Messinfo.objects.get(student_id=student)
         if stu.mess_option == 'mess1':
             dish = Nonveg_menu.objects.get(
-                                           dish=request.POST.get("dish"),
-                                           order_interval=request.POST['interval'])
+                dish=request.POST.get("dish"),
+                order_interval=request.POST['interval'])
             order_interval = dish.order_interval
             order_date = datetime.now().date()
             nonveg_obj = Nonveg_data(student_id=student, order_date=order_date,
@@ -281,10 +282,10 @@ def vacasubmit(request):
                                  end_date=end_date, purpose=purpose)
 
         vaca_obj.save()
-        #return HttpResponseRedirect("/mess")
+        # return HttpResponseRedirect("/mess")
         data = {
-             'status':1
-         }
+            'status': 1
+        }
 
         return JsonResponse(data)
 
@@ -303,7 +304,8 @@ def menusubmit(request):
             dish = Menu.objects.get(dish=request.POST.get("dish"))
             newdish = request.POST.get("newdish")
             reason = request.POST.get("reason")
-            app_obj = Menu_change_request(dish=dish, request=newdish, reason=reason)
+            app_obj = Menu_change_request(
+                dish=dish, request=newdish, reason=reason)
             app_obj.save()
             return HttpResponseRedirect("/mess")
 
@@ -369,7 +371,8 @@ def regsubmit(request):
     i = 0
     j = 0
     month_1 = ['January', 'February', 'March', 'April', 'May', 'June']
-    month_2 = ['July', 'August', 'September', 'October', 'November', 'December']
+    month_2 = ['July', 'August', 'September',
+               'October', 'November', 'December']
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
 
@@ -387,14 +390,16 @@ def regsubmit(request):
         else:
 
             if mess_reg.end_reg.strftime("%B") in month_1:
-                while i<=5:
-                    monthly_bill_obj = Monthly_bill(student_id=student, month=month_1[i])
+                while i <= 5:
+                    monthly_bill_obj = Monthly_bill(
+                        student_id=student, month=month_1[i])
                     monthly_bill_obj.save()
                     i = i+1
 
             else:
-                while j<=5:
-                    monthly_bill_obj = Monthly_bill(student_id=student, month=month_2[j])
+                while j <= 5:
+                    monthly_bill_obj = Monthly_bill(
+                        student_id=student, month=month_2[j])
                     monthly_bill_obj.save()
                     j = j+1
 
@@ -418,7 +423,8 @@ def regadd(request):
             sem = request.POST.get('sem')
             start_reg = request.POST.get('start_date')
             end_reg = request.POST.get('end_date')
-            mess_reg_obj = Mess_reg(sem=sem, start_reg=start_reg, end_reg=end_reg)
+            mess_reg_obj = Mess_reg(
+                sem=sem, start_reg=start_reg, end_reg=end_reg)
             mess_reg_obj.save()
 
             return HttpResponseRedirect("/mess")
@@ -448,21 +454,21 @@ def leaverequest(request):
             b = datetime.strptime(str(start_date), date_format)
             c = datetime.strptime(str(r.end_date), date_format)
             d = datetime.strptime(str(end_date), date_format)
-            print((b <= a and (d >= a and d <= c)) or (b >= a and (d >= a and d <= c)) or (b <= a and (d >= c)) or ((b >= a and b<=c) and (d >= c)))
-            print((b >= a and b<=c) and (d >= c))
-            if ((b <= a and (d >= a and d <= c)) or (b >= a and (d >= a and d <= c)) or (b <= a and (d >= c)) or ((b >= a and b<=c) and (d >= c))):
+            print((b <= a and (d >= a and d <= c)) or (b >= a and (d >= a and d <= c)) or (
+                b <= a and (d >= c)) or ((b >= a and b <= c) and (d >= c)))
+            print((b >= a and b <= c) and (d >= c))
+            if ((b <= a and (d >= a and d <= c)) or (b >= a and (d >= a and d <= c)) or (b <= a and (d >= c)) or ((b >= a and b <= c) and (d >= c))):
                 flag = 0
                 break
 
     if flag == 1:
         rebate_obj = Rebate(student_id=student, leave_type=leave_type, start_date=start_date,
-                                end_date=end_date, purpose=purpose)
+                            end_date=end_date, purpose=purpose)
         rebate_obj.save()
 
     data = {
-            'status': flag,
+        'status': flag,
     }
-
 
     return JsonResponse(data)
 
@@ -486,7 +492,8 @@ def invitation(request):
     venue = request.POST.get('venue')
     agenda = request.POST.get('agenda')
     time = request.POST.get('time')
-    invitation_obj = Mess_meeting(meet_date=date, agenda=agenda, venue=venue, meeting_time=time)
+    invitation_obj = Mess_meeting(
+        meet_date=date, agenda=agenda, venue=venue, meeting_time=time)
     invitation_obj.save()
     # data = {
     #         'status': 1,
@@ -510,22 +517,22 @@ def placerequest(request):
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
     if extrainfo.user_type == 'student':
-        print (request.POST)
+        print(request.POST)
         extrainfo = ExtraInfo.objects.get(user=user)
         student = Student.objects.get(id=extrainfo)
         fr = request.POST.get("start_date")
         to = request.POST.get("end_date")
-        print (fr, to, "dates")
+        print(fr, to, "dates")
         food1 = request.POST.get("food1")
         food2 = request.POST.get("food2")
         purpose = request.POST.get("purpose")
 
-        print ("Hello")
+        print("Hello")
         spfood_obj = Special_request(student_id=student, start_date=fr, end_date=to,
                                      item1=food1, item2=food2, request=purpose)
         spfood_obj.save()
         data = {
-             'status': 1,
+            'status': 1,
         }
         return JsonResponse(data)
 
@@ -539,6 +546,7 @@ def responsespl(request, ap_id):
 
     sprequest.save()
     return HttpResponseRedirect("/mess")
+
 
 def updatecost(request):
     user = request.user

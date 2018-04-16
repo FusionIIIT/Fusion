@@ -36,7 +36,6 @@ def assign_worker(request, comp_id1):
             worker_id = request.POST.get('assign_worker', '')
             w = Workers.objects.get(id=worker_id)
 
-
             # StudentComplain.objects.get(id=comp_id).update
             # (complaint_finish='complaint_finish', worker_id='worker_id')
             StudentComplain.objects.select_for_update().filter(id=comp_id1).\
@@ -110,7 +109,6 @@ def check(request):
 
 
 @login_required
-
 def user(request):
     """
     The function is used to register a complaint
@@ -215,6 +213,7 @@ def save_comp(request):
         # return HttpResponseRedirect('/complaint/user/')
         return HttpResponseRedirect('/complaint/user/')
 
+
 @login_required
 def caretaker(request):
     """
@@ -285,9 +284,9 @@ def caretaker(request):
         j = 1
         for i in history:
             i.serial_no = j
-            j=j+1
+            j = j+1
             if i.status != 0:
-                if i.complaint_finish < date.today() and i.status!=2:
+                if i.complaint_finish < date.today() and i.status != 2:
                     i.delay = date.today() - i.complaint_finish
                     overduecomplaint.append(i)
 
@@ -381,7 +380,8 @@ def submitfeedback(request, complaint_id):
             c1 = int((a1+b1)/2)
             newrate = c1
 
-        Caretaker.objects.select_related().filter(area=a.location).update(rating=newrate)
+        Caretaker.objects.select_related().filter(
+            area=a.location).update(rating=newrate)
         return HttpResponseRedirect('/complaint/user/')
     else:
         a = StudentComplain.objects.get(id=complaint_id)
@@ -416,11 +416,12 @@ def supervisor(request):
     all_caretaker = Caretaker.objects.filter(area=a.area).order_by('-id')
     area = all_caretaker[0].area
     # ExtraInfo.objects.get(id=sup_id)
-    all_complaint = StudentComplain.objects.filter(location=a.area).order_by('-id')
+    all_complaint = StudentComplain.objects.filter(
+        location=a.area).order_by('-id')
     overduecomplaint = []
     for i in all_complaint:
         if i.status != 0:
-            if i.complaint_finish < date.today() and i.status!=2:
+            if i.complaint_finish < date.today() and i.status != 2:
                 i.delay = date.today() - i.complaint_finish
                 overduecomplaint.append(i)
 
@@ -431,6 +432,7 @@ def supervisor(request):
 
 def search_complaint(request):
     return HttpResponseRedirect('/login/')
+
 
 def login1(request):
     if request.method == 'POST':
@@ -448,17 +450,20 @@ def login1(request):
     else:
         return HttpResponseRedirect('/login/')
 
+
 @login_required
 def detail(request, detailcomp_id1):
     detail = StudentComplain.objects.get(id=detailcomp_id1)
-    return render(request, "complaintModule/complaint_user_detail.html", {"detail": detail,})
+    return render(request, "complaintModule/complaint_user_detail.html", {"detail": detail, })
+
 
 @login_required
 def detail2(request, detailcomp_id1):
     detail2 = StudentComplain.objects.get(id=detailcomp_id1)
-    return render(request, "complaintModule/complaint_caretaker_detail.html", {"detail2": detail2,})
+    return render(request, "complaintModule/complaint_caretaker_detail.html", {"detail2": detail2, })
+
 
 @login_required
 def detail3(request, detailcomp_id1):
     detail3 = StudentComplain.objects.get(id=detailcomp_id1)
-    return render(request, "complaintModule/complaint_supervisor_detail.html", {"detail3": detail3,})
+    return render(request, "complaintModule/complaint_supervisor_detail.html", {"detail3": detail3, })

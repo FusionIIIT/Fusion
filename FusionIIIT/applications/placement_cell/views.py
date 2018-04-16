@@ -1,7 +1,8 @@
 from cgi import escape
 from io import BytesIO
 from datetime import date
-import os, shutil
+import os
+import shutil
 import zipfile
 
 
@@ -34,8 +35,10 @@ def placement(request):
     user = request.user
     profile = get_object_or_404(ExtraInfo, Q(user=user))
     studentrecord = StudentRecord.objects.all()
-    years = PlacementRecord.objects.filter(~Q(placement_type="HIGHER STUDIES")).values('year').annotate(Count('year'))
-    records = PlacementRecord.objects.values('name', 'year', 'ctc', 'placement_type').annotate(Count('name'), Count('year'), Count('placement_type'), Count('ctc'))
+    years = PlacementRecord.objects.filter(
+        ~Q(placement_type="HIGHER STUDIES")).values('year').annotate(Count('year'))
+    records = PlacementRecord.objects.values('name', 'year', 'ctc', 'placement_type').annotate(
+        Count('name'), Count('year'), Count('placement_type'), Count('ctc'))
     for r in records:
         r['name__count'] = 0
         r['year__count'] = 0
@@ -62,7 +65,8 @@ def placement(request):
                             tme[y['year']] = tme[y['year']]+1
                             r['placement_type__count'] = r['placement_type__count']+1
         tadd[y['year']] = tcse[y['year']]+tece[y['year']]+tme[y['year']]
-        y['year__count'] = [tadd[y['year']], tcse[y['year']], tece[y['year']], tme[y['year']]]
+        y['year__count'] = [tadd[y['year']],
+                            tcse[y['year']], tece[y['year']], tme[y['year']]]
     if request.method == 'POST':
         if 'studentplacementrecordsubmit' in request.POST:
             form = SearchPlacementRecord(request.POST)
@@ -86,26 +90,26 @@ def placement(request):
                 if form.cleaned_data['year']:
                     year = form.cleaned_data['year']
                     placementrecord = StudentRecord.objects.filter(Q(record_id__in=PlacementRecord.objects.filter
-                                                               (Q(placement_type="PLACEMENT",
-                                                                  name__icontains=cname,
-                                                                  ctc__gte=ctc, year=year)),
-                                                               unique_id__in=Student.objects.filter
-                                                               ((Q(id__in=ExtraInfo.objects.filter
-                                                                   (Q(user__in=User.objects.filter
-                                                                      (Q(first_name__icontains=stuname)),
-                                                                      id__icontains=rollno))
-                                                                   )))))
+                                                                     (Q(placement_type="PLACEMENT",
+                                                                        name__icontains=cname,
+                                                                        ctc__gte=ctc, year=year)),
+                                                                     unique_id__in=Student.objects.filter
+                                                                     ((Q(id__in=ExtraInfo.objects.filter
+                                                                         (Q(user__in=User.objects.filter
+                                                                            (Q(first_name__icontains=stuname)),
+                                                                             id__icontains=rollno))
+                                                                         )))))
                 else:
                     placementrecord = StudentRecord.objects.filter(Q(record_id__in=PlacementRecord.objects.filter
-                                                               (Q(placement_type="PLACEMENT",
-                                                                  name__icontains=cname,
-                                                                  ctc__gte=ctc)),
-                                                               unique_id__in=Student.objects.filter
-                                                               ((Q(id__in=ExtraInfo.objects.filter
-                                                                   (Q(user__in=User.objects.filter
-                                                                      (Q(first_name__icontains=stuname)),
-                                                                      id__icontains=rollno))
-                                                                   )))))
+                                                                     (Q(placement_type="PLACEMENT",
+                                                                        name__icontains=cname,
+                                                                        ctc__gte=ctc)),
+                                                                     unique_id__in=Student.objects.filter
+                                                                     ((Q(id__in=ExtraInfo.objects.filter
+                                                                         (Q(user__in=User.objects.filter
+                                                                            (Q(first_name__icontains=stuname)),
+                                                                             id__icontains=rollno))
+                                                                         )))))
         else:
             placementrecord = StudentRecord.objects.all()
         if 'studentpbirecordsubmit' in request.POST:
@@ -130,26 +134,26 @@ def placement(request):
                 if form.cleaned_data['year']:
                     year = form.cleaned_data['year']
                     pbirecord = StudentRecord.objects.filter(Q(record_id__in=PlacementRecord.objects.filter
-                                                           (Q(placement_type="PBI",
-                                                              name__icontains=cname,
-                                                              ctc__gte=ctc, year=year)),
-                                                           unique_id__in=Student.objects.filter
-                                                           ((Q(id__in=ExtraInfo.objects.filter
-                                                               (Q(user__in=User.objects.filter
-                                                                  (Q(first_name__icontains=stuname)),
-                                                                  id__icontains=rollno))
-                                                               )))))
+                                                               (Q(placement_type="PBI",
+                                                                  name__icontains=cname,
+                                                                  ctc__gte=ctc, year=year)),
+                                                               unique_id__in=Student.objects.filter
+                                                               ((Q(id__in=ExtraInfo.objects.filter
+                                                                   (Q(user__in=User.objects.filter
+                                                                      (Q(first_name__icontains=stuname)),
+                                                                       id__icontains=rollno))
+                                                                   )))))
                 else:
                     pbirecord = StudentRecord.objects.filter(Q(record_id__in=PlacementRecord.objects.filter
-                                                           (Q(placement_type="PBI",
-                                                              name__icontains=cname,
-                                                              ctc__gte=ctc)),
-                                                           unique_id__in=Student.objects.filter
-                                                           ((Q(id__in=ExtraInfo.objects.filter
-                                                               (Q(user__in=User.objects.filter
-                                                                  (Q(first_name__icontains=stuname)),
-                                                                  id__icontains=rollno))
-                                                               )))))
+                                                               (Q(placement_type="PBI",
+                                                                  name__icontains=cname,
+                                                                  ctc__gte=ctc)),
+                                                               unique_id__in=Student.objects.filter
+                                                               ((Q(id__in=ExtraInfo.objects.filter
+                                                                   (Q(user__in=User.objects.filter
+                                                                      (Q(first_name__icontains=stuname)),
+                                                                       id__icontains=rollno))
+                                                                   )))))
         else:
             pbirecord = StudentRecord.objects.all()
         if 'studenthigherrecordsubmit' in request.POST:
@@ -178,42 +182,45 @@ def placement(request):
                 if form.cleaned_data['year']:
                     year = form.cleaned_data['year']
                     higherrecord = StudentRecord.objects.filter(Q(record_id__in=PlacementRecord.objects.filter
-                                                           (Q(placement_type="HIGHER STUDIES",
-                                                              test_type__icontains=test_type,
-                                                              name__icontains=uname, year=year,
-                                                              test_score__gte=test_score)),
-                                                           unique_id__in=Student.objects.filter
-                                                           ((Q(id__in=ExtraInfo.objects.filter
-                                                               (Q(user__in=User.objects.filter
-                                                                  (Q(first_name__icontains=stuname)),
-                                                                  id__icontains=rollno))
-                                                               )))))
+                                                                  (Q(placement_type="HIGHER STUDIES",
+                                                                     test_type__icontains=test_type,
+                                                                     name__icontains=uname, year=year,
+                                                                     test_score__gte=test_score)),
+                                                                  unique_id__in=Student.objects.filter
+                                                                  ((Q(id__in=ExtraInfo.objects.filter
+                                                                      (Q(user__in=User.objects.filter
+                                                                         (Q(first_name__icontains=stuname)),
+                                                                          id__icontains=rollno))
+                                                                      )))))
                 else:
                     higherrecord = StudentRecord.objects.filter(Q(record_id__in=PlacementRecord.objects.filter
-                                                           (Q(placement_type="HIGHER STUDIES",
-                                                              test_type__icontains=test_type,
-                                                              name__icontains=uname,
-                                                              test_score__gte=test_score)),
-                                                           unique_id__in=Student.objects.filter
-                                                           ((Q(id__in=ExtraInfo.objects.filter
-                                                               (Q(user__in=User.objects.filter
-                                                                  (Q(first_name__icontains=stuname)),
-                                                                  id__icontains=rollno))
-                                                               )))))
+                                                                  (Q(placement_type="HIGHER STUDIES",
+                                                                     test_type__icontains=test_type,
+                                                                     name__icontains=uname,
+                                                                     test_score__gte=test_score)),
+                                                                  unique_id__in=Student.objects.filter
+                                                                  ((Q(id__in=ExtraInfo.objects.filter
+                                                                      (Q(user__in=User.objects.filter
+                                                                         (Q(first_name__icontains=stuname)),
+                                                                          id__icontains=rollno))
+                                                                      )))))
         else:
             higherrecord = StudentRecord.objects.all()
     else:
         placementrecord = StudentRecord.objects.all()
         pbirecord = StudentRecord.objects.all()
         higherrecord = StudentRecord.objects.all()
-    current = HoldsDesignation.objects.filter(Q(working=user, designation__name="student"))
+    current = HoldsDesignation.objects.filter(
+        Q(working=user, designation__name="student"))
     if current:
         student = get_object_or_404(Student, Q(id=profile.id))
         if request.method == 'POST':
             if 'studentapprovesubmit' in request.POST:
-                status = PlacementStatus.objects.filter(pk=request.POST['studentapprovesubmit']).update(invitation='ACCEPTED', timestamp=timezone.now())
+                status = PlacementStatus.objects.filter(pk=request.POST['studentapprovesubmit']).update(
+                    invitation='ACCEPTED', timestamp=timezone.now())
             if 'studentdeclinesubmit' in request.POST:
-                status = PlacementStatus.objects.filter(Q(pk=request.POST['studentdeclinesubmit'])).update(invitation='REJECTED', timestamp=timezone.now())
+                status = PlacementStatus.objects.filter(Q(pk=request.POST['studentdeclinesubmit'])).update(
+                    invitation='REJECTED', timestamp=timezone.now())
             if 'educationsubmit' in request.POST:
                 form = AddEducation(request.POST)
                 if form.is_valid():
@@ -257,8 +264,9 @@ def placement(request):
                     skill = form.cleaned_data['skill']
                     skill_rating = form.cleaned_data['skill_rating']
                     has_obj = Has.objects.create(unique_id=student,
-                                                 skill_id=Skill.objects.get(skill=skill),
-                                                 skill_rating = skill_rating)
+                                                 skill_id=Skill.objects.get(
+                                                     skill=skill),
+                                                 skill_rating=skill_rating)
                     has_obj.save()
             if 'achievementsubmit' in request.POST:
                 form = AddAchievement(request.POST)
@@ -283,8 +291,7 @@ def placement(request):
                     publisher = form.cleaned_data['publisher']
                     publication_date = form.cleaned_data['publication_date']
                     publication_obj = Publication.objects.create(unique_id=student,
-                                                                 publication_title=
-                                                                 publication_title,
+                                                                 publication_title=publication_title,
                                                                  publisher=publisher,
                                                                  description=description,
                                                                  publication_date=publication_date)
@@ -389,7 +396,8 @@ def placement(request):
         form2 = SearchPlacementRecord(initial={})
         form3 = SearchPbiRecord(initial={})
         form4 = SearchHigherRecord(initial={})
-        studentplacement = get_object_or_404(StudentPlacement, Q(unique_id=student))
+        studentplacement = get_object_or_404(
+            StudentPlacement, Q(unique_id=student))
         skills = Has.objects.filter(Q(unique_id=student))
         education = Education.objects.filter(Q(unique_id=student))
         course = Course.objects.filter(Q(unique_id=student))
@@ -398,22 +406,25 @@ def placement(request):
         achievement = Achievement.objects.filter(Q(unique_id=student))
         publication = Publication.objects.filter(Q(unique_id=student))
         patent = Patent.objects.filter(Q(unique_id=student))
-        placementschedule = PlacementSchedule.objects.filter(Q(placement_date__gte=date.today())).values_list('notify_id', flat=True)
+        placementschedule = PlacementSchedule.objects.filter(
+            Q(placement_date__gte=date.today())).values_list('notify_id', flat=True)
         placementstatus = PlacementStatus.objects.filter(Q(unique_id=student,
-                                                            notify_id__in=placementschedule
-                                                            )).order_by('-timestamp')
+                                                           notify_id__in=placementschedule
+                                                           )).order_by('-timestamp')
         context = {'user': user, 'profile': profile, 'student': studentplacement, 'skills': skills,
                    'educations': education, 'courses': course, 'experiences': experience,
                    'projects': project, 'achievements': achievement, 'publications': publication,
                    'patent': patent, 'form': form, 'form1': form1, 'form2': form2, 'form3': form3,
                    'form4': form4, 'form5': form5, 'form6': form6, 'form7': form7, 'form8': form8,
-                   'placementstatus':placementstatus, 'studentrecord':studentrecord,
-                   'placementrecord':placementrecord, 'higherrecord':higherrecord, 'years':years,
-                   'pbirecord':pbirecord, 'form10':form10, 'form11':form11, 'form12':form12,
-                   'records':records, 'current':current}
+                   'placementstatus': placementstatus, 'studentrecord': studentrecord,
+                   'placementrecord': placementrecord, 'higherrecord': higherrecord, 'years': years,
+                   'pbirecord': pbirecord, 'form10': form10, 'form11': form11, 'form12': form12,
+                   'records': records, 'current': current}
         return render(request, "placementModule/placement.html", context)
-    current1 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement chairman"))
-    current2 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement officer"))
+    current1 = HoldsDesignation.objects.filter(
+        Q(working=user, designation__name="placement chairman"))
+    current2 = HoldsDesignation.objects.filter(
+        Q(working=user, designation__name="placement officer"))
     if request.method == 'POST':
         if 'visitsubmit' in request.POST:
             form = AddChairmanVisit(request.POST)
@@ -521,16 +532,18 @@ def placement(request):
                 q3 = Student.objects.all()
                 for ski in q2:
                     q5 = []
-                    q4 = Has.objects.filter(Q(skill_id=ski)).values_list('unique_id', flat=True)
+                    q4 = Has.objects.filter(Q(skill_id=ski)).values_list(
+                        'unique_id', flat=True)
                     q5.extend(list(q4))
-                    q3 = q3.objects.filter(Q(id__in=ExtraInfo.objects.filter(Q(id__in=q4))))
+                    q3 = q3.objects.filter(
+                        Q(id__in=ExtraInfo.objects.filter(Q(id__in=q4))))
                 students = Student.objects.filter(Q(id__in=ExtraInfo.objects.filter
                                                     (Q(user__in=User.objects.filter
                                                        (Q(first_name__icontains=name)),
                                                        department__in=DepartmentInfo.objects.filter
                                                        (Q(name__icontains=department)),
                                                        id__icontains=rollno
-                                                      )),
+                                                       )),
                                                     programme=programme,
                                                     cpi__gte=cpi)).filter(Q(pk__in=StudentPlacement.objects.filter(Q(debar=debar, placed_type=placed_type)).values('unique_id_id')))
                 st = students
@@ -538,7 +551,7 @@ def placement(request):
             st = Student.objects.all()
             students = ''
             if 'getcvsubmit' in request.POST:
-                ee =[]
+                ee = []
             else:
                 if 'debar' in request.POST:
                     spid = request.POST['debar']
@@ -582,7 +595,7 @@ def placement(request):
                                                        department__in=DepartmentInfo.objects.filter
                                                        (Q(name__icontains=department)),
                                                        id__icontains=rollno
-                                                      )),
+                                                       )),
                                                     programme=programme,
                                                     cpi__gte=cpi)).filter(Q(pk__in=StudentPlacement.objects.filter(Q(debar=debar, placed_type=placed_type)).values('unique_id_id')))
                 achievementcheck = request.POST.get('achievementcheck')
@@ -599,31 +612,36 @@ def placement(request):
                     if os.path.isfile(file_path):
                         os.unlink(file_path)
                 for student in students:
-                    profile1 = get_object_or_404(ExtraInfo, Q(pk=student.id.pk))
+                    profile1 = get_object_or_404(
+                        ExtraInfo, Q(pk=student.id.pk))
                     user1 = get_object_or_404(User, Q(pk=profile1.user.pk))
-                    studentplacement = get_object_or_404(StudentPlacement, Q(unique_id=student))
+                    studentplacement = get_object_or_404(
+                        StudentPlacement, Q(unique_id=student))
                     skills = Has.objects.filter(Q(unique_id=student))
                     education = Education.objects.filter(Q(unique_id=student))
                     course = Course.objects.filter(Q(unique_id=student))
-                    experience = Experience.objects.filter(Q(unique_id=student))
+                    experience = Experience.objects.filter(
+                        Q(unique_id=student))
                     project = Project.objects.filter(Q(unique_id=student))
-                    achievement = Achievement.objects.filter(Q(unique_id=student))
-                    publication = Publication.objects.filter(Q(unique_id=student))
+                    achievement = Achievement.objects.filter(
+                        Q(unique_id=student))
+                    publication = Publication.objects.filter(
+                        Q(unique_id=student))
                     patent = Patent.objects.filter(Q(unique_id=student))
                     render_to_pdf1('placementModule/cv.html',
-                                         {'pagesize': 'A4', 'user': user1, 'profile': profile1,
-                                          'projects': project, 'student': studentplacement,
-                                          'skills': skills, 'educations': education,
-                                          'courses': course, 'experiences': experience,
-                                          'achievements': achievement, 'records':records,
-                                          'publications': publication, 'patents': patent,
-                                          'achievementcheck': achievementcheck,
-                                          'educationcheck': educationcheck,
-                                          'publicationcheck': publicationcheck,
-                                          'patentcheck': patentcheck, 'skillcheck': skillcheck,
-                                          'internshipcheck': internshipcheck,
-                                          'projectcheck': projectcheck,
-                                          'coursecheck': coursecheck})
+                                   {'pagesize': 'A4', 'user': user1, 'profile': profile1,
+                                    'projects': project, 'student': studentplacement,
+                                    'skills': skills, 'educations': education,
+                                    'courses': course, 'experiences': experience,
+                                    'achievements': achievement, 'records': records,
+                                    'publications': publication, 'patents': patent,
+                                    'achievementcheck': achievementcheck,
+                                    'educationcheck': educationcheck,
+                                    'publicationcheck': publicationcheck,
+                                    'patentcheck': patentcheck, 'skillcheck': skillcheck,
+                                    'internshipcheck': internshipcheck,
+                                    'projectcheck': projectcheck,
+                                    'coursecheck': coursecheck})
                 download({'students': students})
         if 'studenthigheraddsubmit' in request.POST:
             form = SearchHigherRecord(request.POST)
@@ -634,13 +652,13 @@ def placement(request):
                 test_type = form.cleaned_data['test_type']
                 year = form.cleaned_data['year']
                 placementr = PlacementRecord.objects.create(year=year, name=uname,
-                                                                  placement_type="HIGHER STUDIES",
-                                                                  test_type=test_type,
-                                                                  test_score=test_score)
+                                                            placement_type="HIGHER STUDIES",
+                                                            test_type=test_type,
+                                                            test_score=test_score)
                 studentr = StudentRecord.objects.create(record_id=placementr,
-                                                             unique_id=Student.objects.get
-                                                             ((Q(id=ExtraInfo.objects.get
-                                                                 (Q(id=rollno))))))
+                                                        unique_id=Student.objects.get
+                                                        ((Q(id=ExtraInfo.objects.get
+                                                            (Q(id=rollno))))))
                 studentr.save()
                 placementr.save()
         if 'studentpbiaddsubmit' in request.POST:
@@ -651,12 +669,12 @@ def placement(request):
                 year = form.cleaned_data['year']
                 cname = form.cleaned_data['cname']
                 placementr = PlacementRecord.objects.create(year=year, ctc=ctc,
-                                                                  placement_type="PBI",
-                                                                  name=cname)
+                                                            placement_type="PBI",
+                                                            name=cname)
                 studentr = StudentRecord.objects.create(record_id=placementr,
-                                                             unique_id=Student.objects.get
-                                                             ((Q(id=ExtraInfo.objects.get
-                                                                 (Q(id=rollno))))))
+                                                        unique_id=Student.objects.get
+                                                        ((Q(id=ExtraInfo.objects.get
+                                                            (Q(id=rollno))))))
                 studentr.save()
                 placementr.save()
         if 'studentplacementaddsubmit' in request.POST:
@@ -667,12 +685,12 @@ def placement(request):
                 year = form.cleaned_data['year']
                 cname = form.cleaned_data['cname']
                 placementr = PlacementRecord.objects.create(year=year, ctc=ctc,
-                                                                  placement_type="PLACEMENT",
-                                                                  name=cname)
+                                                            placement_type="PLACEMENT",
+                                                            name=cname)
                 studentr = StudentRecord.objects.create(record_id=placementr,
-                                                             unique_id=Student.objects.get
-                                                             ((Q(id=ExtraInfo.objects.get
-                                                                 (Q(id=rollno))))))
+                                                        unique_id=Student.objects.get
+                                                        ((Q(id=ExtraInfo.objects.get
+                                                            (Q(id=rollno))))))
                 studentr.save()
                 placementr.save()
     else:
@@ -692,13 +710,13 @@ def placement(request):
     schedules = PlacementSchedule.objects.all()
     placementstatus = PlacementStatus.objects.all()
     studentplacement = StudentPlacement.objects.all()
-    context = {'user': user, 'profile': profile, 'form':form, 'form1':form1, 'form5':form5,
-               'chairmanvisits':chairmanvisit, 'students':students, 'schedules':schedules,
-               'notify':notify, 'form2':form2, 'form3':form3, 'form4':form4, 'form9':form9,
-               'form10':form10, 'form11':form11, 'studentrecord':studentrecord, 'form13':form13,
-               'placementrecord':placementrecord, 'higherrecord':higherrecord, 'years':years,
-               'pbirecord':pbirecord, 'placementstatus':placementstatus, 'records':records,
-               'studentplacement':studentplacement, 'current1':current1, 'current2':current2}
+    context = {'user': user, 'profile': profile, 'form': form, 'form1': form1, 'form5': form5,
+               'chairmanvisits': chairmanvisit, 'students': students, 'schedules': schedules,
+               'notify': notify, 'form2': form2, 'form3': form3, 'form4': form4, 'form9': form9,
+               'form10': form10, 'form11': form11, 'studentrecord': studentrecord, 'form13': form13,
+               'placementrecord': placementrecord, 'higherrecord': higherrecord, 'years': years,
+               'pbirecord': pbirecord, 'placementstatus': placementstatus, 'records': records,
+               'studentplacement': studentplacement, 'current1': current1, 'current2': current2}
     return render(request, "placementModule/placement.html", context)
 
 
@@ -725,23 +743,24 @@ def render_to_pdf1(template_src, context_dict):
 
 
 def xyz():
-    file_path = settings.MEDIA_ROOT +'/'+ "placement_cell"
-    file_wrapper = FileWrapper(open(file_path,'rb'))
+    file_path = settings.MEDIA_ROOT + '/' + "placement_cell"
+    file_wrapper = FileWrapper(open(file_path, 'rb'))
     file_mimetype = mimetypes.guess_type(file_path)
-    response = HttpResponse(file_wrapper, content_type=file_mimetype )
+    response = HttpResponse(file_wrapper, content_type=file_mimetype)
     response['X-Sendfile'] = file_path
     response['Content-Length'] = os.stat(file_path).st_size
-    response['Content-Disposition'] = 'attachment; filename=%s/' % smart_str(file_name)
+    response['Content-Disposition'] = 'attachment; filename=%s/' % smart_str(
+        file_name)
     return response
 
 
 def download(context_dict):
     students = context_dict['students']
-    filenames = [settings.MEDIA_ROOT +'/'+ "placement_cell/2015093.pdf"]
+    filenames = [settings.MEDIA_ROOT + '/' + "placement_cell/2015093.pdf"]
 
-    #for student in students:
+    # for student in students:
     #    filenames.append(settings.MEDIA_ROOT +'/'+ "placement_cell" + student.id.id + ".pdf")
-    #print(filenames)
+    # print(filenames)
 
     # Folder name in ZIP archive which contains the above files
     # E.g [thearchive.zip]/somefiles/file2.txt
@@ -767,7 +786,8 @@ def download(context_dict):
     zf.close()
 
     # Grab ZIP file from in-memory, make response with correct MIME-type
-    resp = HttpResponse(s.getvalue(), content_type = "application/x-zip-compressed")
+    resp = HttpResponse(
+        s.getvalue(), content_type="application/x-zip-compressed")
     # ..and correct content-disposition
     resp['Content-Disposition'] = 'attachment; filename=%s' % zip_filename
 
@@ -779,7 +799,8 @@ def cv(request, username):
     user = request.user
     profile = get_object_or_404(ExtraInfo, Q(user=user))
 
-    current = HoldsDesignation.objects.filter(Q(working=user, designation__name="student"))
+    current = HoldsDesignation.objects.filter(
+        Q(working=user, designation__name="student"))
     if current:
         if request.method == 'POST':
             achievementcheck = request.POST.get('achievementcheck')
@@ -805,18 +826,19 @@ def cv(request, username):
     import datetime
     now = datetime.datetime.now()
     if int(str(profile.id)[:2]) == 20:
-        if (now.month>4):
-          roll = 1+now.year-int(str(profile.id)[:4])
+        if (now.month > 4):
+            roll = 1+now.year-int(str(profile.id)[:4])
         else:
-          roll = now.year-int(str(profile.id)[:4])
+            roll = now.year-int(str(profile.id)[:4])
     else:
-        if (now.month>4):
-          roll = 1+(now.year)-int("20"+str(profile.id)[0:2])
+        if (now.month > 4):
+            roll = 1+(now.year)-int("20"+str(profile.id)[0:2])
         else:
-          roll = (now.year)-int("20"+str(profile.id)[0:2])
+            roll = (now.year)-int("20"+str(profile.id)[0:2])
 
     student = get_object_or_404(Student, Q(id=profile.id))
-    studentplacement = get_object_or_404(StudentPlacement, Q(unique_id=student))
+    studentplacement = get_object_or_404(
+        StudentPlacement, Q(unique_id=student))
     skills = Has.objects.filter(Q(unique_id=student))
     education = Education.objects.filter(Q(unique_id=student))
     course = Course.objects.filter(Q(unique_id=student))

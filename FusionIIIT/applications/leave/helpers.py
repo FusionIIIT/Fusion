@@ -7,7 +7,6 @@ from .models import LeaveMigration, LeaveRequest, LeavesCount
 
 
 def get_user_choices(user):
-
     """
 
     # This Hacky way is to avoid an unrecognized error caused by following code:
@@ -106,7 +105,8 @@ def deduct_leave_balance(leave):
 
 def get_pending_leave_requests(user):
     users = list(x.user for x in user.current_designation.all())
-    requests = LeaveRequest.objects.filter(Q(requested_from__in=users), Q(status='pending'))
+    requests = LeaveRequest.objects.filter(
+        Q(requested_from__in=users), Q(status='pending'))
     return requests
 
 

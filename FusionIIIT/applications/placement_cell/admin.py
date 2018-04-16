@@ -30,11 +30,13 @@ class HasAdmin(admin.ModelAdmin):
 
 
 class EducationAdmin(admin.ModelAdmin):
-    list_display = ('unique_id', 'degree', 'institute', 'stream', 'sdate', 'edate')
+    list_display = ('unique_id', 'degree', 'institute',
+                    'stream', 'sdate', 'edate')
 
 
 class ExperienceAdmin(admin.ModelAdmin):
-    list_display = ('unique_id', 'title', 'status', 'company', 'location', 'sdate', 'edate')
+    list_display = ('unique_id', 'title', 'status',
+                    'company', 'location', 'sdate', 'edate')
 
 
 class CourseAdmin(admin.ModelAdmin):
@@ -42,11 +44,13 @@ class CourseAdmin(admin.ModelAdmin):
 
 
 class PublicationAdmin(admin.ModelAdmin):
-    list_display = ('unique_id', 'publication_title', 'publisher', 'publication_date')
+    list_display = ('unique_id', 'publication_title',
+                    'publisher', 'publication_date')
 
 
 class AchievementAdmin(admin.ModelAdmin):
-    list_display = ('unique_id', 'achievement', 'achievement_type', 'issuer', 'date_earned')
+    list_display = ('unique_id', 'achievement',
+                    'achievement_type', 'issuer', 'date_earned')
 
 
 class CoauthorAdmin(admin.ModelAdmin):
@@ -83,7 +87,8 @@ class PlacementStatusAdmin(admin.ModelAdmin):
 
 
 class PlacementRecordAdmin(admin.ModelAdmin):
-    list_display = ('placement_type', 'name', 'ctc', 'year', 'test_score', 'test_type')
+    list_display = ('placement_type', 'name', 'ctc',
+                    'year', 'test_score', 'test_type')
 
 
 class StudentRecordAdmin(admin.ModelAdmin):

@@ -8,38 +8,38 @@ VISITOR_CATEGORY = (
     ('B', 'B'),
     ('C', 'C'),
     ('D', 'D'),
-    )
+)
 
 ROOM_TYPE = (
     ('SingleBed', 'SingleBed'),
     ('DoubleBed', 'DoubleBed'),
     ('VIP', 'VIP')
-    )
+)
 
 ROOM_FLOOR = (
     ('GroundFloor', 'GroundFloor'),
     ('FirstFloor', 'FirstFloor'),
     ('SecondFloor', 'SecondFloor'),
     ('ThirdFloor', 'ThirdFloor'),
-    )
+)
 
 ROOM_STATUS = (
     ('Booked', 'Booked'),
     ('CheckedIn', 'CheckedIn'),
     ('Available', 'Available'),
     ('UnderMaintenance', 'UnderMaintenance'),
-    )
+)
 
 BOOKING_STATUS = (
-    ("Confirmed" , 'Confirmed'),
-    ("Pending" , 'Pending'),
-    ("Rejected" , 'Rejected'),
-    ("Canceled" , 'Canceled'),
-    ("CancelRequested" , 'CancelRequested'),
-    ("CheckedIn" , 'CheckedIn'),
+    ("Confirmed", 'Confirmed'),
+    ("Pending", 'Pending'),
+    ("Rejected", 'Rejected'),
+    ("Canceled", 'Canceled'),
+    ("CancelRequested", 'CancelRequested'),
+    ("CheckedIn", 'CheckedIn'),
     ("Complete", 'Complete'),
     ("Forward", 'Forward')
-    )
+)
 
 
 class VisitorDetail(models.Model):
@@ -55,10 +55,11 @@ class VisitorDetail(models.Model):
 
 
 class RoomDetail(models.Model):
-    room_number  = models.CharField(max_length=4, unique=True)
+    room_number = models.CharField(max_length=4, unique=True)
     room_type = models.CharField(max_length=12, choices=ROOM_TYPE)
     room_floor = models.CharField(max_length=12, choices=ROOM_FLOOR)
-    room_status  = models.CharField(max_length=20, choices=ROOM_STATUS, default='Available')
+    room_status = models.CharField(
+        max_length=20, choices=ROOM_STATUS, default='Available')
 
     def __str__(self):
         return self.room_number
@@ -73,7 +74,8 @@ class BookingDetail(models.Model):
     booking_to = models.DateField()
     check_in = models.DateField(null=True, blank=True)
     check_out = models.DateField(null=True, blank=True)
-    status = models.CharField(max_length=15, choices=BOOKING_STATUS ,default ="Pending")
+    status = models.CharField(
+        max_length=15, choices=BOOKING_STATUS, default="Pending")
     remark = models.CharField(max_length=40, blank=True, null=True)
     visitor = models.ManyToManyField(VisitorDetail)
     image = models.FileField(null=True, blank=True, upload_to='VhImage/')
@@ -89,7 +91,7 @@ class MealRecord(models.Model):
     breakfast = models.BooleanField(default=False)
     lunch = models.BooleanField(default=False)
     dinner = models.BooleanField(default=False)
-    persons=models.IntegerField(default=0)
+    persons = models.IntegerField(default=0)
 
 
 class Bill(models.Model):

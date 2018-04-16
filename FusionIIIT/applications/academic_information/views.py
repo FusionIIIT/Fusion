@@ -51,9 +51,9 @@ def homepage(request):
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
-    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
-    print (temp)
-    print (current_user)
+    temp = HoldsDesignation.objects.all().filter(designation=desig_id).first()
+    print(temp)
+    print(current_user)
     acadadmin = temp.working
     k = str(user_details).split()
     print(k)
@@ -67,21 +67,22 @@ def homepage(request):
     calendar = Calendar.objects.all()
     opt_courses = Course.objects.all().filter(optional=True)
     course_list = sem_for_generate_sheet()
-    get_course_list = Course.objects.all().filter(sem = course_list[0])
-    get_course_list_1 = Course.objects.all().filter(sem = course_list[1])
-    get_course_list_2 = Course.objects.all().filter(sem = course_list[2])
-    get_course_list_3 = Course.objects.all().filter(sem = course_list[3])
+    get_course_list = Course.objects.all().filter(sem=course_list[0])
+    get_course_list_1 = Course.objects.all().filter(sem=course_list[1])
+    get_course_list_2 = Course.objects.all().filter(sem=course_list[2])
+    get_course_list_3 = Course.objects.all().filter(sem=course_list[3])
 
-    get_courses = list(chain(get_course_list, get_course_list_1, get_course_list_2, get_course_list_3))
-    if(course_list[0]==1):
+    get_courses = list(chain(get_course_list, get_course_list_1,
+                             get_course_list_2, get_course_list_3))
+    if(course_list[0] == 1):
         course_list = [2, 4, 6, 8]
-    get_course_list = Course.objects.all().filter(sem = course_list[0])
-    get_course_list_1 = Course.objects.all().filter(sem = course_list[1])
-    get_course_list_2 = Course.objects.all().filter(sem = course_list[2])
-    get_course_list_3 = Course.objects.all().filter(sem = course_list[3])
+    get_course_list = Course.objects.all().filter(sem=course_list[0])
+    get_course_list_1 = Course.objects.all().filter(sem=course_list[1])
+    get_course_list_2 = Course.objects.all().filter(sem=course_list[2])
+    get_course_list_3 = Course.objects.all().filter(sem=course_list[3])
 
-    this_sem_courses = list(chain(get_course_list, get_course_list_1, get_course_list_2, get_course_list_3))
-
+    this_sem_courses = list(
+        chain(get_course_list, get_course_list_1, get_course_list_2, get_course_list_3))
 
     print("Courses>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>.", get_courses)
 
@@ -120,25 +121,25 @@ def homepage(request):
     pass
 
     context = {
-         'senates': senates,
-         'students': students,
-         'Convenor': Convenor,
-         'CoConvenor': CoConvenor,
-         'meetings': meetings,
-         'minuteForm': minuteForm,
-         'acadTtForm': acadTtForm,
-         'examTtForm': examTtForm,
-         'Dean': Dean,
-         'student': student,
-         'extra': extra,
-         'grade': grade,
-         'courses': courses,
-         'exam': exam_t,
-         'timetable': timetable,
-         'academic_calendar': calendar,
-         'opt_courses': opt_courses,
-         'next_sem_course': get_courses,
-         'this_sem_course': this_sem_courses,
+        'senates': senates,
+        'students': students,
+        'Convenor': Convenor,
+        'CoConvenor': CoConvenor,
+        'meetings': meetings,
+        'minuteForm': minuteForm,
+        'acadTtForm': acadTtForm,
+        'examTtForm': examTtForm,
+        'Dean': Dean,
+        'student': student,
+        'extra': extra,
+        'grade': grade,
+        'courses': courses,
+        'exam': exam_t,
+        'timetable': timetable,
+        'academic_calendar': calendar,
+        'opt_courses': opt_courses,
+        'next_sem_course': get_courses,
+        'this_sem_course': this_sem_courses,
     }
     return render(request, "ais/ais.html", context)
 
@@ -164,9 +165,9 @@ def senator(request):
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
-    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
-    print (temp)
-    print (current_user)
+    temp = HoldsDesignation.objects.all().filter(designation=desig_id).first()
+    print(temp)
+    print(current_user)
     acadadmin = temp.working
     k = str(user_details).split()
     print(k)
@@ -315,9 +316,9 @@ def addMinute(request):
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
-    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
-    print (temp)
-    print (current_user)
+    temp = HoldsDesignation.objects.all().filter(designation=desig_id).first()
+    print(temp)
+    print(current_user)
     acadadmin = temp.working
     k = str(user_details).split()
     print(k)
@@ -455,9 +456,9 @@ def add_attendance(request):
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
-    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
-    print (temp)
-    print (current_user)
+    temp = HoldsDesignation.objects.all().filter(designation=desig_id).first()
+    print(temp)
+    print(current_user)
     acadadmin = temp.working
     k = str(user_details).split()
     print(k)
@@ -536,9 +537,9 @@ def get_attendance(request):
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
-    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
-    print (temp)
-    print (current_user)
+    temp = HoldsDesignation.objects.all().filter(designation=desig_id).first()
+    print(temp)
+    print(current_user)
     acadadmin = temp.working
     k = str(user_details).split()
     print(k)
@@ -598,9 +599,9 @@ def delete_attendance(request):
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
-    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
-    print (temp)
-    print (current_user)
+    temp = HoldsDesignation.objects.all().filter(designation=desig_id).first()
+    print(temp)
+    print(current_user)
     acadadmin = temp.working
     k = str(user_details).split()
     print(k)
@@ -611,7 +612,8 @@ def delete_attendance(request):
     course_id = request.GET.get('course_id')
     student_id = request.GET.get('student_id')
     c_id = Course.objects.get(course_id=course_id)
-    student_attend = Student_attendance.objects.get(student_id_id=student_id, course_id_id=c_id)
+    student_attend = Student_attendance.objects.get(
+        student_id_id=student_id, course_id_id=c_id)
     student_attend.delete()
     context = {}
     context['result'] = 'Success'
@@ -636,9 +638,9 @@ def delete_advanced_profile(request):
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
-    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
-    print (temp)
-    print (current_user)
+    temp = HoldsDesignation.objects.all().filter(designation=desig_id).first()
+    print(temp)
+    print(current_user)
     acadadmin = temp.working
     k = str(user_details).split()
     print(k)
@@ -684,9 +686,9 @@ def add_advanced_profile(request):
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
-    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
-    print (temp)
-    print (current_user)
+    temp = HoldsDesignation.objects.all().filter(designation=desig_id).first()
+    print(temp)
+    print(current_user)
     acadadmin = temp.working
     k = str(user_details).split()
     print(k)
@@ -735,9 +737,9 @@ def add_grade(request):
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
-    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
-    print (temp)
-    print (current_user)
+    temp = HoldsDesignation.objects.all().filter(designation=desig_id).first()
+    print(temp)
+    print(current_user)
     acadadmin = temp.working
     k = str(user_details).split()
     print(k)
@@ -804,9 +806,9 @@ def delete_grade(request):
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
-    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
-    print (temp)
-    print (current_user)
+    temp = HoldsDesignation.objects.all().filter(designation=desig_id).first()
+    print(temp)
+    print(current_user)
     acadadmin = temp.working
     k = str(user_details).split()
     print(k)
@@ -852,9 +854,9 @@ def add_course(request):
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
-    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
-    print (temp)
-    print (current_user)
+    temp = HoldsDesignation.objects.all().filter(designation=desig_id).first()
+    print(temp)
+    print(current_user)
     acadadmin = temp.working
     k = str(user_details).split()
     print(k)
@@ -968,6 +970,7 @@ def delete_exam_timetable(request):
         t.delete()
         return HttpResponse("TimeTable Deleted")
 
+
 def add_calendar(request):
     """
     to add an entry to the academic calendar
@@ -1001,6 +1004,7 @@ def add_calendar(request):
         print(c)
         c.save()
         return HttpResponse("Calendar Added")
+
 
 def update_calendar(request):
     """
@@ -1037,6 +1041,7 @@ def update_calendar(request):
         get_calendar_details.to_date = to_date
         get_calendar_details.save()
         return HttpResponseRedirect('/academic-procedures/')
+
 
 def add_optional(request):
     """
@@ -1075,7 +1080,7 @@ def min_cred(request):
         sem_cred = Get credit details from forms and the append it to an array.
         sem - Get the object for the minimum credits from the database and the update it.
     """
-    if request.method=="POST":
+    if request.method == "POST":
         sem_cred = []
         sem_cred.append(0)
         for i in range(1, 10):
@@ -1088,7 +1093,9 @@ def min_cred(request):
             sem.save()
         return HttpResponse("Worked")
 
-#Generate Attendance Sheet
+# Generate Attendance Sheet
+
+
 def sem_for_generate_sheet():
     """
     This function generates semester grade sheet
@@ -1135,9 +1142,9 @@ def generatexlsheet(request):
         st - temporary variables for final output
     """
     idd = str(request.POST['year'])
-    f_key = Course.objects.get(course_name = str(idd))
+    f_key = Course.objects.get(course_name=str(idd))
     course_id = str(f_key.course_id)
-    obj = Register.objects.all().filter(course_id = f_key)
+    obj = Register.objects.all().filter(course_id=f_key)
     ans = []
     for i in obj:
         k = []
@@ -1151,19 +1158,19 @@ def generatexlsheet(request):
     output = io.BytesIO()
     from xlsxwriter.workbook import Workbook
 
-    book = Workbook(output,{'in_memory':True})
+    book = Workbook(output, {'in_memory': True})
     title = book.add_format({'bold': True,
-                                'font_size': 22,
-                                'align': 'center',
-                                'valign': 'vcenter'})
+                             'font_size': 22,
+                             'align': 'center',
+                             'valign': 'vcenter'})
     subtitle = book.add_format({'bold': True,
                                 'font_size': 15,
                                 'align': 'center',
                                 'valign': 'vcenter'})
     normaltext = book.add_format({'bold': False,
-                                'font_size': 15,
-                                'align': 'center',
-                                'valign': 'vcenter'})
+                                  'font_size': 15,
+                                  'align': 'center',
+                                  'valign': 'vcenter'})
     sheet = book.add_worksheet()
 
     title_text = ((str(course_id)+" : "+str(str(idd))))
@@ -1171,37 +1178,36 @@ def generatexlsheet(request):
     sheet.set_default_row(25)
 
     sheet.merge_range('A2:E2', title_text, title)
-    sheet.write_string('A3',"Sl. No",subtitle)
-    sheet.write_string('B3',"Roll No",subtitle)
-    sheet.write_string('C3',"Name",subtitle)
-    sheet.write_string('D3',"Discipline",subtitle)
-    sheet.write_string('E3','Signature',subtitle)
-    sheet.set_column('A:A',20)
-    sheet.set_column('B:B',20)
-    sheet.set_column('C:C',60)
-    sheet.set_column('D:D',15)
-    sheet.set_column('E:E',30)
+    sheet.write_string('A3', "Sl. No", subtitle)
+    sheet.write_string('B3', "Roll No", subtitle)
+    sheet.write_string('C3', "Name", subtitle)
+    sheet.write_string('D3', "Discipline", subtitle)
+    sheet.write_string('E3', 'Signature', subtitle)
+    sheet.set_column('A:A', 20)
+    sheet.set_column('B:B', 20)
+    sheet.set_column('C:C', 60)
+    sheet.set_column('D:D', 15)
+    sheet.set_column('E:E', 30)
     k = 4
     num = 1
     for i in ans:
-        sheet.write_number('A'+str(k),num,normaltext)
-        num+=1
-        z,b,c = str(i[0]),i[1],i[2]
+        sheet.write_number('A'+str(k), num, normaltext)
+        num += 1
+        z, b, c = str(i[0]), i[1], i[2]
         name = str(b)+" "+str(c)
         temp = str(i[3]).split()
         dep = str(temp[len(temp)-1])
-        sheet.write_string('B'+str(k),z,normaltext)
-        sheet.write_string('C'+str(k),name,normaltext)
-        sheet.write_string('D'+str(k),dep,normaltext)
-        k+=1
+        sheet.write_string('B'+str(k), z, normaltext)
+        sheet.write_string('C'+str(k), name, normaltext)
+        sheet.write_string('D'+str(k), dep, normaltext)
+        k += 1
     book.close()
     output.seek(0)
-    response = HttpResponse(output.read(),content_type = 'application/vnd.ms-excel')
+    response = HttpResponse(
+        output.read(), content_type='application/vnd.ms-excel')
     st = 'attachment; filename = ' + course_id + '.xlsx'
     response['Content-Disposition'] = st
     return response
-
-
 
 
 def generate_preregistration_report(request):
@@ -1223,7 +1229,7 @@ def generate_preregistration_report(request):
         z - temporary array to add data to variable data
 
     """
-    sem = sem_for_generate_sheet();
+    sem = sem_for_generate_sheet()
     # EDIT HERE ON DEPLOYMENT
     sem = [2, 4, 6, 8]
     print(sem)
@@ -1241,18 +1247,19 @@ def generate_preregistration_report(request):
         z.append(m)
         m += 1
         z.append(i.student_id.id.user.username)
-        z.append(str(i.student_id.id.user.first_name)+" "+str(i.student_id.id.user.last_name))
+        z.append(str(i.student_id.id.user.first_name) +
+                 " "+str(i.student_id.id.user.last_name))
         z.append(i.student_id.id.department.name)
         z.append(i.course_id.credits)
         z.append(i.course_id.course_id)
         z.append(i.course_id.course_name)
         try:
-            p = Instructor.objects.get(course_id = i.course_id)
+            p = Instructor.objects.get(course_id=i.course_id)
             z.append(p.instructor_id)
         except:
             z.append("Dr. Atul Gupta")
         data.append(z)
     data.sort()
     print(data)
-    context = {'dict':data }
-    return render(request,'ais/generate_preregistration_report.html', context)
+    context = {'dict': data}
+    return render(request, 'ais/generate_preregistration_report.html', context)

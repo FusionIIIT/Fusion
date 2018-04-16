@@ -63,31 +63,31 @@ def academic_procedures(request):
     # Academics Admin Check
 
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
-    print ("yaha se")
-    print (desig_id)
-    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
+    print("yaha se")
+    print(desig_id)
+    temp = HoldsDesignation.objects.all().filter(designation=desig_id).first()
     acadadmin = temp.working
-    print (temp)
+    print(temp)
     print(user_details)
     k = str(user_details).split()
     print("Temp variable", k)
 
     final_user = k[2]
-    print ("Final User", final_user)
+    print("Final User", final_user)
 
-    print (str(acadadmin) == str(final_user))
+    print(str(acadadmin) == str(final_user))
     # print(acadadmin, user_details)
     # IF user is academic admin
     if (str(acadadmin) == str(final_user)):
         return HttpResponseRedirect('/aims')
 
     obj1 = Student.objects.all().filter(id=user_details.id)
-    print (obj1)
+    print(obj1)
     count = 0
     for i in obj1:
         count += 1
     if(count == 0):
-            return HttpResponseRedirect('/dashboard')
+        return HttpResponseRedirect('/dashboard')
     pgflag = 0
     for i in obj1:
         if(i.programme[0] == "M" or i.programme[0] == "P"):
@@ -101,39 +101,44 @@ def academic_procedures(request):
     # print(student.programme)
     if student.programme == 'PhD':
         return HttpResponseRedirect('/academic-procedures/PhD/')
-    registered_or_not = Register.objects.all().filter(student_id=student, semester = (user_sem + 1)).first()
+    registered_or_not = Register.objects.all().filter(
+        student_id=student, semester=(user_sem + 1)).first()
     # Get the pre-registration and final-registration date
     regflag = True
     if(registered_or_not):
         regflag = True
     else:
         regflag = False
-    pre_registration_date = Calendar.objects.all().filter(description="Pre Registration").first()
-    final_registration_date = Calendar.objects.all().filter(description="Physical Reporting at the Institute").first()
+    pre_registration_date = Calendar.objects.all().filter(
+        description="Pre Registration").first()
+    final_registration_date = Calendar.objects.all().filter(
+        description="Physical Reporting at the Institute").first()
     # print("Pre-Registration", pre_registration_date, final_registration_date)
     prd_start_date = pre_registration_date.from_date
     prd_end_date = pre_registration_date.to_date
     frd_start_date = final_registration_date.from_date
-    frd_end_date   = final_registration_date.to_date
+    frd_end_date = final_registration_date.to_date
     prd, frd = False, False
     current_date = datetime.datetime.now().date()
-    if current_date>=prd_start_date and current_date<=prd_end_date:
+    if current_date >= prd_start_date and current_date <= prd_end_date:
         prd = True
-    if current_date>=frd_start_date and current_date<=frd_end_date:
+    if current_date >= frd_start_date and current_date <= frd_end_date:
         frd = True
     # print(prd, frd)
     # Get add/drop course date
-    add_drop_course = Calendar.objects.all().filter(description="Last Date for Adding/Dropping of course").first()
+    add_drop_course = Calendar.objects.all().filter(
+        description="Last Date for Adding/Dropping of course").first()
     print(add_drop_course)
     adc_start_date = add_drop_course.from_date
     adc_end_date = add_drop_course.to_date
     adc_flag = False
-    if current_date>=adc_start_date and current_date<=adc_end_date:
+    if current_date >= adc_start_date and current_date <= adc_end_date:
         adc_flag = True
     # Function call to get the current user's branch
     user_branch = get_user_branch(user_details)
     get_courses = Course.objects.all().filter(sem=(user_sem+1), optional=False)
-    get_sel_courses = Course.objects.all().filter(sem=(user_sem+1), optional=True, acad_selection=True)
+    get_sel_courses = Course.objects.all().filter(
+        sem=(user_sem+1), optional=True, acad_selection=True)
     # get_courses = get_courses + get_sel_courses
     get_courses = list(chain(get_courses, get_sel_courses))
     # Fucntion Call to get the courses related to the branch
@@ -142,29 +147,32 @@ def academic_procedures(request):
     year = datetime.datetime.now().year
     yearr = str(year) + "-" + str(year+1)
     details = {
-            'current_user': current_user,
-            'year': yearr,
-            'user_sem': user_sem,
-            'check_pre_register': registered_or_not,
-            'regflag':regflag,
-            }
+        'current_user': current_user,
+        'year': yearr,
+        'user_sem': user_sem,
+        'check_pre_register': registered_or_not,
+        'regflag': regflag,
+    }
     final_register = Register.objects.all().filter(student_id=user_details.id)
     final_register_count = FinalRegistrations.objects.all().filter(
-                                                student_id=user_details.id).first()
+        student_id=user_details.id).first()
     add_course = get_add_course(branch_courses, final_register)
     # print("branchh Cousr",branch_courses, final_register)
     show_list = get_course_to_show(branch_courses, final_register)
     # print(show_list)
-    pre_register_found = Register.objects.all().filter(student_id=user_details.id, semester=(user_sem+1)).first()
+    pre_register_found = Register.objects.all().filter(
+        student_id=user_details.id, semester=(user_sem+1)).first()
     pre_register = True
     # Final Registration Found or not
-    final_register_found = FinalRegistrations.objects.all().filter(student_id=user_details.id).first()
+    final_register_found = FinalRegistrations.objects.all().filter(
+        student_id=user_details.id).first()
     final_register_1 = True
     if final_register_found is None:
         final_register_1 = False
     else:
         final_register_1 = True
-    currently_registered = get_currently_registered_courses(user_details.id, user_sem)
+    currently_registered = get_currently_registered_courses(
+        user_details.id, user_sem)
     if (pre_register_found):
         pre_register = True
     else:
@@ -202,23 +210,23 @@ def academic_procedures(request):
     minimum_credit = MinimumCredits.objects.all().filter(semester=(user_sem+1)).first()
 
     return render(
-                  request, '../templates/academic_procedures/academic.html',
-                  {'details': details,
-                   'calendar': calendar,
-                   'currently_registered': currently_registered,
-                   'courses_list': branch_courses,
-                   'final_register': final_register,
-                   'final_count': final_register_count,
-                   'change_branch': change_branch,
-                   'add_course': add_course,
-                   'show_list': show_list,
-                   'pre_register': pre_register,
-                   'prd': prd,
-                   'frd': frd,
-                   'final_r': final_register_1,
-                   'adc_flag': adc_flag,
-                   'mincr': minimum_credit,}
-        )
+        request, '../templates/academic_procedures/academic.html',
+        {'details': details,
+         'calendar': calendar,
+         'currently_registered': currently_registered,
+         'courses_list': branch_courses,
+         'final_register': final_register,
+         'final_count': final_register_count,
+         'change_branch': change_branch,
+         'add_course': add_course,
+         'show_list': show_list,
+         'pre_register': pre_register,
+         'prd': prd,
+         'frd': frd,
+         'final_r': final_register_1,
+         'adc_flag': adc_flag,
+         'mincr': minimum_credit, }
+    )
 
 
 def get_currently_registered_courses(user_details, user_sem):
@@ -338,10 +346,13 @@ def drop_course(request):
             c_id = request.POST.getlist('course_id')
             user_id = request.POST.getlist('user')
             for i in range(len(c_id)):
-                cour_id = Course.objects.all().filter(course_id=c_id[i]).first()
-                s_id = ExtraInfo.objects.all().filter(id=user_id[i][:7]).first()
+                cour_id = Course.objects.all().filter(
+                    course_id=c_id[i]).first()
+                s_id = ExtraInfo.objects.all().filter(
+                    id=user_id[i][:7]).first()
                 s_id = Student.objects.all().filter(id=s_id)
-                instance = Register.objects.filter(course_id=cour_id).filter(student_id=s_id)
+                instance = Register.objects.filter(
+                    course_id=cour_id).filter(student_id=s_id)
                 instance = instance[0]
                 # print('ind=s', instance)
                 instance.delete()
@@ -458,7 +469,8 @@ def register(request):
     if request.method == 'POST':
         try:
             # print(request.POST)
-            current_user = get_object_or_404(User, username=request.POST.get('user'))
+            current_user = get_object_or_404(
+                User, username=request.POST.get('user'))
             current_user = ExtraInfo.objects.all().filter(user=current_user).first()
             current_user = Student.objects.all().filter(id=current_user.id).first()
             # current_user = get_object_or_404(ExtraInfo, user=current_user.username)
@@ -477,13 +489,14 @@ def register(request):
                         except:
                             # print("nahi hua")
                             last_id = 1
-                        course_id = get_object_or_404(Course, course_id=values[x])
+                        course_id = get_object_or_404(
+                            Course, course_id=values[x])
                         p = Register(
                             r_id=last_id,
                             course_id=course_id,
                             student_id=current_user,
                             semester=sem
-                            )
+                        )
                         p.save()
                     else:
                         continue
@@ -519,7 +532,7 @@ def final_register(request):
             semester=user_sem+1,
             student_id=current_user,
             registration=True
-            )
+        )
         p.save()
         messages.info(request, 'Registration Successful')
     return HttpResponseRedirect('/academic-procedures/main')
@@ -564,11 +577,11 @@ def apply_branch_change(request):
         label_for_change = True
 
     context = {
-            'branches': branches,
-            'student': student,
-            'cpi_data': cpi_data,
-            'label_for_change': label_for_change,
-        }
+        'branches': branches,
+        'student': student,
+        'cpi_data': cpi_data,
+        'label_for_change': label_for_change,
+    }
     return context
 
 
@@ -588,12 +601,13 @@ def branch_change_request(request):
         current_user = get_object_or_404(User, username=request.user.username)
         extraInfo_user = ExtraInfo.objects.all().filter(user=current_user).first()
         student = Student.objects.all().filter(id=extraInfo_user.id).first()
-        department = DepartmentInfo.objects.all().filter(name=request.POST['change']).first()
+        department = DepartmentInfo.objects.all().filter(
+            name=request.POST['change']).first()
         # print(department)
         change_save = BranchChange(
             branches=department,
             user=student
-            )
+        )
         change_save.save()
         messages.info(request, 'Apply for branch change successfull')
         return HttpResponseRedirect('/academic-procedures/main')
@@ -636,9 +650,9 @@ def acad_person(request):
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
-    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
-    print (temp)
-    print (current_user)
+    temp = HoldsDesignation.objects.all().filter(designation=desig_id).first()
+    print(temp)
+    print(current_user)
     acadadmin = temp.working
     k = str(user_details).split()
     print(k)
@@ -659,7 +673,8 @@ def acad_person(request):
     else:
         semflag = 2
     # TO DO Bdes
-    date = {'year': yearr, 'month': month, 'semflag': semflag, 'queryflag': queryflag}
+    date = {'year': yearr, 'month': month,
+            'semflag': semflag, 'queryflag': queryflag}
 
     change_queries = BranchChange.objects.all()
     # Total seats taken as some random value
@@ -694,7 +709,8 @@ def acad_person(request):
             available_seats.append(available_ece_seats)
         elif i.branches.name == 'ME':
             available_seats.append(available_me_seats)
-    lists = zip(applied_by, change_branch, initial_branch, available_seats, cpi)
+    lists = zip(applied_by, change_branch,
+                initial_branch, available_seats, cpi)
     tag = False
     # print(lists)
     if len(initial_branch) > 0:
@@ -706,16 +722,16 @@ def acad_person(request):
     }
     # print(context)
     return render(
-                request,
-                '../templates/academic_procedures/academicadmin.html',
-                {
-                    'context': context,
-                    'lists': lists,
-                    'date': date,
-                    'query_option1': query_option1,
-                    'query_option2': query_option2
-                }
-            )
+        request,
+        '../templates/academic_procedures/academicadmin.html',
+        {
+            'context': context,
+            'lists': lists,
+            'date': date,
+            'query_option1': query_option1,
+            'query_option2': query_option2
+        }
+    )
 
 
 @login_required(login_url='/acounts/login')
@@ -780,22 +796,22 @@ def get_batch_query_detail(month, year):
     query_option1 = {}
     if(month >= 7):
         query_option1 = {
-                            stream1+str(year): stream1+str(year),
-                            stream1+str(year-1): stream1+str(year-1),
-                            stream1+str(year-2): stream1+str(year-2),
-                            stream1+str(year-3): stream1+str(year-3),
-                            stream1+str(year-4): stream1+str(year-4),
-                            stream2+str(year): stream2+str(year),
-                            stream2+str(year-1): stream2+str(year)}
+            stream1+str(year): stream1+str(year),
+            stream1+str(year-1): stream1+str(year-1),
+            stream1+str(year-2): stream1+str(year-2),
+            stream1+str(year-3): stream1+str(year-3),
+            stream1+str(year-4): stream1+str(year-4),
+            stream2+str(year): stream2+str(year),
+            stream2+str(year-1): stream2+str(year)}
     else:
         query_option1 = {
-                            stream1+str(year-1): stream1+str(year-1),
-                            stream1+str(year-2): stream1+str(year-2),
-                            stream1+str(year-3): stream1+str(year-3),
-                            stream1+str(year-4): stream1+str(year-4),
-                            stream1+str(year-5): stream1+str(year-5),
-                            stream2+str(year-1): stream2+str(year-1),
-                            stream2+str(year-2): stream2+str(year-2), }
+            stream1+str(year-1): stream1+str(year-1),
+            stream1+str(year-2): stream1+str(year-2),
+            stream1+str(year-3): stream1+str(year-3),
+            stream1+str(year-4): stream1+str(year-4),
+            stream1+str(year-5): stream1+str(year-5),
+            stream2+str(year-1): stream2+str(year-1),
+            stream2+str(year-2): stream2+str(year-2), }
     return query_option1
 
 
@@ -841,9 +857,9 @@ def verify_course(request):
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
-    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
-    print (temp)
-    print (current_user)
+    temp = HoldsDesignation.objects.all().filter(designation=desig_id).first()
+    print(temp)
+    print(current_user)
     acadadmin = temp.working
     k = str(user_details).split()
     print(k)
@@ -889,11 +905,11 @@ def verify_course(request):
     # TO DO Bdes
     date = {'year': yearr, 'semflag': semflag}
     return render(
-                    request,
-                    '../templates/academic_procedures/show_courses.html',
-                    {'details': details,
-                        'dict2': dict2,
-                        'date': date})
+        request,
+        '../templates/academic_procedures/show_courses.html',
+        {'details': details,
+         'dict2': dict2,
+         'date': date})
 
 
 # view to generate all list of students
@@ -928,7 +944,8 @@ def student_list(request):
             semflag = 2
         query_option1 = get_batch_query_detail(month, year)
         query_option2 = {"CSE": "CSE", "ECE": "ECE", "ME": "ME"}
-        date = {'year': yearr, 'month': month, 'semflag': semflag, 'queryflag': queryflag}
+        date = {'year': yearr, 'month': month,
+                'semflag': semflag, 'queryflag': queryflag}
         dep_id = DepartmentInfo.objects.all().filter(name=option2)
         obj1 = ExtraInfo.objects.all().filter(department=dep_id)
         queryflag = 1
@@ -944,14 +961,16 @@ def student_list(request):
             for z in obj1:
                 if(p[0:7] == z.id and p[0:4] == option1[7:]):
                     tempobj['roll_no'] = p[0:7]
-                    tempobj['name'] = str(z.user.first_name) + " " + str(z.user.last_name)
+                    tempobj['name'] = str(
+                        z.user.first_name) + " " + str(z.user.last_name)
                     tempobj['branch'] = option2
                     # student_obj[str(cnt)]=tempobj
                     student_obj.append(tempobj)
                     cnt += 1
                 elif(p[0:7] == z.id and p[0:2] == option1[9:]):
                     tempobj['roll_no'] = p[0:7]
-                    tempobj['name'] = str(z.user.first_name) + " " + str(z.user.last_name)
+                    tempobj['name'] = str(
+                        z.user.first_name) + " " + str(z.user.last_name)
                     tempobj['branch'] = option2
                     # student_obj[str(cnt)]=tempobj
                     student_obj.append(tempobj)
@@ -985,7 +1004,7 @@ def acad_branch_change(request):
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
-    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
+    temp = HoldsDesignation.objects.all().filter(designation=desig_id).first()
     acadadmin = temp.working
     k = str(user_details).split()
     final_user = k[2]
@@ -1005,7 +1024,8 @@ def acad_branch_change(request):
     else:
         semflag = 2
     # TO DO Bdes
-    date = {'year': yearr, 'month': month, 'semflag': semflag, 'queryflag': queryflag}
+    date = {'year': yearr, 'month': month,
+            'semflag': semflag, 'queryflag': queryflag}
 
     change_queries = BranchChange.objects.all()
     # Total seats taken as some random value
@@ -1040,7 +1060,8 @@ def acad_branch_change(request):
             available_seats.append(available_ece_seats)
         elif i.branches.name == 'ME':
             available_seats.append(available_me_seats)
-    lists = zip(applied_by, change_branch, initial_branch, available_seats, cpi)
+    lists = zip(applied_by, change_branch,
+                initial_branch, available_seats, cpi)
     tag = False
     # print(lists)
     if len(initial_branch) > 0:
@@ -1052,16 +1073,16 @@ def acad_branch_change(request):
     }
     # print(context)
     return render(
-                request,
-                '../templates/academic_procedures/academicadminforbranch.html',
-                {
-                    'context': context,
-                    'lists': lists,
-                    'date': date,
-                    'query_option1': query_option1,
-                    'query_option2': query_option2
-                }
-            )
+        request,
+        '../templates/academic_procedures/academicadminforbranch.html',
+        {
+            'context': context,
+            'lists': lists,
+            'date': date,
+            'query_option1': query_option1,
+            'query_option2': query_option2
+        }
+    )
 
 
 @login_required(login_url='/accounts/login')
@@ -1086,13 +1107,16 @@ def phd_details(request):
     thesis = Thesis.objects.all().filter(student_id=student).first()
     #Professor = Designation.objects.all().filter(name='Professor')
     # print(user_details.department.name)
-    #faculty = ExtraInfo.objects.all().filter(department=user_details.department,
+    # faculty = ExtraInfo.objects.all().filter(department=user_details.department,
     #                                         designation='Professor')
-    f1 = HoldsDesignation.objects.filter(designation=Designation.objects.get(name = "Assistant Professor"))
-    f2 = HoldsDesignation.objects.filter(designation=Designation.objects.get(name = "Professor"))
-    f3 = HoldsDesignation.objects.filter(designation=Designation.objects.get(name = "Associate Professor"))
+    f1 = HoldsDesignation.objects.filter(
+        designation=Designation.objects.get(name="Assistant Professor"))
+    f2 = HoldsDesignation.objects.filter(
+        designation=Designation.objects.get(name="Professor"))
+    f3 = HoldsDesignation.objects.filter(
+        designation=Designation.objects.get(name="Associate Professor"))
 
-    faculty = list(chain(f1,f2,f3))
+    faculty = list(chain(f1, f2, f3))
     # print(Professor,faculty)
     faculties_list = []
     for i in faculty:
@@ -1103,15 +1127,15 @@ def phd_details(request):
         total_thesis = False
 
     context = {
-            'total_thesis': total_thesis,
-            'thesis': thesis,
-            }
+        'total_thesis': total_thesis,
+        'thesis': thesis,
+    }
     # print(total_thesis)
     return render(
-            request,
-            '../templates/academic_procedures/phdregistration.html',
-            {'context': context, 'faculty': faculties_list, 'student': student}
-            )
+        request,
+        '../templates/academic_procedures/phdregistration.html',
+        {'context': context, 'faculty': faculties_list, 'student': student}
+    )
 
 
 def add_thesis(request):
@@ -1146,11 +1170,11 @@ def add_thesis(request):
         # print(fac, student)
 
         p = Thesis(
-                reg_id=user_details,
-                student_id=student,
-                supervisor_id=fac,
-                topic=thesis
-            )
+            reg_id=user_details,
+            student_id=student,
+            supervisor_id=fac,
+            topic=thesis
+        )
         p.save()
         messages.info(request, 'Thesis Topic Selected')
         return HttpResponseRedirect('/academic-procedures/PhD')

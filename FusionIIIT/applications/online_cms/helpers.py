@@ -14,7 +14,8 @@ def semester(roll):
 
 
 def create_thumbnail(course, row, name, ext, attach_str, thumb_time, thumb_size):
-    filepath = settings.MEDIA_ROOT + '/online_cms/' + course.course_id + '/vid/' + name + ext
+    filepath = settings.MEDIA_ROOT + '/online_cms/' + \
+        course.course_id + '/vid/' + name + ext
     filename = settings.MEDIA_ROOT + '/online_cms/' + course.course_id + '/vid/'
     filename = filename + name.replace(' ', '-') + '-' + attach_str + '.png'
     process = 'ffmpeg -y -i ' + filepath + ' -vframes ' + str(1) + ' -an -s '

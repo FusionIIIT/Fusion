@@ -79,9 +79,9 @@ class Quiz(models.Model):
 
     def __str__(self):
         return '{} - {} - {} - {} - {}'.format(
-                self.pk, self.course_id,
-                self.start_time, self.end_time,
-                self.negative_marks)
+            self.pk, self.course_id,
+            self.start_time, self.end_time,
+            self.negative_marks)
 
 
 class QuizQuestion(models.Model):
@@ -103,8 +103,8 @@ class Practice(models.Model):
 
     def __str__(self):
         return '{} - {} - {} - {} - {}'.format(
-                self.pk, self.course_id,
-                self.negative_marks)
+            self.pk, self.course_id,
+            self.negative_marks)
 
 
 class PracticeQuestion(models.Model):
@@ -133,9 +133,9 @@ class StudentAnswer(models.Model):
 
     def __str__(self):
         return '{} - {} - {} - {} - {}'.format(
-                self.pk, self.student_id,
-                self.quiz_id, self.question_id,
-                self.choice)
+            self.pk, self.student_id,
+            self.quiz_id, self.question_id,
+            self.choice)
 
 
 class Assignment(models.Model):
@@ -160,9 +160,9 @@ class StudentAssignment(models.Model):
 
     def __str__(self):
         return '{} - {} - {} - {} - {}'.format(
-                self.pk, self.student_id,
-                self.assignment_id, self.score,
-                self.feedback)
+            self.pk, self.student_id,
+            self.assignment_id, self.score,
+            self.feedback)
 
 
 class QuizResult(models.Model):
@@ -173,9 +173,9 @@ class QuizResult(models.Model):
 
     def __str__(self):
         return '{} - {} - {} - {} - {}'.format(
-                self.pk, self.student_id,
-                self.quiz_id, self.score,
-                self.feedback)
+            self.pk, self.student_id,
+            self.quiz_id, self.score,
+            self.feedback)
 
 
 class Forum(models.Model):
@@ -240,9 +240,9 @@ class Quiz(models.Model):
 
     def __str__(self):
         return '{} - {} - {} - {} - {}'.format(
-                self.pk, self.course_id,
-                self.start_time, self.end_time,
-                self.negative_marks)
+            self.pk, self.course_id,
+            self.start_time, self.end_time,
+            self.negative_marks)
 
 
 class QuizQuestion(models.Model):
@@ -273,9 +273,9 @@ class StudentAnswer(models.Model):
 
     def __str__(self):
         return '{} - {} - {} - {} - {}'.format(
-                self.pk, self.student_id,
-                self.quiz_id, self.question_id,
-                self.choice)
+            self.pk, self.student_id,
+            self.quiz_id, self.question_id,
+            self.choice)
 
 
 class Assignment(models.Model):
@@ -299,9 +299,9 @@ class StudentAssignment(models.Model):
 
     def __str__(self):
         return '{} - {} - {} - {} - {}'.format(
-                self.pk, self.student_id,
-                self.assignment_id, self.score,
-                self.feedback)
+            self.pk, self.student_id,
+            self.assignment_id, self.score,
+            self.feedback)
 
 
 class QuizResult(models.Model):
@@ -312,9 +312,9 @@ class QuizResult(models.Model):
 
     def __str__(self):
         return '{} - {} - {} - {} - {}'.format(
-                self.pk, self.student_id,
-                self.quiz_id, self.score,
-                self.feedback)
+            self.pk, self.student_id,
+            self.quiz_id, self.score,
+            self.feedback)
 
 
 class Forum(models.Model):

@@ -15,7 +15,8 @@ class Constants:
 
 
 class File(models.Model):
-    employee_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE, related_name='employee_id')
+    employee_id = models.ForeignKey(
+        ExtraInfo, on_delete=models.CASCADE, related_name='employee_id')
     subject = models.CharField(max_length=40)
     file_type = models.CharField(max_length=20, choices=Constants.FILE_TYPE)
     description = models.CharField(max_length=100)

@@ -29,8 +29,10 @@ def spacs(request):
     # context = {}
     convener = Designation.objects.get(name='spacsconvenor')
     assistant = Designation.objects.get(name='spacsassistant')
-    hd = HoldsDesignation.objects.filter(user=request.user,designation=convener)
-    hd1 = HoldsDesignation.objects.filter(user=request.user,designation=assistant)
+    hd = HoldsDesignation.objects.filter(
+        user=request.user, designation=convener)
+    hd1 = HoldsDesignation.objects.filter(
+        user=request.user, designation=assistant)
     if request.user.extrainfo.user_type == 'student':
         return HttpResponseRedirect('/spacs/student_view')
     elif hd:
@@ -54,7 +56,7 @@ def convener_view(request):
                 award=award,
                 remarks=remarks
             )
-            messages.success(request,award+' are invited successfully')
+            messages.success(request, award+' are invited successfully')
             return HttpResponseRedirect('/spacs/convener_view')
 
         elif 'Email' in request.POST:
@@ -70,7 +72,7 @@ def convener_view(request):
                 cpi=cpi,
                 award_id=award_id
             )
-            messages.success(request,award+' are invited successfully')
+            messages.success(request, award+' are invited successfully')
             return HttpResponseRedirect('/spacs/convener_view')
 
         elif 'Accept_mcm' in request.POST:
@@ -84,14 +86,14 @@ def convener_view(request):
                 year=year,
                 award_id=award
             )
-            messages.success(request,'Application is accepted')
+            messages.success(request, 'Application is accepted')
             return HttpResponseRedirect('/spacs/convener_view')
 
         elif 'Reject_mcm' in request.POST:
             pk = request.POST.get('id')
             student_id = Mcm.objects.get(id=pk).student
             Mcm.objects.filter(id=pk).update(status='Reject')
-            messages.success(request,'Application is rejected')
+            messages.success(request, 'Application is rejected')
             return HttpResponseRedirect('/spacs/convener_view')
 
         elif 'Accept_gold' in request.POST:
@@ -105,13 +107,13 @@ def convener_view(request):
                 year=year,
                 award_id=award
             )
-            messages.success(request,'Application is accepted')
+            messages.success(request, 'Application is accepted')
             return HttpResponseRedirect('/spacs/convener_view')
         elif 'Reject_gold' in request.POST:
             pk = request.POST.get('id')
             student_id = Director_gold.objects.get(id=pk).student
             Director_gold.objects.filter(id=pk).update(status='Reject')
-            messages.success(request,'Application is rejected')
+            messages.success(request, 'Application is rejected')
             return HttpResponseRedirect('/spacs/convener_view')
 
         elif 'Accept_silver' in request.POST:
@@ -125,13 +127,13 @@ def convener_view(request):
                 year=year,
                 award_id=award
             )
-            messages.success(request,'Application is accepted')
+            messages.success(request, 'Application is accepted')
             return HttpResponseRedirect('/spacs/convener_view')
         elif 'Reject_silver' in request.POST:
             pk = request.POST.get('id')
             student_id = Director_silver.objects.get(id=pk).student
             Director_silver.objects.filter(id=pk).update(status='Reject')
-            messages.success(request,'Application is rejected')
+            messages.success(request, 'Application is rejected')
             return HttpResponseRedirect('/spacs/convener_view')
         elif 'Accept_dm' in request.POST:
             pk = request.POST.get('id')
@@ -144,15 +146,14 @@ def convener_view(request):
                 year=year,
                 award_id=award
             )
-            messages.success(request,'Application is accepted')
+            messages.success(request, 'Application is accepted')
             return HttpResponseRedirect('/spacs/convener_view')
         elif 'Rejec_dm' in request.POST:
             pk = request.POST.get('id')
             Proficiency_dm.objects.filter(id=pk).update(status='Reject')
             student_id = Proficiency_dm.objects.get(id=pk).student
-            messages.success(request,'Application is rejected')
+            messages.success(request, 'Application is rejected')
             return HttpResponseRedirect('/spacs/convener_view')
-
 
     else:
         mcm = Mcm.objects.all()
@@ -171,13 +172,13 @@ def convener_view(request):
         assis = Designation.objects.get(name='spacsassistant')
         hd = HoldsDesignation.objects.get(designation=con)
         hd1 = HoldsDesignation.objects.get(designation=assis)
-        context={'mcm': mcm, 'source': source, 'time': time, 'ch': ch, 'awards': awards,
+        context = {'mcm': mcm, 'source': source, 'time': time, 'ch': ch, 'awards': awards,
                    'spi': spi, 'student': student, 'winners': winners, 'release': release,
                    'gold': gold, 'silver': silver, 'dandm': dandm, 'con': con, 'assis': assis,
-                    'hd': hd, 'hd1': hd1
+                   'hd': hd, 'hd1': hd1
                    }
 
-        return render(request, 'scholarshipsModule/scholarships_convener.html',context)
+        return render(request, 'scholarshipsModule/scholarships_convener.html', context)
 
 
 @login_required(login_url='/accounts/login')
@@ -243,13 +244,15 @@ def student_view(request):
                 college_fee=college_fee,
                 college_name=college_name
             )
-            messages.success(request,'Mcm scholarhsip is successfully applied')
+            messages.success(
+                request, 'Mcm scholarhsip is successfully applied')
             return HttpResponseRedirect('/spacs/student_view')
 
         elif 'Submit_gold' in request.POST:
             relevant_document = request.FILES.get('myfile')
             student_id = request.user.extrainfo.student
-            a = Award_and_scholarship.objects.get(award_name="Director Gold Medal").id
+            a = Award_and_scholarship.objects.get(
+                award_name="Director Gold Medal").id
             award_id = Award_and_scholarship.objects.get(id=a)
             academic_achievements = request.POST.get('academic_achievements')
             science_inside = request.POST.get('science_inside')
@@ -266,11 +269,11 @@ def student_view(request):
             counselling_activities = request.POST.get('counselling_activities')
             other_activites = request.POST.get('other_activites')
             justification = request.POST.get('justification')
-            correspondence_address=request.POST.get('c_address')
-            financial_assistance=request.POST.get('financial_assistance')
-            grand_total=request.POST.get('grand_total')
-            nearest_policestation=request.POST.get('nps')
-            nearest_railwaystation=request.POST.get('nrs')
+            correspondence_address = request.POST.get('c_address')
+            financial_assistance = request.POST.get('financial_assistance')
+            grand_total = request.POST.get('grand_total')
+            nearest_policestation = request.POST.get('nps')
+            nearest_railwaystation = request.POST.get('nrs')
 
             Director_gold.objects.create(
                 student=student_id,
@@ -296,7 +299,7 @@ def student_view(request):
                 nearest_railwaystation=nearest_railwaystation,
                 justification=justification
             )
-            messages.success(request,'Application is successfully submitted')
+            messages.success(request, 'Application is successfully submitted')
             return HttpResponseRedirect('/spacs/student_view')
 
         elif 'Submit_silver' in request.POST:
@@ -308,11 +311,11 @@ def student_view(request):
             inside_achievements = request.POST.get('inside_achievements')
             outside_achievements = request.POST.get('outside_achievements')
             justification = request.POST.get('justification')
-            correspondence_address=request.POST.get('c_address')
-            financial_assistance=request.POST.get('financial_assistance')
-            grand_total=request.POST.get('grand_total')
-            nearest_policestation=request.POST.get('nps')
-            nearest_railwaystation=request.POST.get('nrs')
+            correspondence_address = request.POST.get('c_address')
+            financial_assistance = request.POST.get('financial_assistance')
+            grand_total = request.POST.get('grand_total')
+            nearest_policestation = request.POST.get('nps')
+            nearest_railwaystation = request.POST.get('nrs')
 
             Director_silver.objects.create(
                 student=student_id,
@@ -328,9 +331,8 @@ def student_view(request):
                 outside_achievements=outside_achievements
             )
 
-            messages.success(request,'Application is successfully submitted')
+            messages.success(request, 'Application is successfully submitted')
             return HttpResponseRedirect('/spacs/student_view')
-
 
         elif 'Submit_dandm' in request.POST:
             title_name = request.POST.get('title')
@@ -343,27 +345,27 @@ def student_view(request):
             try:
                 roll_no1 = int(request.POST.get('roll_no1'))
             except:
-                roll_no1=0
+                roll_no1 = 0
 
             try:
                 roll_no2 = int(request.POST.get('roll_no2'))
             except:
-                roll_no2=0
+                roll_no2 = 0
 
             try:
                 roll_no3 = int(request.POST.get('roll_no3'))
             except:
-                roll_no3=0
+                roll_no3 = 0
 
             try:
                 roll_no4 = int(request.POST.get('roll_no4'))
             except:
-                roll_no4=0
+                roll_no4 = 0
 
             try:
                 roll_no5 = int(request.POST.get('roll_no5'))
             except:
-                roll_no5=0
+                roll_no5 = 0
 
             ece_topic = request.POST.get('ece_topic')
             cse_topic = request.POST.get('cse_topic')
@@ -375,12 +377,11 @@ def student_view(request):
             design_percentage = int(request.POST.get('design_percentage'))
             brief_description = request.POST.get('brief_description')
             justification = request.POST.get('justification')
-            correspondence_address=request.POST.get('c_address')
-            financial_assistance=request.POST.get('financial_assistance')
-            grand_total=request.POST.get('grand_total')
-            nearest_policestation=request.POST.get('nps')
-            nearest_railwaystation=request.POST.get('nrs')
-
+            correspondence_address = request.POST.get('c_address')
+            financial_assistance = request.POST.get('financial_assistance')
+            grand_total = request.POST.get('grand_total')
+            nearest_policestation = request.POST.get('nps')
+            nearest_railwaystation = request.POST.get('nrs')
 
             Proficiency_dm.objects.create(
                 title_name=title_name,
@@ -410,9 +411,8 @@ def student_view(request):
                 justification=justification
             )
 
-            messages.success(request,'Application is successfully submitted')
+            messages.success(request, 'Application is successfully submitted')
             return HttpResponseRedirect('/spacs/student_view')
-
 
     else:
         mcm = Mcm.objects.all()
@@ -433,10 +433,10 @@ def student_view(request):
         hd = HoldsDesignation.objects.get(designation=con)
         hd1 = HoldsDesignation.objects.get(designation=assis)
         return render(request, 'scholarshipsModule/scholarships_student.html',
-                  {'mcm': mcm, 'time': time, 'ch': ch, 'awards': awards, 'spi': spi,
-                   'student': student, 'winners': winners, 'release': release,
-                   'gold': gold, 'silver': silver, 'dandm': dandm, 'source': source,
-                  'mother_occ': mother_occ, 'con': con, 'assis': assis,'hd': hd, 'hd1': hd1})
+                      {'mcm': mcm, 'time': time, 'ch': ch, 'awards': awards, 'spi': spi,
+                       'student': student, 'winners': winners, 'release': release,
+                       'gold': gold, 'silver': silver, 'dandm': dandm, 'source': source,
+                       'mother_occ': mother_occ, 'con': con, 'assis': assis, 'hd': hd, 'hd1': hd1})
 
 
 @login_required(login_url='/accounts/login')
@@ -445,46 +445,46 @@ def staff_view(request):
         if 'Verify_mcm' in request.POST:
             pk = request.POST.get('id')
             Mcm.objects.filter(id=pk).update(status='COMPLETE')
-            messages.success(request,'Verified successfully')
+            messages.success(request, 'Verified successfully')
             return HttpResponseRedirect('/spacs/staff_view')
 
         elif 'Reject_mcm' in request.POST:
             pk = request.POST.get('id')
             Mcm.objects.filter(student=pk).update(status='Reject')
-            messages.success(request,'Rejected successfully')
+            messages.success(request, 'Rejected successfully')
             return HttpResponseRedirect('/spacs/staff_view')
 
         elif 'Verify_gold' in request.POST:
             pk = request.POST.get('id')
             Director_gold.objects.filter(id=pk).update(status='COMPLETE')
-            messages.success(request,'Verified successfully')
+            messages.success(request, 'Verified successfully')
             return HttpResponseRedirect('/spacs/staff_view')
         elif 'Reject_gold' in request.POST:
             pk = request.POST.get('id')
             Director_gold.objects.filter(id=pk).update(status='Reject')
-            messages.success(request,'Rejected successfully')
+            messages.success(request, 'Rejected successfully')
             return HttpResponseRedirect('/spacs/staff_view')
 
         elif 'Verify_silver' in request.POST:
             pk = request.POST.get('id')
             Director_silver.objects.filter(id=pk).update(status='COMPLETE')
-            messages.success(request,'Verified successfully')
+            messages.success(request, 'Verified successfully')
             return HttpResponseRedirect('/spacs/staff_view')
         elif 'Reject_silver' in request.POST:
             pk = request.POST.get('id')
             Director_silver.objects.filter(id=pk).update(status='Reject')
-            messages.success(request,'Rejected successfully')
+            messages.success(request, 'Rejected successfully')
             return HttpResponseRedirect('/spacs/staff_view')
 
         elif 'Verify_dm' in request.POST:
             pk = request.POST.get('id')
             Proficiency_dm.objects.filter(id=pk).update(status='COMPLETE')
-            messages.success(request,'Verified successfully')
+            messages.success(request, 'Verified successfully')
             return HttpResponseRedirect('/spacs/staff_view')
         elif 'Rejec_dm' in request.POST:
             pk = request.POST.get('id')
             Proficiency_dm.objects.filter(id=pk).update(status='Reject')
-            messages.success(request,'Rejected successfully')
+            messages.success(request, 'Rejected successfully')
             return HttpResponseRedirect('/spacs/staff_view')
     else:
         mcm = Mcm.objects.all()
@@ -500,33 +500,33 @@ def staff_view(request):
         hd1 = HoldsDesignation.objects.get(designation=assis)
 
         return render(request, 'scholarshipsModule/scholarships_staff.html',
-                  {'mcm': mcm, 'student': student,
-                   'awards': awards, 'gold': gold,
-                   'silver': silver, 'dandm': dandm, 'winners': winners,
-                   'con': con, 'assis': assis,'hd': hd, 'hd1': hd1})
+                      {'mcm': mcm, 'student': student,
+                       'awards': awards, 'gold': gold,
+                       'silver': silver, 'dandm': dandm, 'winners': winners,
+                       'con': con, 'assis': assis, 'hd': hd, 'hd1': hd1})
 
 
 def convener_catalogue(request):
     if request.method == 'POST':
-        award_name=request.POST.get('award_name')
-        catalog_content=request.POST.get('catalog_content')
+        award_name = request.POST.get('award_name')
+        catalog_content = request.POST.get('catalog_content')
         context = {}
         try:
-            award=Award_and_scholarship.objects.get(award_name=award_name)
-            award.catalog=catalog_content
+            award = Award_and_scholarship.objects.get(award_name=award_name)
+            award.catalog = catalog_content
             award.save()
-            context['result']='Success'
+            context['result'] = 'Success'
         except:
-            context['result']='Failure'
+            context['result'] = 'Failure'
         return HttpResponse(json.dumps(context), content_type='convener_catalogue/json')
 
     else:
-        award_name=request.GET.get('award_name')
+        award_name = request.GET.get('award_name')
         print(award_name)
         context = {}
         try:
             award = Award_and_scholarship.objects.get(award_name=award_name)
-            context['catalog']=award.catalog
+            context['catalog'] = award.catalog
             context['result'] = 'Success'
         except:
             context['result'] = 'Failure'
@@ -536,15 +536,14 @@ def convener_catalogue(request):
 def get_winners(request):
     award_name = request.GET.get('award_name')
     batch_year = int(request.GET.get('batch'))
-    award=Award_and_scholarship.objects.get(award_name=award_name)
-    print(award_name,award)
+    award = Award_and_scholarship.objects.get(award_name=award_name)
+    print(award_name, award)
     print(batch_year)
-    winners=Previous_winner.objects.filter(year=batch_year,award_id=award)
-    context={}
-    context['student_name']=[]
+    winners = Previous_winner.objects.filter(year=batch_year, award_id=award)
+    context = {}
+    context['student_name'] = []
     context['student_program'] = []
-    context['roll']=[]
-
+    context['roll'] = []
 
     if winners:
         for winner in winners:
@@ -553,31 +552,31 @@ def get_winners(request):
             s_id = Student.objects.get(id=extra_info)
             s_name = extra_info.user.first_name
             s_roll = winner.student_id
-            s_program=s_id.programme
-            print(s_roll,type(s_roll))
+            s_program = s_id.programme
+            print(s_roll, type(s_roll))
             context['student_name'].append(s_name)
             context['roll'].append(s_roll)
             context['student_program'].append(s_program)
 
-        context['result']='Success'
+        context['result'] = 'Success'
 
     else:
-        context['result']='Failure'
+        context['result'] = 'Failure'
 
     return HttpResponse(json.dumps(context), content_type='get_winners/json')
 
 
 def get_content(request):
     print('data is coming through')
-    award_name=request.GET.get('award_name')
+    award_name = request.GET.get('award_name')
     print(award_name)
-    context={}
+    context = {}
     try:
         award = Award_and_scholarship.objects.get(award_name=award_name)
-        context['result']='Success'
-        context['content']=award.catalog
+        context['result'] = 'Success'
+        context['content'] = award.catalog
 
     except:
-        context['result']='Failure'
+        context['result'] = 'Failure'
 
     return HttpResponse(json.dumps(context), content_type='get_content/json')

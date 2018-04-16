@@ -2,14 +2,14 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .models import File, Tracking
 from applications.globals.models import ExtraInfo
 from django.template.defaulttags import csrf_token
-from django.http import HttpResponse,HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 
 
-@login_required(login_url = "/accounts/login/")
+@login_required(login_url="/accounts/login/")
 def filetracking(request):
-    if request.method =="POST":
+    if request.method == "POST":
         try:
             if 'save' in request.POST:
                 uploader = request.user.extrainfo
@@ -36,33 +36,33 @@ def filetracking(request):
     return render(request, 'filetracking/composefile.html', {'file': file, 'extrainfo': extrainfo})
 
 
-@login_required(login_url = "/accounts/login")
+@login_required(login_url="/accounts/login")
 def drafts(request):
     draft = File.objects.filter(uploader=request.user.extrainfo)
     extrainfo = ExtraInfo.objects.all()
     return render(request, 'filetracking/drafts.html', {'draft': draft, 'extrainfo': extrainfo})
 
 
-@login_required(login_url = "/accounts/login")
+@login_required(login_url="/accounts/login")
 def outward(request):
     out = Tracking.objects.filter(current_id=request.user.extrainfo)
-    return render( request, 'filetracking/outward.html' , {'out': out})
+    return render(request, 'filetracking/outward.html', {'out': out})
 
 
-@login_required(login_url = "/accounts/login")
+@login_required(login_url="/accounts/login")
 def inward(request):
     in_file = Tracking.objects.filter(receiver_id=request.user.extrainfo)
 
     return render(request, 'filetracking/inward.html', {'in_file': in_file})
 
 
-@login_required(login_url = "/accounts/login")
+@login_required(login_url="/accounts/login")
 def archive(request):
     arch = File.objects.filter(complete_flag=True)
     return render(request, 'filetracking/archive.html', {'arch': arch})
 
 
-@login_required(login_url = "/accounts/login")
+@login_required(login_url="/accounts/login")
 def finish(request, id):
     file = get_object_or_404(File, ref_id=id)
     track = Tracking.objects.filter(file_id=file)
@@ -70,34 +70,34 @@ def finish(request, id):
     return render(request, 'filetracking/finish.html', {'file': file, 'track': track})
 
 
-@login_required(login_url = "/accounts/login")
+@login_required(login_url="/accounts/login")
 def forward(request, id):
 
     file = get_object_or_404(File, ref_id=id)
     track = Tracking.objects.filter(file_id=file)
 
     if request.method == "POST":
-            if 'finish' in request.POST:
-                file.complete_flag = True
-                file.save()
+        if 'finish' in request.POST:
+            file.complete_flag = True
+            file.save()
 
-            if 'send' in request.POST:
-                current_id = request.user.extrainfo
-                remarks = request.POST.get('remarks')
-                receiver = request.POST.get('receiver')
-                receiver_id= ExtraInfo.objects.get(id=receiver)
-                upload_file = request.FILES.get('myfile')
+        if 'send' in request.POST:
+            current_id = request.user.extrainfo
+            remarks = request.POST.get('remarks')
+            receiver = request.POST.get('receiver')
+            receiver_id = ExtraInfo.objects.get(id=receiver)
+            upload_file = request.FILES.get('myfile')
 
-                Tracking.objects.create(
-                    file_id=file,
-                    current_id=current_id,
-                    receiver_id=receiver_id,
-                    remarks=remarks,
-                    upload_file=upload_file,
-                )
+            Tracking.objects.create(
+                file_id=file,
+                current_id=current_id,
+                receiver_id=receiver_id,
+                remarks=remarks,
+                upload_file=upload_file,
+            )
 
     extrainfo = ExtraInfo.objects.all()
 
     return render(request, 'filetracking/forward.html', {'extrainfo': extrainfo,
-                                                        'file': file,
-                                                        'track': track })
+                                                         'file': file,
+                                                         'track': track})

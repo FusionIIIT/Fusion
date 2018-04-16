@@ -33,7 +33,8 @@ class Constants:
 
 class Caretaker(models.Model):
     staff_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
-    area = models.CharField(choices=Constants.AREA, max_length=20, default='hall-3')
+    area = models.CharField(choices=Constants.AREA,
+                            max_length=20, default='hall-3')
     rating = models.IntegerField(default=0)
 
     def __str__(self):

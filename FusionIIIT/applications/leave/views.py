@@ -10,6 +10,7 @@ from .handlers import (handle_faculty_leave_application,
                        send_staff_leave_form, send_student_leave_form,
                        delete_leave_application)
 
+
 @login_required(login_url='/accounts/login')
 def leave(request):
 
@@ -69,7 +70,8 @@ def generate_form(request):
     id = request.GET.get('id')
     leave = request.user.all_leaves.filter(id=id)
     if leave:
-        response = render(request, 'leaveModule/generate_form.html', {'leave': leave.first()})
+        response = render(
+            request, 'leaveModule/generate_form.html', {'leave': leave.first()})
     else:
         response = HttpResponseForbidden()
 

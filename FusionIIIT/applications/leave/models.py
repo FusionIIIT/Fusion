@@ -4,7 +4,6 @@ from django.utils import timezone
 from applications.globals.models import Designation
 
 
-
 class Constants:
 
     REPLACEMENT_TYPES = (
@@ -45,20 +44,21 @@ class LeaveType(models.Model):
     def is_station(self):
         return self.name == 'Station'
 
-
     def __str__(self):
         return f'{self.name}, Max: {self.max_in_year}'
 
 
 class LeavesCount(models.Model):
-    user = models.ForeignKey(User, related_name='leave_balance', on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        User, related_name='leave_balance', on_delete=models.CASCADE)
     year = models.IntegerField(default=2015)
     leave_type = models.ForeignKey(LeaveType, on_delete=models.CASCADE)
     remaining_leaves = models.FloatField(default=2.0)
 
     def save(self, *args, **kwargs):
         if self.year < 2015 or self.remaining_leaves < 2:
-            raise ValueError('Year must be greater than 2018 and remaining leaves more than 0')
+            raise ValueError(
+                'Year must be greater than 2018 and remaining leaves more than 0')
         super(LeavesCount, self).save(*args, **kwargs)
 
     def __str__(self):
@@ -72,9 +72,11 @@ class Leave(models.Model):
     applicant = models.ForeignKey(User, related_name='all_leaves',
                                   on_delete=models.CASCADE)
     purpose = models.CharField(max_length=500, default='', blank=True)
-    status = models.CharField(max_length=20, default='pending', choices=Constants.STATUS)
+    status = models.CharField(
+        max_length=20, default='pending', choices=Constants.STATUS)
     timestamp = models.DateTimeField(auto_now=True, null=True)
-    extra_info = models.CharField(max_length=200, blank=True, null=True, default='')
+    extra_info = models.CharField(
+        max_length=200, blank=True, null=True, default='')
     is_station = models.BooleanField(default=False)
 
     @property
@@ -103,7 +105,6 @@ class Leave(models.Model):
                 return False
         return True
 
-
     def __str__(self):
         return '{} applied, status: {}'.format(self.applicant.username,
                                                self.status)
@@ -111,19 +112,24 @@ class Leave(models.Model):
 
 # TODO: Add more fields
 class ReplacementSegment(models.Model):
-    leave = models.ForeignKey(Leave, related_name='replace_segments', on_delete=models.CASCADE)
-    replacer = models.ForeignKey(User, related_name='rep_requests', on_delete=models.CASCADE)
+    leave = models.ForeignKey(
+        Leave, related_name='replace_segments', on_delete=models.CASCADE)
+    replacer = models.ForeignKey(
+        User, related_name='rep_requests', on_delete=models.CASCADE)
     replacement_type = models.CharField(max_length=20, default='academic',
                                         choices=Constants.REPLACEMENT_TYPES)
     start_date = models.DateField()
     end_date = models.DateField()
-    status = models.CharField(max_length=20, default='pending', choices=Constants.STATUS)
+    status = models.CharField(
+        max_length=20, default='pending', choices=Constants.STATUS)
     remark = models.CharField(max_length=50, default='', blank=True, null=True)
 
 
 class LeaveSegment(models.Model):
-    leave = models.ForeignKey(Leave, related_name='segments', on_delete=models.CASCADE)
-    leave_type = models.ForeignKey(LeaveType, on_delete=models.SET_NULL, null=True)
+    leave = models.ForeignKey(
+        Leave, related_name='segments', on_delete=models.CASCADE)
+    leave_type = models.ForeignKey(
+        LeaveType, on_delete=models.SET_NULL, null=True)
     document = models.FileField(upload_to='leave/leave_documents/', null=True)
     start_date = models.DateField()
     start_half = models.BooleanField(default=False)
@@ -132,13 +138,15 @@ class LeaveSegment(models.Model):
 
 
 class LeaveRequest(models.Model):
-    leave = models.ForeignKey(Leave, related_name='leave_requests', on_delete=models.CASCADE)
+    leave = models.ForeignKey(
+        Leave, related_name='leave_requests', on_delete=models.CASCADE)
     requested_from = models.ForeignKey(User, related_name='all_leave_requests',
                                        on_delete=models.CASCADE)
     remark = models.CharField(max_length=50, blank=True, null=True)
     permission = models.CharField(max_length=20, default='sanc_auth',
                                   choices=Constants.LEAVE_PERMISSIONS)
-    status = models.CharField(max_length=20, default='pending', choices=Constants.STATUS)
+    status = models.CharField(
+        max_length=20, default='pending', choices=Constants.STATUS)
 
     @property
     def by_student(self):
@@ -153,7 +161,8 @@ class LeaveAdministrators(models.Model):
     """
     # Take care of `null` fields in back-end logic
     """
-    user = models.OneToOneField(User, related_name='leave_admins', on_delete=models.CASCADE)
+    user = models.OneToOneField(
+        User, related_name='leave_admins', on_delete=models.CASCADE)
     authority = models.ForeignKey(Designation, null=True,
                                   related_name='sanc_authority_of', on_delete=models.SET_NULL)
     officer = models.ForeignKey(Designation, null=True,
@@ -168,7 +177,8 @@ class LeaveAdministrators(models.Model):
 
 
 class LeaveMigration(models.Model):
-    leave = models.ForeignKey(Leave, related_name='all_migrations', on_delete=models.CASCADE)
+    leave = models.ForeignKey(
+        Leave, related_name='all_migrations', on_delete=models.CASCADE)
     type_migration = models.CharField(max_length=10, default='transfer',
                                       choices=Constants.MIGRATION_CHOICES)
     on_date = models.DateField(null=False)

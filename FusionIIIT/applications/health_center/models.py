@@ -90,7 +90,8 @@ class Prescription(models.Model):
     details = models.CharField(max_length=100)
     date = models.DateField()
     test = models.CharField(max_length=200, null=True, blank=True)
-    test_file = models.FileField(upload_to='healthcenter/', null=True, blank=True)
+    test_file = models.FileField(
+        upload_to='healthcenter/', null=True, blank=True)
     appointment = models.ForeignKey(Appointment, null=True, blank=True)
 
     def __str__(self):
