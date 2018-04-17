@@ -12,8 +12,14 @@ login_url = getattr(settings, "LOGIN_URL", "/")
 
 @login_required(login_url=login_url)
 def notifications(request):
+    ajax = request.is_ajax()
     context = {"notifications": request.user.notifications.all().order_by("-timestamp")}
-    return render(request, "notification_channels/notify.html", context)
+    context["ajax"] = ajax
+    template = "notification_channels/type_sorted_notifs.html"
+    if not ajax:
+        template = "notification_channels/notifs_full.html"
+        context["type_sorted"]=False
+    return render(request, template, context)
 
 
 @login_required(login_url=login_url)
@@ -69,15 +75,23 @@ def mark_read(request, id):
 
 @login_required(login_url=login_url)
 def get_notifications(request):
+    ajax = request.is_ajax()
     notifs = seen_or_x(Notification.objects.all())
     context = {"notifications": notifs}
+    context["ajax"] = ajax
     return render(request, "notification_channels/notify.html", context)
 
 
 @login_required(login_url=login_url)
 def get_type_sorted_notifs(request):
-    context = type_sort_notifs(request.user.notifications)
-    return render(request, "notification_channels/type_sorted_notifs.html", context)
+    ajax = request.is_ajax()
+    context = type_sort_notifs(request.user.notifications, ajax)
+    context["ajax"] = ajax
+    template = "notification_channels/type_sorted_notifs.html"
+    if not ajax:
+        template = "notification_channels/notifs_full.html"
+        context["type_sorted"]=True
+    return render(request, template, context)
 
 
 @login_required(login_url=login_url)

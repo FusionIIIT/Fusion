@@ -25,3 +25,8 @@ def execute_leave_migrations():
                                              .update(working=to_update)
 
     migrations.delete()
+
+
+@celery.task()
+def testing(a, b):
+    return a+b
