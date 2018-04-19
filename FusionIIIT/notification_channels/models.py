@@ -55,7 +55,7 @@ class NotificationManager(models.Manager):
             notif.generator.add(generator)
         notif.save()
         if getattr(settings, "NOTIFY_ON_CREATE", True):
-            self.notify()
+            notif.notify()
         return notif
 
     """ Discard notification deletes the notification or removes the generator for the """

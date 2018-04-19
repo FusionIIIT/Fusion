@@ -103,11 +103,12 @@ $(document).ready(function(){
 	notif_button.click(reloadNotifications);
 
 	$(document).on("click", "a.type-sorted-div", function(event){
-		const url = "/notifications/seen-all/"+$(this).attr("data-tab")+"/";
+		const url = "/notifications/seen-all/";
 		const notif_type = $(this).attr("data-tab");
 		$.ajax({
 			type: "GET",
 			url: url,
+			data: { "type": notif_type },
 			success:function(data){
 				// console.log("success",data);
 				updateNotificationLabel();
@@ -121,11 +122,12 @@ $(document).ready(function(){
 
 
 	$(document).on("click", "a.read-all", function(event){
-		const url = "/notifications/read-all/"+$(this).attr("data")+"/";
+		const url = "/notifications/read-all/";
 		const item = $(this);
 		$.ajax({
 			type: "GET",
 			url: url,
+			data: { "type": item.attr("data") },
 			success:function(data){
 				// console.log("success",data);
 				reloadNotifications();

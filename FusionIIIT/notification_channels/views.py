@@ -23,7 +23,8 @@ def notifications(request):
 
 
 @login_required(login_url=login_url)
-def read_all(request, notif_type):
+def read_all(request):
+    notif_type = request.GET.get("type")
     if notif_type == "all":
         request.user.notifications.seen()
         request.user.notifications.read()
@@ -35,7 +36,8 @@ def read_all(request, notif_type):
 
 
 @login_required(login_url=login_url)
-def seen_all(request, notif_type):
+def seen_all(request):
+    notif_type = request.GET.get("type")
     if notif_type == "all":
         request.user.notifications.seen()
     else:
