@@ -8,8 +8,7 @@
 ## Requirements
 
 Python 3.6  
-Django==1.11.4  
-And additional requirements are in **requirements.txt**  
+And additional requirements are in **requirements.txt** and will be installed through the below steps
 
 ## How to run it?
 
@@ -17,7 +16,6 @@ And additional requirements are in **requirements.txt**
   * Create a virtual environment `$ virtualenv env -p python3.6`  
   * Activate the env: `$ source env/bin/activate`  
   * Install the requirements: `$ pip install -r requirements.txt`
-  * Run the bash file `$ ./initial_installation.sh`
   * Change directory to FusionIIIT `$ cd FusionIIIT`
   * Make migrations `$ python manage.py makemigrations`  
   * Migrate the changes to the database `$ python manage.py migrate`  
