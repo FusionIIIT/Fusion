@@ -1,0 +1,115 @@
+{% load static %}
+{% block payroll_content3 %}
+
+    <div class="ui active tab" data-tab="memberrequests">
+        <div class="ui vertical segment">
+            <table class="ui very basic collapsing celled sortable table"
+                   style="padding-left: 2.5%;padding-right: 2.5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
+                <thead>
+                <tr>
+                    <th>
+                    </th>
+
+                    <th>
+                        PF
+                    </th>
+
+                    <th class="four wide column">
+                        Email
+                    </th>
+
+                    <th>
+                        Name
+                    </th>
+
+                    <th>
+                        Designation
+                    </th>
+
+                    <th>
+                        Gross Reduction
+                    </th>
+
+                    <th>
+                        Net Payment
+                    </th>
+                </tr>
+                </thead>
+
+                <tbody>
+                
+                <form action = "/finance/verifying/" method="post">
+                {% csrf_token %}
+                        {% for info in b %}
+                        <tr>
+                            <td class="collapsing">
+                                <div class="ui fitted checkbox">
+                                    <input type="checkbox" name = "box" value = "{{ info.id }}" /> <label></label>
+                                </div>
+                            </td>
+
+                            <td>
+                                {{ info.pf }}
+                            </td>
+
+                            <td>
+                                <h4 class="ui image header">
+                                    <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                                    <div class="content">
+                                        Zlatan Ibrahimovic
+                                        <div class="sub header">
+                                            gmail@zlatan.com
+                                        </div>
+                                    </div>
+                                </h4>
+                            </td>
+
+                            <td>
+                                {{ info.name }}
+                            </td>
+
+                            <td>
+                                {{ info.designation }}
+                            </td>
+
+                            <td>
+                                {{ info.pf }}
+                            </td>
+
+                            <td>
+                                {{ info.pf }}
+                            </td>
+
+                            
+                    </tr>
+                        {% endfor %}
+                
+                </tbody>
+            </table>
+
+            <br>
+
+            
+            
+                <div class="ui green right floated button">
+                    <button class="ui green button right floated" type="submit" name = "verify">
+                        Send For Verification
+                    </button>
+                </div>
+                
+                <div class="ui red right floated button">
+                    <button class="ui red button right floated" type="submit" name = "delete">
+                        REVERT
+                    </button>
+                </div>
+            </form>
+
+            <br>
+            <br>
+
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+
+{% endblock %}

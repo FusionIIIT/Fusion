@@ -1,0 +1,144 @@
+{% load static %}
+{% include 'officeModule/officeOfDeanPnD/incomingFiles_content1Modal.html' %}
+<table class="ui very basic collapsing celled sortable table"
+       style="padding-left: 5%;
+                                                          padding-right: 5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+    <thead>
+    <tr>
+        <th class="one wide column"></th>
+        <th class="one wide column">
+            Sr. No.
+        </th>
+
+        <th class="four wide column">
+            Work Assignment ID
+        </th>
+
+        <th class="two wide column">
+            Date
+        </th>
+
+        <th class="four wide column">
+            Sent By
+        </th>
+
+        <th class="one wide column">
+            Estimate
+        </th>
+
+        <th class="one wide column">
+            Details
+        </th>
+
+        <th>
+        </th>
+    </tr>
+
+    </thead>
+
+    <tbody>
+    <form action="{% url 'office:action' %}" method="POST">
+        {% csrf_token %}
+        {% for file in files %}
+        <tr><td>
+            <div class="ui radio checkbox">
+                <input type="radio" name="select" value={{file.id}}><label></label>
+            </div>
+        </td>
+
+            <td>
+                {{forloop.counter}}
+            </td>
+
+            <td>
+                {{file.rid.id}}
+            </td>
+
+            <td>
+                {{file.date}}
+            </td>
+
+            <td>
+                <h4 class="ui image header">
+                    <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                    <div class="content">
+                        {{file.sentby.user.first_name}} {{file.sentby.user.last_name}}
+                         <div class="sub header">
+                        {% if "Civil_AE" in file.receivedby.designation.name %}
+                        {{file.sentby.designation.name}}
+                        {% elif "Civil_JE" in file.receivedby.designation.name %}
+                        {{file.sentby.designation.name}}
+                        {% elif "EE" in file.receivedby.designation.name %}
+                        {{file.sentby.designation.name}}
+                        {% elif "DeanPnD" in file.receivedby.designation.name %}
+                        {{file.sentby.designation.name}}
+                        {% elif "Director" in file.receivedby.designation.name %}
+                        {{file.sentby.designation.name}}
+                        {% elif "Electrical_AE" in file.receivedby.designation.name %}
+                        {{file.sentby.designation.name}}
+                        {% elif "Electrical_JE" in file.receivedby.designation.name %}
+                        {{file.sentby.designation.name}}
+                        {% endif %}
+                        </div>
+                        <div class="sub header">
+                            {{file.sentby.user.email}}
+                        </div>
+                    </div>
+                </h4>
+            </td>
+
+            <td>
+                <!--
+                 TODO: Attachments here!
+                 -->
+
+                <a class="ui inverted circular icon button" style="margin: auto;" target="_blank" href="/media/{{file.rid.estimate}}">
+                    <i class="large attach black icon"></i>
+                </a>
+            </td>
+
+            <td onclick="view('{{ file.pk }}')">
+                <button class="ui button" type="button" id="test1">Details</button>
+            </td>
+
+
+
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<br>
+
+<div class="ui divider"></div>
+
+{% comment %}
+TODO: Modal 1 and 2
+{% endcomment %}
+
+<div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+
+    <div class="field">
+        <label>Remarks</label>
+        <textarea rows="2" name="remarks"></textarea>
+    </div>
+
+    <button class="ui red right floated button" name="reject" type="submit" value="reject">Reject</button>
+    <button class="ui red right floated button" name="revert" type="submit" value="revert">Revert</button>
+    <button class="ui primary right floated button" name="approve" type="submit" value="approve">Approve</button>
+    <button class="ui green right floated button" name="forward" type="submit" value="forward">Forward</button>
+
+    <br>
+    <br>
+</div>
+
+</form>
+
+<br>
+<br>
+<div class="ui divider"></div>
+

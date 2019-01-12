@@ -1,0 +1,95 @@
+{% block newClubApprovals%}
+{% include 'officeModule/officeOfDeanStudents/newClubApprovalsModal.html' %}
+<h3>New Club Approvals Approval</h3>
+{% comment %}The tab menu starts here!{% endcomment %}
+	<div class="ui pointing secondary menu">
+        <a class=" active item" data-tab="club">
+            Approvals
+        </a>
+
+        <a class="item" data-tab="past">
+            Past
+        </a>
+    </div>
+
+    <div class="ui active  tab segment" data-tab="club">
+    <table class="ui very basic celled table">
+    	<thead>
+		<tr>
+			<th></th>
+			<th>Club Name</th>
+			<th>Category</th>
+			<th>Co-ordinator</th>
+			<th>Co Co-ordinator</th>
+			<th>Faculty Incharge</th>
+			<th>Club File</th>
+			<th></th>
+		</tr>
+	</thead>
+	<tbody>
+		<form method="post" action="">
+			{% csrf_token %}
+		<tr>
+			{% for i in clubNew %}
+			<td><input type="checkbox" name="check" value="{{i.pk}}"></td>
+			<td onclick="view('{{ i.pk }}')">{{i.club_name}}</td>
+			<td>{{i.category}}</td>
+			<td>{{i.co_ordinator}}</td>
+			<td>{{i.co_coordinator}}</td>
+			<td>{{i.faculty_incharge}}</td>
+			<td><a class="ui inverted circular icon button" style="margin: auto;"  href="/media/{{ i.club_file}}">
+                            <i class="large attach black icon"></i>
+                        </a></td>
+            <td><div class="ui compact icon button" onclick="view('{{ i.pk }}')">
+                            <i class="expand icon"></i>
+                                </div></td>
+
+		</tr>
+
+			{% endfor %}
+	</tbody>
+    </table>
+       <br>
+
+            <button class="ui primary right floated button" type="submit" name="submit" id="approve" formaction="club_approval">Approve Selected</button>
+            <button class="ui red right floated button" type="submit" name="submit" id="reject" formaction="club_rejection">Reject Selected</button>
+            </form>
+            <br>
+            <br>
+
+            <div class="ui divider"></div>
+	</div>
+<div class="ui  tab segment" data-tab="past">
+  <table class="ui very basic celled table">
+    	<thead>
+		<tr>
+			<th>Status</th>
+			<th>Club Name</th>
+			<th>Category</th>
+			<th>Co-ordinator</th>
+			<th>Co Co-ordinator</th>
+			<th>Faculty Incharge</th>
+			<th>Club File</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for i in club %}
+		<tr {% if i.status == "confirmed" %} class="positive" {% else %}  class="negative"  {% endif %} >
+
+			<td>{{i.status}}</td>
+			<td>{{i.club_name}}</td>
+			<td>{{i.category}}</td>
+			<td>{{i.co_ordinator}}</td>
+			<td>{{i.co_coordinator}}</td>
+			<td>{{i.faculty_incharge}}</td>
+			<td><a class="ui inverted circular icon button" style="margin: auto;"  href="/media/{{ i.club_file}}">
+                            <i class="large attach black icon"></i>
+                        </a></td>
+
+		</tr>
+
+			{% endfor %}
+	</tbody>
+    </table>
+</div>
+{% endblock newClubApprovals%}

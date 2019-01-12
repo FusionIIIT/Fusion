@@ -1,0 +1,17 @@
+{% block form2 %}
+
+	<h3>Budget Approvals</h3>
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class=" active item" data-tab="Budgets">
+            Club Budget
+        </a>
+    </div>
+
+     <div class="ui active  tab segment" data-tab="Budgets">
+        {% block subform1 %}
+                    {% include 'officeModule/officeOfDeanStudents/clubBudget.html' %}
+        {% endblock %}
+    </div>
+
+{% endblock form2%}

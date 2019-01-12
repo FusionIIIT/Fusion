@@ -1,0 +1,66 @@
+<div class="ui vertical segment">
+    <form method="POST" action="{%url 'office:meeting' %}">
+        {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+         {% csrf_token %}
+        <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+            <div class="field">
+                <label>Meeting Agenda</label>
+                <textarea rows="2" name="agenda"></textarea>
+            </div>
+
+            <div class="two fields">
+                <div class="field">
+                    <label>Number of Nominee</label>
+                    <select class="ui search fluid dropdown">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label>Member Name</label>
+                    <input placeholder="Name" class="ui large input" name="member">
+                </div>
+
+            </div>
+
+            <div class="two fields">
+                <div class="field">
+                    <label>Venue</label>
+                    <input class="ui large input" placeholder="Meeting Room" name="venue">
+                </div>
+                <div class="field">
+                    <label>Date</label>
+                    <div class="ui calendar" id="rangestart">
+                        <div class="ui input left icon">
+                            <i class="calendar icon"></i>
+                            <input type="text" placeholder="Date" name="adate">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <br>
+
+            <div class="field">
+                <button class="ui primary button right floated" type="submit">
+                    Submit
+                </button>
+            </div>
+             {% csrf_token %}
+        </div>
+    </form>
+    <br>
+    <br>
+</div>
+<br>
+<div class="extra content"></div>

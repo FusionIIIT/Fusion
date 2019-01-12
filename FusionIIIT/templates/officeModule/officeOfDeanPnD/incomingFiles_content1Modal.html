@@ -1,0 +1,196 @@
+{% load static %}
+{% block modal4 %}
+<script type="text/javascript">
+    function view(a){
+        var id= '.ui.modal.'+a;;
+
+        $(id).modal('show');
+    }
+
+</script>
+
+
+
+{% for file in files %}
+<div class="ui modal {{ file.pk }} " id={{file.pk}}>
+    <div class="header"> </div>
+    <div class="content">
+        <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;" >
+            <div class="three fields">
+
+
+                <div class="four wide field">
+
+                    <label>Building</label>
+
+                    <input value="{{file.rid.building}}" class="ui large input" readonly>
+                </div>
+                <div class="four wide field">
+
+                    <label>Date</label>
+                    <input value="{{file.rid.req_date}}" class="ui large input" readonly>
+                </div>
+
+                <div class="field">
+
+                    <h4 class="ui image header">
+                        &emsp;&emsp;&emsp;
+                        <label>Requester</label><br>
+                        &emsp;&emsp;&emsp;
+                        <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                        <div class="content">
+                            {{file.rid.userid.user.first_name}}{{file.rid.userid.user.last_name}}
+                            <div class="sub header">
+                                {{file.rid.userid.user.email}}
+                            </div>
+                        </div>
+                    </h4>
+                </div>
+            </div>
+            <div class="eight wide field">
+                <label>Title</label>
+                <input type="text" value="{{file.rid.assign_title}}" readonly></input>
+            </div>
+
+            <div class="field" >
+                <label>Description</label>
+                <input value="{{file.rid.assign_description}}" readonly></input>
+            </div>
+
+            <h4> Requisition </h4>
+            <div class="two fields" >
+                <div class="four wide field">
+                    <label>Title</label>
+                    <input type="text" value="{{file.rid.title}}" readonly></input>
+                </div>
+                <div class="eight wide field">
+                    <label>Description</label>
+                    <input type="text" value="{{file.rid.description}}" readonly></input>
+                </div></div>
+
+
+        </div>
+    </div>
+    <div class="content">
+        <table class="ui very basic collapsing celled sortable table"
+               style="padding-left: 5%;
+                                                          padding-right: 5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+            <thead>
+            <tr>
+                <th class="two wide column">
+                    Date Sent
+                </th>
+
+                <th class="three wide column">
+                    Sent By
+                </th>
+
+                <th class="three wide column">
+                    Sent To
+                </th>
+
+                <th class="one wide column">
+                    Remarks
+                </th>
+
+            </tr>
+            </thead> <tbody>
+        {% for filemov in allfiles %}
+        {% if filemov.rid.id == file.rid.id %}
+
+
+
+
+        <tr>
+            <td>
+                {{filemov.date}}
+            </td>
+
+            <td>
+                <h4 class="ui image header">
+                    <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                    <div class="content">
+                        {{filemov.sentby.user.first_name}}{{filemov.sentby.user.last_name}}
+                        <div class="sub header">
+                        {% if "Civil_AE" in filemov.sentby.designation.name %}
+                        {{filemov.sentby.designation.name}}
+                        {% elif "Civil_JE" in filemov.sentby.designation.name %}
+                        {{filemov.sentby.designation.name}}
+                        {% elif "EE" in filemov.sentby.designation.name %}
+                        {{filemov.sentby.designation.name}}
+                        {% elif "DeanPnD" in filemov.sentby.designation.name %}
+                        {{filemov.sentby.designation.name}}
+                        {% elif "Director" in filemov.sentby.designation.name %}
+                        {{filemov.sentby.designation.name}}
+                        {% elif "Electrical_AE" in filemov.sentby.designation.name %}
+                        {{filemov.sentby.designation.name}}
+                        {% elif "Electrical_JE" in filemov.sentby.designation.name %}
+                        {{filemov.sentby.designation.name}}
+                        {% endif %}
+                        </div>
+
+                        <div class="sub header">
+                            {{filemov.sentby.user.email}}
+                        </div>
+                    </div>
+                </h4>
+            </td>
+
+            <td>
+                <h4 class="ui image header">
+                    <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                    <div class="content">
+                        {{filemov.receivedby.user.first_name}}{{filemov.receivedby.user.last_name}}
+                        <div class="sub header">
+                        {% if "Civil_AE" in filemov.receivedby.designation.name %}
+                        {{filemov.receivedby.designation.name}}
+                        {% elif "Civil_JE" in filemov.receivedby.designation.name %}
+                        {{filemov.receivedby.designation.name}}
+                        {% elif "EE" in filemov.receivedby.designation.name %}
+                        {{filemov.receivedby.designation.name}}
+                        {% elif "DeanPnD" in filemov.receivedby.designation.name %}
+                        {{filemov.receivedby.designation.name}}
+                        {% elif "Director" in filemov.receivedby.designation.name %}
+                        {{filemov.receivedby.designation.name}}
+                        {% elif "Electrical_AE" in filemov.receivedby.designation.name %}
+                        {{filemov.receivedby.designation.name}}
+                        {% elif "Electrical_JE" in filemov.receivedby.designation.name %}
+                        {{filemov.receivedby.designation.name}}
+                        {% endif %}
+                        </div>
+                        <div class="sub header">
+                            {{filemov.receivedby.user.email}}
+                        </div>
+                    </div>
+                </h4>
+            </td>
+
+            <td>
+
+                {{filemov.remarks}}
+
+            </td>
+
+
+        </tr>
+
+
+
+        {% endif %}
+
+        {% endfor %}  </tbody>
+        </table>
+
+    </div>
+
+
+</div>
+
+
+
+{% endfor %}
+
+{% endblock %}

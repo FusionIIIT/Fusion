@@ -1,0 +1,106 @@
+{% load static %}
+
+<script type="text/javascript">
+    function modals(a){
+        var id= '.ui.modal.'+a;
+        
+        // id=id.replace(" ",".");
+        // alert(id);
+        $(id).modal('show');
+       }
+
+</script>
+
+{% for details in final_minutes%}
+<div class="ui modal {{ details.pk }} ">
+	<div class="content">
+<form class="ui large form">
+	
+	<h3>Meetings</h3>
+	
+
+		<div class="field">
+        <label>Name</label>
+        <input type="text" value="{{ details.title }}" readonly="true">
+        </div>
+
+        <div class="fields">
+        	<div class="field">
+        		<label>Time</label>
+        		<input type="text" value="{{ details.time }}" readonly="true">
+        	</div>
+
+        	<div class="field">
+        		<label>Date</label>
+        		<input type="text" value="{{ details.date }}" readonly="true">
+        	</div>
+
+
+        </div>
+        <div class="field">
+        	<label>Venue</label>
+        		<input type="text" value="{{ details.venue }}" readonly="true">
+        </div>
+        <div >
+        	<label>Agenda</label>
+        		<textarea rows="2" value="{{ details.Agenda }}" name="Agenda"></textarea>
+        </div>
+         <div class="field">
+            <label>File</label>
+        <a class="ui inverted circular icon button" style="margin: auto;"  href="/media/{{  details.minutes_file }}" target="blank">
+                            <i class="large attach black icon"></i>
+                        </a>
+        </div>
+	</div>
+</form>
+</div>
+
+
+	
+
+{% endfor %}
+
+{% for details in meetingMinutes %}
+<div class="ui large modal {{ details.pk }} ">
+	<div class="content">
+<form class="ui large form">
+	<h3>Meetings</h3>
+	
+
+		<div class="field">
+        <label>Name</label>
+        <input type="text" value="{{ details.title }}" readonly="true">
+        </div>
+
+        <div class="fields">
+        	<div class="field">
+        		<label>Time</label>
+        		<input type="text" value="{{ details.time }}" readonly="true">
+        	</div>
+
+        	<div class="field">
+        		<label>Date</label>
+        		<input type="text" value="{{ details.date }}" readonly="true">
+        	</div>
+
+
+        </div>
+        <div class="field">
+        	<label>Venue</label>
+        		<input type="text" value="{{ details.venue }}" readonly="true">
+        </div>
+        <div class="field">
+        	<label>Agenda</label>
+        		<textarea rows="2" value="{{ details.Agenda }}" name="Agenda"></textarea>
+        </div>
+        <label>No File</label>
+        <br> <br>
+	</div>
+
+</form>
+</div>
+
+
+	
+
+{% endfor %}

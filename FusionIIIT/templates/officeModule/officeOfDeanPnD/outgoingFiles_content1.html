@@ -1,0 +1,172 @@
+{% load static %}
+
+<table class="ui very basic collapsing celled sortable table"
+       style="padding-left: 5%;
+                                                          padding-right: 5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+     {% if "Civil_JE" in desig or "Civil_AE" in desig or "EE" in desig or "DeanPnD" in desig or "Director" in desig or "Electrical_JE" in desig or "Electrical_AE" in desig %}
+    <thead>
+
+    <tr>
+        <th class="one wide column">
+            Sr. No.
+        </th>
+
+        <th class="two wide column">
+            Work Assignment ID
+        </th>
+
+        <th class="two wide column">
+            Date
+        </th>
+
+        <th class="four wide column">
+            Sent To
+        </th>
+        
+
+       
+        <th class="two wide column">
+            Action
+        </th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+    {% for file in sentfiles %}
+    <tr>
+
+        <td>
+            {{forloop.counter}}
+        </td>
+
+        <td>
+            {{file.rid.id}}
+        </td>
+
+        <td>
+            {{file.date}}
+        </td>
+
+        <td>
+            <h4 class="ui image header">
+                <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                <div class="content">
+                    {{file.receivedby.user.first_name}}{{file.receivedby.user.last_name}}
+                    <div class="sub header">
+                    {% if "Civil_AE" in file.receivedby.designation.name %}
+                        {{file.receivedby.designation.name}}
+                        {% elif "Civil_JE" in file.receivedby.designation.name %}
+                        {{file.receivedby.designation.name}}
+                        {% elif "EE" in file.receivedby.designation.name %}
+                        {{file.receivedby.designation.name}}
+                        {% elif "DeanPnD" in file.receivedby.designation.name %}
+                        {{file.receivedby.designation.name}}
+                        {% elif "Director" in file.receivedby.designation.name %}
+                        {{file.receivedby.designation.name}}
+                        {% elif "Electrical_AE" in file.receivedby.designation.name %}
+                        {{file.receivedby.designation.name}}
+                        {% elif "Electrical_JE" in file.receivedby.designation.name %}
+                        {{file.receivedby.designation.name}}
+                        {% endif %}
+                    </div>
+                    <div class="sub header">
+
+                        {{file.receivedby.user.email}}
+                    </div>
+                </div>
+            </h4>
+        </td>
+
+       
+        <td>
+            {% if file.actionby_receiver == "accept" %}
+            Approved
+            {% elif file.actionby_receiver == "reject" %}
+            Rejected
+            {% elif file.actionby_receiver == "forward" %}
+            Forwarded
+            {% elif file.actionby_receiver == "revert" %}
+            Reverted
+            {% endif %}
+        </td>
+
+    </tr>
+    {% endfor %}
+
+    </tbody>
+    {% else %}
+    <thead>
+
+    <tr>
+        <th class="one wide column">
+            Sr. No.
+        </th>
+
+        <th class="two wide column">
+            Work Assignment ID
+        </th>
+
+        <th class="two wide column">
+            Date
+        </th>
+
+        <th class="four wide column">
+            Department
+        </th>
+         <th class="four wide column">
+            Title
+        </th>
+
+       
+        <th class="two wide column">
+            Status
+        </th>
+    </tr>
+    </thead>
+
+    <tbody>
+    {% for request in requisitions %}
+    <tr>
+
+        <td>
+            {{forloop.counter}}
+        </td>
+
+        <td>
+            {{request.id}}
+        </td>
+
+        <td>
+            {{request.req_date}}
+        </td>
+
+        <td>
+            {{request.department}}
+        </td>
+        <td>
+            {{request.title}}
+        </td>
+
+       
+        <td>
+            {% if request.tag %}
+            Completed
+            {% else %}
+            Ongoing
+            {% endif %}
+        </td>
+
+    </tr>
+    {% endfor %}
+
+    </tbody>
+    {% endif %}
+</table>
+
+<br>
+<br>
+<div class="ui divider"></div>

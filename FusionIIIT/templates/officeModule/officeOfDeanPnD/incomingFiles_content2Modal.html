@@ -1,0 +1,29 @@
+{% load static %}
+{% block modal4 %}
+<script type="text/javascript">
+    function modals(a){
+        var id= '.ui.modal.'+a;
+        $(id).modal('show');
+       }
+
+</script>
+
+{% for req in civilreq %}
+<div class="ui modal {{ req.pk }} ">
+	<div class="header">{{ req.pk }} </div>
+
+	
+   <div class="content">
+   <b>Title:</b>
+  {{req.title}}
+  <br>
+  <b>Descripton:</b>
+  {{req.description}}
+  </div>
+		  </div>
+	
+             {% endfor %}
+            
+
+
+{% endblock %}

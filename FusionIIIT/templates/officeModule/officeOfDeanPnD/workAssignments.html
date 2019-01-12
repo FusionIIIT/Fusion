@@ -1,0 +1,31 @@
+{% block tab4 %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="tab4content1">
+            Create Work Assignments
+        </a>
+         
+       <a class="item" data-tab="tab4content2">
+        View Assignments
+         </a>
+         
+    </div>
+
+    <div class="ui active tab" data-tab="tab4content1">
+        <div class="ui vertical segment">
+            {% block tab4content1 %}
+                {% include 'officeModule/officeOfDeanPnD/workAssignments_content1.html' %}
+            {% endblock %}
+        </div>
+     </div>
+     <div class="ui tab" data-tab="tab4content2">   
+        <div class="ui vertical segment" >
+            {% block tab4content2 %}
+                {% include 'officeModule/officeOfDeanPnD/searchAssignments_content1.html' %}
+            {% endblock %}
+        </div>
+    </div>
+
+    
+{% endblock tab4%}

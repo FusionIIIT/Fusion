@@ -1,0 +1,165 @@
+{% load static %}
+{% include 'officeModule/officeOfDeanPnD/seachAssignments_content1Modal.html' %}
+
+<form method="POST" action="{% url 'office:officeOfDeanPnD' %}">
+    {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+    {% csrf_token %}
+    <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+        <div class="inline fields">
+            <div class="field">
+                <div class="ui radio checkbox">
+                    <input type="radio" name="status" checked="checked" value="1">
+                    <label>All</label>
+                </div>
+            </div>
+            <div class="field">
+                <div class="ui radio checkbox">
+                    <input type="radio" name="status" value="2">
+                    <label>Ongoing Projects</label>
+                </div>
+            </div>
+            <div class="field">
+                <div class="ui radio checkbox">
+                    <input type="radio" name="status" value="3">
+                    <label>Completed Projects</label>
+                </div>
+            </div>
+        </div>
+        <br>
+        <div class="three fields">
+            <div class="field">
+                <label>From</label>
+                <div class="ui calendar" id="rangestart">
+                    <div class="ui input left icon">
+                        <i class="calendar icon"></i>
+                        <input type="text" placeholder="From">
+                    </div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>To</label>
+                <div class="ui calendar" id="rangeend">
+                    <div class="ui input left icon">
+                        <i class="calendar icon"></i>
+                        <input type="text" placeholder="To">
+                    </div>
+                </div>
+            </div>
+
+            <div class="field">
+                {% comment %}The Dropdown field starts here!{% endcomment %}
+                <label>Department</label>
+
+                <div class="ui fluid search selection dropdown">
+                    <input name="department" type="hidden">
+                    <i class="dropdown icon"></i>
+
+                    <div class="default text">Select Department</div>
+
+                    <div class="menu">
+                        <div class="item" data-value="all">
+                            All
+                        </div>
+                        <div class="item" data-value="civil">
+                            Civil
+                        </div>
+
+                        <div class="item" data-value="electrical">
+                            Electrical
+                        </div>
+                    </div>
+                </div>
+                {% comment %}The Dropdown field ends here!{% endcomment %}
+            </div>
+        </div>
+
+        <div class="field">
+            <button class="ui primary button right floated" type="submit" name="asearch" value="asearch">
+                Search
+            </button>
+        </div>
+    </div>
+</form>
+
+<br>
+<br>
+<div class="ui divider"></div>
+
+<table class="ui very basic collapsing celled sortable table"
+       style="padding-left: 10%;
+                                                          padding-right: 10%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+    <thead>
+    <tr>
+        <th class="one wide column">
+            Sr No
+        </th>
+        <th class="one wide column">
+            Assisgnment ID
+        </th>
+        <th class="two wide column">
+            Date Created
+        </th>
+
+        <th class="three wide column">
+            Title
+        </th>
+
+        <th class="three wide column">
+            Building
+        </th>
+
+        <th class="one wide column">
+            Estimate
+        </th>
+
+        <th class="one wide column">
+            Details
+        </th>
+    </tr>
+    </thead>
+
+    <tbody>
+    {% for object in req%}
+    <tr>
+
+        <td>
+            {{forloop.counter}}
+        </td>
+        <td>
+            {{object.id}}
+        </td>
+        <td>
+            {{object.assign_date}}
+        </td>
+
+        <td>
+            {{object.assign_title}}
+        </td>
+
+        <td>
+            {{object.building}}
+        </td>
+
+        <td>
+            <a class="ui inverted huge circular icon button" target="_blank" href="/media/{{object.estimate}}"
+               style="margin: auto;">
+                <i class="attach black icon"></i>
+            </a>
+
+        </td>
+        <td onclick="detail('{{ object.pk }}')">
+            <button class="ui button" type="button" id="test">Details</button>
+        </td>
+
+
+
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<div class="ui divider"></div>
+

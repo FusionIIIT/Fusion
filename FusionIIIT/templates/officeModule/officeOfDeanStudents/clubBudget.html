@@ -1,0 +1,147 @@
+{% load static %}
+{% include 'officeModule/officeOfDeanStudents/clubBudgetModal.html' %}
+{% block subform1 %}
+{% comment %}The tab menu starts here!{% endcomment %}
+
+    <div class="ui pointing secondary menu">
+        <a class=" active item" data-tab="approvals_budget">
+            Approvals
+        </a>
+
+        <a class="item" data-tab="past_budget">
+            Past
+        </a>
+    </div>
+    <div class="ui active  tab segment" data-tab="approvals_budget">
+    	    <div class="ui vertical segment">
+
+            <table class="ui very basic collapsing celled sortable table"
+                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;" id="tableID">
+                <thead>
+                <tr>
+                    <th>
+                    </th>
+
+                    <th class="two wide column">
+                        Club
+                    </th>
+                    <th class="two wide column">
+                        Category
+                    </th>
+                    <th class="two wide column">
+                        Budget For
+                    </th>
+
+                    <th class="one wide column">
+                        PFA
+                    </th>
+                    <th class="four wide column">
+                        Amount
+                    </th>
+                    <th class="four wide column">
+                        Remark
+                    </th>
+                    <th> </th>
+                </tr>
+                </thead>
+
+                <tbody>
+                    <form method="post" action="" id="form">
+                        {% csrf_token %}
+
+                <tr>
+                    {% for i in budget_app %}
+                    <td><input type="checkbox" name="check" value="{{i.id}}"></td>
+                    <td > {{ i.club }}</td>
+                    <td> {{ i.club.category }}</td>
+                    <td>{{i.budget_for}}</td>
+                    <input type="text" name="amount {{i.id}}" value="{{i.budget_amt}}" hidden="true">
+                    <td><a class="ui inverted circular icon button" style="margin: auto;"  href="/media/{{ i.budget_file }}" target="blank">
+                            <i class="large attach black icon"></i>
+                        </a></td>
+                    <td>{{i.budget_amt}}</td>
+                    <td><textarea rows="2" name="{{i.id}}"></textarea></td>
+                    <td> <div class="ui compact icon button" onclick="view_budget('{{ i.pk }}')">
+                            <i class="expand icon"></i>
+                                </div></td>
+                </tr>
+                {% endfor %}
+
+                </tbody>
+            </table>
+
+            <br>
+            <button class="ui primary right floated button" type="submit" name="submit" id="approve" formaction="budget_approval">Approve Selected</button>
+            <button class="ui red right floated button" type="submit" name="submit" id="reject" formaction="budget_rejection">Reject Selected</button>
+            </form>
+            <br>
+            <br>
+
+            <div class="ui divider"></div>
+
+        </div>
+
+    </div>
+    <div class="ui tab segment" data-tab="past_budget">
+    	  	    <div class="ui vertical segment">
+            <table class="ui very basic collapsing celled sortable table"
+                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                <thead>
+                <tr>
+                    <th>
+                    	Status
+                    </th>
+                    <th class="two wide column">
+                        Club
+                    </th>
+
+                    <th class="two wide column">
+                        Category
+                    </th>
+
+                    <th class="two wide column">
+                        Budget For
+                    </th>
+                    <th class="four wide column">
+                        PFA
+                    </th>
+
+                    <th class="one wide column">
+                        Budget amount
+                    </th>
+                    <th class="four wide column">
+                        Remark
+                    </th>
+                </tr>
+                </thead>
+
+                <tbody>
+                    {% for i in p_budget%}
+                <tr {% if i.status == "confirmed" %} class="positive" {% else %}  class="negative"  {% endif %}>
+                    <td> {{i.status}}</td>
+                    <td> {{ i.club}}</td>
+                    <td> {{ i.club.category }}</td>
+                    <td>{{i.budget_for}}</td>
+                    <td><a class="ui inverted circular icon button" style="margin: auto;"  href="/media/{{ i.budget_file }}" target="blank">
+                            <i class="large attach black icon"></i>
+                        </a></td>
+                    <td>{{i.budget_amt}}</td>
+                    <td>{{i.remarks}}</td>
+                </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+
+    </div>
+    </div>
+
+{% endblock subform1%}

@@ -1,0 +1,87 @@
+{% load static %}
+<form method="POST" action="">
+      {% csrf_token %}
+<table class="ui very basic collapsing celled sortable table"
+       style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+    <thead>
+    <tr>
+        <th class="one wide column">
+        </th>
+
+        <th class="three wide column">
+            File Number
+        </th>
+
+        <th class="three wide column">
+            Date
+        </th>
+
+        <th class="seven wide column">
+            Purpose
+        </th>
+
+
+
+        <th class="one wide column">
+            Attachment
+        </th>
+    </tr>
+    </thead>
+
+    <tbody>
+    {% for views in view %}
+    <tr>
+
+        <td class="collapsing">
+            <div class="ui fitted checkbox">
+                <input type="checkbox" name="checked[]" value="{{views}}" > <label></label>
+            </div>
+        </td>
+
+        <td>
+            {{views.id}}
+        </td>
+
+        <td>
+            {{current_date}}
+        </td>
+
+        <td>
+            {{views.purpose}}
+        </td>
+
+        <td>
+            {% comment %}
+                TODO: Add the attachment here!
+            {% endcomment %}
+            <a class="ui inverted circular icon button" style="margin: auto;" target="_blank" href="/media/{{ views.file }}">
+                <i class="large attach black icon"></i>
+            </a>
+        </td>
+    </tr>
+
+{% endfor %}
+
+
+    </tbody>
+</table>
+
+
+<br>
+
+<button class="ui primary right floated button" type="submit" name="GA">GA</button>
+<button class="ui green right floated button" type="submit" name="PS">PS</button>
+<button class="ui red right floated button" type="submit">FA</button>
+<button class="ui red right floated button" type="submit">ES</button>
+
+</form>
+<br>
+<br>
+<div class="ui divider"></div>
+
+
+

@@ -1,0 +1,106 @@
+{% include 'officeModule/officeOfDeanStudents/budgetAllotmentModal.html' %}
+{% block hostelRoomAllotment%}
+
+<h3>Club Budget Allotment</h3>
+
+
+<div class="ui pointing secondary menu">
+        <a class=" active item" data-tab="allot_budget">
+            Allotment
+        </a>
+
+        <a class="item" data-tab="alloted_budget">
+            Alloted Budget
+        </a>
+</div>
+
+<div class="ui active  tab segment" data-tab="allot_budget">
+	<div class="ui vertical segment">
+		<table class="ui very basic  celled table">
+                <thead>
+                <tr >
+                    <th class="four wide column">
+                        Club
+                    </th>
+                    <th class="four wide column">
+                        Category
+                    </th>
+                    <th class="four wide column">
+                    	
+                    </th>
+
+                </tr>
+                </thead>
+
+        <tbody>
+        	{% for i in budget_allotment %}
+
+        		<tr > 
+        				<td>{{ i.club_name }}</td>
+        				<td> {{ i.category }}</td>
+        				<td> <div class="ui animated button" tabindex="0" onclick="modalAllot('{{ i.club_name }}')">
+  							<div class="visible content">Set</div>
+  							<div class="hidden content">
+    						<i class="right arrow icon"></i>
+  							</div>
+							</div></td>
+        		</tr>
+
+        	
+
+
+        </tbody>
+        	{% endfor %}
+</table>
+</div>
+
+</div>
+<div class="ui tab segment" data-tab="alloted_budget">
+	<div class="ui vertical segment">
+		<table class="ui  table">
+                <thead>
+                <tr onclick="">
+                    <th class="four wide column">
+                        Club
+                    </th>
+                    <th class="four wide column">
+                        Category
+                    </th>
+                    <th class="four wide column">
+                        Budget
+                    </th>
+                    <th class="four wide column"></th>
+
+
+                </tr>
+                </thead>
+
+        <tbody>
+        	{% for i in budget_alloted %}
+
+        		<tr> 
+        				<td>{{ i.club_name }}</td>
+        				<td> {{ i.category }}</td>
+        				<td class="bold"> {{ i.alloted_budget }}</td>
+        				<td> <div class="ui animated button" tabindex="0" onclick="modalEditBudget('{{ i.club_name }}')">
+  							<div class="visible content">Edit</div>
+  							<div class="hidden content">
+    						<i class="right edit icon"></i>
+  							</div>
+							</div></td>
+
+        		</tr>
+
+        	
+
+
+        </tbody>
+        	{% endfor %}
+</table>
+</div>
+
+</div>
+
+
+
+{% endblock %}

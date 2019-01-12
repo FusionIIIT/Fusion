@@ -1,0 +1,145 @@
+{% block applyform %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    
+    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script>
+        $(function(){
+            $("#co-or").change(function(){
+               var selected = $(this).find('option:selected');
+               var extra = selected.data('foo');
+               $('#co_or_name').val(extra); 
+            });
+
+            $("#coco-or").change(function(){
+               var selected = $(this).find('option:selected');
+               var extra = selected.data('foo');
+               $('#coco_or_name').val(extra); 
+            });
+        });
+    </script> -->
+    <script type="text/javascript">
+        function setDate(){
+        var today = new Date();
+        var dd = today.getDate();
+        var mm = today.getMonth()+1; //January is 0!
+        var yyyy = today.getFullYear();
+         if(dd<10){
+                dd='0'+dd
+            } 
+            if(mm<10){
+                mm='0'+mm
+            } 
+
+        today = dd+'/'+mm+'/'+yyyy;
+        // document.getElementById("datefield").setAttribute("min", today);
+        var dateControl = document.querySelector('input[type="date"]');
+        dateControl.value = today;
+        }
+
+    </script>
+    <div class="ui vertical segment">
+        <form method="post" id="change_head_form">
+        {% csrf_token %}
+            {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+            <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                <div class="eight wide field">
+                    <label>Club</label>
+                    <select class="ui search fluid dropdown" name="club" required>
+                        <option value="">Select</option>
+                        {% for i in Club_name %}
+                            {% if i.status == "confirmed" %}
+                            <option value="{{ i.club_name }}">{{ i.club_name }} </option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- <div class="two fields">
+                    <div class="eight wide field">
+                        <label>Co-ordinator</label>
+                        <select class="ui search fluid dropdown" id="co-or">
+                            <option value="">Select</option>
+                            {% for i in Students %}
+                                {% if i.user.username != request.user.username %}
+                                <option value="{{ i.user.username }}" data-foo = "{{i.user.first_name}} {{i.user.last_name}}">{{ i.user.username }}</option>
+                                {%endif%}
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="eight wide field">
+                        <label>Name</label>
+                        <input id="co_or_name" placeholder="Name" class="ui large input" disabled />
+                    </div>
+                </div>
+
+
+                <div class="two fields">
+                    <div class="eight wide field">
+                        <label>Co Co-ordinator</label>
+                            <select class="ui search fluid dropdown" id="coco-or">
+                                <option value="">Select</option>
+                                {% for i in Students %}
+                                {% if i.user.username != request.user.username %}
+                                <option value="{{ i.user.username }}" data-foo = "{{i.user.first_name}} {{i.user.last_name}}">{{ i.user.username }}</option>
+                                {%endif%}
+                                {% endfor %}
+                            </select>
+                    </div>
+                    
+                    <div class="eight wide field">
+                        <label>Name</label>
+                        <input id="coco_or_name" placeholder="Name" class="ui large input" disabled />
+                    </div>
+                </div> -->
+                <div class="two fields">
+                    <div class="eight wide field">
+                        <label>Co-ordinator</label>
+                        <select class="ui search fluid dropdown" id="co" name="co" required>
+                            <option value="">Select</option>
+                            {% for i in Students %}
+                            <option value="{{ i }}">{{ i }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="eight wide field">
+                        <label>Co Co-ordinator</label>
+                            <select class="ui search fluid dropdown" id="coco" name="coco" required>
+                                <option value="">Select</option>
+                                {% for i in Students %}
+                                <option value="{{ i }}">{{ i }}</option>
+                                {% endfor %}
+                            </select>
+                    </div>
+                    
+                </div>
+
+                <div class="three fields">
+                    <div class="eight wide field">
+                        <label>Date</label>
+                        <input class="ui input date" type="date" data-date-format="DD/MM/YYYY" placeholder="From" name="date" id="datefield" min="01/04/2018" required></input>
+                    </div>
+                    <script type="text/javascript">
+                        $("#datefield").validate();
+                    </script>
+                    <div class="eight wide field">
+                        <label>Time</label>
+                        <input class="ui input" type="time" name="time" required></input>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <button class="ui primary button right floated" type="submit" onclick="form_submit('changehead','change_head_form',event)">
+                        Submit
+                    </button>
+                </div>
+            </div>
+        </form>
+        <br>
+        <br>
+    </div>
+    <br>
+    <div class="extra content"></div>
+{% endblock %}

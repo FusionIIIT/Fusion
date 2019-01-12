@@ -1,0 +1,31 @@
+{% block tab4content2 %}
+
+<form>
+    {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+    <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+         {% csrf_token %}
+        <table class="ui celled table" style="padding: 8px; padding-left: 24px; padding-right: 24px; " >
+            <thead>
+                <tr>
+                    <th>Roll no.</th>
+                    <th>Assigned Course</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for obj1 in pro1 %}
+                <tr>
+                        <td> <input value={{obj1.roll_no}} class="ui large input" name="roll_no" readonly style="border: 0;"> </td>
+                        <td> <input value={{obj1.assigned_course}} class="ui large input" name="assigned_course" readonly style="border: 0;"></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+         
+    </div>
+
+<br>
+<div class="ui divider"></div>
+</form>
+
+{% endblock %}
+ 

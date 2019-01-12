@@ -1,0 +1,42 @@
+{% block tab6 %}
+
+
+
+ <form  method="post" action="/office/officeOfRegistrar/upload/" enctype="multipart/form-data">
+     {% csrf_token %}
+    {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+    <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+        <div class="two fields">
+            <div class="field">
+                <label>Document Name</label>
+                <input value="New File" class="ui large input" name="docname">
+            </div>
+
+            <div class="field">
+                <label>Purpose</label>
+                <input value="For ..." class="ui large input" name="purpose">
+            </div>
+        </div>
+
+        <div class="field">
+            <label>Description</label>
+            <textarea rows="2" name="description"></textarea>
+        </div>
+
+        <div>
+    <label for="file" class="ui primary medium button">
+        <i class="file icon"></i>
+        Upload Scanned File</label>
+    <input type="file" id="file" style="display:none" name="upload">
+</div>
+        <button class="ui primary right floated button" type="submit">Save</button>
+
+    </div>
+</form>
+
+<br>
+<br>
+<div class="ui divider"></div>
+
+{% endblock tab6%}

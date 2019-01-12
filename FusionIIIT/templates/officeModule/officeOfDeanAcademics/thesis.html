@@ -1,0 +1,136 @@
+{% load static %}
+{% block form3 %}
+
+              <div class="ui form">
+                          <div class="inline fields">
+                            <div class="field">
+                              <div class="ui radio checkbox">
+                                <input type="radio" name="frequency" value="CSE" checked="checked">
+                                <label> CSE </label>
+                              </div>
+                            </div>
+                            <div class="field">
+                              <div class="ui radio checkbox">
+                                <input type="radio" name="frequency" value="ECE">
+                                <label>ECE</label>
+                              </div>
+                            </div>
+                            <div class="field">
+                              <div class="ui radio checkbox">
+                                <input type="radio" name="frequency" value="ME">
+                                <label>ME</label>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                <!--MCM content starts-->
+                <div class="ui active  tab " data-tab="cse">
+                    <table class="ui very basic collapsing celled table">
+                        <thead>
+                            <tr>
+                                 <th>Branch</th>
+                                <th>Name</th>
+                                <th>Roll No.</th>
+                                <th>Professor's Name</th>
+                                <th>Thesis File</th>
+                                <th>Action</th>
+                                <th>Comment</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for assist in thesis %}
+                            <tr class="dataRow">
+                                <td>
+                                    {{assist.student_id.id.department.name}}
+                                </td>
+                                <td>
+                                    <h4 class="ui image header">
+                                        <img src="{% static 'globals/img/matthew.png' %}" class="ui mini rounded image">
+                                        <div class="content">
+                                            {{assist.student_id.id.user}}
+                                            <div class="sub header">
+                                            </div>
+                                        </div>
+                                    </h4>
+                                </td>
+                                <td>
+                                    {{assist.student_id.id.id}}
+                                </td>
+                                
+                                <td>
+                                    {{assist.supervisor_id.id.user}}
+                                </td>
+                                <td>
+                                    <a href="file:///C:/Users/Mayank%20Saurabh/Music/Dean%20Acad/file/first.pdf" target="_blank">View Application</a>
+                                </td>
+                                <td>
+                                    <div class="ui checkbox">
+                                      <input type="checkbox" name="example">
+                                      <label></label>
+                                    </div> 
+                                </td>
+                                <td>
+                                    <div class="ui form">
+                                        <div class="field">
+                                            <textarea rows="2" required></textarea>
+                                        </div>
+                                        <!--<button class="ui primary loading button">Loading</button>-->
+                                    </div>
+
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                     <div class="ui   buttons">
+                                        <button class="ui button">Accept</button>
+                                        <div class="or"></div>
+                                        <button class="ui positive button">Reject</button>
+                                    </div>
+                </div>
+                <!--MCM content Ends-->
+  
+             <script>
+          $("input[type=radio]").change(function(){
+              var filter = this.value;
+                             console.log(filter);
+              if (filter == "ALL")
+                  $("tr.dataRow").css( "visibility", "visible" );
+              else $("tr.dataRow").css( "visibility", "collapse" );
+
+          if (filter == "CSE")
+                $("tr.dataRow").css( "visibility", "visible" );
+            else $("tr.dataRow").css( "visibility", "collapse" );
+            
+            if (filter == "ECE")
+                $("tr.dataRow").css( "visibility", "visible" );
+            else $("tr.dataRow").css( "visibility", "collapse" );
+            
+            if (filter == "ME")
+                $("tr.dataRow").css( "visibility", "visible" );
+            else $("tr.dataRow").css( "visibility", "collapse" );
+
+            if (filter == "DESIGN")
+                $("tr.dataRow").css( "visibility", "visible" );
+            else $("tr.dataRow").css( "visibility", "collapse" );
+
+              if (filter == "NS")
+                $("tr.dataRow").css( "visibility", "visible" );
+            else $("tr.dataRow").css( "visibility", "collapse" );
+
+              var matchFound = false;
+
+              $("tr.dataRow").find("td").each(function() {
+                $this = $(this);
+                
+                if (!matchFound){
+                    if ($this.html() == filter){
+                      matchFound = true;
+                      $this.parent().css( "visibility", "visible" );
+                    }
+                }
+              });
+          });
+              </script>          
+{% endblock form3 %}
