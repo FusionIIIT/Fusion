@@ -30,7 +30,7 @@ class Constants:
         ('transfer', 'Transfer Responsibilities')
     )
 
-
+#@python_2_unicode_compatible
 class LeaveType(models.Model):
     name = models.CharField(max_length=40, null=False)
     max_in_year = models.IntegerField(default=2)
@@ -39,10 +39,11 @@ class LeaveType(models.Model):
     for_faculty = models.BooleanField(default=True)
     for_staff = models.BooleanField(default=True)
     for_student = models.BooleanField(default=False)
-
-    @property
-    def is_station(self):
-        return self.name == 'Station'
+    requires_address = models.BooleanField(default=False)
+    
+    #@property
+    #def is_station(self):
+    #    return self.name == 'Station'
 
     def __str__(self):
         return f'{self.name}, Max: {self.max_in_year}'
@@ -55,7 +56,7 @@ class LeavesCount(models.Model):
     remaining_leaves = models.FloatField(default=2.0)
 
     def save(self, *args, **kwargs):
-        if self.year < 2015 or self.remaining_leaves < 2:
+        if self.year < 2015 or self.remaining_leaves < 0:
             raise ValueError('Year must be greater than 2018 and remaining leaves more than 0')
         super(LeavesCount, self).save(*args, **kwargs)
 
@@ -73,7 +74,7 @@ class Leave(models.Model):
     status = models.CharField(max_length=20, default='pending', choices=Constants.STATUS)
     timestamp = models.DateTimeField(auto_now=True, null=True)
     extra_info = models.CharField(max_length=200, blank=True, null=True, default='')
-    is_station = models.BooleanField(default=False)
+    #is_station = models.BooleanField(default=False)
 
     @property
     def to_forward(self):
@@ -95,10 +96,10 @@ class Leave(models.Model):
 
     @property
     def yet_not_started(self):
-        for segment in self.segments.all():
-            today = timezone.now().date()
-            if segment.start_date <= today:
-                return False
+        #for segment in self.segments.all():
+        #    today = timezone.now().date()
+        #    if segment.start_date <= today:
+        #        return False
         return True
 
     def __str__(self):
@@ -120,12 +121,13 @@ class ReplacementSegment(models.Model):
 
 class LeaveSegment(models.Model):
     leave = models.ForeignKey(Leave, related_name='segments', on_delete=models.CASCADE)
-    leave_type = models.ForeignKey(LeaveType, on_delete=models.SET_NULL, null=True)
+    leave_type = models.ForeignKey(LeaveType, on_delete=models.SET_NULL, null=True, default=None)
     document = models.FileField(upload_to='leave/leave_documents/', null=True)
     start_date = models.DateField()
     start_half = models.BooleanField(default=False)
     end_date = models.DateField()
     end_half = models.BooleanField(default=False)
+    address = models.CharField(max_length=500, default='', blank=True, null=True)
 
 
 class LeaveRequest(models.Model):
@@ -179,3 +181,12 @@ class LeaveMigration(models.Model):
     def __str__(self):
         return '{} : {}, type => {}'.format(self.replacee.username, self.replacer.username,
                                             self.type_migration)
+
+class RestrictedHoliday(models.Model):
+    date = models.DateField()
+
+class ClosedHoliday(models.Model):
+    date = models.DateField()
+
+class VacationHoliday(models.Model):
+    date = models.DateField()

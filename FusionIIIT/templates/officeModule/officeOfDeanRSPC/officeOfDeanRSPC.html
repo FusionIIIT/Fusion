@@ -13,6 +13,7 @@
     {% endblock %}
 
     {% comment %}The grid starts here!{% endcomment %}
+   
     <div class="ui stackable doubling grid">
 
         {% comment %}The left-margin segment!{% endcomment %}
@@ -41,14 +42,20 @@
                  style="max-width: 320px;">
 
                 <a class="active item" data-tab="first">
-                    Tab Content #1
+                    Applications
                     <i class="right floated chevron right icon"></i>
                 </a>
 
-                <a class="item" data-tab="second">
-                    Tab Content #2
+                 <!-- <a class="item" href="http://www.sciencepub.net/nature/0403/13-0186-mahongbao-ns.pdf" target="_blank">
+                    Generate Report
+                    <i class="right floated chevron right icon"></i>
+                </a> -->
+
+                 <a class="active item" data-tab="second">
+                    Projects
                     <i class="right floated chevron right icon"></i>
                 </a>
+
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
 
@@ -65,7 +72,7 @@
             {% comment %}The Details start here!{% endcomment %}
             <div class="ui active tab segment" data-tab="first">
                 {% block form1 %}
-                    {% include 'officeModule/officeOfDeanRSPC/tab1.html' %}
+                    {% include 'officeModule/officeOfDeanRSPC/Applications.html' %}
                 {% endblock %}
             </div>
             {% comment %}The Personal Details end here!{% endcomment %}
@@ -73,7 +80,9 @@
 
             {% comment %}The Publications starts here!{% endcomment %}
             <div class="ui tab segment" data-tab="second">
-
+                {% block projects %}
+                    {% include 'eisModulenew/projects.html' %}
+                {% endblock %}
             </div>
             {% comment %}The Publications ends here!{% endcomment %}
 

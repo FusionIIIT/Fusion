@@ -9,69 +9,50 @@
 
     <div class="ui active tab" data-tab="newsession">
         <div class="ui vertical segment">
-            <form>
+            <form method="post" id="new_session_form">
+            {% csrf_token %}
                 {% comment %}The add a new skill Accordian starts here!{% endcomment %}
                 <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
 
-                    <div class="two fields">
-                        <div class="field">
-                            <label>Club</label>
-                            <select class="ui search fluid dropdown">
-                                <option value="">Select</option>
-                                <option value="club1">Club #1</option>
-                                <option value="club2">Club #2</option>
-                                <option value="club3">Club #3</option>
-                                <option value="Others">Others</option>
-                            </select>
-                        </div>
+                    <div class="field">
+                        <label>Club</label>
+                        <select class="ui search fluid dropdown" name="club" required>
+                            <option value="">Select</option>
+                            {% for i in Club_name %}
+                                {% if request.user.username in i.co_ordinator|stringformat:"s" or request.user.username in i.co_coordinator|stringformat:"s" %}
+                                    <option value="{{ i.club_name }}">{{ i.club_name }} </option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
                     </div>
-
-                    <div class="three fields">
-                        <div class="six wide field">
-                            <label>Coordinator</label>
-                            <input value="Zlatan Ibrahimovic" class="ui large input" readonly>
-                        </div>
-
-                        <div class="six wide field">
-                            <label>Email</label>
-                            <input value="gmail@zlatan.com" class="ui large input" type="email" readonly>
-                        </div>
-
-                        <div class="four wide field">
-                            <label>Roll Number</label>
-                            <input value="2015121" class="ui large input" readonly>
-                        </div>
-                    </div>
-
+                
                     <div class="three fields">
                         <div class="field">
                             <label>Venue</label>
-                            <input placeholder="Venue">
+                            <input placeholder="Venue" name="venue" required>
                         </div>
 
                         <div class="field">
                             <label>Date</label>
-                            <div class="ui calendar" id="rangestart">
-                                <div class="ui input left icon">
-                                    <i class="calendar icon"></i>
-                                    <input type="text" placeholder="From">
-                                </div>
+                            <div class="ui input left icon">
+                                <i class="calendar icon"></i>
+                                <input type="date" data-date-format="YYYY-MM-DD" placeholder="From" name="date" required> 
                             </div>
                         </div>
 
                         <div class="field">
                             <label>Time</label>
-                            <input type="time" class="ui large input">
+                            <input type="time" class="ui large input" name="time" required>
                         </div>
                     </div>
 
                     <div class="field">
                         <label>Details & Description</label>
-                        <textarea rows="2"></textarea>
+                        <textarea rows="2" name="d_d" required></textarea>
                     </div>
 
                     <div class="field">
-                        <button class="ui primary button right floated" type="submit">
+                        <button class="ui primary button right floated" type="submit" onclick="form_submit('new_session','new_session_form',event)">
                             Submit
                         </button>
                     </div>

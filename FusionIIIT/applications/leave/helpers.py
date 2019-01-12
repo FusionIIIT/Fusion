@@ -41,11 +41,34 @@ def get_user_choices(user):
 
 
 def get_special_leave_count(start, end, leave_name):
-    from applications.academic_information.models import Holiday
-    special_holidays = Holiday.objects.filter(holiday_name=leave_name)
+    #from applications.academic_information.models import Holiday
+    #special_holidays = Holiday.objects.filter(holiday_name=leave_name)
+    from applications.leave.models import RestrictedHoliday
+    special_holidays = RestrictedHoliday.objects.all()
     count = 0.0
     while start <= end:
-        if not special_holidays.filter(holiday_date=start).exists():
+        if not special_holidays.filter(date=start).exists():
+            return -1
+        count += 1.0
+        start = start + datetime.timedelta(days=1)
+    return count
+
+#def date_range(start, end):
+#    r = (end+datetime.timedelta(days=1)-start).days
+#    return [start+datetime.timedelta(days=i) for i in range(r)]
+
+def get_vacation_leave_count(start,end,leave_name):
+    #win_start = datetime.date(2018,12,1)
+    #win_end = datetime.date(2018,12,31)
+    #vacation_winter=date_range(win_start,win_end)
+    #sum_start = datetime.date(2019,5,1)
+    #sum_end = datetime.date(2019,7,31)
+    #vacation_summer = date_range(sum_start,sum_end)
+    from applications.leave.models import VacationHoliday
+    vacation_holidays = VacationHoliday.objects.all()
+    count = 0.0
+    while start <= end:
+        if not vacation_holidays.filter(date=start).exists():
             return -1
         count += 1.0
         start = start + datetime.timedelta(days=1)
@@ -59,8 +82,10 @@ def get_leave_days(start, end, leave_type, start_half, end_half):
     # TODO: Remove this hard code and make it database dependent
     # Maybe add one field in leave type, which tells that this has to be taken from
     # academic calendar
-    if leave_name.lower() in ['restricted', 'vacation']:
+    if leave_name.lower()=='restricted':
         count = get_special_leave_count(start, end, leave_name.lower())
+    elif leave_name.lower()=='vacation':
+        count = get_vacation_leave_count(start, end, leave_name.lower())
     else:
         while start <= end:
             if not start.weekday() in [5, 6]:
@@ -85,8 +110,8 @@ def get_leaves(leave):
     mapping = dict()
 
     for segment in leave.segments.all():
-        if segment.leave_type.is_station:
-            continue
+        #if segment.leave_type.is_station:
+        #    continue
 
         count = get_leave_days(segment.start_date, segment.end_date, segment.leave_type,
                                segment.start_half, segment.end_half)

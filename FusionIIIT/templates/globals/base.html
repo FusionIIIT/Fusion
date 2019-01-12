@@ -5,21 +5,18 @@
     <title>Fusion!
         {% block title %}{% endblock %}
     </title>
-    {% load static %}
+
     {% load staticfiles %}
     <link rel="stylesheet" type="text/css" href="{% static 'globals/semantic-ui/components/reset.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'globals/semantic-ui/components/icon.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'globals/css/semantic.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'globals/css/mediaquery.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'globals/css/semantic-notify.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'notification_channels/css/lobibox.css' %}">
 
     <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"> </script>
     <script type="text/javascript" src="{% static 'globals/js/jquery.formset.js' %}"> </script>
     <script type="text/javascript" src="{% static 'globals/js/semantic-notify.js' %}"> </script>
     <script type="text/javascript" src="{% static 'globals/js/ajax-post.js' %}"></script>
-    <script type="text/javascript" src="{% static 'notification_channels/notifications.js' %}"></script>
-    <script type="text/javascript" src="{% static 'notification_channels/lobibox.js' %}"></script>
     {% block css %}
     {% endblock %}
 
@@ -33,6 +30,11 @@
     {% endblock %}
 {% endblock %}
 
+    <div id="messages">
+        {% for message in messages %}
+            <div class="message" tag="{% if 'success' in message.tags %}green{% elif 'error' in message.tags %}red{% else %} blue {% endif %}" message="{{ message|safe }}"></div>
+        {% endfor %}
+    </div>
 </body>
 
 <script type="text/javascript" src="{% static 'globals/js/semantic.min.js' %}"></script>
@@ -43,52 +45,18 @@
 
     $(document).ready(function() {
 
-        setTimeout(function() {
-                    $('#new-notification')
-                    .popup({
-                        inline: true,
-                        hoverable: true,
-                        position: 'bottom left',
-                        popup: $('#notificationPopup'),
-                        on: 'click',
-                        delay: {
-                            show: 250,
-                            hide: 500
-                        }
-                    })
-                ;
-            }, 50);
-        // $('#messages').find('.message').each(function(){
-        //     $.uiAlert({
-        //         textHead: $(this).attr('message'), // header
-        //         text: '',
-        //         bgcolor: $(this).attr('tag'), // background-color
-        //         textcolor: '#fff', // color
-        //         position: 'bottom-left',// position . top And bottom ||  left / center / right
-        //         time: 3, // time
-        //     });
-        // });
+        $('#messages').find('.message').each(function(){
+            $.uiAlert({
+                textHead: $(this).attr('message'), // header
+                text: '',
+                bgcolor: $(this).attr('tag'), // background-color
+                textcolor: '#fff', // color
+                position: 'bottom-left',// position . top And bottom ||  left / center / right
+                time: 3, // time
+            });
+        });
 
-        {% for message in messages %}
-            var type = "{% if 'success' in message.tags %}success{% elif 'error' in message.tags %}error{% else %}info{% endif %}";
-            Lobibox.notify(type, {msg: "{{ message|safe }}"})
-        {% endfor %}
-
-    });
-</script>
-
-<script>
-    $(document).ready(function(){
-
-        $('.ui.accordion').accordion('refresh');
-        $('.ui.sidebar')
-        //.sidebar('toggle')
-            .sidebar('attach events', '#navbar #sidebartrigger')
-            .sidebar('setting', 'transition', 'overlay')
-        ;
-    });
-
-    $('#new-notification')
+        $('#new-notification')
             .popup({
                 inline: true,
                 hoverable: true,
@@ -101,6 +69,22 @@
                 }
             })
         ;
+    });
+</script>
+
+<script>
+    $(document).ready(function(){
+        newNotification();
+        newNotification();
+        newNotification();
+
+        $('.ui.accordion').accordion('refresh');
+        $('.ui.sidebar')
+        //.sidebar('toggle')
+            .sidebar('attach events', '#navbar #sidebartrigger')
+            .sidebar('setting', 'transition', 'overlay')
+        ;
+    });
 
 </script>
 

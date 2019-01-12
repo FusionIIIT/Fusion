@@ -34,11 +34,11 @@ class StudentApplicationForm(forms.Form):
         data = self.cleaned_data
         errors = dict()
         today = timezone.now().date()
-        if data.get('start_date') < today:
+        """if data.get('start_date') < today:
             errors['start_date'] = ['Past Dates are not allowed']
         if data.get('end_date') < today:
             errors['end_date'] = ['Past Dates are not allowed']
-
+"""
         lt = LeaveType.objects.filter(name=data.get('leave_type')).first()
 
         if lt.requires_proof and not data.get('document'):
@@ -66,14 +66,15 @@ class StudentApplicationForm(forms.Form):
 class EmployeeCommonForm(forms.Form):
 
     purpose = forms.CharField(widget=forms.TextInput)
-    is_station = forms.BooleanField(initial=False, required=False)
+    #is_station = forms.BooleanField(initial=False, required=False)
     leave_info = forms.CharField(label='Information', widget=forms.Textarea, required=False)
 
     def clean(self):
         super(EmployeeCommonForm, self).clean()
         data = self.cleaned_data
 
-        if data.get('is_station') and not data.get('leave_info'):
+        #if data.get('is_station') and not data.get('leave_info'):
+        if not data.get('leave_info'):
             raise VE({'leave_info': ['If there is a station leave, provide details about it.']})
 
         return self.cleaned_data
@@ -87,12 +88,18 @@ class LeaveSegmentForm(forms.Form):
     except:
         LEAVE_TYPES = []
 
+    #Changed by Abhay Gupta
+    l_type_fac=list((leave_type.id, leave_type.name) for leave_type in LeaveType.objects.all())
+    l_type_staff=list((leave_type.id, leave_type.name) for leave_type in LeaveType.objects.filter(for_staff=1))
+    #l_type=list(leave_type.name for leave_type in LeaveType.objects.all())
+
     leave_type = forms.ChoiceField(label='Leave Type', choices=LEAVE_TYPES)
     start_date = forms.DateField(label='Leave From', required=True)
     end_date = forms.DateField(label='Leave To', required=True)
     document = forms.FileField(label='Related Document', required=False)
     start_half = forms.BooleanField(label='Half Day at start', required=False)
     end_half = forms.BooleanField(label='Half Day at end', required=False)
+    address = forms.CharField(label='Out of Station Address', required=False)
 
     def clean(self, *args, **kwargs):
         super(LeaveSegmentForm, self).clean(*args, **kwargs)
@@ -120,6 +127,11 @@ class LeaveSegmentForm(forms.Form):
                     errors['leave_type'] = [error, ]
 
         elif data['start_date'] == data['end_date']:
+            #if data.get('leave_type')==2:
+            #    restricted_holidays=list(res.date for res in RestrictedHoliday.objects.all())
+            #    print(restricted_holidays)
+            #    print(data.get('start_date'))
+
             if data['start_half'] and data['end_half']:
                 errors['start_half'] = ['Invalid Input']
                 errors['end_half'] = ['Invalid Input']
@@ -135,9 +147,13 @@ class LeaveSegmentForm(forms.Form):
         else:
             errors['start_date'] = ['Start date must not be more than End date.']
 
-        now = timezone.now().date()
 
-        if data['start_date'] < now:
+
+
+
+        #now = timezone.now().date()
+
+        """if data['start_date'] < now:
             error = 'You have inserted past date in Start Date Field'
             if 'start_date' in errors:
                 errors['start_date'].append(error)
@@ -150,11 +166,17 @@ class LeaveSegmentForm(forms.Form):
                 errors['end_date'].append(error)
             else:
                 errors['end_date'] = error
+                """
 
         leave_type = LeaveType.objects.filter(id=data['leave_type']).first()
         if leave_type and leave_type.requires_proof and not data.get('document'):
             errors['document'] = [f'{leave_type.name} requires a document for proof.']
 
+        leave_type = LeaveType.objects.filter(id=data['leave_type']).first()
+        if leave_type and leave_type.requires_address and not data.get('address'):
+            errors['document'] = [f'{leave_type.name} requires Out of Station address.']
+
+        
         if errors.keys():
             raise VE(errors)
 
@@ -285,8 +307,9 @@ class BaseLeaveFormSet(BaseFormSet):
             try:
                 data = form.cleaned_data
                 leave_type = LeaveType.objects.get(id=data.get('leave_type'))
-                if leave_type.is_station:
-                    continue
+                #if leave_type.is_station:
+                #    continue
+
                 count = get_leave_days(data.get('start_date'), data.get('end_date'),
                                        leave_type, data.get('start_half'), data.get('end_half'))
 

@@ -59,6 +59,11 @@
                     Indent Form
                     <i class="right floated chevron right icon"></i>
                 </a>
+
+                <a class="item" data-tab="fifth">
+                    After Purchase Form
+                    <i class="right floated chevron right icon"></i>
+                </a>
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
 
@@ -103,6 +108,14 @@
             <div class="ui tab segment" data-tab="fourth">
                 {% block tab4 %}
                     {% include 'officeModule/officeOfPurchaseOfficer/indentForm.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The Publications ends here!{% endcomment %}
+
+            {% comment %}The Publications starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="fifth">
+                {% block tab5 %}
+                    {% include 'officeModule/officeOfPurchaseOfficer/after_purchase.html' %}
                 {% endblock %}
             </div>
             {% comment %}The Publications ends here!{% endcomment %}
@@ -161,6 +174,27 @@
             $("#textLoader").toggle();
             $("#replacement-card").toggle();
             setTimeout(loader, 1750);
+            var calendarOpts = {
+            type: 'date',
+            formatter: {
+            date: function (date, settings) {
+            if (!date) return '';
+            var day = date.getDate() + '';
+            if (day.length < 2) {
+            day = '0' + day;
+            }
+            var month = (date.getMonth() + 1) + '';
+            if (month.length < 2) {
+            month = '0' + month;
+            }
+            var year = date.getFullYear();
+            return year + '-' + month + '-' + day;
+            }
+            }
+            };
+            $('.ui.calendar').calendar(calendarOpts);
+           
+
         });
 
         function loader() {
@@ -169,6 +203,18 @@
             $("#loader").removeClass("active");
             $("#loader").addClass("disabled");
         }
+        
+        
+
+        function quantityInputOnChange(val){
+            var quantityInput = document.getElementById("quantityInput");
+            var lpcFields = document.getElementById("lpcFields");   
+            //console.log(val); 
+            if (val >= 25000 && val < 250000)
+               lpcFields.style.display = 'block';
+            else
+               lpcFields.style.display = 'none';
+        };
     </script>
 
 {% endblock %}

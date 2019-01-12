@@ -4,7 +4,7 @@
         <div class="two fields">
             <div class="twelve wide field">
                 <label>File Number</label>
-                <input value="Search" class="ui search large input">
+                <input value="Search" class="ui search large input" name="file">
             </div>
 
             <div class="four wide field">
@@ -34,7 +34,7 @@
         </th>
 
         <th class="six wide column">
-            Intendor
+            Indentor
         </th>
 
         <th class="four wide column">
@@ -44,38 +44,59 @@
         <th class="four wide column">
             Purchase Amount
         </th>
-
-        <th class="one wide column">
-        </th>
     </tr>
     </thead>
-
+    {% if phmatch %}
+    {% for j in phmatch %}
     <tbody>
     <tr>
         <td>
-            ...
+            {{ j.id }}
+        </td>
+
+        <td>  
+            {{ j.id.user.username }}
         </td>
 
         <td>
-            ...
+            {{ j.purchase_date}}
         </td>
 
         <td>
-            ...
+            {{ j.amount }}
         </td>
 
-        <td>
-            ...
-        </td>
-
-        <td>
-            <a class="ui inverted circular icon button" style="margin: auto;" target="_blank" href="">
-                <i class="large external link alternate black icon"></i>
-            </a>
-        </td>
     </tr>
-
     </tbody>
+    {% endfor %}
+
+    {% endif %}
+
+
+
+
+    {% for j in ph %}
+    <tbody>
+    <tr>
+        <td>
+            {{ j.id }}
+        </td>
+
+        <td>
+            {{ j.indentor_name_id }}
+        </td>
+
+        <td>
+            {{ j.purchase_date}}
+        </td>
+
+        <td>
+            {{ j.amount }}
+        </td>
+
+    </tr>
+    </tbody>
+    {% endfor %}
 </table>
 
 <br>

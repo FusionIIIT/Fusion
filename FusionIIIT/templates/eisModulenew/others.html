@@ -22,37 +22,41 @@
 
     {% comment %}The  Achievement segment starts here!{% endcomment %}
     <div class="ui active tab segment" data-tab="research projects">
-        <h4 class="ui dividing header" id="changes12">Add an Achievement</h4>
-            <form class="ui form"  method="post" action="{% url 'eis:award_insert' %}" onsubmit="return validateaward()">
-            {% csrf_token %}
+        <h4 class="ui dividing header">Add a Research Project</h4>
+        <form class="ui form">
            
-            <div style="display: none;"> <input type="text" id="achZ" name="ach_id"></div>
+
             <div class="field">
                 <label>Year/Month/Day</label>
                 <div class=" four fields">
                     <div class=" field">
                         <!-- <input placeholder="Year/Month/Day" type="text"> -->
                              <div class="ui fluid search selection dropdown">
-                            <input type="hidden" name="a_day"  id="achC"  >
+                            <input type="hidden">
                             <i class="dropdown icon"></i>
                             <div class="default text">Select Day</div>
                             <div class="menu">
-                                {% for i in "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" %}
-                                <div class="item" data-value="{{ forloop.counter }}">{{ forloop.counter }}</div>
-                              {% endfor %}
+                                <div class="item" data-value="1">1</div>
+                                <div class="item" data-value="2">2</div>
+                                <div class="item" data-value="3">3</div>
+                                <div class="item" data-value="30">30</div>
+                                <div class="item" data-value="31">32</div>
+                              
                             </div>
                         </div>
                     </div>
                      <div class=" field">
                         <!-- <input placeholder="Year/Month/Day" type="text"> -->
                              <div class="ui fluid search selection dropdown">
-                            <input type="hidden" name="a_month" id="achF">
+                            <input type="hidden">
                             <i class="dropdown icon"></i>
                             <div class="default text">Month</div>
                             <div class="menu">
-                                {% for i in "xxxxxxxxxxxx" %}
-                                <div class="item" data-value="{{ forloop.counter }}">{{ forloop.counter }}</div>
-                                {% endfor %}
+                                <div class="item" data-value="1">1</div>
+                                <div class="item" data-value="2">2</div>
+                                <div class="item" data-value="3">3</div>
+                                <div class="item" data-value="4">4</div>
+                                <div class="item" data-value="5">5</div>
                             </div>
                         </div>
 
@@ -60,20 +64,35 @@
                      <div class=" field">
                         <!-- <input placeholder="Year/Month/Day" type="text"> -->
                         <div class="ui fluid search selection dropdown">
-                            <input type="hidden" name="a_year" id="achE" required>
+                            <input type="hidden">
                             <i class="dropdown icon"></i>
                             <div class="default text">Select Year</div>
                             <div class="menu">
-                                {% for i in year_range %}
-                                <div class="item" data-value="{{ i }}">{{ i }}</div>
-                                {% endfor %}
+                                <div class="item" data-value="2009">2009</div>
+                                <div class="item" data-value="2008">2008</div>
+                                <div class="item" data-value="2007">2007</div>
+                                <div class="item" data-value="2006">2006</div>
+                                <div class="item" data-value="2005">2005</div>
+                                <div class="item" data-value="2004">2004</div>
+                                <div class="item" data-value="2003">2003</div>
+                                <div class="item" data-value="2002">2002</div>
+                                <div class="item" data-value="2001">2001</div>
+                                <div class="item" data-value="2000">2000</div>
+                                <div class="item" data-value="2010">2010</div>
+                                <div class="item" data-value="2011">2011</div>
+                                <div class="item" data-value="2012">2012</div>
+                                <div class="item" data-value="2013">2013</div>
+                                <div class="item" data-value="2014">2014</div>
+                                <div class="item" data-value="2015">2015</div>
+                                <div class="item" data-value="2016">2016</div>
+                                <div class="item" data-value="2017">2017</div>
                             </div>
                         </div>
                     </div>   
 
                     <div class=" field">
                         <div class="ui fluid search selection dropdown">
-                            <input type="hidden" name="type"  id="achA" required>
+                            <input type="hidden">
                             <i class="dropdown icon"></i>
                             <div class="default text">Achievement Type</div>
                             <div class="menu">
@@ -95,15 +114,16 @@
                     <div class="fourteen wide field">
                         <div class="field">
                             <label>Details</label>
-                            <input placeholder="Title" type="text"   id="achB" name="details" required>
+                            <input placeholder="Title" type="text">
                         </div>
                     </div>
 
                     <div class="two wide field">
                         <label><br></label>
-                        <button class="ui primary button" type="submit">
-                            Save<i class="ui save icon right floated"></i>
-                        </button>
+                        <div class="ui primary button">
+                            Save
+                            <i class="ui save icon right floated"></i>
+                        </div>
                     </div>
                 </div>
 
@@ -112,61 +132,49 @@
         </form>
         <br>
         <h4 class="ui dividing header">Report:</h4>
-        <div class="ui pointing pagination menu">
-                {% for award in awards %}
-                {% if forloop.counter0|divisibleby:10 %}
-                    <span align="right>"><a class="{% if forloop.counter0 == 0 %}active {% endif %}item" data-tab="ach-{{ forloop.counter0 }}">
-                        {% widthratio forloop.counter|add:10 10 1 %}
-            </a></span>
-                {% endif %}
-                {% endfor %}
 
-            </div>
-        {% for award in awards %}
-
-            {% if forloop.counter0|divisibleby:10 %}
-            <div class="ui {% if forloop.counter0 == 0 %}active {% endif %} tab segment" data-tab="ach-{{ forloop.counter0 }}">
-        <table class="ui fixed sortable celled table" id="ach">
+        <table class="ui fixed single line sortable celled table">
             <thead>
             <tr>
-               <!-- <th class="sorted ascending">Sr.</th>
+                <th class="sorted ascending">Sr.</th>
                 <th class="">Achievement</th>
                 <th class="" colspan="3">Details</th>
                                 <th class="">Year/Month/Day</th>
-                <th class="">Action</th>-->
-
-                  <th class="sorted ascending" style="width: 7%;">Sr.</th>
-                <th class="" style="width: 15%;" >Achievement</th>
-                <th class="" style="width: 53%;">Title </th>
-                <th class="" style="width: 15%;">Day/Month/Year</th>
-
-                <th style="width:10%">Action</th>
+                <th class="">Action</th>
             </tr>
             </thead>
 
             <tbody>
-            {% endif %}
             <tr>
-                <td id="ach{{ forloop.counter }}Z"><div style="display: none;">{{ award.id }}</div>{{ forloop.counter }}.</td>
-                <td id="ach{{ forloop.counter }}A">{{ award.a_type }}</td>
-                <td id="ach{{ forloop.counter }}B">{{ award.details }}</td>
-                <td id="ach{{ forloop.counter }}C">{% if award.a_day %}{{ award.a_day }} / {% endif %}{% if award.a_month %}{{ award.a_month }} / {% endif %}{% if award.a_year %}{{ award.a_year }}{% endif %}</td>
-                <td><a onclick="updateACH({{ forloop.counter }})"><i id="bt" class="edit icon" style="font-size:1.3vw;color:blue"></i> </a><br><a class="centered raised item" href="{% url 'eis:achievement_delete' award.id %}"><i id="bt" class="trash outline icon" style="font-size:1.3vw;color:red;"></i></a></td>
-
+                
             </tr>
-            {% if forloop.counter0|add:1|divisibleby:10 %}
+
+            <tr>
+                          </tr>
+
+            <tr>
+               
+            </tr>
             </tbody>
 
-
+            <tfoot>
+            <tr>
+                <th colspan="7">
+                    <div class="ui right floated pagination menu">
+                        <a class="icon item">
+                            <i class="left chevron icon"></i>
+                        </a>
+                        <a class="item">1</a>
+                        <a class="item">2</a>
+                        <a class="item">3</a>
+                        <a class="item">4</a>
+                        <a class="icon item">
+                            <i class="right chevron icon"></i>
+                        </a>
+                    </div>
+                </th>
+            </tr></tfoot>
         </table>
-                 </div>
-            {% endif %}
-            {% endfor %}
-     {% if not awards.all.count|divisibleby:10 %}
-     </tbody>
-        </table>
-            </div>
- {% endif %}
     </div>
 
     {% comment %}The Achievements segment ends here!{% endcomment %}
@@ -175,18 +183,16 @@
 
     {% comment %}The Expert Lectures segment starts here!{% endcomment %}
     <div class="ui tab segment" data-tab="Consultancy project">
-        <h4 class="ui dividing header"  id="changes13">Add a Expert Lecture/Invited Talks</h4>
-           <form class="ui form"  method="post" action="{% url 'eis:talk_insert' %}"  onsubmit="return validateexp()">
-                           <div style="display: none;"> <input type="text" id="lecZ" name="lec_id"></div>
-            {% csrf_token %}
+        <h4 class="ui dividing header">Add a Expert Lecture/Invited Talks</h4>
+        <form class="ui form">
             <div class="field">
                 <div class="three fields">
                 <!-- code change starts -->
                     <div class="field">
                         <label>Presentation Type</label>
-                        
+                         <!-- <input placeholder="Presentation Type" type="text"> -->
                           <div class="ui fluid search selection dropdown">
-                            <input type="hidden" name="type"  id="lecA" required>
+                            <input type="hidden">
                             <i class="dropdown icon"></i>
                             <div class="default text">Presentation Type</div>
                             <div class="menu">
@@ -203,16 +209,16 @@
 
                     <div class="field">
                         <label>Place</label>
-                        <input placeholder="Place" type="text" name="place" id="lecC" required>
+                        <input placeholder="Place" type="text">
                     </div>
                       <div class="field">
                         <label>Date</label>
                         <!-- <input placeholder="Client" type="text"> -->
                         <!-- code change starts -->
-                             <div class="ui calendar" id="example2g">
+                             <div class="ui calendar" id="example1g">
                                 <div class="ui input left icon">
                                   <i class="calendar icon"></i>
-                                  <input type="text" placeholder="Date/Time" name="l_date" id="lecD" required>
+                                  <input type="text" placeholder="Date/Time">
                                 </div>
                               </div>
                           <!-- code change ends -->
@@ -228,15 +234,16 @@
                     <div class="fourteen wide field">
                         <div class="field">
                             <label>Title</label>
-                            <input placeholder="Title" type="text" name="title"  id="lecB" required>
+                            <input placeholder="Title" type="text">
                         </div>
                     </div>
 
                     <div class="two wide field">
                         <label><br></label>
-                        <button class="ui primary button" type="submit">
-                            Save<i class="ui save icon right floated"></i>
-                        </button>
+                        <div class="ui primary button">
+                            Save
+                            <i class="ui save icon right floated"></i>
+                        </div>
                     </div>
                 </div>
 
@@ -244,73 +251,66 @@
         </form>
         <br>
         <h4 class="ui dividing header">Report:</h4>
-        <div class="ui pointing pagination menu">
-                {% for talk in talks %}
-                {% if forloop.counter0|divisibleby:10 %}
-                    <span align="right>"><a class="{% if forloop.counter0 == 0 %}active {% endif %}item" data-tab="talk-{{ forloop.counter0 }}">
-                        {% widthratio forloop.counter|add:10 10 1 %}
-            </a></span>
-                {% endif %}
-                {% endfor %}
 
-            </div>
-        {% for talk in talks %}
-
-            {% if forloop.counter0|divisibleby:10 %}
-            <div class="ui {% if forloop.counter0 == 0 %}active {% endif %} tab segment" data-tab="talk-{{ forloop.counter0 }}">
-        <table class="ui fixed sortable celled table" id="talk">
+        <table class="ui fixed single line sortable celled table">
             <thead>
             <tr>
-              
-
-                <th class="sorted ascending" style="width: 7%;">Sr.</th>
-                <th class="" style="width: 15%;" >Presented</th>
-                <th class="" style="width: 30%;">Title </th>
-                <th class="" style="width: 20%;">Place</th>
-                  <th style="width:18%">Date</th>
-                <th style="width:10%">Action</th>
+                <th class="sorted ascending">Sr.</th>
+                <th class="">Presentation Type</th>
+                <th class="">Title</th>
+                <th class="">Place</th>
+                <th class="">Date</th>
+                <th class="">Year</th>
+                <th class="">Action</th>
             </tr>
             </thead>
 
             <tbody>
-             {% endif %}
-            <tr id="r1">
-                <td id="lec{{ forloop.counter }}Z"><div style="display: none;">{{ talk.id }}</div>{{ forloop.counter }}.</td>
-                <td id="lec{{ forloop.counter }}A">{{ talk.l_type }}</td>
-                <td id="lec{{ forloop.counter }}B">{{ talk.title }}</td>
-                <td id="lec{{ forloop.counter }}C">{{ talk.place }}</td>
-                <td id="lec{{ forloop.counter }}D">{{ talk.l_date }}</td>
-                <td><a onclick="updateLEC({{ forloop.counter }})"><i id="bt" class="edit icon" style="font-size:1.3vw;color:blue"></i></a><br><a class="centered raised item" href="{% url 'eis:emp_expert_lecturesDelete' talk.id %}"><i id="bt" class="trash outline icon" style="font-size:1.3vw;color:red;"></i></a></td>
-
+            <tr>
+                 
             </tr>
-                        {% if forloop.counter0|add:1|divisibleby:10 %}
+
+            <tr>
+                  
+            </tr>
+
+            <tr>
+              
+            </tr>
             </tbody>
 
-
+            <tfoot>
+            <tr>
+                <th colspan="7">
+                    <div class="ui right floated pagination menu">
+                        <a class="icon item">
+                            <i class="left chevron icon"></i>
+                        </a>
+                        <a class="item">1</a>
+                        <a class="item">2</a>
+                        <a class="item">3</a>
+                        <a class="item">4</a>
+                        <a class="icon item">
+                            <i class="right chevron icon"></i>
+                        </a>
+                    </div>
+                </th>
+            </tr></tfoot>
         </table>
-    </div>
-          {% endif %}
-            {% endfor %}
-     {% if not talks.all.count|divisibleby:10 %}
-     </tbody>
-        </table>
-            </div>
- {% endif %}
     </div>
     {% comment %}The Expert Lecture ends here!{% endcomment %}
 
 
     {% comment %}The Session chaired starts here!{% endcomment %}
     <div class="ui tab segment" data-tab="patents">
-        <h4 class="ui dividing header" id="changes14">Add a  Session Chaired</h4>
-              <form class="ui form"  method="post" action="{% url 'eis:chaired_insert' %}">
-            {% csrf_token %}
-                              <div style="display: none;"> <input type="text" id="sessionZ" name="ses_id"></div>
+        <h4 class="ui dividing header">Add a  Session Chaired</h4>
+        <form class="ui form">
             <div class="field">
                 <div class="two fields">
                     
 
                     <div class="field">
+                           </label>
                     </div>
                 </div>
             </div>
@@ -319,7 +319,7 @@
                 <label>Event</label>
                 <div class=" three fields">
                     <div class=" field">
-                        <input placeholder="Event" type="text" name="event"  id="sessionB" required>
+                        <input placeholder="Event" type="text">
                     </div>
                   <!-- code change starts -->  
                     <div class=" field">
@@ -328,7 +328,7 @@
                            <div class="ui calendar" id="rangestart6">
                                           <div class="ui input left icon">
                                             <i class="calendar icon"></i>
-                                            <input type="text" placeholder="Start" name="start" id="sessionC" required>
+                                            <input type="text" placeholder="Start">
                                           </div>
                                 </div>                  
                     </div>
@@ -338,7 +338,7 @@
                          <div class="ui calendar" id="rangeend6">
                                       <div class="ui input left icon">
                                         <i class="calendar icon"></i>
-                                        <input type="text" placeholder="End" name="end" id="sessionD" required>
+                                        <input type="text" placeholder="End">
                                       </div>
                                     </div>
                     </div>
@@ -349,15 +349,16 @@
                     <div class="fourteen wide field">
                         <div class="field">
                             <label>Name</label>
-                            <input placeholder="Name" type="text" name="name" id="sessionA" required>
+                            <input placeholder="Name" type="text">
                         </div>
                     </div>
 
                     <div class="two wide field">
                         <label><br></label>
-                        <button class="ui primary button" type="submit">
-                            Save<i class="ui save icon right floated"></i>
-                        </button>
+                        <div class="ui primary button">
+                            Save
+                            <i class="ui save icon right floated"></i>
+                        </div>
                     </div>
                 </div>
 
@@ -365,60 +366,50 @@
         </form>
         <br>
         <h4 class="ui dividing header">Report:</h4>
-        <div class="ui pointing pagination menu">
-                {% for chair in chairs %}
-                {% if forloop.counter0|divisibleby:10 %}
-                    <span align="right>"><a class="{% if forloop.counter0 == 0 %}active {% endif %}item" data-tab="chair-{{ forloop.counter0 }}">
-                        {% widthratio forloop.counter|add:10 10 1 %}
-            </a></span>
-                {% endif %}
-                {% endfor %}
 
-            </div>
-        {% for chair in chairs %}
-
-            {% if forloop.counter0|divisibleby:10 %}
-            <div class="ui {% if forloop.counter0 == 0 %}active {% endif %} tab segment" data-tab="chair-{{ forloop.counter0 }}">
-        <table class="ui fixed sortable celled table" id="chair">
+        <table class="ui fixed single line sortable celled table">
             <thead>
             <tr>
-               <!-- <th class="sorted ascending">Sr.</th>
-                <th class="" colspan=2>Name</th>
+                <th class="sorted ascending">Sr.</th>
+                <th class="">Name</th>
                 <th class="" colspan=3>Event</th>
-                <th class="">Duration</th>
-                <th class="">Action</th>-->
-
-
-                   <th class="sorted ascending" style="width: 7%;">Sr.</th>
-                <th class="" style="width: 20%;" >Name</th>
-                <th class="" style="width: 38%;">Event </th>
-                <th class="" style="width: 25%;">Duration</th>
-
-                <th style="width:10%">Action</th>
+                <th class="">Date</th>
+                <th class="">Year</th>
+              
+                <th class="">Action</th>
             </tr>
             </thead>
 
             <tbody>
-             {% endif %}
             <tr>
-                <td id="session{{ forloop.counter }}Z"><div style="display: none;">{{ chair.id }}</div>{{ forloop.counter }}.</td>
-                <td class=""  id="session{{ forloop.counter }}A">{{ chair.name }}</td>
-                <td class="" id="session{{ forloop.counter }}B">{{ chair.event }}</td>
-                <td id="session{{ forloop.counter }}C">{{ chair.start_date }} - {{ chair.end_date }}</td>
-                <td><a onclick="updateSESSION({{ forloop.counter }})"><i id="bt" class="edit icon" style="font-size:1.3vw;color:blue"></i></a><br><a class="centered raised item" href="{% url 'eis:emp_session_chairDelete' chair.id %}"><i id="bt" class="trash outline icon" style="font-size:1.3vw;color:red;"></i> </a></td>
-
+              
             </tr>
-                        {% if forloop.counter0|add:1|divisibleby:10 %}
+
+            <tr>
+                           </tr>
+
+            <tr>
+                           </tr>
             </tbody>
+
+            <tfoot>
+            <tr>
+                <th colspan="7">
+                    <div class="ui right floated pagination menu">
+                        <a class="icon item">
+                            <i class="left chevron icon"></i>
+                        </a>
+                        <a class="item">1</a>
+                        <a class="item">2</a>
+                        <a class="item">3</a>
+                        <a class="item">4</a>
+                        <a class="icon item">
+                            <i class="right chevron icon"></i>
+                        </a>
+                    </div>
+                </th>
+            </tr></tfoot>
         </table>
-    </div>
-          {% endif %}
-            {% endfor %}
-     {% if not chairs.all.count|divisibleby:10 %}
-     </tbody>
-        </table>
-            </div>
- {% endif %}
     </div>
 
     {% comment %}The Session chaired segment ends here!{% endcomment %}
@@ -427,15 +418,14 @@
     {% comment %}The Keynote/Planery Address segment starts here!{% endcomment %}
 
     <div class="ui tab segment" data-tab="technology transfer">
-        <h4 class="ui dividing header" id="changes15">Add a Keynote/Planery Address</h4>
-          <form class="ui form"  method="post" action="{% url 'eis:keynote_insert' %}">
-            {% csrf_token %}
-              <div style="display: none;"> <input type="text" id="keyZ" name="keyid"></div>
+        <h4 class="ui dividing header">Add a Keynote/Planery Address</h4>
+        <form class="ui form">
             <div class="field">
                 <div class="two fields">
                     
 
                     <div class="field">
+                           </label>
                     </div>
                 </div>
             </div>
@@ -446,11 +436,11 @@
                     <div class=" field">
                       <!--   <input placeholder="Event" type="text"> -->
                            <div class="ui fluid search selection dropdown">
-                            <input type="hidden" name="type"  id="keyA" value="Keynote" required>
+                            <input type="hidden">
                             <i class="dropdown icon"></i>
                             <div class="default text"> Presentation Type</div>
                             <div class="menu">
-                                <div class="item" data-value="Keynote">Keynote</div>
+                                <div class="item" data-value="Keynotes">Keynotes</div>
                                 <div class="item" data-value="Planery Address">Planery Address</div>
                                
                             </div>
@@ -459,10 +449,10 @@
                     <div class=" field">
                         <!-- <input placeholder="Date" type="text"> -->
                         <!-- code change starts -->
-                              <div class="ui calendar" id="example2h">
+                              <div class="ui calendar" id="example1h">
                                     <div class="ui input left icon">
                                       <i class="calendar icon"></i>
-                                      <input type="text" placeholder="Date/Time" name="start" id="keyD"  required>
+                                      <input type="text" placeholder="Date/Time">
                                     </div>
                                   </div>
                         <!-- code change ends -->
@@ -474,112 +464,91 @@
                     <div class=" field">
                       <!--   <input placeholder="Event" type="text"> -->
                       <label>Page No.</label>
-                            <input placeholder="Page No." type="text" id="keyC"  name="page_no">
+                            <input placeholder="Page No." type="text">
                           
                     </div>
                     <div class=" field">
                         <!-- <input placeholder="Date" type="text"> -->
                         <!-- code change starts -->
                         <label>ISBN No.</label>
-                            <input placeholder="ISBN No." type="text" name="isbn_no" id="keyE">
+                            <input placeholder="ISBN No." type="text">
                              
                         <!-- code change ends -->
                     </div>
 
                 
                 </div>
-<div class="fields">
-    <div class="eight wide field">
-        <div class="field">
-                            <label>Confrence Name</label>
-                            <input placeholder="Confrence Name" type="text" name="name" required  id="keyF">
-                        </div>
-    </div>
-    <div class="eight wide field">
-        <div class="field">
-                            <label>Conference Venue</label>
-                            <input placeholder="Confrence Venue" type="text" name="venue" required  id="keyG">
-                        </div>
-    </div>
-</div>
+
                 <div class="fields">
                     <div class="fourteen wide field">
                         <div class="field">
                             <label>Title</label>
-                            <input placeholder="Title" type="text" name="title" id="keyB" required>
+                            <input placeholder="Title" type="text">
                         </div>
                     </div>
 
                     <div class="two wide field">
                         <label><br></label>
-                        <button class="ui primary button" type="submit">
-                            Save<i class="ui save icon right floated"></i>
-                        </button>
+                        <div class="ui primary button">
+                            Save
+                            <i class="ui save icon right floated"></i>
+                        </div>
                     </div>
                 </div>
 
             </div>
         </form>
         
-        
         <br>
 
          <h4 class="ui dividing header">Report:</h4>
-<div class="ui pointing pagination menu">
-                {% for keynote in keynotes %}
-                {% if forloop.counter0|divisibleby:10 %}
-                    <span align="right>"><a class="{% if forloop.counter0 == 0 %}active {% endif %}item" data-tab="keynote-{{ forloop.counter0 }}">
-                        {% widthratio forloop.counter|add:10 10 1 %}
-            </a></span>
-                {% endif %}
-                {% endfor %}
 
-            </div>
-        {% for keynote in keynotes %}
-
-            {% if forloop.counter0|divisibleby:10 %}
-            <div class="ui {% if forloop.counter0 == 0 %}active {% endif %} tab segment" data-tab="keynote-{{ forloop.counter0 }}">
-        <table class="ui fixed sortable celled table" id="keynote">
+        <table class="ui fixed single line sortable celled table">
             <thead>
             <tr>
-                <!--<th class="sorted ascending">Sr.</th>
-                <th class="" >Type</th>
-                <th class="" colspan="2">Title</th>
-                <th class="" colspan="3">Conference Details</th>
-                <th class="" >Date</th>
-                <th class="">Action</th>-->
-
-                <th class="sorted ascending" style="width: 7%;">Sr.</th>
-                <th class="" style="width: 15%;" >Type</th>
-                <th class="" style="width: 23%;">Title </th>
-                <th class="" style="width: 30%;">Conference Details</th>
-                <th style="width:15%">Date</th>
-                <th style="width:10%">Action</th>
+                <th class="sorted ascending">Sr.</th>
+                <th class="" >Name</th>
+                <th class="" colspan="2">Details</th>
+                <th class="" colspan="2">Conference Details</th>
+                <th class="" >Year</th>
+                <th class="" >Date Of Submission</th>
+                
+                <th class="">Action</th>
             </tr>
             </thead>
 
             <tbody>
-             {% endif %}
             <tr>
-                <td id="key{{ forloop.counter }}Z"><div style="display: none;">{{ keynote.id }}</div>{{ forloop.counter }}.</td>
-                <td id="key{{ forloop.counter }}A" >{{ keynote.type }}</td>
-                <td id="key{{ forloop.counter }}B" >{{ keynote.title }}</td>
-                <td id="key{{ forloop.counter }}C" ><b>Name:</b>{{ keynote.name }}<br/><b>Venue:</b>{{ keynote.venue }}<br/><b>Page No:</b>{{ keynote.page_no }}<br/><b>ISBN No.:</b>{{ keynote.isbn_no }}</td>
-                <td id="key{{ forloop.counter }}D" >{{ keynote.start_date }}</td>
-                <td><a onclick="updateKEY({{ forloop.counter }})"><i id="bt" class="edit icon" style="font-size:1.3vw;color:blue"></i></a><br><a class="centered raised item" href="{% url 'eis:emp_keynote_addressDelete' keynote.id %}"><i id="bt" class="trash outline icon" style="font-size:1.3vw;color:red;"></i></a> </td>
-
+                  
             </tr>
-                        {% if forloop.counter0|add:1|divisibleby:10 %}
+
+            <tr>
+                   
+            </tr>
+
+            <tr>
+              
+            </tr>
             </tbody>
-       </table>
-    </div>
-          {% endif %}
-            {% endfor %}
-     {% if not keynotes.all.count|divisibleby:10 %}
-     </tbody>
+
+            <tfoot>
+            <tr>
+                <th colspan="7">
+                    <div class="ui right floated pagination menu">
+                        <a class="icon item">
+                            <i class="left chevron icon"></i>
+                        </a>
+                        <a class="item">1</a>
+                        <a class="item">2</a>
+                        <a class="item">3</a>
+                        <a class="item">4</a>
+                        <a class="icon item">
+                            <i class="right chevron icon"></i>
+                        </a>
+                    </div>
+                </th>
+            </tr></tfoot>
         </table>
-            </div>
- {% endif %}
     </div>
     {% comment %}The Technology segment ends here!{% endcomment %}
 {% endblock %}

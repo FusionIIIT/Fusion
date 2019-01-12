@@ -59,12 +59,12 @@
                     </thead>
                     <tbody>
                         {% for lv_bal in req.leave.get_current_leave_balance %}
-                            {% if lv_bal.leave_type.name != 'Station' %}
+                            <!--{% if lv_bal.leave_type.name != 'Station' %}-->
                                 <tr>
                                     <td> {{ lv_bal.leave_type.name }} </td>
                                     <td> {{ lv_bal.remaining_leaves }} </td>
                                 </tr>
-                            {% endif %}
+                            <!--{% endif %}-->
 
                         {% endfor %}
 
@@ -127,12 +127,12 @@
                     </thead>
                     <tbody>
                         {% for lv_bal in req.leave.get_current_leave_balance %}
-                            {% if lv_bal.leave_type.name != 'Station' %}
+                            <!--{% if lv_bal.leave_type.name != 'Station' %}-->
                                 <tr>
                                     <td> {{ lv_bal.leave_type.name }} </td>
                                     <td> {{ lv_bal.remaining_leaves }} </td>
                                 </tr>
-                            {% endif %}
+                            <!--{% endif %}-->
 
                         {% endfor %}
 

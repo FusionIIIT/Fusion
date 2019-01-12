@@ -34,6 +34,8 @@
     </thead>
 
     <tbody>
+    {% for views in view4  %}
+    {% for views in view5  %}
     <tr>
 
         <td class="collapsing">
@@ -43,19 +45,53 @@
         </td>
 
         <td>
-            ...
+            {{ views.item_name }}
         </td>
 
         <td>
-            ...
+            {{ views.purchase_date }}
         </td>
 
         <td>
-            ...
+            {{ views.purpose }}
         </td>
 
         <td>
             <i class="large green checkmark icon"></i>
+        </td>
+
+        <td>
+            {% comment %}
+                TODO: Add the attachment here!
+            {% endcomment %}
+            <a class="ui inverted circular icon button" style="margin: auto;" target="_blank" href="{{ views.quotation1.url }}">
+                <i class="large attach black icon">{{ views.quotation1 }}</i>
+            </a>
+        </td>
+    </tr>
+
+     <tr>
+
+        <td class="collapsing">
+            <div class="ui fitted checkbox">
+                <input type="checkbox"> <label></label>
+            </div>
+        </td>
+
+        <td>
+            6478
+        </td>
+
+        <td>
+            08/04/18
+        </td>
+
+        <td>
+            Purchase 3 Fans
+        </td>
+
+        <td>
+            <i class="large red remove icon"></i>
         </td>
 
         <td>
@@ -67,7 +103,8 @@
             </a>
         </td>
     </tr>
-
+    {% endfor %}
+    {% endfor %}
     </tbody>
 </table>
 

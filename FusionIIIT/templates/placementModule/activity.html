@@ -1,12 +1,33 @@
 {% block activity %}
-{% if current %}
+
+<div class="ui pointing secondary menu">
+    <a class="active item" data-tab="placementschedule">
+      Placement Schedule
+    </a>
+    {% for c3 in current2 %}
+    {% if c3.designation.name == 'placement officer' %}
+    <a class="item" data-tab="addschedule">
+        Add Schedule
+    </a>
+    {% endif %}
+    {% endfor %}
+    {% for c in current1 %}
+    {% if c.designation.name == 'placement chairman' %}
+    <a class="item" data-tab="addschedule">
+        Add Schedule
+    </a>
+    {% endif %}
+    {% endfor %}
+</div>
+
+  <div class="ui active tab" data-tab="placementschedule">
+    <div class="ui vertical segment">
         {% for c in current %}
         {% if c.designation.name == 'student' %}
            {% if placementstatus %}
             <!--The noticeboard card starts here!-->
 
                 <div class="content">
-                    <div class="ui header">Activity / Schedule</div>
                     <div class="ui divider"></div>
 
                     {% for ps in placementstatus %}
@@ -43,7 +64,9 @@
 
                 </div>
 
-            {% endif %}
+            {% else %}<center><h5>There are no Activities Scheduled.</h5></center>
+              {% endif %}
+
             {% endif %}
             {% endfor %}
 
@@ -52,7 +75,6 @@
                {% if schedules %}
 
                     <div class="content">
-                        <div class="ui header">Activity / Schedule</div>
                         <div class="ui divider"></div>
 
                       {% for sch in schedules %}
@@ -85,15 +107,20 @@
                 {% if schedules %}
 
                      <div class="content">
-                         <div class="ui header">Activity / Schedule</div>
                          <div class="ui divider"></div>
 
                        {% for sch in schedules %}
                        <span>
                          <div class="ui segments">
                            <div class="ui horizontal segments">
-                             <div class="ui segment">
-                               <strong><h3>{{ sch.notify_id.placement_type }} | {{ sch.notify_id.company_name }}</h3></strong><br>
+                             <div class="ui segment"> <form method="post" class="ui form" role="form">
+                               {% csrf_token %}
+                               <button name="deletesch" value="{{ sch.pk }}" class="ui inverted huge circular icon right floated button" style="margin: auto;" type="submit">
+                                   <i class="delete red icon"></i>
+                               </button>
+                               </form>
+                               <strong><h3>{{ sch.notify_id.placement_type }} | {{ sch.notify_id.company_name }}  </h3></strong><br>
+
                                Time of Message: {{ sch.notify_id.timestamp }}
 
                            </div>
@@ -113,7 +140,217 @@
                  {% endif %}
                     {% endif %}
                     {% endfor %}
-{% else %}
-<CENTER>  <B> No Placement Activities Scheduled for now</B> </CENTER>
+</div>
+</div>
+
+{% for c3 in current2 %}
+{% if c3.designation.name == 'placement officer'%}
+<div class="ui tab" data-tab="addschedule">
+    <div class="ui vertical segment">
+
+        {% comment %}Form Tag starts here!{% endcomment %}
+        <form method="post" class="ui form" role="form" >
+            {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+            <div class="ui accordion field">
+                <div class="title">
+                    <i class="icon dropdown"></i>
+                    Add a new Event!
+                </div>
+                {{ form5.non_field_errors }}
+                <div class="content">
+                    <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                      {% csrf_token %}
+                        <div class="three fields">
+                            <div class="eight wide field">
+                              {{ form5.company_name.errors }}
+                                <label>Company Name:</label>
+                                <div class="ui fluid large input">
+                                    {% comment %}The Institute Name input!{% endcomment %}
+                                    {{ form5.company_name }}
+                                </div>
+                            </div>
+
+                            <div class="four wide field">
+                              {{ form5.placement_date.errors }}
+                                <label for="{{ form.placement_date.id_for_label }}">
+                                  Date (yyyy-mm-dd):</label>
+                                <div class="ui calendar" id="rangestart">
+                                    <div class="ui input large left icon">
+                                        <i class="calendar icon"></i>
+                                        {{ form5.placement_date }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="four wide field">
+                              {{ form5.location.errors }}
+                                <label>Location:</label>
+                                <div class="ui fluid large input">
+                                    {% comment %}The Location input!{% endcomment %}
+                                    {{ form5.location }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="three fields">
+                            <div class="five wide field">
+                              {{ form5.ctc.errors }}
+                                <label>CTC in Lpa:</label>
+                                <div class="ui fluid large input">
+                                    {% comment %}The Institute Name input!{% endcomment %}
+                                    {{ form5.ctc }}
+                                </div>
+                            </div>
+                            <div class="five wide field">
+                              {{ form5.time.errors }}
+                                <label>Time:</label>
+                                <div class="ui fluid large input">
+                                    {% comment %}The Institute Name input!{% endcomment %}
+                                    {{ form5.time }}
+                                </div>
+                            </div>
+                        <div class="six wide field">
+                          {{ form5.placement_type.errors }}
+                            <label>Placement Type:</label>
+                            <div class="ui fluid large input">
+                                {% comment %}The Location input!{% endcomment %}
+                                {{ form5.placement_type }}
+                            </div>
+                        </div>
+                    </div>
+                        <div class="field">
+                          {{ form5.description.errors }}
+                            <label>
+                                Description
+                            </label>
+
+                            <div class="ui fluid large input">
+                                    {% comment %}The Location input!{% endcomment %}
+                                    {{ form5.description }}
+                            </div>
+                        </div>
+                        <div class="field">
+                            <button name="schedulesubmit" value="schedulesubmit" class="ui right floated large primary button" type="submit">
+                                Submit
+                            </button>
+                        </div>
+
+                        <br>
+                        <br>
+
+                    </div>
+                </div>
+            </div>
+            {% comment %}The add a new Achievement Accordian ends here!{% endcomment %}
+        </form>
+        {% comment %}Form Tag ends here!{% endcomment %}
+    </div>
+</div>
 {% endif %}
+{% endfor %}
+
+{% for c1 in current1 %}
+{% if c1.designation.name == 'placement chairman'%}
+<div class="ui tab" data-tab="addschedule">
+    <div class="ui vertical segment">
+
+        {% comment %}Form Tag starts here!{% endcomment %}
+        <form method="post" class="ui form" role="form" >
+            {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+            <div class="ui accordion field">
+                <div class="title">
+                    <i class="icon dropdown"></i>
+                    Add a new Event!
+                </div>
+                {{ form5.non_field_errors }}
+                <div class="content">
+                    <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                      {% csrf_token %}
+                        <div class="three fields">
+                            <div class="eight wide field">
+                              {{ form5.company_name.errors }}
+                                <label>Company Name:</label>
+                                <div class="ui fluid large input">
+                                    {% comment %}The Institute Name input!{% endcomment %}
+                                    {{ form5.company_name }}
+                                </div>
+                            </div>
+
+                            <div class="four wide field">
+                              {{ form5.placement_date.errors }}
+                                <label for="{{ form.placement_date.id_for_label }}">
+                                  Date (yyyy-mm-dd):</label>
+                                <div class="ui calendar" id="rangestart">
+                                    <div class="ui input large left icon">
+                                        <i class="calendar icon"></i>
+                                        {{ form5.placement_date }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="four wide field">
+                              {{ form5.location.errors }}
+                                <label>Location:</label>
+                                <div class="ui fluid large input">
+                                    {% comment %}The Location input!{% endcomment %}
+                                    {{ form5.location }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="three fields">
+                            <div class="five wide field">
+                              {{ form5.ctc.errors }}
+                                <label>CTC in Lpa:</label>
+                                <div class="ui fluid large input">
+                                    {% comment %}The Institute Name input!{% endcomment %}
+                                    {{ form5.ctc }}
+                                </div>
+                            </div>
+                            <div class="five wide field">
+                              {{ form5.time.errors }}
+                                <label>Time:</label>
+                                <div class="ui fluid large input">
+                                    {% comment %}The Institute Name input!{% endcomment %}
+                                    {{ form5.time }}
+                                </div>
+                            </div>
+                        <div class="six wide field">
+                          {{ form5.placement_type.errors }}
+                            <label>Placement Type:</label>
+                            <div class="ui fluid large input">
+                                {% comment %}The Location input!{% endcomment %}
+                                {{ form5.placement_type }}
+                            </div>
+                        </div>
+                    </div>
+                        <div class="field">
+                          {{ form5.description.errors }}
+                            <label>
+                                Description
+                            </label>
+
+                            <div class="ui fluid large input">
+                                    {% comment %}The Location input!{% endcomment %}
+                                    {{ form5.description }}
+                            </div>
+                        </div>
+                        <div class="field">
+                            <button name="schedulesubmit" value="schedulesubmit" class="ui right floated large primary button" type="submit">
+                                Submit
+                            </button>
+                        </div>
+
+                        <br>
+                        <br>
+
+                    </div>
+                </div>
+            </div>
+            {% comment %}The add a new Achievement Accordian ends here!{% endcomment %}
+        </form>
+        {% comment %}Form Tag ends here!{% endcomment %}
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+
 {% endblock %}

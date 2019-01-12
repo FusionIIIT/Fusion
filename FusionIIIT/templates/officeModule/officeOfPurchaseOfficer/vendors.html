@@ -14,7 +14,7 @@
     <div class="ui active tab" data-tab="tab2content1">
         <div class="ui vertical segment">
             {% block tab2content1 %}
-                {% include 'officeModule/officeOfPurchaseOfficer/vendors_content1.html' %}
+                {% include 'officeModule/officeOfPurchaseOfficer/vendors_content1.html' with p=p %}
             {% endblock %}
         </div>
     </div>

@@ -51,9 +51,9 @@ def homepage(request):
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
-    temp = HoldsDesignation.objects.all().filter(designation=desig_id).first()
-    print(temp)
-    print(current_user)
+    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
+    print (temp)
+    print (current_user)
     acadadmin = temp.working
     k = str(user_details).split()
     print(k)
@@ -67,22 +67,21 @@ def homepage(request):
     calendar = Calendar.objects.all()
     opt_courses = Course.objects.all().filter(optional=True)
     course_list = sem_for_generate_sheet()
-    get_course_list = Course.objects.all().filter(sem=course_list[0])
-    get_course_list_1 = Course.objects.all().filter(sem=course_list[1])
-    get_course_list_2 = Course.objects.all().filter(sem=course_list[2])
-    get_course_list_3 = Course.objects.all().filter(sem=course_list[3])
+    get_course_list = Course.objects.all().filter(sem = course_list[0])
+    get_course_list_1 = Course.objects.all().filter(sem = course_list[1])
+    get_course_list_2 = Course.objects.all().filter(sem = course_list[2])
+    get_course_list_3 = Course.objects.all().filter(sem = course_list[3])
 
-    get_courses = list(chain(get_course_list, get_course_list_1,
-                             get_course_list_2, get_course_list_3))
-    if(course_list[0] == 1):
+    get_courses = list(chain(get_course_list, get_course_list_1, get_course_list_2, get_course_list_3))
+    if(course_list[0]==1):
         course_list = [2, 4, 6, 8]
-    get_course_list = Course.objects.all().filter(sem=course_list[0])
-    get_course_list_1 = Course.objects.all().filter(sem=course_list[1])
-    get_course_list_2 = Course.objects.all().filter(sem=course_list[2])
-    get_course_list_3 = Course.objects.all().filter(sem=course_list[3])
+    get_course_list = Course.objects.all().filter(sem = course_list[0])
+    get_course_list_1 = Course.objects.all().filter(sem = course_list[1])
+    get_course_list_2 = Course.objects.all().filter(sem = course_list[2])
+    get_course_list_3 = Course.objects.all().filter(sem = course_list[3])
 
-    this_sem_courses = list(
-        chain(get_course_list, get_course_list_1, get_course_list_2, get_course_list_3))
+    this_sem_courses = list(chain(get_course_list, get_course_list_1, get_course_list_2, get_course_list_3))
+
 
     print("Courses>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>.", get_courses)
 
@@ -121,25 +120,25 @@ def homepage(request):
     pass
 
     context = {
-        'senates': senates,
-        'students': students,
-        'Convenor': Convenor,
-        'CoConvenor': CoConvenor,
-        'meetings': meetings,
-        'minuteForm': minuteForm,
-        'acadTtForm': acadTtForm,
-        'examTtForm': examTtForm,
-        'Dean': Dean,
-        'student': student,
-        'extra': extra,
-        'grade': grade,
-        'courses': courses,
-        'exam': exam_t,
-        'timetable': timetable,
-        'academic_calendar': calendar,
-        'opt_courses': opt_courses,
-        'next_sem_course': get_courses,
-        'this_sem_course': this_sem_courses,
+         'senates': senates,
+         'students': students,
+         'Convenor': Convenor,
+         'CoConvenor': CoConvenor,
+         'meetings': meetings,
+         'minuteForm': minuteForm,
+         'acadTtForm': acadTtForm,
+         'examTtForm': examTtForm,
+         'Dean': Dean,
+         'student': student,
+         'extra': extra,
+         'grade': grade,
+         'courses': courses,
+         'exam': exam_t,
+         'timetable': timetable,
+         'academic_calendar': calendar,
+         'opt_courses': opt_courses,
+         'next_sem_course': get_courses,
+         'this_sem_course': this_sem_courses,
     }
     return render(request, "ais/ais.html", context)
 
@@ -154,7 +153,9 @@ def senator(request):
         request - contains metadata about the requested page
 
     @variables:
-        rollno - rollno of the student to become the senator
+        current_user - gets the data of current user.
+        user_details - gets the details of the required user.
+        desig_id - used to check the designation ID.
         extraInfo - extraInfo object of the student with that rollno
         s - designation object of senator
         hDes - holdsDesignation object to store that the particualr student is holding the senator designation
@@ -165,9 +166,9 @@ def senator(request):
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
-    temp = HoldsDesignation.objects.all().filter(designation=desig_id).first()
-    print(temp)
-    print(current_user)
+    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
+    print (temp)
+    print (current_user)
     acadadmin = temp.working
     k = str(user_details).split()
     print(k)
@@ -176,11 +177,16 @@ def senator(request):
     if (str(acadadmin) != str(final_user)):
         return HttpResponseRedirect('/academic-procedures/')
     if request.method == 'POST':
-        rollno = request.POST.get('rollno')
+        print(request.POST, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+        rollno = request.POST.getlist('Roll Number')[0]
+        # print(request.POST.get('rollno'))
         extraInfo = ExtraInfo.objects.get(id=rollno)
-        s = Designation.objects.get(name='senate')
-        extraInfo.designation.add(s)
-        extraInfo.save()
+        s = Designation.objects.get(name='Senator')
+        hDes = HoldsDesignation()
+        hDes.user = extraInfo.user
+        hDes.working = extraInfo.user
+        hDes.designation = s
+        hDes.save()
         student = Student.objects.get(id=extraInfo)
         data = {
             'name': extraInfo.user.username,
@@ -188,11 +194,10 @@ def senator(request):
             'programme': student.programme,
             'branch': extraInfo.department.name
         }
-        return JsonResponse(data)
+        return HttpResponseRedirect('/aims/')
+        # return JsonResponse(data)
     else:
-        data = {}
-        return JsonResponse(data)
-
+        return HttpResponseRedirect('/aims/')
 
 @csrf_exempt
 def deleteSenator(request, pk):
@@ -209,12 +214,15 @@ def deleteSenator(request, pk):
                information that the particular student is a senator
 
     """
-    s = get_object_or_404(Designation, name="senate")
-    student = get_object_or_404(ExtraInfo, id=pk)
-    student.designation.remove(s)
-    data = {}
-    return JsonResponse(data)
-# ####################################################
+    print(request.POST)
+    if request.POST:
+        s = get_object_or_404(Designation, name="Senator")
+        student = get_object_or_404(ExtraInfo, id=request.POST.getlist("senate_id")[0])
+        hDes = get_object_or_404( HoldsDesignation, user = student.user)
+        hDes.delete()
+        return HttpResponseRedirect('/aims/')
+    else:
+        return HttpResponseRedirect('/aims/')# ####################################################
 
 
 # ##########covenors and coconvenors##################
@@ -244,25 +252,26 @@ def add_convenor(request):
     if request.method == 'POST':
         rollno = request.POST.get('rollno_convenor')
         extraInfo = ExtraInfo.objects.get(id=rollno)
+        s = Designation.objects.get(name='Convenor')
+        p = Designation.objects.get(name='Co Convenor')
         result = request.POST.get('designation')
+        hDes = HoldsDesignation()
+        hDes.user = extraInfo.user
+        hDes.working = extraInfo.user
         if result == "Convenor":
-            extraInfo.designation.add(s)
-            extraInfo.save()
-            designation = 'Convenor'
+            hDes.designation = s
         else:
-            extraInfo.designation.add(p)
-            extraInfo.save()
-            designation = 'Co Convenor'
+            hDes.designation = p
+        hDes.save()
         data = {
             'name': extraInfo.user.username,
             'rollno_convenor': extraInfo.id,
-            'designation': designation,
+            'designation': hDes.designation.name,
         }
         return JsonResponse(data)
     else:
         data = {}
         return JsonResponse(data)
-
 
 @csrf_exempt
 def deleteConvenor(request, pk):
@@ -285,19 +294,17 @@ def deleteConvenor(request, pk):
     s = get_object_or_404(Designation, name="Convenor")
     c = get_object_or_404(Designation, name="Co Convenor")
     student = get_object_or_404(ExtraInfo, id=pk)
-    for des in student.designation.all():
-        if des.name == s.name:
-            student.designation.remove(s)
-            designation = des.name
-        elif des.name == c.name:
-            designation = des.name
-            student.designation.remove(c)
+    hDes = HoldsDesignation.objects.filter(user = student.user)
+    designation = []
+    for des in hDes:
+        if des.designation == s or des.designation == c:
+            designation = des.designation.name
+            des.delete()
     data = {
         'id': pk,
         'designation': designation,
     }
-    return JsonResponse(data)
-# ######################################################
+    return JsonResponse(data)# ######################################################
 
 
 # ##########Senate meeting Minute##################
@@ -310,15 +317,17 @@ def addMinute(request):
         request - contains metadata about the requested page
 
     @variables:
-        minForm - the form that contains all the information & file about the new minute
+        current_user - details of the current user.
+        desig_id - to check the designation of the user.
+        user_details - to get the details of the required user.
 
     """
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
-    temp = HoldsDesignation.objects.all().filter(designation=desig_id).first()
-    print(temp)
-    print(current_user)
+    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
+    print (temp)
+    print (current_user)
     acadadmin = temp.working
     k = str(user_details).split()
     print(k)
@@ -348,9 +357,12 @@ def deleteMinute(request):
         t - the minute object received from id to be deleted
 
     """
-    minute = Meeting.objects.get(id=request.POST["delete"])
-    minute.delete()
-    return HttpResponse("Deleted")
+    if request.method == "POST":
+        data = request.POST['delete']
+        t = Meeting.objects.get(id=data)
+        t.delete()
+
+    return HttpResponseRedirect('/aims/')
 # ######################################################
 
 
@@ -365,16 +377,11 @@ def add_basic_profile(request):
         request - contains metadata about the requested page
 
     @variables:
-        username - the new username of student
-        password - the new password of the student
         name - the name of the student
         roll - the rollno of the student
-        sex - the gender of the student
-        age - student's age
-        category - student's category
         batch - the current batch of the student
         programme - the programme the student is enrolled in
-        department - the department of the student
+        ph - the phone number of the student
 
     """
     if request.method == "POST":
@@ -425,13 +432,16 @@ def delete_basic_profile(request, pk):
         s - the student object of the student
 
     """
-    if(Student.objects.get(id=pk)):
-        Student.objects.get(id=pk).delete()
-    else:
-        return HttpResponse("Id Does not exist")
-    data = {}
-    return JsonResponse(data)
-# #########################################################
+    e = get_object_or_404(ExtraInfo, id=pk)
+    user = get_object_or_404(User, username = e.user.username)
+    s = get_object_or_404(Student, id=e)
+    data = {
+        'rollno': pk,
+    }
+    s.delete()
+    e.delete()
+    u.delete()
+    return JsonResponse(data)# #########################################################
 
 
 # view to add attendance data to database
@@ -443,6 +453,9 @@ def add_attendance(request):
         request - contains metadata about the requested page
 
     @variables:
+        current_user - details of the current user.
+        user_details - details of the required user.
+        desig_id - to check the dwsignation of the user.
         course_id - the course id of the course for attendance entry from the user
         rollno - the rollno of the particular student
         total - the total no. of class
@@ -456,9 +469,9 @@ def add_attendance(request):
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
-    temp = HoldsDesignation.objects.all().filter(designation=desig_id).first()
-    print(temp)
-    print(current_user)
+    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
+    print (temp)
+    print (current_user)
     acadadmin = temp.working
     k = str(user_details).split()
     print(k)
@@ -467,55 +480,31 @@ def add_attendance(request):
     if (str(acadadmin) != str(final_user)):
         return HttpResponseRedirect('/academic-procedures/')
     if request.method == 'POST':
-        s_id = request.POST.get('student_id')
-        c_id = request.POST.get('course_id')
 
-        context = {}
-        # validating student data
-        try:
-            student_id = Student.objects.get(id_id=s_id)
-        except:
-            error_mess = "Student Data Not Found"
-            context['result'] = 'Failure'
-            context['message'] = error_mess
-            return HttpResponse(json.dumps(context), content_type='add_attendance/json')
-        # validating course data
-        try:
-            course_id = Course.objects.get(course_id=c_id)
-        except:
-            error_mess = "Course Data Not Found"
-            context['result'] = 'Failure'
-            context['message'] = error_mess
-            return HttpResponse(json.dumps(context), content_type='add_attendance/json')
+        course_id = request.POST.getlist('course_id')[0]
+        rollno = request.POST.getlist('rollno')[0]
+        total = int(request.POST.get('Total'))
+        attended = int(request.POST.get('attended'))
 
-        present_attend = int(request.POST.get('present_attend'))
-        total_attend = int(request.POST.get('total_attend'))
-        # checking attendance data
-        if present_attend > total_attend:
-            error_mess = "Present attendance should not be greater than Total attendance"
-            context['result'] = 'Failure'
-            context['message'] = error_mess
-            return HttpResponse(json.dumps(context), content_type='add_attendance/json')
-
-        try:
-            student_attend = Student_attendance.objects.get(student_id_id=student_id,
-                                                            course_id_id=course_id)
-            student_attend.present_attend = present_attend
-            student_attend.total_attend = total_attend
-            success_mess = "Your Data has been successfully edited"
-            student_attend.save()
-        except:
-            student_attend = Student_attendance()
-            student_attend.course_id = course_id
-            student_attend.student_id = student_id
-            student_attend.present_attend = present_attend
-            student_attend.total_attend = total_attend
-            success_mess = "Your Data has been successfully added"
-            student_attend.save()
+        c_id = Course.objects.get(course_id=course_id)
+        s_id = ExtraInfo.objects.get(id=rollno)
+        s_id = Student.objects.get(id=s_id)
+        check = Student_attendance.objects.all().filter(course_id=c_id, student_id=s_id).first()
+        if (check):
+            check.total_attend = total
+            check.present_attend = attended
+            check.save()
+        else:
+            form = Student_attendance(
+                student_id = s_id,
+                course_id= c_id,
+                present_attend = attended,
+                total_attend = total
+            )
+            form.save()
         context['result'] = 'Success'
-        context['message'] = success_mess
-        return HttpResponse(json.dumps(context), content_type='add_attendance/json')
-
+        return HttpResponse(json.dumps(context), content_type='delete_attendance/json')
+    return HttpResponse('/aims/')
 
 # view to fetch attendance data
 def get_attendance(request):
@@ -537,9 +526,9 @@ def get_attendance(request):
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
-    temp = HoldsDesignation.objects.all().filter(designation=desig_id).first()
-    print(temp)
-    print(current_user)
+    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
+    print (temp)
+    print (current_user)
     acadadmin = temp.working
     k = str(user_details).split()
     print(k)
@@ -599,9 +588,9 @@ def delete_attendance(request):
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
-    temp = HoldsDesignation.objects.all().filter(designation=desig_id).first()
-    print(temp)
-    print(current_user)
+    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
+    print (temp)
+    print (current_user)
     acadadmin = temp.working
     k = str(user_details).split()
     print(k)
@@ -612,8 +601,7 @@ def delete_attendance(request):
     course_id = request.GET.get('course_id')
     student_id = request.GET.get('student_id')
     c_id = Course.objects.get(course_id=course_id)
-    student_attend = Student_attendance.objects.get(
-        student_id_id=student_id, course_id_id=c_id)
+    student_attend = Student_attendance.objects.get(student_id_id=student_id, course_id_id=c_id)
     student_attend.delete()
     context = {}
     context['result'] = 'Success'
@@ -638,9 +626,9 @@ def delete_advanced_profile(request):
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
-    temp = HoldsDesignation.objects.all().filter(designation=desig_id).first()
-    print(temp)
-    print(current_user)
+    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
+    print (temp)
+    print (current_user)
     acadadmin = temp.working
     k = str(user_details).split()
     print(k)
@@ -674,6 +662,10 @@ def add_advanced_profile(request):
         request - contains metadata about the requested page
 
     @variables:
+        current_user - the username of the logged in user
+        user_details - the details of the current user
+        desig_id - checking the designation of the current user
+        acadadmin - deatils of the acad admin
         father - father's name of the student
         rollno - the rollno of the student required to check if the student is available
         mother - mother's name of the student
@@ -686,9 +678,9 @@ def add_advanced_profile(request):
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
-    temp = HoldsDesignation.objects.all().filter(designation=desig_id).first()
-    print(temp)
-    print(current_user)
+    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
+    print (temp)
+    print (current_user)
     acadadmin = temp.working
     k = str(user_details).split()
     print(k)
@@ -697,24 +689,32 @@ def add_advanced_profile(request):
     if (str(acadadmin) != str(final_user)):
         return HttpResponseRedirect('/academic-procedures/')
     if request.method == "POST":
-        try:
-            roll = ExtraInfo.objects.get(id=request.POST['roll'])
-            father = request.POST['father']
-            mother = request.POST['mother']
-            hall = request.POST['hall']
-            room = request.POST['room']
-        except:
-            return HttpResponse("Student Does Not Exist")
-        try:
-            db = Student.objects.get(id=roll)
-        except:
-            return HttpResponse("Student Does Not Exist")
-        db.father_name = father.upper()
-        db.mother_name = mother.upper()
-        db.hall_no = hall
-        db.room_no = room.upper()
-        db.save()
-    return HttpResponse("Data successfully inputed")
+        print(request.POST)
+        rollno=request.POST.get('roll')
+        print(rollno)
+        student = ExtraInfo.objects.get(id=rollno)
+        print(student.address)
+        if not student:
+            data = {}
+            return JsonResponse(data)
+        else:
+            father = request.POST.get('father')
+            mother = request.POST.get('mother')
+            add = request.POST.get('address')
+            hall = request.POST.get('hall')
+            room = request.POST.get('room')
+            cpi = request.POST.get('cpi')
+            student.address = str(hall) + " " + str(room)
+            student.save()
+            s = Student.objects.get(id=student)
+            s.father_name=father
+            s.mother_name=mother
+            s.hall_no = hall
+            s.room_no = room
+            s.save()
+
+            return HttpResponseRedirect('/academic-procedures/')
+    return HttpResponseRedirect('/academic-procedures/')
 
 
 def add_grade(request):
@@ -737,9 +737,9 @@ def add_grade(request):
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
-    temp = HoldsDesignation.objects.all().filter(designation=desig_id).first()
-    print(temp)
-    print(current_user)
+    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
+    print (temp)
+    print (current_user)
     acadadmin = temp.working
     k = str(user_details).split()
     print(k)
@@ -806,9 +806,9 @@ def delete_grade(request):
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
-    temp = HoldsDesignation.objects.all().filter(designation=desig_id).first()
-    print(temp)
-    print(current_user)
+    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
+    print (temp)
+    print (current_user)
     acadadmin = temp.working
     k = str(user_details).split()
     print(k)
@@ -842,6 +842,10 @@ def add_course(request):
         request - contains metadata about the requested page.
 
     @variables:
+        current_user - the username of the logged in user
+        user_details - the details of the current user
+        desig_id - checking the designation of the current user
+        acadadmin - deatils of the acad admin
         c_id = course id to be added to the database.
         c_name = course name to be added to the database.
         c_opt = check if the course is optional or not.
@@ -854,9 +858,9 @@ def add_course(request):
     current_user = get_object_or_404(User, username=request.user.username)
     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
-    temp = HoldsDesignation.objects.all().filter(designation=desig_id).first()
-    print(temp)
-    print(current_user)
+    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
+    print (temp)
+    print (current_user)
     acadadmin = temp.working
     k = str(user_details).split()
     print(k)
@@ -895,14 +899,13 @@ def add_course(request):
 
 def add_timetable(request):
     """
-    to add an entry to the academic calendar ppppppppppppppppppppppppppppppppppppppppppppppppppppp
+    acad-admin can upload the time table(any type of) of the semester.
 
     @param:
         request - contains metadata about the requested page.
 
     @variables:
-        examTtForm - data of delete dictionary in post request
-        t - Object of  time table to be added
+        acadTtForm - data of delete dictionary in post request
     """
     acadTtForm = AcademicTimetableForm()
     if request.method == 'POST' and request.FILES:
@@ -916,28 +919,24 @@ def add_timetable(request):
 
 def add_exam_timetable(request):
     """
-    to add an entry to the academic calendar ppppppppppppppppppppppppppppppppppppppppppppppppppppp
+    acad-admin can upload the exam timtable of the ongoing semester.
 
     @param:
         request - contains metadata about the requested page.
 
     @variables:
         examTtForm - data of delete dictionary in post request
-        t - Object of Exam time table to be added
     """
-    examTtForm = ExamTimetableForm()
     if request.method == 'POST' and request.FILES:
         examTtForm = ExamTimetableForm(request.POST, request.FILES)
         if examTtForm.is_valid():
+            print("kkk")
             examTtForm.save()
-            return HttpResponse('sucess')
-    else:
-        return HttpResponse('not uploaded')
-
+    return HttpResponseRedirect('/aims/')
 
 def delete_timetable(request):
     """
-    to add an entry to the academic calendar ppppppppppppppppp
+    acad-admin can delete the outdated timetable from the server.
 
     @param:
         request - contains metadata about the requested page.
@@ -955,7 +954,7 @@ def delete_timetable(request):
 
 def delete_exam_timetable(request):
     """
-    to add an entry to the academic calendar ppppppppppppppppppppppppppppppppppppppppppppppppppppp
+    acad-admin can delete the outdated exam timetable.
 
     @param:
         request - contains metadata about the requested page.
@@ -970,10 +969,9 @@ def delete_exam_timetable(request):
         t.delete()
         return HttpResponse("TimeTable Deleted")
 
-
 def add_calendar(request):
     """
-    to add an entry to the academic calendar
+    to add an entry to the academic calendar to be uploaded
 
     @param:
         request - contains metadata about the requested page.
@@ -1005,10 +1003,9 @@ def add_calendar(request):
         c.save()
         return HttpResponse("Calendar Added")
 
-
 def update_calendar(request):
     """
-    to update an entry to the academic calendar
+    to update an entry to the academic calendar to be updated.
 
     @param:
         request - contains metadata about the requested page.
@@ -1041,7 +1038,6 @@ def update_calendar(request):
         get_calendar_details.to_date = to_date
         get_calendar_details.save()
         return HttpResponseRedirect('/academic-procedures/')
-
 
 def add_optional(request):
     """
@@ -1080,7 +1076,7 @@ def min_cred(request):
         sem_cred = Get credit details from forms and the append it to an array.
         sem - Get the object for the minimum credits from the database and the update it.
     """
-    if request.method == "POST":
+    if request.method=="POST":
         sem_cred = []
         sem_cred.append(0)
         for i in range(1, 10):
@@ -1093,9 +1089,7 @@ def min_cred(request):
             sem.save()
         return HttpResponse("Worked")
 
-# Generate Attendance Sheet
-
-
+#Generate Attendance Sheet
 def sem_for_generate_sheet():
     """
     This function generates semester grade sheet
@@ -1122,7 +1116,7 @@ def generatexlsheet(request):
         request - contains metadata about the requested page
 
     @variables:
-        f_key -
+        f_key - gets the courses
         idd - Dictionary value of post data year
         course_id - Course object according to idd
         obj - Registration object of the year in idd
@@ -1142,9 +1136,9 @@ def generatexlsheet(request):
         st - temporary variables for final output
     """
     idd = str(request.POST['year'])
-    f_key = Course.objects.get(course_name=str(idd))
+    f_key = Course.objects.get(course_name = str(idd))
     course_id = str(f_key.course_id)
-    obj = Register.objects.all().filter(course_id=f_key)
+    obj = Register.objects.all().filter(course_id = f_key)
     ans = []
     for i in obj:
         k = []
@@ -1158,19 +1152,19 @@ def generatexlsheet(request):
     output = io.BytesIO()
     from xlsxwriter.workbook import Workbook
 
-    book = Workbook(output, {'in_memory': True})
+    book = Workbook(output,{'in_memory':True})
     title = book.add_format({'bold': True,
-                             'font_size': 22,
-                             'align': 'center',
-                             'valign': 'vcenter'})
+                                'font_size': 22,
+                                'align': 'center',
+                                'valign': 'vcenter'})
     subtitle = book.add_format({'bold': True,
                                 'font_size': 15,
                                 'align': 'center',
                                 'valign': 'vcenter'})
     normaltext = book.add_format({'bold': False,
-                                  'font_size': 15,
-                                  'align': 'center',
-                                  'valign': 'vcenter'})
+                                'font_size': 15,
+                                'align': 'center',
+                                'valign': 'vcenter'})
     sheet = book.add_worksheet()
 
     title_text = ((str(course_id)+" : "+str(str(idd))))
@@ -1178,41 +1172,42 @@ def generatexlsheet(request):
     sheet.set_default_row(25)
 
     sheet.merge_range('A2:E2', title_text, title)
-    sheet.write_string('A3', "Sl. No", subtitle)
-    sheet.write_string('B3', "Roll No", subtitle)
-    sheet.write_string('C3', "Name", subtitle)
-    sheet.write_string('D3', "Discipline", subtitle)
-    sheet.write_string('E3', 'Signature', subtitle)
-    sheet.set_column('A:A', 20)
-    sheet.set_column('B:B', 20)
-    sheet.set_column('C:C', 60)
-    sheet.set_column('D:D', 15)
-    sheet.set_column('E:E', 30)
+    sheet.write_string('A3',"Sl. No",subtitle)
+    sheet.write_string('B3',"Roll No",subtitle)
+    sheet.write_string('C3',"Name",subtitle)
+    sheet.write_string('D3',"Discipline",subtitle)
+    sheet.write_string('E3','Signature',subtitle)
+    sheet.set_column('A:A',20)
+    sheet.set_column('B:B',20)
+    sheet.set_column('C:C',60)
+    sheet.set_column('D:D',15)
+    sheet.set_column('E:E',30)
     k = 4
     num = 1
     for i in ans:
-        sheet.write_number('A'+str(k), num, normaltext)
-        num += 1
-        z, b, c = str(i[0]), i[1], i[2]
+        sheet.write_number('A'+str(k),num,normaltext)
+        num+=1
+        z,b,c = str(i[0]),i[1],i[2]
         name = str(b)+" "+str(c)
         temp = str(i[3]).split()
         dep = str(temp[len(temp)-1])
-        sheet.write_string('B'+str(k), z, normaltext)
-        sheet.write_string('C'+str(k), name, normaltext)
-        sheet.write_string('D'+str(k), dep, normaltext)
-        k += 1
+        sheet.write_string('B'+str(k),z,normaltext)
+        sheet.write_string('C'+str(k),name,normaltext)
+        sheet.write_string('D'+str(k),dep,normaltext)
+        k+=1
     book.close()
     output.seek(0)
-    response = HttpResponse(
-        output.read(), content_type='application/vnd.ms-excel')
+    response = HttpResponse(output.read(),content_type = 'application/vnd.ms-excel')
     st = 'attachment; filename = ' + course_id + '.xlsx'
     response['Content-Disposition'] = st
     return response
 
 
+
+
 def generate_preregistration_report(request):
     """
-    to generate preresgistration report after
+    to generate preresgistration report after pre-registration
 
     @param:
         request - contains metadata about the requested page
@@ -1229,7 +1224,7 @@ def generate_preregistration_report(request):
         z - temporary array to add data to variable data
 
     """
-    sem = sem_for_generate_sheet()
+    sem = sem_for_generate_sheet();
     # EDIT HERE ON DEPLOYMENT
     sem = [2, 4, 6, 8]
     print(sem)
@@ -1247,19 +1242,18 @@ def generate_preregistration_report(request):
         z.append(m)
         m += 1
         z.append(i.student_id.id.user.username)
-        z.append(str(i.student_id.id.user.first_name) +
-                 " "+str(i.student_id.id.user.last_name))
+        z.append(str(i.student_id.id.user.first_name)+" "+str(i.student_id.id.user.last_name))
         z.append(i.student_id.id.department.name)
         z.append(i.course_id.credits)
         z.append(i.course_id.course_id)
         z.append(i.course_id.course_name)
         try:
-            p = Instructor.objects.get(course_id=i.course_id)
+            p = Instructor.objects.get(course_id = i.course_id)
             z.append(p.instructor_id)
         except:
             z.append("Dr. Atul Gupta")
         data.append(z)
     data.sort()
     print(data)
-    context = {'dict': data}
-    return render(request, 'ais/generate_preregistration_report.html', context)
+    context = {'dict':data }
+    return render(request,'ais/generate_preregistration_report.html', context)

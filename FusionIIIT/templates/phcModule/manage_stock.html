@@ -9,13 +9,11 @@
         <a class="item" data-tab="addmedicine">
           Add New Medicine
         </a>
-
-        <a class="item" data-tab="viewstock">
-          View Stock
+        <a class="item" data-tab="viewexpiredstock">
+          Expired Medicine
         </a>
-
-        <a class="item" data-tab="viewinventory">
-          View Inventory
+        <a class="item" data-tab="viewlivestock">
+          Live Medicine
         </a>
         <a class="item" data-tab="thresholdstock">
           Threshold Stock
@@ -43,6 +41,18 @@
                         </div>
                     </div>
                     <div class="field">
+                        <label>Supplier</label>
+                        <div class="ui fluid large input">
+                            <input placeholder="Supplier" id="supplier" name="supplier" type="text">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Expiry Date</label>
+                        <div class="ui fluid large input">
+                            <input id="expiry_date" name="expiry_date" type="date">
+                        </div>
+                    </div>
+                    <div class="field">
                     <label><br></label>
 
                     <div >
@@ -56,7 +66,9 @@
                                                   {
                                                     var medicine = document.getElementById('medicine_a').value;
                                                     var qty = document.getElementById('quantity_a').value;
-                                                    if ( medicine==""||qty==""||qty<=0) {
+                                                    var supplier = document.getElementById('supplier').value;
+                                                    var expiry_date = document.getElementById('expiry_date').value;
+                                                    if ( medicine==""||supplier==""||expiry_date==""||qty==""||qty<=0) {
                                                         $('#medicine_add').html('Enter valid details');
                                                         return false;
                                                     }
@@ -68,7 +80,10 @@
                                                       csrfmiddlewaretoken: '{{ csrf_token }}',
                                                       medicine_id:$("#medicine_a").val(),
                                                       quantity:$("#quantity_a").val(),
+                                                      supplier:$("#supplier").val(),
+                                                      expiry_date:$("#expiry_date").val(),
                                                       add_stock:$("#add_stock").val()
+
                                                     },
                                                       success: function(data){
                                                       alert("added stock ");
@@ -111,6 +126,18 @@
                     </div>
                 </div>
                 <div class="field">
+                    <label>Supplier</label>
+                    <div class="ui fluid large input">
+                        <input placeholder="Supplier" id="new_supplier" name="new_supplier" type="text">
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Expiry Date</label>
+                    <div class="ui fluid large input">
+                        <input id="new_expiry_date" name="new_expiry_date" type="date">
+                    </div>
+                </div>
+                <div class="field">
                 <label><br></label>
 
                 <div >
@@ -125,7 +152,9 @@
                                                     var new_medicine = document.getElementById('new_medicine').value;
                                                     var threshold = document.getElementById('threshold').value;
                                                     var new_quantity = document.getElementById('new_quantity').value;
-                                                    if ( new_medicine==""||new_quantity==""||new_quantity<=0||threshold==""||threshold<0) {
+                                                    var new_supplier = document.getElementById('new_supplier').value;
+                                                    var new_expiry_date = document.getElementById('new_expiry_date').value;
+                                                    if ( new_medicine==""||new_expiry_date==""||new_supplier==""||new_quantity==""||new_quantity<=0||threshold==""||threshold<0) {
                                                         $('#med_add').html('Enter valid details');
                                                         return false;
                                                     }
@@ -138,6 +167,8 @@
                                                       new_medicine:$("#new_medicine").val(),
                                                       new_quantity:$("#new_quantity").val(),
                                                       threshold:$("#threshold").val(),
+                                                      new_supplier:$("#new_supplier").val(),
+                                                      new_expiry_date:$("#new_expiry_date").val(),
                                                       add_medicine:$('#add_medicine').val()
                                                     },
                                                       success: function(data){
@@ -145,6 +176,8 @@
                                                       document.getElementById("new_medicine").value="";
                                                       document.getElementById("threshold").value="";
                                                       document.getElementById("new_quantity").value="";
+                                                      document.getElementById("new_supplier").value="";
+                                                      document.getElementById("new_expiry_date").value="";
                                                     }
                                                   });
                                                 });
@@ -160,7 +193,7 @@
 
 
     {% comment %}the view stock tab starts here {% endcomment %}
-    <div class="ui tab" data-tab="viewstock">
+    <div class="ui tab" data-tab="viewlivestock">
         <div class="ui vertical segment" >
             <table class="ui very basic collapsing celled large fluid sortable table"
                    style="padding-left: 2.5%;padding-right: 2.5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
@@ -195,50 +228,82 @@
         </div>
     </div>
     {% comment %}the view stock tab ends here {% endcomment %}
-
-    {% comment %}the view inventory tab starts here {% endcomment %}
-    <div class="ui tab" data-tab="viewinventory">
+    {% comment %}the view stock tab starts here {% endcomment %}
+    <div class="ui tab" data-tab="viewexpiredstock">
         <div class="ui vertical segment" >
             <table class="ui very basic collapsing celled large fluid sortable table"
                    style="padding-left: 2.5%;padding-right: 2.5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
                 <thead>
                 <tr>
-                    <th class="three wide">
+                    <th class="two wide">
                         Medicine
                     </th>
 
-                    <th class="three wide" >
+                    <th class="two wide" >
                         Quantity
                     </th>
-                    <th class="three wide" >
-                        Date
+                    <th class="two wide" >
+                        Expiry Date
+                    </th>
+                    <th class="two wide" >
+                        Supplier
+                    </th>
+                    <th class="two wide" >
+                        Return
                     </th>
 
                 </tr>
                 </thead>
 
                 <tbody>
-                {% for inventory in inventories %}
+                {% for view in expired %}
                 <tr>
 
                     <td>
-                       {{inventory.medicine_id}}
+                       {{view.medicine_id}}
                     </td>
 
                     <td>
-                        {{inventory.quantity}}
+                        {{view.quantity}}
                     </td>
                     <td>
-                        {{inventory.date}}
+                        {{view.expiry_date}}
                     </td>
+                    <td>
+                        {{view.supplier}}
+                    </td>
+                    {% if view.returned == False %}
+                    <td>
+                        <input type="hidden" id="return_id" name="id" value={{view.id}} />
+                        <input type='button' value='Returned' id="returned" name="returned" class=" return ui small right floated primary button" />
+                    </td>
+                    {% endif %}
                 </tr>
                 {% endfor %}
                 </tbody>
+
             </table>
+            <script type="text/javascript">
+                  $('#returned').click(function(e)
+                                                      {
+                                                        $.ajax({
+                                                          type:'post',
+                                                          url:'/healthcenter/compounder/',
+                                                          data: {
+                                                          csrfmiddlewaretoken: '{{ csrf_token }}',
+                                                          id:$("#return_id").val(),
+                                                          returned:$("#returned").val()
+                                                        },
+                                                          success: function(data){
+                                                            alert("returned medicine to supplier");
+                                                          }
+                                                      });
+                                                    });
+                </script>
         </div>
     </div>
-    {% comment %}the view inventory tab ends here {% endcomment %}
-
+    {% comment %}the view stock tab ends here {% endcomment %}
+    
         {% comment %}the threshold stock tab starts here {% endcomment %}
         <div class="ui tab" data-tab="thresholdstock">
             <div class="ui vertical segment" >

@@ -5,11 +5,24 @@
     <div class="ui fluid card">
         <div class="content">
             <div class="ui header">
-              <form method="POST" action="/placement/" class="ui form" role="form">
+              <form method="POST" action="/dashboard/" enctype="multipart/form-data" class="ui form" role="form">
                 About Me
 
-                  {{ form.non_field_errors }}
+                  {{ form14.non_field_errors }}
                   {% csrf_token %}
+                <!--  <div class="ui red mini button right floated">
+                    <label  for="{{ form.pic.id_for_label }}">
+                         <i class="file icon"></i>
+                         Change Profile Picture</label>
+                         <input name=pic type="file" id="file" value="{{ profile.profile_picture }}" style="display:none">                         {{ form.pic }}
+                     <button type="submit">Upload</button>
+
+                  </div>
+
+              -->
+                </form>
+                  <form method="POST" action="/dashboard/" class="ui form" role="form">
+                    {% csrf_token %}
                   <input type="submit" value="Save Profile Details" class="ui red mini button right floated" name="profilesubmit">
             </div>
 
@@ -39,12 +52,12 @@
                     <tbody>
                         <tr>
                             <td>
-                                Date of Birth
+                                Age
                             </td>
 
                             <td>
-                              <div class="ui calendar input">
-                                <input name=dob
+                              <div class="ui fluid input">
+                                <input name=age
                                           rows=5
                                           type="text"
                                           style="width: 100%;"
@@ -53,7 +66,7 @@
                             </td>
                         </tr>
 
-                        <tr>
+                        <!--<tr>
                             <td>
                                 Desired Future Option:
                             </td>
@@ -75,7 +88,7 @@
                                 </div>
                               {% endif %}
                             </td>
-                        </tr>
+                        </tr>-->
 
                         <tr>
                             <td>

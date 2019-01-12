@@ -3,16 +3,14 @@
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="tab2content1">
-            Expenses
+           <!--Employee Expenses-->
+              Expenses
+
         </a>
 
-        <a class="item" data-tab="tab2content2">
-            Electric Department
-        </a>
-
-        <a class="item" data-tab="tab2content3">
-            Guest House
-        </a>
+        <!--<a class="item" data-tab="tab2content3">-->
+           <!--Visitor Hostel Expenses-->
+        <!--</a>-->
     </div>
 
     <div class="ui active tab" data-tab="tab2content1">
@@ -23,19 +21,19 @@
         </div>
     </div>
 
-    <div class="ui tab" data-tab="tab2content2">
-        <div class="ui vertical segment">
-            {% block tab2content2 %}
-                {% include 'officeModule/officeOfRegistrar/generalAdministration_content2.html' %}
-            {% endblock %}
-        </div>
-    </div>
+    <!--<div class="ui tab" data-tab="tab2content2">-->
+        <!--<div class="ui vertical segment">-->
+            <!--{% block tab2content2 %}-->
+                <!--{% include 'officeModule/officeOfRegistrar/generalAdministration_content2.html' %}-->
+            <!--{% endblock %}-->
+        <!--</div>-->
+    <!--</div>-->
 
-    <div class="ui tab" data-tab="tab2content3">
-        <div class="ui vertical segment">
-            {% block tab2content3 %}
-                {% include 'officeModule/officeOfRegistrar/generalAdministration_content3.html' %}
-            {% endblock %}
-        </div>
-    </div>
+    <!--<div class="ui tab" data-tab="tab2content3">-->
+        <!--<div class="ui vertical segment">-->
+            <!--{% block tab2content3 %}-->
+                <!--{% include 'officeModule/officeOfRegistrar/generalAdministration_content3.html' %}-->
+            <!--{% endblock %}-->
+        <!--</div>-->
+    <!--</div>-->
 {% endblock tab2%}

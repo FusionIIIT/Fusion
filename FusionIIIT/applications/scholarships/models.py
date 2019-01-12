@@ -119,6 +119,7 @@ class Mcm(models.Model):
     date = models.DateField(default=datetime.date.today)
     award_id = models.ForeignKey(Award_and_scholarship, default=4)
 
+
     class Meta:
         db_table = 'Mcm'
 
@@ -131,6 +132,7 @@ class Notional_prize(models.Model):
     cpi = models.FloatField()
     year = models.CharField(max_length=10, choices=Constants.batch)
     award_id = models.ForeignKey(Award_and_scholarship, default=4)
+
 
     class Meta:
         db_table = 'Notional_prize'
@@ -145,11 +147,12 @@ class Previous_winner(models.Model):
         db_table = 'Previous_winner'
 
 
+
 class Release(models.Model):
     startdate = models.DateField(default=datetime.date.today)
     enddate = models.DateField()
-    award = models.CharField(default='', max_length=25)
-    remarks = models.TextField(max_length=500, default='')
+    award = models.CharField(default='',max_length=25)
+    remarks = models.TextField(max_length=500,default='')
 
     class Meta:
         db_table = 'Release'
@@ -160,13 +163,12 @@ class Director_silver(models.Model):
     nearest_railwaystation = models.TextField(max_length=30, default='station')
     correspondence_address = models.TextField(max_length=150, null=True)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    award_id = models.ForeignKey(
-        Award_and_scholarship, on_delete=models.CASCADE)
+    award_id = models.ForeignKey(Award_and_scholarship, on_delete=models.CASCADE)
     status = models.CharField(max_length=10, choices=Constants.STATUS_CHOICES,
                               default='INCOMPLETE')
     relevant_document = models.FileField(null=True, blank=True)
     date = models.DateField(default=datetime.date.today)
-    financial_assistance = models.TextField(max_length=1000, null=True)
+    financial_assistance = models.TextField(max_length=1000 ,null=True)
     grand_total = models.IntegerField(null=True)
     inside_achievements = models.TextField(max_length=1000, null=True)
     justification = models.TextField(max_length=1000, null=True)
@@ -177,6 +179,7 @@ class Director_silver(models.Model):
     nearest_policestation = models.CharField(max_length=25, null=True)
     nearest_railwaystation = models.CharField(max_length=25, null=True)
 
+
     class Meta:
         db_table = 'Director_silver'
 
@@ -185,8 +188,7 @@ class Proficiency_dm(models.Model):
     relevant_document = models.FileField(null=True, blank=True)
     title_name = models.CharField(max_length=30, null=True)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    award_id = models.ForeignKey(
-        Award_and_scholarship, on_delete=models.CASCADE)
+    award_id = models.ForeignKey(Award_and_scholarship, on_delete=models.CASCADE)
     status = models.CharField(max_length=10, choices=Constants.STATUS_CHOICES,
                               default='INOMPLETE')
     nearest_policestation = models.TextField(max_length=30, default='station')
@@ -199,14 +201,14 @@ class Proficiency_dm(models.Model):
     roll_no3 = models.IntegerField(default=0)
     roll_no4 = models.IntegerField(default=0)
     roll_no5 = models.IntegerField(default=0)
-    financial_assistance = models.TextField(max_length=1000, null=True)
-    brief_description = models.TextField(max_length=1000, null=True)
-    justification = models.TextField(max_length=1000, null=True)
+    financial_assistance = models.TextField(max_length=1000 ,null=True)
+    brief_description = models.TextField(max_length=1000 ,null=True)
+    justification = models.TextField(max_length=1000 ,null=True)
     grand_total = models.IntegerField(null=True)
-    ece_topic = models.CharField(max_length=25, null=True)
-    cse_topic = models.CharField(max_length=25, null=True)
-    mech_topic = models.CharField(max_length=25, null=True)
-    design_topic = models.CharField(max_length=25, null=True)
+    ece_topic = models.CharField(max_length=25,null=True)
+    cse_topic = models.CharField(max_length=25,null=True)
+    mech_topic = models.CharField(max_length=25,null=True)
+    design_topic = models.CharField(max_length=25,null=True)
     ece_percentage = models.IntegerField(null=True)
     cse_percentage = models.IntegerField(null=True)
     mech_percentage = models.IntegerField(null=True)
@@ -216,6 +218,7 @@ class Proficiency_dm(models.Model):
     grand_total = models.IntegerField(null=True)
     nearest_policestation = models.CharField(max_length=25, null=True)
     nearest_railwaystation = models.CharField(max_length=25, null=True)
+
 
     class Meta:
         db_table = 'Proficiency_dm'
@@ -231,22 +234,22 @@ class Director_gold(models.Model):
     relevant_document = models.FileField(null=True, blank=True)
     date = models.DateField(default=datetime.date.today)
     award_id = models.ForeignKey(Award_and_scholarship, default=4)
-    financial_assistance = models.TextField(max_length=1000, null=True)
-    academic_achievements = models.TextField(max_length=1000, null=True)
-    science_inside = models.TextField(max_length=1000, null=True)
-    science_outside = models.TextField(max_length=1000, null=True)
-    games_inside = models.TextField(max_length=1000, null=True)
-    games_outside = models.TextField(max_length=1000, null=True)
-    cultural_inside = models.TextField(max_length=1000, null=True)
-    cultural_outside = models.TextField(max_length=1000, null=True)
-    social = models.TextField(max_length=1000, null=True)
-    coorporate = models.TextField(max_length=1000, null=True)
-    hall_activities = models.TextField(max_length=1000, null=True)
-    gymkhana_activities = models.TextField(max_length=1000, null=True)
-    institute_activities = models.TextField(max_length=1000, null=True)
-    counselling_activities = models.TextField(max_length=1000, null=True)
-    other_activities = models.TextField(max_length=1000, null=True)
-    justification = models.TextField(max_length=1000, null=True)
+    financial_assistance = models.TextField(max_length=1000 ,null=True)
+    academic_achievements = models.TextField(max_length=1000 ,null=True)
+    science_inside = models.TextField(max_length=1000 ,null=True)
+    science_outside = models.TextField(max_length=1000 ,null=True)
+    games_inside = models.TextField(max_length=1000 ,null=True)
+    games_outside = models.TextField(max_length=1000 ,null=True)
+    cultural_inside = models.TextField(max_length=1000 ,null=True)
+    cultural_outside = models.TextField(max_length=1000 ,null=True)
+    social = models.TextField(max_length=1000 ,null=True)
+    coorporate = models.TextField(max_length=1000 ,null=True)
+    hall_activities = models.TextField(max_length=1000 ,null=True)
+    gymkhana_activities = models.TextField(max_length=1000 ,null=True)
+    institute_activities = models.TextField(max_length=1000 ,null=True)
+    counselling_activities = models.TextField(max_length=1000 ,null=True)
+    other_activities = models.TextField(max_length=1000 ,null=True)
+    justification = models.TextField(max_length=1000 ,null=True)
     grand_total = models.IntegerField(null=True)
     correspondence_address = models.CharField(max_length=100, null=True)
     financial_assistance = models.TextField(max_length=1000, null=True)

@@ -67,17 +67,37 @@
                 </a>
                 {% endif %}
                 {% endfor %}-->
+                {% for c in current %}
+                {% if c.designation.name == 'student' %}
                  <a class="active item" data-tab="twelth">
-                     Placement Activity / Schedule
+                     Placement Schedule
                      <i class="right floated chevron right icon"></i>
                  </a>
+                 {% endif %}
+                 {% endfor %}
+
 
                 {% for c in current2 %}
                 {% if c.designation.name == 'placement officer' %}
-                <a class="item" data-tab="ninth">
+                {% if students %}
+                <a class="item" data-tab="twelth">
+                    Placement Schedule
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <a class="active item" data-tab="ninth">
                     Student Records
                     <i class="right floated chevron right icon"></i>
                 </a>
+                {% else %}
+                 <a class="active item" data-tab="twelth">
+                     Placement Schedule
+                     <i class="right floated chevron right icon"></i>
+                 </a>
+                 <a class="item" data-tab="ninth">
+                     Student Records
+                     <i class="right floated chevron right icon"></i>
+                 </a>
+                 {% endif %}
 
                 <a class="item" data-tab="tenth">
                     Manage Records
@@ -88,10 +108,25 @@
 
                 {% for c in current1 %}
                 {% if c.designation.name == 'placement chairman' %}
-                <a class="item" data-tab="ninth">
+                {% if students %}
+                <a class="item" data-tab="twelth">
+                    Placement Schedule
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <a class="active item" data-tab="ninth">
                     Student Records
                     <i class="right floated chevron right icon"></i>
                 </a>
+                {% else %}
+                 <a class="active item" data-tab="twelth">
+                     Placement Schedule
+                     <i class="right floated chevron right icon"></i>
+                 </a>
+                 <a class="item" data-tab="ninth">
+                     Student Records
+                     <i class="right floated chevron right icon"></i>
+                 </a>
+                 {% endif %}
 
                 <a class="item" data-tab="tenth">
                     Manage Records
@@ -103,6 +138,7 @@
                 </a>
                 {% endif %}
                 {% endfor %}
+
                 <a class="item" data-tab="eighth">
                     Placement Statistics
                     <i class="right floated chevron right icon"></i>
@@ -174,6 +210,7 @@
             {% endfor %}
 
 
+
             {% for c in current1 %}
             {% if c.designation.name == 'placement chairman' %}
             {% comment %}The Placement Visits tab starts here!{% endcomment %}
@@ -187,22 +224,31 @@
             {% endfor %}
 
             {% comment %}The Placement Statistics tab starts here!{% endcomment %}
+            {% if students %}
+            <div class="ui tab segment" data-tab="twelth">
+              {% else %}
+              <div class="ui active tab segment" data-tab="twelth">
+                {% endif %}
+                {% block activity %}
+                    {% include 'placementModule/activity.html' %}
+                {% endblock %}
+            </div>
             <div class="ui tab segment" data-tab="eighth">
                 {% block placementstatistics %}
                     {% include 'placementModule/placementstatistics.html' %}
                 {% endblock %}
             </div>
-            <div class="ui active tab segment" data-tab="twelth">
-                {% block activity %}
-                    {% include 'placementModule/activity.html' %}
-                {% endblock %}
-            </div>
+
             {% comment %}The Placement Visits tab ends here!{% endcomment %}
 
 
             {% if current == None %}
+            {% if students %}
             {% comment %}The Placement Statistics tab starts here!{% endcomment %}
-            <div class="ui tab segment" data-tab="ninth">
+            <div class="ui active tab segment" data-tab="ninth">
+              {% else %}
+              <div class="ui tab segment" data-tab="ninth">
+                {% endif %}
                 {% block studentrecords %}
                     {% include 'placementModule/studentrecords.html' %}
                 {% endblock %}

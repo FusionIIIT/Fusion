@@ -1,4 +1,3 @@
-from .tasks import notify as liveNotify
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -7,7 +6,6 @@ from django.db import models
 from django.db.models.signals import m2m_changed, post_delete
 from django.dispatch import receiver
 from django.utils import timezone
-from django.utils.decorators import method_decorator
 from django.utils.timesince import timesince
 
 
@@ -54,8 +52,6 @@ class NotificationManager(models.Manager):
         if generator:
             notif.generator.add(generator)
         notif.save()
-        if getattr(settings, "NOTIFY_ON_CREATE", True):
-            notif.notify()
         return notif
 
     """ Discard notification deletes the notification or removes the generator for the """
@@ -97,14 +93,14 @@ class NotificationManager(models.Manager):
         elif generator and generator in notif.generator.all():
             notif.delete()
 
-    def seen(self, seen=True, *args, **kwargs):
-        queryset = super(NotificationManager, self).get_queryset().filter(**kwargs)
+    def seen(self, seen=True):
+        queryset = super(NotificationManager, self).get_queryset()
         queryset.update(seen=seen)
         for qry in queryset:
             qry.activities.all().update(seen=seen)
 
-    def read(self, read=True, *args, **kwargs):
-        queryset = super(NotificationManager, self).get_queryset().filter(**kwargs)
+    def read(self, read=True):
+        queryset = super(NotificationManager, self).get_queryset()
         queryset.update(read=read)
         for qry in queryset:
             qry.activities.all().update(read=read)
@@ -207,9 +203,6 @@ class Notification(models.Model):
     def mark_read(self, read=True):
         self.read = read
         super(Notification, self).save()
-
-    def notify(self):
-        liveNotify(self)
 
 
 """ Activities are to keep track of user's activity for mergeable and

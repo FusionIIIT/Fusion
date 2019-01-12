@@ -68,7 +68,7 @@ class QuestionFormObjective(forms.Form):
     image = forms.FileField(required=False)
     answer = forms.IntegerField(label='Answer',
                                 widget=forms.Textarea(
-                                    attrs={'placeholder': 'Enter in between 1 & 5'}))
+                                                      attrs={'placeholder': 'Enter in between 1 & 5'}))
     option1 = forms.CharField(label='Option1', max_length=100)
     option2 = forms.CharField(label='Option2', max_length=100)
     option3 = forms.CharField(label='Option3', max_length=100,
@@ -83,3 +83,5 @@ class QuestionFormObjective(forms.Form):
 
         super(QuestionFormObjective, self).__init__(*args, **kwargs)
         self.fields['image'].widget.attrs.update({'accept': 'image/*'})
+
+        

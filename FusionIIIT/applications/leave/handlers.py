@@ -31,7 +31,8 @@ def add_leave_segment(form, type_of_leaves):
         end_date=data.get('end_date'),
         start_half=data.get('start_half'),
         end_half=data.get('end_half'),
-        document=data.get('document')
+        document=data.get('document'),
+        address=data.get('address') #changed
     )
     return leave_segment
 
@@ -97,7 +98,7 @@ def handle_faculty_leave_application(request):
 
         data = common_form.cleaned_data
         leave.purpose = data.get('purpose')
-        leave.is_station = data.get('is_station')
+        #leave.is_station = data.get('is_station')
         leave.extra_info = data.get('leave_info')
         leave.save()
         for segment in segments:
@@ -162,7 +163,7 @@ def handle_staff_leave_application(request):
 
         data = common_form.cleaned_data
         leave.purpose = data.get('purpose')
-        leave.is_station = data.get('is_station')
+        #leave.is_station = data.get('is_station')
         leave.extra_info = data.get('leave_info')
         leave.save()
         for segment in segments:

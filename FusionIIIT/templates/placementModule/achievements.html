@@ -48,7 +48,7 @@
                               <div class="four wide field">
                                 {{ form12.date_earned.errors }}
                                 <label for="{{ form12.date_earned.id_for_label }}">
-                                  Date:
+                                  Date (yyyy-mm-dd):
                                 </label>
                                 <div class="ui calendar" id="rangestart2">
                                     <div class="ui input large left icon">
@@ -133,7 +133,7 @@
                     <td>
                       <form method="post" class="ui form" role="form">
                         {% csrf_token %}
-                        <button name="deleteach" value="{{ course.pk }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
+                        <button name="deleteach" value="{{ achievement.pk }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
                             <i class="delete red icon"></i>
                         </button>
                         </form>

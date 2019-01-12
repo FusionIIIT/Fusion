@@ -1,9 +1,9 @@
 <table class="ui very basic collapsing celled sortable table"
        style="padding-left: 2.5%;
-                                                          padding-right: 2.5%;
-                                                          padding-top: 1%;
-                                                          padding-bottom: 1.5%;
-                                                          margin: auto;">
+              padding-right: 2.5%;
+              padding-top: 1%;
+              padding-bottom: 1.5%;
+              margin: auto;">
     <thead>
     <tr>
         <th class="one wide column">
@@ -20,6 +20,9 @@
         <th class="four wide column">
             Post
         </th>
+        <th class="one wide column">
+            Duration
+        </th>
 
         <th class="two wide column">
             Attachment
@@ -28,51 +31,56 @@
     </thead>
 
     <tbody>
+    {% for views in view3 %}
     <tr>
 
         <td class="collapsing">
             <div class="ui fitted checkbox">
-                <input type="checkbox"> <label></label>
+                <input type="checkbox" id="{{views.id}}"> <label></label>
             </div>
         </td>
 
         <td>
             <h4 class="ui image header">
                 <div class="content">
-                    Zlatan Ibrahimovic
+                    {{views.person_name}}
                     <div class="sub header">
-                        gmail@zlatan.com
+                       {{views.person_mail_id}}
                     </div>
                 </div>
             </h4>
         </td>
 
         <td>
-            ...
+            {{views.date}}
         </td>
 
         <td>
-            ...
+           {{views.post}}
+        </td>
+
+        <td>
+            {{views.duration}}
         </td>
 
         <td>
             {% comment %}
                             TODO: Add the attachment here!
                         {% endcomment %}
-            <a class="ui inverted circular icon button" style="margin: auto;" target="_blank" href="">
-                <i class="large attach black icon"></i>
+            <a class="ui inverted circular icon button" style="margin: auto;" target="_blank" href= "{{ views.file.url }}">
+                <i class="large attach black icon">{{views.file}}</i>
             </a>
         </td>
     </tr>
-
+    {% endfor %}
     </tbody>
 </table>
 
 
 <br>
 
-<div class="ui primary right floated button">Approve Selected</div>
-<div class="ui red right floated button">Reject Selected</div>
+<div class="ui primary right floated button" onclick="submit" >Approve Selected</div>
+<div class="ui red right floated button" >Reject Selected</div>
 
 <br>
 <br>

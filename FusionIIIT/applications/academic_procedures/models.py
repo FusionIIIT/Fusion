@@ -6,6 +6,7 @@ from applications.academic_information.models import Course, Student
 from applications.globals.models import DepartmentInfo, ExtraInfo, Faculty
 
 
+
 class Constants:
     SEM_CHOICES = (
         ('1', '1'),
@@ -20,8 +21,7 @@ class Constants:
 
     MTechSpecialization = (
         ('Power and Control', 'Power and Control'),
-        ('Microwave and Communication Engineering',
-         'Microwave and Communication Engineering'),
+        ('Microwave and Communication Engineering', 'Microwave and Communication Engineering'),
         ('Micro-nano Electronics', 'Micro-nano Electronics'),
         ('CAD/CAM', 'CAD/CAM'),
         ('Design', 'Design'),
@@ -82,8 +82,7 @@ class BranchChange(models.Model):
 
 class CoursesMtech(models.Model):
     c_id = models.ForeignKey(Course, on_delete=models.CASCADE)
-    specialization = models.CharField(
-        max_length=30, choices=Constants.MTechSpecialization)
+    specialization = models.CharField(max_length=30, choices=Constants.MTechSpecialization)
 
     def __str__(self):
         return str(self.c_id)
@@ -95,3 +94,5 @@ class MinimumCredits(models.Model):
 
     def __str__(self):
         return "Semester: " + str(self.semester)+" Credits:" + str(self.credits)
+
+    

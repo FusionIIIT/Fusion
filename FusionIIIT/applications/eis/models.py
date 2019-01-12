@@ -7,18 +7,17 @@ from django.core.urlresolvers import reverse
 
 class emp_visits(models.Model):
     pf_no = models.CharField(max_length=20)
-    v_type = models.IntegerField(default=1)
+    v_type = models.IntegerField(default = 1)
     country = models.CharField(max_length=500, default=" ")
     place = models.CharField(max_length=500, default=" ")
     purpose = models.CharField(max_length=500, default=" ")
-    v_date = models.DateField(null=True, blank=True)
-    start_date = models.DateField(null=True, blank=True)
-    end_date = models.DateField(null=True, blank=True)
-    entry_date = models.DateField(
-        null=True, blank=True, default=datetime.datetime.now)
+    v_date = models.DateField(null=True,blank=True)
+    start_date = models.DateField(null=True,blank=True)
+    end_date = models.DateField(null=True,blank=True)
+    entry_date = models.DateField(null=True,blank=True, default=datetime.datetime.now)
 
     def __str__(self):
-        return 'PF No.: {}   Name: {}   Purpose: {}'.format(self.pf_no, self.country, self.purpose)
+        return 'PF No.: {}   Name: {}   Purpose: {}'.format(self.pf_no,self.country,self.purpose)
 
     def get_absolute_url(self):
         return reverse('eis:profile')
@@ -27,8 +26,7 @@ class emp_visits(models.Model):
 class emp_techtransfer(models.Model):
     pf_no = models.IntegerField()
     details = models.CharField(max_length=500, default=" ")
-    date_entry = models.DateField(
-        null=True, blank=True, default=datetime.datetime.now)
+    date_entry = models.DateField(null=True, blank=True, default=datetime.datetime.now)
 
 
 class emp_session_chair(models.Model):
@@ -38,20 +36,17 @@ class emp_session_chair(models.Model):
     YEAR_CHOICES = []
     for r in range(1995, 2018):
         YEAR_CHOICES.append((r, r))
-    s_year = models.IntegerField(
-        ('year'), choices=YEAR_CHOICES, null=True, blank=True)
+    s_year = models.IntegerField(('year'), choices=YEAR_CHOICES, null=True, blank=True)
     MONTH_CHOICES = []
     for r in range(1, 13):
         MONTH_CHOICES.append((r, r))
-    a_month = models.IntegerField(
-        ('Month'), choices=MONTH_CHOICES, null=True, blank=True, default=1)
+    a_month = models.IntegerField(('Month'), choices=MONTH_CHOICES, null=True, blank=True, default=1)
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
-    date_entry = models.DateField(
-        null=True, blank=True, default=datetime.datetime.now)
+    date_entry = models.DateField(null=True, blank=True, default=datetime.datetime.now)
 
     def __str__(self):
-        return 'PF No.: {}   Name: {}'.format(self.pf_no, self.name)
+        return 'PF No.: {}   Name: {}'.format(self.pf_no,self.name)
 
 
 class emp_research_projects(models.Model):
@@ -68,15 +63,14 @@ class emp_research_projects(models.Model):
         ('Ongoing', 'Ongoing'),
         ('Completed', 'Completed')
     )
-    status = models.CharField(max_length=10, choices=STATUS_TYPE_CHOICES)
+    status = models.CharField(max_length = 10, choices = STATUS_TYPE_CHOICES)
     start_date = models.DateField(null=True, blank=True)
     finish_date = models.DateField(null=True, blank=True)
     date_submission = models.DateField(null=True, blank=True)
-    date_entry = models.DateField(
-        null=True, blank=True, default=datetime.datetime.now)
+    date_entry = models.DateField(null=True, blank=True, default=datetime.datetime.now)
 
     def __str__(self):
-        return 'PF No.: {}   pi: {}  title: {}'.format(self.pf_no, self.pi, self.title)
+        return 'PF No.: {}   pi: {}  title: {}'.format(self.pf_no,self.pi, self.title)
 
 
 class emp_research_papers(models.Model):
@@ -85,8 +79,7 @@ class emp_research_papers(models.Model):
         ('Journal', 'Journal'),
         ('Conference', 'Conference'),
     )
-    rtype = models.CharField(
-        max_length=50, choices=R_TYPE_CHOICES, default='Conference')
+    rtype = models.CharField(max_length=50, choices = R_TYPE_CHOICES, default='Conference')
     authors = models.CharField(max_length=250, null=True, blank=True)
     title_paper = models.CharField(max_length=250, null=True, blank=True)
     name_journal = models.CharField(max_length=250, null=True, blank=True)
@@ -97,8 +90,7 @@ class emp_research_papers(models.Model):
         ('Yes', 'Yes'),
         ('No', 'No'),
     )
-    is_sci = models.CharField(
-        max_length=3, choices=IS_SCI_TYPE_CHOICES, null=True, blank=True)
+    is_sci = models.CharField(max_length=3, choices=IS_SCI_TYPE_CHOICES, null=True, blank=True)
     issn_no = models.CharField(max_length=250, null=True, blank=True)
     doi = models.CharField(max_length=40, null=True, blank=True)
     start_date = models.DateField(null=True, blank=True)
@@ -108,29 +100,25 @@ class emp_research_papers(models.Model):
     YEAR_CHOICES = []
     for r in range(1995, (datetime.datetime.now().year + 1)):
         YEAR_CHOICES.append((r, r))
-    year = models.IntegerField(
-        ('year'), choices=YEAR_CHOICES, null=True, blank=True)
+    year = models.IntegerField(('year'), choices=YEAR_CHOICES, null=True, blank=True)
     MONTH_CHOICES = []
     for r in range(1, 13):
         MONTH_CHOICES.append((r, r))
-    a_month = models.IntegerField(
-        ('Month'), choices=MONTH_CHOICES, null=True, blank=True, default=1)
+    a_month = models.IntegerField(('Month'), choices=MONTH_CHOICES, null=True, blank=True, default=1)
     doc_id = models.CharField(max_length=50, null=True, blank=True)
     doc_description = models.CharField(max_length=100, null=True, blank=True)
-    date_entry = models.DateField(
-        null=True, blank=True, default=datetime.datetime.now)
+    date_entry = models.DateField(null=True, blank=True, default=datetime.datetime.now)
     STATUS_TYPE_CHOICES = (
         ('Published', 'Published'),
         ('Accepted', 'Accepted'),
         ('Communicated', 'Communicated'),
     )
-    status = models.CharField(
-        max_length=15, choices=STATUS_TYPE_CHOICES, null=True, blank=True)
+    status = models.CharField(max_length=15, choices=STATUS_TYPE_CHOICES, null=True, blank=True)
     date_submission = models.DateField(null=True, blank=True)
     reference_number = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self):
-        return 'PF No.: {}   Author: {}  Title: {}'.format(self.pf_no, self.authors, self.title_paper)
+        return 'PF No.: {}   Author: {}  Title: {}'.format(self.pf_no,self.authors, self.title_paper)
 
 
 class emp_published_books(models.Model):
@@ -148,19 +136,16 @@ class emp_published_books(models.Model):
     YEAR_CHOICES = []
     for r in range(1995, (datetime.datetime.now().year + 1)):
         YEAR_CHOICES.append((r, r))
-    pyear = models.IntegerField(
-        ('year'), choices=YEAR_CHOICES, null=True, blank=True)
+    pyear = models.IntegerField(('year'), choices=YEAR_CHOICES, null=True, blank=True)
     MONTH_CHOICES = []
     for r in range(1, 13):
         MONTH_CHOICES.append((r, r))
-    a_month = models.IntegerField(
-        ('Month'), choices=MONTH_CHOICES, null=True, blank=True, default=1)
+    a_month = models.IntegerField(('Month'), choices=MONTH_CHOICES, null=True, blank=True, default=1)
     co_authors = models.CharField(max_length=250, default=" ")
-    date_entry = models.DateField(
-        null=True, blank=True, default=datetime.datetime.now)
+    date_entry = models.DateField(null=True, blank=True, default=datetime.datetime.now)
 
     def __str__(self):
-        return 'PF No.: {}   Type: {}  Title: {}'.format(self.pf_no, self.p_type, self.title)
+        return 'PF No.: {}   Type: {}  Title: {}'.format(self.pf_no,self.p_type, self.title)
 
 
 class emp_patents(models.Model):
@@ -178,18 +163,15 @@ class emp_patents(models.Model):
     YEAR_CHOICES = []
     for r in range(1995, (datetime.datetime.now().year + 1)):
         YEAR_CHOICES.append((r, r))
-    p_year = models.IntegerField(
-        ('year'), choices=YEAR_CHOICES, null=True, blank=True)
+    p_year = models.IntegerField(('year'), choices=YEAR_CHOICES, null=True, blank=True)
     MONTH_CHOICES = []
     for r in range(1, 13):
         MONTH_CHOICES.append((r, r))
-    a_month = models.IntegerField(
-        ('Month'), choices=MONTH_CHOICES, null=True, blank=True, default=1)
-    date_entry = models.DateField(
-        null=True, blank=True, default=datetime.datetime.now)
+    a_month = models.IntegerField(('Month'), choices=MONTH_CHOICES, null=True, blank=True, default=1)
+    date_entry = models.DateField(null=True, blank=True, default=datetime.datetime.now)
 
     def __str__(self):
-        return 'PF No.: {}   Status: {}  Title: {}'.format(self.pf_no, self.status, self.title)
+        return 'PF No.: {}   Status: {}  Title: {}'.format(self.pf_no,self.status, self.title)
 
 
 class emp_mtechphd_thesis(models.Model):
@@ -203,18 +185,15 @@ class emp_mtechphd_thesis(models.Model):
     YEAR_CHOICES = []
     for r in range(1995, (datetime.datetime.now().year + 1)):
         YEAR_CHOICES.append((r, r))
-    s_year = models.IntegerField(
-        ('year'), choices=YEAR_CHOICES, null=True, blank=True)
+    s_year = models.IntegerField(('year'), choices=YEAR_CHOICES, null=True, blank=True)
     MONTH_CHOICES = []
     for r in range(1, 13):
         MONTH_CHOICES.append((r, r))
-    a_month = models.IntegerField(
-        ('Month'), choices=MONTH_CHOICES, null=True, blank=True, default=1)
-    date_entry = models.DateField(
-        null=True, blank=True, default=datetime.datetime.now)
+    a_month = models.IntegerField(('Month'), choices=MONTH_CHOICES, null=True, blank=True, default=1)
+    date_entry = models.DateField(null=True, blank=True, default=datetime.datetime.now)
 
     def __str__(self):
-        return 'PF No.: {}   Supervisor: {}  Title: {}'.format(self.pf_no, self.supervisors, self.title)
+        return 'PF No.: {}   Supervisor: {}  Title: {}'.format(self.pf_no,self.supervisors, self.title)
 
 
 class emp_keynote_address(models.Model):
@@ -223,8 +202,7 @@ class emp_keynote_address(models.Model):
         ('Keynote', 'Keynote'),
         ('Plenary Address', 'Plenary Address'),
     )
-    type = models.CharField(
-        max_length=14, choices=KEYNOTE_TYPE_CHOICES, default='Keynote')
+    type = models.CharField(max_length=14, choices=KEYNOTE_TYPE_CHOICES, default='Keynote')
     title = models.CharField(max_length=100)
     name = models.CharField(max_length=100)
     venue = models.CharField(max_length=100)
@@ -233,20 +211,17 @@ class emp_keynote_address(models.Model):
     YEAR_CHOICES = []
     for r in range(1995, (datetime.datetime.now().year + 1)):
         YEAR_CHOICES.append((r, r))
-    k_year = models.IntegerField(
-        ('year'), choices=YEAR_CHOICES, null=True, blank=True)
+    k_year = models.IntegerField(('year'), choices=YEAR_CHOICES, null=True, blank=True)
     MONTH_CHOICES = []
     for r in range(1, 13):
         MONTH_CHOICES.append((r, r))
-    a_month = models.IntegerField(
-        ('Month'), choices=MONTH_CHOICES, null=True, blank=True, default=1)
+    a_month = models.IntegerField(('Month'), choices=MONTH_CHOICES, null=True, blank=True, default=1)
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
-    date_entry = models.DateField(
-        null=True, blank=True, default=datetime.datetime.now)
+    date_entry = models.DateField(null=True, blank=True, default=datetime.datetime.now)
 
     def __str__(self):
-        return 'PF No.: {}   Name: {}  Title: {}'.format(self.pf_no, self.name, self.title)
+        return 'PF No.: {}   Name: {}  Title: {}'.format(self.pf_no,self.name, self.title)
 
 
 class emp_expert_lectures(models.Model):
@@ -255,23 +230,19 @@ class emp_expert_lectures(models.Model):
         ('Expert Lecture', 'Expert Lecture'),
         ('Invited Talk', 'Invited Talk'),
     )
-    l_type = models.CharField(
-        max_length=14, choices=LECTURE_TYPE_CHOICES, default='Expert Lecture', null=False)
+    l_type = models.CharField(max_length=14, choices=LECTURE_TYPE_CHOICES, default='Expert Lecture', null=False)
     title = models.CharField(max_length=100)
     place = models.CharField(max_length=100)
     l_date = models.DateField(null=True, blank=True)
     YEAR_CHOICES = []
     for r in range(1995, (datetime.datetime.now().year + 1)):
         YEAR_CHOICES.append((r, r))
-    l_year = models.IntegerField(
-        ('year'), choices=YEAR_CHOICES, null=True, blank=True)
+    l_year = models.IntegerField(('year'), choices=YEAR_CHOICES, null=True, blank=True)
     MONTH_CHOICES = []
     for r in range(1, 13):
         MONTH_CHOICES.append((r, r))
-    a_month = models.IntegerField(
-        ('Month'), choices=MONTH_CHOICES, null=True, blank=True, default=1)
-    date_entry = models.DateField(
-        null=True, blank=True, default=datetime.datetime.now)
+    a_month = models.IntegerField(('Month'), choices=MONTH_CHOICES, null=True, blank=True, default=1)
+    date_entry = models.DateField(null=True, blank=True, default=datetime.datetime.now)
 
     def __str__(self):
         return 'PF No.: {}  Title: {}'.format(self.pf_no, self.title)
@@ -298,8 +269,7 @@ class emp_event_organized(models.Model):
     role = models.CharField(max_length=11, choices=ROLE_TYPE_CHOICES)
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
-    date_entry = models.DateField(
-        null=True, blank=True, default=datetime.datetime.now)
+    date_entry = models.DateField(null=True, blank=True, default=datetime.datetime.now)
 
     def __str__(self):
         return 'PF No.: {}  Name: {}'.format(self.pf_no, self.name)
@@ -314,8 +284,7 @@ class emp_consultancy_projects(models.Model):
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
     duration = models.CharField(max_length=50, null=True, blank=True)
-    date_entry = models.DateField(
-        null=True, blank=True, default=datetime.datetime.now)
+    date_entry = models.DateField(null=True, blank=True, default=datetime.datetime.now)
 
     def __str__(self):
         return 'PF No.: {}  Consultants: {}'.format(self.pf_no, self.consultants)
@@ -328,17 +297,14 @@ class emp_confrence_organised(models.Model):
     YEAR_CHOICES = []
     for r in range(1995, (datetime.datetime.now().year + 1)):
         YEAR_CHOICES.append((r, r))
-    k_year = models.IntegerField(
-        ('year'), choices=YEAR_CHOICES, null=True, blank=True)
+    k_year = models.IntegerField(('year'), choices=YEAR_CHOICES, null=True, blank=True)
     MONTH_CHOICES = []
     for r in range(1, 13):
         MONTH_CHOICES.append((r, r))
-    a_month = models.IntegerField(
-        ('Month'), choices=MONTH_CHOICES, null=True, blank=True, default=1)
+    a_month = models.IntegerField(('Month'), choices=MONTH_CHOICES, null=True, blank=True, default=1)
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
-    date_entry = models.DateField(
-        default=datetime.datetime.now, null=True, blank=True)
+    date_entry = models.DateField(default=datetime.datetime.now, null=True, blank=True)
     ROLE1_TYPE_CHOICES = (
         ('Advisary Committee', 'Advisary Committee'),
         ('Program Committee', 'Program Committee'),
@@ -346,8 +312,7 @@ class emp_confrence_organised(models.Model):
         ('Conference Chair', 'Conference Chair'),
         ('Any Other', 'Any Other'),
     )
-    role1 = models.CharField(max_length=20, choices=ROLE1_TYPE_CHOICES,
-                             null=True, blank=True, default="Any Other")
+    role1 = models.CharField(max_length=20, choices=ROLE1_TYPE_CHOICES, null=True, blank=True, default="Any Other")
     role2 = models.CharField(max_length=20, null=True, blank=True)
 
     def __str__(self):
@@ -362,40 +327,35 @@ class emp_achievement(models.Model):
         ('Prize', 'Prize'),
         ('Other', 'Other'),
     )
-    a_type = models.CharField(
-        max_length=18, choices=A_TYPE_CHOICES, default="Other")
+    a_type = models.CharField(max_length=18, choices=A_TYPE_CHOICES, default="Other")
     details = models.TextField(max_length=1550, default=" ")
     DAY_CHOICES = []
     for r in range(1, 32):
         DAY_CHOICES.append((r, r))
-    a_day = models.IntegerField(
-        ('Day'), choices=DAY_CHOICES, null=True, blank=True)
+    a_day = models.IntegerField(('Day'), choices=DAY_CHOICES, null=True, blank=True)
     MONTH_CHOICES = []
     for r in range(1, 13):
         MONTH_CHOICES.append((r, r))
-    a_month = models.IntegerField(
-        ('Month'), choices=MONTH_CHOICES, null=True, blank=True)
+    a_month = models.IntegerField(('Month'), choices=MONTH_CHOICES, null=True, blank=True)
     YEAR_CHOICES = []
     for r in range(1995, (datetime.datetime.now().year + 1)):
         YEAR_CHOICES.append((r, r))
-    a_year = models.IntegerField(
-        ('year'), choices=YEAR_CHOICES, null=True, blank=True)
+    a_year = models.IntegerField(('year'), choices=YEAR_CHOICES, null=True, blank=True)
     date_entry = models.DateField(default=datetime.datetime.now)
 
     def __str__(self):
-        return 'PF No.: {} {} : {}'.format(self.pf_no, self.a_type, self.details)
+        return 'PF No.: {} {} : {}'.format(self.pf_no, self.a_type,self.details)
 
     def get_absolute_url(self):
         return reverse('eis:profile')
 
-
 class faculty_about(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User,on_delete=models.CASCADE)
     about = models.TextField(max_length=1000)
     doj = models.DateField(default=datetime.datetime.now)
     education = models.TextField(max_length=500)
     interest = models.TextField(max_length=500)
-    contact = models.CharField(max_length=20, null=True, blank=True)
+    contact = models.CharField(max_length=20,null=True, blank=True)
 
     def __str__(self):
         return str(self.user)

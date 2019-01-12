@@ -23,8 +23,9 @@ class Mess_minutesAdmin(admin.ModelAdmin):
     fieldsets = [
         ('meeting_date', {'fields': ['meeting_date']}),
         ('mess_minutes', {'fields': ['mess_minutes']}),
-    ]
+        ]
     list_display = ('meeting_date', 'mess_minutes')
+
 
 
 class MenuAdmin(admin.ModelAdmin):
@@ -33,7 +34,7 @@ class MenuAdmin(admin.ModelAdmin):
         ('mess_option', {'fields': ['mess_option']}),
         ('meal_time', {'fields': ['meal_time']}),
         ('dish', {'fields': ['dish']}),
-    ]
+        ]
     list_display = ('mess_option', 'meal_time', 'dish')
 
 
@@ -43,8 +44,9 @@ class Mess_regAdmin(admin.ModelAdmin):
         ('sem', {'fields': ['sem']}),
         ('start_reg', {'fields': ['start_reg']}),
         ('end_reg', {'fields': ['end_reg']}),
-    ]
+        ]
     list_display = ('start_reg', 'end_reg')
+
 
 
 class Monthly_billAdmin(admin.ModelAdmin):
@@ -58,9 +60,10 @@ class Monthly_billAdmin(admin.ModelAdmin):
         ('rebate_amount', {'fields': ['rebate_amount']}),
         ('total_bill', {'fields': ['total_bill']}),
 
-    ]
+        ]
     list_display = ('student_id', 'month', 'amount',
                     'nonveg_total_bill', 'rebate_count', 'rebate_amount', 'total_bill')
+
 
 
 class PaymentsAdmin(admin.ModelAdmin):
@@ -69,7 +72,7 @@ class PaymentsAdmin(admin.ModelAdmin):
         ('student_id', {'fields': ['student_id']}),
         ('sem', {'fields': ['sem']}),
         ('amount_paid', {'fields': ['amount_paid']}),
-    ]
+        ]
     list_display = ('student_id', 'sem', 'amount_paid')
 
 
@@ -81,9 +84,10 @@ class RebateAdmin(admin.ModelAdmin):
         ('end_date', {'fields': ['end_date']}),
         ('purpose', {'fields': ['purpose']}),
         ('status', {'fields': ['status']}),
-    ]
+        ]
     list_display = ('student_id', 'start_date', 'end_date',
                     'purpose', 'status')
+
 
 
 class Vacation_foodAdmin(admin.ModelAdmin):
@@ -94,9 +98,10 @@ class Vacation_foodAdmin(admin.ModelAdmin):
         ('end_date', {'fields': ['end_date']}),
         ('purpose', {'fields': ['purpose']}),
         ('status', {'fields': ['status']}),
-    ]
+        ]
     list_display = ('student_id', 'start_date', 'end_date',
                     'purpose', 'status')
+
 
 
 class Nonveg_menuAdmin(admin.ModelAdmin):
@@ -105,8 +110,9 @@ class Nonveg_menuAdmin(admin.ModelAdmin):
         ('dish', {'fields': ['dish']}),
         ('price', {'fields': ['price']}),
         ('order_interval', {'fields': ['order_interval']}),
-    ]
+        ]
     list_display = ('dish', 'price', 'order_interval')
+
 
 
 class Nonveg_dataAdmin(admin.ModelAdmin):
@@ -116,8 +122,9 @@ class Nonveg_dataAdmin(admin.ModelAdmin):
         ('order_date', {'fields': ['order_date']}),
         ('dish', {'fields': ['dish']}),
         ('order_interval', {'fields': ['order_interval']}),
-    ]
+        ]
     list_display = ('student_id', 'order_date', 'dish', 'order_interval')
+
 
 
 class Special_requestAdmin(admin.ModelAdmin):
@@ -128,9 +135,10 @@ class Special_requestAdmin(admin.ModelAdmin):
         ('end_date', {'fields': ['end_date']}),
         ('request', {'fields': ['request']}),
         ('status', {'fields': ['status']}),
-    ]
+        ]
     list_display = ('student_id', 'start_date', 'end_date',
                     'request', 'status')
+
 
 
 class Menu_change_requestAdmin(admin.ModelAdmin):
@@ -139,7 +147,7 @@ class Menu_change_requestAdmin(admin.ModelAdmin):
         ('dish', {'fields': ['dish']}),
         ('request', {'fields': ['request']}),
         ('status', {'fields': ['status']}),
-    ]
+        ]
     list_display = ('dish', 'request', 'status')
 
 
@@ -150,8 +158,9 @@ class Mess_meetingAdmin(admin.ModelAdmin):
         ('agenda', {'fields': ['agenda']}),
         ('venue', {'fields': ['venue']}),
         ('meeting_time', {'fields': ['meeting_time']}),
-    ]
+        ]
     list_display = ('meet_date', 'agenda', 'venue', 'meeting_time')
+
 
 
 class FeedbackAdmin(admin.ModelAdmin):
@@ -161,7 +170,7 @@ class FeedbackAdmin(admin.ModelAdmin):
         ('fdate', {'fields': ['fdate']}),
         ('description', {'fields': ['description']}),
         ('feedback_type', {'fields': ['feedback_type']})
-    ]
+        ]
     list_display = ('student_id', 'fdate', 'description', 'feedback_type')
 
 

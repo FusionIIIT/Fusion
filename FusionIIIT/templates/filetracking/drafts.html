@@ -5,7 +5,7 @@
     <div class="ui pointing secondary menu">
         <h3>
             <a class="active item" data-tab="inward">
-            Saved Files
+            Created Files
             </a>
         </h3>
 
@@ -17,9 +17,9 @@
         <thead>
         <tr>
             <th>File ID</th>
+            <th>Created As</th>
             <th>Title</th>
             <th>Date</th>
-            <th>Download File</th>
             <th>View File</th>
         </tr>
         </thead>
@@ -27,15 +27,11 @@
         <tbody>
         {% for j in draft %}
         <tr>
-            <td>{{j.ref_id}}</td>
+            <td>{{request.user.extrainfo.department.name}}/{{j.upload_date.year}}/{{j.upload_date.month}}/#{{j.id}}</td>
+            <td>{{j.designation}}</td>
             <td>{{j.subject}}</td>
             <td>{{j.upload_date}}</td>
-            <td>
-                <a href="/media/{{j.upload_file}}" target="_blank"><button class="ui primary button">
-                          Download
-                </button></a>
-            </td>
-            <td><a href="{% url 'filetracking:forward' j.ref_id %}"><button class="ui primary button">
+            <td><a href="{% url 'filetracking:forward' j.id %}"><button class="ui primary button">
                           View
                 </button></a></td>
         </tr>

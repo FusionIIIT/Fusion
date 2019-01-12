@@ -4,10 +4,10 @@
     {% comment %}the compounder prescription tab starts here {% endcomment %}
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="prescribe_app">
-            Prescribe Appointment
+            Prescribe with Appointment
         </a>
         <a class="item" data-tab="prescribe">
-            Prescribe
+            Prescribe without Appointment
         </a>
         <a class="item" data-tab="hospitaladmit">
             Hospital Admission
@@ -140,6 +140,7 @@
                                                           times:$("#times").val()
                                                         },
                                                           success: function(data){
+
                                                               alert("added medicine");
                                                               document.getElementById("quantity").value="";
                                                               document.getElementById("medicine_id").value="";
@@ -412,8 +413,13 @@
 
                   <div class="field">
                       <label>Hospital</label>
-                      <input type='text' required=true placeholder="Hospital Name" name='hospital_name' id='hospital_name' />
-                  </div>
+                      <select class="ui search fluid dropdown" name="hospital_name" id="hospital_name" required="true">
+                        <option value="" disabled selected>--SELECT--</option>
+                        {% for h in hospitals %}
+                        <option value="{{h.id}}">{{h.hospital_name}}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
                   <div class="field">
                       <label>Hospital Doctor</label>
                       <input type='text' placeholder="Hospital Doctor" name='hospital_doctor' id='hospital_doctor' />

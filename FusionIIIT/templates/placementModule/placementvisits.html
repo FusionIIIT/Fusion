@@ -41,7 +41,7 @@
                                 <div class="field">
                                   {{ form.visiting_date.errors }}
                                     <label for="{{ form.visiting_date.id_for_label }}">
-                                        Date:
+                                        Date (yyyy-mm-dd):
                                     </label>
                                     <div class="ui calendar" id="rangestart">
                                         <div class="ui input large left icon">
@@ -130,7 +130,6 @@
                             {{ chairmanvisit.description }}
                         </td>
 
-                        {% if profile.designation.name == 'placement chairman' %}
                         <td>
                           <form method="post" class="ui form" role="form">
                             {% csrf_token %}
@@ -139,7 +138,6 @@
                             </button>
                             </form>
                         </td>
-                        {% endif %}
                     </tr>
                     {% endfor %}
                 </tbody>

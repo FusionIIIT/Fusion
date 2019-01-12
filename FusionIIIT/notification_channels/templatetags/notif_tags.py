@@ -19,16 +19,6 @@ def get_notif_count(user):
     return user.notifications.all().count()
 
 
-@register.simple_tag(name='get_count_type_unseen')
-def get_count_type_unseen(notif_type, user):
-    return user.notifications.filter(notif_type=notif_type, seen=False).count()
-
-
-@register.simple_tag(name='get_unseen_notif_count')
-def get_unseen_notif_count(user):
-    return user.notifications.filter(seen=False).count()
-
-
 @register.simple_tag(name='get_related_notifs')
 def get_related_notifs(obj):
     obj_ctype = ContentType.objects.get_for_model(obj)

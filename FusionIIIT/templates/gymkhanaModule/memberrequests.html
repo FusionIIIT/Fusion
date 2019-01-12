@@ -2,6 +2,47 @@
 {% block memberrequests %}
 
     {% comment %}The tab menu starts here!{% endcomment %}
+    
+    {% for i in Club_member %}
+        {% if i.status == "open" %}
+            <div class="ui small modal {{ i.member.id.id }}{{ i.club.club_name}}" >
+                <i class="close icon"></i>
+                <div class="header">
+                    Applicant's Info
+                </div>
+                <div class="image content">
+                    <div class="ui medium image">
+                      <img src="{% static 'globals/img/zlatan.jpg' %}">
+                    </div>
+                    <div class="description">
+                        <div class="ui header">
+                        <p>{{ i.member.id.user.username }}&nbsp;&nbsp;&nbsp;&nbsp;{{ i.member.id.id }}</p>
+                        </div>
+                        <p>{{ i.club.club_name}} &nbsp; Club</p>
+                        <p>{{ i.description }}</p>
+                    </div>
+                </div>
+                <div class="actions">
+                    <div class="ui black deny button">
+                        Close
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    {% endfor %}
+    
+    <!-- modal script enable -->
+    <script type="text/javascript">
+        function view(a,b) {
+            // body...
+            //$('.ui.modal').find("input").val({'name':id}); 
+            var id = '.ui.small.modal.'+a+b;
+            $(id).modal('show');
+        }
+    </script>
+
+    
+
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="memberrequests">
             Member Requests
@@ -10,40 +51,10 @@
 
     <div class="ui active tab" data-tab="memberrequests">
         <div class="ui vertical segment">
-
-            <form class="ui form" style="padding-left: 32px; padding-right: 32px;">
-                <div class="field">
-                    <label>Club</label>
-                    <input class="ui large input" value="Club de fútbol" readonly>
-                </div>
-
-                <div class="three fields">
-                    <div class="field">
-                        <label>Coordinator</label>
-                        <input class="ui large input" value="Zlatan Ibrahimovic" readonly>
-                    </div>
-
-                    <div class="field">
-                        <label>Co-Coordinator</label>
-                        <input class="ui large input" value="Zlatan Ibrahimovic" readonly>
-                    </div>
-
-                    <div class="field">
-                        <label>Faculty Coordinator</label>
-                        <input class="ui large input" value="Zlatan Ibrahimovic" readonly>
-                    </div>
-                </div>
-            </form>
-
-            <br>
-
-            <h4 class="ui dividing header" style="margin-left: 32px; margin-right: 32px;">Members</h4>
-
-
-            <table class="ui very basic collapsing celled sortable table"
-                   style="padding-left: 2.5%;
-                                                          padding-right: 2.5%;
-                                                          padding-top: 1%;
+        <form method="post" action="" id="memberrequest">
+        {% csrf_token %}
+            <table id="mytable" class="ui very basic collapsing celled sortable table"
+                   style="padding-top: 1%;
                                                           padding-bottom: 1.5%;
                                                           margin: auto;">
                 <thead>
@@ -60,111 +71,50 @@
                     </th>
 
                     <th>
+                        Club
+                    </th>
+
+                    <th>
                         Category
                     </th>
 
-                    <th class="six wide column">
-                        Achievements
+                    <th>
+                        Remarks
                     </th>
                 </tr>
                 </thead>
 
                 <tbody>
-                <tr>
-
-                    <td class="collapsing">
-                        <div class="ui fitted checkbox">
-                            <input type="checkbox"> <label></label>
-                        </div>
-                    </td>
-
-                    <td>
-                        <h4 class="ui image header">
-                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
-                            <div class="content">
-                                Zlatan Ibrahimovic
-                                <div class="sub header">
-                                    gmail@zlatan.com
-                                </div>
+                {% for i in Club_member %}
+                    {% if request.user.username in i.club.co_ordinator|stringformat:"s" and i.status == "open" %}
+                    <tr >
+                        <td class="collapsing">
+                            <div class="ui fitted checkbox">
+                                <input type="checkbox" id="{{ i.member.id }}" value="{{ i.member.id }},{{ i.club }}" name="check" > <label></label>
                             </div>
-                        </h4>
-                    </td>
+                        </td>
+                        <td onclick="view('{{ i.member.id.id }}','{{ i.club.club_name }}')">
+                            {{ i.member.id.id }}
+                        </td>
 
-                    <td>
-                        2015121
-                    </td>
+                        <td>
+                            {{ i.member.id.user.username }}
+                        </td>
 
-                    <td>
-                        Category #1
-                    </td>
+                        <td>
+                            {{ i.club.club_name}}
+                        </td>
 
-                    <td>
-                        ...
-                    </td>
-                </tr>
-                <tr>
+                        <td>
+                            {{ i.club.category }}
+                        </td>
 
-                    <td class="collapsing">
-                        <div class="ui fitted checkbox">
-                            <input type="checkbox"> <label></label>
-                        </div>
-                    </td>
-
-                    <td>
-                        <h4 class="ui image header">
-                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
-                            <div class="content">
-                                Zlatan Ibrahimovic
-                                <div class="sub header">
-                                    gmail@zlatan.com
-                                </div>
-                            </div>
-                        </h4>
-                    </td>
-
-                    <td>
-                        2015121
-                    </td>
-
-                    <td>
-                        Category #1
-                    </td>
-
-                    <td>
-                        ...
-                    </td>
-                </tr>
-                <tr>
-
-                    <td class="collapsing">
-                        <div class="ui fitted checkbox">
-                            <input type="checkbox"> <label></label>
-                        </div>
-                    </td>
-
-                    <td>
-                        <h4 class="ui image header">
-                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
-                            <div class="content">
-                                Zlatan Ibrahimovic
-                                <div class="sub header">
-                                    gmail@zlatan.com
-                                </div>
-                            </div>
-                        </h4>
-                    </td>
-
-                    <td>
-                        2015121
-                    </td>
-
-                    <td>
-                        Category #1
-                    </td>
-
-                    <td>
-                        ...
-                    </td>
+                        <td>
+                            <textarea rows="1" name="remarks{{ i.member.id }},{{ i.club }}"></textarea>
+                        </td> 
+                    </tr>
+                    {% endif %}
+                {% endfor %}
                 </tr>
 
                 </tbody>
@@ -173,15 +123,24 @@
 
             <br>
 
-            <div class="ui primary right floated button">Approve Selected</div>
-            <div class="ui red right floated button">Reject Selected</div>
-
+            <!-- <div class="ui primary right floated button" name="approve" onclick="approve();">Approve Selected</div> -->
+            <!-- <div class="ui red right floated button" name = "reject" onclick="approve();">Reject Selected</div> -->
+            <div class="field">
+                <button class="ui primary button right floated" type="submit" formaction="/gymkhana/approve/">
+                    Approve Selected
+                </button>
+            </div>
+            <div class="field">
+                <button class="ui primary button right floated" type="submit" formaction="/gymkhana/reject/">
+                    Reject Selected
+                </button>
+            </div>
             <br>
             <br>
-
+        </form>
             <div class="ui divider"></div>
 
         </div>
     </div>
-
+    
 {% endblock %}

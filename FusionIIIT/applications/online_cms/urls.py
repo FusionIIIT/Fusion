@@ -5,8 +5,7 @@ from . import views
 urlpatterns = [
 
     url(r'^$', views.viewcourses, name='viewcourses'),
-    url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/$',
-        views.course, name='course'),
+    url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/$', views.course, name='course'),
     url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/forum$', views.forum,
         name='forum'),
     url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/ajax_reply$', views.ajax_reply,
@@ -30,8 +29,7 @@ urlpatterns = [
     url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/ajax_feedback$', views.ajax_feedback,
         name='ajax_feedback'),
     url(r'^quiz/(?P<quiz_id>[0-9]+)/$', views.quiz, name='quiz'),
-    url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/create_quiz/$',
-        views.create_quiz, name='create_quiz'),
+    url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/create_quiz/$', views.create_quiz, name='create_quiz'),
     url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/edit_quiz/(?P<quiz_code>[0-9]+)/$',
         views.edit_quiz, name='edit_quiz'),
     url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/edit_quiz/(?P<quiz_code>[0-9]+)/(?P<topic_id>[0-9]+)$',

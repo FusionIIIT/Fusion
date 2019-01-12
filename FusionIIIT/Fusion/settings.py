@@ -113,6 +113,9 @@ INSTALLED_APPS = [
     'applications.academic_procedures',
     'applications.academic_information',
     'applications.leave',
+    'applications.library',
+    'applications.gymkhana',
+    'applications.office_module',
     'applications.central_mess',
     'applications.complaint_system',
     'applications.filetracking',
@@ -127,7 +130,6 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth',
     'allauth.socialaccount.providers.google',
-    'channels',
     'semanticuiforms',
 ]
 
@@ -164,37 +166,24 @@ WSGI_APPLICATION = 'Fusion.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
+#DATABASES = {
+#    'default':
+#        {
+#            'ENGINE': 'django.db.backends.mysql',
+#            'NAME': 'fusion',
+#            'USER': 'abhay',
+#            'PASSWORD': 'abhaygupta',
+#            'HOST': '127.0.0.1',
+#            'PORT': '3306',
+#        },
+#}
 
-# DATABASES = {
-#     'default':
-#         {
-#             'ENGINE': 'django.db.backends.mysql',
-#             'NAME': 'fusion2',
-#             'USER': 'root',
-#             'PASSWORD': '1',
-#             'HOST': '127.0.0.1',
-#             'PORT': '3306',
-#         },
-# }
-
+PROJECT_DIR = os.path.abspath(os.path.dirname(__file__))
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'NAME': os.path.join(PROJECT_DIR, 'fusion.db'),
     }
-}
-
-
-# Channel Layer
-
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "asgi_redis.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [("localhost", 6379)],
-        },
-        "ROUTING": "Fusion.routing.channel_routing",
-    },
 }
 
 
@@ -228,7 +217,7 @@ USE_I18N = True
 
 USE_L10N = False
 
-USE_TZ = True
+USE_TZ = False
 
 SITE_ID = 1
 # Static files (CSS, JavaScript, Images)

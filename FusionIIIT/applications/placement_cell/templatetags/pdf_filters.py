@@ -1,10 +1,7 @@
 from django import template
-import urllib
-import io
-import base64
+import urllib, io, base64
 
 register = template.Library()
-
 
 @register.filter
 def get64(url):

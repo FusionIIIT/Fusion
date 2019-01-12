@@ -6,7 +6,7 @@
     Module
 {% endblock %}
 
-
+.
 {% block body %}
     {% block navBar %}
         {% include 'dashboard/navbar.html' %}
@@ -40,13 +40,20 @@
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
 
-                <a class="active item" data-tab="first">
-                    Tab Content #1
+                
+				
+				 <a class="item" data-tab="first">
+                    Lab Schedule
                     <i class="right floated chevron right icon"></i>
                 </a>
 
                 <a class="item" data-tab="second">
-                    Tab Content #2
+                    TA Assignment
+                    <i class="right floated chevron right icon"></i>
+                </a>
+				
+				<a class="item" data-tab="third">
+                    Teaching Credits
                     <i class="right floated chevron right icon"></i>
                 </a>
             </div>
@@ -62,20 +69,35 @@
             The central-rail segment starts here!
         {% endcomment %}
         <div class="eight wide column">
-            {% comment %}The Details start here!{% endcomment %}
-            <div class="ui active tab segment" data-tab="first">
-                {% block form1 %}
-                    {% include 'officeModule/officeOfHOD/tab1.html' %}
-                {% endblock %}
-            </div>
-            {% comment %}The Personal Details end here!{% endcomment %}
-
-
+            
             {% comment %}The Publications starts here!{% endcomment %}
-            <div class="ui tab segment" data-tab="second">
+            <div class="ui active tab segment" data-tab="first">
+			   {% block form2 %}
+                    {% include 'officeModule/officeOfHOD/tab2.html' %}
+               {% endblock %}
 
             </div>
             {% comment %}The Publications ends here!{% endcomment %}
+			
+			
+			{% comment %}The Publications starts here!{% endcomment %}
+			<div class="ui tab segment" data-tab="second">
+			   {% block form3 %}
+                    {% include 'officeModule/officeOfHOD/tab3.html' %}
+               {% endblock %}
+
+            </div>
+            {% comment %}The Publications ends here!{% endcomment %}
+			
+			{% comment %}The Publications starts here!{% endcomment %}
+			<div class="ui tab segment" data-tab="third">
+			   {% block form4 %}
+                    {% include 'officeModule/officeOfHOD/tab4.html' %}
+               {% endblock %}
+
+            </div>
+            {% comment %}The Publications ends here!{% endcomment %}
+
 
         </div>
         {% comment %}The central-rail segment ends here!{% endcomment %}
@@ -85,7 +107,7 @@
             <div class="row">
                 <div class="ui row">
                     <h3 class="ui header" style="padding-left: 16px;">
-                        Office of HOD {Branch}
+                        Office of HOD
                     </h3>
                 </div>
             </div>
@@ -109,6 +131,7 @@
                     </div>
                 </div>
             </div>
+
         </div>
         {% comment %}The right-rail segment ends here!{% endcomment %}
 

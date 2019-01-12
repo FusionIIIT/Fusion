@@ -95,7 +95,7 @@
                               Search
                           </button>
                         </div>
-                        {% if profile.designation.name != 'student' %}
+                        {% if current == None %}
                         <div class="field">
                             <button name="studentplacementaddsubmit" value="studentplacementaddsubmit" class="ui fluid large primary button" type="submit">
                                 Add
@@ -110,67 +110,71 @@
         </form>
                     {% comment %}Form Tag ends here!{% endcomment %}
 
-                    {% if placementrecord %}
+                    {% if placementrecord == 1 %}
                     <br>
-                    <br>
-                    <div class="ui divider"></div>
-                    <br>
+                {% elif placementrecord %}
+                <br>
+                <br>
+                <div class="ui divider"></div>
+                <br>
 
-                <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;">
-                    <thead>
-                    <tr>
-                        <th class="four wide">Student</th>
-                        <th class="two wide">Year</th>
-                        <th class="six wide">Company</th>
-                        <th class="two wide">CTC</th>
-                        {% if profile.designation.name != 'student' %}
-                        <th class="two wide">Delete</th>
-                        {% endif %}
-                    </tr>
-                    </thead>
-
-                    <tbody>
-                      {% for student in placementrecord %}
-                      {% if student.record_id.placement_type == 'PLACEMENT' %}
-                    <tr>
-                        <td>
-                            <h4 class="ui image header">
-                                <div class="content">
-                                    {{ student.unique_id.id.user.first_name }} {{ student.unique_id.id.user.last_name }}
-                                    <div class="sub header">
-                                        {{ student.unique_id.id.id }}
-                                    </div>
-                                </div>
-                            </h4>
-                        </td>
-
-                        <td>
-                            {{ student.record_id.year }}
-                        </td>
-
-                        <td>
-                            {{ student.record_id.name }}
-                        </td>
-
-                        <td>
-                            {{ student.record_id.ctc }}
-                        </td>
-
-                        {% if profile.designation.name != 'student' %}
-                        <td>
-                          <form method="post" class="ui form" role="form">
-                            {% csrf_token %}
-                            <button name="deleterecord" value="{{ student.pk }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
-                                <i class="delete red icon"></i>
-                            </button>
-                            </form>
-                        </td>
-                        {% endif %}
-                    </tr>
+            <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;">
+                <thead>
+                <tr>
+                    <th class="four wide">Student</th>
+                    <th class="two wide">Year</th>
+                    <th class="six wide">Company</th>
+                    <th class="two wide">CTC</th>
+                    {% if profile.designation.name != 'student' %}
+                    <th class="two wide">Delete</th>
                     {% endif %}
-                    {% endfor %}
-                    </tbody>
-                </table>
+                </tr>
+                </thead>
+
+                <tbody>
+                  {% for student in placementrecord %}
+                  {% if student.record_id.placement_type == 'PLACEMENT' %}
+                <tr>
+                    <td>
+                        <h4 class="ui image header">
+                            <div class="content">
+                                {{ student.unique_id.id.user.first_name }} {{ student.unique_id.id.user.last_name }}
+                                <div class="sub header">
+                                    {{ student.unique_id.id.id }}
+                                </div>
+                            </div>
+                        </h4>
+                    </td>
+
+                    <td>
+                        {{ student.record_id.year }}
+                    </td>
+
+                    <td>
+                        {{ student.record_id.name }}
+                    </td>
+
+                    <td>
+                        {{ student.record_id.ctc }}
+                    </td>
+
+                    {% if current == None %}
+                    <td>
+                      <form method="post" class="ui form" role="form">
+                        {% csrf_token %}
+                        <button name="deleterecord" value="{{ student.pk }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
+                            <i class="delete red icon"></i>
+                        </button>
+                        </form>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% endif %}
+                {% endfor %}
+                </tbody>
+            </table>
+
+                {% else %}<center><hr><h5>Data Not Found</h5></center>
 
                 {% endif %}
 
@@ -252,7 +256,7 @@
                                             Search
                                         </button>
                                       </div>
-                                      {% if profile.designation.name != 'student' %}
+                                      {% if current == None %}
                                       <div class="field">
                                           <button name="studentpbiaddsubmit" value="studentpbiaddsubmit" class="ui fluid large primary button" type="submit">
                                               Add
@@ -271,6 +275,9 @@
                     <div class="ui divider"></div>
                     <br>
 
+                    {% if pbirecord == 1 %}
+                    <br>
+                {% elif pbirecord %}
                 <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;">
                     <thead>
                     <tr>
@@ -311,7 +318,7 @@
                             &#8377; {{ student.record_id.ctc }}
                         </td>
 
-                        {% if profile.designation.name != 'student' %}
+                        {% if current == None %}
                         <td>
                           <form method="post" class="ui form" role="form">
                             {% csrf_token %}
@@ -327,6 +334,10 @@
 
                    </tbody>
                       </table>
+
+                      {% else %}<center><h5>Data Not Found</h5></center>
+
+                      {% endif %}
 
 
 
@@ -418,7 +429,7 @@
                               Search
                           </button>
                         </div>
-                        {% if profile.designation.name != 'student' %}
+                        {% if current == None %}
                         <div class="field">
                             <button name="studenthigheraddsubmit" value="studenthigheraddsubmit" class="ui fluid large primary button" type="submit">
                                 Add
@@ -431,14 +442,16 @@
             </div>
             {% comment %}The add a new skill Accordian ends here!{% endcomment %}
         </form>
-                      {% if higherrecord %}
+
 
                     <br>
                     <br>
                     <div class="ui divider"></div>
                     <br>
 
-
+                    {% if higherrecord == 1 %}
+                    <br>
+                {% elif higherrecord %}
                 <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;">
                     <thead>
                     <tr>
@@ -481,7 +494,7 @@
                             {{ student.record_id.test_score }}
                         </td>
 
-                        {% if profile.designation.name != 'student' %}
+                        {% if current == None %}
                         <td>
                           <form method="post" class="ui form" role="form">
                             {% csrf_token %}
@@ -497,7 +510,9 @@
          </tbody>
             </table>
 
-                {% endif %}
+            {% else %}<center><h5>Data Not Found</h5></center>
+
+            {% endif %}
 
             </div>
 
@@ -582,30 +597,6 @@
 
                         </td>
                     </tr>
-
-                    <!--<tr>
-                        <td>Placement</td>
-
-                        <td>
-                             %
-                        </td>
-
-                        <td>
-                             %
-                        </td>
-
-                        <td>
-                             %
-                        </td>
-
-                        <td>
-                             %
-                        </td>
-
-                        <td>
-                             %
-                        </td>
-                    </tr>-->
 
                     </tbody>
 

@@ -16,6 +16,7 @@
         <thead>
         <tr>
             <th>Sent To</th>
+            <th>Sent As</th>
             <th>File ID</th>
             <th>Title</th>
             <th>Date</th>
@@ -27,11 +28,12 @@
         {% for i in out %}
         <tr>
 
-            <td>{{i.receiver_id}}</td>
-            <td>{{i.file_id.ref_id}}</td>
+            <td>{{i.receive_design}}</td>
+            <td>{{i.current_design}}</td>
+            <td>{{i.file_id.uploader.department.name}}/{{i.file_id.upload_date.year}}/{{i.file_id.upload_date.month}}/#{{i.file_id.id}}</td>
             <td>{{i.file_id.subject}}</td>
             <td>{{i.receive_date}}</td>
-            <td><a href="{% url 'filetracking:forward' i.file_id.ref_id %}"><button class="ui primary button">
+            <td><a href="{% url 'filetracking:forward' i.file_id.id %}"><button class="ui primary button">
                           View
                 </button></a>
             </td>

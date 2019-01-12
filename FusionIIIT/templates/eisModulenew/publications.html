@@ -21,15 +21,19 @@
     {% comment %}The Journal segment starts here!{% endcomment %}
 
     <div class="ui active tab segment" data-tab="journal">
-        <h4 class="ui dividing header" id="changes5">Add a Journal</h4>
-        <form class="ui form"  method="post" action="{% url 'eis:journal_insert' %}" onsubmit="return validatejournal()">
-            {% csrf_token %}
-            <div style="display: none;"> <input type="text" id="pubZ" name="pub_id"></div>
+        <h4 class="ui dividing header">Add a Journal</h4>
+        <form class="ui form">
             <div class="field">
                 <div class="two fields">
                     <div class="field">
                         <label>Author</label>
-                        <input placeholder="Author" type="text" name="authors"  id="pubA"  required>
+                        <input placeholder="Author" type="text">
+                    </div>
+
+                    <div class="field">
+                        <label>Co-author(s)</label>
+                       <!--  <input placeholder="Journal" type="file"> -->
+                        <input placeholder="Author" type="text">
                     </div>
                 </div>
             </div>
@@ -37,13 +41,17 @@
             <div class="field">
                 <label>Journal details</label>
                 <div class="fields">
-                    <div class="six wide field">
-                        <input placeholder="Name of the Journal" type="text" name="name"  id="pubC"  required>
+                    <div class="eight wide field">
+                        <input placeholder="Name of the Journal" type="text">
+                    </div>
+
+                    <div class="four wide field">
+                       <input placeholder="Journal" type="file">
                     </div>
 
                     <div class="four wide field">
                         <div class="ui fluid search selection dropdown">
-                            <input type="hidden" name="year"  id="pubD"  required>
+                            <input type="hidden">
                             <i class="dropdown icon"></i>
                             <div class="default text">Select Year</div>
                             <div class="menu">
@@ -68,34 +76,22 @@
                             </div>
                         </div>
                     </div>
-
-                           <div class="four wide field">
-                              <div class="ui fluid search selection dropdown">
-                            <input type="hidden" name="month"  id="pubX"  required>
-                            <i class="dropdown icon"></i>
-                            <div class="default text">Select Month</div>
-                            <div class="menu">
-                               {% for i in "xxxxxxxxxxxx" %}
-                                <div class="item" data-value="{{ forloop.counter }}">{{ forloop.counter }}</div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
                 <div class="fields">
                     <div class="fourteen wide field">
                         <div class="field">
                             <label>Title</label>
-                            <input placeholder="Title" type="text" name="title"  id="pubB"  required >
+                            <input placeholder="Title" type="text">
                         </div>
                     </div>
 
                     <div class="two wide field">
                         <label><br></label>
-                        <button class="ui primary button" type="submit">
-                            Save<i class="ui save icon right floated"></i>
-                        </button>
+                        <div class="ui primary button">
+                            Save
+                            <i class="ui save icon right floated"></i>
+                        </div>
                     </div>
                 </div>
 
@@ -108,137 +104,162 @@
                         <div class=" four fields">
                                <div class="field">
                                 <label>Volume No./Issue No.</label>
-                                <input placeholder="Volume No./Issue No." type="text" name="volume" id="pubE">
+                                <input placeholder="Volume No./Issue No." type="text">
                                </div>
                              <div class="  field">
                                 <label>Page No.</label>
-                                <input placeholder="Page No." type="text" name="page" id="pubF">
+                                <input placeholder="Page No." type="text">
                             </div>
                              <div class=" field">
                                 <label>Paper Reference No.</label>
-                                <input placeholder="Paper Reference No." type="text" name="ref" id="pubG">
+                                <input placeholder="Paper Reference No." type="text">
                             </div>
                              <div class="field">
+
+            
                                 <label>Date of Submission</label>
-                                  <div class="ui calendar" id="example2">
+                                <!-- <input placeholder="Date of Submission" type="text"> -->
+                                <!-- Code change starts -->
+                                 <div class="ui calendar" id="example1">
                                     <div class="ui input left icon">
                                       <i class="calendar icon"></i>
-                                      <input type="text" placeholder="DOS" name="dos"  id="pubH">
+                                      <input type="text" placeholder="Date/Time">
                                     </div>
                                   </div>
-                                </div>
+                                <!-- code change ends -->
+                                
                             </div>
-
-
-
+                      </div>
                             <div class=" four fields">
                                <div class="field">
                                 <label>Date of Publication(DOP)</label>
-                                  <div class="ui calendar" id="example2a">
+                                <!-- <input placeholder="Date of Publication" type="text"> -->
+                                <!-- Code change starts -->
+                                 <div class="ui calendar" id="example1a">
                                     <div class="ui input left icon">
                                       <i class="calendar icon"></i>
-                                      <input type="text" placeholder="DOP" name="dop"  id="pubI">
+                                      <input type="text" placeholder="Date/Time">
                                     </div>
                                   </div>
-                                </div>
-
-                                 <div class=" field">
-                                <label>SCI/SCIE</label>
-                                     <div class="ui fluid search selection dropdown">
-                                            <input type="hidden"  name="sci"  id="pubK">
-                                            <i class="dropdown icon"></i>
-                                            <div class="default text">SCI/SCIE</div>
-                                                <div class="menu">
-                                                    <div class="item" data-value="Yes">Yes</div>
-                                                    <div class="item" data-value="No">No</div>
-
-                                                </div>
-                                        </div>
-                              </div>
-
-                                   <div class="field">
-                                        <label>Date of Issuance(DOI)</label>
-                                           <div class="ui calendar" id="example2b">
-                                            <div class="ui input left icon">
-                                              <i class="calendar icon"></i>
-                                              <input type="text" placeholder="DOI"  name="doi" id="pubL">
-                                            </div>
-                                          </div>
-                                  </div>
-                             </div>
-
-
-                                    </div>
-                                 </div>
+                                <!-- code change ends -->
+                               </div>
+                             <div class="  field">
+                                <label>Status</label>
+                                <input placeholder="Status" type="text">
                             </div>
+                             <div class=" field">
+                                <label>SCI/SCIE</label>
+                                <input placeholder="SCI/SCIE" type="text">
+                            </div>
+                             <div class="field">
+                                <label>Date of Issuance(DOI)</label>
+                               <!--  <input placeholder="Date of Issuance" type="text"> -->
+                               <!-- Code change starts -->
+                                 <div class="ui calendar" id="example1b">
+                                    <div class="ui input left icon">
+                                      <i class="calendar icon"></i>
+                                      <input type="text" placeholder="Date/Time">
+                                    </div>
+                                  </div>
+                                <!-- code change ends -->
+                            </div>
+                      </div>
+
+                      <!--   <div class="field" style="padding-top: 8px;">
+                            <label></label>
+                            <input placeholder="Conference Details" type="text">
+                        </div> -->
+                    </div>
+                </div>
+
+            </div>
         </form>
         <br>
         <h4 class="ui dividing header">Report:</h4>
-        <div class="ui pointing pagination menu">
-                {% for j in journal %}
-                {% if forloop.counter0|divisibleby:10 %}
-                    <span align="right"><a class="{% if forloop.counter0 == 0 %}active {% endif %}item" data-tab="j-{{ forloop.counter0 }}">
-                        {% widthratio forloop.counter|add:10 10 1 %}
 
-     </a></span>{% if forloop.counter0|divisibleby:10 %}
-                        <br>
-                        {% endif %}
-                {% endif %}
-
-                {% endfor %}
-
-            </div>
-     {% for j in journal %}
-
-            {% if forloop.counter0|divisibleby:10 %}
-            <div class="ui {% if forloop.counter0 == 0 %}active {% endif %} tab segment" data-tab="j-{{ forloop.counter0 }}">
         <table class="ui fixed sortable celled table">
             <thead>
             <tr>
-
-                <th class="sorted ascending" style="width: 7%;">Sr.</th>
-                <th class="" style="width: 20%;" >Authors</th>
-                <th class="" style="width: 20%;">Title of Paper</th>
-                <th class="" style="width: 33%;">Journal Details</th>
-
-                <th class="" style="width: 12%;">Year</th>
-                <th class="" style="width: 8%;">Action</th>
+                <th class="sorted ascending">Sr.</th>
+                <th class="">Authors</th>
+                <th class="">Title of Paper</th>
+                <th class="" colspan="2">Journal Detaiks</th>
+                <th class="">Uploaded Document</th>
+                <th class="">Year</th>
+                <th class="">Action</th>
             </tr>
             </thead>
 
-            <tbody style="max-height: 100px; overflow-y: auto;">
-            {% endif %}
+            <tbody>
             <tr>
-                <td id="pub{{ forloop.counter }}Z"><div style="display: none;">{{ j.id }}</div>{{ forloop.counter }}.</td>
-                <td id="pub{{ forloop.counter }}A">{{ j.authors }}</td>
-                <td id="pub{{ forloop.counter }}B">{{ j.title_paper }}</td>
-                <td id="pub{{ forloop.counter }}C"><b>Name of the Journal: </b>{{ j.name_journal }}<br>
-                    <b>Volume No./Issue No.: </b>{{ j.volume_no }} <br>
-                                    <b>Page No.:</b> {{ j.page_no }}    <br>
-                                    <b>Paper Reference No. :</b> {{ j.reference_number }} <br>
-                                    <b>Date Of Submission :</b> {{ j.date_submission }}  <br>
-                                    <b>Date of Publication :</b> {{ j.date_publication }}  <br>
-                                    <b>SCI/SCIE        : </b>{{ j.is_sci }} <br>
-                                    <b>Date of Issuance :</b>  {{ j.doi }}
+                <td>1.</td>
+                <td>Journal's Authors</td>
+                <td>Journal's Title</td>
+                <td colspan="2">Name of the Journal:   <br>
+                                Volume No./Issue No.:  <br>
+                                Page No.:              <br>
+                                Paper Reference No. :  <br>
+                                Date Of Submission :   <br>
+                                Date of Publication :   <br>
+                                Status              :   <br>
+                                SCI/SCIE             :  <br>
+                                Date of Issuance     :              
 
                 </td>
-
-                <td id="pub{{ forloop.counter }}D">{{ j.a_month }}/{{ j.year }}</td>
-                <td><a onclick="updatePUB({{ forloop.counter }})" onclick="location.href='#top'"> <i id="bt" class="edit icon" style="font-size:1.3vw;color:blue"></i></a><br><a class="centered raised item" href="{% url 'eis:emp_research_papersDelete' j.id %}"><i id="bt" class="trash outline icon" style="font-size:1.3vw;color:red"></i></a></td>
+                 <td></td>
+                <td>2017</td>
+                <td><button class="ui primary button">
+                          Edit
+                  </button> <br><button class="ui red button">
+                      Delete
+                     </button> </td>
             </tr>
-            {% if forloop.counter0|add:1|divisibleby:10 %}
-            </tbody>
-        </table>
-    </div>
-          {% endif %}
-            {% endfor %}
-     {% if not journal.all.count|divisibleby:10 %}
-     </tbody>
-        </table>
-            </div>
- {% endif %}
-    </div>
 
+              <tr>
+                <td>1.</td>
+                <td>Journal's Authors</td>
+                <td>Journal's Title</td>
+                <td colspan="2">Name of the Journal:   <br>
+                                Volume No./Issue No.:  <br>
+                                Page No.:              <br>
+                                Paper Reference No. :  <br>
+                                Date Of Submission :   <br>
+                                Date of Publication :   <br>
+                                Status              :   <br>
+                                SCI/SCIE             :  <br>
+                                Date of Issuance     :              
+
+                </td>
+                 <td></td>
+                <td>2017</td>
+                <td><button class="ui primary button">
+                          Edit
+                  </button> <br><button class="ui red button">
+                      Delete
+                     </button> </td>
+            </tr>
+
+            </tbody>
+
+            <tfoot>
+            <tr>
+                <th colspan="8">
+                    <div class="ui right floated pagination menu">
+                        <a class="icon item">
+                            <i class="left chevron icon"></i>
+                        </a>
+                        <a class="item">1</a>
+                        <a class="item">2</a>
+                        <a class="item">3</a>
+                        <a class="item">4</a>
+                        <a class="icon item">
+                            <i class="right chevron icon"></i>
+                        </a>
+                    </div>
+                </th>
+            </tr></tfoot>
+        </table>
+    </div>
 
     {% comment %}The Journal segment ends here!{% endcomment %}
 
@@ -247,31 +268,37 @@
     {% comment %}The Conference segment starts here!{% endcomment %}
 
     <div class="ui tab segment" data-tab="conference">
-        <h4 class="ui dividing header"  id="changes6">Add a Conference</h4>
-       <form class="ui form"  method="post" action="{% url 'eis:confrence_insert' %}"  onsubmit="return validatec()">
-            {% csrf_token %}
-           <div style="display: none;"> <input type="text" id="conZ" name="con_id"></div>
+        <h4 class="ui dividing header">Add a Conference</h4>
+       <form class="ui form">
             <div class="field">
                 <div class="two fields">
                     <div class="field">
                         <label>Author</label>
-                        <input placeholder="Author" type="text" name="authors" id="conA"  required>
+                        <input placeholder="Author" type="text">
                     </div>
 
+                    <div class="field">
+                        <label>Co-author(s)</label>
+                       <!--  <input placeholder="Journal" type="file"> -->
+                        <input placeholder="Author" type="text">
+                    </div>
                 </div>
             </div>
 
             <div class="field">
                 <label>Conference details</label>
                 <div class="fields">
-                    <div class="six wide field">
-                        <input placeholder="Name of the Conference" type="text" name="name" id="conC" required>
+                    <div class="eight wide field">
+                        <input placeholder="Name of the Conference" type="text">
                     </div>
 
+                    <div class="four wide field">
+                       <input placeholder="Conference" type="file">
+                    </div>
 
                     <div class="four wide field">
                         <div class="ui fluid search selection dropdown">
-                            <input type="hidden" name="year" id="conD" required>
+                            <input type="hidden">
                             <i class="dropdown icon"></i>
                             <div class="default text">Select Year</div>
                             <div class="menu">
@@ -296,34 +323,22 @@
                             </div>
                         </div>
                     </div>
-
-                           <div class="four wide field">
-                              <div class="ui fluid search selection dropdown">
-                            <input type="hidden" name="month"  id="conX"  required>
-                            <i class="dropdown icon"></i>
-                            <div class="default text">Select Month</div>
-                            <div class="menu">
-                               {% for i in "xxxxxxxxxxxx" %}
-                                <div class="item" data-value="{{ forloop.counter }}">{{ forloop.counter }}</div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
                 <div class="fields">
                     <div class="fourteen wide field">
                         <div class="field">
                             <label>Title</label>
-                            <input placeholder="Title" type="text" name="title" id="conB" required>
+                            <input placeholder="Title" type="text">
                         </div>
                     </div>
 
                     <div class="two wide field">
                         <label><br></label>
-                        <button class="ui primary button" type="submit">
-                            Save<i class="ui save icon right floated"></i>
-                        </button>
+                        <div class="ui primary button">
+                            Save
+                            <i class="ui save icon right floated"></i>
+                        </div>
                     </div>
                 </div>
 
@@ -336,64 +351,65 @@
                         <div class=" four fields">
                                <div class="field">
                                 <label>Venue/Host Institute</label>
-                                <input placeholder="Venue." type="text" name="venue"  id="conE">
+                                <input placeholder="Volume No./Issue No." type="text">
                                </div>
                              <div class="  field">
                                 <label>Date of Submission(DOS)</label>
-                               <!-- <input placeholder="Page No." type="text">-->
-                                        <div class="ui calendar" id="example2d">
-                                            <div class="ui input left icon">
-                                              <i class="calendar icon"></i>
-                                              <input type="text" placeholder="Date/Time"  name="dos"  id="conF">
-                                            </div>
-                                      </div>
-                            </div>
-                             <div class=" field">
-                                <label>Confrence Start Date:</label>
-                                 <!--<input placeholder="Paper Reference No." type="text">-->
-                                       <div class="ui calendar" id="example2e">
-                                        <div class="ui input left icon">
-                                          <i class="calendar icon"></i>
-                                          <input type="text" placeholder="Date/Time"  name="doa"  id="conG">
-                                        </div>
-                                      </div>
-                            </div>
-                             <div class="field">
-                                <label>Confrence End Date:</label>
-                                 <!-- <input placeholder="Date of Submission" type="text">-->
-                                    <div class="ui calendar" id="example2f">
+                               <!--  <input placeholder="Page No." type="text"> -->
+                                <!-- Code change starts -->
+                                 <div class="ui calendar" id="example1d">
                                     <div class="ui input left icon">
                                       <i class="calendar icon"></i>
-                                      <input type="text" placeholder="Date/Time" name="dop"  id="conH">
+                                      <input type="text" placeholder="Date/Time">
                                     </div>
                                   </div>
+                                <!-- code change ends -->
+                            </div>
+                             <div class=" field">
+                                <label>Date of Acceptance(DOA)</label>
+                               <!--  <input placeholder="Paper Reference No." type="text"> -->
+                                <!-- Code change starts -->
+                                 <div class="ui calendar" id="example1e">
+                                    <div class="ui input left icon">
+                                      <i class="calendar icon"></i>
+                                      <input type="text" placeholder="Date/Time">
+                                    </div>
+                                  </div>
+                                <!-- code change ends -->
+                            </div>
+                             <div class="field">
+                                <label>Date of Publication(DOP)</label>
+                                <!-- <input placeholder="Date of Submission" type="text"> -->
+                                 <!-- Code change starts -->
+                                 <div class="ui calendar" id="example1f">
+                                    <div class="ui input left icon">
+                                      <i class="calendar icon"></i>
+                                      <input type="text" placeholder="Date/Time">
+                                    </div>
+                                  </div>
+                                <!-- code change ends -->
                             </div>
                       </div>
                             <div class=" four fields">
                                <div class="field">
                                 <label>Page No.</label>
-                                <input placeholder="Date of Publication" type="text"  name="page"  id="conI">
+                                <input placeholder="Date of Publication" type="text">
                                </div>
+                             <div class="  field">
+                                <label>Status</label>
+                                <input placeholder="Status" type="text">
+                            </div>
                              <div class=" field">
-                                <label>SCI/SCIE</label>
-                                     <div class="ui fluid search selection dropdown">
-                                            <input type="hidden"  name="sci" id="conK">
-                                            <i class="dropdown icon"></i>
-                                            <div class="default text">SCI/SCIE</div>
-                                                <div class="menu">
-                                                    <div class="item" data-value="Yes">Yes</div>
-                                                    <div class="item" data-value="No">No</div>
-
-                                                </div>
-                                        </div>
-                              </div>
+                                <label>Conference Date(s)</label>
+                                <input placeholder="SCI/SCIE" type="text">
+                            </div>
                              <div class="field">
                                 <label>ISBN No</label>
-                                <input placeholder="Date of Issuance" type="text" name="isbn"  id="conL">
+                                <input placeholder="Date of Issuance" type="text">
                             </div>
                       </div>
 
-
+                     
                     </div>
                 </div>
 
@@ -401,104 +417,109 @@
         </form>
         <br>
         <h4 class="ui dividing header">Report:</h4>
-        <div class="ui pointing pagination menu">
-                {% for c in conference %}
-                {% if forloop.counter0|divisibleby:10 %}
-                    <span align="right>"><a class="{% if forloop.counter0 == 0 %}active {% endif %}item" data-tab="c-{{ forloop.counter0 }}">
-                        {% widthratio forloop.counter|add:10 10 1 %}
-     </a></span>
-                {% endif %}
-                {% endfor %}
 
-            </div>
-     {% for c in conference %}
-
-            {% if forloop.counter0|divisibleby:10 %}
-            <div class="ui {% if forloop.counter0 == 0 %}active {% endif %} tab segment" data-tab="c-{{ forloop.counter0 }}">
-        <table class="ui fixed sortable celled table">
+        <table class="ui fixed single line sortable celled table">
             <thead>
             <tr>
-              <!--  <th class="sorted ascending">Sr.</th>
+                <th class="sorted ascending">Sr.</th>
                 <th class="">Authors</th>
                 <th class="">Title of Paper</th>
                 <th class="" colspan="2">Conference Detaiks</th>
                 <th class="">Uploaded Document</th>
                 <th class="">Year</th>
-                <th class="">Action</th>-->
-                 <th class="sorted ascending" style="width: 7%;">Sr.</th>
-                <th class="" style="width: 20%;" >Authors</th>
-                <th class="" style="width: 20%;">Title of Paper</th>
-                <th class=""  style="width: 33%;">Conference Details</th>
-
-                <th class="" style="width: 12%;">Year</th>
-                <th class="" style="width: 8%;">Action</th>
+                <th class="">Action</th>
             </tr>
             </thead>
 
             <tbody>
-            {% endif %}
             <tr>
-                <td id="con{{ forloop.counter }}Z"><div style="display: none;">{{ c.id }}</div>{{ forloop.counter }}.</td>
-                <td id="con{{ forloop.counter }}A">{{ c.authors }}</td>
-                <td id="con{{ forloop.counter }}B">{{ c.title_paper }}</td>
-                <td id="con{{ forloop.counter }}C">
-                    <b>Name of the Conference:</b> {{ c.name_journal }}  <br>
-                    <b>Venue/Host Institute:</b> {{ c.venue }}  <br>
-                    <b>Page No.:  </b>   {{ c.page_no }}         <br>
-                    <b>Date of Submission :</b>  {{ c.date_submission }}<br>
-                    <b>Start Date :</b>  {{ c.date_acceptance }} <br>
-                    <b>End Date : </b> {{ c.date_publication }} <br>
-                    <b>Conference Date(s)   : </b> {{ c.start_date }} to {{ c.end_date }}<br>
-                    <b>ISBN No.     :   </b> {{ c.issn_no }}
+                   <td>1.</td>
+                <td> Authors</td>
+                <td>Conference Title</td>
+                <td colspan="2">Name of the Conference:   <br>
+                                Venue/Host INstitute:  <br>
+                                Page No.:              <br>
+                                Date of Submission :  <br>
+                                Date Of Acceptance :   <br>
+                                Date of Publication :   <br>
+                                Status              :   <br>
+                                Conference Date(s)   :  <br>
+                                ISBN No.     :              
 
                 </td>
-
-                <td id="con{{ forloop.counter }}D">{{ c.a_month }}/{{ c.year }}</td>
-                <td><a onclick="updateCON({{ forloop.counter }})"><i id="bt" class="edit icon" style="font-size:1.3vw;color:blue;"></i></a><br><a class="centered raised item" href="{% url 'eis:emp_research_papersDelete' c.id %}"><i id="bt" class="trash outline icon" style="font-size:1.3vw;color:red;"></i><br>
-                </a> </td>
+                 <td></td>
+                <td>2017</td>
+                <td><button class="ui primary button">
+                          Edit
+                  </button> <br><button class="ui red button">
+                      Delete
+                     </button> </td>
             </tr>
-            {% if forloop.counter0|add:1|divisibleby:10 %}
+
+            <tr>
+                   <td>2.</td>
+                      <td> Authors</td>
+                <td>Conference Title</td>
+                <td colspan="2">Name of the Conference:   <br>
+                                Venue/Host INstitute:  <br>
+                                Page No.:              <br>
+                                Date of Submission :  <br>
+                                Date Of Acceptance :   <br>
+                                Date of Publication :   <br>
+                                Status              :   <br>
+                                Conference Date(s)   :  <br>
+                                ISBN No.     :              
+
+                </td>
+                
+                 <td></td>
+                <td>2017</td>
+                <td><button class="ui primary button">
+                          Edit
+                  </button> <br><button class="ui red button">
+                      Delete
+                     </button> </td>
+            </tr>
+
+         
             </tbody>
+
+            <tfoot>
+            <tr>
+                <th colspan="7">
+                    <div class="ui right floated pagination menu">
+                        <a class="icon item">
+                            <i class="left chevron icon"></i>
+                        </a>
+                        <a class="item">1</a>
+                        <a class="item">2</a>
+                        <a class="item">3</a>
+                        <a class="item">4</a>
+                        <a class="icon item">
+                            <i class="right chevron icon"></i>
+                        </a>
+                    </div>
+                </th>
+            </tr></tfoot>
         </table>
-    </div>
-          {% endif %}
-            {% endfor %}
-     {% if not conference.all.count|divisibleby:10 %}
-     </tbody>
-        </table>
-            </div>
- {% endif %}
     </div>
     {% comment %}The Conference segment ends here!{% endcomment %}
 
 
     {% comment %}The Books segment starts here!{% endcomment %}
     <div class="ui tab segment" data-tab="books">
-        <h4 class="ui dividing header" id="changes7">Add a Book/Book Chapter</h4>
-        <form class="ui form"  method="post" action="{% url 'eis:book_insert' %}"  onsubmit="return validatebooks()">
-            {% csrf_token %}
-            <div style="display: none;"> <input type="text" id="booksZ" name="book_id"></div>
+        <h4 class="ui dividing header">Add a Book/Book Chapter</h4>
+        <form class="ui form">
             <div class="field">
                 <div class="two fields">
                     <div class="field">
                         <label>Published</label>
-                        <div class="ui fluid search selection dropdown">
-                            <input type="hidden" name="type"  id="booksA" required>
-                            <i class="dropdown icon"></i>
-                            <div class="default text">Published</div>
-                            <div class="menu">
-                                <div class="item" data-value="Book">Book</div>
-                                <div class="item" data-value="Monograph">Monograph</div>
-                                <div class="item" data-value="Book Chapter">Book Chapter</div>
-                                <div class="item" data-value="Handbook">Handbook</div>
-                                <div class="item" data-value="Technical Report">Technical Report</div>
-                            </div>
-                        </div>
+                        <input placeholder="Published" type="text">
                     </div>
 
                     <div class="field">
                         <label>Co-author</label>
-                        <input placeholder="Co-author" type="text" name="co_authors" id="booksE" required>
+                        <input placeholder="Co-author" type="text">
                     </div>
                 </div>
             </div>
@@ -506,13 +527,13 @@
             <div class="field">
                 <label>Publisher</label>
                 <div class="fields">
-                    <div class="eight wide field">
-                        <input placeholder="Publisher" type="text" name="publisher" id="booksC" required>
+                    <div class="twelve wide field">
+                        <input placeholder="Publisher" type="text">
                     </div>
 
                     <div class="four wide field">
                         <div class="ui fluid search selection dropdown">
-                            <input type="hidden" name="year" id="booksD" required>
+                            <input type="hidden">
                             <i class="dropdown icon"></i>
                             <div class="default text">Select Year</div>
                             <div class="menu">
@@ -527,33 +548,22 @@
                             </div>
                         </div>
                     </div>
-                          <div class="four wide field">
-                              <div class="ui fluid search selection dropdown">
-                            <input type="hidden" name="month"  id="booksX"  required>
-                            <i class="dropdown icon"></i>
-                            <div class="default text">Select Month</div>
-                            <div class="menu">
-                               {% for i in "xxxxxxxxxxxx" %}
-                                <div class="item" data-value="{{ forloop.counter }}">{{ forloop.counter }}</div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
                 <div class="fields">
                     <div class="fourteen wide field">
                         <div class="field">
                             <label>Title</label>
-                            <input placeholder="Title" type="text"  id="booksB"  name="title" required>
+                            <input placeholder="Title" type="text">
                         </div>
                     </div>
 
                     <div class="two wide field">
                         <label><br></label>
-                        <button class="ui primary button" type="submit">
-                            Save<i class="ui save icon right floated"></i>
-                        </button>
+                        <div class="ui primary button">
+                            Save
+                            <i class="ui save icon right floated"></i>
+                        </div>
                     </div>
                 </div>
 
@@ -561,66 +571,77 @@
         </form>
         <br>
         <h4 class="ui dividing header">Report:</h4>
-        <div class="ui pointing pagination menu">
-                {% for b in books %}
-                {% if forloop.counter0|divisibleby:10 %}
-                    <span align="right>"><a class="{% if forloop.counter0 == 0 %}active {% endif %}item" data-tab="b-{{ forloop.counter0 }}">
-                        {% widthratio forloop.counter|add:10 10 1 %}
-     </a></span>
-                {% endif %}
-                {% endfor %}
 
-            </div>
-     {% for b in books %}
-
-            {% if forloop.counter0|divisibleby:10 %}
-            <div class="ui {% if forloop.counter0 == 0 %}active {% endif %} tab segment" data-tab="b-{{ forloop.counter0 }}">
-        <table class="ui fixed sortable celled table">
+        <table class="ui fixed single line sortable celled table">
             <thead>
             <tr>
-                <!--<th class="sorted ascending">Sr.</th>
+                <th class="sorted ascending">Sr.</th>
                 <th class="">Published</th>
                 <th class="">Title</th>
                 <th class="">Publisher</th>
                 <th class="">Year</th>
                 <th class="">Co-authors</th>
-                <th class="">Action</th>-->
-
-                  <th class="sorted ascending" style="width: 7%;">Sr.</th>
-                <th class="" style="width: 20%;" >Published</th>
-                <th class="" style="width: 20%;">Title of Paper</th>
-                <th class=""  style="width: 17%;">Publisher</th>
-
-
-                <th class="" style="width: 11%;">Year</th>
-                <th style="width:17%">Co-authors</th>
-                <th class="" style="width: 8%;">Action</th>
+                <th class="">Action</th>
             </tr>
             </thead>
 
             <tbody>
-            {% endif %}
             <tr>
-                <td id="books{{ forloop.counter }}Z"><div style="display: none;">{{ b.id }}</div>{{ forloop.counter }}.</td>
-                <td id="books{{ forloop.counter }}A">{{ b.p_type }}</td>
-                <td id="books{{ forloop.counter }}B">{{ b.title }}</td>
-                <td id="books{{ forloop.counter }}C">{{ b.publisher }}</td>
-                <td id="books{{ forloop.counter }}D">{{ b.a_month }}/{{ b.pyear }}</td>
-                <td id="books{{ forloop.counter }}E">{{ b.co_authors }}</td>
-                <td><a onclick="updateBOOKS({{ forloop.counter }})"><i id="bt" class="edit icon" style="font-size:1.3vw;color:blue"></i></a><br><a class="centered raised item" href="{% url 'eis:emp_published_booksDelete' b.id %}"><i id="bt" class="trash outline icon" style="font-size:1.3vw;color:red;"></i></a></td>
+                <td>1.</td>
+                <td>Journal's Name</td>
+                <td>Journal's Title</td>
+                <td>Journal's Publisher</td>
+                <td>2017</td>
+                <td>Journal's Co-author</td>
+                <td>Edit</td>
             </tr>
-            {% if forloop.counter0|add:1|divisibleby:10 %}
+
+            <tr>
+                <td>2.</td>
+                <td>Journal's Name</td>
+                <td>Journal's Title</td>
+                <td>Journal's Publisher</td>
+                <td>2016</td>
+                <td>Journal's Co-author</td>
+                <td>Edit</td>
+            </tr>
+
+            <tr>
+                <td>3.</td>
+                <td>Journal's Name</td>
+                <td>Journal's Title</td>
+                <td>Journal's Publisher</td>
+                <td>2015</td>
+                <td>Journal's Co-author</td>
+                <td>Edit</td>
+            </tr>
             </tbody>
+
+            <tfoot>
+            <tr>
+                <th colspan="7">
+                    <div class="ui right floated pagination menu">
+                        <a class="icon item">
+                            <i class="left chevron icon"></i>
+                        </a>
+                        <a class="item">1</a>
+                        <a class="item">2</a>
+                        <a class="item">3</a>
+                        <a class="item">4</a>
+                        <a class="icon item">
+                            <i class="right chevron icon"></i>
+                        </a>
+                    </div>
+                </th>
+            </tr></tfoot>
         </table>
-    </div>
-          {% endif %}
-            {% endfor %}
-     {% if not books.all.count|divisibleby:10 %}
-     </tbody>
-        </table>
-            </div>
- {% endif %}
     </div>
     {% comment %}The Books segment ends here!{% endcomment %}
 
-{% endblock %}
+  
+  {% endblock %}
+
+
+
+
+  

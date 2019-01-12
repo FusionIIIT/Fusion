@@ -38,10 +38,10 @@ class Constants:
         ('DEBAR', 'Debar'),
     )
     DEP = (
-        ('', ''),
+        ('',''),
         ('CSE', 'CSE'),
-        ('ME', 'ME'),
-        ('ECE', 'ECE')
+        ('ME','ME'),
+        ('ECE','ECE')
     )
 
 
@@ -50,33 +50,13 @@ class Project(models.Model):
     project_name = models.CharField(max_length=50, default='')
     project_status = models.CharField(max_length=20, choices=Constants.RESUME_TYPE,
                                       default='COMPLETED')
-    summary = models.CharField(
-        max_length=1000, default='', null=True, blank=True)
-    project_link = models.CharField(
-        max_length=200, default='', null=True, blank=True)
+    summary = models.TextField(max_length=1000, default='', null=True, blank=True)
+    project_link = models.CharField(max_length=200, default='', null=True, blank=True)
     sdate = models.DateField(_("Date"), default=datetime.date.today)
     edate = models.DateField(null=True, blank=True)
 
     def __str__(self):
         return '{} - {}'.format(self.unique_id.id, self.project_name)
-
-
-class Language(models.Model):
-    language = models.CharField(max_length=20, default='')
-
-    def __str__(self):
-        return self.language
-
-
-class Know(models.Model):
-    language_id = models.ForeignKey(Language, on_delete=models.CASCADE)
-    unique_id = models.ForeignKey(Student, on_delete=models.CASCADE)
-
-    class Meta:
-        unique_together = (('language_id', 'unique_id'),)
-
-    def __str__(self):
-        return '{} - {}'.format(self.unique_id.id, self.language_id.language)
 
 
 class Skill(models.Model):
@@ -102,9 +82,8 @@ class Education(models.Model):
     unique_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     degree = models.CharField(max_length=40, default='')
     grade = models.CharField(max_length=10, default='')
-    institute = models.CharField(max_length=250, default='')
-    stream = models.CharField(
-        max_length=150, default='', null=True, blank=True)
+    institute = models.TextField(max_length=250, default='')
+    stream = models.CharField(max_length=150, default='', null=True, blank=True)
     sdate = models.DateField(_("Date"), default=datetime.date.today)
     edate = models.DateField(null=True, blank=True)
 
@@ -117,8 +96,7 @@ class Experience(models.Model):
     title = models.CharField(max_length=100, default='')
     status = models.CharField(max_length=20, choices=Constants.RESUME_TYPE,
                               default='COMPLETED')
-    description = models.CharField(
-        max_length=500, default='', null=True, blank=True)
+    description = models.TextField(max_length=500, default='', null=True, blank=True)
     company = models.CharField(max_length=200, default='')
     location = models.CharField(max_length=200, default='')
     sdate = models.DateField(_("Date"), default=datetime.date.today)
@@ -131,10 +109,8 @@ class Experience(models.Model):
 class Course(models.Model):
     unique_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     course_name = models.CharField(max_length=100, default='')
-    description = models.CharField(
-        max_length=250, default='', null=True, blank=True)
-    license_no = models.CharField(
-        max_length=100, default='', null=True, blank=True)
+    description = models.TextField(max_length=250, default='', null=True, blank=True)
+    license_no = models.CharField(max_length=100, default='', null=True, blank=True)
     sdate = models.DateField(_("Date"), default=datetime.date.today)
     edate = models.DateField(null=True, blank=True)
 
@@ -145,9 +121,8 @@ class Course(models.Model):
 class Publication(models.Model):
     unique_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     publication_title = models.CharField(max_length=100, default='')
-    description = models.CharField(
-        max_length=250, default='', null=True, blank=True)
-    publisher = models.CharField(max_length=250, default='')
+    description = models.TextField(max_length=250, default='', null=True, blank=True)
+    publisher = models.TextField(max_length=250, default='')
     publication_date = models.DateField(_("Date"), default=datetime.date.today)
 
     def __str__(self):
@@ -165,9 +140,8 @@ class Coauthor(models.Model):
 class Patent(models.Model):
     unique_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     patent_name = models.CharField(max_length=100, default='')
-    description = models.CharField(
-        max_length=250, default='', null=True, blank=True)
-    patent_office = models.CharField(max_length=250, default='')
+    description = models.TextField(max_length=250, default='', null=True, blank=True)
+    patent_office = models.TextField(max_length=250, default='')
     patent_date = models.DateField()
 
     def __str__(self):
@@ -195,8 +169,7 @@ class Achievement(models.Model):
     achievement = models.CharField(max_length=100, default='')
     achievement_type = models.CharField(max_length=20, choices=Constants.ACHIEVEMENT_TYPE,
                                         default='OTHER')
-    description = models.CharField(
-        max_length=1000, default='', null=True, blank=True)
+    description = models.TextField(max_length=1000, default='', null=True, blank=True)
     issuer = models.CharField(max_length=200, default='')
     date_earned = models.DateField(_("Date"), default=datetime.date.today)
 
@@ -217,8 +190,7 @@ class NotifyStudent(models.Model):
                                       default='PLACEMENT')
     company_name = models.CharField(max_length=100, default='')
     ctc = models.DecimalField(decimal_places=2, max_digits=5)
-    description = models.CharField(
-        max_length=1000, default='', null=True, blank=True)
+    description = models.TextField(max_length=1000, default='', null=True, blank=True)
     timestamp = models.DateTimeField(auto_now=True)
 
     def __str__(self):
@@ -245,12 +217,10 @@ class PlacementRecord(models.Model):
     placement_type = models.CharField(max_length=20, choices=Constants.PLACEMENT_TYPE,
                                       default='PLACEMENT')
     name = models.CharField(max_length=100, default='')
-    ctc = models.DecimalField(
-        decimal_places=2, max_digits=5, null=True, blank=True)
+    ctc = models.DecimalField(decimal_places=2, max_digits=5, default=0)
     year = models.IntegerField(default=0)
     test_score = models.IntegerField(default=0, null=True, blank=True)
-    test_type = models.CharField(
-        max_length=30, default='', null=True, blank=True)
+    test_type = models.CharField(max_length=30, default='', null=True, blank=True)
 
     def __str__(self):
         return '{} - {}'.format(self.name, self.year)
@@ -271,26 +241,11 @@ class ChairmanVisit(models.Model):
     company_name = models.CharField(max_length=100, default='')
     location = models.CharField(max_length=100, default='')
     visiting_date = models.DateField(_("Date"), default=datetime.date.today)
-    description = models.CharField(
-        max_length=1000, default='', null=True, blank=True)
+    description = models.TextField(max_length=1000, default='', null=True, blank=True)
     timestamp = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.company_name
-
-
-class ContactCompany(models.Model):
-    company_name = models.CharField(max_length=100, default='')
-    hr_mail = models.CharField(
-        max_length=100, default='', null=True, blank=True)
-    reference = models.CharField(
-        max_length=1000, default='', null=True, blank=True)
-    description = models.CharField(
-        max_length=500, default='', null=True, blank=True)
-    timestamp = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return '{} - {}'.format(self.company_name, self.timestamp)
 
 
 class PlacementSchedule(models.Model):
@@ -298,8 +253,7 @@ class PlacementSchedule(models.Model):
     title = models.CharField(max_length=100, default='')
     placement_date = models.DateField(_("Date"), default=datetime.date.today)
     location = models.CharField(max_length=100, default='')
-    description = models.CharField(
-        max_length=500, default='', null=True, blank=True)
+    description = models.TextField(max_length=500, default='', null=True, blank=True)
     time = models.TimeField()
 
     def __str__(self):
@@ -307,10 +261,8 @@ class PlacementSchedule(models.Model):
 
 
 class StudentPlacement(models.Model):
-    unique_id = models.OneToOneField(
-        Student, primary_key=True, on_delete=models.CASCADE)
-    debar = models.CharField(
-        max_length=20, choices=Constants.DEBAR_TYPE, default='NOT DEBAR')
+    unique_id = models.OneToOneField(Student, primary_key=True, on_delete=models.CASCADE)
+    debar = models.CharField(max_length=20, choices=Constants.DEBAR_TYPE, default='NOT DEBAR')
     future_aspect = models.CharField(max_length=20, choices=Constants.PLACEMENT_TYPE,
                                      default='PLACEMENT')
     placed_type = models.CharField(max_length=20, choices=Constants.PLACED_TYPE,

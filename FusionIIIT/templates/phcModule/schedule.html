@@ -22,26 +22,31 @@
                         <tr>
                           <th>Schedule</th>
                           {% for d in doctors %}
+                          {{count.doctor_count}}
                           <th>{{d.doctor_name}}</th>
                           {% endfor %}
                         <tr>
 
                           {% for p,day in days %}
-
+                          {{count.empty_fine}}
                           <tr>
                             <td>{{day}}</td>
-                            {% for s in schedule %}
 
-
-                            {% if s.day == p %}
                             {% for d in doctors %}
-                            {% if s.doctor_id.id == d.id %}
+                            {{count.empty_fine}}
+                            {% for s in schedule %}
+                            {% if s.day == p %}
+                            {% if d.id == s.doctor_id.id %}
                             <td>{{s.from_time}}--{{s.to_time}}</td>
+                            {{count.increment}}
+                            {% else %}
+                            {% endif %}
                             {% endif %}
                             {% endfor %}
-
+                            {% if count.count == 0 %}
+                              <td></td>
                             {% endif %}
-                            {% endfor %}
+                          {% endfor %}
                           </tr>
 
                           {% endfor %}

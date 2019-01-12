@@ -2,11 +2,8 @@ from django.contrib import admin
 from .models import *
 
 # Register your models here.
-
-
 class emp_research_papersAdmin(admin.ModelAdmin):
     list_per_page = 900
-
 
 admin.site.register(emp_research_projects)
 admin.site.register(emp_visits)
