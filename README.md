@@ -49,7 +49,7 @@ And additional requirements are in **requirements.txt** and will be installed th
 ### Syncing with Fork:
 * `$ git fetch upstream`
 * `$ git merge upstream/master`
-* `$ git push origin`
+* `$ git push origin <module-name>`
 * Open the link given after the previous command or go to `https://github.com/FusionIIIT/Fusion` and create pull request
 
 
