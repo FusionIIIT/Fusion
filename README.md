@@ -43,7 +43,9 @@ And additional requirements are in **requirements.txt** and will be installed th
   You may use autopep8 to automatically resolve them. https://pypi.org/project/autopep8/#usage
 * After making changes  
     - `$ git add .`  
-    - `$ git commit` then enter the commit message. Follow: https://gist.github.com/robertpainsi/b632364184e70900af4ab688decf6f53  
+    - `$ git commit` then enter the commit message.
+        Refer to below link for best practices regarding commit messages
+        Follow: https://gist.github.com/robertpainsi/b632364184e70900af4ab688decf6f53  
 ### Syncing with Fork:
 * `$ git fetch upstream`
 * `$ git merge upstream/master`
