@@ -12,31 +12,18 @@
         {% include 'dashboard/navbar.html' %}
     {% endblock %}
 
-    {% comment %}The grid starts here!{% endcomment %}
+    <!--The grid starts here!-->
     <div class="ui stackable doubling grid">
 
-        {% comment %}The left-margin segment!{% endcomment %}
+        <!--The left-margin segment!-->
         <div class="column"></div>
 
-        {% comment %}
+        <!--
             The left-rail segment starts here!
-        {% endcomment %}
+        -->
         <div class="three wide column">
 
-            {% comment %}The user image card starts here!{% endcomment %}
-            {% block usercard %}
-
-                {% comment %}
-                TODO: Instead of Name write the position like "Office Of Dean Students!"
-                {% endcomment %}
-
-                {% include 'globals/usercard.html' %}
-            {% endblock %}
-            {% comment %}The user image card ends here!{% endcomment %}
-
-            <div class="ui divider"></div>
-
-            {% comment %}The Tab-Menu starts here!{% endcomment %}
+            <!--The Tab-Menu starts here!-->
 
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
@@ -89,84 +76,84 @@
                 </a>
                 {% endif %}
             </div>
-            {% comment %}The Tab-Menu ends here!{% endcomment %}
+            <!--The Tab-Menu ends here!-->
 
         </div>
-        {% comment %}
+        <!--
             The left-rail segment ends here!
-        {% endcomment %}
+        -->
 
 
-        {% comment %}
+        <!--
             The central-rail segment starts here!
-        {% endcomment %}
+        -->
 
         <div class="eight wide column">
-            {% comment %}The Details start here!{% endcomment %}
+            <!--The Details start here!-->
 
-            {% comment %}The Holding meetings start here!{% endcomment %}
+            <!--The Holding meetings start here!-->
             <div class="ui tab segment" data-tab="zero">
                 {% block form0 %}
                     {% include 'officeModule/officeOfDeanStudents/budgets.html' %}
                      {{ all_designations }}
                 {% endblock %}
             </div>
-            {% comment %}The Holding meetings end here!{% endcomment %}
+            <!--The Holding meetings end here!-->
 
-            {% comment %}The Holding meetings start here!{% endcomment %}
+            <!--The Holding meetings start here!-->
             <div class="ui tab segment" data-tab="first">
                 {% block form1 %}
                     {% include 'officeModule/officeOfDeanStudents/holdingMeetings.html' %}
                 {% endblock %}
             </div>
-            {% comment %}The Holding meetings end here!{% endcomment %}
+            <!--The Holding meetings end here!-->
 
 
-            {% comment %}The budget approvals starts here!{% endcomment %}
+            <!--The budget approvals starts here!-->
             <div class="ui tab segment" data-tab="second">
                 {% block form2 %}
                     {% include 'officeModule/officeOfDeanStudents/budgetApproval.html' %}
                 {% endblock %}
             </div>
-            {% comment %}The budget approvals ends here!{% endcomment %}
+            <!--The budget approvals ends here!-->
 
-            {% comment %}The New Club Approvals starts here!{% endcomment %}
+            <!--The New Club Approvals starts here!-->
             <div class="ui tab segment" data-tab="fifth">
                 {% block form5 %}
                     {% include 'officeModule/officeOfDeanStudents/newClubApprovals.html' %}
                 {% endblock %}
             </div>
-            {% comment %}The New CLub Approvals ends here!{% endcomment %}
+            <!--The New CLub Approvals ends here!-->
 
-            {% comment %}The Meeting minutes starts here!{% endcomment %}
+            <!--The Meeting minutes starts here!-->
             <div class="ui tab segment" data-tab="sixth">
                 {% block form6 %}
                     {% include 'officeModule/officeOfDeanStudents/meetingMinutes.html' %}
                 {% endblock %}
 
             </div>
-            {% comment %}The Meeting minutes ends here!{% endcomment %}
+            <!--The Meeting minutes ends here!-->
 
-            {% comment %}The Hostel Room Allotment starts here!{% endcomment %}
+            <!--The Hostel Room Allotment starts here!-->
             <div class="ui tab segment" data-tab="seventh">
                 {% block form7 %}
                     {% include 'officeModule/officeOfDeanStudents/hostelRoomAllotment.html' %}
                 {% endblock %}
             </div>
-            {% comment %}The Hostel Room Allotment ends here!{% endcomment %}
+            <!--The Hostel Room Allotment ends here!-->
 
-            {% comment %}Club budget allotment starts  here!{% endcomment %}
+            <!--Club budget allotment starts  here!-->
             <div class="ui tab segment" data-tab="tenth">
                 {% block form10 %}
                     {% include 'officeModule/officeOfDeanStudents/budgetAllotment.html' %}
                 {% endblock %}
             </div>
-            {% comment %}Club budget allotment ends here!{% endcomment %}
+            <!--Club budget allotment ends here!-->
 
         </div>
-        {% comment %}The central-rail segment ends here!{% endcomment %}
+        <!--The central-rail segment ends here!-->
 
-        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <!--The right-rail segment starts here!-->
         <div class="three wide column">
             <div class="row">
                 <div class="ui row">
@@ -196,13 +183,13 @@
                 </div>
             </div>
         </div>
-        {% comment %}The right-rail segment ends here!{% endcomment %}
+        <!--The right-rail segment ends here!-->
 
-        {% comment %}The right-margin segment!{% endcomment %}
+        <!--The right-margin segment!-->
         <div class="column"></div>
 
     </div>
-    {% comment %}The grid ends here!{% endcomment %}
+    <!--The grid ends here!-->
 
 
 
