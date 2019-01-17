@@ -72,7 +72,8 @@ def meetingMinutes(request):
     b=Meeting.objects.get(pk=id)
     b.minutes_file=file
     b.save()
-    return HttpResponseRedirect('/office/officeOfDeanStudents/meeting_Minutes')
+    #return HttpResponseRedirect('/office/officeOfDeanStudents/first')
+    return render(request, "officeModule/officeModule/officeOfDeanStudents/holdingMeetings.html", context)
 
 @login_required
 def hostelRoomAllotment(request):
@@ -80,7 +81,7 @@ def hostelRoomAllotment(request):
     hall_no=request.POST.get('hall_no')
     p=hostel_allotment(allotment_file=file,hall_no=hall_no)
     p.save()
-    return HttpResponseRedirect('/office/officeOfDeanStudents/hostelRoomAllotment')
+    return HttpResponseRedirect('/office/officeOfDeanStudents')
 
 @login_required
 def budgetApproval(request):
@@ -98,7 +99,7 @@ def budgetApproval(request):
         b.avail_budget= (availBudget- int(budget))
         a.save()
         b.save()
-    return HttpResponseRedirect('/office/officeOfDeanStudents/budget_approval')
+    return HttpResponseRedirect('/office/officeOfDeanStudents')
 
 @login_required
 def budgetRejection(request):
@@ -109,7 +110,7 @@ def budgetRejection(request):
         a.status='rejected'
         a.remarks=request.POST.get(id_r[i])
         a.save()
-    return HttpResponseRedirect('/office/officeOfDeanStudents/budget_rejection')
+    return HttpResponseRedirect('/office/officeOfDeanStudents')
 
 
 @login_required
@@ -127,7 +128,8 @@ def clubApproval(request):
         HoldsDesig.save()
         HoldsDesig = HoldsDesignation( user= co_co, working= co_co, designation=designation1)
         HoldsDesig.save()
-    return HttpResponseRedirect('/office/officeOfDeanStudents/club_approval')
+    return HttpResponseRedirect('/office/officeOfDeanStudents')
+    return render(request, "officeModule/officeModule / officeOfDeanStudents / newClubApprovals.html", context)
 
 @login_required
 def clubRejection(request):
@@ -136,7 +138,7 @@ def clubRejection(request):
         a=Club_info.objects.get(pk=id_r[i]);
         a.status='rejected'
         a.save()
-    return HttpResponseRedirect('/office/officeOfDeanStudents/club_rejection')
+    return HttpResponseRedirect('/office/officeOfDeanStudents')
 
 @login_required
 def budgetAllot(request):
@@ -146,7 +148,7 @@ def budgetAllot(request):
     a.alloted_budget=int(budget)
     a.avail_budget= int(budget)
     a.save()
-    return HttpResponseRedirect('/office/officeOfDeanStudents/budgetAllot')
+    return HttpResponseRedirect('/office/officeOfDeanStudents')
 
 @login_required
 def budgetAllotEdit(request):
@@ -157,4 +159,4 @@ def budgetAllotEdit(request):
     a.avail_budget= int(budget)
     a.spent_budget= int(0)
     a.save()
-    return HttpResponseRedirect('/office/officeOfDeanStudents/budgetAllotEdit')
+    return HttpResponseRedirect('/office/officeOfDeanStudents')
