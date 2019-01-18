@@ -100,3 +100,11 @@ FusionIIIT/Fusion/settings.py
 
 # dbinsertscripts
 FusionIIIT/dbinsertscripts
+
+#Folders
+FusionIIIT/Include
+FusionIIIT/Scripts
+FusionIIIT/Lib
+FusionIIIT/tcl
+
+

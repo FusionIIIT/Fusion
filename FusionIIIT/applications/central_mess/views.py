@@ -55,6 +55,7 @@ def mess(request):
         feed = Feedback.objects.all()
         messinfo = Messinfo.objects.get(student_id=student)
         count = 0
+        #variable y stores the menu items
         y = Menu.objects.all()
         x = Nonveg_menu.objects.all()
 
@@ -296,6 +297,7 @@ def menusubmit(request):
     extrainfo = ExtraInfo.objects.get(user=user)
     holds_designations = HoldsDesignation.objects.filter(user=user)
     desig = holds_designations
+    context = {}
     for d in desig:
 
         if d.designation.name == 'mess_convener':
