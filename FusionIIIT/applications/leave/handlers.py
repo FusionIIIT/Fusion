@@ -6,14 +6,15 @@ from django.forms.formsets import formset_factory
 from django.http import JsonResponse
 from django.shortcuts import redirect, render, reverse
 
+from applications.globals.models import HoldsDesignation
+
 from .forms import (AcademicReplacementForm, AdminReplacementForm,
                     BaseLeaveFormSet, EmployeeCommonForm, LeaveSegmentForm,
                     StudentApplicationForm)
 from .helpers import (create_migrations, deduct_leave_balance,
                       get_pending_leave_requests, restore_leave_balance)
-from .models import (Leave, LeaveRequest, LeaveSegment,
-                     LeaveType, ReplacementSegment)
-from applications.globals.models import HoldsDesignation
+from .models import (Leave, LeaveRequest, LeaveSegment, LeaveType,
+                     ReplacementSegment)
 
 LeaveFormSet = formset_factory(LeaveSegmentForm, extra=0, max_num=3, min_num=1,
                                formset=BaseLeaveFormSet)

@@ -1,12 +1,12 @@
-from django.shortcuts import render , reverse
-from django.http import HttpResponse, HttpResponseNotFound, Http404,  HttpResponseRedirect
-from .models import Paymentscheme
-from .models import Payments
-from .models import Receipts
-from .models import Bank
-from .models import Company
-from applications.globals.models import HoldsDesignation
 import datetime
+
+from django.http import (Http404, HttpResponse, HttpResponseNotFound,
+                         HttpResponseRedirect)
+from django.shortcuts import render, reverse
+
+from applications.globals.models import HoldsDesignation
+
+from .models import Bank, Company, Payments, Paymentscheme, Receipts
 
 
 def financeModule(request):

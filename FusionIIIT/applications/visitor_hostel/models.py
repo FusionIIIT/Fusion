@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
-from applications.globals.models import ExtraInfo
 
+from applications.globals.models import ExtraInfo
 
 VISITOR_CATEGORY = (
     ('A', 'A'),

@@ -1,14 +1,14 @@
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, JsonResponse, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import render
 
-from .handlers import (handle_faculty_leave_application,
+from .handlers import (delete_leave_application,
+                       handle_faculty_leave_application,
                        handle_staff_leave_application,
                        handle_student_leave_application,
                        process_staff_faculty_application,
                        process_student_application, send_faculty_leave_form,
-                       send_staff_leave_form, send_student_leave_form,
-                       delete_leave_application)
+                       send_staff_leave_form, send_student_leave_form)
 
 
 @login_required(login_url='/accounts/login')

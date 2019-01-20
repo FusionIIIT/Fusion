@@ -2,6 +2,7 @@
 import datetime
 
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from applications.academic_information.models import Student
@@ -204,7 +205,7 @@ class PlacementStatus(models.Model):
                                   default='PENDING')
     placed = models.CharField(max_length=20, choices=Constants.PLACED_TYPE,
                               default='NOT PLACED')
-    timestamp = models.DateTimeField(auto_now=True)
+    timestamp = models.DateTimeField(auto_now=False, auto_now_add=False, default=timezone.now)
 
     class Meta:
         unique_together = (('notify_id', 'unique_id'),)
@@ -255,6 +256,8 @@ class PlacementSchedule(models.Model):
     location = models.CharField(max_length=100, default='')
     description = models.TextField(max_length=500, default='', null=True, blank=True)
     time = models.TimeField()
+    attached_file = models.FileField(upload_to='documents/placement/schedule', null=True, blank=True)
+    schedule_at = models.DateTimeField(auto_now_add=False, auto_now=False, default=timezone.now, blank=True, null=True)
 
     def __str__(self):
         return '{} - {}'.format(self.notify_id.company_name, self.placement_date)

@@ -8,14 +8,16 @@
 
 import datetime
 import json
-from django.contrib.auth.decorators import login_required
+
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
 # Create your views here.
 from django.shortcuts import render
 
 from applications.academic_information.models import Spi, Student
-from applications.globals.models import Designation, HoldsDesignation, ExtraInfo
+from applications.globals.models import (Designation, ExtraInfo,
+                                         HoldsDesignation)
 
 from .models import (Award_and_scholarship, Constants, Director_gold,
                      Director_silver, Mcm, Notional_prize, Previous_winner,

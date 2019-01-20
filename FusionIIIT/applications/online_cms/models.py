@@ -199,6 +199,3 @@ class ForumReply(models.Model):
 
     def __str__(self):
         return '{} - {} - {}'.format(self.pk, self.forum_ques, self.forum_reply)
-
-
-

@@ -11,7 +11,7 @@
     {% block navBar %}
         {% include 'dashboard/navbar.html' %}
     {% endblock %}
-
+{{student_record_check}}
     {% comment %}The grid starts here!{% endcomment %}
     <div class="ui stackable doubling grid">
 
@@ -69,7 +69,7 @@
                 {% endfor %}-->
                 {% for c in current %}
                 {% if c.designation.name == 'student' %}
-                 <a class="active item" data-tab="twelth">
+                 <a class="{% if officer_manage or officer_manage_pbi or officer_statistics_past or officer_statistics_past_add or officer_statistics_past_pbi_search or officer_statistics_past_pbi_add or officer_statistics_past_higher_search or officer_statistics_past_higher_add %}item{% else %}active item{% endif %}" data-tab="twelth">
                      Placement Schedule
                      <i class="right floated chevron right icon"></i>
                  </a>
@@ -79,27 +79,26 @@
 
                 {% for c in current2 %}
                 {% if c.designation.name == 'placement officer' %}
-                {% if students %}
-                <a class="item" data-tab="twelth">
-                    Placement Schedule
-                    <i class="right floated chevron right icon"></i>
-                </a>
-                <a class="active item" data-tab="ninth">
-                    Student Records
-                    <i class="right floated chevron right icon"></i>
-                </a>
+                {% if students or invitecheck == 1 or student_record_check == 1 %}
+                    <a class="item" data-tab="twelth">
+                        Placement Schedule
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    <a class="{% if officer_manage or officer_manage_pbi or officer_statistics_past or officer_statistics_past_add or officer_statistics_past_pbi_search or officer_statistics_past_pbi_add or officer_statistics_past_higher_search or officer_statistics_past_higher_add %}item{% else %}active item{% endif %}" data-tab="ninth">
+                        Student Records
+                        <i class="right floated chevron right icon"></i>
+                    </a>
                 {% else %}
-                 <a class="active item" data-tab="twelth">
-                     Placement Schedule
-                     <i class="right floated chevron right icon"></i>
-                 </a>
-                 <a class="item" data-tab="ninth">
-                     Student Records
-                     <i class="right floated chevron right icon"></i>
-                 </a>
+                     <a class="{% if officer_manage or officer_manage_pbi or officer_statistics_past or officer_statistics_past_add or officer_statistics_past_higher_search or officer_statistics_past_higher_add or officer_statistics_past_pbi_add or officer_statistics_past_pbi_search%}item{% else %}active item{% endif %}" data-tab="twelth">
+                         Placement Schedule
+                         <i class="right floated chevron right icon"></i>
+                     </a>
+                     <a class="item" data-tab="ninth">
+                         Student Records
+                         <i class="right floated chevron right icon"></i>
+                     </a>
                  {% endif %}
-
-                <a class="item" data-tab="tenth">
+                <a class="{% if officer_manage or officer_manage_pbi %}active item{% else %}item{% endif %}" data-tab="tenth">
                     Manage Records
                     <i class="right floated chevron right icon"></i>
                 </a>
@@ -109,37 +108,37 @@
                 {% for c in current1 %}
                 {% if c.designation.name == 'placement chairman' %}
                 {% if students %}
-                <a class="item" data-tab="twelth">
-                    Placement Schedule
-                    <i class="right floated chevron right icon"></i>
-                </a>
-                <a class="active item" data-tab="ninth">
-                    Student Records
-                    <i class="right floated chevron right icon"></i>
-                </a>
+                    <a class="item" data-tab="twelth">
+                        Placement Schedule
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    <a class="{% if officer_manage or officer_manage_pbi or officer_statistics_past or officer_statistics_past_add or officer_statistics_past_pbi_search or officer_statistics_past_pbi_add or officer_statistics_past_higher_search or officer_statistics_past_higher_add or chairman_visit_add %}item{% else %}active item{% endif %}" data-tab="ninth">
+                        Student Records
+                        <i class="right floated chevron right icon"></i>
+                    </a>
                 {% else %}
-                 <a class="active item" data-tab="twelth">
-                     Placement Schedule
-                     <i class="right floated chevron right icon"></i>
-                 </a>
-                 <a class="item" data-tab="ninth">
-                     Student Records
-                     <i class="right floated chevron right icon"></i>
-                 </a>
+                     <a class="{% if officer_manage or officer_manage_pbi or officer_statistics_past or officer_statistics_past_add or officer_statistics_past_higher_search or officer_statistics_past_higher_add or officer_statistics_past_pbi_add or officer_statistics_past_pbi_search or chairman_visit_add%}item{% else %}active item{% endif %}" data-tab="twelth">
+                         Placement Schedule
+                         <i class="right floated chevron right icon"></i>
+                     </a>
+                     <a class="item" data-tab="ninth">
+                         Student Records
+                         <i class="right floated chevron right icon"></i>
+                     </a>
                  {% endif %}
 
-                <a class="item" data-tab="tenth">
+                <a class="{% if officer_manage or officer_manage_pbi %}active item{% else %}item{% endif %}" data-tab="tenth">
                     Manage Records
                     <i class="right floated chevron right icon"></i>
                 </a>
-                <a class="item" data-tab="seventh">
+                <a class="{% if chairman_visit_add %}active item{% else %}item{% endif %}" data-tab="seventh">
                     Placement Visits
                     <i class="right floated chevron right icon"></i>
                 </a>
                 {% endif %}
                 {% endfor %}
 
-                <a class="item" data-tab="eighth">
+                <a class="{% if officer_statistics_past or officer_statistics_past_add or officer_statistics_past_pbi_add or officer_statistics_past_pbi_search or officer_statistics_past_higher_add or officer_statistics_past_higher_search %}active item{% else %}item{% endif %}" data-tab="eighth">
                     Placement Statistics
                     <i class="right floated chevron right icon"></i>
                 </a>
@@ -214,7 +213,7 @@
             {% for c in current1 %}
             {% if c.designation.name == 'placement chairman' %}
             {% comment %}The Placement Visits tab starts here!{% endcomment %}
-            <div class="ui tab segment" data-tab="seventh">
+            <div class="{% if chairman_visit_add %}ui active tab segment{% else %}ui tab segment{% endif %}" data-tab="seventh">
                 {% block placementvisits %}
                     {% include 'placementModule/placementvisits.html' %}
                 {% endblock %}
@@ -224,16 +223,16 @@
             {% endfor %}
 
             {% comment %}The Placement Statistics tab starts here!{% endcomment %}
-            {% if students %}
-            <div class="ui tab segment" data-tab="twelth">
-              {% else %}
-              <div class="ui active tab segment" data-tab="twelth">
-                {% endif %}
+            {% if students or invitecheck == 1 or student_record_check == 1 %}
+                <div class="ui tab segment" data-tab="twelth">
+            {% else %}
+                <div class="{% if officer_manage or officer_manage_pbi or officer_statistics_past or officer_statistics_past_add or officer_statistics_past_pbi_add or officer_statistics_past_pbi_search or officer_statistics_past_higher_search or officer_statistics_past_higher_add or chairman_visit_add %}ui tab segment{% else %}ui active tab segment{% endif %}" data-tab="twelth">
+            {% endif %}
                 {% block activity %}
                     {% include 'placementModule/activity.html' %}
                 {% endblock %}
             </div>
-            <div class="ui tab segment" data-tab="eighth">
+            <div class="{% if officer_statistics_past or officer_statistics_past_add or officer_statistics_past_higher_add or officer_statistics_past_higher_search or officer_statistics_past_pbi_search or officer_statistics_past_pbi_add %}ui active tab segment{% else %}ui tab segment{% endif %}" data-tab="eighth">
                 {% block placementstatistics %}
                     {% include 'placementModule/placementstatistics.html' %}
                 {% endblock %}
@@ -243,12 +242,12 @@
 
 
             {% if current == None %}
-            {% if students %}
-            {% comment %}The Placement Statistics tab starts here!{% endcomment %}
-            <div class="ui active tab segment" data-tab="ninth">
-              {% else %}
-              <div class="ui tab segment" data-tab="ninth">
-                {% endif %}
+            {% if students or invitecheck == 1 or student_record_check == 1 %}
+                {% comment %}The Placement Statistics tab starts here!{% endcomment %}
+                <div class="{% if officer_manage or officer_manage_pbi %}ui tab segment{% else %}ui active tab segment{% endif %}" data-tab="ninth">
+            {% else %}
+                <div class="ui tab segment" data-tab="ninth">
+            {% endif %}
                 {% block studentrecords %}
                     {% include 'placementModule/studentrecords.html' %}
                 {% endblock %}
@@ -256,7 +255,7 @@
             {% comment %}The Placement Visits tab ends here!{% endcomment %}
 
             {% comment %}The Placement Statistics tab starts here!{% endcomment %}
-            <div class="ui tab segment" data-tab="tenth">
+            <div class="{% if officer_manage or officer_manage_pbi %}ui active tab segment{% else %}ui tab segment{% endif %}" data-tab="tenth">
                 {% block managerecords %}
                     {% include 'placementModule/managerecords.html' %}
                 {% endblock %}
@@ -265,6 +264,10 @@
             {% endif %}
         </div>
         {% comment %}The central-rail segment ends here!{% endcomment %}
+
+        
+<!-- ------------------------------------------------------------------------- -->
+
 
         {% for c in current %}
         {% if c.designation.name == 'student' %}

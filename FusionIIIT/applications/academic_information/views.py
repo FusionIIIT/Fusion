@@ -1,22 +1,22 @@
 import datetime
 import json
-
-from itertools import chain
-from xhtml2pdf import pisa
-from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
-from django.shortcuts import get_object_or_404, render
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.models import User
-from django.template.loader import get_template
 from io import BytesIO
+from itertools import chain
 
+from django.contrib.auth.models import User
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.shortcuts import get_object_or_404, render
+from django.template.loader import get_template
+from django.views.decorators.csrf import csrf_exempt
+from xhtml2pdf import pisa
 
-from applications.globals.models import Designation, ExtraInfo, HoldsDesignation
+from applications.academic_procedures.models import MinimumCredits, Register
+from applications.globals.models import (Designation, ExtraInfo,
+                                         HoldsDesignation)
 
 from .forms import AcademicTimetableForm, ExamTimetableForm, MinuteForm
-from .models import (Course, Instructor, Exam_timetable, Grades, Meeting, Student,
-                     Student_attendance, Timetable, Calendar)
-from applications.academic_procedures.models import MinimumCredits, Register
+from .models import (Calendar, Course, Exam_timetable, Grades, Instructor,
+                     Meeting, Student, Student_attendance, Timetable)
 
 
 def homepage(request):
