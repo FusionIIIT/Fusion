@@ -1,10 +1,13 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from .models import File, Tracking
-from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
-from django.template.defaulttags import csrf_token
-from django.http import HttpResponse,HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import get_object_or_404, redirect, render
+from django.template.defaulttags import csrf_token
+
+from applications.globals.models import (Designation, ExtraInfo,
+                                         HoldsDesignation)
+
+from .models import File, Tracking
 
 
 @login_required(login_url = "/accounts/login/")

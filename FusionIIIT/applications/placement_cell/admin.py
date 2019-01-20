@@ -1,9 +1,8 @@
 from django.contrib import admin
 
-from .models import (Achievement, ChairmanVisit, Coauthor, Coinventor,
-                     Course, Education, Experience, Has,
-                     Interest, MessageOfficer, NotifyStudent,
-                     Patent, PlacementRecord, PlacementSchedule,
+from .models import (Achievement, ChairmanVisit, Coauthor, Coinventor, Course,
+                     Education, Experience, Has, Interest, MessageOfficer,
+                     NotifyStudent, Patent, PlacementRecord, PlacementSchedule,
                      PlacementStatus, Project, Publication, Skill,
                      StudentPlacement, StudentRecord)
 

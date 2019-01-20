@@ -1,7 +1,7 @@
 from django.contrib import admin
 
-from .models import (BranchChange, CoursesMtech, FinalRegistrations, Register,
-                     Thesis, MinimumCredits)
+from .models import (BranchChange, CoursesMtech, FinalRegistrations,
+                     MinimumCredits, Register, Thesis)
 
 admin.site.register(Thesis)
 admin.site.register(Register)

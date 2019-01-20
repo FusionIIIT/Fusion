@@ -1,12 +1,15 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .models import *
-from applications.globals.models import *
-from applications.academic_information.models import Student
 from django.contrib.auth.models import User
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.dateparse import parse_date
+
+from applications.academic_information.models import Student
+from applications.globals.models import *
+
+from .models import *
+
 
 def retrun_content(roll, name, desig):
 	students = ExtraInfo.objects.all().filter(user_type = "student")

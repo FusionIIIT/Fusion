@@ -131,6 +131,9 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.socialaccount.providers.google',
     'semanticuiforms',
+    'applications.feeds.apps.FeedsConfig',
+    'pagedown',
+    'markdown_deux',
 ]
 
 MIDDLEWARE = [
@@ -163,20 +166,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'Fusion.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/1.11/ref/settings/#databases
-#DATABASES = {
-#    'default':
-#        {
-#            'ENGINE': 'django.db.backends.mysql',
-#            'NAME': 'fusion',
-#            'USER': 'abhay',
-#            'PASSWORD': 'abhaygupta',
-#            'HOST': '127.0.0.1',
-#            'PORT': '3306',
-#        },
-#}
 
 PROJECT_DIR = os.path.abspath(os.path.dirname(__file__))
 DATABASES = {

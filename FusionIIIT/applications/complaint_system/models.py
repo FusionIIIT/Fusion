@@ -4,7 +4,6 @@ from django.utils import timezone
 
 from applications.globals.models import ExtraInfo
 
-
 # Class definations:
 
 

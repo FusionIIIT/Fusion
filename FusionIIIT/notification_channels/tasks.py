@@ -1,7 +1,10 @@
 from __future__ import absolute_import, unicode_literals
-from channels import Group
-import celery
+
 import json
+
+import celery
+
+from channels import Group
 
 
 @celery.task()

@@ -15,9 +15,18 @@
         <div class="ui vertical segment">
 
             <div class="ui three item menu">
-                <a class="active item" data-tab="Placement">Placement</a>
-                <a class="item" data-tab="PBI">PBI</a>
-                <a class="item" data-tab="HigherStudies">Higher Studies</a>
+                <a class="{% if officer_statistics_past_pbi_search or officer_statistics_past_pbi_add or officer_statistics_past_higher_search or officer_statistics_past_higher_add %}item{% else %}active item{% endif %}" data-tab="Placement">
+                  Placement
+                </a>
+
+                <a class="{% if officer_statistics_past_pbi_search or officer_statistics_past_pbi_add %}active item{% else %}item{% endif %}" data-tab="PBI">
+                  PBI
+                </a>
+
+                <a class="{% if officer_statistics_past_higher_search or officer_statistics_past_higher_add %}active item{% else %}item{% endif %}" data-tab="HigherStudies">
+                  Higher Studies
+                </a>
+
             </div>
 
             <div class="ui active tab" data-tab="Placement">
