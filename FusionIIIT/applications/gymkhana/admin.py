@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from .models import Club_info, Club_member, Core_team, Club_budget, Session_info, Club_report, Fest_budget, Other_report
+from .models import (Club_budget, Club_info, Club_member, Club_report,
+                     Core_team, Fest_budget, Other_report, Session_info)
 
 # Register your models here.
 

@@ -1,0 +1,863 @@
+<!-- Current File -->
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+	Feeds
+{% endblock %}
+
+{% block css %}
+
+	<style type="text/css">
+		.wmd-panel{
+			margin-left: 7% !important;
+		}
+
+		.scrollbar
+		{
+			overflow-y: scroll;
+			overflow-x: hidden;
+			height: 500px;
+		}
+
+		
+		#style-1::-webkit-scrollbar-track
+		{
+			-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+			border-radius: 20px;
+			background-color: #F5F5F5;
+		}
+
+		#style-1::-webkit-scrollbar
+		{
+			width: 5px;
+			background-color: #F5F5F5;
+		}
+
+		#style-1::-webkit-scrollbar-thumb
+		{
+			background-color: #AAA;
+			border-radius: 20px;
+			background-image: -webkit-linear-gradient(90deg, rgba(0, 0, 0, .2), transparent)
+		}
+	</style>
+
+{% endblock %}
+
+{% block extra %}
+	{{form_answer.media}}
+{% endblock %}
+
+
+{% block body %}
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.1.7/semantic.min.js"></script>
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.1.7/semantic.min.css" rel="stylesheet"/>
+	{% block navBar %}
+		{% include 'dashboard/navbar.html' %}
+	{% endblock %}
+
+	<!-- Search Bar Section -->
+	<div class="ui clearing center aligned segment container">
+		<a href="{% url 'eis:profile' %}" style="font-size: 15px; text-decoration: none; float: left; padding-top: 5px;">
+			<i class="ui big user icon" style="color: teal;"></i>
+			<span style="color: teal;"> Atul Gupta</span>
+		</a>
+		<div class="ui large left icon input">
+			<form method="post" action="{% url 'feeds:feeds' %}">
+				{% csrf_token %}
+			<input type="search" name="keyword" style="width: 500px;"  placeholder="Search...">
+			<button type="submit" name="search" value="search" class="ui search button">
+			<i class="ui search icon"></i></button>
+
+			</form>
+		</div>
+		<button class="ui inverted right floated red button" id="modal-script" style="font-size: 16px;">
+			Ask a Question?
+		</button>
+	</div>
+	<!-- Search Bar Section ends here-->
+
+
+	<!-- Modal Starts here...... -->
+	<div class="ui modal" id="post_modal">
+		<i class="close icon"></i>
+		<div class="ui header"><i class="ui user icon"></i>{{ username }}</div>
+		<div class="scrolling content">
+			<div class="ui message">
+				<div class="header">
+					Check these things
+				</div>
+				<ul class="list">
+					<li>Please try to add How, What, Why in subject.</li>
+					<li>Be specific to your problem.</li>
+				</ul>
+			</div>
+
+			<form method="post" action="{% url 'feeds:feeds' %}" enctype="multipart/form-data">{% csrf_token %}
+				<div class="ui large form">
+					<div class="field">
+						<label>Subject</label>
+						<input id="subject" type="text" name="subject" placeholder="Subject for your problem..." required>
+					</div>
+
+					<div class="field">
+						<label>Description</label>
+						<input type="text" id="description" name="description" rows="2">
+					</div>
+
+					<div class="field">
+						<label>Add Tag</label>
+		    				<div class='ui multiple search selection dropdown seasons'>
+		      					<input name="Add_Tag" id="Add_Tag" value="Add_Tag" type="hidden">
+		      					<i class="dropdown icon"></i>
+		      					<div class="default text"><i class="tags icon"></i>Select</div>
+	      						<div class="menu">
+	      							{% for allowed_subtag in subtags %}
+	        						<div class="item" data-value="{{ allowed_subtag.id }}">{{ allowed_subtag.subtag }}</div>
+	        						{% endfor %}
+	      						</div>
+
+		    				</div>
+		  			</div>
+
+		  			<div class="field">
+		  				<label>Upload File</label>
+		  				<input type="file" id="file" name="file" style="border-radius: 3px;">
+		  			</div>
+
+					<div class="ui hidden divider"></div>
+					<div class="field">
+						<div class="ui black checkbox">
+  							<input type="checkbox" id="anonymous" name="anonymous">
+ 							<label>Ask Anonymously</label>
+						</div>
+					</div>
+					<div class="ui hidden divider"></div>
+
+					<div class="actions">
+						<button type="submit" name="add_qus" value="add_qus" class="ui submit positive button" style="float: right;">
+							Post
+						</button><br>
+						<div class="ui hidden divider"></div>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+	<!-- Modal ends here -->
+
+	<div class="ui divider"></div>
+	<br>
+
+<div class="ui grid">
+
+	<!-- First section of the page starts here -->
+	<div class="three wide column container" style="padding-left: 50px;">
+
+		<form action="{% url 'feeds:feeds' %}" method="POST" class="ui form">
+			{% csrf_token %}
+			<div class="field">
+				<div class='ui multiple search selection dropdown seasons'>
+					<input name="tag" id="tag" value="tag" type="hidden">
+					<i class="dropdown icon"></i>
+					<div class="default text"><i class="tags icon"></i>Select</div>
+					<div class="menu">
+						{% for allowed_subtag in add_tag_list %}
+							<div class="item" data-value="{{ allowed_subtag.id }}">
+								{{ allowed_subtag.subtag }}
+							</div>
+						{% endfor %}
+					</div>
+
+				</div>
+			</div>
+
+			<button type="submit" name="add_tag" id="add_tag" value="add_tag" class="ui button" type="button">
+				Add Tag
+			</button>
+		</form>
+
+	    {% comment %}The Tab-Menu starts here!{% endcomment %}
+	        <div class="ui fluid vertical pointing menu"
+	                 style="max-width: 320px;">
+	                <a class="active item" data-tab="life" id="Top-Stories" onclick="tags_based(id);">
+	                    Top Stories
+	                    <i class="right floated chevron right icon"></i>
+	                </a>
+	                {% for my_tag in my_tags %}
+	                	<div class="ui dropdown item" data-tab="first" id= {{ my_tag.tag }}>
+	                	{{ my_tag.tag }}
+	                	<i class="dropdown icon"></i>
+
+	                	{% if my_tag.tag == 'CSE' %}
+	                	<div class="menu">
+	                		{% for a in a %}
+	                			<div class="item">
+	                				<a style="color: inherit;" id={{ a.my_subtag.subtag }} onclick="tags_based(id);">
+	                					{{ a.my_subtag.subtag }}
+	                				</a>
+	                				<a id={{ a.my_subtag.subtag }} style="color: inherit;" onclick="removeTag(id);">
+	                					<i class="close icon" style="float: right;"></i>
+	                				</a>
+	                			</div>
+	     					{% endfor %}
+	    				</div>
+	    				{% endif %}
+
+	    				{% if my_tag.tag == 'ECE' %}
+	                	<div class="menu">
+	                		{% for b in b %}
+	                			<div class="item">
+		                			<a style="color: inherit;" id={{ b.my_subtag.subtag }} onclick="tags_based(id);">{{ b.my_subtag.subtag }}</a>
+		                			<i class="close icon" style="float: right;"></i>
+		                		</div>
+	     					{% endfor %}
+	    				</div>
+	    				{% endif %}
+
+	    				{% if my_tag.tag == 'Mechanical' %}
+	                	<div class="menu">
+	                		{% for c in c %}
+	                			<div class="item">
+		                			<a style="color: inherit;" id={{ c.my_subtag.subtag }} onclick="tags_based(id);">{{ c.my_subtag.subtag }}</a>
+		                			<i class="close icon" style="float: right;"></i>
+		                		</div>
+	     					{% endfor %}
+	    				</div>
+	    				{% endif %}
+
+	    				{% if my_tag.tag == 'Design' %}
+	                	<div class="menu">
+	                		{% for d in d %}
+	                			<div class="item">
+		                			<a style="color: inherit;" id={{ d.my_subtag.subtag }} onclick="tags_based(id);">{{ d.my_subtag.subtag }}</a>
+		                			<i class="close icon" style="float: right;"></i>
+		                		</div>	    
+		                	{% endfor %}
+	    				</div>
+	    				{% endif %}
+
+	    				{% if my_tag.tag == 'Business-and-Career' %}
+	                	<div class="menu">
+	                		{% for e in cse_e %}
+	                			<<div class="item">
+		                			<a style="color: inherit;" id={{ e.my_subtag.subtag }} onclick="tags_based(id);">{{ e.my_subtag.subtag }}</a>
+		                			<i class="close icon" style="float: right;"></i>
+		                		</div>
+	     					{% endfor %}
+	    				</div>
+	    				{% endif %}
+
+	    				{% if my_tag.tag == 'Entertainment' %}
+	                	<div class="menu">
+	                		{% for f in f %}
+	                			<div class="item">
+		                			<a style="color: inherit;" id={{ f.my_subtag.subtag }} onclick="tags_based(id);">{{ f.my_subtag.subtag }}</a>
+		                			<i class="close icon" style="float: right;"></i>
+		                		</div>
+	     					{% endfor %}
+	    				</div>
+	    				{% endif %}
+
+	    				{% if my_tag.tag == 'Jabalpur-city' %}
+	                	<div class="menu">
+	                		{% for g in g %}
+	                			<div class="item">
+		                			<a style="color: inherit;" id={{ g.my_subtag.subtag }} onclick="tags_based(id);">{{ g.my_subtag.subtag }}</a>
+		                			<i class="close icon" style="float: right;"></i>
+		                		</div>
+	     					{% endfor %}
+	    				</div>
+	    				{% endif %}
+
+	    				{% if my_tag.tag == 'IIITDMJ-Rules-and-Regulations' %}
+	                	<div class="menu">
+	                		{% for h in h %}
+	                			<div class="item">
+		                			<a style="color: inherit;" id={{ h.my_subtag.subtag }} onclick="tags_based(id);">{{ h.my_subtag.subtag }}</a>
+		                			<i class="close icon" style="float: right;"></i>
+		                		</div>
+	     					{% endfor %}
+	    				</div>
+	    				{% endif %}
+
+	    				{% if my_tag.tag == 'Life-Relationship-and-Self' %}
+	                	<div class="menu">
+	                		{% for i in i %}
+	                			<div class="item">
+		                			<a style="color: inherit;" id={{ i.my_subtag.subtag }} onclick="tags_based(id);">{{ i.my_subtag.subtag }}</a>
+		                			<i class="close icon" style="float: right;"></i>
+	                			</div>
+	     					{% endfor %}
+	    				</div>
+	    				{% endif %}
+
+	    				{% if my_tag.tag == 'IIITDMJ-Campus' %}
+	                	<div class="menu">
+	                		{% for j in j %}
+	                			<div class="item">
+		                			<a style="color: inherit;" id={{ j.my_subtag.subtag }} onclick="tags_based(id);">{{ j.my_subtag.subtag }}</a>
+		                			<i class="close icon" style="float: right;"></i>
+	                			</div>
+	     					{% endfor %}
+	    				</div>
+	    				{% endif %}
+
+	    				{% if my_tag.tag == 'Programmes' %}
+	                	<div class="menu">
+	                		{% for k in k %}
+	                			<div class="item">
+		                			<a style="color: inherit;" id={{ k.my_subtag.subtag }} onclick="tags_based(id);">{{ k.my_subtag.subtag }}</a>
+		                			<i class="close icon" style="float: right;"></i>
+	                			</div>
+	     					{% endfor %}
+	    				</div>
+	    				{% endif %}
+	    				</div>
+	                {% endfor %}
+			</div>
+	</div>
+	<!-- First section of the page ends here -->
+
+
+	<!-- Middle section of the page -->
+	<div class="ten wide column container" style="padding-left: 60px; padding-right: 60px;">		
+
+		<!-- Are You sure Modal for Delete button -->
+		<div class="ui modal" id="delete_modal">
+			<i class="close icon"></i>
+			<div class="ui header">
+				<i class="ui user icon"></i>
+				{{ username }}
+			</div>
+
+			<div class="ui message">
+				<p> Are you sure you want to delete this question? </p>
+			</div>
+
+			<form method="post" action="{% url 'feeds:delete_post' question.id %}">
+			{% csrf_token %}
+				<a class="ui item">
+					<button class="ui button" type="submit" name="delete" value="delete" id="delete_post">
+				<i class="trash icon" id="delete">Delete Post</i> 
+					</button>
+				</a>
+			</form>
+		</div> 
+
+		<div class="ui segment">
+			<h3 class="ui header">
+				<img class="ui avatar image" src="{% static 'globals/img/zlatan.jpg' %}">
+				<a href="" style="color: rgba(0,0,0,.6); font-size: 15px;">
+					{% for result in question.select_tag.all %}
+						| {{ result }} |
+					{% endfor %}
+				</a>
+
+				<!-- Update, Delete and Hide Button -->
+				<div class="ui simple dropdown item" style="float: right;">
+					<i class="ui ellipsis horizontal icon" style="color: grey;"></i>
+					<div class="ui menu">
+						{% if question.user == request.user %}
+							<div class="ui item">
+								<button class="ui button" style="background-color: transparent;" type="submit" name="delete" value="delete" id="delete_post">
+								<i class="trash alternate icon"></i> Delete Post
+								</button>
+							</div>
+
+							<div class="ui item">
+								<button class="ui button" style="background-color: transparent;" type="submit" name="update" value="{{question.id}}" id="update_post">
+									<i class="undo icon"></i> Update Post
+								</button> 
+
+								 <!-- Update Modal Starts here...... -->
+								<div class="ui modal" id="update_modal{{question.id}}">
+									<i class="close icon"></i>
+									<div class="ui header"><i class="ui user icon"></i>{{ username }} Edited</div>
+									<div class="scrolling content">
+										<div class="ui message">
+											<div class="header">
+												Check these things
+											</div>
+											<ul class="list">
+												<li>Please try to add How, What, Why in subject.</li>
+												<li>Be specific to your problem.</li>
+											</ul>
+										</div>
+
+										<form method="post" action="{% url 'feeds:update_post' question.id %}">{% csrf_token %}
+											<div class="ui large form">
+												<div class="field">
+													<label>Subject</label>
+													<input id="subject" type="text" name="subject" value="{{question.subject}}" required>
+												</div>
+
+												<div class="field">
+													<label>Description</label>
+													<input type="text" id="description" name="description" rows="2" value="{{question.description}}">
+												</div>
+
+												<div class="ui hidden divider"></div>
+												<div class="field">
+													<div class="ui black checkbox">
+														{% if question.anonymous_ask %}
+							  							<input type="checkbox" id="anonymous_update" name="anonymous_update" checked="checked"> 
+							 							<label>Ask Anonymously</label>
+							 							{% else %}
+							 							<input type="checkbox" id="anonymous_update" name="anonymous_update" > 
+							 							<label>Ask Anonymously</label>
+							 							{% endif %}
+													</div>
+												</div>
+												<div class="ui hidden divider"></div>
+
+												<div class="actions">
+													<button type="submit" name="update" value="update_qus" class="ui submit positive button" style="float: right;">
+														Update
+													</button><br>
+													<div class="ui hidden divider"></div>
+												</div>
+											</div>
+										</form>
+									</div>
+								</div>
+
+							</div>
+						{% endif %}
+
+						<div class="ui item">
+							<button class="ui button" style="background-color: transparent;" type="submit" name="hide" value="hide" id="hide_post">
+							<i class="eye icon"></i> Hide Post
+							</button>
+						</div>
+					</div>
+				</div>
+
+			</h3>
+			<div class="ui divider" style="line-height: 0.5;"></div>
+			<h2 class="ui header">
+				<span style="padding-left: 8px;">{{ question.subject }}</span>
+				<a href="" class="ui basic huge red circular label" style="float: right; margin-right: 15px;">0</a>
+				<div class="sub header">
+					<div class="ui grid container">
+						<div class="two wide column" style="width: 8%!important; padding-top: 5px; padding-right: 1px;">
+							<a href=""><img class="ui avatar image" src="{% static 'globals/img/zlatan.jpg' %}"></a> 
+						</div>
+						<div class="fourteen wide column" style="padding: 0px;">
+							<span style="font-size: 13px;"> 
+								{% if question.anonymous_ask is True %}
+									<a href="" style="color: rgba(0,0,0,.6);">Anonymous</a><br>
+								{% else %}
+									<a href="" style="color: rgba(0,0,0,.6);">{{ username }} | Second Year | CSE</a><br>
+								{% endif %}
+								{{ question.uploaded_at }}
+							</span>
+						</div>
+					</div>
+				</div>
+			</h2>
+			
+			<div style="font-size: 16px; font-family: Georgia; line-height: 24px;">
+				{{ question.get_markdown }}
+			</div>
+			<br><br>
+
+			{% if question.file.url is not null %}
+			<div>
+				<label style="font-weight: bold;">Attached Files -</label>
+				<br><br>
+				<a href="{{question.file.url}}" target="_blank">
+					<img src="{{question.file.url}}" style="padding-left: 20px;" width="500px">
+				</a>
+			</div>	
+			{% endif %}	
+			
+			<br>
+			<div style="display: inline;" id="request-section{{question.id}}">
+				{% include 'feeds/question_request_count.html' %}
+			</div>
+
+			<button class="ui positive button" id="answer">answer</button>
+
+			<!-- Modal for answer button -->
+			<div class="ui modal" id="answer_modal">
+				<i class="close icon"></i>
+				<div class="header">Your Answer</div>
+				<div class="scrolling content">
+					<form method="POST" action="">{% csrf_token %}
+						{{form_answer}}
+						<br><br>
+						<div class="actions">
+							<input style="float: right;" class="ui primary button" type="submit" name="answer_button" id="answer_button">
+						</div>
+					</form>
+					<br><br>
+				</div>
+			</div>
+			<!-- Modal ends here -->
+
+			<div class="ui hidden divider">	</div>
+
+			<span style="padding-top: 7px; font-weight: 100; font-size: 13px;">
+				<a href="" class="link1" onclick="toggle_to_div('{{question.id}}'); return false;" style="color: rgba(0,0,0,.6);">
+					{{question.comments_set.count}} comments | view comments
+				</a> 
+			</span>
+
+			<div class="ui divider" style="margin-top: 0px;"></div>
+
+			<form id="{{question.id}}" method="POST" class="comment-form" role="form" action=".">{% csrf_token %}
+				<div class="ui info floating message">
+					<div class="ui fluid left icon input">
+						<i class="ui comment icon"></i>
+						<input type="hidden" name="question_id" value="{{ question.id }}">
+						<input id="chat-msg{{question.id}}" name="chat-msg" type="text" name="comment" placeholder="Add Comment">
+						<button type="submit" name="add_comment" value="add_comment" class="ui blue button" class="scroll" id="{{question.id}}" style="margin-left:15px;">
+							Comment
+						</button>
+					</div>
+				</div>
+			</form>
+			<br>
+			<!-- Comment Section -->
+			<div class="hidden" id="main_comments{{question.id}}" style="display: none;">
+				{% include 'feeds/comment_text.html' %}
+			</div>
+			<!-- Comment Section ends here -->
+			<br>
+
+			<!-- Answer Section starts here -->
+			<div>
+				<div style="font-size: 20px;font-style: italic; font-weight: bold;" class="header">
+					{{ question.answeraquestion_set.count }} Answers
+					<i class="ui right labeled icon caret right"></i>		
+				</div>
+				<hr>
+				<br>
+
+				{% for answer in question.answeraquestion_set.all %}
+				<div class="ui grid">
+					<div class="two wide column" style="width: 10% !important; padding-right: 0px;">
+						<h2><img class="ui avatar image" src="{% static 'globals/img/zlatan.jpg' %}"></h2>
+					</div>
+					<div class="fourteen wide column" style="padding-left: 0px;">
+						{{answer.get_markdown}}
+						<footer>
+							<span style="color: rgba(0,0,0,.6);">-{{answer.user}} | {{answer.uploaded_at|timesince}} ago</span>
+						</footer>
+					</div>
+				</div>
+				<div class="ui divider"></div>
+				{% endfor %}
+
+			</div>
+			<!-- Answer Section ends here -->
+
+		</div>
+	</div>
+
+	<div class="three wide column container" style="padding-right: 50px;">
+		<div class="ui success message">
+			ands,ma aksnd,m
+			<div></div>
+			<div></div>
+			<div>
+				Hello there!
+			</div>
+			<div>
+				Hello there!
+			</div>
+			<div></div>
+			<div></div>
+			<div>
+				Hey There
+			</div>
+			<div></div>
+			<div></div>
+			<div>
+				Yo man Awesome....
+			</div>
+		</div>
+	</div>
+</div>
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+
+	<!-- Tags based question -->
+	<script type="text/javascript">
+		function tags_based(id){
+			console.log('first');
+			$("a.active item").removeClass('active');
+			// $(this).addClass('active');
+			// var id = $(this).attr('id');
+			console.log(id);
+			if(id == 'Top-Stories'){
+				location.href = '/feeds/';
+			}
+			else{
+				console.log('script');
+				location.href = '/feeds/' + id + '/';
+			}
+			return false;
+		}
+		
+	</script>
+
+	<!-- This section is to avoid the refreshing of anchor tag with the class name 'link1' -->
+<!-- 	<script>
+		$(function(){
+			$("a.link1").click(function()
+			{
+				console.log('coming here');
+				$("#{{ question.id }}").show();
+			     // $.get("WebForm2.aspx" );
+			     return false;
+			});
+		});
+	</script> -->
+
+
+	<!-- to toggle the view comments -->
+    <script type="text/javascript">
+    	function toggle_to_div(id){
+    		console.log('coming');
+    		var div = document.getElementById("main_comments"+id);
+    		console.log(id);
+
+    		if (div.style.display !== "none") {
+    			div.style.display = "none";
+			}
+			else {
+    			div.style.display = "block";
+			}
+    	}
+    </script>
+
+    <!-- Modal for Ask a Question? -->
+    <script type="text/javascript">
+    	$('#modal-script').on('click', function(){
+    		$('#post_modal')
+  			.modal('show');
+    	});
+
+    	$('#delete_post').on('click', function(){
+    		$('#delete_modal')
+  			.modal('show');
+    	});
+
+    	$('#report').on('click', function(){
+    		$('#report_modal')
+  			.modal('show');
+    	});
+
+    	$(document).ready(function(){
+  			$(document).on("click","#update_post",function(){
+    			// alert(this.id);
+    			$('#update_modal'+ $(this).attr('value'))
+  				.modal('show');
+  			});
+		});
+
+		$('#answer').on('click', function(){
+    		$('#answer_modal')
+  			.modal('show');
+    	});
+    </script>
+    <!-- Modal ends here -->
+
+    <!-- Remove Tag -- >
+    <script type="text/javascript">
+    	function removeTag(id){
+    		console.log('Remove Tag');
+    		$.ajax({
+    			type: 'POST',
+    			url: 'feeds/remove_tag',
+    			data:{
+    				id: id,
+    				'csrfmiddlewaretoken': '{{ csrf_token }}'
+    			},
+    			success: function(response){
+
+    			}
+    		});
+    	}
+    </script>
+
+    <script type="text/javascript">
+    	function readURL(input){
+    		if(input.files && input.files[0]){
+    			var reader = new FileReader();
+
+    			reader.onload = function(e){
+    				$('#image1')
+    					.attr('src', e.target.result)
+    					.width(150)
+    					.height(200);
+    			};
+    			reader.readAsDataURL(input.files[0]);
+    		}
+    	}
+    </script>
+
+    <!-- js for requests -->
+ 	<script type="text/javascript">
+ 		$(document).ready(function(event){
+ 			$(document).on('click', '#request', function(event){
+ 				console.log('submitted');
+ 				event.preventDefault();
+ 				var pk = $(this).attr('value');
+ 				$.ajax({
+ 					type: 'POST',
+ 					url: '/feeds/request/',
+ 					data: {
+ 						id: pk,
+ 						'csrfmiddlewaretoken': '{{ csrf_token }}'
+ 					},
+ 					success: function(response){
+ 						console.log('ajax successful');
+ 						$('#request-section'+ pk).html(response['form']);
+ 						console.log(response['form']);
+ 						console.log(pk);
+ 					}
+ 				});
+ 			});
+ 		});
+ 	</script>
+
+
+ 	<!-- Reply Section Ajax -->
+    <script type="text/javascript">
+    	$(document).on('submit','.reply-form', function(event){
+    		console.log("Hey there");
+    		event.preventDefault();
+    		var pk = $(this).attr('id');
+    		var string = $('#reply_text'+pk).val();
+    		console.log(string);
+    		ques_id = document.getElementById('unique_'+pk).innerHTML;
+    		console.log(ques_id);
+    		console.log($(this).serialize());
+
+    		$.ajax({
+    			type: 'POST',
+    			url: '/feeds/reply_text/',
+    			data: {
+    				ques_id: ques_id,
+    				id: pk,
+    				comment_box: string,
+    				'csrfmiddlewaretoken': '{{csrf_token}}',
+    			},
+
+    			success:function(result){
+    				console.log("yup");
+    				$('#main_comments'+ques_id).html(result['form']);
+    				var div = document.getElementById('reply'+pk);
+
+		    		if (div.style.display !== "none") {
+		    			div.style.display = "none";
+					}
+					else {
+		    			div.style.display = "block";
+					}
+    				document.getElementById('reply_text'+pk).value = ''
+    				// $('chat-msg'+pk).val('');
+    				// $('#1').append('<br>'+ result['status'] + '<br>');
+    				// document.getElementById('12'+pk).innerHTML = document.getElementById('comment-text' + pk).innerHTML + result['form'] + '<br>' + document.getElementById('like_button_div').innerHTML;
+    				// $('#comment-text' + pk).append(result['form']);
+    				// console.log(result['form']);
+    			}
+    			
+    		});
+    	});
+    </script>
+    <!-- Reply Section Ajax ends here -->
+
+
+    <script type="text/javascript">
+    	function reply_btn(id){
+    		var div = document.getElementById('reply'+id);
+
+    		if (div.style.display !== "none") {
+    			div.style.display = "none";
+			}
+			else {
+    			div.style.display = "block";
+			}
+    	}
+    </script>
+
+
+    <!-- Comments Section Ajax -->
+    <script type="text/javascript">
+    	$(document).on('submit','.comment-form', function(event){
+    		console.log("Hey there");
+    		event.preventDefault();
+    		var pk = $(this).attr('id');
+    		var string = $('#chat-msg'+pk).val();
+    		console.log(string);
+    		console.log($(this).serialize());
+
+
+    		$.ajax({
+    			type: 'POST',
+    			url: '/feeds/comment_text/',
+    			data: {
+    				id: pk,
+    				comment_box: string,
+    				'csrfmiddlewaretoken': '{{csrf_token}}',
+    			},
+
+    			success:function(result){
+    				console.log("yup");
+    				$('#main_comments'+pk).html(result['form']);
+    				document.getElementById('chat-msg'+pk).value = '';
+    				// $('chat-msg'+pk).val('');
+    				// $('#1').append('<br>'+ result['status'] + '<br>');
+    				// document.getElementById('12'+pk).innerHTML = document.getElementById('comment-text' + pk).innerHTML + result['form'] + '<br>' + document.getElementById('like_button_div').innerHTML;
+    				// $('#comment-text' + pk).append(result['form']);
+    				// console.log(result['form']);
+    			}
+    			
+    		});
+    	});
+    </script>
+    <!-- Comments Section Ajax ends here -->
+
+
+    <!-- Ajax for Comment like button -->
+ 	<script type="text/javascript">
+ 		$(document).ready(function(event){
+ 			$(document).on('click', '#like_comment_id', function(event){
+ 				event.preventDefault();
+ 				var pk = $(this).attr('value');
+ 				console.log('yeah');
+ 				console.log(pk);
+ 				$.ajax({
+ 					type: 'POST',
+ 					url: '/feeds/like_comment/',
+ 					data: {id:pk, 'csrfmiddlewaretoken': '{{ csrf_token }}'},
+ 					dataType: 'json',
+ 					success: function(response){
+ 						// var qus = JSON.parse(response)
+ 						// document.getElementById('like-section').innerHTML = response['form'];
+ 						$('#like-section-comment' + pk).html(response['form']);
+ 						console.log("ajax successful");
+ 						console.log(pk)
+ 					},
+ 					error: function(rs, e){
+ 						console.log("rs.responseText");
+ 					},
+ 				});
+ 			});
+ 		});
+ 	</script>
+ 	<!-- Ajax for Comment like button -->
+
+{% endblock %}

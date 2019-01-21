@@ -4,8 +4,6 @@ from .models import (Assignment, CourseDocuments, CourseVideo, Forum,
                      ForumReply, Quiz, QuizQuestion, QuizResult, StudentAnswer,
                      StudentAssignment, Topics)
 
-
-
 admin.site.register(CourseDocuments)
 
 admin.site.register(CourseVideo)

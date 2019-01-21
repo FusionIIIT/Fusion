@@ -83,5 +83,3 @@ class QuestionFormObjective(forms.Form):
 
         super(QuestionFormObjective, self).__init__(*args, **kwargs)
         self.fields['image'].widget.attrs.update({'accept': 'image/*'})
-
-        

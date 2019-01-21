@@ -1,25 +1,47 @@
 {% load static %}
+
+{% block css %}
+  <style type="text/css">
+
+  </style>
+
+{% endblock %}
+
 {% block studentrecords %}
 
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="search">
+        <a class="{% if invitecheck == 0 %}active item{% else %}item{% endif %}" data-tab="search">
             Search
         </a>
 
-        <a class="item" data-tab="sendinvite">
+        <a class="{% if invitecheck == 0 %}item{% else %}active item{% endif %}" data-tab="sendinvite">
             Send Invitation
         </a>
     </div>
 
-    <div class="ui active tab" data-tab="search">
-        <form method="post" class="ui form" role="form">
+    {% if not students and student_record_check == 1 %}
+      <div class="ui error message">
+        <i class="close icon"></i>
+        <div class="header">
+          There is no such record of this type.
+        </div>
+        <ul>
+          <li>try changing some fields or,</li>
+          <li>include some more fields in search</li>
+        </ul>
+      </div>
+    {% endif %}
+    <div class="{% if invitecheck == 0 %}ui active tab{% else %}ui tab{% endif %}" data-tab="search">
+        <form method="post" class="ui form" role="form" action="{% url 'placement:search_record' %}">
             {% comment %}The add a new skill Accordian starts here!{% endcomment %}
             <div class="ui active accordion field">
                 <div class="title">
                     <i class="icon dropdown"></i>
                     Search a Student!
                 </div>
+
+
                 {{ form1.non_field_errors }}
                 <div class="active content">
                     <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
@@ -184,114 +206,167 @@
             {% comment %}The add a new skill Accordian ends here!{% endcomment %}
         </form>
         {% comment %}Form Tag ends here!{% endcomment %}
-</div>
 
+        {% if students %}
 
+        <!-- Pagination Section starts here  --->
+        {% if no_pagination %}
+        <center>
+          <div class="ui pagination menu">
+            {% if students.has_previous %}
+            <a href="?page={{students.previous_page_number}}" class="item">
+              Previous
+            </a>
+            {% endif %}
 
-    <div class="ui tab" data-tab="sendinvite">
-      <form method="post" class="ui form" role="form">
-        {{ form13.non_field_errors }}
-              {% csrf_token %}
-        <div class="field">
-            {{ form13.company.errors }}
-              <label>
-                  Company Name
-              </label>
-                <div class="ui fluid large input">
-              {{ form13.company }}
+            {% if is_disabled %}
+              <a href="?page=1" class="item">1</a>
+              <div class="disabled item">
+                ...
+              </div>
+            {% endif %}
+
+            {% for i in page_range %}
+              {% if students.number == i %}
+                <a href="?page={{i}}" class="active item">{{ i }} </a>
+              {% else %}
+                <a href="?page={{ i }}" class="item">{{ i }}</a>
+              {% endif %}
+            {% endfor %}
+
+            
+
+            {% if students.has_next %}
+            <div class="disabled item">
+              ...
+            </div>
+            <a href="?page={{students.next_page_number}}" class="item">
+              Next
+            </a>
+            {% endif %}
           </div>
-        </div>
-          <div class="field" >
-              <button name="sendinvite" value="sendinvite" class="ui large primary button right floated" type="submit">
-                  Send
-              </button>
-          </div>
-          <br><div class="row"></div><br>
+        </center>
+        {% endif %}
+        <!-- Pagination Section ends here --->
+
+        <br>
+
+        <form action="{% url 'placement:html_to_pdf_view' %}">
+          <input style="float: right;" class="positive ui button" type="submit" name="generate_pdf" value="Download as PDF">
         </form>
+
+        <br><br>
+
+        <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;">
+            <thead>
+            <tr>
+                <th>Student</th>
+                <th>CPI</th>
+                <th>Department</th>
+                <th>Discipline</th>
+                <th>View Profile</th>
+                <th>Placed</th>
+                <th>Debarred?</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for student in students %}
+            <tr>
+                <td>
+                    <div class="content">
+                        {{ student.id.user.first_name}} {{ student.id.user.last_name }}
+                        <div class="sub header">
+                            {{ student.id.id }}
+                        </div>
+                    </div>
+                </td>
+
+                <td>
+                    {{ student.cpi }}
+                </td>
+
+                <td>
+                    {{ student.programme }}
+                </td>
+
+                <td>
+                    {{ student.id.department.name }}
+                </td>
+
+                <td>
+                    <a class="ui inverted huge circular icon button" target="_blank" href="/placement/cv/{{ student.id.user.username }}/" style="margin: auto;">
+                        <i class="attach black icon"></i>
+                    </a>
+                </td>
+
+                <!-- <td>
+                  {% for sp in studentplacement %}
+                  {% if sp.unique_id == student %}
+                  {% if sp.placed_type == "PLACED" %}
+                  Yes
+                  {% else %}
+                  No
+                  {% endif %}
+                  {% endif %}
+                  {% endfor %}
+                </td>
+
+                <td>
+                  <form method="post" class="ui form" role="form">
+                    {% csrf_token %}
+                    {% for sp in studentplacement %}
+                    {% if sp.unique_id == student %}
+                    {% if sp.debar == "DEBAR" %}
+                    <button name="undebar" type="submit" class="ui green mini button right floated" value="{{ sp.pk }}">
+                    Undebar</button>
+                    {% else %}
+                    <button name="debar" type="submit" class="ui red mini button right floated" value="{{ sp.pk }}">
+                    Debar</button>
+                    {% endif %}
+                    {% endif %}
+                    {% endfor %}
+                  </form>
+                </td> -->
+            </tr>
+          {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+
+  
+    </div>
+
+
+
+  <div class="{% if invitecheck == 0 %}ui tab{% else %}ui active tab{% endif %}" data-tab="sendinvite">
+    <form method="post" class="ui form" role="form">
+      {{ form13.non_field_errors }}
+            {% csrf_token %}
+      <div class="field">
+          {{ form13.company.errors }}
+            <label>
+                Company Name
+            </label>
+            <div class="ui fluid large input">
+              {{ form13.company }}
+            </div>
+      </div>
+        <div class="field" >
+            <button name="sendinvite" value="sendinvite" class="ui large primary button right floated" type="submit">
+                Send
+            </button>
         </div>
+        <br><div class="row"></div><br>
+    </form>
+  </div>
 
     {% if students %}
     <br>
     <br>
     <div class="ui divider"></div>
 
-    <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;">
-        <thead>
-        <tr>
-            <th>Student</th>
-            <th>CPI</th>
-            <th>Department</th>
-            <th>Discipline</th>
-            <th>View Profile</th>
-            <th>Placed</th>
-            <th>Debarred?</th>
-        </tr>
-        </thead>
 
-        <tbody>
-        {% for student in students %}
-        <tr>
-            <td>
-                    <div class="content">
-                        {{ student.id.user.first_name }} {{ student.id.user.last_name }}
-                        <div class="sub header">
-                            {{ student.id.id }}
-                        </div>
-                    </div>
-            </td>
-
-            <td>
-                {{ student.cpi }}
-            </td>
-
-            <td>
-                {{ student.programme }}
-            </td>
-
-            <td>
-                {{ student.id.department.name }}
-            </td>
-
-            <td>
-                <a class="ui inverted huge circular icon button" target="_blank" href="/placement/cv/{{ student.id.user.username }}/" style="margin: auto;">
-                    <i class="attach black icon"></i>
-                </a>
-            </td>
-
-            <td>
-              {% for sp in studentplacement %}
-              {% if sp.unique_id == student %}
-              {% if sp.placed_type == "PLACED" %}
-              Yes
-              {% else %}
-              No
-              {% endif %}
-              {% endif %}
-              {% endfor %}
-            </td>
-
-            <td>
-              <form method="post" class="ui form" role="form">
-                {% csrf_token %}
-                {% for sp in studentplacement %}
-                {% if sp.unique_id == student %}
-                {% if sp.debar == "DEBAR" %}
-                <button name="undebar" type="submit" class="ui green mini button right floated" value="{{ sp.pk }}">
-                Undebar</button>
-                {% else %}
-                <button name="debar" type="submit" class="ui red mini button right floated" value="{{ sp.pk }}">
-                Debar</button>
-                {% endif %}
-                {% endif %}
-                {% endfor %}
-              </form>
-            </td>
-        </tr>
-      {% endfor %}
-        </tbody>
-    </table>
-
-    <div class="ui divider"></div>
     {% endif %}
 
     {% if invitecheck == 1 %}

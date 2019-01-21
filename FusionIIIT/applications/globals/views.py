@@ -1,23 +1,26 @@
 import json
 
-from django.db.models import Q
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth.models import User
-from django.shortcuts import get_object_or_404, redirect, render
 from django.core.files.storage import FileSystemStorage
-
+from django.db.models import Q
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import get_object_or_404, redirect, render
 from PIL import Image
 
-from applications.globals.forms import IssueForm, WebFeedbackForm
-from applications.globals.models import Feedback, Issue, IssueImage, ExtraInfo, HoldsDesignation
-from applications.placement_cell.models import (Achievement, Course, Education, Experience, Has,
-                                                Project, Publication, Skill, Patent)
 from applications.academic_information.models import Student
-from applications.placement_cell.forms import (AddEducation, AddProfile, AddSkill, AddCourse, AddProfile,
-                                               AddAchievement, AddProject, AddPublication, AddPatent, AddExperience)
-
+from applications.globals.forms import IssueForm, WebFeedbackForm
+from applications.globals.models import (ExtraInfo, Feedback, HoldsDesignation,
+                                         Issue, IssueImage)
+from applications.placement_cell.forms import (AddAchievement, AddCourse,
+                                               AddEducation, AddExperience,
+                                               AddPatent, AddProfile,
+                                               AddProject, AddPublication,
+                                               AddSkill)
+from applications.placement_cell.models import (Achievement, Course, Education,
+                                                Experience, Has, Patent,
+                                                Project, Publication, Skill)
 from Fusion.settings import LOGIN_URL
 
 

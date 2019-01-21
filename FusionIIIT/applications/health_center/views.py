@@ -1,16 +1,19 @@
 import json
 from datetime import datetime, timedelta
-from django.contrib.auth.models import User
+
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.core import serializers
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
+
 from applications.globals.models import ExtraInfo
 from notification_channels.models import Notification
 
-from .models import (Ambulance_request, Appointment, Complaint, Constants, Counter, Expiry,
-                     Doctor, Hospital_admit, Medicine, Prescribed_medicine, Hospital,
-                     Prescription, Schedule, Stock)
+from .models import (Ambulance_request, Appointment, Complaint, Constants,
+                     Counter, Doctor, Expiry, Hospital, Hospital_admit,
+                     Medicine, Prescribed_medicine, Prescription, Schedule,
+                     Stock)
 
 
 def datetime_handler(x):

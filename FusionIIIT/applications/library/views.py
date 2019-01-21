@@ -1,4 +1,5 @@
 from django.shortcuts import render
+
    #   """
    #   This Function is used to View the Issued Items of the user acording to the tags.
    #   The Data is scraped from the institutes library module hosted on the web OPAC server.
@@ -184,4 +185,3 @@ def libraryModule(request):
         context={"data1": yo, "due": due, "data2": yo1}
         print(request.user)
         return render(request, "libraryModule/libraryModule.html", context)
-

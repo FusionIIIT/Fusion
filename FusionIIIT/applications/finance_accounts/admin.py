@@ -1,9 +1,6 @@
 from django.contrib import admin
-from .models import Paymentscheme
-from .models import Receipts
-from .models import Payments
-from .models import Bank
-from .models import Company
+
+from .models import Bank, Company, Payments, Paymentscheme, Receipts
 
 admin.site.register(Paymentscheme)
 admin.site.register(Receipts)
