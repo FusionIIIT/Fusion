@@ -1,21 +1,23 @@
-from .models import Project_Reallocation,Project_Closure,Project_Extension,Project_Registration
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-from applications.globals.models import ExtraInfo, Designation, User, HoldsDesignation
-from applications.scholarships.models import Mcm
-from applications.academic_procedures.models import Thesis
-from applications.globals.models import HoldsDesignation
-from django.http import HttpResponse, HttpResponseRedirect
-from .models import *
 import datetime
-from django.utils import timezone
-from .forms import *
-from django.db.models import Q
-from .views_office_students import *
-from django.shortcuts import render
 from datetime import date, datetime
-from django.shortcuts import get_object_or_404, render
+
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required
+from django.db.models import Q
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import get_object_or_404, render
+from django.utils import timezone
+
+from applications.academic_procedures.models import Thesis
+from applications.globals.models import (Designation, ExtraInfo,
+                                         HoldsDesignation, User)
+from applications.scholarships.models import Mcm
+
+from .forms import *
+from .models import *
+from .models import (Project_Closure, Project_Extension, Project_Reallocation,
+                     Project_Registration)
+from .views_office_students import *
 
 
 def officeOfDeanRSPC(request):

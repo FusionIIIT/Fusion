@@ -22,12 +22,13 @@ from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     url(r'^', include('applications.globals.urls')),
-    url(r'^eis/', include('applications.eis.urls',namespace='eis')),
+    url(r'^feeds/', include('applications.feeds.urls')),
+    url(r'^eis/', include('applications.eis.urls', namespace='eis')),
     url(r'^mess/', include('applications.central_mess.urls')),
     url(r'^complaint/', include('applications.complaint_system.urls')),
     url(r'^healthcenter/', include('applications.health_center.urls')),
     url(r'^leave/', include('applications.leave.urls')),
-    url(r'^placement/', include('applications.placement_cell.urls',namespace='placement')),
+    url(r'^placement/', include('applications.placement_cell.urls', namespace='placement')),
     url(r'^filetracking/', include('applications.filetracking.urls')),
     url(r'^spacs/', include('applications.scholarships.urls')),
     url(r'^visitorhostel/', include('applications.visitor_hostel.urls')),
@@ -46,7 +47,8 @@ urlpatterns = [
 
 ]
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.MEDIA_URL,
+                          document_root=settings.MEDIA_ROOT)
 
     import debug_toolbar
     urlpatterns = [

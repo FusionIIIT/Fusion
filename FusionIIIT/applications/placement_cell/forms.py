@@ -1,7 +1,9 @@
 from django import forms
-from .models import Constants, Skill, NotifyStudent
-from applications.globals.models import DepartmentInfo
+
 from applications.academic_information.models import Constants as Con
+from applications.globals.models import DepartmentInfo
+
+from .models import Constants, NotifyStudent, Skill
 
 
 class AddProfile(forms.ModelForm):
@@ -285,7 +287,10 @@ class AddSchedule(forms.Form):
             description - description of company
             placement_date - date of placement activity
     """
-    time = forms.TimeField(label='time', widget=forms.widgets.TimeInput(attrs={'type': "time",'value':"00:00",'min':"0:00",'max':"18:02"}))
+    time = forms.TimeField(label='time', widget=forms.widgets.TimeInput(attrs={'type': "time",
+                                                                                'value':"00:00",
+                                                                                'min':"0:00",
+                                                                                'max':"18:02"}))
     ctc = forms.DecimalField(label="ctc")
     company_name = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
                                                               'class': 'field'}),
@@ -298,6 +303,8 @@ class AddSchedule(forms.Form):
     description = forms.CharField(widget=forms.Textarea(attrs={'max_length': 1000,
                                                           'class': 'form-control'}),
                                   label="description", required=False)
+    attached_file = forms.FileField()
+
     placement_date = forms.DateField(label='placement_date', widget=forms.widgets.DateInput())
 
 
