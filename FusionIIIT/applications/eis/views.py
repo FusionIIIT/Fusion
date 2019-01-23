@@ -308,7 +308,7 @@ def profile(request):
     flag_rspc = 0
     for i in a1:
         print(i.designation)
-        if(str(i.designation)=='Dean (RSPC)'):
+        if(str(i.designation)=='Dean (R&D)'):
             flag_rspc = 1
     print(flag_rspc)
     # done edit
