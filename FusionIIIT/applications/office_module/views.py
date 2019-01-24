@@ -296,22 +296,19 @@ def project_registration_permission(request):
     if 'approve' in request.POST:
         id=request.POST.get('id')
         obj=Project_Registration.objects.get(pk=id)
-        if obj.DRSPC_response == 'Pending':
-            obj.DRSPC_response='Approve'
-            obj.save()
+        obj.DRSPC_response='Approve'
+        obj.save()
     elif 'forward' in request.POST:
         id=request.POST.get('id')
         obj=Project_Registration.objects.get(pk=id)
-        if obj.DRSPC_response == 'Pending':
-            obj.DRSPC_response='Forward'
-            obj.save()
+        obj.DRSPC_response='Forward'
+        obj.save()
     elif 'reject' in request.POST:
         id=request.POST.get('id')
         obj=Project_Registration.objects.get(pk=id)
         print(obj.DRSPC_response)
-        if obj.DRSPC_response == 'Pending':
-            obj.DRSPC_response='Disapprove'
-            obj.save()
+        obj.DRSPC_response='Disapprove'
+        obj.save()
     return HttpResponseRedirect('/office/officeOfDeanRSPC/')
 
 
