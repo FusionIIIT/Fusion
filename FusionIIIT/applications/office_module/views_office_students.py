@@ -62,7 +62,7 @@ def holdingMeeting(request):
     Time = request.POST.get('time')
     Venue = request.POST.get('venue')
     Agenda = request.POST.get('Agenda')
-    p=Meeting(title=title,venue=Venue,date=date,time=Time,agenda=Agenda);
+    p=Meeting(venue=Venue,date=date,time=Time,agenda=Agenda,minutes_file="No file");
     p.save()
     return HttpResponse('ll')
 
