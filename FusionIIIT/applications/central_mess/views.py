@@ -252,7 +252,7 @@ def submit(request):
 
     if extrainfo.user_type == 'student':
         student = Student.objects.get(id=extrainfo)
-        fdate = datetime.datetime.now().date()
+        fdate = datetime.now().date()
         description = request.POST.get('description')
         feedback_type = request.POST.get('feedback_type')
         feedback_obj = Feedback(student_id=student, fdate=fdate,
