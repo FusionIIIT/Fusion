@@ -95,7 +95,7 @@
                 </tbody>
             </table>
 
-           
+
 
             <br>
 
@@ -117,7 +117,6 @@
 
     <script>
         $(document).on('submit','#winners_form',function (event) {
-                event.preventDefault();
                 $('#winners_table tbody').find("tr:gt(0)").remove();
                 var element = $('#winners_table tbody tr').first();
                 $.ajax({
@@ -150,6 +149,7 @@
 
                     }
                 });
+                event.preventDefault();
             });
 
 
@@ -157,7 +157,3 @@
     </script>
 
 {% endblock javascript %}
-
-
-
-
