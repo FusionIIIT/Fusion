@@ -40,11 +40,11 @@
                     <i class="right floated chevron right icon"></i>
                 </a>
 
-                
 
-                
 
-               
+
+
+
                 <a class="item" data-tab="two">
                     Spacs Members Details
                     <i class="right floated chevron right icon"></i>
@@ -53,16 +53,16 @@
                     Apply for Awards
                     <i class="right floated chevron right icon"></i>
                 </a>
-                
+
                 <a class="item" data-tab="four">
                         View Application Status
                         <i class="right floated chevron right icon"></i>
                 </a>
                 <a class="item" data-tab="five">
-                    Browse Award Catalogue
+                    BrowseAward Catalogue
                     <i class="right floated chevron right icon"></i>
                 </a>
-                
+
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
 
@@ -85,13 +85,13 @@
             </div>
             {% comment %}The Personal Details end here!{% endcomment %}
 
-        
+
             {% comment %}The Publications starts here!{% endcomment %}
-            
+
             {% comment %}The Publications notionalprize ends here!{% endcomment %}
 
-            
-                    
+
+
                 {% comment %}The Publications about spacs  starts here!{% endcomment %}
                     <div class="ui tab segment" data-tab="two">
                             {% block aboutspacs %}
@@ -99,7 +99,7 @@
                             {% endblock %}
                     </div>
                     {% comment %}The Publications about spacs  ends here!{% endcomment %}
-                    
+
                     {% comment %}The Publications awards  starts here!{% endcomment %}
                         <div class="ui tab segment" data-tab="three">
                                 {% block awards %}
@@ -108,7 +108,7 @@
                         </div>
                             {% comment %}The Publications about awards ends here!{% endcomment %}
 
-                   
+
                        <div class="ui tab segment" data-tab="four">
                              {% block viewmcm %}
                                          {% include 'scholarshipsModule/viewstatus.html' with winners=winners mcm=mcm gold=gold silver=silver dandm=dandm %}
@@ -119,7 +119,7 @@
                                     {% include 'scholarshipsModule/browsecatalogue.html' with winners=winners mcm=mcm gold=gold silver=silver dandm=dandm awards=awards %}
                        {% endblock %}
                   </div>
-                      
+
                 {% comment %}The Publications about view mcm details ends here!{% endcomment %}
         </div>
         {% comment %}The central-rail segment ends here!{% endcomment %}
@@ -127,7 +127,7 @@
         {% comment %}The right-rail segment starts here!{% endcomment %}
         <div class="three wide column">
                 <div class="row">
-                    
+
                     {% if messages %}
                     <div class="field">
                     <div class="ui positive message">
@@ -140,7 +140,7 @@
                     </div>
                     </div>
                     {% endif %}
-    
+
                 </div>
             </div>
         {% comment %}The right-rail segment ends here!{% endcomment %}
