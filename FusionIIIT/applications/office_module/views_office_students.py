@@ -36,7 +36,7 @@ def officeOfDeanStudents(request):
     hall=[]
     hostel_file= hostel_allotment.objects.all()
     for i in HALL_NO:
-        if(str(i[1]) not in [j.hall_no for j in hostel_file]):
+        if(str(i[1]) ):  #not in [j.hall_no for j in hostel_file]#
             hall.append(str(i[1]))
     print(roll_)
     context = {'meetingMinutes':minutes,
