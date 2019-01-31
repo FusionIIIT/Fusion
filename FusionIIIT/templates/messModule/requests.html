@@ -115,8 +115,7 @@
                             <label>From:</label>
                             <div class="ui calendar" id="rangestart1">
                                 <div class="ui input left icon">
-                                    <i class="calendar icon"></i>
-                                    <input type="text" name="start_date" placeholder="From" required="true"             
+                                    <input type="date" name="start_date" placeholder="From" required="true"
                                     id="s_date">
                                 </div>
                             </div>
@@ -126,8 +125,7 @@
                             <label>To:</label>
                             <div class="ui calendar" id="rangeend1">
                                 <div class="ui input left icon">
-                                    <i class="calendar icon"></i>
-                                    <input type="text" name="end_date" placeholder="To" required="true" id="e_date">
+                                    <input type="date" name="end_date" placeholder="To" required="true" id="e_date">
                                 </div>
                             </div>
                         </div>
@@ -135,7 +133,7 @@
 
                     <div class="field">
                         <label>Purpose:</label>
-                        <textarea name="purpose" rows="2" required="true" id="purpose"></textarea>
+                        <textarea rows="2" class="purpose" name="purpose" required="true"></textarea>
                     </div>
 
                     <div class="field">
@@ -176,7 +174,7 @@
                               <thead>
                               <tr>
                                   <th>
-                                      App Date
+                                      Application Date
                                   </th>
 
                                   <th>
@@ -266,9 +264,11 @@
                 date: function (date, settings) {
                     if (!date) return '';
                     var day = date.getDate() + '';
+
                     if (day.length < 2) {
                         day = '0' + day;
                     }
+
                     var month = (date.getMonth() + 1) + '';
                      if (month.length < 2) {
                         month = '0' + month;
@@ -290,11 +290,11 @@
                     'food1':$("#food1").val(),
                     'food2':$("#food2").val(),
                     'start_date':$("#s_date").val(),
-                    'end_date':$("#e_date").val(),
-                    'purpose':$("#purpose").val()
+                    'end_date': $("#e_date").val(),
+                    'purpose': $("textarea.purpose").val()
                 },                
                 success: function(data) {
-                    if(data.status){
+                    if(data.status == 1){
                         alert("Data Inserted Successfully");
                         
                         /*$('#ls_table').prepend("<tr><td>"+ $("#leave_type").val()+ "</td><td>"+ 
@@ -308,11 +308,17 @@
                         document.getElementById('purpose').value="";
                         
                     }
+                    if(data.status == 2){
+                        alert("Special Food request has already been made");
+                    }
+                    if(data.status == 3){
+                    alert("Please check the date. The date may have passed or might not be a valid date");
+                    return false;
+                    }
                 },
                 error: function(data, err) {
                     alert(err.message);
                 }
-
             });
             return false;
 }

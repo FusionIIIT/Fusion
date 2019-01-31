@@ -51,7 +51,7 @@ def mess(request):
         meeting = Mess_meeting.objects.all()
         minutes = Mess_minutes.objects.all()
         sprequest = Special_request.objects.filter(status='1')
-        splrequest = Special_request.objects.all()
+        splrequest = Special_request.objects.filter(student_id=student).order_by('-app_date')
         feed = Feedback.objects.all()
         messinfo = Messinfo.objects.get(student_id=student)
         count = 0
@@ -509,10 +509,11 @@ def responserebate(request, ap_id):
 
 
 def placerequest(request):
+    # This is for placing special food request
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
     if extrainfo.user_type == 'student':
-        print (request.POST)
+        print(request.POST)
         extrainfo = ExtraInfo.objects.get(user=user)
         student = Student.objects.get(id=extrainfo)
         fr = request.POST.get("start_date")
@@ -520,16 +521,32 @@ def placerequest(request):
         print (fr, to, "dates")
         food1 = request.POST.get("food1")
         food2 = request.POST.get("food2")
-        purpose = request.POST.get("purpose")
-
-        print ("Hello")
+        purpose = request.POST.get('purpose')
+        print(purpose)
+        # date_format = "%Y-%m-%d"
+        date_today = datetime.now().date()
+        date_today = str(date_today)
+        print(date_today)
+        if (date_today > to)or(to < fr):
+            data = {
+                'status': 3
+            # case when the to date has passed
+            }
+            return JsonResponse(data)
         spfood_obj = Special_request(student_id=student, start_date=fr, end_date=to,
                                      item1=food1, item2=food2, request=purpose)
-        spfood_obj.save()
-        data = {
-             'status': 1,
-        }
-        return JsonResponse(data)
+        if Special_request.objects.filter(student_id=student, start_date=fr, end_date=to,
+                                     item1=food1, item2=food2, request=purpose).exists():
+            data = {
+                'status': 2,
+            }
+            return JsonResponse(data)
+        else:
+            spfood_obj.save()
+            data = {
+                 'status': 1,
+            }
+            return JsonResponse(data)
 
 
 def responsespl(request, ap_id):
