@@ -47,7 +47,9 @@
     {% comment %}if pr.HOD_response == 'Forwarded' {% endcomment %}
     <tr>
         <td class="collapsing">
+                {% if "Dean (R&D)" in desig %}
                 <input type="checkbox" form="application" value={{pr.id}} name="id[]">
+                {% endif %}
         </td>
 
         <td class="one wide column">
