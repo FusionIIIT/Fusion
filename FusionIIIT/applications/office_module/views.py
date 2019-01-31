@@ -19,12 +19,12 @@ from .models import (Project_Closure, Project_Extension, Project_Reallocation,
                      Project_Registration)
 from .views_office_students import *
 
-
+@login_required
 def officeOfDeanRSPC(request):
-    project=Project_Registration.objects.all()
-    project1=Project_Extension.objects.all()
-    project2=Project_Closure.objects.all()
-    project3=Project_Reallocation.objects.all()
+    project = Project_Registration.objects.all()
+    project1 = Project_Extension.objects.all()
+    project2 = Project_Closure.objects.all()
+    project3 = Project_Reallocation.objects.all()
 
     design = HoldsDesignation.objects.filter(working=request.user)
     print(design)
@@ -32,7 +32,7 @@ def officeOfDeanRSPC(request):
     for i in design:
         desig.append(str(i.designation))
 
-    context = {'project':project, 'project1':project1, 'project2':project2, 'project3':project3, 'desig':desig}
+    context = {'project': project, 'project1': project1, 'project2': project2, 'project3': project3, 'desig': desig}
 
     return render(request, "officeModule/officeOfDeanRSPC/officeOfDeanRSPC.html", context)
 
@@ -296,22 +296,19 @@ def project_registration_permission(request):
     if 'approve' in request.POST:
         id=request.POST.get('id')
         obj=Project_Registration.objects.get(pk=id)
-        if obj.DRSPC_response == 'Pending':
-            obj.DRSPC_response='Approve'
-            obj.save()
+        obj.DRSPC_response='Approve'
+        obj.save()
     elif 'forward' in request.POST:
         id=request.POST.get('id')
         obj=Project_Registration.objects.get(pk=id)
-        if obj.DRSPC_response == 'Pending':
-            obj.DRSPC_response='Forward'
-            obj.save()
+        obj.DRSPC_response='Forward'
+        obj.save()
     elif 'reject' in request.POST:
         id=request.POST.get('id')
         obj=Project_Registration.objects.get(pk=id)
         print(obj.DRSPC_response)
-        if obj.DRSPC_response == 'Pending':
-            obj.DRSPC_response='Disapprove'
-            obj.save()
+        obj.DRSPC_response='Disapprove'
+        obj.save()
     return HttpResponseRedirect('/office/officeOfDeanRSPC/')
 
 
