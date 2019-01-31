@@ -293,22 +293,26 @@ def project_register(request):
 # Project Registration Table End.................................................................................
 
 def project_registration_permission(request):
+
     if 'approve' in request.POST:
-        id=request.POST.get('id')
-        obj=Project_Registration.objects.get(pk=id)
-        obj.DRSPC_response='Approve'
-        obj.save()
+        id_list=request.POST.getlist('id[]')
+        for id in id_list:
+            obj=Project_Registration.objects.get(pk=id)
+            obj.DRSPC_response='Approve'
+            obj.save()
     elif 'forward' in request.POST:
-        id=request.POST.get('id')
-        obj=Project_Registration.objects.get(pk=id)
-        obj.DRSPC_response='Forward'
-        obj.save()
+        id_list = request.POST.getlist('id[]')
+        for id in id_list:
+            obj=Project_Registration.objects.get(pk=id)
+            obj.DRSPC_response='Forward'
+            obj.save()
     elif 'reject' in request.POST:
-        id=request.POST.get('id')
-        obj=Project_Registration.objects.get(pk=id)
-        print(obj.DRSPC_response)
-        obj.DRSPC_response='Disapprove'
-        obj.save()
+        id_list = request.POST.getlist('id[]')
+        for id in id_list:
+            obj=Project_Registration.objects.get(pk=id)
+            print(obj.DRSPC_response)
+            obj.DRSPC_response='Disapprove'
+            obj.save()
     return HttpResponseRedirect('/office/officeOfDeanRSPC/')
 
 
