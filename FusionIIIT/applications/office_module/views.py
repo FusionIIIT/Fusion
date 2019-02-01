@@ -12,7 +12,7 @@ from applications.academic_procedures.models import Thesis
 from applications.globals.models import (Designation, ExtraInfo,
                                          HoldsDesignation, User)
 from applications.scholarships.models import Mcm
-
+from applications.eis.models import emp_research_projects, emp_patents, emp_consultancy_projects
 from .forms import *
 from .models import *
 from .models import (Project_Closure, Project_Extension, Project_Reallocation,
@@ -21,6 +21,9 @@ from .views_office_students import *
 
 @login_required
 def officeOfDeanRSPC(request):
+    projects = emp_research_projects.objects.all()
+    consultancy = emp_consultancy_projects.objects.all()
+    patents = emp_patents.objects.all()
     project = Project_Registration.objects.all()
     project1 = Project_Extension.objects.all()
     project2 = Project_Closure.objects.all()
@@ -32,7 +35,7 @@ def officeOfDeanRSPC(request):
     for i in design:
         desig.append(str(i.designation))
 
-    context = {'project': project, 'project1': project1, 'project2': project2, 'project3': project3, 'desig': desig}
+    context = {'projects': projects, 'consultancy': consultancy, 'patents': patents, 'project': project, 'project1': project1, 'project2': project2, 'project3': project3, 'desig': desig}
 
     return render(request, "officeModule/officeOfDeanRSPC/officeOfDeanRSPC.html", context)
 
