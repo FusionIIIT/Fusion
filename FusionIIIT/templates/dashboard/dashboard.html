@@ -41,7 +41,7 @@
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
 
-                <a class="active item" data-tab="first">
+                <a class="item" data-tab="first">
                     View Profile
                     <i class="right floated chevron right icon"></i>
                 </a>
@@ -69,10 +69,12 @@
             <div class="row">
                 <div class="ui row">
                     <div id="textSegmentDiv">
+                        {% comment %}
                         <div class="ui active large text loader"
                              id="loader">
                             Loading ...
                         </div>
+                        {% endcomment %}
 
                         <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
                             {% block alerts %}
@@ -119,4 +121,23 @@
 
 {% endblock %}
 
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    {% comment %}
+    <script>
+        $(document).ready(function(){
+            $("#textLoader").toggle();
+            $("#replacement-card").toggle();
+            setTimeout(loader, 1750);
+        });
 
+        function loader() {
+            $("#textLoader").toggle();
+            $("#replacement-card").toggle();
+            $("#loader").removeClass("active");
+            $("#loader").addClass("disabled");
+        }
+    </script>
+    {% endcomment %}
+
+{% endblock %}
