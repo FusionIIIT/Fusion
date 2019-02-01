@@ -15,31 +15,36 @@ class Constants:
         ('ONGOING', 'Ongoing'),
         ('COMPLETED', 'Completed'),
     )
+
     ACHIEVEMENT_TYPE = (
         ('EDUCATIONAL', 'Educational'),
         ('OTHER', 'Other'),
     )
+
     INVITATION_TYPE = (
         ('ACCEPTED', 'Accepted'),
         ('REJECTED', 'Rejected'),
         ('PENDING', 'Pending'),
     )
+
     PLACEMENT_TYPE = (
         ('PLACEMENT', 'Placement'),
         ('PBI', 'PBI'),
         ('HIGHER STUDIES', 'Higher Studies'),
         ('OTHER', 'Other'),
     )
+
     PLACED_TYPE = (
         ('NOT PLACED', 'Not Placed'),
         ('PLACED', 'Placed'),
     )
+
     DEBAR_TYPE = (
         ('NOT DEBAR', 'Not Debar'),
         ('DEBAR', 'Debar'),
     )
+
     DEP = (
-        ('',''),
         ('CSE', 'CSE'),
         ('ME','ME'),
         ('ECE','ECE')
@@ -205,7 +210,7 @@ class PlacementStatus(models.Model):
                                   default='PENDING')
     placed = models.CharField(max_length=20, choices=Constants.PLACED_TYPE,
                               default='NOT PLACED')
-    timestamp = models.DateTimeField(auto_now=False, auto_now_add=False, default=timezone.now)
+    timestamp = models.DateTimeField(auto_now=True)
 
     class Meta:
         unique_together = (('notify_id', 'unique_id'),)
