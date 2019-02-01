@@ -121,7 +121,6 @@ INSTALLED_APPS = [
     'applications.filetracking',
     'applications.finance_accounts',
     'applications.health_center',
-    'notification_channels',
     'applications.online_cms',
     'applications.placement_cell',
     'applications.scholarships',
