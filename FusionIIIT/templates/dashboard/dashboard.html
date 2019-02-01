@@ -3,7 +3,7 @@
 
 
 {% block title %}
-    Profile
+    Dashboard
 {% endblock %}
 
 {% block css %}
@@ -41,7 +41,7 @@
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
 
-                <a class="item" data-tab="first">
+                <a class="item" href="{% url 'globals:profile' %}">
                     View Profile
                     <i class="right floated chevron right icon"></i>
                 </a>
@@ -94,13 +94,6 @@
 
         {% comment %}The right-rail segment starts here!{% endcomment %}
         <div class="three wide column">
-            <div class="row">
-                {% comment %}The Modules:{% endcomment %}
-                {% block generatereport %}
-                    {% include 'eisModulenew/generatereport.html' %}
-                {% endblock %}
-            </div>
-
             <div class="row">
                 {% comment %}The Modules:{% endcomment %}
                 {% block modules %}
