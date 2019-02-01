@@ -38,3 +38,4 @@ webencodings==0.5.1
 xhtml2pdf==0.2b1
 xlrd==1.1.0
 XlsxWriter==1.0.2
+django-notifications-hq==1.5.0

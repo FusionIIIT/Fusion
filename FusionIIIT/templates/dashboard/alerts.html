@@ -2,118 +2,24 @@
 
 {% block alerts %}
     <div class="ui one cards" style="padding: 2px">
+        {% for notice in notifications %}
+            {% comment %}A single notification starts here!{% endcomment %}
+            <div class="ui card">
+                <div class="content">
+                    <div class="header">
+                        {{ notice.actor }}
+                    </div>
+                    <div class="meta">
+                        {{ notice.timesince }} ago
+                    </div>
 
-        {% comment %}A single card starts here!{% endcomment %}
-        <div class="ui card">
-            <div class="content">
-                <div class="header">
-                    Title of the notification
-                </div>
-                <div class="meta">
-                    Dec 21, 2018, to all students
-                </div>
-
-                <div class="description">
-                    Summary notification and/or alerts. Summary notification and/or alerts. Summary notification and/or alerts. Summary notification and/or alerts. 
+                    <div class="description">
+                        {{ notice.verb }}
+                    </div>
                 </div>
             </div>
-        </div>
-
-        {% comment %}A single card starts here!{% endcomment %}
-        <div class="ui card">
-            <div class="content">
-                <div class="header">
-                    Title of the notification
-                </div>
-                <div class="meta">
-                    Dec 21, 2018, to all students
-                </div>
-
-                <div class="description">
-                    Summary notification and/or alerts. Summary notification and/or alerts. Summary notification and/or alerts. Summary notification and/or alerts. 
-                </div>
-            </div>
-        </div>
-
-        {% comment %}A single card starts here!{% endcomment %}
-        <div class="ui card">
-            <div class="content">
-                <div class="header">
-                    Title of the notification
-                </div>
-                <div class="meta">
-                    Dec 21, 2018, to all students
-                </div>
-
-                <div class="description">
-                    Summary notification and/or alerts. Summary notification and/or alerts. Summary notification and/or alerts. Summary notification and/or alerts. 
-                </div>
-            </div>
-        </div>
-
-        {% comment %}A single card starts here!{% endcomment %}
-        <div class="ui card">
-            <div class="content">
-                <div class="header">
-                    Title of the notification
-                </div>
-                <div class="meta">
-                    Dec 21, 2018, to all students
-                </div>
-
-                <div class="description">
-                    Summary notification and/or alerts. Summary notification and/or alerts. Summary notification and/or alerts. Summary notification and/or alerts. 
-                </div>
-            </div>
-        </div>
-
-        {% comment %}A single card starts here!{% endcomment %}
-        <div class="ui card">
-            <div class="content">
-                <div class="header">
-                    Title of the notification
-                </div>
-                <div class="meta">
-                    Dec 21, 2018, to all students
-                </div>
-
-                <div class="description">
-                    Summary notification and/or alerts. Summary notification and/or alerts. Summary notification and/or alerts. Summary notification and/or alerts. 
-                </div>
-            </div>
-        </div>
-
-        {% comment %}A single card starts here!{% endcomment %}
-        <div class="ui card">
-            <div class="content">
-                <div class="header">
-                    Title of the notification
-                </div>
-                <div class="meta">
-                    Dec 21, 2018, to all students
-                </div>
-
-                <div class="description">
-                    Summary notification and/or alerts. Summary notification and/or alerts. Summary notification and/or alerts. Summary notification and/or alerts. 
-                </div>
-            </div>
-        </div>
-
-        {% comment %}A single card starts here!{% endcomment %}
-        <div class="ui card">
-            <div class="content">
-                <div class="header">
-                    Title of the notification
-                </div>
-                <div class="meta">
-                    Dec 21, 2018, to all students
-                </div>
-
-                <div class="description">
-                    Summary notification and/or alerts. Summary notification and/or alerts. Summary notification and/or alerts. Summary notification and/or alerts. 
-                </div>
-            </div>
-        </div>
+            {% comment %}A single notification ends here!{% endcomment %}
+        {% endfor %}
 
     </div>
 {% endblock %}
