@@ -21,7 +21,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '=&w9due426k@l^ju1=s1)fj1rnpf0ok8xvjwx+62_nc-f12-8('
-
+CLIENT_ID = '630776370716-teetmopg2cl3rjhnk5eaggv70f5qlkl8.apps.googleusercontent.com'
+CLIENT_SECRET = 'BTbxZo7RFNk3O_prvp4YGH5V'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -208,6 +209,14 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+AUTHENTICATION_BACKENDS = (
+    # Default backend -- used to login by username in Django admin
+    "django.contrib.auth.backends.ModelBackend",
+    # `allauth` specific authentication methods, such as login by e-mail
+    "allauth.account.auth_backends.AuthenticationBackend",
+)
+
+
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
 
@@ -232,6 +241,10 @@ STATIC_ROOT = '/static'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_EMAIL_VERIFICATION = "none"
+SOCIALACCOUNT_QUERY_EMAIL = True
+LOGIN_REDIRECT_URL = "/"
 
 if DEBUG:
     MIDDLEWARE += (
@@ -239,7 +252,7 @@ if DEBUG:
     )
     INSTALLED_APPS += (
         'debug_toolbar',
-    )
+        )
     INTERNAL_IPS = ('127.0.0.1',)
     DEBUG_TOOLBAR_CONFIG = {
         'INTERCEPT_REDIRECTS': False,
