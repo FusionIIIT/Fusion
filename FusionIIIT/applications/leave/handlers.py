@@ -6,7 +6,6 @@ from django.forms.formsets import formset_factory
 from django.http import JsonResponse
 from django.shortcuts import redirect, render, reverse
 from django.core.exceptions import ValidationError
-
 from .forms import (AcademicReplacementForm, AdminReplacementForm,
                     BaseLeaveFormSet, EmployeeCommonForm, LeaveSegmentForm,
                     StudentApplicationForm, AcademicReplacementFormOffline, AdminReplacementFormOffline,
@@ -16,6 +15,7 @@ from .helpers import (create_migrations, deduct_leave_balance,
 from .models import (Leave, LeaveRequest, LeaveSegment,
                      LeaveType, ReplacementSegment, LeaveOffline, LeaveSegmentOffline, ReplacementSegmentOffline)
 from applications.globals.models import HoldsDesignation
+from notification.views import leave_module_notif
 
 LeaveFormSet = formset_factory(LeaveSegmentForm, extra=0, max_num=3, min_num=1,
                                formset=BaseLeaveFormSet)
@@ -157,6 +157,8 @@ def handle_faculty_leave_application(request):
         ReplacementSegment.objects.bulk_create(replacements)
 
         deduct_leave_balance(leave,False)
+
+        leave_module_notif(request)
 
         messages.add_message(request, messages.SUCCESS, 'Successfully Submitted !')
         return redirect(reverse('leave:leave'))
@@ -500,7 +502,6 @@ def process_staff_faculty_application(request):
                 leave.save()
                 leave.replace_segments.filter(status='pending') \
                                       .update(status='auto rejected')
-
                 restore_leave_balance(leave)
                 return JsonResponse({'status': 'success', 'message': 'Successfully Rejected'})
 
