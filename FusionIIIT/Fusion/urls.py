@@ -19,6 +19,7 @@ from django.conf.urls import include, url
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
+import notifications.urls
 
 urlpatterns = [
     url(r'^', include('applications.globals.urls')),
@@ -44,6 +45,7 @@ urlpatterns = [
     url(r'^academic-procedures/', include('applications.academic_procedures.urls',
                                           namespace='procedures')),
     url(r'^aims/', include('applications.academic_information.urls')),
+    url(r'^notifications/', include(notifications.urls, namespace='notifications')),
 
 ]
 if settings.DEBUG:

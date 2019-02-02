@@ -134,6 +134,7 @@ INSTALLED_APPS = [
     'applications.feeds.apps.FeedsConfig',
     'pagedown',
     'markdown_deux',
+    'notifications',
 ]
 
 MIDDLEWARE = [
@@ -256,3 +257,7 @@ if DEBUG:
     DEBUG_TOOLBAR_CONFIG = {
         'INTERCEPT_REDIRECTS': False,
     }
+
+DJANGO_NOTIFICATIONS_CONFIG = {
+'USE_JSONFIELD':True,
+}
