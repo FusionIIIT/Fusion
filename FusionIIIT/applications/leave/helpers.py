@@ -2,8 +2,20 @@ import datetime
 
 from django.contrib.auth.models import User
 from django.db.models import Q
+from applications.globals.models import HoldsDesignation, Designation
 
 from .models import LeaveMigration, LeaveRequest, LeavesCount
+
+def get_designation(user):
+    desig = list(HoldsDesignation.objects.all().filter(working = user).values_list('designation'))
+    b = [i for sub in desig for i in sub]
+    c=str(Designation.objects.get(id=b[0]))
+    for i in b:
+        if str(Designation.objects.get(id=i))=='Assistant Registrar':
+            c='Assistant Registrar'
+            break
+    print(c)
+    return c
 
 
 def get_user_choices(user):
@@ -101,20 +113,54 @@ def get_leave_days(start, end, leave_type, start_half, end_half):
     return count
 
 
-def get_leaves(leave):
+def get_leaves(leave, check):
     """
     @param - leave: Leave application object
     This helper function returns a dictionary which maps from leave_type to number
     of days of leaves of that particular leave type.
     """
     mapping = dict()
+    if check:
+        for segment in leave.segments_offline.all():
+            #if segment.leave_type.is_station:
+            #    continue
 
+            count = get_leave_days(segment.start_date, segment.end_date, segment.leave_type,
+                                   segment.start_half, segment.end_half)
+            if segment in mapping.keys():
+                mapping[segment] += count
+            else:
+                mapping[segment] = count
+
+        return mapping
+    else:
+        for segment in leave.segments.all():
+            #if segment.leave_type.is_station:
+            #    continue
+
+            count = get_leave_days(segment.start_date, segment.end_date, segment.leave_type,
+                                   segment.start_half, segment.end_half)
+            if segment in mapping.keys():
+                mapping[segment] += count
+            else:
+                mapping[segment] = count
+
+        return mapping
+
+def get_leaves_restore(leave):
+    """
+    @param - leave: Leave application object
+    This helper function returns a dictionary which maps from leave_type to number
+    of days of leaves of that particular leave type.
+    """
+    mapping = dict()
+    
     for segment in leave.segments.all():
         #if segment.leave_type.is_station:
         #    continue
 
         count = get_leave_days(segment.start_date, segment.end_date, segment.leave_type,
-                               segment.start_half, segment.end_half)
+                                   segment.start_half, segment.end_half)
         if segment in mapping.keys():
             mapping[segment] += count
         else:
@@ -124,9 +170,29 @@ def get_leaves(leave):
 
 
 def restore_leave_balance(leave):
-    to_restore = get_leaves(leave)
+    to_restore = get_leaves_restore(leave)
     for key, value in to_restore.items():
-        count = LeavesCount.objects.get(user=leave.applicant, leave_type=key.leave_type,
+        try:
+            if key.leave_type == 'Vacation':
+                count = LeavesCount.objects.get(user=leave.applicant, leave_type=key.leave_type,
+                                                year=key.start_date.year)
+                #count.remaining_leaves += value / 2
+                count.remaining_leaves += value
+                count.save()
+            elif key.leave_type == 'Earned':
+                count = LeavesCount.objects.get(user=leave.applicant, leave_type=key.leave_type,
+                                                year=key.start_date.year)
+                #count.remaining_leaves += 2.0 * value
+                count.remaining_leaves += value
+                count.save()
+            else:
+                count = LeavesCount.objects.get(user=leave.applicant, leave_type=key.leave_type,
+                                        year=key.start_date.year)
+                count.remaining_leaves += value
+                count.save()
+        except:
+            pass
+        """count = LeavesCount.objects.get(user=leave.applicant, leave_type=key.leave_type,
                                         year=key.start_date.year)
         count.remaining_leaves += value
         count.save()
@@ -142,26 +208,30 @@ def restore_leave_balance(leave):
                 count.remaining_leaves += 2.0 * value
                 count.save()
         except:
-            pass
+            pass"""
 
 
-def deduct_leave_balance(leave):
-    to_deduct = get_leaves(leave)
+def deduct_leave_balance(leave,check):
+    to_deduct = get_leaves(leave,check)
     for key, value in to_deduct.items():
-        count = LeavesCount.objects.get(user=leave.applicant, leave_type=key.leave_type,
-                                        year=key.start_date.year)
-        count.remaining_leaves -= value
-        count.save()
+        
         try:
             if key.leave_type == 'Vacation':
-                count = LeavesCount.objects.get(user=leave.applicant, leave_type__name='Earned',
+                count = LeavesCount.objects.get(user=leave.applicant, leave_type=key.leave_type,
                                                 year=key.start_date.year)
-                count.remaining_leaves -= value / 2
+                #count.remaining_leaves -= value / 2
+                count.remaining_leaves -= value
                 count.save()
             elif key.leave_type == 'Earned':
-                count = LeavesCount.objects.get(user=leave.applicant, leave_type__name='Vacation',
+                count = LeavesCount.objects.get(user=leave.applicant, leave_type=key.leave_type,
                                                 year=key.start_date.year)
-                count.remaining_leaves -= 2.0 * value
+                #count.remaining_leaves -= 2.0 * value
+                count.remaining_leaves -= value
+                count.save()
+            else:
+                count = LeavesCount.objects.get(user=leave.applicant, leave_type=key.leave_type,
+                                        year=key.start_date.year)
+                count.remaining_leaves -= value
                 count.save()
         except:
             pass

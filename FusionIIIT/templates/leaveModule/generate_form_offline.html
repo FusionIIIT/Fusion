@@ -22,9 +22,9 @@
     {% now "jS F\, Y" %}
     <br> <hr>
     <p><b> Applicant: </b> {{ leave.applicant.get_full_name }} <br></p>
-    {% if leave.segments.count > 0 %}
+    {% if leave.segments_offline.count > 0 %}
         <p>
-            {% for segment in leave.segments.all %}
+            {% for segment in leave.segments_offline.all %}
                 <b> From </b> {{ segment.start_date }} <b> To </b> {{ segment.end_date }}: <u> {{ segment.leave_type.name }} Leave. </u>
                 <ul>
                     <li> Start with Half Day: {{ segment.start_half|yesno:"Yes,No" }} </li>
@@ -38,11 +38,10 @@
         </p>
     {% endif %}
     <b> Purpose: </b> {{ leave.purpose }} <br><br>
-    <b> Extra Information: </b> {{ leave.extra_info|default:"Not Available" }} <br><br>
 
     {% if request.user.extrainfo.user_type != 'student' %}
         <hr>
-        {% for rep in leave.replace_segments.all %}
+        {% for rep in leave.replace_segments_offline.all %}
             <ul>
                 <li> <b> {{ rep.get_replacement_type_display }}: </b> </li>
                 <ul>

@@ -19,7 +19,7 @@
                 <i class="comment icon"></i>Feedback
             </div>
             <div class="right inverted menu">
-                <a class="item" href="/dashboard">
+                <a class="item" href="{% url 'globals:profile' %}">
                     {% comment %}
                         TODO: User details! depending on type of user say: STUDENT/FACULTY/STAFF!
                     {% endcomment %}
@@ -27,11 +27,22 @@
                     {{request.user.first_name}} {{request.user.last_name}}
                 </a>
 
-                <a class="item" id="new-notification">
-                    Notifications
+                <a class="item ui pointed dropdown link" href="{% url 'globals:dashboard' %}" id="new-notification">
+                    <div class="text">Notifications</div>
+                    <i class="dropdown"></i>
+                    <div class="ui red circular label">22</div>
+                    {% comment %}
+                        TODO: Make dropdown menu
+                    <div class="menu">
+                        <div class="item">Notification1</div>
+                        <div class="item">Notification1</div>
+                    </div>
+                    {% endcomment %}
                 </a>
-
-                <div class="ui fluid popup bottom left transition hidden">
+                {% comment %}
+                TODO: Find out what this entire comment block is supposed to perform
+                    
+                <div class="ui fluid popup bottom left transition">
                     <div class="ui four column relaxed equal height stackable doubling grid">
                         <div class="row">
                             <h3 class="ui dividing header" style="margin: auto; margin-top: 8px;">Notifications</h3>
@@ -88,7 +99,7 @@
                 </div>
 
                 <div class="item"></div>
-
+                {% endcomment %}
                 <a class="right item" href="/accounts/logout">
                     {% comment %}
                         TODO: LOGOUT!

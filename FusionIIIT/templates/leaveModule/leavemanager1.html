@@ -383,10 +383,11 @@
 
                     </div>
                     <div id="common_form" hidden>
-
+                        {% render_field common_form.leave_user_select %}
+                        {% render_field common_form.application_date %}
                         {% render_field common_form.purpose %}
                         <!--{% render_field common_form.is_station %}-->
-                        {% render_field common_form.leave_info _no_required='True' %}
+                        
                         <span id="common_pre" class="primary ui animated button" tabindex="0">
                             <div class="visible content">Go Back</div>
                             <div class="hidden content">
@@ -429,29 +430,6 @@
 
     </div>
 
-    <div class="extra content">
-        <br>
-        <br>
-
-        <div class="ui five equal width blue small stackable statistics"
-             style="margin: auto;">
-            {% for bal in leave_balance %}
-	    	<!--{% if not bal.leave_type.name == "Station" %}-->
-	    	<div class="ui statistic">
-                    <div class="value">
-                        {{ bal.remaining_leaves }}
-                    </div>
-
-                    <div class="label">
-                        <i class="plane icon"></i>
-                        {{ bal.leave_type.name }}
-                    </div>
-                </div>
-		{% endif %}
-            {% endfor %}
-
-        </div>
-
-    </div>
+   
 
 </div>
