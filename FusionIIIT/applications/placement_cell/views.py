@@ -50,8 +50,8 @@ def Placement(request):
     form5 = AddSchedule(initial={})
     current1 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement chairman"))
     current2 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement officer"))
-
     current = HoldsDesignation.objects.filter(Q(working=user, designation__name="student"))
+
     if current:
         student = get_object_or_404(Student, Q(id=profile.id))
         placementschedule = PlacementSchedule.objects.filter(
@@ -234,6 +234,9 @@ def Placement(request):
                 hs = Patent.objects.get(Q(pk=hid))
                 hs.delete()
 
+    # facult and other staff view only statistics
+    if not (current or current1 or current2):
+        return redirect('/placement/statistics/')
 
     if 'deletesch' in request.POST:
         delete_sch_key = request.POST['delete_sch_key']
@@ -853,8 +856,6 @@ def ManageRecords(request):
     current1 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement chairman"))
     current2 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement officer"))
 
-    hold_design = get_object_or_404(HoldsDesignation, working=user)
-
     current = HoldsDesignation.objects.filter(Q(working=user, designation__name="student"))
 
     if len(current) == 0:
@@ -1126,8 +1127,6 @@ def PlacementStatistics(request):
     form4 = SearchHigherRecord(initial={})
     current1 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement chairman"))
     current2 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement officer"))
-
-    hold_design = get_object_or_404(HoldsDesignation, working=user)
 
     current = HoldsDesignation.objects.filter(Q(working=user, designation__name="student"))
 
