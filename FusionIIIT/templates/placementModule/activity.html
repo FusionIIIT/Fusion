@@ -1,407 +1,532 @@
-{% block activity %}
-
+{% extends 'globals/base.html' %}
 {% load staticfiles %}
 
-<div class="ui pointing secondary menu">
-  {% if form5.errors %}
-    <a class="item" data-tab="placementschedule">
-      Placement Schedule
-    </a>
-  {% else %}
-    <a class="active item" data-tab="placementschedule">
-      Placement Schedule
-    </a>
-  {% endif %}
 
-  {% for c3 in current2 %}
-    {% if c3.designation.name == 'placement officer' %}
-      {% if form5.errors %}
-      <a class="active item" data-tab="addschedule">
-          Add Schedule
-      </a>
-      {% else %}
-         <a class="item" data-tab="addschedule">
-          Add Schedule
-        </a>
-      {% endif %}
-    {% endif %}
-  {% endfor %}
+{% block title %}
+    Placement Schedule
+{% endblock %}
 
-  {% for c in current1 %}
-    {% if c.designation.name == 'placement chairman' %}
-    <a class="item" data-tab="addschedule">
-        Add Schedule
-    </a>
-    {% endif %}
-  {% endfor %}
 
-</div>
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
 
-  <div class="{% if form5.errors %}ui tab{% else %}ui active tab{% endif %}" data-tab="placementschedule">
-    <div class="ui vertical segment">
-        {% for c in current %}
-        {% if c.designation.name == 'student' %}
-           {% if placementstatus %}
-            <!--The noticeboard card starts here!-->
-                <div class="content">
-                    <div class="ui divider"></div>
-                    {% for ps in placementstatus %}
-                    {% if ps.invitation != 'PENDING' and ps.invitation != 'Pending' %}
-                    {% if ps.placed != 'Placed' and ps.placed != 'PLACED' %}
-                    <span>
-                      <div class="ui segments">
-                        <div class="ui horizontal segments">
-                          <div class="ui segment">
-                            {{ ps.notify_id.placement_type }}
-                            {{ ps.notify_id.timestamp }}
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
 
-                        </div>
-                          </div>
-                          <div class="ui secondary segment">
-                            <p>{{ ps.notify_id.company_name }} ,<b> CTC: {{ ps.notify_id.ctc }}</b></p>
-                            <p>{{ ps.notify_id.description }} </p>
-                          </div>
-                          {% if ps.invitation == 'ACCEPTED' or ps.invitation == 'Accepted' %}
-                          <div class="ui secondary green inverted segment">
-                            <p>Invitation was <b>{{ ps.invitation}}.</b></p>
-                          </div>
-                          {% endif %}
-                          {% if ps.invitation == 'REJECTED' or ps.invitation == 'Rejected' %}
-                          <div class="ui secondary red inverted segment">
-                            <p>Invitation was <b>{{ ps.invitation}}.</b></p>
-                          </div>
-                          {% endif %}
-                      </div>
-                    </span><br>
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}
+            The left-rail segment starts here!
+        {% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu starts here!{% endcomment %}
+            <div class="ui huge fluid vertical pointing menu"
+                 style="max-width: 320px;">
+                {% for c in current %}
+                    {% if c.designation.name == 'student' %}
+                     <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" data-tab="twelth">
+                         Placement Schedule
+                         <i class="right floated chevron right icon"></i>
+                     </a>
+                     {% endif %}
+                 {% endfor %}
+
+
+                {% for c in current2 %}
+                    {% if c.designation.name == 'placement officer' %}
+                        {% if students or invitecheck == 1 or student_record_check == 1 %}
+                            <a class="item" data-tab="twelth">
+                                Placement Schedule
+                                <i class="right floated chevron right icon"></i>
+                            </a>
+                            <a class="{% if officer_manage or officer_manage_pbi or officer_statistics_past or officer_statistics_past_add or officer_statistics_past_pbi_search or officer_statistics_past_pbi_add or officer_statistics_past_higher_search or officer_statistics_past_higher_add %}item{% else %}active item{% endif %}" href="{% url 'placement:student_records' %}">
+                                Student Records
+                                <i class="right floated chevron right icon"></i>
+                            </a>
+                        {% else %}
+                             <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
+                                 Placement Schedule
+                                 <i class="right floated chevron right icon"></i>
+                             </a>
+                             <a class="{% if strecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:student_records' %}">
+                                 Student Records
+                                 <i class="right floated chevron right icon"></i>
+                             </a>
+                         {% endif %}
+                    <a class="{% if mnrecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:manage_records' %}">
+                        Manage Records
+                        <i class="right floated chevron right icon"></i>
+                    </a>
                     {% endif %}
-                    {% endif %}
-                    {% endfor %}
-                </div>
+                {% endfor %}
 
+
+                {% for c in current1 %}
+                    {% if c.designation.name == 'placement chairman' %}
+                        {% if students %}
+                            <a class="item" data-tab="twelth">
+                                Placement Schedule
+                                <i class="right floated chevron right icon"></i>
+                            </a>
+                            <a class="{% if officer_manage or officer_manage_pbi or officer_statistics_past or officer_statistics_past_add or officer_statistics_past_pbi_search or officer_statistics_past_pbi_add or officer_statistics_past_higher_search or officer_statistics_past_higher_add or chairman_visit_add %}item{% else %}active item{% endif %}" data-tab="ninth">
+                                Student Records
+                                <i class="right floated chevron right icon"></i>
+                            </a>
+                        {% else %}
+                             <a class="{% if officer_manage or officer_manage_pbi or officer_statistics_past or officer_statistics_past_add or officer_statistics_past_higher_search or officer_statistics_past_higher_add or officer_statistics_past_pbi_add or officer_statistics_past_pbi_search or chairman_visit_add%}item{% else %}active item{% endif %}" data-tab="twelth">
+                                 Placement Schedule
+                                 <i class="right floated chevron right icon"></i>
+                             </a>
+                             <a class="item" data-tab="ninth">
+                                 Student Records
+                                 <i class="right floated chevron right icon"></i>
+                             </a>
+                         {% endif %}
+
+                    <a class="{% if officer_manage or officer_manage_pbi %}active item{% else %}item{% endif %}" data-tab="tenth">
+                        Manage Records
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    <a class="{% if chairman_visit_add %}active item{% else %}item{% endif %}" data-tab="seventh">
+                        Placement Visits
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    {% endif %}
+                {% endfor %}
+
+                <a class="{% if statistics_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement_statistics' %}">
+                    Placement Statistics
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+            </div>
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+
+        {% comment %} The central-rail segment starts here!{% endcomment %}
+        <div class="eight wide column">
+
+          <div class="ui pointing secondary menu">
+            {% if form5.errors %}
+              <a class="item" data-tab="placementschedule">
+                Placement Schedule
+              </a>
             {% else %}
-              <center><h5>There are no Activities Scheduled.</h5></center>
+              <a class="active item" data-tab="placementschedule">
+                Placement Schedule
+              </a>
             {% endif %}
 
+            {% for c3 in current2 %}
+              {% if c3.designation.name == 'placement officer' %}
+                {% if form5.errors %}
+                <a class="active item" data-tab="addschedule">
+                    Add Schedule
+                </a>
+                {% else %}
+                   <a class="item" data-tab="addschedule">
+                    Add Schedule
+                  </a>
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+
+            {% for c in current1 %}
+              {% if c.designation.name == 'placement chairman' %}
+              <a class="item" data-tab="addschedule">
+                  Add Schedule
+              </a>
+              {% endif %}
+            {% endfor %}
+
+          </div>
+
+          <div class="{% if form5.errors %}ui tab{% else %}ui active tab{% endif %}" data-tab="placementschedule">
+            <div class="ui vertical segment">
+                {% for c in current %}
+                {% if c.designation.name == 'student' %}
+                   {% if placementstatus %}
+                    <!--The noticeboard card starts here!-->
+                        <div class="content">
+                            <div class="ui divider"></div>
+                            {% for ps in placementstatus %}
+                            {% if ps.invitation != 'PENDING' and ps.invitation != 'Pending' %}
+                            {% if ps.placed != 'Placed' and ps.placed != 'PLACED' %}
+                            <span>
+                              <div class="ui segments">
+                                <div class="ui horizontal segments">
+                                  <div class="ui segment">
+                                    {{ ps.notify_id.placement_type }}
+                                    {{ ps.notify_id.timestamp }}
+
+                                </div>
+                                  </div>
+                                  <div class="ui secondary segment">
+                                    <p>{{ ps.notify_id.company_name }} ,<b> CTC: {{ ps.notify_id.ctc }}</b></p>
+                                    <p>{{ ps.notify_id.description }} </p>
+                                  </div>
+                                  {% if ps.invitation == 'ACCEPTED' or ps.invitation == 'Accepted' %}
+                                  <div class="ui secondary green inverted segment">
+                                    <p>Invitation was <b>{{ ps.invitation}}.</b></p>
+                                  </div>
+                                  {% endif %}
+                                  {% if ps.invitation == 'REJECTED' or ps.invitation == 'Rejected' %}
+                                  <div class="ui secondary red inverted segment">
+                                    <p>Invitation was <b>{{ ps.invitation}}.</b></p>
+                                  </div>
+                                  {% endif %}
+                              </div>
+                            </span><br>
+                            {% endif %}
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+
+                    {% else %}
+                      <center><h5>There are no Activities Scheduled.</h5></center>
+                    {% endif %}
+
+                    {% endif %}
+                    {% endfor %}
+
+                    {% for c1 in current1 %}
+                    {% if c1.designation.name == 'placement chairman' %}
+                       {% if schedules %}
+                            <div class="content">
+                                <div class="ui divider"></div>
+
+                              {% for sch in schedules|dictsortreversed:"schedule_at" %}
+                              <span>
+                                <div class="ui segments">
+                                  <div class="ui horizontal segments">
+                                    <div class="ui segment">
+                                      <strong><h3>{{ sch.notify_id.placement_type }} | {{ sch.notify_id.company_name }}</h3></strong><br>
+                                      Time of Message: {{ sch.notify_id.timestamp }}
+
+                                  </div>
+                                    </div>
+                                    <div class="ui secondary segment">
+                                      <p><b> CTC (LPA): {{ sch.notify_id.ctc }}</b></p>
+                                      <p><b>{{ sch.title }} </b>| {{ sch.notify_id.description }} </p>
+                                      <p>Date/Time & Location: {{ sch.placement_date }} | {{ sch.time }} | {{ sch.location }}</p>
+                                      <p>Job Description: {{ sch.description }}</p>
+                                    </div>
+                                </div>
+                              </span><br>
+                              {% endfor %}
+
+                            </div>
+
+                        {% endif %}
+                        {% endif %}
+                        {% endfor %}
+
+                        {% for c1 in current2 %}
+                        {% if c1.designation.name == 'placement officer' %}
+                        {% if schedules %}
+
+                             <div class="content">
+                                 <div class="ui divider"></div>
+                                 <!-- |dictsortreversed:"schedule_at" -->
+                               {% for sch in schedules|dictsortreversed:"schedule_at" %}
+                               <span>
+                                 <div class="ui segments">
+                                   <div class="ui horizontal segments">
+                                     <div class="ui segment">
+                                      <form method="post" class="ui form" role="form" action="">
+                                       {% csrf_token %}
+                                       <input type="hidden" name="delete_sch_key" value="{{ sch.pk }}">
+                                       <button name="deletesch" value="{{ sch.pk }}" class="ui inverted huge circular icon right floated button" style="margin: auto;" type="submit">
+                                           <i class="delete red icon"></i>
+                                       </button>
+                                       </form>
+                                       <strong><h3>{{ sch.notify_id.placement_type }} | {{ sch.notify_id.company_name }}  </h3></strong><br>
+
+                                       Time of Message: {{ sch.notify_id.timestamp }}
+
+                                   </div>
+                                     </div>
+                                     <div class="ui secondary segment">
+                                       <p><b> CTC (LPA): {{ sch.notify_id.ctc }}</b></p>
+                                       <p><b>{{ sch.title }} </b>| {{ sch.notify_id.description }} </p>
+                                       <p>Date/Time & Location: {{ sch.placement_date }} | {{ sch.time }} | {{ sch.location }}</p>
+                                       <p>Job Description: {{ sch.description }}</p>
+                                     </div>
+                                    {% if sch.attached_file %}
+                                      <a href="{{sch.attached_file.url}}">download</a>
+                                    {% endif %}
+                                 </div>
+                               </span><br>
+                               {% endfor %}
+
+                             </div>
+
+                         {% endif %}
+                            {% endif %}
+                            {% endfor %}
+            </div>
+          </div>
+
+          {% for c3 in current2 %}
+            {% if c3.designation.name == 'placement officer'%}
+            <div  class="{% if form5.errors %}ui active tab {% else %} ui tab {% endif %}" data-tab="addschedule">
+                <div class="ui vertical segment">
+                  {% if form5.errors %}
+                    <div class="ui error message">
+                      <i class="close icon"></i>
+                      <div class="header">
+                        There were some errors with your submission
+                      </div>
+                      <ul>
+                        {% if form5.company_name.errors %}
+                          <li>{{ form5.company_name.errors }}</li>
+                        {% endif %}
+
+                        {% if form5.placement_date.errors %}
+                          <li>{{ form5.placement_date.errors }}</li>
+                        {% endif %}
+
+                        {% if form5.location.errors %}
+                          <li>{{ form5.location.errors }}</li>
+                        {% endif %}
+
+                        {% if form5.ctc.errors %}
+                          <li>{{ form5.ctc.errors }}</li>
+                        {% endif %}
+
+                        {% if form5.time.errors %}
+                          <li>{{ form5.time.errors }}</li>
+                        {% endif %}
+
+                        {% if form5.placement_type.errors %}
+                          <li>{{ form5.placement_type.errors }}</li>
+                        {% endif %}
+
+                        {% if form5.description.errors %}
+                          <li>{{ form5.description.errors }}</li>
+                        {% endif %}
+                      </ul>
+                    </div>
+                  {% endif %}
+
+                    {% comment %}Form Tag starts here!{% endcomment %}
+                    <form method="post" enctype = "multipart/form-data" class="ui form" role="form" action="">
+                        {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                        <div class="ui accordion field">
+                            <div class="title">
+                                <i class="icon dropdown"></i>
+                                Add a new Event!
+                            </div>
+
+                            <div class="{% if form5.errors %}content active{% else %}content{% endif %}">
+                                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                                  {% csrf_token %}
+                                    <div class="three fields">
+                                        <div class="eight wide field">
+                                            <label>Company Name:</label>
+                                            <div class="ui fluid large input">
+                                                {% comment %}The Institute Name input!{% endcomment %}
+                                                {{ form5.company_name }}
+                                            </div>
+                                        </div>
+
+                                        <div class="four wide field">
+                                            <label for="{{ form.placement_date.id_for_label }}">
+                                              Date (yyyy-mm-dd):</label>
+                                            <div class="ui calendar" id="rangestart">
+                                                <div class="ui input large left icon">
+                                                    <i class="calendar icon"></i>
+                                                    {{ form5.placement_date }}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="four wide field">
+                                            <label>Location:</label>
+                                            <div class="ui fluid large input">
+                                                {% comment %}The Location input!{% endcomment %}
+                                                {{ form5.location }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="three fields">
+                                        <div class="five wide field">
+                                            <label>CTC in Lpa:</label>
+                                            <div class="ui fluid large input">
+                                                {% comment %}The Institute Name input!{% endcomment %}
+                                                {{ form5.ctc }}
+                                            </div>
+                                        </div>
+                                        <div class="five wide field">
+                                            <label>Time:</label>
+                                            <div class="ui fluid large input">
+                                                {% comment %}The Institute Name input!{% endcomment %}
+                                                {{ form5.time }}
+                                            </div>
+                                        </div>
+                                    <div class="six wide field">
+                                        <label>Placement Type:</label>
+                                        <div class="ui fluid large input">
+                                            {% comment %}The Location input!{% endcomment %}
+                                            {{ form5.placement_type }}
+                                        </div>
+                                    </div>
+                                </div>
+                                    <div class="field">
+                                        <label>
+                                            Description
+                                        </label>
+
+                                        <div class="ui fluid large input">
+                                                {% comment %}The Location input!{% endcomment %}
+                                                {{ form5.description }}
+                                        </div>
+                                    </div>
+                                    <input type="file" name="attached_file">
+                                    <div class="field">
+                                        <button name="schedulesubmit" value="schedulesubmit" class="ui right floated large primary button" type="submit">
+                                            Submit
+                                        </button>
+                                    </div>
+
+                                    <br>
+                                    <br>
+
+                                </div>
+                            </div>
+                        </div>
+                        {% comment %}The add a new Achievement Accordian ends here!{% endcomment %}
+                    </form>
+                    {% comment %}Form Tag ends here!{% endcomment %}
+                </div>
+            </div>
             {% endif %}
             {% endfor %}
 
             {% for c1 in current1 %}
-            {% if c1.designation.name == 'placement chairman' %}
-               {% if schedules %}
-                    <div class="content">
-                        <div class="ui divider"></div>
+            {% if c1.designation.name == 'placement chairman'%}
+            <div class="ui tab" data-tab="addschedule">
+                <div class="ui vertical segment">
 
-                      {% for sch in schedules|dictsortreversed:"schedule_at" %}
-                      <span>
-                        <div class="ui segments">
-                          <div class="ui horizontal segments">
-                            <div class="ui segment">
-                              <strong><h3>{{ sch.notify_id.placement_type }} | {{ sch.notify_id.company_name }}</h3></strong><br>
-                              Time of Message: {{ sch.notify_id.timestamp }}
-
-                          </div>
+                    {% comment %}Form Tag starts here!{% endcomment %}
+                    <form method="post" class="ui form" role="form" >
+                        {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                        <div class="ui accordion field">
+                            <div class="title">
+                                <i class="icon dropdown"></i>
+                                Add a new Event!
                             </div>
-                            <div class="ui secondary segment">
-                              <p><b> CTC (LPA): {{ sch.notify_id.ctc }}</b></p>
-                              <p><b>{{ sch.title }} </b>| {{ sch.notify_id.description }} </p>
-                              <p>Date/Time & Location: {{ sch.placement_date }} | {{ sch.time }} | {{ sch.location }}</p>
-                              <p>Job Description: {{ sch.description }}</p>
+                            {{ form5.non_field_errors }}
+                            <div class="content">
+                                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                                  {% csrf_token %}
+                                    <div class="three fields">
+                                        <div class="eight wide field">
+                                          {{ form5.company_name.errors }}
+                                            <label>Company Name:</label>
+                                            <div class="ui fluid large input">
+                                                {% comment %}The Institute Name input!{% endcomment %}
+                                                {{ form5.company_name }}
+                                            </div>
+                                        </div>
+
+                                        <div class="four wide field">
+                                          {{ form5.placement_date.errors }}
+                                            <label for="{{ form.placement_date.id_for_label }}">
+                                              Date (yyyy-mm-dd):</label>
+                                            <div class="ui calendar" id="rangestart">
+                                                <div class="ui input large left icon">
+                                                    <i class="calendar icon"></i>
+                                                    {{ form5.placement_date }}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="four wide field">
+                                          {{ form5.location.errors }}
+                                            <label>Location:</label>
+                                            <div class="ui fluid large input">
+                                                {% comment %}The Location input!{% endcomment %}
+                                                {{ form5.location }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="three fields">
+                                        <div class="five wide field">
+                                          {{ form5.ctc.errors }}
+                                            <label>CTC in Lpa:</label>
+                                            <div class="ui fluid large input">
+                                                {% comment %}The Institute Name input!{% endcomment %}
+                                                {{ form5.ctc }}
+                                            </div>
+                                        </div>
+                                        <div class="five wide field">
+                                          {{ form5.time.errors }}
+                                            <label>Time:</label>
+                                            <div class="ui fluid large input">
+                                                {% comment %}The Institute Name input!{% endcomment %}
+                                                {{ form5.time }}
+                                            </div>
+                                        </div>
+                                    <div class="six wide field">
+                                      {{ form5.placement_type.errors }}
+                                        <label>Placement Type:</label>
+                                        <div class="ui fluid large input">
+                                            {% comment %}The Location input!{% endcomment %}
+                                            {{ form5.placement_type }}
+                                        </div>
+                                    </div>
+                                </div>
+                                    <div class="field">
+                                      {{ form5.description.errors }}
+                                        <label>
+                                            Description
+                                        </label>
+
+                                        <div class="ui fluid large input">
+                                                {% comment %}The Location input!{% endcomment %}
+                                                {{ form5.description }}
+                                        </div>
+                                    </div>
+                                    <div class="field">
+                                        <button name="schedulesubmit" value="schedulesubmit" class="ui right floated large primary button" type="submit">
+                                            Submit
+                                        </button>
+                                    </div>
+
+                                    <br>
+                                    <br>
+
+                                </div>
                             </div>
                         </div>
-                      </span><br>
-                      {% endfor %}
-
-                    </div>
-
-                {% endif %}
-                {% endif %}
-                {% endfor %}
-
-                {% for c1 in current2 %}
-                {% if c1.designation.name == 'placement officer' %}
-                {% if schedules %}
-
-                     <div class="content">
-                         <div class="ui divider"></div>
-                         <!-- |dictsortreversed:"schedule_at" -->
-                       {% for sch in schedules|dictsortreversed:"schedule_at" %}
-                       <span>
-                         <div class="ui segments">
-                           <div class="ui horizontal segments">
-                             <div class="ui segment">
-                              <form method="post" class="ui form" role="form" action="{% url 'placement:delete_schedule' %}">
-                               {% csrf_token %}
-                               <input type="hidden" name="delete_sch_key" value="{{ sch.pk }}">
-                               <button name="deletesch" value="{{ sch.pk }}" class="ui inverted huge circular icon right floated button" style="margin: auto;" type="submit">
-                                   <i class="delete red icon"></i>
-                               </button>
-                               </form>
-                               <strong><h3>{{ sch.notify_id.placement_type }} | {{ sch.notify_id.company_name }}  </h3></strong><br>
-
-                               Time of Message: {{ sch.notify_id.timestamp }}
-
-                           </div>
-                             </div>
-                             <div class="ui secondary segment">
-                               <p><b> CTC (LPA): {{ sch.notify_id.ctc }}</b></p>
-                               <p><b>{{ sch.title }} </b>| {{ sch.notify_id.description }} </p>
-                               <p>Date/Time & Location: {{ sch.placement_date }} | {{ sch.time }} | {{ sch.location }}</p>
-                               <p>Job Description: {{ sch.description }}</p>
-                             </div>
-                            {% if sch.attached_file %}
-                              <a href="{{sch.attached_file.url}}">download</a>
-                            {% endif %}
-                         </div>
-                       </span><br>
-                       {% endfor %}
-
-                     </div>
-
-                 {% endif %}
-                    {% endif %}
-                    {% endfor %}
-</div>
-</div>
-
-{% for c3 in current2 %}
-{% if c3.designation.name == 'placement officer'%}
-<div  class="{% if form5.errors %}ui active tab {% else %} ui tab {% endif %}" data-tab="addschedule">
-    <div class="ui vertical segment">
-      {% if form5.errors %}
-        <div class="ui error message">
-          <i class="close icon"></i>
-          <div class="header">
-            There were some errors with your submission
-          </div>
-          <ul>
-            {% if form5.company_name.errors %}
-              <li>{{ form5.company_name.errors }}</li>
+                        {% comment %}The add a new Achievement Accordian ends here!{% endcomment %}
+                    </form>
+                    {% comment %}Form Tag ends here!{% endcomment %}
+                </div>
+            </div>
             {% endif %}
-
-            {% if form5.placement_date.errors %}
-              <li>{{ form5.placement_date.errors }}</li>
-            {% endif %}
-
-            {% if form5.location.errors %}
-              <li>{{ form5.location.errors }}</li>
-            {% endif %}
-
-            {% if form5.ctc.errors %}
-              <li>{{ form5.ctc.errors }}</li>
-            {% endif %}
-
-            {% if form5.time.errors %}
-              <li>{{ form5.time.errors }}</li>
-            {% endif %}
-
-            {% if form5.placement_type.errors %}
-              <li>{{ form5.placement_type.errors }}</li>
-            {% endif %}
-
-            {% if form5.description.errors %}
-              <li>{{ form5.description.errors }}</li>
-            {% endif %}
-          </ul>
+          {% endfor %}
         </div>
-      {% endif %}
 
-        {% comment %}Form Tag starts here!{% endcomment %}
-        <form method="post" enctype = "multipart/form-data" class="ui form" role="form" action="{% url 'placement:add_schedule' %}">
-            {% comment %}The add a new skill Accordian starts here!{% endcomment %}
-            <div class="ui accordion field">
-                <div class="title">
-                    <i class="icon dropdown"></i>
-                    Add a new Event!
-                </div>
-
-                <div class="{% if form5.errors %}content active{% else %}content{% endif %}">
-                    <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
-                      {% csrf_token %}
-                        <div class="three fields">
-                            <div class="eight wide field">
-                                <label>Company Name:</label>
-                                <div class="ui fluid large input">
-                                    {% comment %}The Institute Name input!{% endcomment %}
-                                    {{ form5.company_name }}
-                                </div>
-                            </div>
-
-                            <div class="four wide field">
-                                <label for="{{ form.placement_date.id_for_label }}">
-                                  Date (yyyy-mm-dd):</label>
-                                <div class="ui calendar" id="rangestart">
-                                    <div class="ui input large left icon">
-                                        <i class="calendar icon"></i>
-                                        {{ form5.placement_date }}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="four wide field">
-                                <label>Location:</label>
-                                <div class="ui fluid large input">
-                                    {% comment %}The Location input!{% endcomment %}
-                                    {{ form5.location }}
-                                </div>
-                            </div>
-                        </div>
-                        <div class="three fields">
-                            <div class="five wide field">
-                                <label>CTC in Lpa:</label>
-                                <div class="ui fluid large input">
-                                    {% comment %}The Institute Name input!{% endcomment %}
-                                    {{ form5.ctc }}
-                                </div>
-                            </div>
-                            <div class="five wide field">
-                                <label>Time:</label>
-                                <div class="ui fluid large input">
-                                    {% comment %}The Institute Name input!{% endcomment %}
-                                    {{ form5.time }}
-                                </div>
-                            </div>
-                        <div class="six wide field">
-                            <label>Placement Type:</label>
-                            <div class="ui fluid large input">
-                                {% comment %}The Location input!{% endcomment %}
-                                {{ form5.placement_type }}
-                            </div>
-                        </div>
-                    </div>
-                        <div class="field">
-                            <label>
-                                Description
-                            </label>
-
-                            <div class="ui fluid large input">
-                                    {% comment %}The Location input!{% endcomment %}
-                                    {{ form5.description }}
-                            </div>
-                        </div>
-                        <input type="file" name="attached_file">
-                        <div class="field">
-                            <button name="schedulesubmit" value="schedulesubmit" class="ui right floated large primary button" type="submit">
-                                Submit
-                            </button>
-                        </div>
-
-                        <br>
-                        <br>
-
-                    </div>
-                </div>
-            </div>
-            {% comment %}The add a new Achievement Accordian ends here!{% endcomment %}
-        </form>
-        {% comment %}Form Tag ends here!{% endcomment %}
+        <div class="three wide column"></div>
     </div>
-</div>
-{% endif %}
-{% endfor %}
-
-{% for c1 in current1 %}
-{% if c1.designation.name == 'placement chairman'%}
-<div class="ui tab" data-tab="addschedule">
-    <div class="ui vertical segment">
-
-        {% comment %}Form Tag starts here!{% endcomment %}
-        <form method="post" class="ui form" role="form" >
-            {% comment %}The add a new skill Accordian starts here!{% endcomment %}
-            <div class="ui accordion field">
-                <div class="title">
-                    <i class="icon dropdown"></i>
-                    Add a new Event!
-                </div>
-                {{ form5.non_field_errors }}
-                <div class="content">
-                    <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
-                      {% csrf_token %}
-                        <div class="three fields">
-                            <div class="eight wide field">
-                              {{ form5.company_name.errors }}
-                                <label>Company Name:</label>
-                                <div class="ui fluid large input">
-                                    {% comment %}The Institute Name input!{% endcomment %}
-                                    {{ form5.company_name }}
-                                </div>
-                            </div>
-
-                            <div class="four wide field">
-                              {{ form5.placement_date.errors }}
-                                <label for="{{ form.placement_date.id_for_label }}">
-                                  Date (yyyy-mm-dd):</label>
-                                <div class="ui calendar" id="rangestart">
-                                    <div class="ui input large left icon">
-                                        <i class="calendar icon"></i>
-                                        {{ form5.placement_date }}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="four wide field">
-                              {{ form5.location.errors }}
-                                <label>Location:</label>
-                                <div class="ui fluid large input">
-                                    {% comment %}The Location input!{% endcomment %}
-                                    {{ form5.location }}
-                                </div>
-                            </div>
-                        </div>
-                        <div class="three fields">
-                            <div class="five wide field">
-                              {{ form5.ctc.errors }}
-                                <label>CTC in Lpa:</label>
-                                <div class="ui fluid large input">
-                                    {% comment %}The Institute Name input!{% endcomment %}
-                                    {{ form5.ctc }}
-                                </div>
-                            </div>
-                            <div class="five wide field">
-                              {{ form5.time.errors }}
-                                <label>Time:</label>
-                                <div class="ui fluid large input">
-                                    {% comment %}The Institute Name input!{% endcomment %}
-                                    {{ form5.time }}
-                                </div>
-                            </div>
-                        <div class="six wide field">
-                          {{ form5.placement_type.errors }}
-                            <label>Placement Type:</label>
-                            <div class="ui fluid large input">
-                                {% comment %}The Location input!{% endcomment %}
-                                {{ form5.placement_type }}
-                            </div>
-                        </div>
-                    </div>
-                        <div class="field">
-                          {{ form5.description.errors }}
-                            <label>
-                                Description
-                            </label>
-
-                            <div class="ui fluid large input">
-                                    {% comment %}The Location input!{% endcomment %}
-                                    {{ form5.description }}
-                            </div>
-                        </div>
-                        <div class="field">
-                            <button name="schedulesubmit" value="schedulesubmit" class="ui right floated large primary button" type="submit">
-                                Submit
-                            </button>
-                        </div>
-
-                        <br>
-                        <br>
-
-                    </div>
-                </div>
-            </div>
-            {% comment %}The add a new Achievement Accordian ends here!{% endcomment %}
-        </form>
-        {% comment %}Form Tag ends here!{% endcomment %}
-    </div>
-</div>
-{% endif %}
-{% endfor %}
 
 {% endblock %}

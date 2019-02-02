@@ -104,7 +104,7 @@ class Mcm(models.Model):
     constructed_area = models.IntegerField(blank=True, null=True)
     school_fee = models.IntegerField(blank=True, null=True)
     school_name = models.CharField(max_length=30, null=True)
-    bank_name = models.CharField(max_length=10, null=True)
+    bank_name = models.CharField(max_length=100, null=True)
     loan_amount = models.IntegerField(blank=True, null=True)
     college_fee = models.IntegerField(blank=True, null=True)
     college_name = models.CharField(max_length=30, null=True)
