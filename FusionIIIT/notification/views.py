@@ -4,9 +4,9 @@ from notifications.signals import notify
 # Create your views here.
 
 def leave_module_notif(request):
-    print("it works")
     user=request.user
-    target_url='leave'
-    notify.send(sender=user, recipient=user, target_url=target_url, verb='testing...')
+    url='leave:leave'
+    module='Leave Module'
+    notify.send(sender=user, recipient=user, url=url, module=module, verb='testing...')
 
 

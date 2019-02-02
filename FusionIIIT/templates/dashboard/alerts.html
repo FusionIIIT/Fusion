@@ -1,13 +1,14 @@
 {% load static %}
 
 {% block alerts %}
+{% load notifications_tags %}
     <div class="ui one cards" style="padding: 2px">
         {% for notice in notifications %}
             {% comment %}A single notification starts here!{% endcomment %}
             <div class="ui card">
                 <div class="content">
                     <div class="header">
-                        {{ notice.actor }}
+                        <a href="{% url 'notifications:mark_as_read_and_redirect' notice.slug %}"> {{ notice.data.module }} </a>
                     </div>
                     <div class="meta">
                         {{ notice.timesince }} ago
