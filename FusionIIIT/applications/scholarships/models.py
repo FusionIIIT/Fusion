@@ -152,6 +152,8 @@ class Release(models.Model):
     enddate = models.DateField()
     award = models.CharField(default='',max_length=25)
     remarks = models.TextField(max_length=500,default='')
+    notif_visible = models.IntegerField(default=1)
+    award_form_visible = models.IntegerField(default=0)
 
     class Meta:
         db_table = 'Release'
