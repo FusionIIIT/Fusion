@@ -2,7 +2,8 @@
 {% block awards %}
     {% comment %}The tab menu starts here!{% endcomment %}
     <body>
-
+    {% for i in release %}
+    {% if i.award_form_visible == 1 %}
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="mcm">
             Mcm Scholarship
@@ -17,8 +18,8 @@
         <div class="ui vertical segment">
             <div class="ui header">
                 Application Form for Merit Cum Means (MCM) Scholarship:
-            
-            
+
+
             <a class="right floated item" style="padding-left:50px" href="https://drive.google.com/open?id=1Ylcj_ZX_h-0TTZ_zOGVF1JLEJE1_YQGD" target="_blank">
                 <button class="ui primary button">
                     Form A
@@ -41,7 +42,7 @@
             <div class="content">
                 <div class="description">
                     <form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;" enctype="multipart/form-data">
-                        {% csrf_token %} 
+                        {% csrf_token %}
                 <div class="three fields">
                         <div class="six wide field ">
                                 <label>Category</label>
@@ -55,7 +56,7 @@
                                     <input value="{{request.user.extrainfo.student.hall_no}}" name="hall_no" type="text" readonly>
                                 </div>
                             </div>
-                        
+
                 <div class="four wide field">
                         <label>Room no</label>
                         <div class="ui large input">
@@ -77,7 +78,7 @@
                                     {% for p,v in source %}
                                     <option value="{{p}}">{{v}}</option>
                                     {% endfor %}
-        
+
                                 </select>
                         </div>
                 </div>
@@ -96,7 +97,7 @@
                                     {% for p,v in mother_occ %}
                                     <option value="{{p}}">{{v}}</option>
                                     {% endfor %}
-        
+
                             </select>
                         </div>
                 </div>
@@ -157,16 +158,16 @@
                                 <input placeholder="Income" name="mother_income" type="number" required>
                             </div>
                         </div>
-                       
+
                         <div class=" field">
                             <label>Other sources Annual Income</label>
                             <div class="ui large input">
                                 <input placeholder="Income" name="other_income" type="number">
                             </div>
                         </div>
-                             
+
                     </div>
-                    
+
                 <div class="two fields">
                     <div class="eight wide field ">
                         <label># of Four Wheeler</label>
@@ -291,7 +292,7 @@
                 </div>
                 <div><br/><br/></div>
             </form>
-                
+
                 </div>
             </div>
         </div>
@@ -302,7 +303,7 @@
                     <div class="ui header">
                             Please read below instructions before applying for any of the Convocation Medals:
                         </div>
-            
+
                         <div class="content">
                             <div class="description">
                                 <label>Brief Description for Cultural:</label>
@@ -318,34 +319,34 @@
                                          <br/>
                                     </p>
                                     <br><br>
-                                
+
                             </div>
                         </div>
                     <button type="button" class="ui primary large right floated button" onclick="java_script_:dis(1)" >Proceed</button>
                <br><br> </div>
-        
+
                     <div class="ui vertical segment" id="form_part2" style="display:none">
                             <div class="ui large input">
                                     <div class="sixteen wide field">
                                     <label>Award</label>
-                                    
+
                                     <select class="ui fluid search large dropdown" name="award" id="award" onchange="java_script_:show(this.options[this.selectedIndex].value)">
                                         <option selected hidden default>Select</option>
                                         <option value="silver">Director Silver Medal</option>
                                         <option value="gold">Director Gold Medal</option>
                                         <option value="dandm">D&M Proficiency Gold Medal</option>
-                                        
+
                                     </select>
                                 </div>
                             </div>
                             <br>
-                        
+
 
     <div class="ui tab" id="dandm">
         <div class="ui active tab" data-tab="dandm">
             <div class="ui vertical segment">
                 <form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;" enctype="multipart/form-data">
-                    {% csrf_token %} 
+                    {% csrf_token %}
                     <div class="field">
                             <label>PBI Project/Design Project</label>
                             <div class="ui large input">
@@ -359,24 +360,24 @@
                                                 <input placeholder="Room no."  name="room_no" value="{{request.user.extrainfo.student.hall_no}}" type="number" readonly>
                                             </div>
                                         </div>
-                                
+
                                     <div class="six wide field">
                                         <label>Room no</label>
                                         <div class="ui large input">
                                             <input placeholder="Room no."  name="room_no" type="text" value="{{request.user.extrainfo.student.room_no}}" readonly>
                                         </div>
                                     </div>
-                
+
                                     <div class="six wide field">
                                             <label>Type</label>
                                             <select class="ui fluid search selection large dropdown" name="award" required>
-                                                    <option value="">Select</option> 
+                                                    <option value="">Select</option>
                                                     <option value="D&M Proficiency Gold Medal">D&M Proficiency Gold Medal</option>
                                                     <option value="IIITDM Proficiency Prizes">IIITDM Proficiency Prizes</option>
                                             </select>
                                      </div>
                                 </div>
-               
+
                            <div class="two fields">
                                 <div class="eight wide field ">
                                     <label>Father's Name</label>
@@ -396,7 +397,7 @@
                                         <label>Permanent Address:</label>
                                         <textarea rows="2" name="p_address" readonly>{{request.user.extrainfo.address}}</textarea>
                                     </div>
-                
+
                                    <div class="field">
                                         <label>Correspondance Address:</label>
                                         <textarea rows="2" name="c_address" required></textarea>
@@ -415,12 +416,12 @@
                                         <input placeholder="Railway Station" name="nrs" type="text" required>
                                     </div>
                             </div>
-                        </div> 
+                        </div>
                         <div class="two fields">
                                 <div class="twelve wide field">
                                         <div class="sixteen wide field">
                                             <label>Financial Assistance</label required>
-                        
+
                                                <textarea rows="3" name="financial_assitance" required></textarea>
                                         </div>
                                    </div>
@@ -430,7 +431,7 @@
                                             <input placeholder="Total" name="grand_total" type="number" required>
                                         </div>
                                 </div>
-                            </div>  
+                            </div>
                             <div class="eight wide field">
                                 <label>Number Of Student</label>
                                 <select class="ui fluid search selection large dropdown" name="students" required>
@@ -474,7 +475,7 @@
                                                     <input placeholder="Student5" type="number" name="roll_no5">
                                                 </div>
                                             </div>
-                                
+
                             </div>
 
                 <div class="two fields">
@@ -547,7 +548,7 @@
                 <div class="two fields">
                         <div class="field" style="width:700px;">
                                 <a class="right floated item">
-                               <label><br></label>               
+                               <label><br></label>
                                <div class="seven wide field">
                                    <label>Upload file</label>
                                    <div class="ui fluid input">
@@ -584,7 +585,7 @@
          <div class="ui active tab" data-tab="goldmedal">
                 <div class="ui vertical segment">
                     <form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;" enctype="multipart/form-data">
-                        {% csrf_token %} 
+                        {% csrf_token %}
                         <div class="two fields">
                                 <div class="eight wide field">
                                         <label>Hall no</label>
@@ -592,17 +593,17 @@
                                                 <input placeholder="Room no."  name="room_no" value="{{request.user.extrainfo.student.hall_no}}" type="number" readonly>
                                             </div>
                                         </div>
-                                
+
                                     <div class="eight wide field">
                                         <label>Room no</label>
                                         <div class="ui large input">
                                             <input placeholder="Room no."  name="room_no" type="text" value="{{request.user.extrainfo.student.room_no}}" readonly>
                                         </div>
                                     </div>
-                
-                                    
+
+
                                 </div>
-               
+
                            <div class="two fields">
                                 <div class="eight wide field ">
                                     <label>Father's Name</label>
@@ -622,7 +623,7 @@
                                         <label>Permanent Address:</label>
                                         <textarea rows="2" name="p_address" readonly>{{request.user.extrainfo.address}}</textarea>
                                     </div>
-                
+
                                    <div class="field">
                                         <label>Correspondance Address:</label>
                                         <textarea rows="2" name="c_address" required></textarea>
@@ -641,12 +642,12 @@
                                         <input placeholder="Railway Station" name="nrs" type="text" required>
                                     </div>
                             </div>
-                        </div>   
+                        </div>
                         <div class="two fields">
                                 <div class="twelve wide field">
                                         <div class="sixteen wide field">
                                             <label>Financial Assistance</label required>
-                        
+
                                                <textarea rows="3" name="financial_assitance" required></textarea>
                                         </div>
                                    </div>
@@ -663,21 +664,21 @@
                                        <textarea rows="5" name="academic_achievements" required></textarea>
                                 </div>
                            </div>
-       
+
                            <div class="field">
                                 <div class="sixteen wide field">
                                     <label>Brief Description of Science and Technology (Inside IIITDMJ) Achievement:</label>
                                        <textarea rows="5" name="science_inside" required></textarea>
                                 </div>
                            </div>
-       
+
                            <div class="field">
                                 <div class="sixteen wide field">
                                     <label>Brief Description of Science and Technology (Outside IIITDMJ) Achievement:</label>
                                        <textarea rows="5" name="science_outside" required></textarea>
                                 </div>
                            </div>
-       
+
                            <div class="field">
                                 <div class="sixteen wide field">
                                     <label>Brief Description of Games and Sports (Inside IIITDMJ) Achievement:</label>
@@ -690,7 +691,7 @@
                                        <textarea rows="5" name="games_outside" required></textarea>
                                 </div>
                            </div>
-       
+
                            <div class="field">
                                 <div class="sixteen wide field">
                                     <label>Brief Description of Cultural (Inside IIITDMJ) Achievement:</label>
@@ -703,8 +704,8 @@
                                        <textarea rows="5" name="cultural_outside" required></textarea>
                                 </div>
                            </div>
-       
-       
+
+
                            <div class="field">
                                 <div class="sixteen wide field">
                                     <label>Brief Description of Social Service:</label>
@@ -756,7 +757,7 @@
                            <div class=" two fields" style="width:700px;">
                                    <div class="field">
                                            <a class="right floated item">
-                                          <label><br></label>               
+                                          <label><br></label>
                                           <div class="seven wide field">
                                               <label>Upload files</label>
                                               <div class="ui fluid input">
@@ -764,7 +765,7 @@
                                               </div>
                                           </div>
                                       </div>
-   
+
                                <div class="field">
                                    <a class="right floated item">
                                        <label><br></label>
@@ -778,13 +779,13 @@
             </div>
          </div>
         </div>
-        
-        
+
+
     <div class="ui tab" id="silver">
      <div class="ui active tab" data-tab="goldmedal">
             <div class="ui vertical segment">
                 <form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;" enctype="multipart/form-data">
-                    {% csrf_token %} 
+                    {% csrf_token %}
             <div class="three fields">
                     <div class="six wide field">
                             <label>Hall no</label>
@@ -792,24 +793,24 @@
                                     <input placeholder="Room no."  name="room_no" value="{{request.user.extrainfo.student.hall_no}}" type="number" readonly>
                                 </div>
                             </div>
-                    
+
                         <div class="six wide field">
                             <label>Room no</label>
                             <div class="ui large input">
                                 <input placeholder="Room no."  name="room_no" type="text" value="{{request.user.extrainfo.student.room_no}}" readonly>
                             </div>
                         </div>
-    
+
                         <div class="six wide field">
                                 <label>Type</label>
                                 <select class="ui fluid search selection large dropdown" name="award" required>
-                                        <option value="">Select</option> 
+                                        <option value="">Select</option>
                                         <option value="Director Silver Medal Games and Sports">Director Silver Medal Games and Sports</option>
                                         <option value="Director Silver Medal Cultural">Director Silver Medal Cultural</option>
                                 </select>
                          </div>
                     </div>
-   
+
                <div class="two fields">
                     <div class="eight wide field ">
                         <label>Father's Name</label>
@@ -829,7 +830,7 @@
                             <label>Permanent Address:</label>
                             <textarea rows="2" name="p_address" readonly>{{request.user.extrainfo.address}}</textarea>
                         </div>
-    
+
                        <div class="field">
                             <label>Correspondance Address:</label>
                             <textarea rows="2" name="c_address" required></textarea>
@@ -848,12 +849,12 @@
                             <input placeholder="Railway Station" name="nrs" type="text" required>
                         </div>
                 </div>
-            </div>   
+            </div>
             <div class="two fields">
                     <div class="twelve wide field">
                             <div class="sixteen wide field">
                                 <label>Financial Assistance</label required>
-            
+
                                    <textarea rows="3" name="financial_assitance" required></textarea>
                             </div>
                        </div>
@@ -863,36 +864,36 @@
                                 <input placeholder="Total" name="grand_total" type="number" required>
                             </div>
                     </div>
-                </div>   
+                </div>
             <div class="field">
                     <div class="sixteen wide field">
                         <label>Brief Description of Games and Sports/Cultural Achievement: (INSIDE IIITDMJ)</label required>
-    
+
                            <textarea rows="5" name="inside_achievements" required></textarea>
                     </div>
                </div>
-    
-    
+
+
                <div class="field">
                     <div class="sixteen wide field">
                         <label>Brief Description of Game and Sports/Cultural Achievement: (OUTSIDE IIITDMJ)</label>
-    
+
                            <textarea rows="5" name="outside_achievements" required></textarea>
                     </div>
                </div>
-    
-    
+
+
                <div class="field">
                     <div class="sixteen wide field">
                         <label>Justification:</label>
                            <textarea rows="3" name="justification" required></textarea>
                     </div>
                </div>
-        
+
                         <div class="two fields">
                                 <div class="field" style="width:700px;">
                                         <a class="right floated item">
-                                       <label><br></label>               
+                                       <label><br></label>
                                        <div class="seven wide field">
                                            <label>Upload file</label>
                                            <div class="ui fluid input">
@@ -910,13 +911,17 @@
                                 </a>
                             </div>
                         </div>
-    
+
                 </form>
         </div>
      </div>
     </div>
-             </div>                
+             </div>
 </div>
+{% else %}
+    <p> Form not available to you!!  </p>
+{% endif %}
+{% endfor %}
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
   <!--<script type="text/javascript">
@@ -948,19 +953,19 @@
                 if (aval == "gold") {
                 silver.style.display='none';
                 dandm.style.display='none';
-                gold.style.display='inline-block';
+                gold.style.display='inline';
                 Form.fileURL.focus();
-                } 
+                }
                 if (aval == "silver") {
                 dandm.style.display='none';
                 gold.style.display='none';
-                silver.style.display='inline-block';
+                silver.style.display='inline';
                 Form.fileURL.focus();
-                } 
+                }
                 if (aval == "dandm") {
                 silver.style.display='none';
                 gold.style.display='none';
-                dandm.style.display='inline-block';
+                dandm.style.display='inline';
                 Form.fileURL.focus();
                 }
             }
@@ -970,16 +975,17 @@
         if(aval == 1)
         {
             form_part1.style.display='none';
-            form_part2.style.display='inline-block';
+            form_part2.style.display='inline';
             form_part3.style.display='none';
         }
         else if(aval == 2)
         {
             form_part1.style.display='none';
             form_part2.style.display='none';
-            form_part3.style.display='inline-block';
+            form_part3.style.display='inline';
         }
     }
     </script>
+
 </body>
 {%  endblock %}
