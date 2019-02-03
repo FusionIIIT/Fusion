@@ -95,7 +95,7 @@
                 </tbody>
             </table>
 
-           
+
 
             <br>
 
@@ -145,6 +145,12 @@
                             console.log(response.result)
                         }
                         else{
+                                txt="<tr>";
+                                txt += '<td>' + "" + '</td>' +
+                                '<td>' + "No Data Found!!"  + '</td>' +
+                                '<td>' + "" + '</td>';
+                                txt +='</tr>';
+                                element.after(txt);
                             console.log(response.result);
                         }
 
@@ -157,7 +163,3 @@
     </script>
 
 {% endblock javascript %}
-
-
-
-
