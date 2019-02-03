@@ -111,10 +111,12 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'applications.globals',
     'applications.eis',
+    'notifications',
     'applications.academic_procedures',
     'applications.academic_information',
     'applications.leave',
     'applications.library',
+
     'applications.gymkhana',
     'applications.office_module',
     'applications.central_mess',
@@ -134,7 +136,6 @@ INSTALLED_APPS = [
     'applications.feeds.apps.FeedsConfig',
     'pagedown',
     'markdown_deux',
-    'notifications',
 ]
 
 MIDDLEWARE = [

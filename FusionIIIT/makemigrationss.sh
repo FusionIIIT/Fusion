@@ -1,6 +1,7 @@
 python manage.py makemigrations globals
 python manage.py makemigrations leave
 python manage.py makemigrations eis
+python manage.py makemigrations notifications
 python manage.py makemigrations academic_procedures
 python manage.py makemigrations academic_information
 python manage.py makemigrations library
