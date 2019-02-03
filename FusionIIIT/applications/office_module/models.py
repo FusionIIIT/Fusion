@@ -184,6 +184,7 @@ class Project_Registration(models.Model):
     sponsored_agency = models.CharField(max_length=100)
     CO_PI = models.CharField(max_length=100 ,null=True)
     start_date = models.DateField(null=True,blank=True)
+    expected_finish_date = models.DateField(null=True, blank=True)
     duration = models.CharField(default='0', max_length=100)
     agreement = models.CharField(choices=Constants.TICK_TYPE,
                                       max_length=10, default='NO')
