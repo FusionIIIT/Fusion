@@ -2,7 +2,6 @@ from django.contrib import admin
 
 from .models import *
 
-admin.site.register(Project_Registration)
 admin.site.register(Requisitions)
 admin.site.register(Filemovement)
 admin.site.register(stock)
