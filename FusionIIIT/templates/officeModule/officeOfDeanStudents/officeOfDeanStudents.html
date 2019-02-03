@@ -41,6 +41,11 @@
                     Meetings
                     <i class="right floated chevron right icon"></i>
                 </a>
+                <a class="item" data-tab="third">
+
+                    Test
+                    <i class="right floated chevron right icon"></i>
+                </a>
                 {% endif %}
                 {% if "Dean_s" in all_designation %}
                 <a class="item" data-tab="second">
@@ -91,6 +96,18 @@
 
         <div class="eight wide column">
             <!--The Details start here!-->
+            {% if "Dean_s" in all_designation %}
+                {% block form01 %}
+                        {% include 'officeModule/officeOfDeanStudents/budgets.html' %}
+                         {{ all_designations }}
+                {% endblock %}
+            {% endif %}
+
+            {% if "Junior Superintendent" in all_designation %}
+                {% block form02 %}
+                    {% include 'officeModule/officeOfDeanStudents/meetingMinutes.html' %}
+                {% endblock %}
+            {% endif %}
 
             <!--The Holding meetings start here!-->
             <div class="ui tab segment" data-tab="zero">
@@ -117,6 +134,12 @@
                 {% endblock %}
             </div>
             <!--The budget approvals ends here!-->
+
+             <div class="ui tab segment" data-tab="third">
+                {% block form3 %}
+                    {% include 'officeModule/officeOfDeanStudents/budgetApproval.html' %}
+                {% endblock %}
+            </div>
 
             <!--The New Club Approvals starts here!-->
             <div class="ui tab segment" data-tab="fifth">
