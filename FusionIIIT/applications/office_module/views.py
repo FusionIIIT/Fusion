@@ -275,6 +275,7 @@ def project_register(request):
     CO_PI = request.POST.get('copi_name')
    # start_date = datetime.strptime(request.POST.get('start_date'), "%Y-%m-%d")
     start_date = request.POST.get('start_date')
+    expected_finish_date = request.POST.get('expected_finish_date')
     duration = request.POST.get('duration')
     #duration = datetime.timedelta('duration')
     agreement=request.POST.get('agreement')
@@ -288,7 +289,7 @@ def project_register(request):
     request_obj = Project_Registration(PI_id=extrainfo, project_title=project_title,
                                sponsored_agency=sponsored_agency, CO_PI=CO_PI, agreement=agreement,
                                amount_sanctioned=amount_sanctioned, project_type=project_type,
-                               remarks=remarks,duration=duration,fund_recieved_date=fund_recieved_date,start_date=start_date)
+                               remarks=remarks,duration=duration,fund_recieved_date=fund_recieved_date,start_date=start_date, expected_finish_date= expected_finish_date)
     request_obj.save()
     context={}
     return render(request,"eisModulenew/profile.html",context)
