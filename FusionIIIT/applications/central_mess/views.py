@@ -1,7 +1,8 @@
 import datetime
 from datetime import date
 from datetime import datetime
-
+from django.core.exceptions import ObjectDoesNotExist
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
@@ -229,19 +230,22 @@ def placeorder(request):
 
         stu = Messinfo.objects.get(student_id=student)
         if stu.mess_option == 'mess1':
-            dish = Nonveg_menu.objects.get(
-                                           dish=request.POST.get("dish"),
-                                           order_interval=request.POST['interval'])
-            order_interval = dish.order_interval
-            order_date = datetime.now().date()
-            nonveg_obj = Nonveg_data(student_id=student, order_date=order_date,
-                                     order_interval=order_interval, dish=dish)
-            nonveg_obj.save()
-            return HttpResponseRedirect("/mess")
+            try:
+                dishn = Nonveg_menu.objects.get(dish=request.POST.get("dish"))
+
+                order_interval = request.POST.get("interval")
+                order_date = datetime.now().date()
+                nonveg_obj = Nonveg_data(student_id=student, order_date=order_date,
+                                         order_interval=order_interval, dish=dishn)
+                nonveg_obj.save()
+                messages.success(request, 'Your request is forwarded !!', extra_tags='successmsg')
+                return HttpResponseRedirect('/mess')
+            except ObjectDoesNotExist:
+                return HttpResponse("seems like object error")
+
 
         else:
             return HttpResponse("you can't apply for this application")
-
 
 @csrf_exempt
 @login_required
