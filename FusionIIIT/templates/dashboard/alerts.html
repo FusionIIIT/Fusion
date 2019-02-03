@@ -20,6 +20,9 @@
 
                     <div class="description">
                         {{ notice.verb }}
+                        {% ifnotequal notice.actor notice.recipient %}
+                        -by {{ notice.actor.first_name }} {{ notice.actor.last_name }}
+                        {% endifnotequal %}
                     </div>
                     {% if notice.unread %}
                     <div class="ui right floated blue button notif-status" id="notif-status{{notice.id}}" notif-id="{{notice.id}}"  slug="{{notice.slug}}">
