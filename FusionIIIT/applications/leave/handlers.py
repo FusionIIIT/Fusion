@@ -155,11 +155,8 @@ def handle_faculty_leave_application(request):
             replacement.leave = leave
         LeaveSegment.objects.bulk_create(segments)
         ReplacementSegment.objects.bulk_create(replacements)
-
         deduct_leave_balance(leave,False)
-
-        leave_module_notif(request)
-
+        leave_module_notif(request.user, request.user, 'leave_applied')
         messages.add_message(request, messages.SUCCESS, 'Successfully Submitted !')
         return redirect(reverse('leave:leave'))
 
@@ -229,7 +226,7 @@ def handle_staff_leave_application(request):
         ReplacementSegment.objects.bulk_create(replacements)
 
         deduct_leave_balance(leave,False)
-
+        leave_module_notif(request.user, request.user, 'leave_applied')
         messages.add_message(request, messages.SUCCESS, 'Successfully Submitted !')
         return redirect(reverse('leave:leave'))
 
@@ -378,7 +375,7 @@ def intermediary_processing(request, leave_request):
     if status == 'forward':
         leave_request.status = 'forwarded'
         leave_request.save()
-
+        leave_module_notif(request.user, leave_request.leave.applicant, 'leave_forwarded')
         authority = leave.applicant.leave_admins.authority.designees.first().user
         LeaveRequest.objects.create(
             leave=leave_request.leave,
@@ -392,6 +389,7 @@ def intermediary_processing(request, leave_request):
         leave.status = 'rejected'
         leave.remark = 'Intermediary Rejected'
         leave.save()
+        leave_module_notif(request.user, leave_request.leave.applicant, 'leave_rejected')
         message = 'Successfully Rejected'
         restore_leave_balance(leave)
 
@@ -413,18 +411,18 @@ def authority_processing(request, leave_request):
         leave.save()
         create_migrations(leave)
         message = 'Successfully Accepted'
+        leave_module_notif(request.user, leave_request.leave.applicant, 'leave_accepted')
 
     elif status == 'forward':
         leave_request.status = 'forwarded'
         leave_request.save()
-
+        leave_module_notif(request.user, leave_request.leave.applicant, 'leave_forwarded')
         officer = leave.applicant.leave_admins.officer.designees.first().user
         LeaveRequest.objects.create(
             leave=leave,
             requested_from=officer,
             permission='sanc_off'
         )
-
         message = 'Successfully Forwarded'
 
     else:
@@ -434,6 +432,7 @@ def authority_processing(request, leave_request):
         leave.status = 'rejected'
         leave.remark = 'Rejected by Leave Sanctioning Authority'
         leave.save()
+        leave_module_notif(request.user, leave_request.leave.applicant, 'leave_rejected')
         restore_leave_balance(leave)
         message = 'Successfully Rejected'
 
@@ -452,12 +451,14 @@ def officer_processing(request, leave_request):
         leave.status = 'accepted'
         message = 'Successfully Accepted'
         leave.save()
+        leave_module_notif(request.user, leave_request.leave.applicant, 'leave_accepted')
         create_migrations(leave)
     else:
         leave_request.status = 'rejected'
         leave.status = 'rejected'
         leave.remark = 'Rejected by Leave Sanctioning Officer'
         leave.save()
+        leave_module_notif(request.user, leave_request.leave.applicant, 'leave_rejected')
         message = 'Successfully Rejected'
 
     leave_request.save()
@@ -468,7 +469,6 @@ def officer_processing(request, leave_request):
 @transaction.atomic
 def process_staff_faculty_application(request):
     is_replacement_request = request.POST.get('rep')
-
     status = request.POST.get('status')
     id = request.POST.get('id')
 
@@ -482,6 +482,7 @@ def process_staff_faculty_application(request):
                 rep_request.status = 'accepted'
                 rep_request.remark = request.POST.get('remark')
                 rep_request.save()
+                leave_module_notif(request.user, rep_request.leave.applicant, 'request_accepted')
                 if rep_request.leave.relacements_accepted():
                     leave_intermediary = HoldsDesignation.objects.get(
                                                     designation__name='Leave Intermediary').user
@@ -500,6 +501,7 @@ def process_staff_faculty_application(request):
                 leave.status = 'rejected'
                 leave.remark = 'Replacement Request rejected.'
                 leave.save()
+                leave_module_notif(request.user, rep_request.leave.applicant, 'request_declined')
                 leave.replace_segments.filter(status='pending') \
                                       .update(status='auto rejected')
                 restore_leave_balance(leave)
@@ -614,6 +616,7 @@ def handle_offline_leave_application(request):
         LeaveSegmentOffline.objects.bulk_create(segments_offline)
         ReplacementSegmentOffline.objects.bulk_create(replacements)
         deduct_leave_balance(leave,True)
+        leave_module_notif(request.user, leave_user, 'offline_leave')
 
         messages.add_message(request, messages.SUCCESS, 'Successfully Submitted !')
         return redirect(reverse('leave:leavemanager'))
