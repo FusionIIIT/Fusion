@@ -7,7 +7,7 @@ from django.db import transaction
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
-
+from django.contrib import messages
 from django.contrib.auth.models import User
 from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, HoldsDesignation
@@ -532,6 +532,7 @@ def placerequest(request):
                 'status': 3
             # case when the to date has passed
             }
+            messages.error(request, "Invalid dates")
             return JsonResponse(data)
         spfood_obj = Special_request(student_id=student, start_date=fr, end_date=to,
                                      item1=food1, item2=food2, request=purpose)
