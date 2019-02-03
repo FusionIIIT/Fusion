@@ -366,13 +366,13 @@
                     {% comment %}Form Tag starts here!{% endcomment %}
                     <form method="post" enctype = "multipart/form-data" class="ui form" role="form" action="{% url 'placement:placement' %}">
                         {% comment %}The add a new skill Accordian starts here!{% endcomment %}
-                        <div class="ui accordion field">
-                            <div class="title">
+                        <div class="ui accordion">
+                            <div class="title active">
                                 <i class="icon dropdown"></i>
                                 Add a new Event!
                             </div>
 
-                            <div class="{% if form5.errors %}content active{% else %}content{% endif %}">
+                            <div class="content active">
                                 <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
                                   {% csrf_token %}
                                     <div class="three fields">
@@ -465,13 +465,13 @@
                     {% comment %}Form Tag starts here!{% endcomment %}
                     <form method="post" class="ui form" role="form" >
                         {% comment %}The add a new skill Accordian starts here!{% endcomment %}
-                        <div class="ui accordion field">
-                            <div class="title">
+                        <div class="ui accordion field"> 
+                            <div class="title active">
                                 <i class="icon dropdown"></i>
                                 Add a new Event!
                             </div>
                             {{ form5.non_field_errors }}
-                            <div class="content">
+                            <div class="content active">
                                 <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
                                   {% csrf_token %}
                                     <div class="three fields">
