@@ -313,7 +313,7 @@ class AddSchedule(forms.Form):
                                   label="description", required=False)
     attached_file = forms.FileField(required=False)
 
-    placement_date = forms.DateField(label='placement_date', widget=forms.DateInput(attrs={'class':'schedule_datepicker'}))
+    placement_date = forms.DateField(label='placement_date', widget=forms.DateInput(attrs={'class':'datepicker'}))
 
 
 class SearchPlacementRecord(forms.Form):

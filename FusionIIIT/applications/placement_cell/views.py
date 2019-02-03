@@ -55,7 +55,7 @@ def Placement(request):
     if current:
         student = get_object_or_404(Student, Q(id=profile.id))
         placementschedule = PlacementSchedule.objects.filter(
-            Q(placement_date__lte=date.today())).values_list('notify_id',
+            Q(placement_date__gte=date.today())).values_list('notify_id',
             flat=True)
 
         placementstatus = PlacementStatus.objects.filter(Q(unique_id=student,

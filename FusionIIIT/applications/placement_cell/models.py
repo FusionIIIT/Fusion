@@ -195,7 +195,7 @@ class NotifyStudent(models.Model):
     placement_type = models.CharField(max_length=20, choices=Constants.PLACEMENT_TYPE,
                                       default='PLACEMENT')
     company_name = models.CharField(max_length=100, default='')
-    ctc = models.DecimalField(decimal_places=2, max_digits=5)
+    ctc = models.DecimalField(decimal_places=4, max_digits=10)
     description = models.TextField(max_length=1000, default='', null=True, blank=True)
     timestamp = models.DateTimeField(auto_now=True)
 
