@@ -1,119 +1,85 @@
 {% load static %}
 
 {% block alerts %}
+{% load notifications_tags %}
     <div class="ui one cards" style="padding: 2px">
+        {% for notice in notifications %}
+            {% comment %}A single notification starts here!{% endcomment %}
+                {% if notice.unread %}
+                <div class="ui blue card" id="notif{{notice.id}}">
+                {% else %}
+                <div class="ui card" id="notif{{notice.id}}">
+                {% endif %}
+                <div class="content">
+                    <div class="header">
+                        <a href="{% url 'notifications:mark_as_read_and_redirect' notice.slug %}"> {{ notice.data.module }} </a>
+                    </div>
+                    <div class="meta">
+                        {{ notice.timesince }} ago
+                    </div>
 
-        {% comment %}A single card starts here!{% endcomment %}
-        <div class="ui card">
-            <div class="content">
-                <div class="header">
-                    Title of the notification
-                </div>
-                <div class="meta">
-                    Dec 21, 2018, to all students
-                </div>
-
-                <div class="description">
-                    Summary notification and/or alerts. Summary notification and/or alerts. Summary notification and/or alerts. Summary notification and/or alerts. 
+                    <div class="description">
+                        {{ notice.verb }}
+                        {% ifnotequal notice.actor notice.recipient %}
+                        -by {{ notice.actor.first_name }} {{ notice.actor.last_name }}
+                        {% endifnotequal %}
+                    </div>
+                    {% if notice.unread %}
+                    <div class="ui right floated blue button notif-status" id="notif-status{{notice.id}}" notif-id="{{notice.id}}"  slug="{{notice.slug}}">
+                        <div id="notif-sp{{notice.id}}">Unread</div>
+                    </div>
+                    {% else %}
+                    <div class="ui right floated button notif-status" id="notif-status{{notice.id}}" notif-id="{{notice.id}}" slug="{{notice.slug}}">
+                         <div id="notif-sp{{notice.id}}">Read</div>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
-        </div>
 
-        {% comment %}A single card starts here!{% endcomment %}
-        <div class="ui card">
-            <div class="content">
-                <div class="header">
-                    Title of the notification
-                </div>
-                <div class="meta">
-                    Dec 21, 2018, to all students
-                </div>
 
-                <div class="description">
-                    Summary notification and/or alerts. Summary notification and/or alerts. Summary notification and/or alerts. Summary notification and/or alerts. 
-                </div>
-            </div>
-        </div>
-
-        {% comment %}A single card starts here!{% endcomment %}
-        <div class="ui card">
-            <div class="content">
-                <div class="header">
-                    Title of the notification
-                </div>
-                <div class="meta">
-                    Dec 21, 2018, to all students
-                </div>
-
-                <div class="description">
-                    Summary notification and/or alerts. Summary notification and/or alerts. Summary notification and/or alerts. Summary notification and/or alerts. 
-                </div>
-            </div>
-        </div>
-
-        {% comment %}A single card starts here!{% endcomment %}
-        <div class="ui card">
-            <div class="content">
-                <div class="header">
-                    Title of the notification
-                </div>
-                <div class="meta">
-                    Dec 21, 2018, to all students
-                </div>
-
-                <div class="description">
-                    Summary notification and/or alerts. Summary notification and/or alerts. Summary notification and/or alerts. Summary notification and/or alerts. 
-                </div>
-            </div>
-        </div>
-
-        {% comment %}A single card starts here!{% endcomment %}
-        <div class="ui card">
-            <div class="content">
-                <div class="header">
-                    Title of the notification
-                </div>
-                <div class="meta">
-                    Dec 21, 2018, to all students
-                </div>
-
-                <div class="description">
-                    Summary notification and/or alerts. Summary notification and/or alerts. Summary notification and/or alerts. Summary notification and/or alerts. 
-                </div>
-            </div>
-        </div>
-
-        {% comment %}A single card starts here!{% endcomment %}
-        <div class="ui card">
-            <div class="content">
-                <div class="header">
-                    Title of the notification
-                </div>
-                <div class="meta">
-                    Dec 21, 2018, to all students
-                </div>
-
-                <div class="description">
-                    Summary notification and/or alerts. Summary notification and/or alerts. Summary notification and/or alerts. Summary notification and/or alerts. 
-                </div>
-            </div>
-        </div>
-
-        {% comment %}A single card starts here!{% endcomment %}
-        <div class="ui card">
-            <div class="content">
-                <div class="header">
-                    Title of the notification
-                </div>
-                <div class="meta">
-                    Dec 21, 2018, to all students
-                </div>
-
-                <div class="description">
-                    Summary notification and/or alerts. Summary notification and/or alerts. Summary notification and/or alerts. Summary notification and/or alerts. 
-                </div>
-            </div>
-        </div>
+            {% comment %}A single notification ends here!{% endcomment %}
+        {% endfor %}
 
     </div>
+
+    <script type="text/javascript">
+
+                    $('.notif-status').click(function(){
+                    var slug = $(this).attr("slug");
+                    var id = $(this).attr("notif-id");
+                    var status = document.getElementById("notif-sp"+id).innerHTML;
+                    var url;
+                    if(status=="Read"){
+                        url = '{% url 'notifications:mark_as_unread' 0 %}'.replace('0', slug);
+                    }
+                    else{
+                        url = '{% url 'notifications:mark_as_read' 0 %}'.replace('0', slug);
+                    }
+                        $.ajax(
+                            {
+                                type:"GET",
+                                url: url,
+
+                                success: function(data)
+                                {
+                                    if(status=="Read"){
+                                        $("#notif-status"+id).removeClass("ui right floated button");
+                                        $("#notif-status"+id).addClass("ui right floated blue button");
+                                        $("#notif"+id).removeClass("ui card");
+                                        $("#notif"+id).addClass("ui blue card");
+                                        document.getElementById("notif-sp"+id).innerHTML= "Unread";
+                                    }
+                                    else{
+                                        $("#notif-status"+id).removeClass("ui right floated blue button");
+                                        $("#notif-status"+id).addClass("ui right floated button");
+                                        $("#notif"+id).removeClass("ui blue card");
+                                        $("#notif"+id).addClass("ui card");
+                                        document.getElementById("notif-sp"+id).innerHTML= "Read";
+                                    }
+
+                                }
+                             })
+
+                   });
+                   </script>
 {% endblock %}

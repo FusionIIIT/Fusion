@@ -134,6 +134,7 @@ INSTALLED_APPS = [
     'applications.feeds.apps.FeedsConfig',
     'pagedown',
     'markdown_deux',
+    'notifications',
 ]
 
 MIDDLEWARE = [
@@ -169,24 +170,24 @@ WSGI_APPLICATION = 'Fusion.wsgi.application'
 
 PROJECT_DIR = os.path.abspath(os.path.dirname(__file__))
 
-DATABASES = {
-    'default':
-        {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'test',
-            'USER': 'root',
-            'PASSWORD': 'sksingh55',
-            'HOST': 'localhost',
-            'PORT': '3306',
-        },
-}
-
 # DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(PROJECT_DIR, 'fusion.db'),
-#     }
+#     'default':
+#         {
+#             'ENGINE': 'django.db.backends.mysql',
+#             'NAME': 'test',
+#             'USER': 'root',
+#             'PASSWORD': 'sksingh55',
+#             'HOST': 'localhost',
+#             'PORT': '3306',
+#         },
 # }
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(PROJECT_DIR, 'fusion.db'),
+    }
+}
 
 
 # Password validation
@@ -256,3 +257,7 @@ if DEBUG:
     DEBUG_TOOLBAR_CONFIG = {
         'INTERCEPT_REDIRECTS': False,
     }
+
+DJANGO_NOTIFICATIONS_CONFIG = {
+'USE_JSONFIELD':True,
+}

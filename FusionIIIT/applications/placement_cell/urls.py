@@ -10,5 +10,4 @@ urlpatterns = [
     url(r'^manage_records/$', views.ManageRecords, name='manage_records'),
     url(r'^statistics/$', views.PlacementStatistics, name='placement_statistics'),
     url(r'^cv/(?P<username>[a-zA-Z0-9\.]{1,20})/$', views.cv, name="cv"),
-
 ]

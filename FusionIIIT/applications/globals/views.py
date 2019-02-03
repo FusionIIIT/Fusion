@@ -22,7 +22,7 @@ from applications.placement_cell.models import (Achievement, Course, Education,
                                                 Experience, Has, Patent,
                                                 Project, Publication, Skill)
 from Fusion.settings import LOGIN_URL
-
+from notifications.models import Notification
 
 def index(request):
     context = {}
@@ -675,7 +675,12 @@ def about(request):
 
 @login_required(login_url=LOGIN_URL)
 def dashboard(request):
-    return render(request, "dashboard/dashboard.html", {})
+    user=request.user
+    notifs=request.user.notifications.all()
+    context={
+        'notifications':notifs
+    }
+    return render(request, "dashboard/dashboard.html", context)
 
 
 @login_required(login_url=LOGIN_URL)
