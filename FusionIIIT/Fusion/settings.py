@@ -21,8 +21,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '=&w9due426k@l^ju1=s1)fj1rnpf0ok8xvjwx+62_nc-f12-8('
-CLIENT_ID = '630776370716-teetmopg2cl3rjhnk5eaggv70f5qlkl8.apps.googleusercontent.com'
-CLIENT_SECRET = 'BTbxZo7RFNk3O_prvp4YGH5V'
+CLIENT_ID = '187004491411-frc3j36n04o9k0imgnbl02qg42vkq36f.apps.googleusercontent.com'
+CLIENT_SECRET = 'enHu3RD0yBvCM_9C0HQmEp0z'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -111,10 +111,12 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'applications.globals',
     'applications.eis',
+    'notifications',
     'applications.academic_procedures',
     'applications.academic_information',
     'applications.leave',
     'applications.library',
+
     'applications.gymkhana',
     'applications.office_module',
     'applications.central_mess',
@@ -134,7 +136,6 @@ INSTALLED_APPS = [
     'applications.feeds.apps.FeedsConfig',
     'pagedown',
     'markdown_deux',
-    'notifications',
 ]
 
 MIDDLEWARE = [
