@@ -21,9 +21,9 @@ from .views_office_students import *
 
 @login_required
 def officeOfDeanRSPC(request):
-    projects = emp_research_projects.objects.all()
-    consultancy = emp_consultancy_projects.objects.all()
-    patents = emp_patents.objects.all()
+    projects = emp_research_projects.objects.all().order_by('-start_date')
+    consultancy = emp_consultancy_projects.objects.all().order_by('-start_date')
+    patents = emp_patents.objects.all().order_by('-p_year', '-a_month')
     project = Project_Registration.objects.all()
     project1 = Project_Extension.objects.all()
     project2 = Project_Closure.objects.all()
@@ -301,12 +301,14 @@ def project_registration_permission(request):
         id_list=request.POST.getlist('id[]')
         for id in id_list:
             obj=Project_Registration.objects.get(pk=id)
+            #if obj.DRSPC_response == 'Pending':
             obj.DRSPC_response='Approve'
             obj.save()
     elif 'forward' in request.POST:
         id_list = request.POST.getlist('id[]')
         for id in id_list:
             obj=Project_Registration.objects.get(pk=id)
+            # if obj.DRSPC_response == 'Pending':
             obj.DRSPC_response='Forward'
             obj.save()
     elif 'reject' in request.POST:
@@ -314,6 +316,7 @@ def project_registration_permission(request):
         for id in id_list:
             obj=Project_Registration.objects.get(pk=id)
             print(obj.DRSPC_response)
+            # if obj.DRSPC_response == 'Pending':
             obj.DRSPC_response='Disapprove'
             obj.save()
     return HttpResponseRedirect('/office/officeOfDeanRSPC/')
@@ -323,22 +326,22 @@ def project_extension_permission(request):
     if 'approve' in request.POST:
         id=request.POST.get('id')
         obj=Project_Extension.objects.get(pk=id)
-        if obj.DRSPC_response == 'Pending':
-            obj.DRSPC_response='Approve'
-            obj.save()
+        #if obj.DRSPC_response == 'Pending':
+        obj.DRSPC_response='Approve'
+        obj.save()
     elif 'forward' in request.POST:
         id=request.POST.get('id')
         obj=Project_Extension.objects.get(pk=id)
-        if obj.DRSPC_response == 'Pending':
-            obj.DRSPC_response='Forward'
-            obj.save()
+        #if obj.DRSPC_response == 'Pending':
+        obj.DRSPC_response='Forward'
+        obj.save()
     elif 'reject' in request.POST:
         id=request.POST.get('id')
         obj=Project_Extension.objects.get(pk=id)
         print(obj.DRSPC_response)
-        if obj.DRSPC_response == 'Pending':
-            obj.DRSPC_response='Disapprove'
-            obj.save()
+        #if obj.DRSPC_response == 'Pending':
+        obj.DRSPC_response='Disapprove'
+        obj.save()
     return HttpResponseRedirect('/office/officeOfDeanRSPC/')
 
 

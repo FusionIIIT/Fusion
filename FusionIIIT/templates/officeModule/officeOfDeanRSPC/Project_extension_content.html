@@ -40,7 +40,7 @@
     <form action="{% url 'office:extension' %}" method="POST">
         {% csrf_token %}
          {% for pr in project1 %}
-    {% if pr.HOD_response == 'Forwarded'%}
+    {%comment%} if pr.HOD_response == 'Forwarded'{%endcomment%}
     <tr>
 
         <td class="collapsing">
@@ -74,7 +74,15 @@
         </td>
 
         <td>
-            <i class="large red crossmark icon">{{pr.DRSPC_response}}</i>
+            {% if pr.DRSPC_response == "Approve" %}
+            <i class="large green checkmark icon">{{pr.DRSPC_response}}</i>
+            {% elif pr.DRSPC_response == "Pending" %}
+            <i class="large orange warning icon">{{pr.DRSPC_response}}</i>
+            {% elif pr.DRSPC_response == "Disapprove" %}
+            <i class="large red x icon">{{pr.DRSPC_response}}</i>
+            {% elif pr.DRSPC_response == "Forward" %}
+            <i class="large orange warning icon">{{pr.DRSPC_response}}</i>
+            {% endif %}
         </td>
 
         <td>
@@ -90,7 +98,7 @@
         </td>
 
     </tr>
-    {% endif %}
+    {%comment%} endif {%endcomment%}
 
  {% endfor%}
 
@@ -143,7 +151,7 @@
 
 <!-- <div class="ui primary right floated button"><a href="" target="_blank" style="color:white;">View Details</a></div> -->
 <!-- <a href="/officeOfDeanRSPC/app/"><div class="ui primary right floated button">Approve Selected</div></a> -->
-{% if "Dean (RSPC)" in desig %}
+{% if "Dean (R&D)" in desig %}
 <button class="ui primary right floated button" type="submit" name="approve" value="approve">Approve</button>
 <button class="ui primary right floated button" type="submit" name="reject" value="reject">Reject</button>
 <!-- <button class="ui primary right floated button" type="submit" name="forward" value="forward">Forward Selected</button>
