@@ -58,48 +58,18 @@ function editFirst(){
 }
 
 function editStudent() {
-    var aboutSpan = $("#aboutSpan").text().trim();
-    var contactSpan = $("#contactSpan").text().trim();
-    var interestSpan = $("#interestSpan").text().trim();
+    $("#editButton").hide();
+    $("#saveButton").show();
 
-    var buttonValue = $("#editButton").val()
+    $("#contactInput").show();
+    $("#contactSpan").hide();
 
-    if(buttonValue == "Edit") {
-        $("#editButton").val("Save");
+    $("#aboutTextarea").show();
+    $("#aboutSpan").hide();
 
-        $("#contactInput").val(contactSpan);
-        $("#contactInput").show();
-        $("#contactSpan").hide();
-        $("#contactIcon").hide();
+    $("#ageSpan").hide();
+    $("#ageInput").show();
 
-        $("#aboutTextarea").val(aboutSpan);
-        $("#aboutTextarea").show();
-        $("#aboutSpan").hide();
-
-        $("#interestTextarea").val(interestSpan);
-        $("#interestTextarea").show();
-        $("#interestSpan").hide();
-    }
-
-    else if($("#editButton").val("Save")) {
-        $("#editButton").val("Edit");
-
-        var contactValue = $("#contactInput").val().trim();
-        $("#contactSpan").text(contactValue);
-        $("#contactInput").hide();
-        $("#contactSpan").show();
-        $("#contactIcon").show();
-
-        var aboutSpan = $("#aboutTextarea").val().trim();
-        $("#aboutSpan").text(aboutSpan);
-        $("#aboutTextarea").hide();
-        $("#aboutSpan").show();
-
-        var interestSpan = $("#interestTextarea").val().trim();
-        $("#interestSpan").text(interestSpan);
-        $("#interestTextarea").hide();
-        $("#interestSpan").show();
-
-
-    }
+    $("#addrSpan").hide();
+    $("#addrInput").show();
 }

@@ -255,8 +255,9 @@ class SearchStudentRecord(forms.Form):
     rollno = forms.IntegerField(label="rollno", required=False)
     programme = forms.ChoiceField(choices = Con.PROGRAMME, required=False,
                                   label="programme", widget=forms.Select(attrs={'style': "height:45px"}))
-    department = forms.ChoiceField(choices = Constants.DEP, required=False,
-                                  label="department", widget=forms.Select(attrs={'style': "height:45px"}))
+
+    department = forms.MultipleChoiceField(choices = Constants.DEP, required=False, label="department",
+                                    widget=forms.CheckboxSelectMultiple)
     cpi = forms.DecimalField(label="cpi", required=False)
     skill = forms.ModelMultipleChoiceField(required=False, widget=forms.SelectMultiple(),
                                            queryset=Skill.objects.all(), label="skill")
@@ -273,6 +274,13 @@ class SendInvite(forms.Form):
             company - name of company
     """
     company = forms.ModelChoiceField(required=True, queryset=NotifyStudent.objects.all(), label="company")
+    rollno = forms.IntegerField(label="rollno", required=False)
+    programme = forms.ChoiceField(choices = Con.PROGRAMME, required=False,
+                                  label="programme", widget=forms.Select(attrs={'style': "height:45px"}))
+    department = forms.MultipleChoiceField(choices = Constants.DEP, required=False, label="department",
+                                    widget=forms.CheckboxSelectMultiple)
+    cpi = forms.DecimalField(label="cpi", required=False)
+
 
 
 class AddSchedule(forms.Form):
@@ -303,9 +311,9 @@ class AddSchedule(forms.Form):
     description = forms.CharField(widget=forms.Textarea(attrs={'max_length': 1000,
                                                           'class': 'form-control'}),
                                   label="description", required=False)
-    attached_file = forms.FileField()
+    attached_file = forms.FileField(required=False)
 
-    placement_date = forms.DateField(label='placement_date', widget=forms.widgets.DateInput())
+    placement_date = forms.DateField(label='placement_date', widget=forms.DateInput(attrs={'class':'datepicker'}))
 
 
 class SearchPlacementRecord(forms.Form):
