@@ -15,37 +15,39 @@
                 <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
 
                     <div class="field">
-                        <label>Club</label>
-                        <select class="ui search fluid dropdown" name="club" required>
-                            <option value="">Select</option>
-                            {% for i in Club_name %}
-                                {% if request.user.username in i.co_ordinator|stringformat:"s" or request.user.username in i.co_coordinator|stringformat:"s" %}
-                                    <option value="{{ i.club_name }}">{{ i.club_name }} </option>
-                                {% endif %}
-                            {% endfor %}
-                        </select>
+                        <label>Club - </label>
                     </div>
-                
-                    <div class="three fields">
-                        <div class="field">
-                            <label>Venue</label>
-                            <input placeholder="Venue" name="venue" required>
+                    <div class="field">
+                        <label>Venue</label>
+                        <input placeholder="Venue" name="venue" required>
+                    </div>
+                    <div class="Two fields">
+                      <div class="field">
+                        <label>Date</label>
+                        <div class="ui input left icon">
+                            <i class="calendar icon"></i>
+                            <input type="date" data-date-format="YYYY-MM-DD" placeholder="From" id = "session_dates" name="date" required>
                         </div>
+                      </div>
+
+                   </div>
+
+                    <div class="Two fields">
+                      <div class="field">
+                          <label>Start Time</label>
+                          <input type="time" class="ui large input" name="start_time" required>
+                      </div>
 
                         <div class="field">
-                            <label>Date</label>
-                            <div class="ui input left icon">
-                                <i class="calendar icon"></i>
-                                <input type="date" data-date-format="YYYY-MM-DD" placeholder="From" name="date" required> 
-                            </div>
-                        </div>
-
-                        <div class="field">
-                            <label>Time</label>
-                            <input type="time" class="ui large input" name="time" required>
+                            <label>End Time</label>
+                            <input type="time" class="ui large input" name="end_time" required>
                         </div>
                     </div>
-
+                    <div class="field">
+                        <label>Poster (if any)</label>
+                        <input class="ui input" id="fileUpload1" onchange="return ValidateExtension1();" type="file" name="session_poster" required></input>
+                        <span id="lblError1" style="color: red;"></span>
+                    </div>
                     <div class="field">
                         <label>Details & Description</label>
                         <textarea rows="2" name="d_d" required></textarea>

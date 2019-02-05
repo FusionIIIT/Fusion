@@ -36,7 +36,7 @@ def retrun_content(roll, name, desig):
 	else :
 		b = []
 	# #    print roll, name.lower()
-
+	print(desig)
 	content = {
 		'Students' : students,
 		'Club_name' : club_name,
@@ -49,6 +49,7 @@ def retrun_content(roll, name, desig):
 		'Curr_club' : b,
 		'Curr_desig' : desig
 	}
+
 	return content
 
 @login_required
@@ -300,15 +301,22 @@ def change_head(request):
 @login_required
 def new_session(request):
 	if request.method == "POST":
-		club = request.POST.get("club")
-		date = request.POST.get("date")
-		time = request.POST.get("time")
+		club_name = ""
 		venue = request.POST.get("venue")
+		session_poster = request.FILES.get("session_poster")
+		date = request.POST.get("date")
+		start_time = request.POST.get("start_time")
+		end_time = request.POST.get("end_time")
 		desc = request.POST.get("d_d")
+		print(request.user);
+		for i in Club_info.objects.all():
+			co=i.co_ordinator.split(" ")
+			co_co=i.co_coordinator.split(" ")
+			if  request.user in co or request.user in co_co:
+				club_name = Club_info.club_name
+		print(club_name);
 
-		club_name = get_object_or_404(Club_info, club_name = club)
-
-		session = Session_info(club = club_name, venue = venue, date = date+" "+time, details = desc)
+		session = Session_info(club = club_name, venue = venue, date = date, start_time =start_time , end_time = end_time ,session_poster = session_poster , details = desc)
 		session.save()
 		messages.success(request,"Successfully created the session !!!")
 
