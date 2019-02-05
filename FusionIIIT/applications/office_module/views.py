@@ -1,5 +1,5 @@
 import datetime
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
@@ -289,7 +289,7 @@ def project_register(request):
     request_obj = Project_Registration(PI_id=extrainfo, project_title=project_title,
                                sponsored_agency=sponsored_agency, CO_PI=CO_PI, agreement=agreement,
                                amount_sanctioned=amount_sanctioned, project_type=project_type,
-                               remarks=remarks,duration=duration,fund_recieved_date=fund_recieved_date,start_date=start_date,expected_finish_date=expected_finish_date)
+                               remarks=remarks,duration=duration,fund_recieved_date=fund_recieved_date,start_date=start_date)
     request_obj.save()
     context={}
     return render(request,"eisModulenew/profile.html",context)
@@ -302,24 +302,52 @@ def project_registration_permission(request):
         id_list=request.POST.getlist('id[]')
         for id in id_list:
             obj=Project_Registration.objects.get(pk=id)
-            #if obj.DRSPC_response == 'Pending':
-            obj.DRSPC_response='Approve'
-            obj.save()
-    elif 'forward' in request.POST:
+            if "Pending" in obj.DRSPC_response or "Disapprove" in obj.DRSPC_response:
+
+
+                #approved project should be registered in project displayed to dean rspc
+                pf_no=obj.PI_id.id
+                pi = obj.PI_id.user.first_name + " " + obj.PI_id.user.last_name
+                co_pi = obj.CO_PI
+                title = obj.project_title
+                funding_agency = obj.sponsored_agency
+                start_date = obj.start_date
+                days = int(obj.duration)*7
+                finish_date = start_date + timedelta(days=days)
+                financial_outlay = obj.amount_sanctioned
+                ptype = obj.project_type
+                print(ptype)
+                date_entry = obj.applied_date
+                status="Ongoing"
+                if ptype == "sponsoered research":
+                    emp_projects = emp_research_projects(pi=pi, co_pi=co_pi, title=title, funding_agency=funding_agency,
+                                                         start_date=start_date, finish_date=finish_date, date_entry=date_entry,
+                                                         financial_outlay=financial_outlay, status=status, pf_no=pf_no, ptype=ptype)
+                    emp_projects.save()
+                elif ptype == "consultancy":
+                    emp_projects = emp_consultancy_projects(consultants=pi, title=title, client=funding_agency,
+                                                            start_date=start_date, end_date=finish_date,
+                                                            duration=obj.duration + " " + "weeks", financial_outlay=financial_outlay,
+                                                            pf_no=pf_no, date_entry=date_entry)
+                    emp_projects.save()
+                obj.DRSPC_response = "Approve"
+                obj.save()
+
+    elif "forward" in request.POST:
         id_list = request.POST.getlist('id[]')
         for id in id_list:
             obj=Project_Registration.objects.get(pk=id)
-            # if obj.DRSPC_response == 'Pending':
-            obj.DRSPC_response='Forward'
-            obj.save()
-    elif 'reject' in request.POST:
+            if obj.DRSPC_response == 'Pending':
+                obj.DRSPC_response="Forward"
+                obj.save()
+    elif "reject" in request.POST:
         id_list = request.POST.getlist('id[]')
         for id in id_list:
             obj=Project_Registration.objects.get(pk=id)
-            print(obj.DRSPC_response)
-            # if obj.DRSPC_response == 'Pending':
-            obj.DRSPC_response='Disapprove'
-            obj.save()
+            #print(obj.DRSPC_response)
+            if obj.DRSPC_response == 'Pending':
+                obj.DRSPC_response="Disapprove"
+                obj.save()
     return HttpResponseRedirect('/office/officeOfDeanRSPC/')
 
 
