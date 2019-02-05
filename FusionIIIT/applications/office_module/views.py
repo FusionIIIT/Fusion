@@ -285,7 +285,7 @@ def project_register(request):
     #fund_recieved_date=datetime.strptime(request.POST.get('fund_recieved_date'), "%Y-%m-%d")
     project_operated = request.POST.get('project_operated')
     fund_recieved_date = request.POST.get('fund_recieved_date')
-
+    file = request.POST.get('load', False)
     request_obj = Project_Registration(PI_id=extrainfo, project_title=project_title,
                                sponsored_agency=sponsored_agency, CO_PI=CO_PI, agreement=agreement,
                                amount_sanctioned=amount_sanctioned, project_type=project_type,

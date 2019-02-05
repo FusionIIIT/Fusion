@@ -1,5 +1,5 @@
  {% block tab1content1 %}
-<form action="{%url 'office:p_register' %}" method ="POST">
+<form action="{%url 'office:p_register' %}" method ="POST" enctype="multipart/form-data">
     {% comment %}The add a new skill Accordian starts here!{% endcomment %}
     <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
          {% csrf_token %}
@@ -75,7 +75,7 @@
 
         <div class="field">
             <label>Attachments (if any)</label>
-            <input class="ui input" type="file"></input>
+            <input class="ui input" type="file" name='load'>
         </div>
 
         <div class="field">
