@@ -105,7 +105,7 @@
         <div class="three fields">
             <div class="six wide field">
                 <label>Project Duration</label>
-                <input value="{{obj.duration}}" class="ui large input"  name="duration" readonly>
+                <input value="{{obj.duration}} weeks" class="ui large input"  name="duration" readonly>
             </div>
 
             <div class="six wide field">
@@ -152,7 +152,7 @@
 
         <div class="field">
             <label>Details and Description</label>
-            <textarea rows="2"  value="{{obj.description}}" readonly></textarea>
+            <textarea rows="4" readonly>{{obj.description}}</textarea>
         </div>
     </div>
 </form>
