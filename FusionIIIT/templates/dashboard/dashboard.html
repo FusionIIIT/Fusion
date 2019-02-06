@@ -59,36 +59,35 @@
         {% comment %}
             The central-rail segment starts here!
         {% endcomment %}
-        {% comment %}
-            The central-rail segment starts here!
-        {% endcomment %}
+
         <div class="eight wide column">
+            <div class="ui top attached tabular large menu">
+                <a class="active item" data-tab="first">Notifications</a>
+                <a class="item" data-tab="second">News</a>
+            </div>
+            <div class="ui bottom attached active tab segment" data-tab="first">
+                <div id="textSegmentDiv">
 
-            <div class="ui divider"></div>
-
-            <div class="row">
-                <div class="ui row">
-                    <div id="textSegmentDiv">
-                        {% comment %}
-                        <div class="ui active large text loader"
+                    {% comment %}
+                    TODO: Loader required?
+                    <div class="ui active large text loader"
                              id="loader">
-                            Loading ...
-                        </div>
-                        {% endcomment %}
+                        Loading ...
+                    </div>
+                    {% endcomment %}
 
-                        <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
-                            {% block alerts %}
-                                {% include 'dashboard/alerts.html' %}
-                            {% endblock %}
-                        </div>
-
+                    <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
+                        {% block alerts %}
+                            {% include 'dashboard/alerts.html' %}
+                        {% endblock %}
                     </div>
                 </div>
-            </div> 
-
+                
+            </div>
+            <div class="ui bottom attached tab segment" data-tab="second">
+                Work in Progress, coming soon!
+            </div>
         </div>
-        {% comment %}The central-rail segment ends here!{% endcomment %}
-
 
         {% comment %}The central-rail segment ends here!{% endcomment %}
 
