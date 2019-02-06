@@ -1,6 +1,25 @@
+
 {% load static %}
 
 {% block profile %}
+
+    <div hidden id="editModal" class="ui modal" ">
+        <div class="header">
+            Edit Profile
+        </div>
+        <div  class="content" >
+            <p>Are you sure you want to edit your profile</p>
+        </div>
+        <div class="actions">
+            <div class="ui negative button">
+                No
+            </div>
+            <div id ="confirmEdit" class="ui positive right labeled icon button">
+                Yes
+                <i class="checkmark icon"></i>
+            </div>
+        </div>
+    </div>
     <!--About Me card starts here!-->
     <div class="ui fluid card">
         <div class="content">
@@ -23,9 +42,14 @@
                 </form>
                   <form method="POST" action="/profile/" class="ui form" role="form">
                     {% csrf_token %}
-                  <input type="button" value="Edit" class="ui red mini button right floated" id="editButton" onclick='javascript:editStudent()'>
+                  <input type="button" value="Edit" class="ui red mini button right floated" id="editButton" onclick='javascript:showModal()'>
+<!--$('.ui.modal')
+  .modal() onclick='javascript:editStudent()
+; -->
                   <input type="submit" value="Save" class="ui red mini button right floated" name="profilesubmit" id="saveButton" style="display: none">
             </div>
+
+
 
             <div class="ui divider"></div>
 
