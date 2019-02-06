@@ -251,11 +251,20 @@
         {% comment %}The central-rail segment ends here!{% endcomment %}
 
         {% comment %}The right-rail segment starts here!{% endcomment %}
-        <div class="three wide column">
-            <div class="ui tab segment" data-tab="dateDetails">
-                {% block dateDetails %}
-                    {% include 'gymkhanaModule/dateDetails.html' %}
-                {% endblock %}
+        <div class="three wide column hidden content" id="dateDetails">
+            <div class="ui items">
+              <div class="item">
+                <div class="content">
+                  <div class="header">Programming Club</div>
+                  <div class="meta">
+                    <span class="price">something</span>
+                    <span class="stay">this is just a test</span>
+                  </div>
+                  <div class="description">
+                    <p>This is a testing description</p>
+                  </div>
+                </div>
+              </div>
             </div>
             <div class="row">
                 {% comment %}
@@ -283,7 +292,27 @@
                 type: "post",
                 data: {'date':date},
                 success: function(response){
-                    alert(response);
+                    // console.log(response)
+                    response = JSON.parse(response);
+                    $("#dateDetails").html('');
+                    for(var key in response){
+                        $("#dateDetails").append( 
+                        '<div class="ui items">\
+                            <div class="item">\
+                                <div class="content">\
+                                <div class="club">'+response[key].fields.club+'</div>\
+                                  <div class="meta">\
+                                    <span class="date">'+response[key].fields.date+'</span>\
+                                    <span class="venue">'+response[key].fields.venue+'</span>\
+                                  </div>\
+                                  <div class="details">\
+                                    <p>'+response[key].fields.details+'</p>\
+                                  </div>\
+                                </div>\
+                            </div>\
+                        </div>') ;
+                        console.log(key, response[key].fields.club);
+                    }
                 }
             })
         }
