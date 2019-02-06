@@ -7,6 +7,8 @@ from django.utils.dateparse import parse_date
 
 from applications.academic_information.models import Student
 from applications.globals.models import *
+from datetime import datetime
+from django.core import serializers
 
 from .models import *
 
@@ -406,6 +408,12 @@ def cancel(request):
 def date_sessions(request):
 	if(request.is_ajax()):
 		value = request.POST.get('date')
-		# print(value)
-		
-		return HttpResponse(value)
+		get_sessions = Session_info.objects.all()
+		dates = []
+		for i in get_sessions:
+			dat = i.date.strftime('%Y-%m-%d')
+			if (dat == value):
+				dates.append(i)
+		dates = serializers.serialize('json', dates)
+		print(dates)
+		return HttpResponse(dates)
