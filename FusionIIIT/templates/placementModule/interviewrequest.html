@@ -25,11 +25,11 @@
             </div>
             <div class="extra content">
                 <div class="ui two buttons">
-                  <form method="post" class="ui form" role="form">
+                  <form method="post" action="{% url 'placement:placement' %}" class="ui form" role="form">
                     {% csrf_token %}
                     <button name="studentapprovesubmit" value="{{ ps.pk }}" class="ui basic green button" type="submit">Approve</button>
                   </form>
-                  <form method="post" class="ui form" role="form">
+                  <form method="post" action="{% url 'placement:placement' %}" class="ui form" role="form">
                     {% csrf_token %}
                     <button name="studentdeclinesubmit" value="{{ ps.pk }}" class="ui basic red button" type="submit">Decline</button>
                   </form>

@@ -25,6 +25,10 @@ And additional requirements are in **requirements.txt** and will be installed th
     - on Ubuntu: `$ source env/bin/activate`  
     - on Windows: `$ ./env/scripts/activate`  
 * Install the requirements: `$ pip install -r requirements.txt`
+* Replace the two files in 
+	`env/lib/python3.6/site-packages/notifications`
+  with the files in 
+	`Fusion/notif_package_mod`
 * Change directory to FusionIIIT `$ cd FusionIIIT`
 * Make migrations `$ python manage.py makemigrations`  
 * Migrate the changes to the database `$ python manage.py migrate`  
