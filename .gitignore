@@ -2,7 +2,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
-fusion.db
+#fusion.db
 
 # C extensions
 *.so
