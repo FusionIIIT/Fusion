@@ -111,9 +111,9 @@ class Session_info(models.Model):
 	id = models.AutoField(max_length=20,primary_key=True)
 	club = models.ForeignKey(Club_info, max_length=50,null=True)
 	venue = models.CharField(max_length=50,null=False,choices=Constants.venue)
-	start_time = models.DateTimeField(default=None ,auto_now=False,null = False)
+	date = models.DateTimeField(default=None ,auto_now=False,null = False)
 	end_time = models.TimeField(default=None ,auto_now=False ,null = False)
-	session_poster = models.FileField(upload_to='uploads/',blank = True )
+	session_poster = models.FileField(upload_to='uploads/',blank = True)
 	details = models.TextField(max_length=256, null=True)
 
 	def __str__(self):
