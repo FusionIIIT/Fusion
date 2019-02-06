@@ -671,6 +671,7 @@ def StudentRecords(request):
                 total_query = 0
 
             if total_query > 30:
+                no_pagination = 1
                 paginator = Paginator(students, 30)
                 page = request.GET.get('page', 1)
                 students = paginator.page(page)
@@ -842,6 +843,14 @@ def StudentRecords(request):
 def ManageRecords(request):
     user = request.user
     mnrecord_tab = 1
+    pagination_placement = 0
+    pagination_pbi = 0
+    pagination_higher = 0
+    is_disabled = 0
+    paginator = ''
+    page_range = ''
+    officer_statistics_past_pbi_search = 0
+    officer_statistics_past_higher_search = 0
 
     profile = get_object_or_404(ExtraInfo, Q(user=user))
     studentrecord = StudentRecord.objects.all()
@@ -936,6 +945,7 @@ def ManageRecords(request):
             else:
                 rollno = ''
             if form.cleaned_data['year']:
+                print('yeayryeayryeayr')
                 year = form.cleaned_data['year']
                 s = Student.objects.filter((Q(id__in=ExtraInfo.objects.filter
                     (Q(user__in=User.objects.filter
@@ -956,10 +966,138 @@ def ManageRecords(request):
 
                 p = PlacementRecord.objects.filter(Q(placement_type="PLACEMENT", name__icontains=cname, ctc__gte=ctc))
 
-                placementrecord = StudentRecord.objects.filter(Q(record_id__in=PlacementRecord.objects.filter(Q(placement_type="PLACEMENT", name__icontains=cname, ctc__gte=ctc)), unique_id__in=Student.objects.filter((Q(id__in=ExtraInfo.objects.filter(Q(user__in=User.objects.filter(Q(first_name__icontains=stuname)),id__icontains=rollno)))))))
-    else:
-        placementrecord = ''
+                placementrecord = StudentRecord.objects.filter(
+                    Q(record_id__in=PlacementRecord.objects.filter(
+                    Q(placement_type="PLACEMENT", name__icontains=cname, ctc__gte=ctc)),
+                    unique_id__in=Student.objects.filter(
+                    (Q(id__in=ExtraInfo.objects.filter(
+                    Q(user__in=User.objects.filter(Q(first_name__icontains=stuname)),
+                    id__icontains=rollno)))))))
 
+            request.session['stuname'] = stuname
+            request.session['ctc'] = ctc
+            request.session['cname'] = cname
+            request.session['rollno'] = rollno
+            request.session['year'] = form.cleaned_data['year']
+
+            total_query = placementrecord.count()
+
+            if total_query > 30:
+                pagination_placement = 1
+                paginator = Paginator(placementrecord, 30)
+                page = request.GET.get('page', 1)
+                placementrecord = paginator.page(page)
+                print(paginator.num_pages)
+                print(page)
+                page = int(page)
+                total_page = int(page + 3)
+                print(placementrecord.has_previous)
+
+                if page<(paginator.num_pages-3):
+                    if total_query > 30 and total_query <=60:
+                        page_range = range(1, 3)
+                    else:
+                        page_range = range(1, total_page+1)
+
+                    if page >= 5:
+                        is_disabled = 1
+                        page_range = range(page-2, total_page)
+                else:
+                    if page >= 5:
+                        is_disabled = 1
+                        page_range = range(page-2, paginator.num_pages+1)
+                    else:
+                        page_range = range(1, paginator.num_pages+1)
+            else:
+                pagination_placement = 0
+    else:
+        if request.GET.get('page') != None:
+            print('--------------------page value none')
+            try:
+                if request.session['year']:
+                    print('lololololol')
+                    s = Student.objects.filter(
+                        (Q(id__in=ExtraInfo.objects.filter(
+                        Q(user__in=User.objects.filter(
+                        Q(first_name__icontains=request.session['stuname'])),
+                       id__icontains=request.session['rollno']))
+                    )))
+
+                    p = PlacementRecord.objects.filter(
+                        Q(placement_type="PLACEMENT",
+                        name__icontains=request.session['cname'],
+                        ctc__gte=request.session['ctc'],
+                        year=request.session['year']))
+
+                    placementrecord = StudentRecord.objects.filter(
+                        Q(record_id__in=PlacementRecord.objects.filter(
+                            Q(placement_type="PLACEMENT",
+                            name__icontains=request.session['cname'],
+                            ctc__gte=request.session['ctc'],
+                            year=request.session['year'])),
+                            unique_id__in=Student.objects.filter(
+                            (Q(id__in=ExtraInfo.objects.filter(
+                            Q(user__in=User.objects.filter(
+                            Q(first_name__icontains=request.session['stuname'])),
+                            id__icontains=request.session['rollno'])))))))
+                else:
+                    s = Student.objects.filter((Q(id__in=ExtraInfo.objects.filter
+                    (Q(user__in=User.objects.filter
+                       (Q(first_name__icontains=request.session['stuname'])),
+                       id__icontains=request.session['rollno']))
+                    )))
+
+                    p = PlacementRecord.objects.filter(
+                        Q(placement_type="PLACEMENT",
+                            name__icontains=request.session['cname'],
+                            ctc__gte=request.session['ctc']))
+
+                    placementrecord = StudentRecord.objects.filter(
+                        Q(record_id__in=PlacementRecord.objects.filter(
+                        Q(placement_type="PLACEMENT",
+                            name__icontains=request.session['cname'],
+                            ctc__gte=request.session['ctc'])),
+                        unique_id__in=Student.objects.filter(
+                        (Q(id__in=ExtraInfo.objects.filter(
+                        Q(user__in=User.objects.filter(
+                        Q(first_name__icontains=request.session['stuname'])),
+                        id__icontains=request.session['rollno'])))))))          
+            except:
+                print('except')
+                placementrecord = ''
+
+            if placementrecord != '':
+                total_query = placementrecord.count()
+            else:
+                total_query = 0
+
+            if total_query > 30:
+                pagination_placement = 1
+                paginator = Paginator(placementrecord, 30)
+                page = request.GET.get('page', 1)
+                placementrecord = paginator.page(page)
+                page = int(page)
+                total_page = int(page + 3)
+
+                if page<(paginator.num_pages-3):
+                    if total_query > 30 and total_query <=60:
+                        page_range = range(1, 3)
+                    else:
+                        page_range = range(1, total_page+1)
+
+                    if page >= 5:
+                        is_disabled = 1
+                        page_range = range(page-2, total_page)
+                else:
+                    if page >= 5:
+                        is_disabled = 1
+                        page_range = range(page-2, paginator.num_pages+1)
+                    else:
+                        page_range = range(1, paginator.num_pages+1)
+            else:
+                pagination_placement = 0
+        else:
+            placementrecord = ''
 
     if 'studentpbirecordsubmit' in request.POST:
         officer_statistics_past_pbi_search = 1
@@ -1004,8 +1142,101 @@ def ManageRecords(request):
                                                               (Q(first_name__icontains=stuname)),
                                                               id__icontains=rollno))
                                                            )))))
+            request.session['stuname'] = stuname
+            request.session['ctc'] = ctc
+            request.session['cname'] = cname
+            request.session['rollno'] = rollno
+            request.session['year'] = form.cleaned_data['year']
+
+            total_query = pbirecord.count()
+
+            if total_query > 30:
+                pagination_pbi = 1
+                paginator = Paginator(pbirecord, 30)
+                page = request.GET.get('page', 1)
+                pbirecord = paginator.page(page)
+                page = int(page)
+                total_page = int(page + 3)
+
+                if page<(paginator.num_pages-3):
+                    if total_query > 30 and total_query <=60:
+                        page_range = range(1, 3)
+                    else:
+                        page_range = range(1, total_page+1)
+
+                    if page >= 5:
+                        is_disabled = 1
+                        page_range = range(page-2, total_page)
+                else:
+                    if page >= 5:
+                        is_disabled = 1
+                        page_range = range(page-2, paginator.num_pages+1)
+                    else:
+                        page_range = range(1, paginator.num_pages+1)
+            else:
+                pagination_pbi = 0
     else:
-        pbirecord = ''
+        if request.GET.get('page') != None:
+            print('--------------------page value none')
+            try:
+                if request.session['year']:
+                    pbirecord = StudentRecord.objects.filter(
+                        Q(record_id__in=PlacementRecord.objects.filter(
+                        Q(placement_type="PBI",
+                        name__icontains=request.session['cname'],
+                        ctc__gte=ctc, year=request.session['year'])),
+                        unique_id__in=Student.objects.filter((
+                        Q(id__in=ExtraInfo.objects.filter(
+                        Q(user__in=User.objects.filter(
+                        Q(first_name__icontains=request.session['stuname'])),
+                        id__icontains=request.session['rollno'])))))))
+                else:
+                    pbirecord = StudentRecord.objects.filter(
+                        Q(record_id__in=PlacementRecord.objects.filter(Q(placement_type="PBI",
+                                                              name__icontains=request.session['cname'],
+                                                              ctc__gte=request.session['ctc'])),
+                                                           unique_id__in=Student.objects.filter(
+                                                            (Q(id__in=ExtraInfo.objects.filter(
+                                                            Q(user__in=User.objects.filter(
+                        Q(first_name__icontains=request.session['stuname'])),
+                        id__icontains=request.session['rollno'])))))))         
+            except:
+                print('except')
+                pbirecord = ''
+
+            if pbirecord != '':
+                total_query = pbirecord.count()
+            else:
+                total_query = 0
+
+            if total_query > 30:
+                pagination_pbi = 1
+                paginator = Paginator(pbirecord, 30)
+                page = request.GET.get('page', 1)
+                pbirecord = paginator.page(page)
+                page = int(page)
+                total_page = int(page + 3)
+
+                if page<(paginator.num_pages-3):
+                    if total_query > 30 and total_query <=60:
+                        page_range = range(1, 3)
+                    else:
+                        page_range = range(1, total_page+1)
+
+                    if page >= 5:
+                        is_disabled = 1
+                        page_range = range(page-2, total_page)
+                else:
+                    if page >= 5:
+                        is_disabled = 1
+                        page_range = range(page-2, paginator.num_pages+1)
+                    else:
+                        page_range = range(1, paginator.num_pages+1)
+            else:
+                pagination_pbi = 0
+        else:
+            pbirecord = ''
+    
     if 'studenthigherrecordsubmit' in request.POST:
         officer_statistics_past_higher_search = 1
         form = SearchHigherRecord(request.POST)
@@ -1044,7 +1275,8 @@ def ManageRecords(request):
                                                               id__icontains=rollno))
                                                            )))))
             else:
-                higherrecord = StudentRecord.objects.filter(Q(record_id__in=PlacementRecord.objects.filter
+                higherrecord = StudentRecord.objects.filter(
+                    Q(record_id__in=PlacementRecord.objects.filter
                                                        (Q(placement_type="HIGHER STUDIES",
                                                           test_type__icontains=test_type,
                                                           name__icontains=uname,
@@ -1055,8 +1287,107 @@ def ManageRecords(request):
                                                               (Q(first_name__icontains=stuname)),
                                                               id__icontains=rollno))
                                                            )))))
+            request.session['stuname'] = stuname
+            request.session['test_score'] = test_score
+            request.session['uname'] = uname
+            request.session['test_type'] = test_type
+            request.session['rollno'] = rollno
+            request.session['year'] = form.cleaned_data['year']
+
+            total_query = higherrecord.count()
+
+            if total_query > 30:
+                pagination_higher = 1
+                paginator = Paginator(higherrecord, 30)
+                page = request.GET.get('page', 1)
+                higherrecord = paginator.page(page)
+                page = int(page)
+                total_page = int(page+3)
+
+                if page < (paginator.num_pages-3):
+                    if total_query > 30 and total_query <= 60:
+                        page_range = range(1, 3)
+                    else:
+                        page_range = range(1, total_page+1)
+
+                    if page >= 5:
+                        is_disabled = 1
+                        page_range = range(page-2, total_page)
+                else:
+                    if page >= 5:
+                        is_disabled = 1
+                        page_range = range(page-2, paginator.num_pages+1)
+                    else:
+                        page_range = range(page-2, paginator.num_pages+1)
+            else:
+                pagination_higher = 0
     else:
-        higherrecord = ''
+        if request.GET.get('page') != None:
+            print('--------------------page value none')
+            try:
+                if request.session['year']: 
+                    higherrecord = StudentRecord.objects.filter(
+                        Q(record_id__in=PlacementRecord.objects.filter(
+                            Q(placement_type="HIGHER STUDIES",
+                                                          test_type__icontains=request.session['test_type'],
+                                                          name__icontains=request.session['uname'],
+                                                          year=request.session['year'],
+                                                          test_score__gte=request.session['test_score'])),
+                                                       unique_id__in=Student.objects.filter(
+                                                        (Q(id__in=ExtraInfo.objects.filter(
+                                                            Q(user__in=User.objects.filter(
+                                                            Q(first_name__icontains=request.session['stuname'])),
+                                                            id__icontains=request.session['rollno']))
+                                                           )))))
+                else:
+                    higherrecord = StudentRecord.objects.filter(
+                        Q(record_id__in=PlacementRecord.objects.filter
+                                                           (Q(placement_type="HIGHER STUDIES",
+                                                              test_type__icontains=request.session['test_type'],
+                                                              name__icontains=request.session['uname'],
+                                                              test_score__gte=request.session['test_score'])),
+                                                           unique_id__in=Student.objects.filter
+                                                           ((Q(id__in=ExtraInfo.objects.filter
+                                                               (Q(user__in=User.objects.filter
+                                                                  (Q(first_name__icontains=request.session['stuname'])),
+                                                                  id__icontains=request.session['rollno']))
+                                                               )))))         
+            except:
+                print('except')
+                higherrecord = ''
+
+            if higherrecord != '':
+                total_query = higherrecord.count()
+            else:
+                total_query = 0
+
+            if total_query > 30:
+                no_pagination = 1
+                paginator = Paginator(higherrecord, 30)
+                page = request.GET.get('page', 1)
+                higherrecord = paginator.page(page)
+                page = int(page)
+                total_page = int(page + 3)
+
+                if page<(paginator.num_pages-3):
+                    if total_query > 30 and total_query <=60:
+                        page_range = range(1, 3)
+                    else:
+                        page_range = range(1, total_page+1)
+
+                    if page >= 5:
+                        is_disabled = 1
+                        page_range = range(page-2, total_page)
+                else:
+                    if page >= 5:
+                        is_disabled = 1
+                        page_range = range(page-2, paginator.num_pages+1)
+                    else:
+                        page_range = range(1, paginator.num_pages+1)
+            else:
+                no_pagination = 0
+        else:
+            higherrecord = ''
 
 
     context = {
@@ -1072,6 +1403,14 @@ def ManageRecords(request):
         'higherrecord'      :     higherrecord,
         'years'             :            years,
         'records'           :          records,
+        'page_range': page_range,
+        'paginator': paginator,
+        'pagination_placement': pagination_placement,
+        'pagination_pbi': pagination_pbi,
+        'pagination_higher': pagination_higher,
+        'is_disabled': is_disabled,
+        'officer_statistics_past_pbi_search': officer_statistics_past_pbi_search,
+        'officer_statistics_past_higher_search': officer_statistics_past_higher_search
     }
 
     return render(request, 'placementModule/managerecords.html', context)
@@ -1081,6 +1420,15 @@ def ManageRecords(request):
 def PlacementStatistics(request):
     user = request.user
     statistics_tab = 1
+
+    pagination_placement = 0
+    pagination_pbi = 0
+    pagination_higher = 0
+    is_disabled = 0
+    paginator = ''
+    page_range = ''
+    officer_statistics_past_pbi_search = 0
+    officer_statistics_past_higher_search = 0
 
     profile = get_object_or_404(ExtraInfo, Q(user=user))
     studentrecord = StudentRecord.objects.all()
@@ -1174,10 +1522,138 @@ def PlacementStatistics(request):
 
                 p = PlacementRecord.objects.filter(Q(placement_type="PLACEMENT", name__icontains=cname, ctc__gte=ctc))
 
-                placementrecord = StudentRecord.objects.filter(Q(record_id__in=PlacementRecord.objects.filter(Q(placement_type="PLACEMENT", name__icontains=cname, ctc__gte=ctc)), unique_id__in=Student.objects.filter((Q(id__in=ExtraInfo.objects.filter(Q(user__in=User.objects.filter(Q(first_name__icontains=stuname)),id__icontains=rollno)))))))
-    else:
-        placementrecord = ''
+                placementrecord = StudentRecord.objects.filter(
+                    Q(record_id__in=PlacementRecord.objects.filter(
+                    Q(placement_type="PLACEMENT", name__icontains=cname, ctc__gte=ctc)),
+                    unique_id__in=Student.objects.filter(
+                    (Q(id__in=ExtraInfo.objects.filter(
+                    Q(user__in=User.objects.filter(Q(first_name__icontains=stuname)),
+                    id__icontains=rollno)))))))
 
+            request.session['stuname'] = stuname
+            request.session['ctc'] = ctc
+            request.session['cname'] = cname
+            request.session['rollno'] = rollno
+            request.session['year'] = form.cleaned_data['year']
+
+            total_query = placementrecord.count()
+
+            if total_query > 30:
+                pagination_placement = 1
+                paginator = Paginator(placementrecord, 30)
+                page = request.GET.get('page', 1)
+                placementrecord = paginator.page(page)
+                print(paginator.num_pages)
+                print(page)
+                page = int(page)
+                total_page = int(page + 3)
+                print(placementrecord.has_previous)
+
+                if page<(paginator.num_pages-3):
+                    if total_query > 30 and total_query <=60:
+                        page_range = range(1, 3)
+                    else:
+                        page_range = range(1, total_page+1)
+
+                    if page >= 5:
+                        is_disabled = 1
+                        page_range = range(page-2, total_page)
+                else:
+                    if page >= 5:
+                        is_disabled = 1
+                        page_range = range(page-2, paginator.num_pages+1)
+                    else:
+                        page_range = range(1, paginator.num_pages+1)
+            else:
+                pagination_placement = 0
+    else:
+        if request.GET.get('page') != None:
+            print('--------------------page value none')
+            try:
+                if request.session['year']:
+                    print('lololololol')
+                    s = Student.objects.filter(
+                        (Q(id__in=ExtraInfo.objects.filter(
+                        Q(user__in=User.objects.filter(
+                        Q(first_name__icontains=request.session['stuname'])),
+                       id__icontains=request.session['rollno']))
+                    )))
+
+                    p = PlacementRecord.objects.filter(
+                        Q(placement_type="PLACEMENT",
+                        name__icontains=request.session['cname'],
+                        ctc__gte=request.session['ctc'],
+                        year=request.session['year']))
+
+                    placementrecord = StudentRecord.objects.filter(
+                        Q(record_id__in=PlacementRecord.objects.filter(
+                            Q(placement_type="PLACEMENT",
+                            name__icontains=request.session['cname'],
+                            ctc__gte=request.session['ctc'],
+                            year=request.session['year'])),
+                            unique_id__in=Student.objects.filter(
+                            (Q(id__in=ExtraInfo.objects.filter(
+                            Q(user__in=User.objects.filter(
+                            Q(first_name__icontains=request.session['stuname'])),
+                            id__icontains=request.session['rollno'])))))))
+                else:
+                    s = Student.objects.filter((Q(id__in=ExtraInfo.objects.filter
+                    (Q(user__in=User.objects.filter
+                       (Q(first_name__icontains=request.session['stuname'])),
+                       id__icontains=request.session['rollno']))
+                    )))
+
+                    p = PlacementRecord.objects.filter(
+                        Q(placement_type="PLACEMENT",
+                            name__icontains=request.session['cname'],
+                            ctc__gte=request.session['ctc']))
+
+                    placementrecord = StudentRecord.objects.filter(
+                        Q(record_id__in=PlacementRecord.objects.filter(
+                        Q(placement_type="PLACEMENT",
+                            name__icontains=request.session['cname'],
+                            ctc__gte=request.session['ctc'])),
+                        unique_id__in=Student.objects.filter(
+                        (Q(id__in=ExtraInfo.objects.filter(
+                        Q(user__in=User.objects.filter(
+                        Q(first_name__icontains=request.session['stuname'])),
+                        id__icontains=request.session['rollno'])))))))          
+            except:
+                print('except')
+                placementrecord = ''
+
+            if placementrecord != '':
+                total_query = placementrecord.count()
+            else:
+                total_query = 0
+
+            if total_query > 30:
+                pagination_placement = 1
+                paginator = Paginator(placementrecord, 30)
+                page = request.GET.get('page', 1)
+                placementrecord = paginator.page(page)
+                page = int(page)
+                total_page = int(page + 3)
+
+                if page<(paginator.num_pages-3):
+                    if total_query > 30 and total_query <=60:
+                        page_range = range(1, 3)
+                    else:
+                        page_range = range(1, total_page+1)
+
+                    if page >= 5:
+                        is_disabled = 1
+                        page_range = range(page-2, total_page)
+                else:
+                    if page >= 5:
+                        is_disabled = 1
+                        page_range = range(page-2, paginator.num_pages+1)
+                    else:
+                        page_range = range(1, paginator.num_pages+1)
+            else:
+                pagination_placement = 0
+        else:
+            placementrecord = ''
 
     if 'studentpbirecordsubmit' in request.POST:
         officer_statistics_past_pbi_search = 1
@@ -1222,8 +1698,101 @@ def PlacementStatistics(request):
                                                               (Q(first_name__icontains=stuname)),
                                                               id__icontains=rollno))
                                                            )))))
+            request.session['stuname'] = stuname
+            request.session['ctc'] = ctc
+            request.session['cname'] = cname
+            request.session['rollno'] = rollno
+            request.session['year'] = form.cleaned_data['year']
+
+            total_query = pbirecord.count()
+
+            if total_query > 30:
+                pagination_pbi = 1
+                paginator = Paginator(pbirecord, 30)
+                page = request.GET.get('page', 1)
+                pbirecord = paginator.page(page)
+                page = int(page)
+                total_page = int(page + 3)
+
+                if page<(paginator.num_pages-3):
+                    if total_query > 30 and total_query <=60:
+                        page_range = range(1, 3)
+                    else:
+                        page_range = range(1, total_page+1)
+
+                    if page >= 5:
+                        is_disabled = 1
+                        page_range = range(page-2, total_page)
+                else:
+                    if page >= 5:
+                        is_disabled = 1
+                        page_range = range(page-2, paginator.num_pages+1)
+                    else:
+                        page_range = range(1, paginator.num_pages+1)
+            else:
+                pagination_pbi = 0
     else:
-        pbirecord = ''
+        if request.GET.get('page') != None:
+            print('--------------------page value none')
+            try:
+                if request.session['year']:
+                    pbirecord = StudentRecord.objects.filter(
+                        Q(record_id__in=PlacementRecord.objects.filter(
+                        Q(placement_type="PBI",
+                        name__icontains=request.session['cname'],
+                        ctc__gte=ctc, year=request.session['year'])),
+                        unique_id__in=Student.objects.filter((
+                        Q(id__in=ExtraInfo.objects.filter(
+                        Q(user__in=User.objects.filter(
+                        Q(first_name__icontains=request.session['stuname'])),
+                        id__icontains=request.session['rollno'])))))))
+                else:
+                    pbirecord = StudentRecord.objects.filter(
+                        Q(record_id__in=PlacementRecord.objects.filter(Q(placement_type="PBI",
+                                                              name__icontains=request.session['cname'],
+                                                              ctc__gte=request.session['ctc'])),
+                                                           unique_id__in=Student.objects.filter(
+                                                            (Q(id__in=ExtraInfo.objects.filter(
+                                                            Q(user__in=User.objects.filter(
+                        Q(first_name__icontains=request.session['stuname'])),
+                        id__icontains=request.session['rollno'])))))))         
+            except:
+                print('except')
+                pbirecord = ''
+
+            if pbirecord != '':
+                total_query = pbirecord.count()
+            else:
+                total_query = 0
+
+            if total_query > 30:
+                pagination_pbi = 1
+                paginator = Paginator(pbirecord, 30)
+                page = request.GET.get('page', 1)
+                pbirecord = paginator.page(page)
+                page = int(page)
+                total_page = int(page + 3)
+
+                if page<(paginator.num_pages-3):
+                    if total_query > 30 and total_query <=60:
+                        page_range = range(1, 3)
+                    else:
+                        page_range = range(1, total_page+1)
+
+                    if page >= 5:
+                        is_disabled = 1
+                        page_range = range(page-2, total_page)
+                else:
+                    if page >= 5:
+                        is_disabled = 1
+                        page_range = range(page-2, paginator.num_pages+1)
+                    else:
+                        page_range = range(1, paginator.num_pages+1)
+            else:
+                pagination_pbi = 0
+        else:
+            pbirecord = ''
+    
     if 'studenthigherrecordsubmit' in request.POST:
         officer_statistics_past_higher_search = 1
         form = SearchHigherRecord(request.POST)
@@ -1262,7 +1831,8 @@ def PlacementStatistics(request):
                                                               id__icontains=rollno))
                                                            )))))
             else:
-                higherrecord = StudentRecord.objects.filter(Q(record_id__in=PlacementRecord.objects.filter
+                higherrecord = StudentRecord.objects.filter(
+                    Q(record_id__in=PlacementRecord.objects.filter
                                                        (Q(placement_type="HIGHER STUDIES",
                                                           test_type__icontains=test_type,
                                                           name__icontains=uname,
@@ -1273,8 +1843,108 @@ def PlacementStatistics(request):
                                                               (Q(first_name__icontains=stuname)),
                                                               id__icontains=rollno))
                                                            )))))
+            request.session['stuname'] = stuname
+            request.session['test_score'] = test_score
+            request.session['uname'] = uname
+            request.session['test_type'] = test_type
+            request.session['rollno'] = rollno
+            request.session['year'] = form.cleaned_data['year']
+
+            total_query = higherrecord.count()
+
+            if total_query > 30:
+                pagination_higher = 1
+                paginator = Paginator(higherrecord, 30)
+                page = request.GET.get('page', 1)
+                higherrecord = paginator.page(page)
+                page = int(page)
+                total_page = int(page+3)
+
+                if page < (paginator.num_pages-3):
+                    if total_query > 30 and total_query <= 60:
+                        page_range = range(1, 3)
+                    else:
+                        page_range = range(1, total_page+1)
+
+                    if page >= 5:
+                        is_disabled = 1
+                        page_range = range(page-2, total_page)
+                else:
+                    if page >= 5:
+                        is_disabled = 1
+                        page_range = range(page-2, paginator.num_pages+1)
+                    else:
+                        page_range = range(page-2, paginator.num_pages+1)
+            else:
+                pagination_higher = 0
     else:
-        higherrecord = ''
+        if request.GET.get('page') != None:
+            print('--------------------page value none')
+            try:
+                if request.session['year']: 
+                    higherrecord = StudentRecord.objects.filter(
+                        Q(record_id__in=PlacementRecord.objects.filter(
+                            Q(placement_type="HIGHER STUDIES",
+                                                          test_type__icontains=request.session['test_type'],
+                                                          name__icontains=request.session['uname'],
+                                                          year=request.session['year'],
+                                                          test_score__gte=request.session['test_score'])),
+                                                       unique_id__in=Student.objects.filter(
+                                                        (Q(id__in=ExtraInfo.objects.filter(
+                                                            Q(user__in=User.objects.filter(
+                                                            Q(first_name__icontains=request.session['stuname'])),
+                                                            id__icontains=request.session['rollno']))
+                                                           )))))
+                else:
+                    higherrecord = StudentRecord.objects.filter(
+                        Q(record_id__in=PlacementRecord.objects.filter
+                                                           (Q(placement_type="HIGHER STUDIES",
+                                                              test_type__icontains=request.session['test_type'],
+                                                              name__icontains=request.session['uname'],
+                                                              test_score__gte=request.session['test_score'])),
+                                                           unique_id__in=Student.objects.filter
+                                                           ((Q(id__in=ExtraInfo.objects.filter
+                                                               (Q(user__in=User.objects.filter
+                                                                  (Q(first_name__icontains=request.session['stuname'])),
+                                                                  id__icontains=request.session['rollno']))
+                                                               )))))         
+            except:
+                print('except')
+                higherrecord = ''
+
+            if higherrecord != '':
+                total_query = higherrecord.count()
+            else:
+                total_query = 0
+
+            if total_query > 30:
+                no_pagination = 1
+                paginator = Paginator(higherrecord, 30)
+                page = request.GET.get('page', 1)
+                higherrecord = paginator.page(page)
+                page = int(page)
+                total_page = int(page + 3)
+
+                if page<(paginator.num_pages-3):
+                    if total_query > 30 and total_query <=60:
+                        page_range = range(1, 3)
+                    else:
+                        page_range = range(1, total_page+1)
+
+                    if page >= 5:
+                        is_disabled = 1
+                        page_range = range(page-2, total_page)
+                else:
+                    if page >= 5:
+                        is_disabled = 1
+                        page_range = range(page-2, paginator.num_pages+1)
+                    else:
+                        page_range = range(1, paginator.num_pages+1)
+            else:
+                no_pagination = 0
+        else:
+            higherrecord = ''
+
 
 
     context = {
@@ -1290,6 +1960,14 @@ def PlacementStatistics(request):
         'higherrecord'      :     higherrecord,
         'years'             :            years,
         'records'           :          records,
+        'page_range': page_range,
+        'paginator': paginator,
+        'pagination_placement': pagination_placement,
+        'pagination_pbi': pagination_pbi,
+        'pagination_higher': pagination_higher,
+        'is_disabled': is_disabled,
+        'officer_statistics_past_pbi_search': officer_statistics_past_pbi_search,
+        'officer_statistics_past_higher_search': officer_statistics_past_higher_search
     }
 
     return render(request, 'placementModule/placementstatistics.html', context)
