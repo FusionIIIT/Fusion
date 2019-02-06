@@ -401,3 +401,11 @@ def cancel(request):
 		messages.success(request,"Successfully deleted !!!")
 
 	return redirect ('/gymkhana/')
+
+@login_required
+def date_sessions(request):
+	if(request.is_ajax()):
+		value = request.POST.get('date')
+		# print(value)
+		
+		return HttpResponse(value)

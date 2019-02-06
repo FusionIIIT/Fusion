@@ -65,7 +65,7 @@
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
 
-                {% if "Junior Superintendent" not in Curr_desig and "Dean_s" not in Curr_desig %}
+                <!-- {% if "Junior Superintendent" not in Curr_desig and "Dean_s" not in Curr_desig %}
 
                     <a class="item" data-tab="first">
                         Apply
@@ -75,21 +75,21 @@
                         Submitted requests
                         <i class="right floated chevron right icon"></i>
                     </a>
-                {% endif %}
+                {% endif %} -->
 
                 <a class="item" data-tab="twelth">
                     View Club Details
                     <i class="right floated chevron right icon"></i>
                 </a>
 
-                {% if "co-ordinator" in Curr_desig and "co co-ordinator" in Curr_desig %}
+                {% if "co-ordinator" in Curr_desig or "co co-ordinator" in Curr_desig %}
                     <a class="item" data-tab="fifth">
                         New Session
                         <i class="right floated chevron right icon"></i>
                     </a>
                 {% endif %}
 
-                {% if "co-ordinator" in Curr_desig or request.user.username == "root" %}
+                <!-- {% if "co-ordinator" in Curr_desig or request.user.username == "root" %}
                     <a class="item" data-tab="sixth">
                         Member Requests
                         <i class="right floated chevron right icon"></i>
@@ -107,11 +107,11 @@
                         <i class="right floated chevron right icon"></i>
                     </a>
                 {% endif %}
-
-                <a class="item" data-tab="third">
+ -->
+                <!-- <a class="item" data-tab="third">
                     Member Records
                     <i class="right floated chevron right icon"></i>
-                </a>
+                </a> -->
 
                 <!-- {% with '"dean(S)"' as list %}
                 {% if request.user.holdsdesignation.designation.name in list %}
@@ -121,7 +121,7 @@
                 </a>
                 {% endif %}
                 {% endwith %} -->
-                {% if "Junior Superintendent" in Curr_desig or request.user.username == "root" %}
+                <!-- {% if "Junior Superintendent" in Curr_desig or request.user.username == "root" %}
 
                     <a class="item" data-tab="fourth">
                         Fest Budget
@@ -135,7 +135,7 @@
                         Submit Event report
                         <i class="right floated chevron right icon"></i>
                     </a>
-                {% endif %}
+                {% endif %} -->
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
 
@@ -252,6 +252,11 @@
 
         {% comment %}The right-rail segment starts here!{% endcomment %}
         <div class="three wide column">
+            <div class="ui tab segment" data-tab="dateDetails">
+                {% block dateDetails %}
+                    {% include 'gymkhanaModule/dateDetails.html' %}
+                {% endblock %}
+            </div>
             <div class="row">
                 {% comment %}
                     TODO: the right rail!
@@ -270,6 +275,25 @@
 
 
 {% block javascript %}
+    <script>
+        function showSessions(){
+            var date = $("#sessions_date").val() ;
+            $.ajax({
+                url: "/gymkhana/date_sessions/",
+                type: "post",
+                data: {'date':date},
+                success: function(response){
+                    alert(response);
+                }
+            })
+        }
+        // $("#sessions_date").datepicker({
+        //     onSelect: function(dateText, inst) {
+        //         var date = $(this).val() ;
+        //         console.log(date) ;
+        //     }
+        // });
+    </script>
     <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
     <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
     <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
