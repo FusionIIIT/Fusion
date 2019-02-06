@@ -3,13 +3,13 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-
+fusion.db
 # C extensions
 *.so
 
 
 # db file
-
+*.db
 
 
 # Distribution / packaging
