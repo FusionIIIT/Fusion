@@ -150,7 +150,7 @@
                 </ul>
               </div>
             {% endif %}
-            <div class="{% if invitation_status_tab %}ui tab{% else %}ui active tab{% endif %}" data-tab="search">
+            <div id="searchTab" class="{% if invitation_status_tab %}ui tab{% else %}ui active tab{% endif %}" data-tab="search">
                 <form method="post" class="ui form" role="form" action="{% url 'placement:student_records' %}">
                     {% comment %}The add a new skill Accordian starts here!{% endcomment %}
                     <div class="ui active accordion field">
@@ -207,12 +207,46 @@
                                         {{ form1.programme }}
                                     </div>
 
-                                    <div class="field">
-                                      {{ form1.department.errors }}
-                                        <label>
-                                            Department
-                                        </label>
-                                        {{ form1.department }}
+                                    <div id="AllDept" class="field">
+                                      <div id = "B.TechSearch" class="dept field">
+                                        {{ form1.dep_btech.errors }}
+                                          <label>
+                                              Department
+                                          </label>
+                                          {{ form1.dep_btech }}
+                                      </div>
+
+                                      <div id = "B.DesSearch" class="dept field">
+                                        {{ form1.dep_bdes.errors }}
+                                          <label>
+                                              Department
+                                          </label>
+                                          {{ form1.dep_bdes }}
+                                      </div>
+
+                                      <div id = "M.TechSearch" class="dept field">
+                                        {{ form1.dep_mtech.errors }}
+                                          <label>
+                                              Department
+                                          </label>
+                                          {{ form1.dep_mtech }}
+                                      </div>
+
+                                      <div id = "M.DesSearch" class="dept field">
+                                        {{ form1.dep_mdes.errors }}
+                                          <label>
+                                              Department
+                                          </label>
+                                          {{ form1.dep_mdes }}
+                                      </div>
+
+                                      <div id = "PhDSearch" class="dept field">
+                                        {{ form1.dep_phd.errors }}
+                                          <label>
+                                              Department
+                                          </label>
+                                          {{ form1.dep_phd }}
+                                      </div>
                                     </div>
 
                                     <div class="field">
@@ -463,7 +497,7 @@
             </div>
 
 
-            <div class="ui tab" data-tab="sendinvite">
+            <div id="sendTab" class="ui tab" data-tab="sendinvite">
               <form method="post" action="{% url 'placement:student_records' %}" class="ui form" role="form">
                 {{ form13.non_field_errors }}
                       {% csrf_token %}
@@ -486,12 +520,46 @@
                       {{ form13.programme }}
                   </div>
 
-                  <div class="field">
-                    {{ form13.department.errors }}
-                      <label>
-                          Department
-                      </label>
-                      {{ form13.department }}
+                  <div id="AllDept" class="field">
+                    <div id = "B.TechSend" class="dept field">
+                      {{ form13.dep_btech.errors }}
+                        <label>
+                            Department
+                        </label>
+                        {{ form13.dep_btech }}
+                    </div>
+
+                    <div id = "B.DesSend" class="dept field">
+                      {{ form13.dep_bdes.errors }}
+                        <label>
+                            Department
+                        </label>
+                        {{ form13.dep_bdes }}
+                    </div>
+
+                    <div id = "M.TechSend" class="dept field">
+                      {{ form13.dep_mtech.errors }}
+                        <label>
+                            Department
+                        </label>
+                        {{ form13.dep_mtech }}
+                    </div>
+
+                    <div id = "M.DesSend" class="dept field">
+                      {{ form13.dep_mdes.errors }}
+                        <label>
+                            Department
+                        </label>
+                        {{ form13.dep_mdes }}
+                    </div>
+
+                    <div id = "PhDSend" class="dept field">
+                      {{ form13.dep_phd.errors }}
+                        <label>
+                            Department
+                        </label>
+                        {{ form13.dep_phd }}
+                    </div>
                   </div>
 
                   <div class="field">
@@ -630,7 +698,7 @@
                               {% endif %}
                             {% endfor %}
 
-                            
+
 
                             {% if placementstatus.has_next %}
                             <div class="disabled item">
@@ -644,7 +712,7 @@
                         </center>
                       {% endif %}
                       <!-- Pagination Section ends here --->
-                      <br>   
+                      <br>
                       <div class="ui divider"></div>
 
                         <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;" id="student">
@@ -805,7 +873,7 @@
                               {% endif %}
                             {% endfor %}
 
-                            
+
 
                             {% if placementstatus.has_next %}
                             <div class="disabled item">
@@ -821,7 +889,7 @@
                       <!-- Pagination Section ends here --->
                       <br>
 
-                      <div class="ui divider"></div>         
+                      <div class="ui divider"></div>
                         <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;" id="student">
                             <thead>
                             <tr>
@@ -898,16 +966,65 @@
             </div>
             {% endif %}
 
-            <script>
-              var fade_out = function() {
-                $("#mydiv").fadeOut().empty();
-              }
 
-              setTimeout(fade_out, 8000);
-
-            </script>
         </div>
     </div>
 
+
+{% endblock %}
+
+{% block javascript %}
+
+<script>
+  var fade_out = function() {
+    $("#mydiv").fadeOut().empty();
+  }
+  setTimeout(fade_out, 8000);
+
+  //---------------------change Dept according to Programme selected-----------------------------
+  changeDeptForSearch(true);
+  changeDeptForSend(true);
+
+  function changeDeptForSearch(first_time_call=false){
+    console.log('hello world');
+
+    var e = document.getElementById("id_programme_search");
+    var prog_name = e.options[e.selectedIndex].value;
+
+    if(!first_time_call)
+      $("#searchTab #AllDept input[type=checkbox]").each(function () {
+          $(this).prop("checked", false);
+      });
+
+    prog_name += 'Search';
+    console.log(prog_name);
+
+    $('#searchTab .dept').hide();
+    var x = document.getElementById(prog_name);
+    x.style.display = "block";
+
+  }
+
+  function changeDeptForSend(first_time_call=false){
+    console.log('hello world');
+
+    var e = document.getElementById("id_programme_send");
+    var prog_name = e.options[e.selectedIndex].value;
+
+    if(!first_time_call)
+      $("#sendTab #AllDept input[type=checkbox]").each(function () {
+          $(this).prop("checked", false);
+      });
+
+    prog_name += "Send";
+    console.log(prog_name);
+
+    $('#sendTab .dept').hide();
+    var x = document.getElementById(prog_name);
+    x.style.display = "block";
+
+  }
+
+</script>
 
 {% endblock %}
