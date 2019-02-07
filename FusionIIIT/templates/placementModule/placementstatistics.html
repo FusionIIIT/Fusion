@@ -151,12 +151,12 @@
 
                           </div>
 
-                          <div class="ui active tab" data-tab="Placement">
+                          <div class="{% if officer_statistics_past_pbi_search or officer_statistics_past_higher_search %}ui tab{% else %}ui active tab{% endif %}" data-tab="Placement">
 
                             <form method="post" class="ui form" role="form" action="{% url 'placement:placement_statistics' %}">
                               {% comment %}The add a new skill Accordian starts here!{% endcomment %}
-                              <div class="ui active accordion field">
-                                  <div class="title">
+                              <div class="ui accordion field">
+                                  <div class="active title">
                                       <i class="icon dropdown"></i>
                                       Search a Student!
                                   </div>
@@ -239,6 +239,46 @@
                           {% elif placementrecord %}
                               <br>
                               <br>
+                              <!-- Pagination Section starts here  --->
+                    {% if pagination_placement %}
+
+                        <center>
+                          <div class="ui pagination menu">
+                            {% if placementrecord.has_previous %}
+                            <a href="?page={{placementrecord.previous_page_number}}" class="item">
+                              Previous
+                            </a>
+                            {% endif %}
+
+                            {% if is_disabled %}
+                              <a href="?page=1" class="item">1</a>
+                              <div class="disabled item">
+                                ...
+                              </div>
+                            {% endif %}
+
+                            {% for i in page_range %}
+                              {% if placementrecord.number == i %}
+                                <a href="?page={{i}}" class="active item">{{ i }} </a>
+                              {% else %}
+                                <a href="?page={{ i }}" class="item">{{ i }}</a>
+                              {% endif %}
+                            {% endfor %}
+
+
+
+                            {% if placementrecord.has_next %}
+                            <div class="disabled item">
+                              ...
+                            </div>
+                            <a href="?page={{placementrecord.next_page_number}}" class="item">
+                              Next
+                            </a>
+                            {% endif %}
+                          </div>
+                        </center>
+                    {% endif %}
+                    <!-- Pagination Section ends here --->
                               <div class="ui divider"></div>
                               <br>
 
@@ -304,13 +344,13 @@
 
                           </div>
 
-                          <div class="ui tab" data-tab="PBI">
+                          <div class="{% if officer_statistics_past_pbi_search %}ui active tab{% else %}ui tab{% endif %}" data-tab="PBI">
 
 
                                         <form method="post" class="ui form" role="form">
                                         {% comment %}The add a new skill Accordian starts here!{% endcomment %}
-                                        <div class="ui active accordion field">
-                                            <div class="title">
+                                        <div class="ui accordion field">
+                                            <div class="active title">
                                                 <i class="icon dropdown"></i>
                                                 Search a Student!
                                             </div>
@@ -390,6 +430,46 @@
 
                                   <br>
                                   <br>
+                    <!-- Pagination Section starts here  --->
+                    {% if pagination_pbi %}
+
+                        <center>
+                          <div class="ui pagination menu">
+                            {% if pbirecord.has_previous %}
+                            <a href="?page={{pbirecord.previous_page_number}}" class="item">
+                              Previous
+                            </a>
+                            {% endif %}
+
+                            {% if is_disabled %}
+                              <a href="?page=1" class="item">1</a>
+                              <div class="disabled item">
+                                ...
+                              </div>
+                            {% endif %}
+
+                            {% for i in page_range %}
+                              {% if pbirecord.number == i %}
+                                <a href="?page={{i}}" class="active item">{{ i }} </a>
+                              {% else %}
+                                <a href="?page={{ i }}" class="item">{{ i }}</a>
+                              {% endif %}
+                            {% endfor %}
+
+
+
+                            {% if pbirecord.has_next %}
+                            <div class="disabled item">
+                              ...
+                            </div>
+                            <a href="?page={{pbirecord.next_page_number}}" class="item">
+                              Next
+                            </a>
+                            {% endif %}
+                          </div>
+                        </center>
+                    {% endif %}
+                    <!-- Pagination Section ends here --->
                                   <div class="ui divider"></div>
                                   <br>
 
@@ -461,12 +541,12 @@
 
                           </div>
 
-                          <div class="ui tab" data-tab="HigherStudies">
+                          <div class="{% if officer_statistics_past_higher_search %}ui active tab{% else %}ui tab{% endif %}" data-tab="HigherStudies">
 
                                <form method="post" class="ui form" role="form">
                           {% comment %}The add a new skill Accordian starts here!{% endcomment %}
-                          <div class="ui active accordion field">
-                              <div class="title">
+                          <div class="ui accordion field">
+                              <div class="active title">
                                   <i class="icon dropdown"></i>
                                   Search a Student!
                               </div>
@@ -558,6 +638,47 @@
 
                                   <br>
                                   <br>
+
+                                  <!-- Pagination Section starts here  --->
+                    {% if pagination_higher %}
+
+                        <center>
+                          <div class="ui pagination menu">
+                            {% if higherrecord.has_previous %}
+                            <a href="?page={{higherrecord.previous_page_number}}" class="item">
+                              Previous
+                            </a>
+                            {% endif %}
+
+                            {% if is_disabled %}
+                              <a href="?page=1" class="item">1</a>
+                              <div class="disabled item">
+                                ...
+                              </div>
+                            {% endif %}
+
+                            {% for i in page_range %}
+                              {% if higherrecord.number == i %}
+                                <a href="?page={{i}}" class="active item">{{ i }} </a>
+                              {% else %}
+                                <a href="?page={{ i }}" class="item">{{ i }}</a>
+                              {% endif %}
+                            {% endfor %}
+
+
+
+                            {% if higherrecord.has_next %}
+                            <div class="disabled item">
+                              ...
+                            </div>
+                            <a href="?page={{higherrecord.next_page_number}}" class="item">
+                              Next
+                            </a>
+                            {% endif %}
+                          </div>
+                        </center>
+                    {% endif %}
+                    <!-- Pagination Section ends here --->
                                   <div class="ui divider"></div>
                                   <br>
 

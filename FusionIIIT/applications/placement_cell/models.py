@@ -44,10 +44,34 @@ class Constants:
         ('DEBAR', 'Debar'),
     )
 
-    DEP = (
+    BTECH_DEP = (
         ('CSE', 'CSE'),
         ('ME','ME'),
-        ('ECE','ECE')
+        ('ECE','ECE'),
+    )
+
+    BDES_DEP = (
+        ('DESIGN', 'DESIGN'),
+    )
+
+    MTECH_DEP = (
+        ('CSE', 'CSE'),
+        ('CAD/CAM', 'CAD/CAM'),
+        ('DESIGN', 'DESIGN'),
+        ('MANUFACTURING', 'MANUFACTURING'),
+        ('MECHATRONICS', 'MECHATRONICS'),
+    )
+
+    MDES_DEP = (
+        ('DESIGN', 'DESIGN'),
+    )
+
+    PHD_DEP = (
+        ('CSE', 'CSE'),
+        ('ME','ME'),
+        ('ECE','ECE'),
+        ('DESIGN', 'DESIGN'),
+        ('NS', 'NS'),
     )
 
 
