@@ -223,15 +223,18 @@ def handle_staff_leave_application(request):
         #leave.is_station = data.get('is_station')
         leave.extra_info = data.get('leave_info')
         leave.save()
+        rep_req = []
         for segment in segments:
             segment.leave = leave
         for replacement in replacements:
             replacement.leave = leave
+            rep_req.append(replacement.replacer)
+
         LeaveSegment.objects.bulk_create(segments)
         ReplacementSegment.objects.bulk_create(replacements)
-
         deduct_leave_balance(leave,False)
         leave_module_notif(request.user, request.user, 'leave_applied')
+        leave_module_notif(request.user, rep_req, 'replacement_request')
         messages.add_message(request, messages.SUCCESS, 'Successfully Submitted !')
         return redirect(reverse('leave:leave'))
 
