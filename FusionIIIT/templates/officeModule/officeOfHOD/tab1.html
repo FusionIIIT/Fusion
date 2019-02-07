@@ -1,14 +1,23 @@
 {% block tab1 %}
 
     {% comment %}The tab menu starts here!{% endcomment %}
+
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="tab1content1">
-            Similar Form #1
+            Fest Reimbursement Claim From
         </a>
 
+
         <a class="item" data-tab="tab1content2">
-            Similar Form #2
+            Auto Fare Claim Form
         </a>
+        <a class="item" data-tab="tab1content3">
+            Application for grant of LTC
+        </a>
+        <a class="item" data-tab="tab1content4">
+            Extra Duty Off
+        </a>
+
     </div>
 
     <div class="ui active tab" data-tab="tab1content1">
@@ -26,4 +35,19 @@
             {% endblock %}
         </div>
     </div>
+    <div class="ui tab" data-tab="tab1content3">
+        <div class="ui vertical segment">
+            {% block tab1content3 %}
+                {% include 'officeModule/officeOfHOD/tab1content3.html' %}
+            {% endblock %}
+        </div>
+    </div>
+    <div class="ui tab" data-tab="tab1content4">
+        <div class="ui vertical segment">
+            {% block tab1content4 %}
+                {% include 'officeModule/officeOfHOD/tab1content4.html' %}
+            {% endblock %}
+        </div>
+    </div>
+
 {% endblock tab1 %}

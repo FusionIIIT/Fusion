@@ -1,0 +1,118 @@
+<form>
+
+    {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+	 <div class="ui header">
+                       <center>Application for grant of LTC</center>
+     </div>
+    <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+         <div class="three fields">
+            <div class="six wide field">
+                <label>Block Year</label>
+                <input placeholder="block year" class="ui large input" >
+            </div>
+
+            <div class="six wide field">
+                <label>P.F. No.</label>
+                <input placeholder="pf no" class="ui large input">
+            </div>
+
+            <div class="four wide field">
+                <label>Basic Pay Rs</label>
+                <input placeholder="basic pay" class="ui large input">
+            </div>
+        </div>
+        
+
+        <div class="three fields">
+            <div class="six wide field">
+                <label>Name</label>
+                <input value="Zlatan Ibrahimovic" class="ui large input" readonly>
+            </div>
+
+            <div class="six wide field">
+                <label>Designation</label>
+                <input placeholder="designation" type="text" class="ui large input">
+            </div>
+
+            <div class="four wide field">
+                <label>Department</label>
+                <input placeholder="department" type="text" class="ui large input">
+            </div>
+        </div>
+		
+        <div class="two fields">
+            <div class="field">
+                <label>Leave Type</label>
+                <select class="ui search fluid dropdown">
+                    <option value="">leave type</option>
+                    <option value="fest1">type #1</option>
+                    <option value="fest2">type #2</option>
+                    <option value="fest3">type #3</option>
+                    <option value="Others">Others</option>
+                </select>
+            </div>
+			
+			<div class="field">
+                <label>No.of days</label>
+                <input placeholder="no of days" type="number" class="ui large input" >
+            </div>
+        </div>
+        <div class="ui header">
+            Duration
+        </div>
+		<div class="two fields">
+                    <div class="field">
+                        <label>From</label>
+                        <div class="ui calendar" id="rangestart">
+                            <div class="ui input left icon">
+                                <i class="calendar icon"></i>
+                                <input type="date" placeholder="from">
+                            </div>
+                        </div>
+                    </div>
+					
+					<div class="field">
+                        <label>To</label>
+                        <div class="ui calendar" id="rangeend">
+                            <div class="ui input left icon">
+                                <i class="calendar icon"></i>
+                                <input type="date" placeholder="to">
+                            </div>
+                        </div>
+                    </div>
+		</div>
+		
+        <div class="field">
+            <label>Address during leave</label>
+            <textarea rows="2"></textarea>
+        </div>
+		
+		<div class="field">
+            <label>Family Details</label>
+            <textarea rows="2"></textarea>
+        </div>
+		
+		<div class="two fields">
+		    <div class="field">
+                 <label>Amount of advance required if any</label>
+                 <input placeholder="amount" type="text" class="ui large input">
+            </div>
+			 
+			<div class="field">
+                 <label>Contact no.</label>
+                 <input placeholder="contact no" type="text" class="ui large input">
+            </div>
+		</div>
+
+
+        <div class="field">
+            <button class="ui primary button right floated" type="submit">
+                Submit
+            </button>
+        </div>
+    </div>
+</form>
+
+<br>
+<br>
+<div class="ui divider"></div>

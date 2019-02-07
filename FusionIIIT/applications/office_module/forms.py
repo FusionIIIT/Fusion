@@ -1,7 +1,5 @@
 from django import forms
-
 from .models import *
-
 
 class Requisitionform(forms.ModelForm):
 	class Meta:

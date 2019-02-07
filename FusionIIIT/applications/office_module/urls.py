@@ -1,6 +1,5 @@
 from django.conf.urls import url
 from django.views.decorators.csrf import csrf_exempt
-
 from . import views
 
 app_name = 'office'
@@ -35,6 +34,11 @@ urlpatterns = [
     url(r'^officeOfHOD/$', views.officeOfHOD, name='officeOfHOD'),
     url(r'^officeOfHOD/submit/$',views.teaching_form,name='teaching_form'),
     url(r'^officeOfHOD/work/$',views.hod_work,name='hod_work'),
+    url(r'^officeOfHOD/lab/$',views.lab_details,name='lab_details'),
+    url(r'^officeOfHOD/assign_ta/$',views.assign_ta,name='assign_ta'),
+
+
+
     url(r'^genericModule/', views.genericModule, name='genericModule'),
     url(r'^deleteitem/(?P<id>[0-9]+)',views.delete_item, name='delete_item'),
     url(r'^deletevendor/(?P<id>[0-9]+)',views.delete_vendor, name='delete_vendor'),

@@ -1,5 +1,4 @@
 from django.contrib import admin
-
 from .models import *
 
 admin.site.register(Requisitions)
@@ -15,3 +14,11 @@ admin.site.register(registrar_finance_section)
 admin.site.register(registrar_establishment_section)
 admin.site.register(registrar_director_section)
 admin.site.register(Assistantship)
+
+admin.site.register(LTC)
+admin.site.register(CPDA)
+admin.site.register(Auto_fair_claim)
+admin.site.register(Teaching_credits1)
+admin.site.register(Assigned_Teaching_credits)
+admin.site.register(Lab1)
+admin.site.register(TA_assign)

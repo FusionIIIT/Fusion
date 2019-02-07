@@ -4,7 +4,7 @@
     {% comment %}The add a new skill Accordian starts here!{% endcomment %}
     <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
          {% csrf_token %}
-         
+
         <div class="three fields">
             <div class="six wide field">
                 <label>Roll no.</label>
@@ -15,9 +15,9 @@
                 <label>Name</label>
                 <input value="" class="ui large input" name="name" required>
             </div>
-            
+
         </div>
-        
+
         <div class="two fields">
             <div class="six wide field">
                 <label>Programme</label>
@@ -36,14 +36,14 @@
                     <option value="ECE">ECE</option>
                 </select>
             </div>
-            
+
         </div>
-        
+
         <div class="three fields">
             <div class="six wide field">
                 <label>Course 1</label>
-                <select class="ui search fluid dropdown" name="course1" required>
-                    <option value="">Select</option>
+                <select class="ui search fluid dropdown" name="course1" required id="box1">
+                    <option value="Default">Default</option>
                     <option value="Computer Graphics">Computer Graphics</option>
                     <option value="Machine Learning">Machine Learning</option>
                     <option value="Image Processing">Image Processing</option>
@@ -53,8 +53,8 @@
 
             <div class="six wide field">
                 <label>Course 2</label>
-                <select class="ui search fluid dropdown" name="course2" required>
-                    <option value="">Select</option>
+                <select class="ui search fluid dropdown" name="course2" required id="box2">
+                    <option value="Disabled">Disabled</option>
                     <option value="Computer Graphics">Computer Graphics</option>
                     <option value="Machine Learning">Machine Learning</option>
                     <option value="Image Processing">Image Processing</option>
@@ -64,8 +64,8 @@
 
             <div class="six wide field">
                 <label>Course 3</label>
-                <select class="ui search fluid dropdown" name="course3" required>
-                    <option value="">Select</option>
+                <select class="ui search fluid dropdown" name="course3" required id="box3">
+                    <option value="Disabled">Disabled</option>
                     <option value="Computer Graphics">Computer Graphics</option>
                     <option value="Machine Learning">Machine Learning</option>
                     <option value="Image Processing">Image Processing</option>
@@ -75,8 +75,11 @@
 
         </div>
 
+
+
+
         <div class="field">
-            <button class="ui primary button right floated" type="submit">
+            <button class="ui primary button right floated" type="submit" onclick="myFunction()"">
                 Submit
             </button>
         </div>
@@ -87,12 +90,27 @@
 <br>
 <div class="ui divider"></div>
 <script type="text/javascript">
-    
-    function isNumberKey(evt){
-    var charCode = (evt.which) ? evt.which : event.keyCode
-    if (charCode > 31 && (charCode < 48 || charCode > 57))
-        return false;
-    return true;
+
+
+
+    $(function(){
+    $('select').change(function(){
+        if($(this).attr('id') == 'box1' && $(this).val() == 'Default'){
+            $('select').not(this).prop('disabled', true).val('Disabled');
+        } else {
+            $('select').not(this).removeProp('disabled');
+
+            $('select option').removeProp('disabled');
+            $('select').each(function(){
+                var val = $(this).val();
+                if(val != 'Default' || val != 'Disabled'){
+                    $('select option[value="'+val+'"]').not(this).prop('disabled', true);
+                }
+            });
+        }
+    });
+});
+
 }
 
 </script>

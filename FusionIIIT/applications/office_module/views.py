@@ -1,23 +1,21 @@
-import datetime
-from datetime import date, datetime
-
-from django.contrib.auth import authenticate, login
+from .models import Project_Reallocation,Project_Closure,Project_Extension,Project_Registration
+from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import get_object_or_404, render
-from django.utils import timezone
-
-from applications.academic_procedures.models import Thesis
-from applications.globals.models import (Designation, ExtraInfo,
-                                         HoldsDesignation, User)
+from applications.globals.models import ExtraInfo, Designation, User, HoldsDesignation
 from applications.scholarships.models import Mcm
-
-from .forms import *
+from applications.academic_procedures.models import Thesis
+from applications.globals.models import HoldsDesignation
+from django.http import HttpResponse, HttpResponseRedirect
 from .models import *
-from .models import (Project_Closure, Project_Extension, Project_Reallocation,
-                     Project_Registration)
+import datetime
+from django.utils import timezone
+from .forms import *
+from django.db.models import Q
 from .views_office_students import *
+from django.shortcuts import render
+from datetime import date, datetime
+from django.shortcuts import get_object_or_404, render
+from django.contrib.auth import authenticate, login
 
 
 def officeOfDeanRSPC(request):
@@ -258,8 +256,11 @@ def upload(request):
 @login_required(login_url='/accounts/login')
 def officeOfHOD(request):
     pro = Teaching_credits1.objects.filter(tag=0)
+    #pro = Teaching_credits1.objects.all()
     pro1 = Assigned_Teaching_credits.objects.all()
-    context = {'pro':pro,'pro1':pro1}
+    lab = Lab1.objects.all()
+    assign_ta = TA_assign.objects.all()
+    context = {'pro':pro,'pro1':pro1,'lab':lab, 'assign_ta':assign_ta}
     return render(request, "officeModule/officeOfHOD/officeOfHOD.html", context)
 
 
@@ -542,28 +543,70 @@ def teaching_form(request):
     course1=request.POST.get('course1')
     course2=request.POST.get('course2')
     course3=request.POST.get('course3')
+    print(course1)
 
     request_obj = Teaching_credits1(roll_no=roll_no,name=name, programme=programme, branch=branch,
                                      course1=course1, course2=course2, course3=course3)
     print("===================================================================")
     request_obj.save()
     context={}
-    return render(request,"officeModule/officeOfHOD/tab4content4.html",context)
+    #return HttpResponseRedirect(request,"officeModule/officeOfHOD/",context)
+    return HttpResponseRedirect('/office/officeOfHOD/')
+
 
 @login_required
 def hod_work(request):
     roll_no=request.POST.get('roll_no')
     tc = Teaching_credits1.objects.get(roll_no=roll_no)
     assigned_course=request.POST.get('assigned_course')
+    print('this is course   ')
+    print(assigned_course)
     request_obj1 = Assigned_Teaching_credits(roll_no=tc,assigned_course=assigned_course)
     request_obj1.save()
     tc.tag=1
     tc.save()
     context={}
-    return render(request,"officeModule/officeOfHOD/tab4content4.html",context)
+    #return render(request,"officeModule/officeOfHOD/tab4content4.html",context)
+    return HttpResponseRedirect('/office/officeOfHOD/')
     """return HttpResponseRedirect('')"""
     """return render(request,"officeModule/officeOfHOD/tab4content1.html",context)"""
 
+@login_required
+def lab_details(request):
+    lab_name=request.POST.get('lab_name')
+    lab_instructor=request.POST.get('lab_instructor')
+    day=request.POST.get('day')
+    s_time=request.POST.get('s_time')
+    e_time=request.POST.get('e_time')
+    request_obj = Lab(lab_name=lab_name, lab_instructor=lab_instructor, day=day, s_time=s_time, e_time=e_time)
+    print("===================================================================")
+    request_obj.save()
+    context={}
+    #return HttpResponseRedirect(request,"officeModule/officeOfHOD/",context)
+    return HttpResponseRedirect('/office/officeOfHOD/')
+
+
+def remove2(x):
+    return x[1:-1]
+
+
+@login_required
+def assign_ta(request):
+    roll_no=request.POST.get('roll_no')
+    lab_name=request.POST.get('lab_name')
+    #lname = lab_name.replace('\"','')
+    #lname = lab_name.lstrip('\"')
+    #lname = remove2(lab_name)
+    #print('this is',lname)
+    name=request.POST.get('name')
+    start_date=request.POST.get('start_date')
+    end_date=request.POST.get('end_date')
+    request_obj = TA_assign(roll_no=roll_no, lab_name=lab_name, name=name, start_date=start_date, end_date=end_date)
+    print("===================================================================")
+    request_obj.save()
+    context={}
+    #return HttpResponseRedirect(request,"officeModule/officeOfHOD/",context)
+    return HttpResponseRedirect('/office/officeOfHOD/')
 
 
 def genericModule(request):

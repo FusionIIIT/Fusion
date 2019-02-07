@@ -1,21 +1,45 @@
-<form>
+<form action="{%url 'office:assign_ta' %}" method ="POST">
 
     {% comment %}The add a new skill Accordian starts here!{% endcomment %}
-	
+
     <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
-        
+      {% csrf_token %}
             <div class="field">
                 <label>Lab</label>
-                <select class="ui search fluid dropdown">
+                <select class="ui search fluid dropdown" name="lab_name" required>
                     <option value="">lab</option>
-                    <option value="fest1">lab #1</option>
-                    <option value="fest2">lab #2</option>
-                    <option value="fest3">lab #3</option>
-                    <option value="Others">lab #4</option>
+                    {% for obj1 in lab %}
+                    <option value='{{obj1.lab_name}}'>{{obj1.lab_name}}</option>
+                    {% endfor %}
+
+
+                    {% comment %} try this again
+                    {% with lname=obj1.lab_name %}{% endwith %}
+                    <option value={{lanme}}>{{obj1.lab_name}}</option>
+                    {% endcomment %}
+
+
                 </select>
             </div>
-			
-			
+
+
+
+            <div class="six wide field">
+                <label>Roll no:</label>
+                <input value="" class="ui large input" name="roll_no" required>
+            </div>
+
+            <div class="six wide field">
+                <label>Name:</label>
+                <input value="" class="ui large input" name="name" required>
+            </div>
+
+            <h4>{% for obj1 in lab %}
+            <option value={{obj1.lab_name}}>{{obj1.lab_name}}</option>
+            {% endfor %}
+          </h4>
+
+
         <div class="ui header">
            Date and Time
         </div>
@@ -25,17 +49,17 @@
                         <div class="ui calendar" id="rangestart">
                             <div class="ui input left icon">
                                 <i class="calendar icon"></i>
-                                <input type="datetime-local" placeholder="from">
+                                <input type="date" placeholder="from"  name = "start_date">
                             </div>
                         </div>
                     </div>
-					
+
 					<div class="field">
                         <label>To</label>
                         <div class="ui calendar" id="rangeend">
                             <div class="ui input left icon">
                                 <i class="calendar icon"></i>
-                                <input type="datetime-local" placeholder="to">
+                                <input type="date" placeholder="to"  name = "end_date">
                             </div>
                         </div>
                     </div>

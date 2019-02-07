@@ -14,13 +14,13 @@
             <tbody>
                 {% for obj1 in pro1 %}
                 <tr>
-                        <td> <input value={{obj1.roll_no}} class="ui large input" name="roll_no" readonly style="border: 0;"> </td>
-                        <td> <input value={{obj1.assigned_course}} class="ui large input" name="assigned_course" readonly style="border: 0;"></td>
+                        <td> <input value='{{obj1.roll_no}}' class="ui large input" name="roll_no" readonly style="border: 0;"> </td>
+                        <td> <input value='{{obj1.assigned_course}}' class="ui large input" name="assigned_course" readonly style="border: 0;"></td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-         
+
     </div>
 
 <br>
@@ -28,4 +28,3 @@
 </form>
 
 {% endblock %}
- 

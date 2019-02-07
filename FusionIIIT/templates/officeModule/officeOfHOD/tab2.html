@@ -6,14 +6,17 @@
            CSE
         </a>
 
-        <a class="item" data-tab="">
+        <a class="item" data-tab="tab2content2">
             ECE
         </a>
-		
-		<a class="item" data-tab="">
+
+		<a class="item" data-tab="tab2content3">
             ME
         </a>
-		 
+        <a class="item" data-tab="tab2content4">
+                Lab details
+            </a>
+
     </div>
 
     <div class="ui active tab" data-tab="tab2content1">
@@ -23,6 +26,27 @@
             {% endblock %}
         </div>
     </div>
+    <div class="ui tab" data-tab="tab2content2">
+        <div class="ui vertical segment">
+            {% block tab2content2 %}
+                {% include 'officeModule/officeOfHOD/tab2content2.html' %}
+            {% endblock %}
+        </div>
+    </div>
+    <div class="ui tab" data-tab="tab2content3">
+        <div class="ui vertical segment">
+            {% block tab2content3 %}
+                {% include 'officeModule/officeOfHOD/tab2content3.html' %}
+            {% endblock %}
+        </div>
+    </div>
+    <div class="ui tab" data-tab="tab2content4">
+        <div class="ui vertical segment">
+            {% block tab2content4 %}
+                {% include 'officeModule/officeOfHOD/tab2content4.html' %}
+            {% endblock %}
+        </div>
+    </div>
 
-    
+
 {% endblock tab2 %}

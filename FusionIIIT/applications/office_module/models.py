@@ -1,19 +1,14 @@
-import datetime
-
 from django.db import models
-
-from applications.academic_information.models import (Course, Grades,
-                                                      Instructor, Meeting, Spi,
-                                                      Student)
-from applications.academic_procedures.models import Thesis
+import datetime
+from datetime import datetime
+from applications.academic_information.models import Student, Grades, Meeting
+from applications.globals.models import Staff, Faculty, ExtraInfo, Designation,HoldsDesignation, DepartmentInfo
 from applications.filetracking.models import Tracking
-from applications.globals.models import (DepartmentInfo, Designation,
-                                         ExtraInfo, Faculty, HoldsDesignation,
-                                         Staff)
 from applications.leave.models import Leave
-
 from .models_office_students import *
+from applications.academic_information.models import Student, Instructor, Spi, Grades, Course
 
+from applications.academic_procedures.models import Thesis
 
 class Constants:
     DAY_CHOICES = (
@@ -102,7 +97,7 @@ class Constants:
         ('rail', 'RAIL')
       )
 
-    TICK_TYPE = (
+    PHD_COURSES = (
         ('Computer Graphics', 'Computer Graphics'),
         ('Machine Learning', 'Machine Learning'),
         ('Image Processing','Image Processing'),
@@ -159,6 +154,14 @@ NATURE_OF_ITEM2 = (
 ITEM_TYPE = (
     ('0', "Non-consumable"),
     ('1', "Consumable"),
+
+)
+
+FEST_TYPE = (
+    ('0', "Abhikalpan"),
+    ('1', "Gusto"),
+    ('2', "Tarang"),
+    ('3', "Inter-IIIT"),
 
 )
 
@@ -492,12 +495,12 @@ class Teaching_credits1(models.Model):
     name = models.CharField(max_length=100)
     programme = models.CharField(max_length=100)
     branch = models.CharField(max_length=100)
-    course1 = models.CharField(choices=Constants.TICK_TYPE,
-                                      max_length=100, default='NO')
-    course2 = models.CharField(choices=Constants.TICK_TYPE,
-                                      max_length=100, default='NO')
-    course3 = models.CharField(choices=Constants.TICK_TYPE,
-                                      max_length=100, default='NO')
+    course1 = models.CharField(choices=Constants.PHD_COURSES,
+                                      max_length=100)
+    course2 = models.CharField(choices=Constants.PHD_COURSES,
+                                      max_length=100)
+    course3 = models.CharField(choices=Constants.PHD_COURSES,
+                                      max_length=100)
     tag = models.IntegerField(default=0)
     class Meta:
         db_table = 'Teaching_credits1'
@@ -507,29 +510,40 @@ class Teaching_credits1(models.Model):
 
 class Assigned_Teaching_credits(models.Model):
     roll_no = models.ForeignKey(Teaching_credits1, on_delete=models.CASCADE)
-    assigned_course = models.CharField(max_length=100,default='NO')
+    assigned_course = models.CharField(max_length=100)
     class Meta:
         db_table = 'Assigned_Teaching_credits'
+    def __str__(self):
+        return str(self.roll_no)
 
 
-class Lab(models.Model):
-    lab = models.CharField(max_length=10)
+class Lab1(models.Model):
+    lab_name = models.CharField(max_length=50, primary_key=True) #Lab name
     lab_instructor = models.CharField(max_length=30)
     day = models.CharField(max_length=10,choices=Constants.DAY_CHOICES, default='Monday')
-    s_time = models.CharField(max_length=6, default='0:00')
-    e_time = models.CharField(max_length=6, default='0:00')
+    s_time = models.TimeField(default ='10:00:00')
+    e_time = models.TimeField(default ='12:00:00')
+
+    #e_time = models.DateTimeField(max_length=6, default='0:00')
     class Meta:
         db_table = 'Lab'
 
     def __str__(self):
-        return str(self.lab)
+        return str(self.lab_name)
 
 class TA_assign(models.Model):
-    roll_no = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE, related_name='TA_id')
-    lab = models.ForeignKey(Lab, on_delete=models.CASCADE)
+    #roll_no = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE, related_name='TA_id')
+    lab_name = models.ForeignKey(Lab1, on_delete=models.CASCADE)
+    roll_no = models.IntegerField(primary_key=True)
+    name = models.CharField(max_length=100, default ='student_name')
+
+    #lab_name = models.CharField(max_length=50, primary_key=True) #Lab name
     balance = models.IntegerField(default=2)
+    start_date = models.DateField()
+    end_date = models.DateTimeField()
+
     class Meta:
         db_table = 'TA_assign'
 
     def __str__(self):
-        return str(self.id)
+        return str(self.roll_no)

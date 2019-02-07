@@ -40,10 +40,10 @@
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
 
-                
-				
+
+
 				 <a class="item" data-tab="first">
-                    Lab Schedule
+                    Home
                     <i class="right floated chevron right icon"></i>
                 </a>
 
@@ -51,11 +51,22 @@
                     TA Assignment
                     <i class="right floated chevron right icon"></i>
                 </a>
-				
+
 				<a class="item" data-tab="third">
                     Teaching Credits
                     <i class="right floated chevron right icon"></i>
                 </a>
+
+{% comment %} prem test menu added The Tab-Menu ends here!{% endcomment %}
+                <a class="item" data-tab="fourth">
+                           Lab Schedule
+                           <i class="right floated chevron right icon"></i>
+                       </a>
+                      <a class="item" data-tab="fifth">
+                                  Forms
+                                  <i class="right floated chevron right icon"></i>
+                      </a>
+
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
 
@@ -69,17 +80,17 @@
             The central-rail segment starts here!
         {% endcomment %}
         <div class="eight wide column">
-            
+
             {% comment %}The Publications starts here!{% endcomment %}
             <div class="ui active tab segment" data-tab="first">
 			   {% block form2 %}
-                    {% include 'officeModule/officeOfHOD/tab2.html' %}
+                    {% include 'officeModule/officeOfHOD/tab5.html' %}
                {% endblock %}
 
             </div>
             {% comment %}The Publications ends here!{% endcomment %}
-			
-			
+
+
 			{% comment %}The Publications starts here!{% endcomment %}
 			<div class="ui tab segment" data-tab="second">
 			   {% block form3 %}
@@ -88,7 +99,7 @@
 
             </div>
             {% comment %}The Publications ends here!{% endcomment %}
-			
+
 			{% comment %}The Publications starts here!{% endcomment %}
 			<div class="ui tab segment" data-tab="third">
 			   {% block form4 %}
@@ -98,6 +109,20 @@
             </div>
             {% comment %}The Publications ends here!{% endcomment %}
 
+            {% comment %}The test starts here!{% endcomment %}
+      			<div class="ui tab segment" data-tab="fourth">
+      			   {% block form5 %}
+                          {% include 'officeModule/officeOfHOD/tab2.html' %}
+                     {% endblock %}
+
+                  </div>
+                  {% comment %}The test ends here!{% endcomment %}
+                  <div class="ui tab segment" data-tab="fifth">
+      			   {% block form6 %}
+                          {% include 'officeModule/officeOfHOD/tab1.html' %}
+                     {% endblock %}
+
+                  </div>
 
         </div>
         {% comment %}The central-rail segment ends here!{% endcomment %}

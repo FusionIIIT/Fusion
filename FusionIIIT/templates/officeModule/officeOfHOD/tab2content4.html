@@ -1,0 +1,68 @@
+{% block tab5 %}
+
+<h2>LAB FORM</h2>
+
+<form action="{%url 'office:lab_details' %}" method ="POST">
+    {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+    <div class="ui form">
+         {% csrf_token %}
+
+        <div class="two fields">
+            <div class="six wide field">
+                <label>Lab Name</label>
+                <input value="" class="ui large input" name="lab">
+            </div>
+
+            <div class="six wide field">
+                <label>Instructor Name</label>
+                <input value="" class="ui large input" name="lab_instructor" required>
+            </div>
+
+        </div>
+
+        <div class="three fields">
+            <div class="six wide field">
+                    <label>Day</label>
+                    <select class="ui search fluid dropdown" name="day" required>
+                        <option value="">Select</option>
+                        <option value="Monday">Monday</option>
+                        <option value="Tuesday">Tuesday</option>
+                        <option value="Wednesday">Wednesday</option>
+                        <option value="Thursday">Thursday</option>
+                        <option value="Friday">Friday</option>
+                    </select>
+
+            </div>
+
+            <div class="field">
+                <label>Start</label>
+                <div class="ui calendar" id="rangestart" >
+                    <div class="ui input left icon">
+                        <i class="calendar icon"></i>
+                        <input type="time" placeholder="from" name ="s_time">>
+                    </div>
+                </div>
+            </div>
+
+  <div class="field">
+                <label>End</label>
+                <div class="ui calendar" id="rangeend" >
+                    <div class="ui input left icon">
+                        <i class="calendar icon"></i>
+                        <input type="time" placeholder="to" name ="e_time">>
+                    </div>
+                </div>
+            </div>
+
+            </div>
+
+            <div class="field">
+                <button class="ui primary button right floated" type="submit">
+                    Submit
+                </button>
+            </div>
+
+            </div>
+            </form>
+
+{% endblock tab5 %}
