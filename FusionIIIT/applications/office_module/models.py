@@ -201,7 +201,7 @@ class Project_Registration(models.Model):
                                  max_length=10, default='Pending')
     applied_date=models.DateField(null=True,blank=True)
     description=models.CharField(max_length=200,null=True)
-
+    file = models.FileField(null=True, upload_to='documents/')
 
     def __str__(self):
         return self.project_title

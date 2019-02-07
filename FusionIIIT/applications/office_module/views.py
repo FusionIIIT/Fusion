@@ -281,15 +281,16 @@ def project_register(request):
     agreement=request.POST.get('agreement')
     amount_sanctioned = request.POST.get('amount_sanctioned')
     project_type = request.POST.get('project_type')
-    remarks=request.POST.get('remarks')
+    #remarks=request.POST.get('remarks')
     #fund_recieved_date=datetime.strptime(request.POST.get('fund_recieved_date'), "%Y-%m-%d")
     project_operated = request.POST.get('project_operated')
     fund_recieved_date = request.POST.get('fund_recieved_date')
-    file = request.POST.get('load', False)
+    file = request.FILES['load']
+    description = request.POST.get('remarks')
     request_obj = Project_Registration(PI_id=extrainfo, project_title=project_title,
                                sponsored_agency=sponsored_agency, CO_PI=CO_PI, agreement=agreement,
                                amount_sanctioned=amount_sanctioned, project_type=project_type,
-                               remarks=remarks,duration=duration,fund_recieved_date=fund_recieved_date,start_date=start_date)
+                               duration=duration,fund_recieved_date=fund_recieved_date,start_date=start_date, description=description, file=file)
     request_obj.save()
     context={}
     return render(request,"eisModulenew/profile.html",context)

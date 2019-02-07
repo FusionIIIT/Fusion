@@ -82,6 +82,10 @@
          
         <div class="three fields">
             <div class="six wide field">
+                <label>Project ID</label>
+                <input value="{{obj.id}}" class="ui large input" name="project_title" readonly>
+            </div>
+            <div class="six wide field">
                 <label>Project Title</label>
                 <input value="{{obj.project_title}}" class="ui large input" name="project_title" readonly>
             </div>
@@ -151,8 +155,17 @@
         </div> -->
 
         <div class="field">
+            <label>Attachments (if any)</label>
+            {% if obj.file.size is not 0 %}
+            <a href="{{obj.file.url}}">Attached File</a>
+            {% else %}
+            <input value="No attached file" class="ui large input" name="file" readonly>
+            {% endif %}
+        </div>
+
+        <div class="field">
             <label>Details and Description</label>
-            <textarea rows="4" readonly>{{obj.description}}</textarea>
+            <textarea rows="2" readonly>{{obj.description}}</textarea>
         </div>
     </div>
 </form>
