@@ -23,7 +23,7 @@
                     <br>
                     <div class="field">
                         <label>Feedback:</label>
-                        <textarea rows="3" id='feedback' name='feedback' ></textarea>
+                        <textarea rows="3" id='feedback' name='feedback' required=‘required’></textarea>
                     </div>
 
                     <div class="field">
@@ -36,7 +36,8 @@
             <script type="text/javascript">
 
                   $('#feed_submit').on('click',function(e){
-                       e.preventDefault();
+                        e.preventDefault ? e.preventDefault() : e.returnValue = false;
+                       {% comment %} e.preventDefault();{% endcomment %}
                        $.ajax({
                        type:'post',
                        url:'/healthcenter/student/',
@@ -45,11 +46,19 @@
                        feedback:$("#feedback").val(),
                        feed_submit:$("#feed_submit").val(),
                        },
+
                        success: function(data){
-                         if (data.status == 1){
-                           alert("feedback submitted")
-                           document.getElementById("feedback").value=""
-                         }
+                              if (data.feedback == "")
+                       {
+                            window.alert("Please provide some feedback ");
+                        }
+
+                        else{
+                             if (data.status == 1){
+                                alert("feedback submitted")
+                                document.getElementById("feedback").value=""
+                                }
+                             }
                      }
                    });
                  });
