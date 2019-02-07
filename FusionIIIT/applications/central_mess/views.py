@@ -9,6 +9,8 @@ from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
+from django.views.generic import View
+from applications.central_mess.utils import render_to_pdf
 from django.contrib.auth.models import User
 from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, HoldsDesignation
@@ -26,7 +28,6 @@ def mess(request):
     holds_designations = HoldsDesignation.objects.filter(user=user)
     desig = holds_designations
     print(desig)
-
     form = MinuteForm()
     current_date = date.today()
     mess_reg = Mess_reg.objects.last()
@@ -40,6 +41,11 @@ def mess(request):
     count8 = 0
     nonveg_total_bill = 0
     rebate_count = 0
+    #
+    # @periodic_task(run_every=(crontab(hour="*", minute="*", day_of_week="*")))
+    #     print("Start")
+    #     now = datetime.now()
+    #     print(now)
 
     if extrainfo.user_type == 'student':
         student = Student.objects.get(id=extrainfo)
@@ -577,3 +583,24 @@ def updatecost(request):
         temp.save()
 
     return HttpResponseRedirect("/mess")
+
+
+class MenuPDF(View):
+    print("in")
+    data = 0
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        extrainfo = ExtraInfo.objects.get(user=user)
+        student = Student.objects.get(id=extrainfo)
+        messinfo = Messinfo.objects.get(student_id=student)
+        mess_option = messinfo.mess_option
+        print(mess_option)
+        y = Menu.objects.all()
+        context = {
+            'menu': y,
+            'messoption': mess_option
+        }
+        # template = get_template('messModule/menudownloadable.html')
+        return render_to_pdf('messModule/menudownloadable.html', context)
+        # return HttpResponse(pdf, content_type='application/pdf')

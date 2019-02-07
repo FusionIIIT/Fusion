@@ -1,5 +1,4 @@
 from django.conf.urls import url
-
 from . import views
 
 app_name = 'mess'
@@ -7,6 +6,7 @@ app_name = 'mess'
 urlpatterns = [
 
     url(r'^$', views.mess, name='mess'),
+    url(r'^menudownload/', views.MenuPDF.as_view(), name='MenuPDF'),
     url(r'^placeorder/', views.placeorder, name='placeorder'),
     url(r'^submit/', views.submit, name='submit'),
     url(r'^vacasubmit/', views.vacasubmit, name='vacasubmit'),
