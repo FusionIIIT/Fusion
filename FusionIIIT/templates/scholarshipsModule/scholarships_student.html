@@ -149,7 +149,37 @@
                     <div class="ui cards">
 
                     {% for m in release %}
-                    {% if m.notif_visible == 1 %}
+                    {% if m.notif_visible == 1 and m.batch == 'all'  %}
+                    <div class="ui fluid card">
+                        <div class="content">
+                            <div class="header">
+                                {{ m.award }} Invitation
+                            </div>
+                            <div class="meta">
+                                 Last Date: {{ m.enddate }}
+                            </div>
+
+                            <div class="ui divider"></div>
+
+                            <div class="description">
+                                <p>{{ m.remarks }} </p>
+                                <p>Do you want to accept the invitation?</p>
+                            </div>
+                        </div>
+                        <div class="extra content">
+                            <div class="ui two buttons">
+                              <form method="post" action="{% url 'spacs:spacs' %}" class="ui form" role="form">
+                                {% csrf_token %}
+                                <button name="studentapprovesubmit" value="{{ m.pk }}" class="ui basic green button" type="submit">Apply</button>
+                              </form>
+                              <form method="post" action="{% url 'spacs:spacs' %}" class="ui form" role="form">
+                                {% csrf_token %}
+                                <button name="studentdeclinesubmit" value="{{ m.pk }}" class="ui basic red button" type="submit">Ignore</button>
+                              </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% elif m.notif_visible == 1 and m.batch == student_batch  %}
                     <div class="ui fluid card">
                         <div class="content">
                             <div class="header">

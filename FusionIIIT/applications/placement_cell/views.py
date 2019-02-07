@@ -358,6 +358,7 @@ def InvitationStatus(request):
     is_disabled = 0
     paginator = ''
     page_range = ''
+    print(request.GET.get('page'))
 
     if 'studentplacementsearchsubmit' in request.POST:
         mnplacement_post = 1
@@ -472,7 +473,6 @@ def InvitationStatus(request):
 
 
     if 'studentpbisearchsubmit' in request.POST:
-        print('pbi')
         mnpbi_tab = 1
         mnpbi_post = 1
         form = ManagePbiRecord(request.POST)
@@ -541,17 +541,20 @@ def InvitationStatus(request):
             else:
                 no_pagination = 0
     else:
-        if request.GET.get('pbi_page') != None:
+        if request.GET.get('page') != None:
             mnpbi_tab = 1
+            mnpbi_post = 1
+            no_pagination = 1
             try:
-                placementstatus = PlacementStatus.objects.filter(Q(notify_id__in=NotifyStudent.objects.filter
-                                           (Q(placement_type="PBI",
-                                              company_name__icontains=request.session['mn_pbi_cname'],
+                placementstatus = PlacementStatus.objects.filter(
+                    Q(notify_id__in=NotifyStudent.objects.filter(
+                    Q(placement_type="PBI",
+                    company_name__icontains=request.session['mn_pbi_cname'],
                                               ctc__gte=request.session['mn_pbi_ctc'])),
-                                           unique_id__in=Student.objects.filter
-                                           ((Q(id__in=ExtraInfo.objects.filter
-                                               (Q(user__in=User.objects.filter
-                                                  (Q(first_name__icontains=request.session['mn_pbi_stuname'])),
+                                           unique_id__in=Student.objects.filter(
+                                            (Q(id__in=ExtraInfo.objects.filter(
+                                                Q(user__in=User.objects.filter(
+                    Q(first_name__icontains=request.session['mn_pbi_stuname'])),
                                                   id__icontains=request.session['mn_pbi_rollno']))
                                                )))))
             except:
@@ -563,7 +566,7 @@ def InvitationStatus(request):
                 total_query = 0
             if total_query > 30:
                 paginator = Paginator(placementstatus, 30)
-                page = request.GET.get('pbi_page', 1)
+                page = request.GET.get('page', 1)
                 placementstatus = paginator.page(page)
                 page = int(page)
                 total_page = int(page + 3)
