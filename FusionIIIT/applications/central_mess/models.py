@@ -119,7 +119,7 @@ class Monthly_bill(models.Model):
     total_bill = models.IntegerField(default=2370)
 
     class Meta:
-        unique_together = (('student_id', 'month'),)
+        unique_together = (('student_id', 'month', 'year'),)
 
     def __str__(self):
         return '{} - {}'.format(self.student_id.id, self.month)
@@ -147,7 +147,6 @@ class Menu(models.Model):
     def __str__(self):
         return '{} - {} - {}'.format(self.mess_option,
                                      self.meal_time, self.dish)
-
 
 
 class Rebate(models.Model):

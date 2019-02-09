@@ -613,11 +613,13 @@ def billgenerate(request):
     data = {
         'status': 1,
     }
-    students = Student.objects.filter.all()
+    students = Student.objects.all()
     for temp in students:
         monthly_bill_obj = Monthly_bill(student_id=temp, month=month_now, year=year_now, amount=amount_m)
-        print(monthly_bill_obj)
-        monthly_bill_obj.save()
+        if Monthly_bill.objects.filter(student_id=temp, month=month_now, year=year_now):
+            print('exists')
+        else:
+            monthly_bill_obj.save()
     return JsonResponse(data)
 
 
