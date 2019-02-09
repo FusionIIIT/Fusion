@@ -22,8 +22,8 @@ from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     url(r'^', include('applications.globals.urls')),
-    url(r'^eis/', include('applications.eis.urls',namespace='eis')),
-    url(r'^mess/', include('applications.central_mess.urls')),
+    url(r'^eis/', include('applications.eis.urls', namespace='eis')),
+    url(r'^mess/', include('applications.central_mess.urls', namespace='mess')),
     url(r'^complaint/', include('applications.complaint_system.urls')),
     url(r'^healthcenter/', include('applications.health_center.urls')),
     url(r'^leave/', include('applications.leave.urls')),
