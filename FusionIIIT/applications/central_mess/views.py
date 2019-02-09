@@ -506,17 +506,27 @@ def invitation(request):
     return HttpResponseRedirect("/mess")
 
 
-def responserebate(request, ap_id):
-    leaves = Rebate.objects.get(pk=ap_id)
+# def responserebate(request, ap_id):
+#     leaves = Rebate.objects.get(pk=ap_id)
 
-    if(request.POST.get('submit') == 'approve'):
-        leaves.status = '2'
+#     if(request.POST.get('submit') == 'approve'):
+#         leaves.status = '2'
 
-    else:
-        leaves.status = '0'
+#     else:
+#         leaves.status = '0'
+#     leaves.save()
+#     return HttpResponseRedirect("/mess")
+
+
+def responserebate(request):
+    id = request.POST["id"]
+    leaves = Rebate.objects.get(pk=id)
+    leaves.status = request.POST["status"]
     leaves.save()
-    return HttpResponseRedirect("/mess")
-
+    data = {
+        'message':'You responded to request !'
+    }
+    return JsonResponse(data)
 
 def placerequest(request):
     # This is for placing special food request
