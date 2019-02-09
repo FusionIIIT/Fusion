@@ -523,6 +523,7 @@ def invitation(request):
        # leaves.status = '0'
     #leaves.save()
    # return HttpResponseRedirect("/mess")
+
 def responserebate(request):
     id = request.POST["id"]
     leaves = Rebate.objects.get(pk=id)
