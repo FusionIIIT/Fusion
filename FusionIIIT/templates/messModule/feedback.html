@@ -45,12 +45,6 @@
                                 </select>
                             </div>
 
-                            <!-- <div class="field">
-                                <label><br></label>
-                                <button class="ui primary fluid button" type="submit">
-                                    Submit
-                                </button>
-                            </div> -->
                         </div>
                     </div>
 
@@ -122,14 +116,14 @@
                 success: function(data) {
                     if(data.status){
                         alert("Data Inserted Successfully");
-                        
+
                          $('#ls_table').prepend("<tr><td>"+ $("#leave_type").val()+ "</td><td>"+
                              $("#start_date").val() + "</td><td>" + $("end_date").val()+
                              "</td><td>"+ $("#purpose").val()+ "</td></tr>")
 
                         document.getElementById('feedback_type').value="";
                         document.getElementById('description').value="";
-                        
+
                     }
                 },
                 error: function(data, err) {
