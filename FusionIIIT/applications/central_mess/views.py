@@ -573,16 +573,22 @@ def responsespl(request, ap_id):
 def updatecost(request):
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
-
-    cost = request.POST.get("newcost")
-
+    today = datetime.today()
+    year = today.year
+    month = today.month
+    print(month)
+    print(year)
+    cost = request.POST.get("amount")
+    data = {
+        'status': 1,
+    }
     monthlybill = Monthly_bill.objects.all()
 
     for temp in monthlybill:
         temp.amount = cost
         temp.save()
-
-    return HttpResponseRedirect("/mess")
+    print(temp)
+    return JsonResponse(data)
 
 
 class MenuPDF(View):
