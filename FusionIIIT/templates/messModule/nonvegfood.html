@@ -4,7 +4,6 @@
 {% block nonvegfood %}
 {% if messages %}
 <ul class="messages">
-   <!--
     {% for message in messages %}
     <li>{% if "successmsg" in message.tags %} class="{{ message.tags }}"{% endif %}>
         {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}Important: {% endif %}
@@ -13,7 +12,6 @@
     {% endfor %}
 </ul>
 {% endif %}
--->
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="nonvegfood">
