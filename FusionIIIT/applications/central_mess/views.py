@@ -602,9 +602,6 @@ def updatecost(request):
 
 
 class MenuPDF(View):
-    print("in")
-    data = 0
-
     def post(self, request, *args, **kwargs):
         user = request.user
         extrainfo = ExtraInfo.objects.get(user=user)

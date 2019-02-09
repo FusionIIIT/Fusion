@@ -112,6 +112,7 @@ class Mess_reg(models.Model):
 class Monthly_bill(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     month = models.CharField(max_length=20, choices=MONTHS)
+    year = models.IntegerField(default=2019)
     amount = models.IntegerField(default=2370)
     rebate_count = models.IntegerField(default=0)
     rebate_amount = models.IntegerField(default=0)
@@ -124,7 +125,6 @@ class Monthly_bill(models.Model):
 
     def __str__(self):
         return '{} - {}'.format(self.student_id.id, self.month)
-
 
 
 class Payments(models.Model):
