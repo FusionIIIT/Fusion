@@ -9,6 +9,10 @@
         <a class="item" data-tab="messpayment">
             Payment
         </a>
+        <a class="item" data-tab="generatebill">
+            Generate Bill
+        </a>
+
     </div>
 
 
@@ -35,23 +39,38 @@
                     </div>
              </div>
          </form>
+        <br>
+        <br>
 
-        <form method="post" >
-             {% csrf_token %}
-             <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
-                    <div class="field">
-                        <label>Generate Bill for this month</label>
-                        <button class="ui primary button right floated" type="submit" name="billgenerate" onclick="return billgenerate()">
-                            Submit
-                        </button>
-                    </div>
-             </div>
-         </form>
+<div class="ui divider"></div>
     </div>
 </div>
 
 <div class="ui divider"></div>
 
+
+<div class="ui tab" data-tab="generatebill" id="generatebill">
+    <div class="ui vertical segment">
+        <!--action="{% url 'mess:billgenerate' %}"-->
+         <form method="post" action="{% url 'mess:billgenerate' %}">
+             {% csrf_token %}
+                    <div class="field">
+                        <label>Generate this month's bill and add bill amount</label>
+                        <button class="ui primary button right floated" type="submit" name="submit">
+                            Generate
+                        </button>
+                    </div>
+         </form>
+
+    </div>
+</div>
+        <br>
+        <br>
+
+<div class="ui divider"></div>
+
+
+<div class="ui divider"></div>
 {% endblock %}
 {% block javascript %}
 <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
@@ -85,11 +104,12 @@
                 url: 'billgenerate/',
                 dataType: 'json',
                 data{
-                }
+                'csrfmiddlewaretoken' : '{{ csrf_token }}'
+                },
                 success: function(data) {
                     if(data.status){
                         alert("Data Inserted Successfully");
-                        $("#messmonthlybill").load(location.href+" #messmonthlybill>*","")
+                        <!--$("#messmonthlybill").load(location.href+" #messmonthlybill>*","")-->
                     }
                 },
                 error: function(data, err) {

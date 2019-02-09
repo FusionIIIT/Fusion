@@ -609,10 +609,15 @@ def billgenerate(request):
     today = datetime.today()
     year_now = today.year
     month_now = today.strftime('%B')
+    amount_m = 2400
     data = {
         'status': 1,
     }
-    # students = Student.objects.get(id = )
+    students = Student.objects.filter.all()
+    for temp in students:
+        monthly_bill_obj = Monthly_bill(student_id=temp, month=month_now, year=year_now, amount=amount_m)
+        print(monthly_bill_obj)
+        monthly_bill_obj.save()
     return JsonResponse(data)
 
 
@@ -620,15 +625,37 @@ class MenuPDF(View):
     def post(self, request, *args, **kwargs):
         user = request.user
         extrainfo = ExtraInfo.objects.get(user=user)
-        student = Student.objects.get(id=extrainfo)
-        messinfo = Messinfo.objects.get(student_id=student)
-        mess_option = messinfo.mess_option
-        print(mess_option)
+        y = Menu.objects.all()
+
+        if extrainfo.user_type=='student':
+            student = Student.objects.get(id=extrainfo)
+            messinfo = Messinfo.objects.get(student_id=student)
+            mess_option = messinfo.mess_option
+            context = {
+                'menu': y,
+                'mess_option': mess_option
+            }
+            if mess_option=='mess2':
+                return render_to_pdf('messModule/menudownloadable2.html', context)
+            else:
+                return render_to_pdf('messModule/menudownloadable1.html', context)
+        else:
+            context = {
+                'menu': y,
+                'mess_option': 'mess2'
+            }
+            return render_to_pdf('messModule/menudownloadable2.html', context)
+        # return HttpResponse(pdf, content_type='application/pdf')
+
+
+class MenuPDF1(View):
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        extrainfo = ExtraInfo.objects.get(user=user)
         y = Menu.objects.all()
         context = {
             'menu': y,
-            'messoption': mess_option
+            'mess_option': 'mess1'
         }
-        # template = get_template('messModule/menudownloadable.html')
-        return render_to_pdf('messModule/menudownloadable.html', context)
+        return render_to_pdf('messModule/menudownloadable1.html', context)
         # return HttpResponse(pdf, content_type='application/pdf')

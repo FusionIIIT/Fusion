@@ -14,6 +14,7 @@ urlpatterns = [
     url(r'^regsubmit/', views.regsubmit, name='regsubmit'),
     url(r'^regadd/', views.regadd, name='regadd'),
     url(r'^menudownload/', views.MenuPDF.as_view(), name='MenuPDF'),
+    url(r'^menudownload1/', views.MenuPDF.as_view(), name='MenuPDF1'),
     url(r'^(?P<ap_id>[0-9]+)/response/', views.response, name='response'),
     url(r'^(?P<ap_id>[0-9]+)/processvacafood/', views.processvacafood, name='processvacafood'),
     url(r'^leave', views.leaverequest, name='leaverequest'),
@@ -24,5 +25,6 @@ urlpatterns = [
    # url(r'^(?P<ap_id>[0-9]+)/responserebate/', views.responserebate, name='responserebate'),
     url(r'^(?P<ap_id>[0-9]+)/responsespl/', views.responsespl, name='responsespl'),
     url(r'^updatecost', views.updatecost, name='updatecost'),
+    url(r'^billgenerate', views.billgenerate, name='billgenerate'),
 
 ]
