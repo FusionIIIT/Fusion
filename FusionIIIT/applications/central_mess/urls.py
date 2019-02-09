@@ -13,7 +13,7 @@ urlpatterns = [
     url(r'^menusubmit/', views.menusubmit, name='menusubmit'),
     url(r'^regsubmit/', views.regsubmit, name='regsubmit'),
     url(r'^regadd/', views.regadd, name='regadd'),
-
+    url(r'^menudownload/', views.MenuPDF.as_view(), name='MenuPDF'),
     url(r'^(?P<ap_id>[0-9]+)/response/', views.response, name='response'),
     url(r'^(?P<ap_id>[0-9]+)/processvacafood/', views.processvacafood, name='processvacafood'),
     url(r'^leave', views.leaverequest, name='leaverequest'),
