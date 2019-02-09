@@ -238,7 +238,8 @@ def placeorder(request):
                 nonveg_obj = Nonveg_data(student_id=student, order_date=order_date,
                                          order_interval=order_interval, dish=dishn)
                 nonveg_obj.save()
-                messages.success(request, 'Your request is forwarded !!', extra_tags='successmsg')
+               # messages.success(request, 'Your request is forwarded !!', extra_tags='successmsg')
+                #return HttpResponse("Your request is successfully forwarded !")
                 return HttpResponseRedirect('/mess')
             except ObjectDoesNotExist:
                 return HttpResponse("seems like object error")
@@ -317,6 +318,35 @@ def menusubmit(request):
 
 
 @login_required
+def response(request):
+    user = request.user
+    extrainfo = ExtraInfo.objects.get(user=user)
+    holds_designations = HoldsDesignation.objects.filter(user=user)
+    desig = holds_designations
+
+    for d in desig:
+        if d.designation.name == 'mess_manager':
+            application = Menu_change_request.objects.get(pk=request.POST["id"])
+
+            if(request.POST["status"]==2):
+                application.status = 2
+                meal = application.dish
+                obj = Menu.objects.get(dish=meal.dish)
+                obj.dish = application.request
+                obj.save()
+
+            elif(request.POST["status"]==0):
+                application.status = 0
+
+            else:
+                application.status = 1
+
+        application.save()
+        data = {
+            'message':request.POST["status"],
+        }
+
+    return JsonResponse(data)
 def response(request, ap_id):
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
@@ -343,7 +373,6 @@ def response(request, ap_id):
         application.save()
 
     return HttpResponseRedirect("/mess")
-
 
 @login_required
 def processvacafood(request, ap_id):
@@ -444,26 +473,10 @@ def leaverequest(request):
 
     rebates = Rebate.objects.filter(student_id=student)
 
-    for r in rebates:
-        if r.status == '1' or r.status == '2':
-            print(r.start_date)
-            print("compare")
-            print(start_date)
-            date_format = "%Y-%m-%d"
-            a = datetime.strptime(str(r.start_date), date_format)
-            b = datetime.strptime(str(start_date), date_format)
-            c = datetime.strptime(str(r.end_date), date_format)
-            d = datetime.strptime(str(end_date), date_format)
-            print((b <= a and (d >= a and d <= c)) or (b >= a and (d >= a and d <= c)) or (b <= a and (d >= c)) or ((b >= a and b<=c) and (d >= c)))
-            print((b >= a and b<=c) and (d >= c))
-            if ((b <= a and (d >= a and d <= c)) or (b >= a and (d >= a and d <= c)) or (b <= a and (d >= c)) or ((b >= a and b<=c) and (d >= c))):
-                flag = 0
-                break
 
-    if flag == 1:
-        rebate_obj = Rebate(student_id=student, leave_type=leave_type, start_date=start_date,
+    rebate_obj = Rebate(student_id=student, leave_type=leave_type, start_date=start_date,
                                 end_date=end_date, purpose=purpose)
-        rebate_obj.save()
+    rebate_obj.save()
 
     data = {
             'status': flag,
@@ -500,17 +513,25 @@ def invitation(request):
     return HttpResponseRedirect("/mess")
 
 
-def responserebate(request, ap_id):
-    leaves = Rebate.objects.get(pk=ap_id)
+#def responserebate(request, ap_id):
+   # leaves = Rebate.objects.get(pk=ap_id)
 
-    if(request.POST.get('submit') == 'approve'):
-        leaves.status = '2'
+    #if(request.POST.get('submit') == 'approve'):
+        #leaves.status = '2'
 
-    else:
-        leaves.status = '0'
+    #else:
+       # leaves.status = '0'
+    #leaves.save()
+   # return HttpResponseRedirect("/mess")
+def responserebate(request):
+    id = request.POST["id"]
+    leaves = Rebate.objects.get(pk=id)
+    leaves.status = request.POST["status"]
     leaves.save()
-    return HttpResponseRedirect("/mess")
-
+    data = {
+        'message':'You responded to request !'
+    }
+    return JsonResponse(data)
 
 def placerequest(request):
     # This is for placing special food request
