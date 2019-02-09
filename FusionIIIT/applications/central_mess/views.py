@@ -10,6 +10,7 @@ from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from django.views.generic import View
+from django.db.models import Q
 from applications.central_mess.utils import render_to_pdf
 from django.contrib.auth.models import User
 from applications.academic_information.models import Student
@@ -584,20 +585,34 @@ def updatecost(request):
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
     today = datetime.today()
-    year = today.year
-    month = today.month
-    print(month)
-    print(year)
+    year_now = today.year
+    month_now = today.strftime('%B')
+    print(month_now)
+    print(year_now)
     cost = request.POST.get("amount")
     data = {
         'status': 1,
     }
-    monthlybill = Monthly_bill.objects.all()
-
+    monthlybill = Monthly_bill.objects.filter(Q(month=month_now) & Q(year=year_now))
     for temp in monthlybill:
+        print(temp)
+        print(temp.year)
         temp.amount = cost
         temp.save()
     print(temp)
+    return JsonResponse(data)
+
+
+def billgenerate(request):
+    user = request.user
+    extrainfo = ExtraInfo.objects.get(user=user)
+    today = datetime.today()
+    year_now = today.year
+    month_now = today.strftime('%B')
+    data = {
+        'status': 1,
+    }
+    # students = Student.objects.get(id = )
     return JsonResponse(data)
 
 

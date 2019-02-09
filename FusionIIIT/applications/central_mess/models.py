@@ -108,17 +108,15 @@ class Mess_reg(models.Model):
     end_reg = models.DateField(default=datetime.date.today)
 
 
-
 class Monthly_bill(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     month = models.CharField(max_length=20, choices=MONTHS)
-    year = models.IntegerField(default=2019)
+    year = models.IntegerField(default=datetime.date.today().year)
     amount = models.IntegerField(default=2370)
     rebate_count = models.IntegerField(default=0)
     rebate_amount = models.IntegerField(default=0)
     nonveg_total_bill = models.IntegerField(default=0)
     total_bill = models.IntegerField(default=2370)
-
 
     class Meta:
         unique_together = (('student_id', 'month'),)
