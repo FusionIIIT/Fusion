@@ -6,9 +6,9 @@
         <!--<a class="ui active item" data-tab="bills">-->
             <!--Monthly Bill-->
         <!--</a>-->
-        <a class="item" data-tab="messpayment">
-            Payment
-        </a>
+        <!--<a class="item" data-tab="messpayment">-->
+            <!--Payment-->
+        <!--</a>-->
         <a class="item" data-tab="generatebill">
             Generate Bill
         </a>
@@ -69,6 +69,9 @@
                             Generate
                         </button>
                     </div>
+                    <div>
+                        <label>Bill generation will take a while please hold on and don't refresh</label>
+                    </div>
          </form>
 
     </div>
@@ -125,6 +128,7 @@
                 },
                 error: function(data, err) {
                     alert(err.message);
+                    $("#generatebill").load(location.href+" #generatebill>*","")
                 }
             });
         return false;
