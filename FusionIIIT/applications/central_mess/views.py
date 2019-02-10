@@ -619,7 +619,9 @@ def billgenerate(request):
     today = datetime.today()
     year_now = today.year
     month_now = today.strftime('%B')
-    amount_m = 2400
+    amount_m = int(request.POST["amount"])
+    print(amount_m)
+    # amount_m = 2400
     data = {
         'status': 1,
     }
@@ -641,6 +643,7 @@ def billgenerate(request):
             if items.leave_type == 'casual':
                 count += item.duration
         rebate_count = count
+        rebate_amount = rebate_count*80
         total_bill = rebate_amount + nonveg_total_bill + amount_m
         monthly_bill_obj = Monthly_bill(student_id=temp.student_id,
                                         month=month_now,

@@ -3,9 +3,9 @@
 
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
-        <a class="ui active item" data-tab="bills">
-            Monthly Bill
-        </a>
+        <!--<a class="ui active item" data-tab="bills">-->
+            <!--Monthly Bill-->
+        <!--</a>-->
         <a class="item" data-tab="messpayment">
             Payment
         </a>
@@ -16,35 +16,35 @@
     </div>
 
 
-<div class="ui active tab" data-tab="bills" id="messmonthlybill">
-    <div class="ui vertical segment">
-         <form method="post" >
-             {% csrf_token %}
-             <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
-                    <div class="two fields">
-                        <div class="field">
-                            <label>Enter bill amount for the current month</label>
-                        </div>
-                    </div>
+<!--<div class="ui active tab" data-tab="bills" id="messmonthlybill">-->
+    <!--<div class="ui vertical segment">-->
+         <!--<form method="post" >-->
+             <!--{% csrf_token %}-->
+             <!--<div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">-->
+                    <!--<div class="two fields">-->
+                        <!--<div class="field">-->
+                            <!--<label>Enter bill amount for the current month</label>-->
+                        <!--</div>-->
+                    <!--</div>-->
 
-                     <div class="field">
-                        <label>Monthly Bill Amount</label>
-                        <input min="0" max="2500" id="amount" name="amount" required="true">
-                    </div>
+                     <!--<div class="field">-->
+                        <!--<label>Monthly Bill Amount</label>-->
+                        <!--<input min="0" max="2500" id="amount" name="amount" required="true">-->
+                    <!--</div>-->
 
-                    <div class="field">
-                        <button class="ui primary button right floated" type="submit" name="submit" onclick="return updatecost()">
-                            Submit
-                        </button>
-                    </div>
-             </div>
-         </form>
-        <br>
-        <br>
+                    <!--<div class="field">-->
+                        <!--<button class="ui primary button right floated" type="submit" name="submit" onclick="return updatecost()">-->
+                            <!--Submit-->
+                        <!--</button>-->
+                    <!--</div>-->
+             <!--</div>-->
+         <!--</form>-->
+        <!--<br>-->
+        <!--<br>-->
 
-<div class="ui divider"></div>
-    </div>
-</div>
+<!--<div class="ui divider"></div>-->
+    <!--</div>-->
+<!--</div>-->
 
 <div class="ui divider"></div>
 
@@ -55,7 +55,16 @@
          <form method="post" action="{% url 'mess:billgenerate' %}">
              {% csrf_token %}
                     <div class="field">
-                        <label>Generate this month's bill and add bill amount</label>
+                        <div class="two fields">
+                        <div class="field">
+                            <label>Enter bill amount for the current month and generate bill</label>
+                        </div>
+                    </div>
+
+                     <div class="field">
+                        <label>Monthly Bill Amount</label>
+                        <input min="0" max="2500" id="amount" name="amount" required="true">
+                    </div>
                         <button class="ui primary button right floated" type="submit" name="submit">
                             Generate
                         </button>
@@ -104,7 +113,8 @@
                 url: 'billgenerate/',
                 dataType: 'json',
                 data{
-                'csrfmiddlewaretoken' : '{{ csrf_token }}'
+                'csrfmiddlewaretoken' : '{{ csrf_token }}',
+                'amount': $("#amount").val()
                 },
                 success: function(data) {
                     if(data.status){
