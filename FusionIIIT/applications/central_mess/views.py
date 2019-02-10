@@ -571,15 +571,24 @@ def placerequest(request):
             return JsonResponse(data)
 
 
-def responsespl(request, ap_id):
-    sprequest = Special_request.objects.get(pk=ap_id)
-    if(request.POST.get('submit') == 'approve'):
-        sprequest.status = '2'
-    else:
-        sprequest.status = '0'
+# def responsespl(request, ap_id):
+#     sprequest = Special_request.objects.get(pk=ap_id)
+#     if(request.POST.get('submit') == 'approve'):
+#         sprequest.status = '2'
+#     else:
+#         sprequest.status = '0'
+#
+#     sprequest.save()
+#     return HttpResponseRedirect("/mess")
 
+def responsespl(request):
+    sprequest = Special_request.objects.get(pk=request.POST["id"])
+    sprequest.status = request.POST["status"]
     sprequest.save()
-    return HttpResponseRedirect("/mess")
+    data = {
+        'message':'You responded to the request !'
+    }
+    return JsonResponse(data)
 
 def updatecost(request):
     user = request.user
@@ -617,6 +626,7 @@ def billgenerate(request):
     mess_info = Messinfo.objects.all()
     students = Student.objects.all()
     for temp in mess_info:
+        print(temp)
         count = 0
         rebate_amount = 0
         nonveg_total_bill = 0
@@ -631,7 +641,7 @@ def billgenerate(request):
             if items.leave_type == 'casual':
                 count += item.duration
         rebate_count = count
-        total_bill = rebate_amount + rebate_count + nonveg_total_bill + amount_m
+        total_bill = rebate_amount + nonveg_total_bill + amount_m
         monthly_bill_obj = Monthly_bill(student_id=temp.student_id,
                                         month=month_now,
                                         year=year_now,
@@ -641,9 +651,9 @@ def billgenerate(request):
                                         nonveg_total_bill=nonveg_total_bill,
                                         total_bill=total_bill)
         if Monthly_bill.objects.filter(student_id=temp.student_id, month=month_now, year=year_now):
-            if Monthly_bill.objects.filter(student_id=temp.student_id, month=month_now, year=year_now, total_bill=total_bill):
-                break
-                # print("exists")
+            if Monthly_bill.objects.filter(student_id=temp.student_id, month=month_now, year=year_now,
+                                           total_bill=total_bill):
+                print("exists")
             else:
                 Monthly_bill.objects.filter(student_id=temp.student_id, month=month_now, year=year_now). \
                     update(student_id=temp.student_id,
@@ -667,7 +677,7 @@ def billgenerate(request):
     #         monthly_bill_obj.save()
     return JsonResponse(data)
 
-
+    
 class MenuPDF(View):
     def post(self, request, *args, **kwargs):
         user = request.user
@@ -705,4 +715,5 @@ class MenuPDF1(View):
             'mess_option': 'mess1'
         }
         return render_to_pdf('messModule/menudownloadable1.html', context)
-        # return HttpResponse(pdf, content_type='application/pdf')
+
+
