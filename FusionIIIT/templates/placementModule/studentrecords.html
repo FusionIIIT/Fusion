@@ -597,7 +597,7 @@
                 </div>
               </div>
 
-              <div class="ui active tab" data-tab="Placement">
+              <div class="{% if mnpbi_post %}ui tab{% else %}ui active tab{% endif %}" data-tab="Placement">
                 {% if not placementstatus and officer_manage %}
                   <div class="ui error message">
                     <i class="close icon"></i>
@@ -755,24 +755,25 @@
                                     </td>
 
                                     <td>
-                                      <form method="post" class="ui form" role="form">
+                                      <form method="post" class="ui form" role="form" action="{% url 'placement:delete_invitation_status' %}">
                                         {% csrf_token %}
-                                        <button name="deleteinvite" value="{{ student.pk }}" class="ui inverted huge circular icon button" style="margin: auto;">
+                                        <button name="deleteinvitationstatus" value="{{ student.pk }}" class="ui inverted huge circular icon button" style="margin: auto;">
                                             <i class="delete red icon"></i>
                                         </button>
-                                        </form>
+                                      </form>
                                     </td>
                                 </tr>
                                 {% endif %}
                               {% endfor %}
                             </tbody>
+
                         </table>
                     {% endif %}
 
                 </div>
               </div>
 
-              <div class="ui tab" data-tab="PBI">
+              <div class="{% if mnpbi_post %}ui active tab{% else %}ui tab{% endif %}" data-tab="PBI">
                   {% if not placementstatus and mnpbi_post %}
                     <div class="ui error message">
                       <i class="close icon"></i>
@@ -849,17 +850,18 @@
                     {% if placementstatus %}
                       <br>
                       <!-- Pagination Section starts here  --->
-                      {% if no_pagination %}
+                    {% if no_pagination %}
+
                         <center>
                           <div class="ui pagination menu">
                             {% if placementstatus.has_previous %}
-                            <a href="?pbi_page={{placementstatus.previous_page_number}}" class="item">
+                            <a href="?page={{placementstatus.previous_page_number}}" class="item">
                               Previous
                             </a>
                             {% endif %}
 
                             {% if is_disabled %}
-                              <a href="?pbi_page=1" class="item">1</a>
+                              <a href="?page=1" class="item">1</a>
                               <div class="disabled item">
                                 ...
                               </div>
@@ -867,9 +869,9 @@
 
                             {% for i in page_range %}
                               {% if placementstatus.number == i %}
-                                <a href="?pbi_page={{i}}" class="active item">{{ i }} </a>
+                                <a href="?page={{i}}" class="active item">{{ i }} </a>
                               {% else %}
-                                <a href="?pbi_page={{ i }}" class="item">{{ i }}</a>
+                                <a href="?page={{ i }}" class="item">{{ i }}</a>
                               {% endif %}
                             {% endfor %}
 
@@ -879,14 +881,14 @@
                             <div class="disabled item">
                               ...
                             </div>
-                            <a href="?pbi_page={{placementstatus.next_page_number}}" class="item">
+                            <a href="?page={{placementstatus.next_page_number}}" class="item">
                               Next
                             </a>
                             {% endif %}
                           </div>
                         </center>
-                      {% endif %}
-                      <!-- Pagination Section ends here --->
+                    {% endif %}
+                    <!-- Pagination Section ends here --->
                       <br>
 
                       <div class="ui divider"></div>
@@ -930,12 +932,13 @@
                                 </td>
 
                                 <td>
-                                  <form method="post" class="ui form" role="form">
-                                    {% csrf_token %}
-                                    <button name="deleteinvite" value="{{ student.pk }}" class="ui inverted huge circular icon button" style="margin: auto;">
-                                        <i class="delete red icon"></i>
-                                    </button>
-                                    </form>
+                                  <form method="post" class="ui form" role="form" action="{% url 'placement:delete_invitation_status' %}">
+                                        {% csrf_token %}
+                                         <input type="hidden" name="pbi_tab_active" value="pbi_tab_active">
+                                        <button name="deleteinvitationstatus" value="{{ student.pk }}" class="ui inverted huge circular icon button" style="margin: auto;">
+                                            <i class="delete red icon"></i>
+                                        </button>
+                                      </form>
                                 </td>
                               </tr>
                               {% endif %}
