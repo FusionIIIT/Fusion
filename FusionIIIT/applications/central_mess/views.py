@@ -613,13 +613,37 @@ def billgenerate(request):
     data = {
         'status': 1,
     }
+    mess_info = Messinfo.objects.all()
     students = Student.objects.all()
-    for temp in students:
-        monthly_bill_obj = Monthly_bill(student_id=temp, month=month_now, year=year_now, amount=amount_m)
-        if Monthly_bill.objects.filter(student_id=temp, month=month_now, year=year_now):
-            print('exists')
-        else:
-            monthly_bill_obj.save()
+    for temp in mess_info:
+        print(temp.student_id)
+        nonveg_data = Nonveg_data.objects.filter(student_id=temp.student_id)
+        print(nonveg_data)
+        nonveg_menu = Nonveg_menu.objects.all()
+        nonveg_bill_temp = 0
+        for dishh in nonveg_data:
+            price = nonveg_menu.filter(dish=dishh)
+            print(price)
+            # nonveg_bill_temp = temp.dish * price
+
+
+        # rebate_count = 0
+        # rebate_amount = 0
+        # nonveg_total_bill = 0
+        # total_bill = rebate_amount + rebate_count + nonveg_total_bill + amount_m
+        # print(temp.student_id)
+        # monthly_bill_obj = Monthly_bill(student_id=temp.student_id, month=month_now, year=year_now, amount=amount_m)
+        # if Monthly_bill.objects.filter(student_id=temp.student_id, month=month_now, year=year_now, total_bill=total_bill):
+        #     print('exists')
+        # else:
+        #     monthly_bill_obj.save()
+        #     print("updated")
+    # for temp in students:
+    #     monthly_bill_obj = Monthly_bill(student_id=temp, month=month_now, year=year_now, amount=amount_m)
+    #     if Monthly_bill.objects.filter(student_id=temp, month=month_now, year=year_now):
+    #         print('exists')
+    #     else:
+    #         monthly_bill_obj.save()
     return JsonResponse(data)
 
 

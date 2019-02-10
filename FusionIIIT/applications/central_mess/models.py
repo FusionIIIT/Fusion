@@ -128,11 +128,11 @@ class Monthly_bill(models.Model):
 class Payments(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     sem = models.IntegerField()
+    year = models.IntegerField(default=datetime.date.today().year)
     amount_paid = models.IntegerField(default=0)
 
-
     class Meta:
-        unique_together = (('student_id', 'sem'),)
+        unique_together = (('student_id', 'sem', 'year'),)
 
     def __str__(self):
         return '{} - {}'.format(self.student_id.id, self.sem)
@@ -162,7 +162,6 @@ class Rebate(models.Model):
         return str(self.student_id.id)
 
 
-
 class Vacation_food(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     start_date = models.DateField(default=datetime.date.today)
@@ -175,7 +174,6 @@ class Vacation_food(models.Model):
         return str(self.student_id.id)
 
 
-
 class Nonveg_menu(models.Model):
     dish = models.CharField(max_length=20)
     price = models.IntegerField()
@@ -184,7 +182,6 @@ class Nonveg_menu(models.Model):
 
     def __str__(self):
         return '{} - {}'.format(self.dish, self.price)
-
 
 
 class Nonveg_data(models.Model):
@@ -197,7 +194,6 @@ class Nonveg_data(models.Model):
 
     def __str__(self):
         return str(self.student_id.id)
-
 
 
 class Special_request(models.Model):
@@ -241,7 +237,6 @@ class Menu_change_request(models.Model):
 
     def __str__(self):
         return '{} - {} - {} - {}'.format(self.id, self.dish, self.request, self.status)
-
 
 
 class Feedback(models.Model):
