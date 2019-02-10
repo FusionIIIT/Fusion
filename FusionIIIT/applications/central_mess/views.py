@@ -606,6 +606,7 @@ def updatecost(request):
 def billgenerate(request):
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
+    nonveg_data = Nonveg_data.objects.all()
     today = datetime.today()
     year_now = today.year
     month_now = today.strftime('%B')
@@ -616,28 +617,48 @@ def billgenerate(request):
     mess_info = Messinfo.objects.all()
     students = Student.objects.all()
     for temp in mess_info:
-        print(temp.student_id)
-        nonveg_data = Nonveg_data.objects.filter(student_id=temp.student_id)
-        print(nonveg_data)
-        nonveg_menu = Nonveg_menu.objects.all()
-        nonveg_bill_temp = 0
-        for dishh in nonveg_data:
-            price = nonveg_menu.filter(dish=dishh)
-            print(price)
-            # nonveg_bill_temp = temp.dish * price
+        count = 0
+        rebate_amount = 0
+        nonveg_total_bill = 0
+        rebates = Rebate.objects.filter(student_id=temp.student_id)
+        for item in rebates:
+            d1 = item.start_date
+            d2 = item.end_date
+            item.duration = abs((d2 - d1).days)+1
+            item.save()
 
-
-        # rebate_count = 0
-        # rebate_amount = 0
-        # nonveg_total_bill = 0
-        # total_bill = rebate_amount + rebate_count + nonveg_total_bill + amount_m
-        # print(temp.student_id)
-        # monthly_bill_obj = Monthly_bill(student_id=temp.student_id, month=month_now, year=year_now, amount=amount_m)
-        # if Monthly_bill.objects.filter(student_id=temp.student_id, month=month_now, year=year_now, total_bill=total_bill):
-        #     print('exists')
-        # else:
-        #     monthly_bill_obj.save()
-        #     print("updated")
+        for items in rebates:
+            if items.leave_type == 'casual':
+                count += item.duration
+        rebate_count = count
+        total_bill = rebate_amount + rebate_count + nonveg_total_bill + amount_m
+        monthly_bill_obj = Monthly_bill(student_id=temp.student_id,
+                                        month=month_now,
+                                        year=year_now,
+                                        amount=amount_m,
+                                        rebate_count=rebate_count,
+                                        rebate_amount=rebate_amount,
+                                        nonveg_total_bill=nonveg_total_bill,
+                                        total_bill=total_bill)
+        if Monthly_bill.objects.filter(student_id=temp.student_id, month=month_now, year=year_now):
+            if Monthly_bill.objects.filter(student_id=temp.student_id, month=month_now, year=year_now, total_bill=total_bill):
+                break
+                # print("exists")
+            else:
+                Monthly_bill.objects.filter(student_id=temp.student_id, month=month_now, year=year_now). \
+                    update(student_id=temp.student_id,
+                           month=month_now,
+                           year=year_now,
+                           amount=amount_m,
+                           rebate_amount=rebate_amount,
+                           rebate_count=rebate_count,
+                           nonveg_total_bill=nonveg_total_bill,
+                           total_bill=total_bill
+                           )
+                # print("updated")
+    else:
+        monthly_bill_obj.save()
+        # print("generate")
     # for temp in students:
     #     monthly_bill_obj = Monthly_bill(student_id=temp, month=month_now, year=year_now, amount=amount_m)
     #     if Monthly_bill.objects.filter(student_id=temp, month=month_now, year=year_now):
