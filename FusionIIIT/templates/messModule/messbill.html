@@ -119,6 +119,7 @@
                 success: function(data) {
                     if(data.status){
                         alert("Data Inserted Successfully");
+                        $("#generatebill").load(location.href+" #generatebill>*","")
                         <!--$("#messmonthlybill").load(location.href+" #messmonthlybill>*","")-->
                     }
                 },

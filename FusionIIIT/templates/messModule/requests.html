@@ -77,7 +77,7 @@
     </div>
 </div>
 
-<div class="ui tab" data-tab="spfood">
+<div class="ui tab" data-tab="spfood" id="spfood">
     <div class="ui vertical segment">
         {% comment %}Form Tag starts here!{% endcomment %}
         <form action="" method="POST">
@@ -303,6 +303,7 @@
                 success: function(data) {
                     if(data.status == 1){
                         alert("Data Inserted Successfully");
+                        $("#spfood").load(location.href+" #spfood>*","")
                         
                         /*$('#ls_table').prepend("<tr><td>"+ $("#leave_type").val()+ "</td><td>"+ 
                             $("#start_date").val() + "</td><td>" + $("end_date").val()+
@@ -317,9 +318,11 @@
                     }
                     if(data.status == 2){
                         alert("Special Food request has already been made");
+                        $("#spfood").load(location.href+" #spfood>*","")
                     }
                     if(data.status == 3){
                     alert("Please check the date. The date may have passed or might not be a valid date");
+                    $("#spfood").load(location.href+" #spfood>*","")
                     return false;
                     }
                 },

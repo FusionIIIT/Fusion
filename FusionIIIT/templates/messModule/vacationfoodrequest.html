@@ -14,7 +14,7 @@
         </a>
     </div>
 
-    <div class="ui active tab" data-tab="vactionfoodrequest">
+    <div class="ui active tab" data-tab="vactionfoodrequest" id="lrequest">
         <div class="ui vertical segment">
 
             {% comment %}Form Tag starts here!{% endcomment %}
@@ -41,18 +41,16 @@
                             <label>Leave From:</label>
                             <div class="ui calendar" id="rangestart">
                                 <div class="ui input left icon">
-                                    <i class="calendar icon"></i>
-                                    <input name="start_date" type="text" placeholder="From" required="true" id="sdate">
+                                    <input name="start_date" type="date" placeholder="From" required="true" id="sdate">
                                 </div>
                             </div>
                         </div>
 
                         <div class="field">
                             <label>Leave To:</label>
-                            <div class="ui calendar" id="rangestart">
+                            <div class="ui calendar" id="rangeend">
                                 <div class="ui input left icon">
-                                    <i class="calendar icon"></i>
-                                    <input name="end_date" type="text" placeholder="To" required="true" id="edate">
+                                    <input name="end_date" type="date" placeholder="To" required="true" id="edate">
                                 </div>
                             </div>
                         </div>
@@ -217,16 +215,22 @@
                     'purpose':$("#purpose1").val()
                 },          
                 success: function(data) {
-                    if(data.status){
+                    if(data.status == 1){
                         alert("Data Inserted Successfully");
-
+                        $("#lrequest").load(location.href+" #lrequest>*","")
                         document.getElementById('sdate').value="";
                         document.getElementById('edate').value="";
                         document.getElementById('purpose1').value="";
                     }
+                    if(data.status == 2){
+                        alert("Please check the date")
+                        $("#lrequest").load(location.href+" #lrequest>*","")
+                    }
+
                 },
                 error: function(data, err) {
                     alert(err.message);
+                    $("#lrequest").load(location.href+" #lrequest>*","")
                 }
             });
         return false;

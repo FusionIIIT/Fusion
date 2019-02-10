@@ -289,6 +289,13 @@ def vacasubmit(request):
         start_date = request.POST.get('start_date')
         end_date = request.POST.get('end_date')
         purpose = request.POST.get('purpose')
+        date_today = str(datetime.now().date())
+        if(start_date<date_today)or(end_date<start_date):
+            data = {
+                'status': 2
+            }
+            return JsonResponse(data)
+
         vaca_obj = Vacation_food(student_id=student, start_date=start_date,
                                  end_date=end_date, purpose=purpose)
 
@@ -442,12 +449,18 @@ def regadd(request):
 def leaverequest(request):
     flag = 1
     user = request.user
+    today = str(datetime.now().date())
     extrainfo = ExtraInfo.objects.get(user=user)
     student = Student.objects.get(id=extrainfo)
     leave_type = request.POST.get('leave_type')
     start_date = request.POST.get('start_date')
     end_date = request.POST.get('end_date')
     purpose = request.POST.get('purpose')
+    if(start_date < today)or(end_date<start_date):
+        data = {
+            'status': 3
+        }
+        return JsonResponse(data)
 
     rebates = Rebate.objects.filter(student_id=student)
 

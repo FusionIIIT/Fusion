@@ -13,7 +13,7 @@
         </a>
     </div>
 
-    <div class="ui active tab" data-tab="feedback">
+    <div class="ui active tab" data-tab="feedback" id="feedback">
         <div class="ui vertical segment">
 
             {% comment %}Form Tag starts here!{% endcomment %}
@@ -116,7 +116,7 @@
                 success: function(data) {
                     if(data.status){
                         alert("Data Inserted Successfully");
-
+                        $("#feedback").load(location.href+" #feedback>*","")
                          $('#ls_table').prepend("<tr><td>"+ $("#leave_type").val()+ "</td><td>"+
                              $("#start_date").val() + "</td><td>" + $("end_date").val()+
                              "</td><td>"+ $("#purpose").val()+ "</td></tr>")
@@ -128,6 +128,7 @@
                 },
                 error: function(data, err) {
                     alert(err.message);
+                    $("#feedback").load(location.href+" #feedback>*","")
                 }
             });
         return false;
