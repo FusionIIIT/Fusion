@@ -1,0 +1,81 @@
+{% load static %}
+
+<!-- Comments Header -->
+<div>
+	<div style="font-size: 20px; color: #6698FF;" class="header">
+		Comments
+		<i class="ui right labeled icon caret right"></i>
+		<br>		
+	</div>
+
+	<!-- Scrollable Comments Section -->
+	<div class="hidden">
+		<div id="style-1" class="ui message scrollbar">
+			<!-- <div class="ui segment force-overflow"> -->
+			{% for comment in question.comments_set.all|dictsortreversed:"commented_at" %}						
+				<br>
+				<div style="display: inline;">
+					<a href=""><img class="ui avatar image" src="{% static 'globals/img/zlatan.jpg' %}"></a>
+				</div>
+				<span style="font-size: 15px; padding-left: 5px;">{{ comment.comment_text }}</span>
+				<footer style="color: rgba(0,0,0,.6); padding-left: 50px;">
+					<small>-{{comment.user}} | {{comment.commented_at|timesince}} ago</small>
+				</footer>
+
+				<!-- Comment_Like Button Section starts here -->
+				<div style="display: inline;" id="like-section-comment{{comment.id}}">
+					{% include 'feeds/like_section_comment.html' %}		
+				</div>
+				<!-- Comment Like Button section ends here -->
+
+				<button class="ui button" style="background-color: transparent;" onclick="reply_btn('{{comment.id}}');">
+					<span style="color: #6495ed;font-size: 12px;">Replies({{comment.reply_set.count}})</span>
+				</button>
+
+				
+				<div id="reply{{comment.id}}" style="display: none;">
+					<div class="ui grid">
+						<div class="ui two wide column"></div>
+
+						<div class="ui fourteen wide column">
+							<blockquote style="margin-left: 15px;">		
+								<form id="{{comment.id}}" class="reply-form" method="POST" action=".">{% csrf_token %}
+									<div style="display: none;" id="unique_{{comment.id}}">{{question.id}}</div>
+									<div class="ui form">
+										<div class="field">
+											<textarea id="reply_text{{comment.id}}" name="reply_text" rows=2 cols="10"></textarea>
+										</div>
+										<input type="hidden" name="ques" value="{{question.id}}">
+										<input class="ui mini blue basic button" type="submit" name="reply_button" value="Submit">
+									</div>
+								</form>
+								<br>
+								<p style="font-style: italic; font-weight: bold;">
+									{{comment.reply_set.count}} replies
+								</p>
+								<hr>
+								<br>
+								<div style="left: 40px; border-left: 100px solid #d9deea;border-left-width: 1px; border-left-style: solid; border-left-color: rgb(217, 222, 234);">
+								{% for reply in comment.reply_set.all|dictsortreversed:"replied_at" %}
+									{{reply.content}}
+									<footer>
+										<small style="color: rgba(0,0,0,.6);">-{{reply.user}} | {{reply.replied_at|timesince}} ago</small>
+									</footer>
+									<!-- <p style="color: rgba(0,0,0,.6); padding-left: 3px;"></p> -->
+									<div class="ui divider"></div>
+								{% endfor %}
+								</div>
+							</blockquote>
+						</div>
+					</div>
+				</div>
+
+				<div class="ui divider"></div>	
+				
+			{% empty %}
+				<p>No comments here yet :(</p>
+			{% endfor %}
+		<!-- </div> -->
+	</div>
+	</div>
+</div>

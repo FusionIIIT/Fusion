@@ -21,7 +21,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '=&w9due426k@l^ju1=s1)fj1rnpf0ok8xvjwx+62_nc-f12-8('
-
+CLIENT_ID = '187004491411-frc3j36n04o9k0imgnbl02qg42vkq36f.apps.googleusercontent.com'
+CLIENT_SECRET = 'enHu3RD0yBvCM_9C0HQmEp0z'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -110,10 +111,12 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'applications.globals',
     'applications.eis',
+    'notifications',
     'applications.academic_procedures',
     'applications.academic_information',
     'applications.leave',
     'applications.library',
+
     'applications.gymkhana',
     'applications.office_module',
     'applications.central_mess',
@@ -121,7 +124,6 @@ INSTALLED_APPS = [
     'applications.filetracking',
     'applications.finance_accounts',
     'applications.health_center',
-    'notification_channels',
     'applications.online_cms',
     'applications.placement_cell',
     'applications.scholarships',
@@ -131,6 +133,9 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.socialaccount.providers.google',
     'semanticuiforms',
+    'applications.feeds.apps.FeedsConfig',
+    'pagedown',
+    'markdown_deux',
 ]
 
 MIDDLEWARE = [
@@ -164,21 +169,20 @@ TEMPLATES = [
 WSGI_APPLICATION = 'Fusion.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/1.11/ref/settings/#databases
-#DATABASES = {
-#    'default':
-#        {
-#            'ENGINE': 'django.db.backends.mysql',
-#            'NAME': 'fusion',
-#            'USER': 'abhay',
-#            'PASSWORD': 'abhaygupta',
-#            'HOST': '127.0.0.1',
-#            'PORT': '3306',
-#        },
-#}
-
 PROJECT_DIR = os.path.abspath(os.path.dirname(__file__))
+
+# DATABASES = {
+#     'default':
+#         {
+#             'ENGINE': 'django.db.backends.mysql',
+#             'NAME': 'test',
+#             'USER': 'root',
+#             'PASSWORD': 'sksingh55',
+#             'HOST': 'localhost',
+#             'PORT': '3306',
+#         },
+# }
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -206,6 +210,14 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+AUTHENTICATION_BACKENDS = (
+    # Default backend -- used to login by username in Django admin
+    "django.contrib.auth.backends.ModelBackend",
+    # `allauth` specific authentication methods, such as login by e-mail
+    "allauth.account.auth_backends.AuthenticationBackend",
+)
+
+
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
 
@@ -230,6 +242,10 @@ STATIC_ROOT = '/static'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_EMAIL_VERIFICATION = "none"
+SOCIALACCOUNT_QUERY_EMAIL = True
+LOGIN_REDIRECT_URL = "/"
 
 if DEBUG:
     MIDDLEWARE += (
@@ -237,8 +253,12 @@ if DEBUG:
     )
     INSTALLED_APPS += (
         'debug_toolbar',
-    )
+        )
     INTERNAL_IPS = ('127.0.0.1',)
     DEBUG_TOOLBAR_CONFIG = {
         'INTERCEPT_REDIRECTS': False,
     }
+
+DJANGO_NOTIFICATIONS_CONFIG = {
+'USE_JSONFIELD':True,
+}

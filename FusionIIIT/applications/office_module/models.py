@@ -1,13 +1,19 @@
-from django.db import models
 import datetime
-from applications.academic_information.models import Student, Grades, Meeting
-from applications.globals.models import Staff, Faculty, ExtraInfo, Designation,HoldsDesignation, DepartmentInfo
-from applications.filetracking.models import Tracking
-from applications.leave.models import Leave
-from .models_office_students import *
-from applications.academic_information.models import Student, Instructor, Spi, Grades, Course
 
+from django.db import models
+
+from applications.academic_information.models import (Course, Grades,
+                                                      Instructor, Meeting, Spi,
+                                                      Student)
 from applications.academic_procedures.models import Thesis
+from applications.filetracking.models import Tracking
+from applications.globals.models import (DepartmentInfo, Designation,
+                                         ExtraInfo, Faculty, HoldsDesignation,
+                                         Staff)
+from applications.leave.models import Leave
+
+from .models_office_students import *
+
 
 class Constants:
     DAY_CHOICES = (

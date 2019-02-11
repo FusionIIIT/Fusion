@@ -1,5 +1,8 @@
+import base64
+import io
+import urllib
+
 from django import template
-import urllib, io, base64
 
 register = template.Library()
 

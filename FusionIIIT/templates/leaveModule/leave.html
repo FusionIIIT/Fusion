@@ -155,6 +155,13 @@
                             <i class="right floated chevron right icon"></i>
                         </a>
                     {% endif %}
+                    {% ifequal designation 'Assistant Registrar' %}
+                        <a class="item" data-tab="fifth">
+                            Leave Manager
+                            <i class="right floated chevron right icon"></i>
+                        </a>
+                    {% endifequal %}
+
                 </div>
                 {% comment %}The Tab-Menu ends here!{% endcomment %}
 
@@ -179,7 +186,7 @@
                 {% comment %}The Leave Status starts here!{% endcomment %}
                 <div class="ui tab segment" data-tab="second">
                     {% block leavestatus %}
-                        {% include 'leaveModule/leavestatus.html' %}
+                        {% include 'leaveModule/leavestatus1.html' %}
                     {% endblock %}
                 </div>
                 {% comment %}The Leave Status ends here!{% endcomment %}
@@ -203,6 +210,17 @@
                     </div>
                 {% endif %}
                 {% comment %}The Approve Leave ends here!{% endcomment %}
+
+
+                {% comment %}The Leave Manager starts here!{% endcomment %}
+                {% ifequal designation 'Assistant Registrar' %}
+                    <div class="ui tab segment" data-tab="fifth">
+                        <a href="{% url 'leave:leavemanager' %}">Go to Leave Manager</a>
+                    </div>
+                {% endifequal %}
+                {% comment %}The Leave Manager ends here!{% endcomment %}
+
+
 
 
             </div>

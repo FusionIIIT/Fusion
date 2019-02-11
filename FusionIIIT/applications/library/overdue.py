@@ -1,5 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
+
 url1 = "http://172.27.20.250/webopac/"
 url2 ="CircTotalFineUserWise.aspx?title=Over%20Due%20Details%20of%20MembersD"
 #r2 = requests.get(url1+url2)

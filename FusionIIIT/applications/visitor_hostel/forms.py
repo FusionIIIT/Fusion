@@ -1,9 +1,11 @@
-from django import forms
-from django.forms import ModelForm
-from .models import Inventory
-from applications.visitor_hostel.models import *
 import datetime
 
+from django import forms
+from django.forms import ModelForm
+
+from applications.visitor_hostel.models import *
+
+from .models import Inventory
 
 #class booking_request(forms.Form):
 CHOICES = (('A', 'A',), ('B', 'B',), ('C', 'C',), ('D', 'D',))

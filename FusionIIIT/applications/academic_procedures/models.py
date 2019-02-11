@@ -6,7 +6,6 @@ from applications.academic_information.models import Course, Student
 from applications.globals.models import DepartmentInfo, ExtraInfo, Faculty
 
 
-
 class Constants:
     SEM_CHOICES = (
         ('1', '1'),
@@ -94,5 +93,3 @@ class MinimumCredits(models.Model):
 
     def __str__(self):
         return "Semester: " + str(self.semester)+" Credits:" + str(self.credits)
-
-    

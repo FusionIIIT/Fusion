@@ -1,20 +1,23 @@
-from django.shortcuts import render, get_object_or_404, render_to_response, redirect
-from django.template import loader
-from django.http import HttpResponseRedirect, HttpResponse
-from django.shortcuts import render
-from django.urls import reverse_lazy
-from django.views import generic
-from django.views.generic.edit import CreateView, UpdateView, DeleteView
 import csv
-from django.contrib.auth.models import User
-from django.template.loader import get_template
-from xhtml2pdf import pisa
 from cgi import escape
 from io import BytesIO
+
+from django.contrib.auth.models import User
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import (get_object_or_404, redirect, render,
+                              render_to_response)
+from django.template import loader
+from django.template.loader import get_template
+from django.urls import reverse_lazy
+from django.views import generic
+from django.views.generic.edit import CreateView, DeleteView, UpdateView
+from xhtml2pdf import pisa
+
 from applications.eis import admin
 from applications.globals.models import ExtraInfo, HoldsDesignation
-from .models import *
+
 from .forms import *
+from .models import *
 
 # Create your views here
 

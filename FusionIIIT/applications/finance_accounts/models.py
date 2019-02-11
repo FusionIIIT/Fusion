@@ -1,7 +1,6 @@
 from django.db import models
 
 
-
 class Paymentscheme(models.Model):
 
     month = models.CharField(max_length = 70 , null = True)

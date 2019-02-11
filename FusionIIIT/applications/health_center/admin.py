@@ -1,8 +1,8 @@
 from django.contrib import admin
 
-from .models import (Ambulance_request, Appointment, Complaint, Doctor,
-                     Hospital_admit, Medicine, Prescribed_medicine,
-                     Prescription, Schedule, Stock, Counter,Expiry,Hospital)
+from .models import (Ambulance_request, Appointment, Complaint, Counter,
+                     Doctor, Expiry, Hospital, Hospital_admit, Medicine,
+                     Prescribed_medicine, Prescription, Schedule, Stock)
 
 admin.site.register(Doctor)
 admin.site.register(Appointment)
