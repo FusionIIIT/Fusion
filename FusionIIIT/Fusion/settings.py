@@ -109,6 +109,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
+    'background_task',
     'applications.globals',
     'applications.eis',
     'notifications',
