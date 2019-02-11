@@ -6,22 +6,27 @@
 
 <div class="ui pointing secondary menu">
     <a class="active item" data-tab="booking-requests">
-        Booking Requests
+        Bookings
     </a>
 
-    {% if user_designation == 'VhIncharge' %}
+    {% if user_designation == 'VhIncharge' or user_designation == 'VhCaretaker' or user_designation == 'Intender' %}
     <a class="item" data-tab="cancellation-requests">
         Cancellation Requests
     </a>
     {% endif %}
-
+    {% if user_designation == 'VhCaretaker' %}
     <a class="item" data-tab="active-bookings">
         Active Bookings
     </a>
-
+    {% endif %}
+<!-- 
     <a class="item" data-tab="rejected-bookings">
         Rejected Bookings
-    </a>
+    </a> -->
+<!-- cancellation requests -->
+   <!--  <a class="item" data-tab="cancellation-requests">
+        Cancellation Requests
+    </a> -->
 
     <a class="item" data-tab="completed-bookings">
         Completed Bookings
@@ -39,14 +44,16 @@
                             <th class="three wide column">Booking From</th>
                             <th class="three wide column">Booking To</th>
                             <th class="three wide column">Category</th>
+                            <th class="three wide column">Status</th>
                         </tr>
                     </thead>
 
                     <tbody>
-                        {% for booking in pending_bookings %}
+                        {% for booking in dashboard_bookings %}
                         {% if user_designation == "VhCaretaker" %}
                         {% if booking.status == "Forward" %}
-                        <tr onclick=bookingRequestModal('{{ booking.id }}')>
+                        <!-- <tr onclick=bookingRequestModal('{{ booking.id }}')> -->
+                        <tr class="intender_entry_row">
                             <td>
                                 <h4 class="ui image header">
                                     <div class="content">
@@ -60,14 +67,58 @@
                             <td>{{ booking.booking_from }}</td>
                             <td>{{ booking.booking_to }}</td>
                             <td>{{ booking.visitor_category }}</td>
+
+                            <td>
+                                {% if booking.status == "Pending" %}
+                                    <i class="yellow exclamation icon"></i>
+                                
+                                {% elif booking.status == "Confirmed" %}
+                                    <i class="green check icon"></i>
+
+                                {% elif booking.status == "Forward" %}
+                                    <i class="green arrow right icon"></i>
+
+                                {% elif booking.status == "Rejected" %}
+                                    <i class="red trash icon"></i>
+
+                                % elif booking.status == "Canceled" %}
+                                    <i class="red close icon"></i>
+
+                                {% elif booking.status == "Complete" %}
+                                    <i class="green calender check icon"></i>
+                                {% else %}
+
+                                    {{ booking.status }}
+                                {% endif %}
+
+                            </td>
+
+                            <td class="update" onclick="updateBookingModal('{{ booking.id }}')"><i class="eye icon"></i></td>
+                            <td>
+                            {% if booking.status == "Confirmed" %}
+                                    <div class="ui large green button center floated"  onclick="bookingRequestModal('{{ booking.id }}')">
+                                        Action
+                                    </div>
+                                    
+                            {% else %}
+                            
+                                    <div class="ui large green button center floated"  onclick="bookingRequestModal('{{ booking.id }}')">
+                                        Action
+                                    </div>
+                            {% endif %}
+                            </td>
+                                <!-- <td class="delete" onclick=bookingRequestModal('{{ booking.id }}')><i class="trash icon"></i></td> -->
+                            <!-- <td><i class="pencil alternate icon" onclick=bookingRequestModal('{{ booking.id }}')></i></td> -->
+                            <!-- <td class="delete" onclick=bookingRequestModal('{{ booking.id }}')><i class="trash icon"></i></td> -->
                         </tr>
                         {% endif %}
                         {% else %}
-                            <tr onclick=bookingRequestModal('{{ booking.id }}')>
+                            <!-- <tr onclick=bookingRequestModal('{{ booking.id }}')> -->
+                            <tr class="intender_entry_row">
                             <td>
                                 <h4 class="ui image header">
                                     <div class="content">
-                                        {{ booking.intender }}
+                                        {{ booking.intender.username }}
                                         <div class="sub header">
                                         {{ booking.intender.email }}
                                         </div>
@@ -77,6 +128,63 @@
                             <td>{{ booking.booking_from }}</td>
                             <td>{{ booking.booking_to }}</td>
                             <td>{{ booking.visitor_category }}</td>
+                            <td>
+                                {% if booking.status == "Pending" %}
+                                    <i class="yellow exclamation icon"></i>
+                                
+                                {% elif booking.status == "Confirmed" %}
+                                    <i class="green check icon"></i>
+
+                                {% elif booking.status == "Forward" %}
+                                    <i class="green arrow right icon"></i>
+
+                                {% elif booking.status == "Rejected" %}
+                                    <i class="red trash icon"></i>
+
+                                % elif booking.status == "Canceled" %}
+                                    <i class="red close icon"></i>
+
+                                {% elif booking.status == "Complete" %}
+                                    <i class="green calender check icon"></i>
+                                {% else %}
+
+                                    {{ booking.status }}
+                                {% endif %}
+
+                            </td>
+                            <td class="update" onclick="updateBookingModal('{{ booking.id }}')"><i class="eye icon"></i></td>
+
+                            {% if user_designation == 'Intender' %}
+
+                                {% if booking.status == "Confirmed" %}
+                                    <td class="delete" onclick="bookingDetailsModal('{{ booking.id }}')"><i class="close icon"></i></td>
+                                {% else %}
+                                
+                                <td class="delete" onclick="bookingRequestModal('{{ booking.id }}')"><i class="close icon"></i></td>
+                                {% endif %}
+                            {% endif %}
+
+                                {% if user_designation == 'VhIncharge' %}
+                                    <td>
+                                {% if booking.status == "Confirmed" %}
+                                        <div class="ui large green button center floated"  onclick="bookingRequestModal('{{ booking.id }}')">
+                                            Action
+                                        </div>
+                                        
+                                {% else %}
+                                
+                                        <div class="ui large green button center floated"  onclick="bookingRequestModal('{{ booking.id }}')">
+                                            Action
+                                        </div>
+                                {% endif %}
+                                </td>
+                                <!-- <td>
+                                    <div class="ui large green button center floated"  onclick="bookingRequestModal('{{ booking.id }}')">
+                                        Action
+                                    </div>
+                                </td> -->
+                                {% endif %}
+
                         </tr>
                         {% endif %}
                         {% endfor %}
@@ -86,9 +194,10 @@
             </div>
         </div>
     </div>
-</div>
+</div> 
 
-{% if user_designation == "VhIncharge" %}
+
+{% if user_designation == "Intender" %}
 <div class="ui tab" data-tab="cancellation-requests">
     <div class="ui vertical segment">
         <div class="content">
@@ -100,12 +209,82 @@
                             <th class="three wide column">Booking From</th>
                             <th class="three wide column">Booking To</th>
                             <th class="three wide column">Category</th>
+                            <th class="three wide column">Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for booking in cancel_booking_requested %}
+                        <tr>
+                            <td>
+                                <h4 class="ui image header">
+                                    <div class="content">
+                                        {{ booking.intender.username }}
+                                        <div class="sub header">
+                                        {{ booking.intender.email }}
+                                        </div>
+                                    </div>
+                                </h4>
+                            </td>
+                            <td>{{ booking.booking_from }}</td>
+                            <td>{{ booking.booking_to }}</td>
+                            <td>{{ booking.visitor_category }}</td>
+                            <td>
+                                {% if booking.status == "Pending" %}
+                                    <i class="yellow exclamation icon"></i>
+                                
+                                {% elif booking.status == "Confirmed" %}
+                                    <i class="green check icon"></i>
+
+                                {% elif booking.status == "Forward" %}
+                                    <i class="green arrow right icon"></i>
+
+                                {% elif booking.status == "Rejected" %}
+                                    <i class="red trash icon"></i>
+
+                                % elif booking.status == "Canceled" %}
+                                    <i class="red close icon"></i>
+
+                                {% elif booking.status == "Complete" %}
+                                    <i class="green calender check icon"></i>
+                                {% else %}
+
+                                    {{ booking.status }}
+                                {% endif %}
+
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="ui divider"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+
+
+{% if user_designation == "VhIncharge" or user_designation == "VhCaretaker" %}
+<div class="ui tab" data-tab="cancellation-requests">
+    <div class="ui vertical segment">
+        <div class="content">
+            <div class="description">
+                <table class="ui very basic collapsing celled sortable table">
+                    <thead>
+                        <tr>
+                            <th class="three wide column">Intender</th>
+                            <th class="three wide column">Booking From</th>
+                            <th class="three wide column">Booking To</th>
+                            <th class="three wide column">Category</th>
+                            <!-- <th class="three wide column">Status</th> -->
                         </tr>
                     </thead>
 
                     <tbody>
                         {% for booking in cancel_booking_request %}
-                        <tr onclick=cancellationRequestModal('{{ booking.id }}')>
+                        <tr>
                             <td>
                                 <h4 class="ui image header">
                                     <div class="content">
@@ -119,6 +298,37 @@
                             <td>{{ booking.booking_from }}</td>
                             <td>{{ booking.booking_to }}</td>
                             <td>{{ booking.visitor_category }}</td>
+                            <!-- <td>
+                                {% if booking.status == "Pending" %}
+                                    <i class="yellow exclamation icon"></i>
+                                
+                                {% elif booking.status == "Confirmed" %}
+                                    <i class="green check icon"></i>
+
+                                {% elif booking.status == "Forward" %}
+                                    <i class="green arrow right icon"></i>
+
+                                {% elif booking.status == "Rejected" %}
+                                    <i class="red trash icon"></i>
+
+                                % elif booking.status == "Canceled" %}
+                                    <i class="red close icon"></i>
+
+                                {% elif booking.status == "Complete" %}
+                                    <i class="green calender check icon"></i>
+                                {% else %}
+
+                                    {{ booking.status }}
+                                {% endif %}
+
+                            </td> -->
+                            {% if user_designation == 'VhIncharge' %}
+                                <td>
+                                    <div class="ui large green button center floated"  onclick="cancellationRequestModal('{{ booking.id }}')">
+                                        Action
+                                    </div>
+                                </td>
+                            {% endif %}
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -198,6 +408,7 @@
                             <th class="three wide column">Booking From</th>
                             <th class="three wide column">Booking To</th>
                             <th class="three wide column">Category</th>
+                            <th class="three wide column">Status</th>
                         </tr>
                     </thead>
 
@@ -218,6 +429,30 @@
                             <td onclick=bookingDetailsModal('{{ booking.id }}')>{{ booking.booking_from }}</td>
                             <td onclick=bookingDetailsModal('{{ booking.id }}')>{{ booking.booking_to }}</td>
                             <td onclick=bookingDetailsModal('{{ booking.id }}')>{{ booking.visitor_category }}</td>
+                            <td>
+                                {% if booking.status == "Pending" %}
+                                    <i class="yellow exclamation icon"></i>
+                                
+                                {% elif booking.status == "Confirmed" %}
+                                    <i class="green check icon"></i>
+
+                                {% elif booking.status == "Forward" %}
+                                    <i class="green arrow right icon"></i>
+
+                                {% elif booking.status == "Rejected" %}
+                                    <i class="red trash icon"></i>
+
+                                {% elif booking.status == "Canceled" %}
+                                    <i class="red close icon"></i>
+
+                                {% elif booking.status == "Complete" %}
+                                    <i class="green calender check icon"></i>
+
+                                {% else %}
+                                    {{ booking.status }}
+                                {% endif %}
+
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -280,5 +515,7 @@
 {% include 'vhModule/check-out-modal.html' %}
 
 {% include 'vhModule/request-booking.html' %}
+
+{% include 'vhModule/update-booking.html' %}
 
 {% endblock %}
