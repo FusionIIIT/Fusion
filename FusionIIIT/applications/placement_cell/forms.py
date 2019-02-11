@@ -349,8 +349,6 @@ class AddSchedule(forms.Form):
                                                           'class': 'form-control'}),
                                   label="description", required=False)
     attached_file = forms.FileField(required=False)
-    role = forms.ModelChoiceField(required=True, queryset=Role.objects.all(), label="role",
-                                    widget=forms.Select(attrs={'class':'ui fluid search dropdown'}))
     placement_date = forms.DateField(label='placement_date', widget=forms.DateInput(attrs={'class':'datepicker'}))
 
     def clean_ctc(self):

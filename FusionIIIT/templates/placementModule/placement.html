@@ -240,7 +240,7 @@
                                       </div>
                                       <div class="ui secondary segment">
                                         <p><b> CTC (LPA): {{ sch.notify_id.ctc }}</b></p>
-                                        <p><b>{{ sch.title }} </b>| {{ sch.notify_id.description }} </p>
+                                        <p><b>{{ sch.title }} </b>| {{ sch.role.role }} </p>
                                         <p>Date/Time & Location: {{ sch.placement_date }} | {{ sch.time }} | {{ sch.location }}</p>
                                         <p>Job Description: {{ sch.description }}</p>
                                       </div>
@@ -303,7 +303,7 @@
                                      </div>
                                      <div class="ui secondary segment">
                                        <p><b> CTC (LPA): {{ sch.notify_id.ctc }}</b></p>
-                                       <p><b>{{ sch.title }} </b>| {{ sch.notify_id.description }} </p>
+                                       <p><b>{{ sch.title }} </b>| {{ sch.get_role }} </p>
                                        <p>Date/Time & Location: {{ sch.placement_date }} | {{ sch.time }} | {{ sch.location }}</p>
                                        <p>Job Description: {{ sch.description }}</p>
                                      </div>
@@ -440,7 +440,11 @@
                                     </div>
                                     <div class="field">
                                         <label>Role Offered</label>
-                                          {{ form5.role }}
+                                          <input list="dropdown-menu1" name="role" id="txt_Search" type="text" />
+                                          <datalist class="dropdown-menu" id="dropdown-menu1">
+                                            
+                                          </datalist>
+                                          <span id="dropdown-menu"></span>
                                     </div>
                                     <input type="file" name="attached_file">
                                     <div class="field">
@@ -658,7 +662,7 @@
 {% endblock %}
 
 
-{%  block javascript %}
+{% block javascript %}
     <link rel="stylesheet" src="{% static 'globals/css/jquery.clockinput.css' %}">
     <script type="text/javascript" src="{% static 'globals/js/editProfile.js' %}"></script>
     <script type="text/javascript" src="{% static 'globals/js/checkbox.js' %}"></script>
@@ -677,9 +681,31 @@
       }
 
       //---------------------role add dropdown----------------------------------------------------
-      $('.ui.dropdown').dropdown({
-            allowAdditions: true
-          });
+
+      $('#txt_Search').keyup( function(){
+        current_value = $('#txt_Search').val();
+
+        $.ajax({
+          type: 'POST',
+          url: '/placement/checking_roles/',
+          data: {
+            'current_value': current_value,
+            'csrfmiddlewaretoken': '{{csrf_token}}'
+          },
+          dataType: 'json',
+          success: function(response){
+            $('.dropdown-menu').html('');
+            for(var i=0;i<response.all_roles.length;i++){
+
+              console.log(response.all_roles[i]);
+              $('.dropdown-menu').append('<option value="'+response.all_roles[i]+'">'+response.all_roles[i]+'</option>');
+            }
+          },
+          error: function(rs, e){
+            console.log('error');
+          },
+        });
+      });
 
 
       $('#rangestart').calendar({

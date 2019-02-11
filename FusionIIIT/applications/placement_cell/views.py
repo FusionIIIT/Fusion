@@ -15,12 +15,13 @@ from django.core.cache import cache
 from django.core.files.storage import FileSystemStorage
 from django.core.paginator import Paginator
 from django.db.models import Count, Q
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import get_template, render_to_string
 from django.utils import timezone
 from django.utils.encoding import smart_str
 from xhtml2pdf import pisa
+from django.core import serializers
 
 from applications.academic_information.models import Student
 from applications.globals.models import (DepartmentInfo, ExtraInfo,
@@ -38,6 +39,16 @@ from .models import (Achievement, ChairmanVisit, Course, Education, Experience,
                      Skill, StudentPlacement, StudentRecord, Role)
 
 # from weasyprint import HTML
+
+def CheckingRoles(request):
+    if request.method == 'POST':
+        current_value = request.POST.get('current_value')
+        all_roles = Role.objects.filter(Q(role__startswith=current_value))
+        role_name = []
+        for role in all_roles:
+            role_name.append(role.role)
+        return JsonResponse({'all_roles': role_name})
+
 
 @login_required
 def Placement(request):
@@ -246,8 +257,10 @@ def Placement(request):
             print('---- \n\n record not found')
 
     if 'schedulesubmit' in request.POST:
+        print(request.POST)
         form5 = AddSchedule(request.POST, request.FILES)
         if form5.is_valid():
+            print('valid')
             company_name = form5.cleaned_data['company_name']
             placement_date = form5.cleaned_data['placement_date']
             location = form5.cleaned_data['location']
@@ -255,13 +268,14 @@ def Placement(request):
             time = form5.cleaned_data['time']
             attached_file = form5.cleaned_data['attached_file']
             placement_type = form5.cleaned_data['placement_type']
-            role_offered = form5.cleaned_data['role']
+            role_offered = request.POST.get('role')
             description = form5.cleaned_data['description']
 
-            print('role is ----------------',role_offered)
-            role = Role.objects.filter(name=role_offered)[0]
-            if not role:
-               role = Role.objects.create(name=role)
+            try:
+                role = Role.objects.filter(role=role_offered)[0]
+            except:
+                role = Role.objects.create(role=role_offered)
+                role.save()
 
 
             notify = NotifyStudent.objects.create(placement_type=placement_type,
@@ -277,7 +291,7 @@ def Placement(request):
                                                         attached_file = attached_file,
                                                         role=role,
                                                         location=location, time=time)
-            role.save()
+            
             notify.save()
             schedule.save()
 
