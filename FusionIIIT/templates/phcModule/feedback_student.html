@@ -23,7 +23,7 @@
                     <br>
                     <div class="field">
                         <label>Feedback:</label>
-                        <textarea rows="3" id='feedback' name='feedback' ></textarea>
+                        <textarea rows="3" id='feedback' name='feedback' required></textarea><br>
                     </div>
 
                     <div class="field">
@@ -35,24 +35,45 @@
             {% comment %}Form Tag ends here!{% endcomment %}
             <script type="text/javascript">
 
+                 function trimfield(str)
+                                       {
+                                         return str.replace(/^\s+|\s+$/g,'');
+                                       }
+
                   $('#feed_submit').on('click',function(e){
                        e.preventDefault();
+
+                       if(trimfield(document.getElementById("feedback").value) == '')
+                       {
+                       alert("Please fill out the feedback!")
+                       document.getElementById("feedback").focus();
+                        }
+
+                       else{
                        $.ajax({
                        type:'post',
                        url:'/healthcenter/student/',
                        data: {
                        csrfmiddlewaretoken: '{{ csrf_token }}',
+
                        feedback:$("#feedback").val(),
                        feed_submit:$("#feed_submit").val(),
                        },
-                       success: function(data){
-                         if (data.status == 1){
-                           alert("feedback submitted")
-                           document.getElementById("feedback").value=""
+                            success: function(data){
+
+                             if (data.status == 1){
+                                alert("feedback submitted")
+                                document.getElementById("feedback").value=""
+                                                   }
+                                                }
+                             });
+
                          }
-                     }
-                   });
-                 });
+                    });
+
+
+{% comment %} if(trimfield(document.getElementById("feedback").value) == ''){alert("Please fill out the feedback!") document.getElementById("feedback").focus();  }        {% endcomment %}
+
 
                 </script>
             <br>
