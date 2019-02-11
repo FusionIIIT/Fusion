@@ -5,9 +5,6 @@ function editFirst(){
     var interestSpan = $("#interestSpan").text().trim();
     var contactSpan = $("#contactSpan").text().trim();
 
-
-    var buttonValue = $("#editButton").val()
-
     if(buttonValue == "Edit"){
         $("#editButton").val("Save");
 
@@ -32,9 +29,13 @@ function editFirst(){
     else if($("#editButton").val("Save")){
         $("#editButton").val("Edit");
 
+        console.log('after save')
+
         var contactValue = $("#contactInput").val().trim();
         $("#contactSpan").text(contactValue);
         $("#contactInput").hide();
+        $("#ageInput").prop('disabled', false);
+        //$("#ageInput").removeAttr('disabled');
         $("#contactSpan").show();
         $("#contactIcon").show();
 
@@ -70,14 +71,17 @@ function showModal(){
   }).modal('show');
 
 }
+
 function editStudent() {
     //$("#tinyModal").show();
 
+    console.log('editing starts')
     $("#editButton").hide();
     $("#saveButton").show();
 
     $("#contactInput").show();
     $("#contactSpan").hide();
+    $("#ageInput").removeAttr('disabled');
 
     $("#aboutTextarea").show();
     $("#aboutSpan").hide();
