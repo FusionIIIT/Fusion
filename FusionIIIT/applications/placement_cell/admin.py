@@ -4,7 +4,7 @@ from .models import (Achievement, ChairmanVisit, Coauthor, Coinventor, Course,
                      Education, Experience, Has, Interest, MessageOfficer,
                      NotifyStudent, Patent, PlacementRecord, PlacementSchedule,
                      PlacementStatus, Project, Publication, Skill,
-                     StudentPlacement, StudentRecord)
+                     StudentPlacement, StudentRecord, Role)
 
 
 # Register your models here.
@@ -109,3 +109,4 @@ admin.site.register(PlacementRecord, PlacementRecordAdmin)
 admin.site.register(StudentRecord, StudentRecordAdmin)
 admin.site.register(ChairmanVisit, ChairmanVisitAdmin)
 admin.site.register(PlacementSchedule, PlacementScheduleAdmin)
+admin.site.register(Role)
