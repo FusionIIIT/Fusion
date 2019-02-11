@@ -438,6 +438,10 @@
                                                 {{ form5.description }}
                                         </div>
                                     </div>
+                                    <div class="field">
+                                        <label>Role Offered</label>
+                                          {{ form5.role }}
+                                    </div>
                                     <input type="file" name="attached_file">
                                     <div class="field">
                                       <label><br></label>
@@ -671,6 +675,12 @@
       function getToday(){
         return new Date();
       }
+
+      //---------------------role add dropdown----------------------------------------------------
+      $('.ui.dropdown').dropdown({
+            allowAdditions: true
+          });
+
 
       $('#rangestart').calendar({
         monthFirst: false,

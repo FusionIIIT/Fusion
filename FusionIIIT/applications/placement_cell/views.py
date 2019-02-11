@@ -35,7 +35,7 @@ from .forms import (AddAchievement, AddChairmanVisit, AddCourse, AddEducation,
 from .models import (Achievement, ChairmanVisit, Course, Education, Experience,
                      Has, NotifyStudent, Patent, PlacementRecord,
                      PlacementSchedule, PlacementStatus, Project, Publication,
-                     Skill, StudentPlacement, StudentRecord)
+                     Skill, StudentPlacement, StudentRecord, Role)
 
 # from weasyprint import HTML
 
@@ -255,7 +255,15 @@ def Placement(request):
             time = form5.cleaned_data['time']
             attached_file = form5.cleaned_data['attached_file']
             placement_type = form5.cleaned_data['placement_type']
+            role_offered = form5.cleaned_data['role']
             description = form5.cleaned_data['description']
+
+            print('role is ----------------',role_offered)
+            role = Role.objects.filter(name=role_offered)[0]
+            if not role:
+               role = Role.objects.create(name=role)
+
+
             notify = NotifyStudent.objects.create(placement_type=placement_type,
                                                   company_name=company_name,
                                                   description=description,
@@ -267,7 +275,9 @@ def Placement(request):
                                                         description=description,
                                                         placement_date=placement_date,
                                                         attached_file = attached_file,
+                                                        role=role,
                                                         location=location, time=time)
+            role.save()
             notify.save()
             schedule.save()
 

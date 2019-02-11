@@ -4,7 +4,7 @@ from applications.academic_information.models import Constants as Con
 from applications.globals.models import DepartmentInfo
 from django.forms import CheckboxSelectMultiple, MultiWidget, Select
 
-from .models import Constants, NotifyStudent, Skill
+from .models import Constants, NotifyStudent, Skill, Role
 
 
 class DepartmentWidget(MultiWidget):
@@ -349,7 +349,8 @@ class AddSchedule(forms.Form):
                                                           'class': 'form-control'}),
                                   label="description", required=False)
     attached_file = forms.FileField(required=False)
-
+    role = forms.ModelChoiceField(required=True, queryset=Role.objects.all(), label="role",
+                                    widget=forms.Select(attrs={'class':'ui fluid search dropdown'}))
     placement_date = forms.DateField(label='placement_date', widget=forms.DateInput(attrs={'class':'datepicker'}))
 
     def clean_ctc(self):
