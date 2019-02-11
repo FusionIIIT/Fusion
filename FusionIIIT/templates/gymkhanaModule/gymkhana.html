@@ -251,7 +251,7 @@
         {% comment %}The central-rail segment ends here!{% endcomment %}
 
         {% comment %}The right-rail segment starts here!{% endcomment %}
-        <div class="three wide column hidden content" id="dateDetails">
+        <div class="three wide column " id="dateDetails">
             <!-- <div class="ui items">
               <div class="item">
                 <div class="content">
@@ -294,24 +294,20 @@
                 success: function(response){
                     // console.log(response)
                     response = JSON.parse(response);
-                    $("#dateDetails").html('');
-                    for(var key in response){
-                        $("#dateDetails").append( 
-                        '<div class="ui items">\
-                            <div class="item">\
-                                <div class="content">\
-                                <div class="club">'+response[key].fields.club+'</div>\
-                                  <div class="meta">\
-                                    <span class="date">'+response[key].fields.date+'</span>\
-                                    <span class="venue">'+response[key].fields.venue+'</span>\
-                                  </div>\
-                                  <div class="details">\
-                                    <p>'+response[key].fields.details+'</p>\
-                                  </div>\
-                                </div>\
-                            </div>\
-                        </div>') ;
-                        console.log(key, response[key].fields.club);
+                    $("#dateDetails").html('<h2>Booked Sessions</h2>');
+                    if (jQuery.isEmptyObject(response) == false){
+                        for(var key in response){
+                            $("#dateDetails").append(
+                                '<table class="ui celled table segment"><thead><tr>\
+                                <th>'+response[key].fields.club+'</th>\
+                                <th>'+response[key].fields.date.substring(11,19)+'</th>\
+                                <th>'+response[key].fields.venue+'</th>\
+                                </tr></thead></table>') ;
+                        }
+                    }
+                    else
+                    {
+                        $("#dateDetails").append('<h5>No booked sessions for the selected date</h5>');
                     }
                 }
             })
