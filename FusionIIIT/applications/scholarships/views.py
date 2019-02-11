@@ -29,6 +29,19 @@ from .models import (Award_and_scholarship, Constants, Director_gold,
 @login_required(login_url='/accounts/login')
 def spacs(request):
     # context = {}
+    if request.method == 'POST':
+        if 'studentapprovesubmit' in request.POST:
+            pk = request.POST.get('studentapprovesubmit')
+            obj1 = Release.objects.get(pk=pk)
+            obj1.notif_visible = 0
+            obj1.award_form_visible = 1
+            obj1.save()
+        if 'studentdeclinesubmit' in request.POST:
+            pk = request.POST.get('studentdeclinesubmit')
+            obj2 = Release.objects.get(pk=pk)
+            obj2.notif_visible = 0
+            obj2.award_form_visible = 0
+            obj2.save()
     convener = Designation.objects.get(name='spacsconvenor')
     assistant = Designation.objects.get(name='spacsassistant')
     hd = HoldsDesignation.objects.filter(user=request.user,designation=convener)
@@ -54,7 +67,9 @@ def convener_view(request):
                 startdate=from_date,
                 enddate=to_date,
                 award=award,
-                remarks=remarks
+                remarks=remarks,
+                notif_visible=1,
+                award_form_visible=0
             )
             messages.success(request,award+' are invited successfully')
             return HttpResponseRedirect('/spacs/convener_view')

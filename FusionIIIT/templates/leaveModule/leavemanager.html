@@ -1,0 +1,362 @@
+{% load semanticui %}
+        <script>
+
+            function Check(e){
+                             
+                    var userInput=$(e).html();
+                    
+                    if (userInput=="Casual"){
+                        $(e).parent().parent().parent().next().css('display','block');
+                        //document.getElementById("half-day").style.display='block';
+                    }
+                    else{
+                        $(e).parent().parent().parent().next().css('display','none');
+                        //document.getElementById("half-day").style.display = 'none';
+                    }
+
+                    if (userInput=="Station"){
+                        $(e).parent().parent().parent().next().next().css('display','block');
+                    }
+                    else{
+                        $(e).parent().parent().parent().next().next().css('display','none');
+                    }
+                   
+                return false;
+            }
+             
+            
+        </script>
+
+        <div class="ui container">
+            <style media="screen">
+
+                .button-holder{
+                    float: right;
+                }
+
+                .leave-add-row{
+                    border-bottom:1px solid gray;
+                    
+                }
+                .leave-delete-row{
+                    border-bottom:2px solid gray;
+                    
+                }
+                .acad-add-row{
+                    border-bottom:2px solid gray;
+                    
+                }
+                .acad-delete-row{
+                    border-bottom:2px solid gray;
+                    
+                }
+                .admin-add-row{
+                    border-bottom:2px solid gray;
+                    
+                }
+                .admin-delete-row{
+                    border-bottom:2px solid gray;
+                    
+                }
+                
+            </style>
+
+            <div class="ui vertical segment">
+                <div class="ui header">
+                    Leave Manager:
+                </div>
+
+                
+            </div>
+            
+
+            <div class="ui vertical stripe team segment"
+                 style="height: 70vh; padding-left: 3.5%;
+                        padding-right: 3.5%; overflow-y: scroll; overflow-x: hidden;">
+
+                
+                <div class="all-container">
+                    <form class="ui large form" method="post" autocomplete="off" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+
+                        {% if request.user.extrainfo.user_type != 'student' %}
+
+                            <script type="text/javascript">
+
+                                $(function(){
+
+                                    var add = function(row){
+                                        $(row).find('.date.calendar').each(function() {
+                                            $(this).calendar({
+                                                type: 'date',
+                                            });
+                                        });
+                                        $(row).find('.dropdown').each(function(i){
+                                            $(this).dropdown('refresh');
+                                        });
+                                    };
+                                    var refresh = function(){
+                                        $(document).find('.date.calendar').each(function() {
+                                            $(this).calendar('refresh');
+                                        });
+                                    };
+
+                                    var update = function(row) {
+                                        // alert(row.html());
+
+                                        add(document);
+                                        refresh();
+                                        add(document);
+                                        refresh();
+                                    };
+                                    
+                                });
+                                $(document).on('click','#leave_next_1', function(e){
+                                    e.preventDefault();
+                                    // alert("Woah, this worked");
+                                    $("#leave_form_1").fadeOut(function(){
+                                        $("#replacements_1").fadeIn();
+                                        $("#first_1").removeClass('active');      
+                                        $("#first_1").addClass('completed');
+                                        $("#second_1").addClass('active');
+                                    });
+                                });
+                                $(document).on('click','#rep_next_1', function(e){
+                                    e.preventDefault();
+                                    // alert("Woah, this worked");
+                                    $("#replacements_1").fadeOut(function(){
+                                        $("#common_form_1").fadeIn();
+                                        $("#second_1").removeClass('active');     
+                                        $("#second_1").addClass('completed');
+                                        $("#third_1").addClass('active');
+                                    });
+                                });
+
+                                $(document).on('click','#common_pre_1', function(e){
+                                    e.preventDefault();
+                                    // alert("Woah, this worked");
+                                    $("#common_form_1").fadeOut(function(){
+                                        $("#replacements_1").fadeIn();
+                                        $("#third_1").removeClass('active');      
+                                        $("#second_1").removeClass('completed');
+                                        $("#second_1").addClass('active');
+                                    });
+                                });
+
+                                $(document).on('click','#rep_pre_1', function(e){
+                                    e.preventDefault();
+                                    // alert("Woah, this worked");
+                                    $("#replacements_1").fadeOut(function(){
+                                        $("#leave_form_set_1").fadeIn();
+                                        $("#second_1").removeClass('active');     
+                                        $("#first_1").removeClass('completed');
+                                        $("#first_1").addClass('active');
+                                    });
+                                });
+
+                                $(document).on('click', '#submit_1', function(){
+                                    $('#submit-btn_1').click();
+                                });
+
+
+
+                                
+                            </script>
+
+                                {% if leave_form_offline_set.non_form_errors %}
+                                    {% for error in leave_form_offline_set.non_form_errors %}
+                                        <div class="ui red message">
+                                            {{ error }}
+                                        </div>
+                                    {% endfor %}
+
+                                {% endif %}
+
+                            <div class="ui ordered steps">
+                              <div class="active step" id="first_1">
+                                <div class="content">
+                                  <div class="title">Leave Type</div>
+                                  
+                                </div>
+                              </div>
+                              <div class="step" id="second_1">
+                                <div class="content">
+                                  <div class="title">Responsibility</div>
+                                  
+                                </div>
+                              </div>
+                              <div class="step" id="third_1">
+                                <div class="content">
+                                  <div class="title">Purpose</div>
+                                  
+                                </div>
+                              </div>
+                            </div>
+
+                            <div id="leave_form_1">
+                                
+
+                                
+
+                                                                       
+                                    <div id="leave" class="leave-form-container-ar" style="padding-top:10px;">
+                                                                                   
+                                        {{ leave.leave_type }}
+                                           
+
+
+                                        <div class="two fields" style="align-left: 10px;" id="half-day" >
+                                            <div  >
+                                                {{ leave.start_half }}
+                                            </div>
+                                            <div >
+                                                {{ leave.end_half }}
+                                            </div>
+                                        </div>
+
+                                        <div class="fields" style="align-left: 10px;">
+                                            <div class="field">
+                                                {{ leave.address }}
+                                            </div>
+                                        </div>
+
+                                        <div class="two fields" style="align-left: 10px;">
+                                            <div class="field">
+                                                    {{ leave.start_date }}
+                                            </div>
+
+                                            <div class="field">
+                                                    {{ leave.end_date }}
+                                            </div>
+                                        </div>
+                                       
+                                        
+                                        {{ leave.document }}
+                                        
+                                    </div>
+                                    
+                                
+                                <br>
+                                <div class="button-holder">
+                                    <div id="leave_next_1" class="ui primary animated button" tabindex="0">
+                                        <div class="visible content">Next</div>
+                                        <div class="hidden content">
+                                            <i class="right arrow icon"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            
+
+                            </div>
+                            <div id="replacements_1" hidden>
+
+                                
+                                    <div class="ui header">
+                                        Academic Responsibilities:
+                                    </div>
+
+                                    <div id="acad_form">
+                                        
+
+                                            <div id="acad" class="acad-form-container-ar" style="padding-top:10px;">
+                                                <div class="two fields" style="align-left: 10px;">
+                                                    <div class="field">
+                                                        {{ acad.acad_start_date }}
+                                                    </div>
+
+                                                    <div class="field">
+                                                        {{ acad.acad_end_date }}
+                                                    </div>
+                                                </div>
+                                                {{ acad.acad_rep }}
+                                            </div>
+                                        
+                                    </div>
+                                    <hr><hr>
+                                
+                                <div class="ui header">
+                                    Administrative Responsibilities:
+                                </div>
+                                <div id="admin_form">
+
+                                    
+                                        <div id="admin" class="admin-form-container-ar" style="padding-top:10px;">
+
+                                            <div class="two fields" style="align-left: 10px;">
+                                                <div class="field">
+                                                    {{ admin.admin_start_date }}
+                                                </div>
+
+                                                <div class="field">
+                                                    {{ admin.admin_end_date }}
+                                                </div>
+                                            </div>
+                                            {{ admin.admin_rep }}
+
+                                        </div>
+                                    
+                                </div>
+                                <div class="button-holder">
+                                    <span id="rep_pre_1" class="ui primary animated button" tabindex="0">
+                                        <div class="visible content">Back</div>
+                                        <div class="hidden content">
+                                            <i class="white left arrow icon"></i>
+                                        </div>
+                                    </span>
+                                    <span id="rep_next_1" class="ui primary animated button" tabindex="0">
+                                        <div class="visible content">Next</div>
+                                        <div class="hidden content">
+                                            <i class="white right arrow icon"></i>
+                                        </div>
+                                    </span>
+                                </div>
+
+                            </div>
+                            <div id="common_form_1" hidden>
+                                {{ common.leave_user_select }}
+                                {{ common.application_date }}
+
+                                {{ common.purpose }}
+                                <!--{% render_field common_form.is_station %}
+                                {% render_field common_form.leave_info _no_required='True' %}-->
+                                <span id="common_pre_1" class="primary ui animated button" tabindex="0">
+                                    <div class="visible content">Go Back</div>
+                                    <div class="hidden content">
+                                        <i class="white left arrow icon"></i>
+                                    </div>
+                                </span>
+
+                                
+
+                                <button id="submit-btn_1" type="submit" hidden> </button>
+                                <span id="submit_1" class="primary green ui animated button" tabindex="0">
+                                    <div class="visible content">Submit</div>
+                                    <div class="hidden content">
+                                        <i class="white right arrow icon"></i>
+                                    </div>
+                                </span>
+                            </div>
+
+                        
+                        {% endif %}
+
+                    </form>
+                </div>
+
+            </div>
+
+            <div class="extra content">
+                <br>
+                <br>
+
+
+            </div>
+
+        </div>
+
+    </div>  
+    
+
+
+

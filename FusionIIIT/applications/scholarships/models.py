@@ -104,7 +104,7 @@ class Mcm(models.Model):
     constructed_area = models.IntegerField(blank=True, null=True)
     school_fee = models.IntegerField(blank=True, null=True)
     school_name = models.CharField(max_length=30, null=True)
-    bank_name = models.CharField(max_length=10, null=True)
+    bank_name = models.CharField(max_length=100, null=True)
     loan_amount = models.IntegerField(blank=True, null=True)
     college_fee = models.IntegerField(blank=True, null=True)
     college_name = models.CharField(max_length=30, null=True)
@@ -152,6 +152,8 @@ class Release(models.Model):
     enddate = models.DateField()
     award = models.CharField(default='',max_length=25)
     remarks = models.TextField(max_length=500,default='')
+    notif_visible = models.IntegerField(default=1)
+    award_form_visible = models.IntegerField(default=0)
 
     class Meta:
         db_table = 'Release'

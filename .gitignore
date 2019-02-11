@@ -3,8 +3,14 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+fusion.db
 # C extensions
 *.so
+
+
+# db file
+*.db
+
 
 # Distribution / packaging
 .Python
@@ -93,9 +99,9 @@ docs/_templates
 
 
 # media
-FusionIIIT/media
+# FusionIIIT/media
 # ignoring settings.py
-FusionIIIT/Fusion/settings.py
+# FusionIIIT/Fusion/settings.py
 
 
 # dbinsertscripts

@@ -15,34 +15,63 @@ class Constants:
         ('ONGOING', 'Ongoing'),
         ('COMPLETED', 'Completed'),
     )
+
     ACHIEVEMENT_TYPE = (
         ('EDUCATIONAL', 'Educational'),
         ('OTHER', 'Other'),
     )
+
     INVITATION_TYPE = (
         ('ACCEPTED', 'Accepted'),
         ('REJECTED', 'Rejected'),
         ('PENDING', 'Pending'),
     )
+
     PLACEMENT_TYPE = (
         ('PLACEMENT', 'Placement'),
         ('PBI', 'PBI'),
         ('HIGHER STUDIES', 'Higher Studies'),
         ('OTHER', 'Other'),
     )
+
     PLACED_TYPE = (
         ('NOT PLACED', 'Not Placed'),
         ('PLACED', 'Placed'),
     )
+
     DEBAR_TYPE = (
         ('NOT DEBAR', 'Not Debar'),
         ('DEBAR', 'Debar'),
     )
-    DEP = (
-        ('',''),
+
+    BTECH_DEP = (
         ('CSE', 'CSE'),
         ('ME','ME'),
-        ('ECE','ECE')
+        ('ECE','ECE'),
+    )
+
+    BDES_DEP = (
+        ('DESIGN', 'DESIGN'),
+    )
+
+    MTECH_DEP = (
+        ('CSE', 'CSE'),
+        ('CAD/CAM', 'CAD/CAM'),
+        ('DESIGN', 'DESIGN'),
+        ('MANUFACTURING', 'MANUFACTURING'),
+        ('MECHATRONICS', 'MECHATRONICS'),
+    )
+
+    MDES_DEP = (
+        ('DESIGN', 'DESIGN'),
+    )
+
+    PHD_DEP = (
+        ('CSE', 'CSE'),
+        ('ME','ME'),
+        ('ECE','ECE'),
+        ('DESIGN', 'DESIGN'),
+        ('NS', 'NS'),
     )
 
 
@@ -190,7 +219,7 @@ class NotifyStudent(models.Model):
     placement_type = models.CharField(max_length=20, choices=Constants.PLACEMENT_TYPE,
                                       default='PLACEMENT')
     company_name = models.CharField(max_length=100, default='')
-    ctc = models.DecimalField(decimal_places=2, max_digits=5)
+    ctc = models.DecimalField(decimal_places=4, max_digits=10)
     description = models.TextField(max_length=1000, default='', null=True, blank=True)
     timestamp = models.DateTimeField(auto_now=True)
 
@@ -205,7 +234,7 @@ class PlacementStatus(models.Model):
                                   default='PENDING')
     placed = models.CharField(max_length=20, choices=Constants.PLACED_TYPE,
                               default='NOT PLACED')
-    timestamp = models.DateTimeField(auto_now=False, auto_now_add=False, default=timezone.now)
+    timestamp = models.DateTimeField(auto_now=True)
 
     class Meta:
         unique_together = (('notify_id', 'unique_id'),)
