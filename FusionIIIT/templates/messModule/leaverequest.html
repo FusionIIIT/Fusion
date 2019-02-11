@@ -14,7 +14,7 @@
         </a>
     </div>
 
-    <div class="ui active tab" data-tab="leave">
+    <div class="ui active tab" data-tab="leave" id="leave">
         <div class="ui vertical segment">
 
             {% comment %}Form Tag starts here!{% endcomment %}
@@ -43,7 +43,7 @@
                                         TODO: A backend code to stop sending of empty values to database (SELECT OPTION)
                                     {% endcomment %}
                                     <option value="">Select</option>
-                                    {% if count >= 10 %}
+                                    {% if count >= 15 %}
                                     <option value="" readonly>Casual Leave(not allowed)</option>
                                     {% else %}
                                     <option value="casual">Casual Leave(took {{count}} leaves)</option>
@@ -66,8 +66,7 @@
                             <label>Leave From:</label>
                             <div class="ui calendar" id="rangestart">
                                 <div class="ui input left icon">
-                                    <i class="calendar icon"></i>
-                                    <input name="start_date" type="text" placeholder="From" required="true" id="start_date">
+                                    <input name="start_date" type="date" placeholder="From" required="true" id="start_date">
                                 </div>
                             </div>
                         </div>
@@ -76,8 +75,7 @@
                             <label>Leave To:</label>
                             <div class="ui calendar" id="rangeend">
                                 <div class="ui input left icon">
-                                    <i class="calendar icon"></i>
-                                    <input name="end_date" type="text" placeholder="To" required="true" id="end_date">
+                                    <input name="end_date" type="date" placeholder="To" required="true" id="end_date">
                                 </div>
                             </div>
                         </div>
@@ -246,9 +244,9 @@
                     'purpose':$("#purpose").val()
                 },                
                 success: function(data) {
-                    if(data.status){
+                    if(data.status == 1){
                         alert("Data Inserted Successfully");
-                        
+                        $("#leave").load(location.href+" #leave>*","")
                         /*$('#ls_table').prepend("<tr><td>"+ $("#leave_type").val()+ "</td><td>"+ 
                             $("#start_date").val() + "</td><td>" + $("end_date").val()+
                             "</td><td>"+ $("#purpose").val()+ "</td></tr>")*/
@@ -259,8 +257,13 @@
                         document.getElementById('purpose').value="";
                         
                     }
+                    if(data.status == 3){
+                        alert("Please check the dates");
+                        $("#leave").load(location.href+" #leave>*","")
+                    }
                     else{
-                        alert("Already applied for leaves in the respective dates"); 
+                        alert("Already applied for leaves in the respective dates");
+                        $("#leave").load(location.href+" #leave>*","")
                     }
                 },
                 error: function(data, err) {
