@@ -5,6 +5,30 @@
         <a class="active item" data-tab="catalog">
             Catalog
         </a>
+
+        <a class="item" data-tab="as">
+            About_spacs
+        </a>
+
+        <a class="item" data-tab="paw">
+              Previous Awards Winner
+          </a>
+    </div>
+
+    <div class="ui tab " data-tab="as">
+        <div class="ui vertical segment">
+            {% block aboutspacs %}
+                {% include 'scholarshipsModule/aboutspacs.html'  with hd=hd hd1=hd1 %}
+            {% endblock %}
+            </div>
+    </div>
+
+    <div class="ui tab " data-tab="paw">
+        <div class="ui vertical segment">
+          {% block winners %}
+              {% include 'scholarshipsModule/winners.html' with winners=winners %}
+          {% endblock %}
+            </div>
     </div>
 
     <div class="ui active tab" data-tab="catalog">
@@ -119,20 +143,20 @@
                             </div>
                         </div>
 
-                        
+
 
                         <div class="ui tab" data-tab="Director Silver Medal Games and Sports">
                                 <h4 class="ui dividing header" style="margin-bottom: 16px;">
                                         Director Silver Medal Games and Sports
-    
+
                                     <input type="button"
                                            class="editButton ui red mini button right floated" onclick="editCatalogue()" value = "Edit"/>
                                 </h4>
-    
+
                                 <span class="aboutSpan">
                                     Sample Data about the Award!
                                 </span>
-    
+
                                 <div class="textarea">
                                     <textarea rows=5  style="width: 100%;"  class="aboutTextarea" hidden></textarea>
                                 </div>
@@ -346,4 +370,3 @@ $('#select_award').on('click','.item',function (event) {
     </script>
 
 {% endblock javascript %}
-

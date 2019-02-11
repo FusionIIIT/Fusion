@@ -42,8 +42,8 @@ class Caretaker(models.Model):
 class Workers(models.Model):
     caretaker_id = models.ForeignKey(Caretaker, on_delete=models.CASCADE)
     name = models.CharField(max_length=50)
-    age = models.CharField(max_length=10)
-    phone = models.IntegerField(blank=True)
+    age = models.CharField(max_length=100)
+    phone = models.BigIntegerField(blank=True)
     worker_type = models.CharField(choices=Constants.COMPLAINT_TYPE,
                                    max_length=20, default='internet')
 

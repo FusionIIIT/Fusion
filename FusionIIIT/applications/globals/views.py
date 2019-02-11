@@ -22,7 +22,7 @@ from applications.placement_cell.models import (Achievement, Course, Education,
                                                 Experience, Has, Patent,
                                                 Project, Publication, Skill)
 from Fusion.settings import LOGIN_URL
-
+from notifications.models import Notification
 
 def index(request):
     context = {}
@@ -675,6 +675,16 @@ def about(request):
 
 @login_required(login_url=LOGIN_URL)
 def dashboard(request):
+    user=request.user
+    notifs=request.user.notifications.all()
+    context={
+        'notifications':notifs
+    }
+    return render(request, "dashboard/dashboard.html", context)
+
+
+@login_required(login_url=LOGIN_URL)
+def profile(request):
     user = request.user
     profile = get_object_or_404(ExtraInfo, Q(user=user))
     if(str(request.user.extrainfo.user_type)=='faculty'):
@@ -870,13 +880,10 @@ def dashboard(request):
                    'patent': patent, 'form': form, 'form1': form1, 'form14': form14,
                    'form5': form5, 'form6': form6, 'form7': form7, 'form8': form8,
                    'form10':form10, 'form11':form11, 'form12':form12, 'current':current}
-        return render(request, "dashboard/dashboard.html", context)
+        return render(request, "globals/student_profile.html", context)
     else:
         context = {}
         return render(request, "dashboard/dashboard.html", context)
-
-
-
 
 @login_required(login_url=LOGIN_URL)
 def logout_view(request):
