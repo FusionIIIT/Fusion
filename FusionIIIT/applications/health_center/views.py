@@ -1,16 +1,19 @@
 import json
 from datetime import datetime, timedelta
-from django.contrib.auth.models import User
+
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.core import serializers
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
-from applications.globals.models import ExtraInfo
-from notification_channels.models import Notification
 
-from .models import (Ambulance_request, Appointment, Complaint, Constants, Counter, Expiry,
-                     Doctor, Hospital_admit, Medicine, Prescribed_medicine, Hospital,
-                     Prescription, Schedule, Stock)
+from applications.globals.models import ExtraInfo
+#from notification_channels.models import Notification
+
+from .models import (Ambulance_request, Appointment, Complaint, Constants,
+                     Counter, Doctor, Expiry, Hospital, Hospital_admit,
+                     Medicine, Prescribed_medicine, Prescription, Schedule,
+                     Stock)
 
 
 def datetime_handler(x):
@@ -70,8 +73,8 @@ def compounder_view(request):
                 active=True
                 )
                 a=User.objects.all()
-                for user in a:
-                    Notification.objects.create(notif_type='healthcenter',recipient=user,action_verb='appoiinted',display_text='New Doctor has been appointed : Dr.'+doctor)
+#                for user in a:
+#                    Notification.objects.create(notif_type='healthcenter',recipient=user,action_verb='appoiinted',display_text='New Doctor has been appointed : Dr.'+doctor)
                 data={'status':1}
                 return JsonResponse(data)
             elif 'remove_doctor' in request.POST:
@@ -79,8 +82,8 @@ def compounder_view(request):
                 Doctor.objects.filter(id=doctor).update(active=False)
                 doc=Doctor.objects.get(id=doctor).doctor_name
                 a=User.objects.all()
-                for user in a:
-                    Notification.objects.create(notif_type='healthcenter',recipient=user,action_verb='removed',display_text='Dr.'+doc+'will not be available from now')
+#                for user in a:
+#                    Notification.objects.create(notif_type='healthcenter',recipient=user,action_verb='removed',display_text='Dr.'+doc+'will not be available from now')
                 data={'status':1}
                 return JsonResponse(data)
             elif 'discharge' in request.POST:
@@ -125,8 +128,8 @@ def compounder_view(request):
                     Schedule.objects.filter(doctor_id=doctor_id, day=day).update(from_time=time_in)
                     Schedule.objects.filter(doctor_id=doctor_id, day=day).update(to_time=time_out)
                 a=User.objects.all()
-                for user in a:
-                    Notification.objects.create(notif_type='healthcenter',recipient=user,action_verb='changed',display_text='Doctor Schedule has been changed')
+#                for user in a:
+#                    Notification.objects.create(notif_type='healthcenter',recipient=user,action_verb='changed',display_text='Doctor Schedule has been changed')
                 data={'status':1}
                 return JsonResponse(data)
             elif 'add_medicine' in request.POST:
@@ -173,7 +176,7 @@ def compounder_view(request):
                  )
                 user=user_id.user
                 hname=hospital_name.hospital_name
-                Notification.objects.create(notif_type='healthcenter',recipient=user,action_verb='admitted',display_text='You have been admitted in '+hname)
+#                Notification.objects.create(notif_type='healthcenter',recipient=user,action_verb='admitted',display_text='You have been admitted in '+hname)
                 data={'status':1}
                 return JsonResponse(data)
             elif 'medicine_name' in request.POST:
@@ -317,7 +320,7 @@ def compounder_view(request):
                             'status': status,
                             'stock':stock
                             }
-                    Notification.objects.create(notif_type='healthcenter',recipient=user.user,action_verb='prescribed',display_text='You have been prescribed for '+details)
+#                    Notification.objects.create(notif_type='healthcenter',recipient=user.user,action_verb='prescribed',display_text='You have been prescribed for '+details)
 
                 return JsonResponse(data)
             elif 'prescribe_b' in request.POST:
@@ -383,7 +386,7 @@ def compounder_view(request):
                         status=0
 
                     Medicine.objects.all().delete()
-                    Notification.objects.create(notif_type='healthcenter',recipient=user.user,action_verb='prescribed',display_text='You have been prescribed for '+details)
+#                    Notification.objects.create(notif_type='healthcenter',recipient=user.user,action_verb='prescribed',display_text='You have been prescribed for '+details)
 
                     data = {
                             'status': status

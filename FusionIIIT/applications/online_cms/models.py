@@ -68,9 +68,9 @@ class Quiz(models.Model):
     quiz_name = models.CharField(max_length=20)
     end_time = models.DateTimeField()
     start_time = models.DateTimeField()
-    d_day = models.CharField(max_length=2)
-    d_hour = models.CharField(max_length=2)
-    d_minute = models.CharField(max_length=2)
+    d_day = models.CharField(max_length=20)
+    d_hour = models.CharField(max_length=20)
+    d_minute = models.CharField(max_length=20)
     negative_marks = models.FloatField(default=0)
     number_of_question = models.IntegerField(default=0)
     description = models.TextField(max_length=1000)
@@ -199,6 +199,3 @@ class ForumReply(models.Model):
 
     def __str__(self):
         return '{} - {} - {}'.format(self.pk, self.forum_ques, self.forum_reply)
-
-
-

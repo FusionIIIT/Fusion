@@ -1,5 +1,7 @@
 from django.db import models
-from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
+
+from applications.globals.models import (Designation, ExtraInfo,
+                                         HoldsDesignation)
 
 
 class File(models.Model):
@@ -31,4 +33,3 @@ class Tracking(models.Model):
 
     class Meta:
         db_table = 'Tracking'
-

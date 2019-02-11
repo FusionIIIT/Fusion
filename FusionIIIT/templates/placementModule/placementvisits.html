@@ -1,17 +1,17 @@
 {% block placementvisits %}
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="addvisit">
+        <a class="{% if chairman_visit_add %}item{% else %}active item{% endif %}" data-tab="addvisit">
             Add a new Visit
         </a>
 
-        <a class="item" data-tab="managevisit">
+        <a class="{% if chairman_visit_add %}active item{% else %}item{% endif %}" data-tab="managevisit">
             Manage Visits
         </a>
     </div>
     {% comment %}The tab menu ends here!{% endcomment %}
 
-    <div class="ui active tab" data-tab="addvisit">
+    <div class="{% if chairman_visit_add %}ui tab{% else %}ui active tab{% endif %}" data-tab="addvisit">
         <div class="ui vertical segment">
             {% comment %}Form Tag starts here!{% endcomment %}
               <form method="post" class="ui form" role="form">
@@ -92,7 +92,7 @@
         </div>
     </div>
 
-    <div class="ui tab" data-tab="managevisit">
+    <div class="{% if chairman_visit_add %}ui active tab{% else %}ui tab{% endif %}" data-tab="managevisit">
         <div class="ui vertical segment">
             {% comment %}
                 TODO: can add a list also instead like mess module!

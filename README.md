@@ -2,134 +2,75 @@
 
 **FusionIIIT** is the automation of various functionalities, modules and tasks of/for PDPM Indian Institute of Information Technology, Design and Manufacturing, Jabalpur being developed in python3.6 and using django webframework version 1.11.4  
 
-[![Build Status](https://api.travis-ci.org/3Peers/FusionIIIT.svg?branch=master)](https://travis-ci.org/3Peers/FusionIIIT)
-
-
 ## Requirements
 
 Python 3.6  
 And additional requirements are in **requirements.txt** and will be installed through the below steps
 
-## How to run it?
+## How to get started
 
-  * Install virtualenv `$ sudo apt install python-virtualenv`  
-  * Create a virtual environment `$ virtualenv env -p python3.6`  
-  * Activate the env: `$ source env/bin/activate`  
-  * Install the requirements: `$ pip install -r requirements.txt`
-  * Change directory to FusionIIIT `$ cd FusionIIIT`
-  * Make migrations `$ python manage.py makemigrations`  
-  * Migrate the changes to the database `$ python manage.py migrate`  
-  * Run the server `$ python manage.py runserver`
+* Download and install **python 3.6** and **git**
+### Download
+* Go to `https://github.com/FusionIIIT/Fusion` and click on `Fork`
+* You will be redirected to *your* fork, `https://github.com/<yourname>/Fusion`
+* Clone using `$ git clone https://github.com/<yourname>/Fusion`
+### Run
+* Install virtualenv  
+    - on Ubuntu: `$ sudo apt install python-virtualenv`  
+    - on Windows Powershell `$ pip install virtualenv`  
+* Create a virtual environment  
+    - on Ubuntu: `$ virtualenv env -p python3.6`  
+    - on Windows: `$ virtualenv env`  
+* Activate the env:
+    - on Ubuntu: `$ source env/bin/activate`  
+    - on Windows: `$ ./env/scripts/activate`  
+* Install the requirements: `$ pip install -r requirements.txt`
+* Replace the two files in 
+	`env/lib/python3.6/site-packages/notifications`
+  with the files in 
+	`Fusion/notif_package_mod`
+* Change directory to FusionIIIT `$ cd FusionIIIT`
+* Make migrations `$ python manage.py makemigrations`  
+* Migrate the changes to the database `$ python manage.py migrate`  
+* Run the server `$ python manage.py runserver`
+### git setup
+* `$ git remote add upstream https://github.com/FusionIIIT/Fusion`
+* `$ git checkout -b <module-name>`
 
-## Configuring a Upstream:
-
- * `$ git remote add upstream https://github.com/3Peers/FusionIIIT.git`
- * `$ git remote -v`
-   * It should like this:
-     * origin    https://github.com/YOUR_USERNAME/FusionIIIT.git (fetch)
-     * origin    https://github.com/YOUR_USERNAME/FusionIIIT.git (push)
-     * upstream  https://github.com/3Peers/FusionIIIT.git (fetch)
-     * upstream  https://github.com/3Peers/FusionIIIT.git (push)
-
-## Syncing with Fork:
-
- * `$ git fetch upstream`
- * `$ git checkout master`
- * `$ git merge upstream/master`
+## How to contribute
+* Start working on your module in the branch you created in the previous step
+* Run and resolve any issues that you may get with:
+  ```
+  $ flake8 . --exclude manage.py,__pycache__,migrations --max-line-length=100
+  $ isort
+  ```  
+  You may use autopep8 to automatically resolve them. https://pypi.org/project/autopep8/#usage
+* After making changes  
+    - `$ git add .`  
+    - `$ git commit` then enter the commit message.
+        Refer to below link for best practices regarding commit messages
+        Follow: https://gist.github.com/robertpainsi/b632364184e70900af4ab688decf6f53  
+### Syncing with Fork:
+* `$ git fetch upstream`
+* `$ git merge upstream/master`
+* `$ git push origin <module-name>`
+* Open the link given after the previous command or go to `https://github.com/FusionIIIT/Fusion` and create pull request
 
 
 ## Different modules include
 
-  * Academic database management  
-  * Academic workflows  
-  * Finance and Accounting  
-  * Placement Cell  
-  * Mess management  
-  * Gymkhana Activities  
-  * Scholarship and Awards Portal  
-  * Employee Management  
-  * Course Management  
-  * Complaint System  
-  * File Tracking System  
-  * Health Centre Mangement  
-  * Visitor's Hostel Management  
-  * Leave Module  
-
-## Contribution
-
-  * Open an issue if you want to contribute for something that's not already in issues
-  * Send a Pull Request anytime.
-  * Before sending a pull request please make sure the changes you make are flake8 and isort compliant by using following commands  
-  ```
-  $ flake8 . --exclude manage.py,__pycache__,migrations --max-line-length=100
-  $ isort
-  ```
-  * If there are errors resolve them, and then send a pull request.
-=======
-# FusionIIIT
-
-**FusionIIIT** is the automation of various functionalities, modules and tasks of/for PDPM Indian Institute of Information Technology, Design and Manufacturing, Jabalpur being developed in python3.5 and using django webframework version 1.11.4  
-
-[![Build Status](https://api.travis-ci.org/3Peers/FusionIIIT.svg?branch=master)](https://travis-ci.org/3Peers/FusionIIIT)
-
-
-## Requirements
-
-Python 3.6  
-Django==1.11.4+  
-And additional requirements are in **requirements.txt**  
-
-## How to run it?
-
-  * Install virtualenv `$ sudo apt install python-virtualenv`  
-  * Create a virtual environment `$ virtualenv env -p python3`  
-  * Activate the env: `$ source env/bin/activate`  
-  * Install the requirements: `$ pip install -r requirements.txt`  
-  * Change directory to FusionIIIT `$ cd FusionIIIT`
-  * Make migrations `$ python manage.py makemigrations`  
-  * Migrate the changes to the database `$ python manage.py migrate`  
-  * Run the server `$ python manage.py runserver`
-
-## Configuring a Upstream:
-
- * `$ git remote add upstream https://github.com/3Peers/FusionIIIT.git`
- * `$ git remote -v`
-   * It should like this:
-     * origin    https://github.com/YOUR_USERNAME/FusionIIIT.git (fetch)
-     * origin    https://github.com/YOUR_USERNAME/FusionIIIT.git (push)
-     * upstream  https://github.com/3Peers/FusionIIIT.git (fetch)
-     * upstream  https://github.com/3Peers/FusionIIIT.git (push)
-
-## Syncing with Fork:
-
- * `$ git fetch upstream`
- * `$ git checkout master`
- * `$ git merge upstream/master`
-
-
-## Different modules include
-
-  * Academic database management  
-  * Academic workflows  
-  * Finance and Accounting  
-  * Placement Cell  
-  * Mess management  
-  * Gymkhana Activities  
-  * Scholarship and Awards Portal  
-  * Employee Management  
-  * Course Management  
-  * Complaint System  
-  * File Tracking System  
-  * Health Centre Mangement  
-  * Visitor's Hostel Management  
-
-## Contribution
-
-  * Open an issue if you want to contribute for something that's not already in issues
-  * Send a Pull Request anytime.
-  * Before sending a pull request please make sure the changes you make are flake8 and isort compliant by using following commands  
-  ```
-  $ flake8 . --exclude manage.py,__pycache__,migrations --max-line-length=100
-  $ isort
-  ```
+* Academic database management  
+* Academic workflows  
+* Finance and Accounting  
+* Placement Cell  
+* Mess management  
+* Gymkhana Activities  
+* Scholarship and Awards Portal  
+* Employee Management  
+* Course Management  
+* Complaint System  
+* File Tracking System  
+* Health Centre Mangement  
+* Visitor's Hostel Management  
+* Leave Module  
 

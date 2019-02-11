@@ -14,6 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 
+import notifications.urls
 from django.conf import settings
 from django.conf.urls import include, url
 from django.conf.urls.static import static
@@ -22,12 +23,13 @@ from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     url(r'^', include('applications.globals.urls')),
-    url(r'^eis/', include('applications.eis.urls',namespace='eis')),
+    url(r'^feeds/', include('applications.feeds.urls')),
+    url(r'^eis/', include('applications.eis.urls', namespace='eis')),
     url(r'^mess/', include('applications.central_mess.urls')),
     url(r'^complaint/', include('applications.complaint_system.urls')),
     url(r'^healthcenter/', include('applications.health_center.urls')),
     url(r'^leave/', include('applications.leave.urls')),
-    url(r'^placement/', include('applications.placement_cell.urls',namespace='placement')),
+    url(r'^placement/', include('applications.placement_cell.urls', namespace='placement')),
     url(r'^filetracking/', include('applications.filetracking.urls')),
     url(r'^spacs/', include('applications.scholarships.urls')),
     url(r'^visitorhostel/', include('applications.visitor_hostel.urls')),
@@ -43,10 +45,12 @@ urlpatterns = [
     url(r'^academic-procedures/', include('applications.academic_procedures.urls',
                                           namespace='procedures')),
     url(r'^aims/', include('applications.academic_information.urls')),
+    url(r'^notifications/', include(notifications.urls, namespace='notifications')),
 
 ]
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.MEDIA_URL,
+                          document_root=settings.MEDIA_ROOT)
 
     import debug_toolbar
     urlpatterns = [
