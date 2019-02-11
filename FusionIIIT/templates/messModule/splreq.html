@@ -27,7 +27,7 @@
               </thead>
               <tbody>
                   {% for var in sprequest %}
-                <tr>
+                <tr id="accpt-{{var.pk}}">
                     <th class="four wide">
                         {{var.app_date}}
                     </th>
@@ -42,14 +42,21 @@
                     <!-- <td>{{var.item2}}</td> -->
                     <td>{{var.request}}</td>
                     <td>
-                        <form action="{{var.pk}}/responsespl/" method="POST">
-                        {% csrf_token %}
-                        <div class="ui buttons">
-                        <button class="ui negative button" name="submit" value="reject" >R</button>
+                            <div class="ui buttons">
+                                    <button class="btn-req ui positive button" name="submit" value="approve"  data-var ="{{var.pk}}" onclick="acceptSplReq({{var.pk}})">A</button>
+
                         <div class="or"></div>
-                        <button class="ui positive button" name="submit" value="approve" >A</button>
+              <button class="btn-rj ui negative button" name="submit" value="reject" data-va ="{{var.pk}}" onclick="rejectSplReq({{var.pk}})" >R</button>
                         </div>
-                        </form>
+                        <!--<form action="{{var.pk}}/responsespl/" method="POST">-->
+                        <!--{% csrf_token %}-->
+                        <!--<div class="ui buttons">-->
+                                    <!--<button class="acbtn ui positive button" name="submit" value="approve" onclick="acceptSplReq({{var.pk}})">A</button>-->
+
+                        <!--<div class="or"></div>-->
+              <!--<button class="ui negative button" name="submit" value="reject" >R</button>-->
+                        <!--</div>-->
+                        <!--</form>-->
                     </td>
                 </tr>
                 {% endfor %}
@@ -59,5 +66,55 @@
     </div>
 </div>
 
+<script>
+function acceptSplReq(id){
+
+        document.getElementById('accpt-'+id).style.visibility='hidden';
+
+         $.ajax({
+                type: 'POST',
+                url: 'responsespl',
+                dataType: 'json',
+                data: {
+                    'csrfmiddlewaretoken' : '{{ csrf_token }}',
+                    'id':$("button.btn-req").attr("data-var"),
+                    'status':'2',
+
+                },
+                success: function(data) {
+
+                        alert(data.message);
+
+}
+
+            });
+
+         }
+
+         function rejectSplReq(id){
+
+                 document.getElementById('accpt-'+id).style.visibility='hidden';
+
+         $.ajax({
+                type: 'POST',
+                url: 'responsespl',
+                dataType: 'json',
+                data: {
+                    'csrfmiddlewaretoken' : '{{ csrf_token }}',
+                    'id':$("button.btn-rj").attr("data-va"),
+                    'status':'0',
+
+                },
+                success: function(data) {
+
+                        alert(data.message);
+
+
+                }
+            });
+
+         }
+
+</script>
 {% endblock %}
 {% endblock %}

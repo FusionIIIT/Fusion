@@ -152,12 +152,37 @@ class Release(models.Model):
     enddate = models.DateField()
     award = models.CharField(default='',max_length=25)
     remarks = models.TextField(max_length=500,default='')
+    batch = models.TextField(default='all')
     notif_visible = models.IntegerField(default=1)
     award_form_visible = models.IntegerField(default=0)
 
     class Meta:
         db_table = 'Release'
 
+#Abhi new class added for keeping track of notifications and applied application by students
+class Notification(models.Model):
+    student_id = models.ForeignKey(ExtraInfo, on_delete = models.CASCADE)
+    notification_mcm_flag = models.BooleanField(default=False)
+    notification_convocation_flag = models.BooleanField(default=False)
+    invite_mcm_accept_flag = models.BooleanField(default=False)
+    invite_covocation_accept_flag = models.BooleanField(default=False)
+    def __str__(self):
+        return str(self.student_id)
+
+    class Meta:
+        db_table = 'Notification'
+
+class Application(models.Model):
+    application_id = models.CharField(max_length = 100, primary_key=True)
+    student_id = models.ForeignKey(ExtraInfo, on_delete = models.CASCADE)
+    applied_flag = models.BooleanField(default=False)
+    award = models.CharField(max_length = 30)
+
+    def __str__(self):
+        return str(self.application_id)
+
+    class Meta:
+        db_table = 'Application'
 
 class Director_silver(models.Model):
     nearest_policestation = models.TextField(max_length=30, default='station')

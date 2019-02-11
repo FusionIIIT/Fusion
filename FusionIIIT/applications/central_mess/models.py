@@ -108,33 +108,31 @@ class Mess_reg(models.Model):
     end_reg = models.DateField(default=datetime.date.today)
 
 
-
 class Monthly_bill(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
-    month = models.CharField(max_length=20, choices=MONTHS)
+    month = models.CharField(max_length=20, default=datetime.date.today().month)
+    year = models.IntegerField(default=datetime.date.today().year)
     amount = models.IntegerField(default=2370)
     rebate_count = models.IntegerField(default=0)
     rebate_amount = models.IntegerField(default=0)
     nonveg_total_bill = models.IntegerField(default=0)
     total_bill = models.IntegerField(default=2370)
 
-
     class Meta:
-        unique_together = (('student_id', 'month'),)
+        unique_together = (('student_id', 'month', 'year'),)
 
     def __str__(self):
         return '{} - {}'.format(self.student_id.id, self.month)
 
 
-
 class Payments(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     sem = models.IntegerField()
+    year = models.IntegerField(default=datetime.date.today().year)
     amount_paid = models.IntegerField(default=0)
 
-
     class Meta:
-        unique_together = (('student_id', 'sem'),)
+        unique_together = (('student_id', 'sem', 'year'),)
 
     def __str__(self):
         return '{} - {}'.format(self.student_id.id, self.sem)
@@ -151,7 +149,6 @@ class Menu(models.Model):
                                      self.meal_time, self.dish)
 
 
-
 class Rebate(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     start_date = models.DateField(default=datetime.date.today)
@@ -163,7 +160,6 @@ class Rebate(models.Model):
 
     def __str__(self):
         return str(self.student_id.id)
-
 
 
 class Vacation_food(models.Model):
@@ -178,7 +174,6 @@ class Vacation_food(models.Model):
         return str(self.student_id.id)
 
 
-
 class Nonveg_menu(models.Model):
     dish = models.CharField(max_length=20)
     price = models.IntegerField()
@@ -187,7 +182,6 @@ class Nonveg_menu(models.Model):
 
     def __str__(self):
         return '{} - {}'.format(self.dish, self.price)
-
 
 
 class Nonveg_data(models.Model):
@@ -200,7 +194,6 @@ class Nonveg_data(models.Model):
 
     def __str__(self):
         return str(self.student_id.id)
-
 
 
 class Special_request(models.Model):
@@ -244,7 +237,6 @@ class Menu_change_request(models.Model):
 
     def __str__(self):
         return '{} - {} - {} - {}'.format(self.id, self.dish, self.request, self.status)
-
 
 
 class Feedback(models.Model):
