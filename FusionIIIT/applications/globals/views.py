@@ -720,7 +720,7 @@ def profile(request):
                 contact = request.POST.get('contact')
                 extrainfo_obj = ExtraInfo.objects.get(user=user)
                 extrainfo_obj.about_me = about_me
-                # extrainfo_obj.age = age
+                extrainfo_obj.date_of_birth = age
                 extrainfo_obj.address = address
                 extrainfo_obj.phone_no = contact
                 extrainfo_obj.save()
@@ -735,8 +735,13 @@ def profile(request):
                 if form.is_valid():
                     skill = form.cleaned_data['skill']
                     skill_rating = form.cleaned_data['skill_rating']
+                    try:
+                      skill_id = Skill.objects.get(skill=skill)
+                    except Exception as e:
+                      skill_id = Skill.objects.create(skill=skill)
+                      skill_id.save()
                     has_obj = Has.objects.create(unique_id=student,
-                                                 skill_id=Skill.objects.get(skill=skill),
+                                                 skill_id=skill_id,
                                                  skill_rating = skill_rating)
                     has_obj.save()
             if 'achievementsubmit' in request.POST:
@@ -856,6 +861,8 @@ def profile(request):
                 hid = request.POST['deletepat']
                 hs = Patent.objects.get(Q(pk=hid))
                 hs.delete()
+
+        print('profile age----\n\n\n', profile.date_of_birth)
         form = AddEducation(initial={})
         form1 = AddProfile(initial={})
         form10 = AddSkill(initial={})

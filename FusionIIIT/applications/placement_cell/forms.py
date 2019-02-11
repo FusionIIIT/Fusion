@@ -6,20 +6,6 @@ from django.forms import CheckboxSelectMultiple, MultiWidget, Select
 
 from .models import Constants, NotifyStudent, Skill, Role
 
-
-class DepartmentWidget(MultiWidget):
-    def __init__(self, attrs={}):
-        _widgets = (
-            Select(attrs=attrs, choices=Constants.MTECH_DEP),
-            CheckboxSelectMultiple(attrs=attrs)
-        )
-
-        super(DepartmentWidget, self).__init__(_widgets, attrs)
-
-    def decompress(self, value):
-        return [value.month, value.year] if value else [None, None]
-
-
 class AddProfile(forms.ModelForm):
     """
     The form is used to change profile picture of user.
@@ -51,8 +37,8 @@ class AddEducation(forms.Form):
     stream = forms.CharField(widget=forms.TextInput(attrs={'max_length': 150,
                                                            'class': 'form-control'}),
                              label="stream", required=False)
-    sdate = forms.DateField(label='sdate', widget=forms.widgets.DateInput())
-    edate = forms.DateField(label='edate', widget=forms.widgets.DateInput())
+    sdate = forms.DateField(label='sdate', widget=forms.DateInput(attrs={'class':'datepicker'}))
+    edate = forms.DateField(label='edate', widget=forms.DateInput(attrs={'class':'datepicker'}))
 
 
 class AddSkill(forms.Form):
@@ -87,8 +73,8 @@ class AddCourse(forms.Form):
     license_no = forms.CharField(widget=forms.TextInput(attrs={'max_length': 250,
                                                                 'class': 'field'}),
                                  label="license_no", required=False)
-    sdate = forms.DateField(label='sdate', widget=forms.widgets.DateInput())
-    edate = forms.DateField(label='edate', widget=forms.widgets.DateInput())
+    sdate = forms.DateField(label='sdate', widget=forms.DateInput(attrs={'class':'datepicker'}))
+    edate = forms.DateField(label='edate', widget=forms.DateInput(attrs={'class':'datepicker'}))
 
 
 class AddExperience(forms.Form):
@@ -117,8 +103,8 @@ class AddExperience(forms.Form):
     location = forms.CharField(widget=forms.TextInput(attrs={'max_length': 200,
                                                              'class': 'form-control'}),
                                label="location")
-    sdate = forms.DateField(label='sdate', widget=forms.widgets.DateInput())
-    edate = forms.DateField(label='edate', widget=forms.widgets.DateInput())
+    sdate = forms.DateField(label='sdate', widget=forms.DateInput(attrs={'class':'datepicker'}))
+    edate = forms.DateField(label='edate', widget=forms.DateInput(attrs={'class':'datepicker'}))
 
 
 class AddProject(forms.Form):
@@ -143,8 +129,8 @@ class AddProject(forms.Form):
     project_link = forms.CharField(widget=forms.TextInput(attrs={'max_length': 200,
                                                                  'class': 'form-control'}),
                                    label="project_link", required=False)
-    sdate = forms.DateField(label='sdate', widget=forms.widgets.DateInput())
-    edate = forms.DateField(label='edate', widget=forms.widgets.DateInput())
+    sdate = forms.DateField(label='sdate', widget=forms.DateInput(attrs={'class':'datepicker'}))
+    edate = forms.DateField(label='edate', widget=forms.DateInput(attrs={'class':'datepicker'}))
 
 
 class AddAchievement(forms.Form):
@@ -168,7 +154,7 @@ class AddAchievement(forms.Form):
     issuer = forms.CharField(widget=forms.TextInput(attrs={'max_length': 200,
                                                                  'class': 'form-control'}),
                              label="issuer")
-    date_earned = forms.DateField(label='date_earned', widget=forms.widgets.DateInput())
+    date_earned = forms.DateField(label='date_earned', widget=forms.DateInput(attrs={'class':'datepicker'}))
 
 
 class AddPublication(forms.Form):
@@ -189,7 +175,7 @@ class AddPublication(forms.Form):
     publisher = forms.CharField(widget=forms.TextInput(attrs={'max_length': 250,
                                                               'class': 'form-control'}),
                                 label="publisher")
-    publication_date = forms.DateField(label='publication_date', widget=forms.widgets.DateInput())
+    publication_date = forms.DateField(label='publication_date', widget=forms.DateInput(attrs={'class':'datepicker'}))
 
 
 class AddPatent(forms.Form):
@@ -210,7 +196,7 @@ class AddPatent(forms.Form):
     patent_office = forms.CharField(widget=forms.TextInput(attrs={'max_length': 250,
                                                                   'class': 'form-control'}),
                                     label="patent_office")
-    patent_date = forms.DateField(label='patent_date', widget=forms.widgets.DateInput())
+    patent_date = forms.DateField(label='patent_date', widget=forms.DateInput(attrs={'class':'datepicker'}))
 
 
 class AddProfile(forms.Form):
@@ -224,7 +210,7 @@ class AddProfile(forms.Form):
     about_me = forms.CharField(widget=forms.TextInput(attrs={'max_length': 250,
                                                               'class': 'field'}),
                                 label="about_me", required=False)
-    age = forms.IntegerField(label="age")
+    age = forms.IntegerField(widget=forms.NumberInput(attrs={'min': 0}), label="age")
     address = forms.CharField(widget=forms.TextInput(attrs={'max_length': 250,
                                                           'class': 'form-control'}),
                             label="address")
@@ -248,7 +234,7 @@ class AddChairmanVisit(forms.Form):
     description = forms.CharField(widget=forms.Textarea(attrs={'max_length': 1000,
                                                           'class': 'form-control'}),
                             label="description")
-    visiting_date = forms.DateField(label='visiting_date', widget=forms.widgets.DateInput())
+    visiting_date = forms.DateField(label='visiting_date', widget=forms.DateInput(attrs={'class':'datepicker'}))
 
 
 class SearchStudentRecord(forms.Form):
@@ -383,9 +369,10 @@ class SearchPlacementRecord(forms.Form):
                               label="stuname", required=False)
     year = forms.IntegerField(label="year", required=False)
     ctc = forms.DecimalField(label="ctc", required=False)
-    roll = forms.CharField(widget=forms.TextInput(attrs={'max_length': 10,
-                                                          'class': 'form-control'}),
-                           label="roll", required=False)
+    roll = forms.CharField(widget=forms.NumberInput(attrs={ 'min':0,
+                                                            'max_length': 10,
+                                                            'class': 'form-control'}),
+                            label="roll", required=False)
     cname = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
                                                               'class': 'field'}),
                             label="cname", required=False)
@@ -406,9 +393,10 @@ class SearchPbiRecord(forms.Form):
                               label="stuname", required=False)
     year = forms.IntegerField(label="year", required=False)
     ctc = forms.DecimalField(label="ctc", required=False)
-    roll = forms.CharField(widget=forms.TextInput(attrs={'max_length': 10,
-                                                          'class': 'form-control'}),
-                           label="roll", required=False)
+    roll = forms.CharField(widget=forms.NumberInput(attrs={ 'min':0,
+                                                            'max_length': 10,
+                                                            'class': 'form-control'}),
+                            label="roll", required=False)
     cname = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
                                                             'class': 'field'}),
                             label="cname", required=False)
@@ -454,13 +442,14 @@ class ManagePlacementRecord(forms.Form):
     stuname = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
                                                               'class': 'field'}),
                               label="stuname", required=False)
-    roll = forms.CharField(widget=forms.TextInput(attrs={'max_length': 10,
-                                                          'class': 'form-control'}),
-                           label="roll", required=False)
+    roll = forms.CharField(widget=forms.NumberInput(attrs={ 'min':0,
+                                                            'max_length': 10,
+                                                            'class': 'form-control'}),
+                            label="roll", required=False)
     company = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
                                                               'class': 'field'}),
                               label="company", required=False)
-    ctc = forms.IntegerField(label="ctc", required=False)
+    ctc = forms.IntegerField(widget=forms.NumberInput(attrs={'min':0}), label="ctc", required=False)
 
 
 class ManagePbiRecord(forms.Form):
@@ -475,13 +464,14 @@ class ManagePbiRecord(forms.Form):
     stuname = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
                                                               'class': 'field'}),
                                 label="stuname", required=False)
-    roll = forms.CharField(widget=forms.TextInput(attrs={'max_length': 10,
-                                                          'class': 'form-control'}),
+    roll = forms.CharField(widget=forms.NumberInput(attrs={ 'min':0,
+                                                            'max_length': 10,
+                                                            'class': 'form-control'}),
                             label="roll", required=False)
     company = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
                                                               'class': 'field'}),
                                 label="company", required=False)
-    ctc = forms.IntegerField(label="ctc", required=False)
+    ctc = forms.IntegerField(widget=forms.NumberInput(attrs={'min':0}), label="ctc", required=False)
 
 
 class ManageHigherRecord(forms.Form):
@@ -497,8 +487,9 @@ class ManageHigherRecord(forms.Form):
     stuname = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
                                                               'class': 'field'}),
                                 label="stuname", required=False)
-    roll = forms.CharField(widget=forms.TextInput(attrs={'max_length': 10,
-                                                          'class': 'form-control'}),
+    roll = forms.CharField(widget=forms.NumberInput(attrs={'min':0,
+                                                    'max_length': 10,
+                                                    'class': 'form-control'}),
                             label="roll", required=False)
     test_type = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
                                                               'class': 'field'}),

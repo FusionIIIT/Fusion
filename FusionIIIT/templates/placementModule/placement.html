@@ -676,10 +676,6 @@
 
     <script type="text/javascript">
 
-      function getToday(){
-        return new Date();
-      }
-
       //---------------------role add dropdown----------------------------------------------------
 
       $('#txt_Search').keyup( function(){
@@ -707,6 +703,12 @@
         });
       });
 
+
+      //----------------------calender--------------------------------
+
+      function getToday(){
+        return new Date();
+      }
 
       $('#rangestart').calendar({
         monthFirst: false,
