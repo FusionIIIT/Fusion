@@ -65,7 +65,7 @@
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
 
-                <!-- {% if "Junior Superintendent" not in Curr_desig and "Dean_s" not in Curr_desig %}
+                {% if "Junior Superintendent" not in Curr_desig and "Dean_s" not in Curr_desig %}
 
                     <a class="item" data-tab="first">
                         Apply
@@ -75,7 +75,7 @@
                         Submitted requests
                         <i class="right floated chevron right icon"></i>
                     </a>
-                {% endif %} -->
+                {% endif %}
 
                 <a class="item" data-tab="twelth">
                     View Club Details
@@ -286,7 +286,7 @@
                             $("#dateDetails").append(
                                 '<table class="ui celled table segment"><thead><tr>\
                                 <th>'+response[key].fields.club+'</th>\
-                                <th>'+response[key].fields.date.substring(11,19)+'</th>\
+                                <th>'+response[key].fields.date.substring(11,19)+'<br><center>to</center>'+response[key].fields.end_time+'</th>\
                                 <th>'+response[key].fields.venue+'</th>\
                                 </tr></thead></table>') ;
                         }

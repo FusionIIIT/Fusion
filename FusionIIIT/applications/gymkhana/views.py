@@ -443,5 +443,6 @@ def date_sessions(request):
 			if (dat == value):
 				dates.append(i)
 		dates = serializers.serialize('json', dates)
+		print(dates)
 		# print(dates)
 		return HttpResponse(dates)

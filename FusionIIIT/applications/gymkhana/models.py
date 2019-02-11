@@ -112,7 +112,7 @@ class Session_info(models.Model):
 	club = models.ForeignKey(Club_info, max_length=50,null=True)
 	venue = models.CharField(max_length=50,null=False,choices=Constants.venue)
 	date = models.DateTimeField(default=None ,auto_now=False,null = False)
-	end_time = models.TimeField(default=None ,auto_now=False ,null = False)
+	end_time = models.TimeField(default=None ,auto_now=False ,null = True)
 	session_poster = models.FileField(upload_to='uploads/',blank = True)
 	details = models.TextField(max_length=256, null=True)
 
@@ -182,4 +182,3 @@ class Change_office(models.Model):
 
 	class Meta:
 		db_table = 'Change_office'
->>>>>>> 15fd3b2b82c66fece36348ed6af27e45c14df9a1
