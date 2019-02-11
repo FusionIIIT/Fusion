@@ -35,7 +35,11 @@
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
 
-                <a class="active item" data-tab="first">
+                 <a class="item" data-tab="one">
+                     Browse Award Catalogue
+                     <i class="right floated chevron right icon"></i>
+                 </a>
+                <!--<a class="active item" data-tab="first">
                     Previous Award Winners
                     <i class="right floated chevron right icon"></i>
                 </a>
@@ -48,20 +52,20 @@
                 <a class="item" data-tab="two">
                     Spacs Members Details
                     <i class="right floated chevron right icon"></i>
-                </a>
-                <a class="item" data-tab="three">
+                </a>-->
+                <a class="item" data-tab="two">
                     Apply for Awards
                     <i class="right floated chevron right icon"></i>
                 </a>
 
-                <a class="item" data-tab="four">
+                <!--<a class="item" data-tab="four">
                         View Application Status
                         <i class="right floated chevron right icon"></i>
                 </a>
                 <a class="item" data-tab="five">
                     Browse Award Catalogue
                     <i class="right floated chevron right icon"></i>
-                </a>
+                </a>-->
 
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
@@ -78,7 +82,7 @@
         {% endcomment %}
         <div class="eight wide column">
             {% comment %}The Details start here!{% endcomment %}
-            <div class="ui active tab segment" data-tab="first">
+            <!--<div class="ui tab segment" data-tab="first">
                 {% block winners %}
                     {% include 'scholarshipsModule/winners.html' with winners=winners %}
                 {% endblock %}
@@ -100,8 +104,13 @@
                     </div>
                     {% comment %}The Publications about spacs  ends here!{% endcomment %}
 
-                    {% comment %}The Publications awards  starts here!{% endcomment %}
-                        <div class="ui tab segment" data-tab="three">
+                    {% comment %}The Publications awards  starts here!{% endcomment %}-->
+                    <div class="ui active tab segment" data-tab="one">
+                       {% block browsecatalogue %}
+                                 {% include 'scholarshipsModule/browsecatalogue.html' with winners=winners mcm=mcm gold=gold silver=silver dandm=dandm awards=awards %}
+                      {% endblock %}
+                     </div>
+                        <div class="ui tab segment" data-tab="two">
                                 {% block awards %}
                                     {% include 'scholarshipsModule/applyNew.html' with mcm=mcm gold=gold silver=silver dandm=dandm source=source mother_occ=mother_occ awards=awards %}
                                 {% endblock %}
@@ -109,16 +118,12 @@
                             {% comment %}The Publications about awards ends here!{% endcomment %}
 
 
-                       <div class="ui tab segment" data-tab="four">
+                      <!-- <div class="ui tab segment" data-tab="four">
                              {% block viewmcm %}
                                          {% include 'scholarshipsModule/viewstatus.html' with winners=winners mcm=mcm gold=gold silver=silver dandm=dandm %}
                             {% endblock %}
-                       </div>
-                       <div class="ui tab segment" data-tab="five">
-                        {% block browsecatalogue %}
-                                    {% include 'scholarshipsModule/browsecatalogue.html' with winners=winners mcm=mcm gold=gold silver=silver dandm=dandm awards=awards %}
-                       {% endblock %}
-                  </div>
+                       </div>-->
+
 
                 {% comment %}The Publications about view mcm details ends here!{% endcomment %}
         </div>
@@ -149,7 +154,7 @@
                     <div class="ui cards">
 
                     {% for m in release %}
-                    {% if m.notif_visible == 1 and m.batch == 'all'  %}
+                    {% if m.award == 'Mcm Scholarship' and notif_mcm_flag == True  %}
                     <div class="ui fluid card">
                         <div class="content">
                             <div class="header">
@@ -170,16 +175,16 @@
                             <div class="ui two buttons">
                               <form method="post" action="{% url 'spacs:spacs' %}" class="ui form" role="form">
                                 {% csrf_token %}
-                                <button name="studentapprovesubmit" value="{{ m.pk }}" class="ui basic green button" type="submit">Apply</button>
+                                <button name="studentapprovesubmit" value="{{ m.award }}" class="ui basic green button" type="submit">Apply</button>
                               </form>
                               <form method="post" action="{% url 'spacs:spacs' %}" class="ui form" role="form">
                                 {% csrf_token %}
-                                <button name="studentdeclinesubmit" value="{{ m.pk }}" class="ui basic red button" type="submit">Ignore</button>
+                                <button name="studentdeclinesubmit" value="{{ m.award }}" class="ui basic red button" type="submit">Ignore</button>
                               </form>
                             </div>
                         </div>
                     </div>
-                    {% elif m.notif_visible == 1 and m.batch == student_batch  %}
+                    {% elif m.award == 'Convocation Medals' and notif_convocation_flag == True  %}
                     <div class="ui fluid card">
                         <div class="content">
                             <div class="header">
@@ -200,11 +205,11 @@
                             <div class="ui two buttons">
                               <form method="post" action="{% url 'spacs:spacs' %}" class="ui form" role="form">
                                 {% csrf_token %}
-                                <button name="studentapprovesubmit" value="{{ m.pk }}" class="ui basic green button" type="submit">Apply</button>
+                                <button name="studentapprovesubmit" value="{{ m.award }}" class="ui basic green button" type="submit">Apply</button>
                               </form>
                               <form method="post" action="{% url 'spacs:spacs' %}" class="ui form" role="form">
                                 {% csrf_token %}
-                                <button name="studentdeclinesubmit" value="{{ m.pk }}" class="ui basic red button" type="submit">Ignore</button>
+                                <button name="studentdeclinesubmit" value="{{ m.award }}" class="ui basic red button" type="submit">Ignore</button>
                               </form>
                             </div>
                         </div>
