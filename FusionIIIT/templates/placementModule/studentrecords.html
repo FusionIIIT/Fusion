@@ -755,17 +755,18 @@
                                     </td>
 
                                     <td>
-                                      <form method="post" class="ui form" role="form">
+                                      <form method="post" class="ui form" role="form" action="{% url 'placement:delete_invitation_status' %}">
                                         {% csrf_token %}
-                                        <button name="deleteinvite" value="{{ student.pk }}" class="ui inverted huge circular icon button" style="margin: auto;">
+                                        <button name="deleteinvitationstatus" value="{{ student.pk }}" class="ui inverted huge circular icon button" style="margin: auto;">
                                             <i class="delete red icon"></i>
                                         </button>
-                                        </form>
+                                      </form>
                                     </td>
                                 </tr>
                                 {% endif %}
                               {% endfor %}
                             </tbody>
+
                         </table>
                     {% endif %}
 
@@ -931,12 +932,13 @@
                                 </td>
 
                                 <td>
-                                  <form method="post" class="ui form" role="form">
-                                    {% csrf_token %}
-                                    <button name="deleteinvite" value="{{ student.pk }}" class="ui inverted huge circular icon button" style="margin: auto;">
-                                        <i class="delete red icon"></i>
-                                    </button>
-                                    </form>
+                                  <form method="post" class="ui form" role="form" action="{% url 'placement:delete_invitation_status' %}">
+                                        {% csrf_token %}
+                                         <input type="hidden" name="pbi_tab_active" value="pbi_tab_active">
+                                        <button name="deleteinvitationstatus" value="{{ student.pk }}" class="ui inverted huge circular icon button" style="margin: auto;">
+                                            <i class="delete red icon"></i>
+                                        </button>
+                                      </form>
                                 </td>
                               </tr>
                               {% endif %}

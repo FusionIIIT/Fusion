@@ -287,6 +287,63 @@ def Placement(request):
     return render(request, 'placementModule/placement.html', context)
 
 
+@login_required
+def deleteInvitationStatus(request):
+    print('coming------deleteInvitation-----status\n\n')
+    user = request.user
+    strecord_tab = 1
+    mnpbi_tab = 0
+    mnplacement_post = 0
+    mnpbi_post = 0
+    invitation_status_tab = 1
+    placementstatus = []
+
+    no_pagination = 1
+    is_disabled = 0
+    paginator = ''
+    page_range = ''
+
+    if 'deleteinvitationstatus' in request.POST:
+        delete_invit_status_key = request.POST['deleteinvitationstatus']
+
+        try:
+            PlacementStatus.objects.get(pk = delete_invit_status_key).delete()
+        except Exception as e:
+            print('---- \n\n record not found')
+
+    if 'pbi_tab_active' in request.POST:
+       mnpbi_tab = 1
+
+    form1 = SearchStudentRecord(initial={})
+    form9 = ManagePbiRecord(initial={})
+    form11 = ManagePlacementRecord(initial={})
+    form13 = SendInvite(initial={})
+    current1 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement chairman"))
+    current2 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement officer"))
+
+    context = {
+        'form1': form1,
+        'form9': form9,
+        'form11': form11,
+        'form13': form13,
+        'invitation_status_tab': invitation_status_tab,
+        'mnplacement_post': mnplacement_post,
+        'mnpbi_tab': mnpbi_tab,
+        'placementstatus': placementstatus,
+        'current1': current1,
+        'current2': current2,
+        'strecord_tab': strecord_tab,
+        'mnpbi_post': mnpbi_post,
+        'page_range': page_range,
+        'paginator': paginator,
+        'no_pagination': no_pagination,
+        'is_disabled': is_disabled,
+    }
+
+    return render(request, 'placementModule/studentrecords.html', context)
+
+
+
 
 def InvitationStatus(request):
     user = request.user
@@ -306,6 +363,7 @@ def InvitationStatus(request):
     if 'studentplacementsearchsubmit' in request.POST:
         mnplacement_post = 1
         form = ManagePlacementRecord(request.POST)
+
         if form.is_valid():
             if form.cleaned_data['stuname']:
                 stuname = form.cleaned_data['stuname']
@@ -328,6 +386,7 @@ def InvitationStatus(request):
             request.session['mn_ctc'] = ctc
             request.session['mn_cname'] = cname
             request.session['mn_rollno'] = rollno
+
             placementstatus = PlacementStatus.objects.filter(Q(notify_id__in=NotifyStudent.objects.filter
                                                        (Q(placement_type="PLACEMENT",
                                                           company_name__icontains=cname,
@@ -1088,7 +1147,7 @@ def ManageRecords(request):
                         (Q(id__in=ExtraInfo.objects.filter(
                         Q(user__in=User.objects.filter(
                         Q(first_name__icontains=request.session['stuname'])),
-                        id__icontains=request.session['rollno'])))))))          
+                        id__icontains=request.session['rollno'])))))))
             except:
                 print('except')
                 placementrecord = ''
@@ -1226,7 +1285,7 @@ def ManageRecords(request):
                                                             (Q(id__in=ExtraInfo.objects.filter(
                                                             Q(user__in=User.objects.filter(
                         Q(first_name__icontains=request.session['stuname'])),
-                        id__icontains=request.session['rollno'])))))))         
+                        id__icontains=request.session['rollno'])))))))
             except:
                 print('except')
                 pbirecord = ''
@@ -1263,7 +1322,7 @@ def ManageRecords(request):
                 pagination_pbi = 0
         else:
             pbirecord = ''
-    
+
     if 'studenthigherrecordsubmit' in request.POST:
         officer_statistics_past_higher_search = 1
         form = SearchHigherRecord(request.POST)
@@ -1352,7 +1411,7 @@ def ManageRecords(request):
         if request.GET.get('page') != None:
             print('--------------------page value none')
             try:
-                if request.session['year']: 
+                if request.session['year']:
                     higherrecord = StudentRecord.objects.filter(
                         Q(record_id__in=PlacementRecord.objects.filter(
                             Q(placement_type="HIGHER STUDIES",
@@ -1378,7 +1437,7 @@ def ManageRecords(request):
                                                                (Q(user__in=User.objects.filter
                                                                   (Q(first_name__icontains=request.session['stuname'])),
                                                                   id__icontains=request.session['rollno']))
-                                                               )))))         
+                                                               )))))
             except:
                 print('except')
                 higherrecord = ''
@@ -1644,7 +1703,7 @@ def PlacementStatistics(request):
                         (Q(id__in=ExtraInfo.objects.filter(
                         Q(user__in=User.objects.filter(
                         Q(first_name__icontains=request.session['stuname'])),
-                        id__icontains=request.session['rollno'])))))))          
+                        id__icontains=request.session['rollno'])))))))
             except:
                 print('except')
                 placementrecord = ''
@@ -1782,7 +1841,7 @@ def PlacementStatistics(request):
                                                             (Q(id__in=ExtraInfo.objects.filter(
                                                             Q(user__in=User.objects.filter(
                         Q(first_name__icontains=request.session['stuname'])),
-                        id__icontains=request.session['rollno'])))))))         
+                        id__icontains=request.session['rollno'])))))))
             except:
                 print('except')
                 pbirecord = ''
@@ -1819,7 +1878,7 @@ def PlacementStatistics(request):
                 pagination_pbi = 0
         else:
             pbirecord = ''
-    
+
     if 'studenthigherrecordsubmit' in request.POST:
         officer_statistics_past_higher_search = 1
         form = SearchHigherRecord(request.POST)
@@ -1908,7 +1967,7 @@ def PlacementStatistics(request):
         if request.GET.get('page') != None:
             print('--------------------page value none')
             try:
-                if request.session['year']: 
+                if request.session['year']:
                     higherrecord = StudentRecord.objects.filter(
                         Q(record_id__in=PlacementRecord.objects.filter(
                             Q(placement_type="HIGHER STUDIES",
@@ -1934,7 +1993,7 @@ def PlacementStatistics(request):
                                                                (Q(user__in=User.objects.filter
                                                                   (Q(first_name__icontains=request.session['stuname'])),
                                                                   id__icontains=request.session['rollno']))
-                                                               )))))         
+                                                               )))))
             except:
                 print('except')
                 higherrecord = ''
