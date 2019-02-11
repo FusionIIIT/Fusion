@@ -175,7 +175,7 @@ PROJECT_DIR = os.path.abspath(os.path.dirname(__file__))
 #     'default':
 #         {
 #             'ENGINE': 'django.db.backends.mysql',
-#             'NAME': 'test',
+#             'NAME': 'try',
 #             'USER': 'root',
 #             'PASSWORD': 'sksingh55',
 #             'HOST': 'localhost',
@@ -186,7 +186,7 @@ PROJECT_DIR = os.path.abspath(os.path.dirname(__file__))
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(PROJECT_DIR, 'fusion.db'),
+        'NAME': os.path.join(PROJECT_DIR, 'fusion_new.db'),
     }
 }
 
