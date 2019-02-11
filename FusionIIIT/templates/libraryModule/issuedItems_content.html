@@ -18,18 +18,18 @@
             Issue Date
         </th>
 
-        
+
     </tr>
     </thead>
 
     <tbody>
-    
+
    {% for key, values in data1.items %}
    <tr>
-        <td>{{ values.assn }}</td> 
-        <td>{{ values.book_name }}</td> 
-        <td>{{ values.due_date }}</td> 
-        <td>{{ values.issue_date }}</td>      
+        <td>{{ values.assn }}</td>
+        <td>{{ values.book_name }}</td>
+        <td>{{ values.due_date }}</td>
+        <td>{{ values.issue_date }}</td>
     </tr>
     {% endfor %}
 

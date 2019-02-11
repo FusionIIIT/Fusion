@@ -23,7 +23,7 @@
                     <br>
                     <div class="field">
                         <label>Feedback:</label>
-                        <textarea rows="3" id='feedback' name='feedback' ></textarea>
+                        <textarea rows="3" id='feedback' name='feedback' required = "required" ></textarea>
                     </div>
 
                     <div class="field">
@@ -45,6 +45,7 @@
                        feedback:$("#feedback").val(),
                        feed_submit:$("#feed_submit").val(),
                        },
+
                        success: function(data){
                          if (data.status == 1){
                            alert("feedback submitted")

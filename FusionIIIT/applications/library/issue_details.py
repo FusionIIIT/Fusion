@@ -11,7 +11,7 @@ viewgen = soup.find(id="__VIEWSTATEGENERATOR")['value']
 eventvalid = soup.find(id="__EVENTVALIDATION")['value']
 
 Status = "Complete"
-memberid = "2015181"
+memberid = ExtraInfo.objects.get(user=request.user).id
 
 formfields={'__VIEWSTATE':viewstate,
 			"__VIEWSTATEGENERATOR":viewgen,
@@ -19,7 +19,7 @@ formfields={'__VIEWSTATE':viewstate,
             'ctl00$ContentPlaceHolder1$RadiobuttonList': Status,
             'ctl00$ContentPlaceHolder1$txtuseridIOU': memberid,
             'ctl00$ContentPlaceHolder1$cmdcheck': 'Enter'}
-r3 = requests.post(url1+url2,cookies=r1.cookies,data=formfields) 
+r3 = requests.post(url1+url2,cookies=r1.cookies,data=formfields)
 #print(r1.status_code)
 #print(r2.status_code)
 #print(r3.status_code)
@@ -38,7 +38,7 @@ for div in soup.find_all("div",{'id':'print13'}):
 						print("Issue Date    :",tr.contents[6].text)
 						print("Item Category :",tr.contents[7].text)
 	else :
-			print("No Records Found")			
+			print("No Records Found")
 
 print("")
 print("Technically Unprocessed Items")
@@ -52,6 +52,6 @@ for div in soup.find_all("div",{'id':'print15'}):
 			print("Author(s)     :",tr.contents[4].text)
 			print("Due Date      :",tr.contents[5].text)
 			print("Issue Date    :",tr.contents[6].text)
-			print("Item Category :",tr.contents[7].text)		
+			print("Item Category :",tr.contents[7].text)
 	else :
-			print("No Records Found")		
+			print("No Records Found")
