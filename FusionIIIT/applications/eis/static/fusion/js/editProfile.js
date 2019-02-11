@@ -56,8 +56,23 @@ function editFirst(){
     }
 
 }
+function showModal(){
+    $("#editModal")
+    .modal({
+    closable  : false,
+    onDeny    : function(){
 
+      return true;
+    },
+    onApprove : function() {
+      editStudent();
+    }
+  }).modal('show');
+
+}
 function editStudent() {
+    //$("#tinyModal").show();
+
     $("#editButton").hide();
     $("#saveButton").show();
 
