@@ -147,12 +147,12 @@
 
                     </div>
 
-                    <div class="ui active tab" data-tab="Placement">
+                    <div class="{% if officer_statistics_past_pbi_search or officer_statistics_past_higher_search %}ui tab{% else %}ui active tab{% endif %}" data-tab="Placement">
 
                       <form method="post" class="ui form" role="form" action="{% url 'placement:manage_records' %}">
                         {% comment %}The add a new skill Accordian starts here!{% endcomment %}
-                        <div class="ui active accordion field">
-                            <div class="title">
+                        <div class="ui accordion field">
+                            <div class="active title">
                                 <i class="icon dropdown"></i>
                                 Search a Student!
                             </div>
@@ -197,7 +197,7 @@
                                         <div class="field">
                                           {{ form3.year.errors }}
                                             <label for="{{ form3.year.id_for_label }}">
-                                                Year
+                                                Placed Year
                                             </label>
 
                                             <div class="ui large input">
@@ -242,8 +242,48 @@
                     {% elif placementrecord %}
                         <br>
                         <br>
-                        <div class="ui divider"></div>
-                        <br>
+                    <!-- Pagination Section starts here  --->
+                    {% if pagination_placement %}
+
+                        <center>
+                          <div class="ui pagination menu">
+                            {% if placementrecord.has_previous %}
+                            <a href="?page={{placementrecord.previous_page_number}}" class="item">
+                              Previous
+                            </a>
+                            {% endif %}
+
+                            {% if is_disabled %}
+                              <a href="?page=1" class="item">1</a>
+                              <div class="disabled item">
+                                ...
+                              </div>
+                            {% endif %}
+
+                            {% for i in page_range %}
+                              {% if placementrecord.number == i %}
+                                <a href="?page={{i}}" class="active item">{{ i }} </a>
+                              {% else %}
+                                <a href="?page={{ i }}" class="item">{{ i }}</a>
+                              {% endif %}
+                            {% endfor %}
+
+
+
+                            {% if placementrecord.has_next %}
+                            <div class="disabled item">
+                              ...
+                            </div>
+                            <a href="?page={{placementrecord.next_page_number}}" class="item">
+                              Next
+                            </a>
+                            {% endif %}
+                          </div>
+                        </center>
+                    {% endif %}
+                    <!-- Pagination Section ends here --->
+                    <div class="ui divider"></div>
+                    <br>
 
                     <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;">
                         <thead>
@@ -307,175 +347,210 @@
 
                     </div>
 
-                    <div class="ui tab" data-tab="PBI">
+                    <div class="{% if officer_statistics_past_pbi_search %}ui active tab{% else %}ui tab{% endif %}" data-tab="PBI">
+                        <form method="post" class="ui form" role="form" action="{% url 'placement:manage_records' %}">
+                              {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                              <div class="ui accordion field">
+                                  <div class="active title">
+                                      <i class="icon dropdown"></i>
+                                      Search a Student!
+                                  </div>
+                                    {{ form3.non_field_errors }}
+                                  <div class="active content">
+                                      <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                                          {% csrf_token %}
+                                          <div class="two fields">
+                                          <div class="field">
+                                            {{ form3.stuname.errors }}
+                                                  <label for="{{ form3.cname.id_for_label }}">
+                                                      Student Name {% if profile.designation.name != 'student' %}(Only for searching records){% endif %}
+                                                  </label>
 
-
-                                  <form method="post" class="ui form" role="form" action="{% url 'placement:manage_records' %}">
-                                  {% comment %}The add a new skill Accordian starts here!{% endcomment %}
-                                  <div class="ui active accordion field">
-                                      <div class="title">
-                                          <i class="icon dropdown"></i>
-                                          Search a Student!
-                                      </div>
-                                        {{ form3.non_field_errors }}
-                                      <div class="active content">
-                                          <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
-                                              {% csrf_token %}
-                                              <div class="two fields">
+                                                  <div class="ui large input">
+                                                      {{ form3.stuname }}
+                                                  </div>
+                                              </div>
                                               <div class="field">
-                                                {{ form3.stuname.errors }}
+                                                {{ form3.cname.errors }}
                                                       <label for="{{ form3.cname.id_for_label }}">
-                                                          Student Name {% if profile.designation.name != 'student' %}(Only for searching records){% endif %}
+                                                          Company
                                                       </label>
 
                                                       <div class="ui large input">
-                                                          {{ form3.stuname }}
+                                                          {{ form3.cname }}
                                                       </div>
                                                   </div>
-                                                  <div class="field">
-                                                    {{ form3.cname.errors }}
-                                                          <label for="{{ form3.cname.id_for_label }}">
-                                                              Company
-                                                          </label>
-
-                                                          <div class="ui large input">
-                                                              {{ form3.cname }}
-                                                          </div>
-                                                      </div>
-                                                      </div>
-                                              <div class="three fields">
-                                                  <div class="field">
-                                                    {{ form3.roll.errors }}
-                                                      <label for="{{ form3.stuname.id_for_label }}">
-                                                          Roll No
-                                                      </label>
-
-                                                      <div class="ui large input">
-                                                          {{ form3.roll}}
-                                                      </div>
                                                   </div>
-
-                                                  <div class="field">
-                                                    {{ form3.year.errors }}
-                                                      <label for="{{ form3.year.id_for_label }}">
-                                                          Year
-                                                      </label>
-
-                                                      <div class="ui large input">
-                                                          {{ form3.year }}
-                                                      </div>
-                                                  </div>
-
-                                                  <div class="field">
-                                                    {{ form3.ctc.errors }}
-                                                      <label for="{{ form3.ctc.id_for_label }}">
-                                                          CTC
-                                                      </label>
-
-                                                      <div class="ui large input">
-                                                          {{ form3.ctc }}
-                                                      </div>
-                                                  </div>
-                                              </div>
-                                              <div class="two fields">
+                                          <div class="three fields">
                                               <div class="field">
-                                                <button name="studentpbirecordsubmit" name="studentpbirecordsubmit" class="ui fluid large primary button" type="submit">
-                                                    Search
-                                                </button>
+                                                {{ form3.roll.errors }}
+                                                  <label for="{{ form3.stuname.id_for_label }}">
+                                                      Roll No
+                                                  </label>
+
+                                                  <div class="ui large input">
+                                                      {{ form3.roll}}
+                                                  </div>
                                               </div>
-                                              {% if current == None %}
+
                                               <div class="field">
-                                                  <button name="studentpbiaddsubmit" value="studentpbiaddsubmit" class="ui fluid large primary button" type="submit">
-                                                      Add
-                                                  </button>
+                                                {{ form3.year.errors }}
+                                                  <label for="{{ form3.year.id_for_label }}">
+                                                      Placed Year
+                                                  </label>
+
+                                                  <div class="ui large input">
+                                                      {{ form3.year }}
+                                                  </div>
                                               </div>
-                                              {% endif %}
-                                            </div>
+
+                                              <div class="field">
+                                                {{ form3.ctc.errors }}
+                                                  <label for="{{ form3.ctc.id_for_label }}">
+                                                      CTC
+                                                  </label>
+
+                                                  <div class="ui large input">
+                                                      {{ form3.ctc }}
+                                                  </div>
+                                              </div>
                                           </div>
+                                          <div class="two fields">
+                                          <div class="field">
+                                            <button name="studentpbirecordsubmit" name="studentpbirecordsubmit" class="ui fluid large primary button" type="submit">
+                                                Search
+                                            </button>
+                                          </div>
+                                          {% if current == None %}
+                                          <div class="field">
+                                              <button name="studentpbiaddsubmit" value="studentpbiaddsubmit" class="ui fluid large primary button" type="submit">
+                                                  Add
+                                              </button>
+                                          </div>
+                                          {% endif %}
+                                        </div>
                                       </div>
                                   </div>
-                                  {% comment %}The add a new skill Accordian ends here!{% endcomment %}
-                              </form>
+                              </div>
+                              {% comment %}The add a new skill Accordian ends here!{% endcomment %}
+                        </form>
 
-                            <br>
-                            <br>
-                            <div class="ui divider"></div>
-                            <br>
+                        <br>
+                        <br>
+                    <!-- Pagination Section starts here  --->
+                    {% if pagination_pbi %}
 
-                            {% if pbirecord == 1 %}
+                        <center>
+                          <div class="ui pagination menu">
+                            {% if pbirecord.has_previous %}
+                            <a href="?page={{pbirecord.previous_page_number}}" class="item">
+                              Previous
+                            </a>
+                            {% endif %}
+
+                            {% if is_disabled %}
+                              <a href="?page=1" class="item">1</a>
+                              <div class="disabled item">
+                                ...
+                              </div>
+                            {% endif %}
+
+                            {% for i in page_range %}
+                              {% if pbirecord.number == i %}
+                                <a href="?page={{i}}" class="active item">{{ i }} </a>
+                              {% else %}
+                                <a href="?page={{ i }}" class="item">{{ i }}</a>
+                              {% endif %}
+                            {% endfor %}
+
+
+
+                            {% if pbirecord.has_next %}
+                            <div class="disabled item">
+                              ...
+                            </div>
+                            <a href="?page={{pbirecord.next_page_number}}" class="item">
+                              Next
+                            </a>
+                            {% endif %}
+                          </div>
+                        </center>
+                    {% endif %}
+                    <!-- Pagination Section ends here --->
+                        <div class="ui divider"></div>
+                        <br>
+
+                        {% if pbirecord == 1 %}
                             <br>
                         {% elif pbirecord %}
-                        <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;">
-                            <thead>
-                            <tr>
-                                <th class="four wide">Student</th>
-                                <th class="two wide">Year</th>
-                                <th class="six wide">Company</th>
-                                <th class="two wide">CTC</th>
-                                {% if profile.designation.name != 'student' %}
-                                <th class="two wide">Delete</th>
-                                {% endif %}
-                            </tr>
-                            </thead>
+                            <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;">
+                                <thead>
+                                <tr>
+                                    <th class="four wide">Student</th>
+                                    <th class="two wide">Year</th>
+                                    <th class="six wide">Company</th>
+                                    <th class="two wide">CTC</th>
+                                    {% if profile.designation.name != 'student' %}
+                                    <th class="two wide">Delete</th>
+                                    {% endif %}
+                                </tr>
+                                </thead>
 
-                            <tbody>
-                          {% for student in pbirecord %}
-                              {% if student.record_id.placement_type == 'PBI' %}
-                            <tr>
-                                <td>
-                                  <h4 class="ui image header">
-                                        <div class="content">
-                                            {{ student.unique_id.id.user.first_name }} {{ student.unique_id.id.user.last_name }}
-                                            <div class="sub header">
-                                                {{ student.unique_id.id.id }}
-                                            </div>
-                                        </div>
-                                          </h4>
-                                </td>
+                                <tbody>
+                                    {% for student in pbirecord %}
+                                        {% if student.record_id.placement_type == 'PBI' %}
+                                            <tr>
+                                                <td>
+                                                  <h4 class="ui image header">
+                                                        <div class="content">
+                                                            {{ student.unique_id.id.user.first_name }} {{ student.unique_id.id.user.last_name }}
+                                                            <div class="sub header">
+                                                                {{ student.unique_id.id.id }}
+                                                            </div>
+                                                        </div>
+                                                          </h4>
+                                                </td>
 
-                                <td>
-                                    {{ student.record_id.year }}
-                                </td>
+                                                <td>
+                                                    {{ student.record_id.year }}
+                                                </td>
 
-                                <td>
-                                    {{ student.record_id.name }}
-                                </td>
+                                                <td>
+                                                    {{ student.record_id.name }}
+                                                </td>
 
-                                <td>
-                                    &#8377; {{ student.record_id.ctc }}
-                                </td>
+                                                <td>
+                                                    &#8377; {{ student.record_id.ctc }}
+                                                </td>
 
-                                {% if current == None %}
-                                <td>
-                                  <form method="post" class="ui form" role="form">
-                                    {% csrf_token %}
-                                    <button name="deleterecord" value="{{ student.pk }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
-                                        <i class="delete red icon"></i>
-                                    </button>
-                                    </form>
-                                </td>
-                                {% endif %}
-                            </tr>
-                            {% endif %}
-                        {% endfor %}
+                                                {% if current == None %}
+                                                <td>
+                                                  <form method="post" class="ui form" role="form">
+                                                    {% csrf_token %}
+                                                    <button name="deleterecord" value="{{ student.pk }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
+                                                        <i class="delete red icon"></i>
+                                                    </button>
+                                                    </form>
+                                                </td>
+                                                {% endif %}
+                                            </tr>
+                                        {% endif %}
+                                    {% endfor %}
 
-                           </tbody>
-                              </table>
+                                </tbody>
+                            </table>
 
-                              {% else %}<center><h5>Data Not Found</h5></center>
+                        {% else %}<center><h5>Data Not Found</h5></center>
 
-                              {% endif %}
-
-
-
+                        {% endif %}
                     </div>
 
-                    <div class="ui tab" data-tab="HigherStudies">
+                    <div class="{% if officer_statistics_past_higher_search %}ui active tab{% else %}ui tab{% endif %}" data-tab="HigherStudies">
 
                          <form method="post" class="ui form" role="form" action="{% url 'placement:manage_records' %}">
                     {% comment %}The add a new skill Accordian starts here!{% endcomment %}
-                    <div class="ui active accordion field">
-                        <div class="title">
+                    <div class="ui accordion field">
+                        <div class="active title">
                             <i class="icon dropdown"></i>
                             Search a Student!
                         </div>
@@ -510,7 +585,7 @@
                                     <div class="field">
                                       {{ form4.year.errors }}
                                             <label for="{{ form4.cname.id_for_label }}">
-                                                Year
+                                                Placed Year
                                             </label>
 
                                             <div class="ui large input">
@@ -573,6 +648,46 @@
 
                             <br>
                             <br>
+                    <!-- Pagination Section starts here  --->
+                    {% if pagination_higher %}
+
+                        <center>
+                          <div class="ui pagination menu">
+                            {% if higherrecord.has_previous %}
+                            <a href="?page={{higherrecord.previous_page_number}}" class="item">
+                              Previous
+                            </a>
+                            {% endif %}
+
+                            {% if is_disabled %}
+                              <a href="?page=1" class="item">1</a>
+                              <div class="disabled item">
+                                ...
+                              </div>
+                            {% endif %}
+
+                            {% for i in page_range %}
+                              {% if higherrecord.number == i %}
+                                <a href="?page={{i}}" class="active item">{{ i }} </a>
+                              {% else %}
+                                <a href="?page={{ i }}" class="item">{{ i }}</a>
+                              {% endif %}
+                            {% endfor %}
+
+
+
+                            {% if higherrecord.has_next %}
+                            <div class="disabled item">
+                              ...
+                            </div>
+                            <a href="?page={{higherrecord.next_page_number}}" class="item">
+                              Next
+                            </a>
+                            {% endif %}
+                          </div>
+                        </center>
+                    {% endif %}
+                    <!-- Pagination Section ends here --->
                             <div class="ui divider"></div>
                             <br>
 

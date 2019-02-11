@@ -267,7 +267,7 @@
                               No
                             </button>
                             <button class="ui positive right labeled icon button">
-                              Yes 
+                              Yes
                               <i class="checkmark icon"></i>
                             </button>
                           </div>
@@ -286,6 +286,7 @@
                                  <div class="ui segments">
                                    <div class="ui horizontal segments">
                                      <div class="ui segment">
+
                                       <form method="post" class="ui form" role="form" action="{% url 'placement:placement' %}">
                                        {% csrf_token %}
                                        <input type="hidden" name="delete_sch_key" value="{{ sch.pk }}">
@@ -293,6 +294,7 @@
                                            <i class="delete red icon"></i>
                                        </button>
                                        </form>
+
                                        <strong><h3>{{ sch.notify_id.placement_type }} | {{ sch.notify_id.company_name }} | {{ sch.placement_date }}</h3></strong><br>
 
                                        Time of Message: {{ sch.notify_id.timestamp }}
@@ -438,9 +440,10 @@
                                     </div>
                                     <input type="file" name="attached_file">
                                     <div class="field">
-                                        <button name="schedulesubmit" value="schedulesubmit" class="ui right floated large primary button" type="submit">
-                                            Submit
-                                        </button>
+                                      <label><br></label>
+                                      <button name="schedulesubmit" value="schedulesubmit" class="ui right floated large primary button" type="submit">
+                                          Submit
+                                      </button>
                                     </div>
 
                                     <br>
@@ -465,7 +468,7 @@
                     {% comment %}Form Tag starts here!{% endcomment %}
                     <form method="post" class="ui form" role="form" >
                         {% comment %}The add a new skill Accordian starts here!{% endcomment %}
-                        <div class="ui accordion field"> 
+                        <div class="ui accordion field">
                             <div class="title active">
                                 <i class="icon dropdown"></i>
                                 Add a new Event!
@@ -662,8 +665,31 @@
 
     <script type="text/javascript" src="{% static 'globals/js/jquery.clockinput.js' %}"></script>
 
-    
+
     <script type="text/javascript">
+
+      function getToday(){
+        return new Date();
+      }
+
+      $('#rangestart').calendar({
+        monthFirst: false,
+        type: 'date',
+        minDate: new Date(getToday().getFullYear(), getToday().getMonth(), getToday().getDate()),
+        formatter: {
+          date: function (date, settings) {
+            if (!date) return '';
+            var day = date.getDate();
+            var month = date.getMonth() + 1;
+            var year = date.getFullYear();
+            return year + '-' + month + '-' + day;
+          }
+        }
+      });
+
+
+
+
       //-------------------------search bar for placement schedule --------------------
         $('#sch_searchbar_btn').click(function(){
             console.log('search button is clicked');
@@ -690,6 +716,10 @@
               $(obj).click();
             });
         }
+
+
+
+
     </script>
 
     <script type="text/javascript" src="{% static 'globals/js/progress.js' %}"></script>

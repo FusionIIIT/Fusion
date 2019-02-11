@@ -2,8 +2,6 @@
 {% block awards %}
     {% comment %}The tab menu starts here!{% endcomment %}
     <body>
-    {% for i in release %}
-    {% if i.award_form_visible == 1 %}
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="mcm">
             Mcm Scholarship
@@ -12,14 +10,25 @@
         <a class="item" data-tab="medals">
             Convocation Medals
         </a>
+
+        <a class="item" data-tab="vas">
+                View Application Status
+        </a>
     </div>
 
-    <div class="ui active tab" data-tab="mcm">
+    <div class="ui tab" data-tab="vas">
         <div class="ui vertical segment">
+           {% block viewmcm %}
+                       {% include 'scholarshipsModule/viewstatus.html' with winners=winners mcm=mcm gold=gold silver=silver dandm=dandm %}
+          {% endblock %}
+          </div>
+     </div>
+
+    <div class="ui active tab" data-tab="mcm" id="mcm_a">
+        <div class="ui vertical segment">
+          {% if show_mcm_flag == True %}
             <div class="ui header">
                 Application Form for Merit Cum Means (MCM) Scholarship:
-
-
             <a class="right floated item" style="padding-left:50px" href="https://drive.google.com/open?id=1Ylcj_ZX_h-0TTZ_zOGVF1JLEJE1_YQGD" target="_blank">
                 <button class="ui primary button">
                     Form A
@@ -295,11 +304,25 @@
 
                 </div>
             </div>
+            {% else %}
+            {% if notif_mcm_flag == True %}
+            <div class="ui button" id="apply_mcm_btn">
+              Apply
+            </div>
+            {% else %}
+            <div class="ui disabled button">
+              Apply
+            </div>
+            {% endif %}
+            {% endif %}
         </div>
     </div>
 
+
+
     <div class="ui tab" data-tab="medals">
             <div class="ui vertical segment" id="form_part1">
+              {%  if show_convocation_flag == True %}
                     <div class="ui header">
                             Please read below instructions before applying for any of the Convocation Medals:
                         </div>
@@ -323,7 +346,19 @@
                             </div>
                         </div>
                     <button type="button" class="ui primary large right floated button" onclick="java_script_:dis(1)" >Proceed</button>
-               <br><br> </div>
+               <br><br>
+               {% else %}
+               {% if notif_convocation_flag == True %}
+               <div class="ui button" id="apply_convocation_btn">
+                 Apply
+               </div>
+               {% else %}
+               <div class="ui disabled button">
+                 Apply
+               </div>
+               {% endif %}
+               {% endif %}
+             </div>
 
                     <div class="ui vertical segment" id="form_part2" style="display:none">
                             <div class="ui large input">
@@ -918,10 +953,8 @@
     </div>
              </div>
 </div>
-{% else %}
-    <p> Form not available to you!!  </p>
-{% endif %}
-{% endfor %}
+
+
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
   <!--<script type="text/javascript">
@@ -969,6 +1002,42 @@
                 Form.fileURL.focus();
                 }
             }
+
+            $(document).on('click','#apply_mcm_btn',function (event) {
+                    event.preventDefault();
+                    $.ajax({
+                        url: '/spacs/get_mcm_flag/',
+                        type: 'GET',
+                        success: function (response) {
+                            if(response.result==='Success'){
+                              location.reload();
+                                console.log(response.result)
+                            }
+                            else{
+                                console.log(response.result);
+                            }
+
+                        }
+                    });
+                });
+
+                $(document).on('click','#apply_convocation_btn',function (event) {
+                        event.preventDefault();
+                        $.ajax({
+                            url: '/spacs/get_convocation_flag/',
+                            type: 'GET',
+                            success: function (response) {
+                                if(response.result==='Success'){
+                                  location.reload();
+                                    console.log(response.result)
+                                }
+                                else{
+                                    console.log(response.result);
+                                }
+
+                            }
+                        });
+                    });
         </script>
     <script>
     function dis(aval) {
