@@ -291,7 +291,7 @@ def Placement(request):
                                                         attached_file = attached_file,
                                                         role=role,
                                                         location=location, time=time)
-            
+
             notify.save()
             schedule.save()
 
@@ -365,7 +365,6 @@ def deleteInvitationStatus(request):
     }
 
     return render(request, 'placementModule/studentrecords.html', context)
-
 
 
 
@@ -2084,8 +2083,129 @@ def PlacementStatistics(request):
 
 
 
+def cv(request, username):
+    # Retrieve data or whatever you need
+    """
+    The function is used to generate the cv in the pdf format.
+    Embeds the data into the predefined template.
+    @param:
+            request - trivial
+            username - name of user whose cv is to be generated
+    @variables:
+            user = stores current user
+            profile = stores extrainfo of user
+            current = Stores all working students from HoldsDesignation for the respective degignation
+            achievementcheck = variable for achievementcheck in form for cv generation
+            educationcheck = variable for educationcheck in form for cv generation
+            publicationcheck = variable for publicationcheck in form for cv generation
+            patentcheck = variable for patentcheck in form for cv generation
+            internshipcheck = variable for internshipcheck in form for cv generation
+            projectcheck = variable for projectcheck in form for cv generation
+            coursecheck = variable for coursecheck in form for cv generation
+            skillcheck = variable for skillcheck in form for cv generation
+            user = get_object_or_404(User, Q(username=username))
+            profile = get_object_or_404(ExtraInfo, Q(user=user))
+            import datetime
+            now = stores current timestamp
+            roll = roll of the user
+            student = variable storing the profile data
+            studentplacement = variable storing the placement data
+            skills = variable storing the skills data
+            education = variable storing the education data
+            course = variable storing the course data
+            experience = variable storing the experience data
+            project = variable storing the project data
+            achievement = variable storing the achievement data
+            publication = variable storing the publication data
+            patent = variable storing the patent data
+    """
+    user = request.user
+    profile = get_object_or_404(ExtraInfo, Q(user=user))
+
+    current = HoldsDesignation.objects.filter(Q(working=user, designation__name="student"))
+    if current:
+        if request.method == 'POST':
+            achievementcheck = request.POST.get('achievementcheck')
+            educationcheck = request.POST.get('educationcheck')
+            publicationcheck = request.POST.get('publicationcheck')
+            patentcheck = request.POST.get('patentcheck')
+            internshipcheck = request.POST.get('internshipcheck')
+            projectcheck = request.POST.get('projectcheck')
+            coursecheck = request.POST.get('coursecheck')
+            skillcheck = request.POST.get('skillcheck')
+    else:
+        achievementcheck = '1'
+        educationcheck = '1'
+        publicationcheck = '1'
+        patentcheck = '1'
+        internshipcheck = '1'
+        projectcheck = '1'
+        coursecheck = '1'
+        skillcheck = '1'
+
+    user = get_object_or_404(User, Q(username=username))
+    profile = get_object_or_404(ExtraInfo, Q(user=user))
+    import datetime
+    now = datetime.datetime.now()
+    if int(str(profile.id)[:2]) == 20:
+        if (now.month>4):
+          roll = 1+now.year-int(str(profile.id)[:4])
+        else:
+          roll = now.year-int(str(profile.id)[:4])
+    else:
+        if (now.month>4):
+          roll = 1+(now.year)-int("20"+str(profile.id)[0:2])
+        else:
+          roll = (now.year)-int("20"+str(profile.id)[0:2])
+
+    student = get_object_or_404(Student, Q(id=profile.id))
+    studentplacement = get_object_or_404(StudentPlacement, Q(unique_id=student))
+    skills = Has.objects.filter(Q(unique_id=student))
+    education = Education.objects.filter(Q(unique_id=student))
+    course = Course.objects.filter(Q(unique_id=student))
+    experience = Experience.objects.filter(Q(unique_id=student))
+    project = Project.objects.filter(Q(unique_id=student))
+    achievement = Achievement.objects.filter(Q(unique_id=student))
+    publication = Publication.objects.filter(Q(unique_id=student))
+    patent = Patent.objects.filter(Q(unique_id=student))
+    return render_to_pdf('placementModule/cv.html', {'pagesize': 'A4', 'user': user,
+                                                     'profile': profile, 'projects': project,
+                                                     'student': studentplacement,
+                                                     'skills': skills, 'educations': education,
+                                                     'courses': course, 'experiences': experience,
+                                                     'achievements': achievement,
+                                                     'publications': publication,
+                                                     'patents': patent, 'roll': roll,
+                                                     'achievementcheck': achievementcheck,
+                                                     'educationcheck': educationcheck,
+                                                     'publicationcheck': publicationcheck,
+                                                     'patentcheck': patentcheck,
+                                                     'internshipcheck': internshipcheck,
+                                                     'projectcheck': projectcheck,
+                                                     'coursecheck': coursecheck,
+                                                     'skillcheck': skillcheck})
 
 
+def render_to_pdf(template_src, context_dict):
+    """
+    The function is used to generate the cv in the pdf format.
+    Embeds the data into the predefined template.
+    @param:
+            template_src - template of cv to be rendered
+            context_dict - data fetched from the dtatabase to be filled in the cv template
+    @variables:
+            template - stores the template
+            html - html rendered pdf
+            result - variable to store data in BytesIO
+            pdf - storing encoded html of pdf version
+    """
+    template = get_template(template_src)
+    html = template.render(context_dict)
+    result = BytesIO()
+    pdf = pisa.pisaDocument(BytesIO(html.encode("ISO-8859-1")), result)
+    if not pdf.err:
+        return HttpResponse(result.getvalue(), content_type='application/pdf')
+    return HttpResponse('We had some errors<pre>%s</pre>' % escape(html))
 
 
 def export_to_xls(qs):
@@ -2471,107 +2591,13 @@ def export_to_xls(qs):
 #         return HttpResponse(result.getvalue(), content_type='application/pdf')
 #     return HttpResponse('We had some errors<pre>%s</pre>' % escape(html))
 
-def cv(request, username):
-    # Retrieve data or whatever you need
-    """
-    The function is used to generate the cv in the pdf format.
-    Embeds the data into the predefined template.
-    @param:
-            request - trivial
-            username - name of user whose cv is to be generated
-    @variables:
-            user = stores current user
-            profile = stores extrainfo of user
-            current = Stores all working students from HoldsDesignation for the respective degignation
-            achievementcheck = variable for achievementcheck in form for cv generation
-            educationcheck = variable for educationcheck in form for cv generation
-            publicationcheck = variable for publicationcheck in form for cv generation
-            patentcheck = variable for patentcheck in form for cv generation
-            internshipcheck = variable for internshipcheck in form for cv generation
-            projectcheck = variable for projectcheck in form for cv generation
-            coursecheck = variable for coursecheck in form for cv generation
-            skillcheck = variable for skillcheck in form for cv generation
-            user = get_object_or_404(User, Q(username=username))
-            profile = get_object_or_404(ExtraInfo, Q(user=user))
-            import datetime
-            now = stores current timestamp
-            roll = roll of the user
-            student = variable storing the profile data
-            studentplacement = variable storing the placement data
-            skills = variable storing the skills data
-            education = variable storing the education data
-            course = variable storing the course data
-            experience = variable storing the experience data
-            project = variable storing the project data
-            achievement = variable storing the achievement data
-            publication = variable storing the publication data
-            patent = variable storing the patent data
-    """
-    user = request.user
-    profile = get_object_or_404(ExtraInfo, Q(user=user))
 
-    current = HoldsDesignation.objects.filter(Q(working=user, designation__name="student"))
-    if current:
-        if request.method == 'POST':
-            achievementcheck = request.POST.get('achievementcheck')
-            educationcheck = request.POST.get('educationcheck')
-            publicationcheck = request.POST.get('publicationcheck')
-            patentcheck = request.POST.get('patentcheck')
-            internshipcheck = request.POST.get('internshipcheck')
-            projectcheck = request.POST.get('projectcheck')
-            coursecheck = request.POST.get('coursecheck')
-            skillcheck = request.POST.get('skillcheck')
-    else:
-        achievementcheck = '1'
-        educationcheck = '1'
-        publicationcheck = '1'
-        patentcheck = '1'
-        internshipcheck = '1'
-        projectcheck = '1'
-        coursecheck = '1'
-        skillcheck = '1'
 
-    user = get_object_or_404(User, Q(username=username))
-    profile = get_object_or_404(ExtraInfo, Q(user=user))
-    import datetime
-    now = datetime.datetime.now()
-    if int(str(profile.id)[:2]) == 20:
-        if (now.month>4):
-          roll = 1+now.year-int(str(profile.id)[:4])
-        else:
-          roll = now.year-int(str(profile.id)[:4])
-    else:
-        if (now.month>4):
-          roll = 1+(now.year)-int("20"+str(profile.id)[0:2])
-        else:
-          roll = (now.year)-int("20"+str(profile.id)[0:2])
 
-    student = get_object_or_404(Student, Q(id=profile.id))
-    studentplacement = get_object_or_404(StudentPlacement, Q(unique_id=student))
-    skills = Has.objects.filter(Q(unique_id=student))
-    education = Education.objects.filter(Q(unique_id=student))
-    course = Course.objects.filter(Q(unique_id=student))
-    experience = Experience.objects.filter(Q(unique_id=student))
-    project = Project.objects.filter(Q(unique_id=student))
-    achievement = Achievement.objects.filter(Q(unique_id=student))
-    publication = Publication.objects.filter(Q(unique_id=student))
-    patent = Patent.objects.filter(Q(unique_id=student))
-    return render_to_pdf('placementModule/cv.html', {'pagesize': 'A4', 'user': user,
-                                                     'profile': profile, 'projects': project,
-                                                     'student': studentplacement,
-                                                     'skills': skills, 'educations': education,
-                                                     'courses': course, 'experiences': experience,
-                                                     'achievements': achievement,
-                                                     'publications': publication,
-                                                     'patents': patent, 'roll': roll,
-                                                     'achievementcheck': achievementcheck,
-                                                     'educationcheck': educationcheck,
-                                                     'publicationcheck': publicationcheck,
-                                                     'patentcheck': patentcheck,
-                                                     'internshipcheck': internshipcheck,
-                                                     'projectcheck': projectcheck,
-                                                     'coursecheck': coursecheck,
-                                                     'skillcheck': skillcheck})
+
+
+
+
 
 
 
@@ -3456,28 +3482,6 @@ def cv(request, username):
 #                'officer_statistics_past_higher_search': officer_statistics_past_higher_search,
 #                'chairman_visit_add': chairman_visit_add}
 #     return render(request, "placementModule/placement.html", context)
-
-
-def render_to_pdf(template_src, context_dict):
-    """
-    The function is used to generate the cv in the pdf format.
-    Embeds the data into the predefined template.
-    @param:
-            template_src - template of cv to be rendered
-            context_dict - data fetched from the dtatabase to be filled in the cv template
-    @variables:
-            template - stores the template
-            html - html rendered pdf
-            result - variable to store data in BytesIO
-            pdf - storing encoded html of pdf version
-    """
-    template = get_template(template_src)
-    html = template.render(context_dict)
-    result = BytesIO()
-    pdf = pisa.pisaDocument(BytesIO(html.encode("ISO-8859-1")), result)
-    if not pdf.err:
-        return HttpResponse(result.getvalue(), content_type='application/pdf')
-    return HttpResponse('We had some errors<pre>%s</pre>' % escape(html))
 
 
 # def render_to_pdf1(template_src, context_dict):
