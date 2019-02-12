@@ -1,5 +1,6 @@
 import os
 import shutil
+import datetime
 import decimal
 import zipfile
 import xlwt
@@ -2143,9 +2144,10 @@ def cv(request, username):
         coursecheck = '1'
         skillcheck = '1'
 
+
+    # print(achievementcheck,' ',educationcheck,' ',publicationcheck,' ',patentcheck,' ',internshipcheck,' ',projectcheck,' \n\n\n')
     user = get_object_or_404(User, Q(username=username))
     profile = get_object_or_404(ExtraInfo, Q(user=user))
-    import datetime
     now = datetime.datetime.now()
     if int(str(profile.id)[:2]) == 20:
         if (now.month>4):
@@ -2168,6 +2170,10 @@ def cv(request, username):
     achievement = Achievement.objects.filter(Q(unique_id=student))
     publication = Publication.objects.filter(Q(unique_id=student))
     patent = Patent.objects.filter(Q(unique_id=student))
+
+    # print(studentplacement)
+    # print(skills)
+
     return render_to_pdf('placementModule/cv.html', {'pagesize': 'A4', 'user': user,
                                                      'profile': profile, 'projects': project,
                                                      'student': studentplacement,
