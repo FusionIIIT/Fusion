@@ -324,7 +324,9 @@ class AddSchedule(forms.Form):
                                                                                 'max':"24:00"}))
     ctc = forms.DecimalField(label="ctc", widget=forms.NumberInput(attrs={'min': 0}) )
     company_name = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
-                                                              'class': 'field'}),
+                                                              'class': 'field',
+                                                              'list': 'company_dropdown1',
+                                                              'id': 'company_input'}),
                                    label="company_name")
     placement_type = forms.ChoiceField(widget=forms.Select(attrs={'style': "height:45px"}), label="placement_type",
                                        choices=Constants.PLACEMENT_TYPE)

@@ -232,6 +232,12 @@ class Role(models.Model):
     def __str__(self):
         return self.role
 
+class CompanyDetails(models.Model):
+    company_name = models.CharField(max_length=100, blank=True, null=True)
+
+    def __str__(self):
+        return self.company_name
+
 
 class PlacementStatus(models.Model):
     notify_id = models.ForeignKey(NotifyStudent, on_delete=models.CASCADE)

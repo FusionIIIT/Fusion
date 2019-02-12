@@ -36,9 +36,23 @@ from .forms import (AddAchievement, AddChairmanVisit, AddCourse, AddEducation,
 from .models import (Achievement, ChairmanVisit, Course, Education, Experience,
                      Has, NotifyStudent, Patent, PlacementRecord,
                      PlacementSchedule, PlacementStatus, Project, Publication,
-                     Skill, StudentPlacement, StudentRecord, Role)
+                     Skill, StudentPlacement, StudentRecord, Role, CompanyDetails)
 
 # from weasyprint import HTML
+
+def CompanyNameDropdown(request):
+    if request.method == 'POST':
+        current_value = request.POST.get('current_value')
+        company_names = CompanyDetails.objects.filter(Q(company_name__startswith=current_value))
+        company_name = []
+        for name in company_names:
+            company_name.append(name.company_name)
+
+        context = {
+            'company_names': company_name
+        }
+
+        return JsonResponse(context)
 
 def CheckingRoles(request):
     if request.method == 'POST':
@@ -270,6 +284,11 @@ def Placement(request):
             placement_type = form5.cleaned_data['placement_type']
             role_offered = request.POST.get('role')
             description = form5.cleaned_data['description']
+
+            try:
+                comp_name = CompanyDetails.objects.filter(company_name=company_name)[0]
+            except:
+                CompanyDetails.objects.create(company_name=company_name)
 
             try:
                 role = Role.objects.filter(role=role_offered)[0]
