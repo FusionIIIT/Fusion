@@ -78,6 +78,10 @@ class BookingDetail(models.Model):
     visitor = models.ManyToManyField(VisitorDetail)
     image = models.FileField(null=True, blank=True, upload_to='VhImage/')
     rooms = models.ManyToManyField(RoomDetail)
+    number_of_rooms =  models.IntegerField(default=1,null=True,blank=True)
+    
+    def __str__(self):
+        return '%s ----> %s - %s id is %s' % (self.intender, self.visitor, self.status, self.id)
 
 
 class MealRecord(models.Model):
@@ -98,6 +102,9 @@ class Bill(models.Model):
     meal_bill = models.IntegerField(default=0)
     room_bill = models.IntegerField(default=0)
     payment_status = models.BooleanField(default=False)
+
+    # def __str__(self):
+    #     return '%s ----> %s - %s id is %s' % (self.booking.id, self.meal_bill, self.room_bill, self.payment_status)
 
 
 class Inventory(models.Model):

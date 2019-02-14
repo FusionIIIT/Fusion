@@ -149,14 +149,17 @@ def handle_faculty_leave_application(request):
         #leave.is_station = data.get('is_station')
         leave.extra_info = data.get('leave_info')
         leave.save()
+        rep_req=[]
         for segment in segments:
             segment.leave = leave
         for replacement in replacements:
             replacement.leave = leave
+            rep_req.append(replacement.replacer)
         LeaveSegment.objects.bulk_create(segments)
         ReplacementSegment.objects.bulk_create(replacements)
         deduct_leave_balance(leave,False)
         leave_module_notif(request.user, request.user, 'leave_applied')
+        leave_module_notif(request.user, rep_req, 'replacement_request')
         messages.add_message(request, messages.SUCCESS, 'Successfully Submitted !')
         return redirect(reverse('leave:leave'))
 
@@ -218,15 +221,18 @@ def handle_staff_leave_application(request):
         #leave.is_station = data.get('is_station')
         leave.extra_info = data.get('leave_info')
         leave.save()
+        rep_req = []
         for segment in segments:
             segment.leave = leave
         for replacement in replacements:
             replacement.leave = leave
+            rep_req.append(replacement.replacer)
         LeaveSegment.objects.bulk_create(segments)
         ReplacementSegment.objects.bulk_create(replacements)
 
         deduct_leave_balance(leave,False)
         leave_module_notif(request.user, request.user, 'leave_applied')
+        leave_module_notif(request.user, rep_req, 'replacement_request')
         messages.add_message(request, messages.SUCCESS, 'Successfully Submitted !')
         return redirect(reverse('leave:leave'))
 
@@ -576,16 +582,63 @@ def handle_offline_leave_application(request):
 
     common_form = EmployeeCommonFormOffline(request.POST)
     leave_valid = leave_form_set.is_valid()
-    acad_valid = academic_form_set.is_valid()
+    #acad_valid = academic_form_set.is_valid()
     admin_valid = admin_form_set.is_valid()
     common_valid = common_form.is_valid()
 
     leave_user = ""
-
-    if leave_valid and acad_valid and admin_valid and common_valid:
+    type_of_user = "staff"
+    data=""
+    if common_valid:
         data = common_form.cleaned_data
+        leave_user = User.objects.get(username = data.get('leave_user_select'))
+        type_of_user = leave_user.extrainfo.user_type
+
+    print("\n\n\n"+type_of_user+"\n\n\n")
+    if leave_valid and admin_valid and common_valid and type_of_user=="faculty":
+        #data = common_form.cleaned_data
+        if academic_form_set.is_valid():
+            leave = LeaveOffline(
+                applicant=leave_user
+            )
+            segments_offline = list()
+            type_of_leaves = LeaveType.objects.all()
+            replacements = list()
+            for form in leave_form_set:
+                leave_segment = add_leave_segment_offline(form, type_of_leaves)
+                segments_offline.append(leave_segment)
+
+            for form in academic_form_set:
+                rep = add_acad_rep_segment_offline(form)
+                replacements.append(rep)
+
+            for form in admin_form_set:
+                rep = add_admin_rep_segment_offline(form)
+                replacements.append(rep)
+
+
+            leave.purpose = data.get('purpose')
+            #leave.is_station = data.get('is_station')
+            leave.application_date = data.get('application_date')
+            leave.leave_user_select = leave_user
+            #leave_user = User.objects.get(username = data.get('leave_user_select'))
+            leave.save()
+            for segment in segments_offline:
+                segment.leave = leave
+            for replacement in replacements:
+                replacement.leave = leave
+            LeaveSegmentOffline.objects.bulk_create(segments_offline)
+            ReplacementSegmentOffline.objects.bulk_create(replacements)
+            deduct_leave_balance(leave,True)
+            leave_module_notif(request.user, leave_user, 'offline_leave')
+
+            messages.add_message(request, messages.SUCCESS, 'Successfully Submitted !')
+            return redirect(reverse('leave:leavemanager'))
+
+    elif leave_valid and admin_valid and common_valid and type_of_user=="staff":
+        #data = common_form.cleaned_data
         leave = LeaveOffline(
-            applicant=User.objects.get(username = data.get('leave_user_select'))
+            applicant=leave_user
         )
         segments_offline = list()
         type_of_leaves = LeaveType.objects.all()
@@ -593,10 +646,6 @@ def handle_offline_leave_application(request):
         for form in leave_form_set:
             leave_segment = add_leave_segment_offline(form, type_of_leaves)
             segments_offline.append(leave_segment)
-
-        for form in academic_form_set:
-            rep = add_acad_rep_segment_offline(form)
-            replacements.append(rep)
 
         for form in admin_form_set:
             rep = add_admin_rep_segment_offline(form)
@@ -606,8 +655,8 @@ def handle_offline_leave_application(request):
         leave.purpose = data.get('purpose')
         #leave.is_station = data.get('is_station')
         leave.application_date = data.get('application_date')
-        leave.leave_user_select = User.objects.get(username = data.get('leave_user_select'))
-        leave_user = User.objects.get(username = data.get('leave_user_select'))
+        leave.leave_user_select = leave_user
+        #leave_user = User.objects.get(username = data.get('leave_user_select'))
         leave.save()
         for segment in segments_offline:
             segment.leave = leave
@@ -627,17 +676,30 @@ def handle_offline_leave_application(request):
     #leave_balance = leave_user.leave_balance.all()
     user_leave_applications = LeaveOffline.objects.filter(applicant=leave_user).order_by('-timestamp')
     #processed_requests = request.user.all_leave_requests.filter(~Q(status='pending'))
-    context = {
-       
-        'leave_form_offline_set': leave_form_set,
-        'acad_form_offline_set': academic_form_set,
-        'admin_form_offline_set': admin_form_set,
-        'common_offline_form': common_form,
-        'forms': True,
-        'user_leave_applications_offline': user_leave_applications
-    }
+    if type_of_user=="faculty":
+        context = {
+           
+            'leave_form_offline_set': leave_form_set,
+            'acad_form_offline_set': academic_form_set,
+            'admin_form_offline_set': admin_form_set,
+            'common_offline_form': common_form,
+            'forms': True,
+            'user_leave_applications_offline': user_leave_applications
+        }
 
-    return render(request, 'leaveModule/test.html', context)
+        return render(request, 'leaveModule/test.html', context)
+    elif type_of_user=="staff":
+        context = {
+           
+            'leave_form_offline_set': leave_form_set,
+            'admin_form_offline_set': admin_form_set,
+            'common_offline_form': common_form,
+            'forms': True,
+            'user_leave_applications_offline': user_leave_applications
+        }
+
+        return render(request, 'leaveModule/test.html', context)
+
 
 def send_offline_leave_form(request):
     #rep_segments = request.user.rep_requests_offline.all()

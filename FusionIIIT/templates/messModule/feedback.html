@@ -13,7 +13,7 @@
         </a>
     </div>
 
-    <div class="ui active tab" data-tab="feedback">
+    <div class="ui active tab" data-tab="feedback" id="feedback">
         <div class="ui vertical segment">
 
             {% comment %}Form Tag starts here!{% endcomment %}
@@ -45,12 +45,6 @@
                                 </select>
                             </div>
 
-                            <!-- <div class="field">
-                                <label><br></label>
-                                <button class="ui primary fluid button" type="submit">
-                                    Submit
-                                </button>
-                            </div> -->
                         </div>
                     </div>
 
@@ -116,24 +110,25 @@
                 dataType: 'json',
                 data: {
                     'csrfmiddlewaretoken' : '{{ csrf_token }}',
-                    'feedback_type':$("#feedback_type").val(),
-                    'description':$("#description").val(),
+                    'feedback_type': $("#feedback_type").val(),
+                    'description': $("#description").val()
                 },                
                 success: function(data) {
                     if(data.status){
                         alert("Data Inserted Successfully");
-                        
-                        // $('#ls_table').prepend("<tr><td>"+ $("#leave_type").val()+ "</td><td>"+ 
-                        //     $("#start_date").val() + "</td><td>" + $("end_date").val()+
-                        //     "</td><td>"+ $("#purpose").val()+ "</td></tr>")
+                        $("#feedback").load(location.href+" #feedback>*","")
+                         $('#ls_table').prepend("<tr><td>"+ $("#leave_type").val()+ "</td><td>"+
+                             $("#start_date").val() + "</td><td>" + $("end_date").val()+
+                             "</td><td>"+ $("#purpose").val()+ "</td></tr>")
 
                         document.getElementById('feedback_type').value="";
                         document.getElementById('description').value="";
-                        
+
                     }
                 },
                 error: function(data, err) {
                     alert(err.message);
+                    $("#feedback").load(location.href+" #feedback>*","")
                 }
             });
         return false;

@@ -6,16 +6,21 @@
   <div class="header">Booking Request Action</div>
   <div class="scrolling content">
     <form class="ui large form" id="behen-ka-bhai">
-        <div class="field">
+        <!-- <div class="field">
             <label>Name</label>
             <input type="text" value="{{ booking.intender.name }}" readonly>
-        </div>
+        </div> -->
 
         <div class="field">
             <div class="two fields">
-                <div class="field">
+                <!-- <div class="field">
                     <label>Phone </label>
                     <input  type="number" value="{{ booking.intender.phone }}" readonly>
+                </div> -->
+
+                <div class="field">
+                    <label>Username</label>
+                    <input type="text" value="{{ booking.intender.username }}" readonly>
                 </div>
 
                 <div class="field">
@@ -80,6 +85,8 @@
                     </div>
                 </div>
 
+                <!--<div class="field">-->
+                    
                 <div class="field">
                     <label>Number Of People</label>
 
@@ -87,7 +94,10 @@
                         <input value="{{ booking.person_count }}" type="number" readonly>
                     </div>
                 </div>
+                        
+                    
 
+                {% if user_designation != 'Intender'  %}
                 <div class="field" id="alloted-rooms-{{ booking.id }}" >
                     <label>Rooms (required*)</label>
                     <select name="alloted-rooms-{{ booking.id }}" multiple="" class="ui fluid dropdown" required="">
@@ -100,15 +110,24 @@
                         {% endfor %}
                     </select>
                 </div>
+                {% endif %}
+
             </div>
         </div>
 
+
         <div class="field">
             <label>Purpose Of Visit</label>
-            <div class="ui fluid input">
-                <input rows="2" value="{{ booking.purpose }}" readonly >
-            </div>
+                <div class="ui fluid input">
+                    <input rows="2" value="{{ booking.purpose }}" readonly >
+                            
+                </div>
         </div>
+
+
+        
+            
+        
         <div class="field">
             <label>Remarks (required*)</label>
             <div class="ui fluid input">

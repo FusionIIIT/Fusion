@@ -131,12 +131,17 @@ viz. meeting, presentations etc. and requesting to stay in the VH.
 
                 </div>
 
+                
+                   
                 <div class="field">
                     <label>Purpose Of Visit</label>
                     <div class="ui fluid input">
-                        <input type="text" name="purpose-of-visit" required="">
+                            <input type="text" name="purpose-of-visit" required="">
                     </div>
                 </div>
+                
+            
+                
                 <div class="field">
                     <label>Remarks</label>
                     <div class="ui fluid input">
@@ -152,8 +157,24 @@ viz. meeting, presentations etc. and requesting to stay in the VH.
                 <input type="hidden" name="csrf" value="{{ csrf_token }}">
                 <div class="field">
                     <label></label>
-                    <button class="ui large primary button right floated"
-                        onclick="request_booking(event)">
+                    <button class="ui large primary button right floated" id="request_booking_button" 
+                        onclick="request_booking(event); ll()">
+                    <script type='text/javascript'>
+                    ll = function () {
+                        document.getElementById("request_booking_button").disabled=true; 
+                        console.log("lllllllllllllllllll");    
+                        setTimeout('jj()', 5000);
+                        }
+                    
+                    jj=function(){
+                        document.getElementById("request_booking_button").disabled=false; 
+                        console.log("ooooooooooo"); 
+                    }
+
+                    </script>
+                        
+
+
                         Place Request
                     </button>
                 </div>

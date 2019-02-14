@@ -26,11 +26,11 @@
                     </div>
                     {% if notice.unread %}
                     <div class="ui right floated blue button notif-status" id="notif-status{{notice.id}}" notif-id="{{notice.id}}"  slug="{{notice.slug}}">
-                        <div id="notif-sp{{notice.id}}">Unread</div>
+                        <div id="notif-sp{{notice.id}}">Mark as Read</div>
                     </div>
                     {% else %}
                     <div class="ui right floated button notif-status" id="notif-status{{notice.id}}" notif-id="{{notice.id}}" slug="{{notice.slug}}">
-                         <div id="notif-sp{{notice.id}}">Read</div>
+                         <div id="notif-sp{{notice.id}}">Mark as Unread</div>
                     </div>
                     {% endif %}
                 </div>
@@ -49,7 +49,7 @@
                     var id = $(this).attr("notif-id");
                     var status = document.getElementById("notif-sp"+id).innerHTML;
                     var url;
-                    if(status=="Read"){
+                    if(status=="Mark as Unread"){
                         url = '{% url 'notifications:mark_as_unread' 0 %}'.replace('0', slug);
                     }
                     else{
@@ -62,19 +62,19 @@
 
                                 success: function(data)
                                 {
-                                    if(status=="Read"){
+                                    if(status=="Mark as Unread"){
                                         $("#notif-status"+id).removeClass("ui right floated button");
                                         $("#notif-status"+id).addClass("ui right floated blue button");
                                         $("#notif"+id).removeClass("ui card");
                                         $("#notif"+id).addClass("ui blue card");
-                                        document.getElementById("notif-sp"+id).innerHTML= "Unread";
+                                        document.getElementById("notif-sp"+id).innerHTML= "Mark as Read";
                                     }
                                     else{
                                         $("#notif-status"+id).removeClass("ui right floated blue button");
                                         $("#notif-status"+id).addClass("ui right floated button");
                                         $("#notif"+id).removeClass("ui blue card");
                                         $("#notif"+id).addClass("ui card");
-                                        document.getElementById("notif-sp"+id).innerHTML= "Read";
+                                        document.getElementById("notif-sp"+id).innerHTML= "Mark as Unread";
                                     }
 
                                 }
