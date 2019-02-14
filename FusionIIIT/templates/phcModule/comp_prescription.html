@@ -379,10 +379,12 @@
     {% comment %}the compounder prescription tab ends here {% endcomment %}
 
 <div class="ui tab" data-tab="hospitaladmit">
+
   <p id="hospital"></p>
   <div class="ui vertical segment">
       <form class="ui form" method="POST" style="padding: 8px; padding-left: 24px; padding-right: 24px;">{% csrf_token %}
           <div class="field">
+              <h4>*Admission details for outside hospitals</h4>
             <div class="two fields">
               <div class="field">
                   <label>Doctor</label>
@@ -396,12 +398,13 @@
 
               <div class="field">
                   <label>User</label>
-                  <select class="ui search fluid dropdown" name="doc" id="doc" required="true">
-                    <option value="" disabled selected>--SELECT--</option>
-                    {% for user in users %}
-                    <option value="{{user.id}}">{{user.id}}-{{user.user}}</option>
-                    {% endfor %}
-                  </select>
+                  <div class="ui fluid large input">
+
+                      {% comment %} {% endcomment %}
+                      <input placeholder="Patient Id" name="doc" id="doc" type="text">
+                      {% comment %}  {% endcomment %}
+                      </div>
+
               </div>
             </div>
               <div class="two fields">
