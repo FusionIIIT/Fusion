@@ -226,6 +226,18 @@ class NotifyStudent(models.Model):
     def __str__(self):
         return '{} - {}'.format(self.company_name, self.placement_type)
 
+class Role(models.Model):
+    role = models.CharField(max_length=100, blank=True, null=True)
+
+    def __str__(self):
+        return self.role
+
+class CompanyDetails(models.Model):
+    company_name = models.CharField(max_length=100, blank=True, null=True)
+
+    def __str__(self):
+        return self.company_name
+
 
 class PlacementStatus(models.Model):
     notify_id = models.ForeignKey(NotifyStudent, on_delete=models.CASCADE)
@@ -285,11 +297,19 @@ class PlacementSchedule(models.Model):
     location = models.CharField(max_length=100, default='')
     description = models.TextField(max_length=500, default='', null=True, blank=True)
     time = models.TimeField()
+    role = models.ForeignKey(Role, on_delete=models.CASCADE, null=True, blank=True)
     attached_file = models.FileField(upload_to='documents/placement/schedule', null=True, blank=True)
     schedule_at = models.DateTimeField(auto_now_add=False, auto_now=False, default=timezone.now, blank=True, null=True)
 
     def __str__(self):
         return '{} - {}'.format(self.notify_id.company_name, self.placement_date)
+
+    @property
+    def get_role(self):
+        try:
+            return self.role.role
+        except:
+            return ''
 
 
 class StudentPlacement(models.Model):
