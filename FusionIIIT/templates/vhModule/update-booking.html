@@ -1,0 +1,175 @@
+{% load static %}
+{% block update-booking %}
+
+<!-- update booking by intender -->
+
+{% for booking in dashboard_bookings %}
+<div class="ui modal booking" id='update-booking-{{ booking.id }}'>
+  <div class="header"> View Booking</div>
+  <div class="scrolling content">
+    <form class="ui large form" id="behen-ka-bhai">
+    
+        <!-- <div class="field">
+            <label>Name</label>
+            <input type="text" value="{{ booking.intender.username }}" id="readonly" readonly>
+        </div> -->
+
+        <div class="field">
+            <div class="two fields">
+               <div class="field">
+                <label>Username</label>
+                <input type="text" value="{{ booking.intender.username }}" id="readonly" readonly>
+                </div>
+
+                <div class="field">
+                    <label>Email</label>
+                    <input type="Email" value="{{ booking.intender.email }}" required="True" readonly>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="two fields">
+            <div class="field">
+                <label>From:</label>
+                <div class="ui calendar" id="rangestart2">
+                    <div class="ui input left icon">
+                        <i class="calendar icon"></i>
+                        <input type="text" class="date-selector" name="update-booking-from" value="{{ booking.booking_from }}" required="True" readonly>
+                    </div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>To:</label>
+                <div class="ui calendar" id="rangeend2">
+                    <div class="ui input left icon">
+                        <i class="calendar icon"></i>
+                        <input type="text" value="{{ booking.booking_to }}" class="date-selector" name="update-booking-to" required="True" readonly>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="field">
+            <div class="three fields">
+
+                <div class="field">
+                    <label>Category </label>
+
+                    <div class="ui fluid search selection dropdown">
+                        <input name="category-{{ booking.id }}" value="{{ booking.visitor_category }}" type="text" required="True" readonly>
+                        <!-- <i class="dropdown icon"></i> -->
+
+                        <!-- <div class="default text">{{ booking.visitor_category }}</div> -->
+
+                        <!-- <div class="menu">
+                            <div class="item" data-value="A">
+                                A
+                            </div>
+
+                            <div class="item" data-value="B">
+                                B
+                            </div>
+
+                            <div class="item" data-value="C">
+                                C
+                            </div>
+
+                            <div class="item" data-value="D">
+                                D
+                            </div>
+                        </div> -->
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>Number Of People</label>
+
+                    <div class="ui fluid input">
+                        <input value="{{ booking.person_count }}" name="number-of-people-{{ booking.id }}" type="number" readonly>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>Number Of Rooms</label>
+
+                    <div class="ui fluid input">
+                        <input value="{{ booking.number_of_rooms }}" name="number-of-rooms-{{ booking.id }}" type="number" readonly>
+                    </div>
+                </div>
+
+<!-- 
+                <div class="field" id="alloted-rooms-{{ booking.id }}" >
+                    <label>Rooms (required*)</label>
+                    <select name="alloted-rooms-{{ booking.id }}" multiple="" class="ui fluid dropdown" required="True">
+                        {% for key, values in available_rooms.items %}
+                            {% if key == booking.id %}
+                                {% for room in values %}
+                                    <option value='{{ booking.room }}'>{{ room }}</option>
+                                {% endfor %}
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div> -->
+            </div>
+        </div>
+
+        <div class="field">
+            <label>Purpose Of Visit</label>
+            <div class="ui fluid input">
+                <input rows="2" value="{{ booking.purpose }}" name="purpose-of-visit-{{ booking.id }}" readonly>
+            </div>
+        </div>
+        <!-- <div class="field">
+            <label>Remarks (required*)</label>
+            <div class="ui fluid input">
+                <input type="text" name="cancellation-remarks-{{ booking.id }}" required="">
+            </div>
+        </div> -->
+
+        <input type="hidden" name="booking-id-{{ booking.id }}" value="{{ booking.id }}"">
+        <input type="hidden" name="csrf" value="{{ csrf_token }}">
+
+        <!-- {% if user_designation == 'VhIncharge'  %}
+        <div class="field">
+            <label></label>
+            <div class="ui large red button right floated" id="reject-booking" onclick="reject_booking('{{ booking.id }}')">
+                Reject
+            </div>
+            <div class="ui large green button right floated" id="confirm-booking" onclick="confirm_booking('{{ booking.id }}')">
+                Confirm
+            </div>
+            <div class="ui large green button right floated" id="farward-booking" onclick="forward_booking('{{ booking.id }}')">
+                Forward
+            </div>
+        </div>
+        {% endif %} -->
+  <!--       {% if user_designation == 'VhCaretaker' and booking.status == "Forward" %}
+        <div class="field">
+            <label></label>
+            <div class="ui large green button right floated" id="confirm-booking" onclick="confirm_booking('{{ booking.id }}')">
+                Confirm
+            </div>
+
+        </div>
+        {% endif %} -->
+
+        {% if user_designation == 'Intender' %}
+        {%  if booking.status == 'Pending' or booking.status == 'Confirmed' %}
+      <!--   <div class="field">
+            <label></label>
+            <div class="ui large blue button right floated" id="update-booking" onclick="update_booking('{{ booking.id }}')">
+                Update
+            </div>
+        </div> -->
+        {% endif %}
+        {% endif %}
+        <br>
+        <br>
+    </form>
+  </div>
+</div>
+
+{% endfor %}
+{% endblock %}

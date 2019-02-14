@@ -33,11 +33,12 @@
 
             {% comment %}The Tab-Menu starts here!{% endcomment %}
             <div class="ui huge fluid vertical pointing menu"
-                 style="max-width: 320px;">
+                 style="max-width: 320px;" >
 
             {% for d in desig %}
                 {% if info.user_type == 'student' and d.designation.name == 'student' %}
-                    <a class="active item" data-tab="first">
+
+                    <a class=" item" data-tab="first">
                         Feedback
                         <i class="right floated chevron right icon"></i>
                     </a>
@@ -67,6 +68,7 @@
                         Apply For Nonveg | ChecK History
                         <i class="right floated chevron right icon"></i>
                     </a>
+
                     {% endif %}
                 {% endif %}
 
@@ -119,7 +121,7 @@
                         <i class="right floated chevron right icon"></i>
                     </a>
 
-                    <a class="item" data-tab="thirteenth">
+                    <a class="item active" data-tab="thirteenth">
                         View Menu
                         <i class="right floated chevron right icon"></i>
                     </a>
@@ -127,12 +129,15 @@
                     <a class="item" data-tab="twelfth">
                         Start Registration
                         <i class="right floated chevron right icon"></i>
+                    </a> <a class="item" data-tab="eighteenth">
+                        Monthly Bill
+                        <i class="right floated chevron right icon"></i>
                     </a>
                 {% endif %}
 
                 {% if info.user_type == 'faculty' and d.designation.name == 'mess_warden' %}
 
-                    <a class="item" data-tab="thirteenth">
+                    <a class="item active" data-tab="thirteenth">
                         View Menu
                         <i class="right floated chevron right icon"></i>
                     </a>
@@ -273,7 +278,7 @@
             {% comment %}The ... ends here!{% endcomment %}
 
             {% comment %}The ... starts here!{% endcomment %}
-            <div class="ui tab segment" data-tab="thirteenth">
+            <div class="ui active tab segment" data-tab="thirteenth">
             {% block viewmenu %}
                     {%  include 'messModule/viewmenu.html' %}
                 {%  endblock %}
@@ -310,6 +315,11 @@
                     {%  include 'messModule/minutes.html' %}
                 {%  endblock %}
             </div>
+            <div class="ui tab segment" data-tab="eighteenth">
+            {% block messbill %}
+                    {%  include 'messModule/messbill.html' %}
+                {%  endblock %}
+            </div>
             {% comment %}The ... ends here!{% endcomment %}
 
         </div>
@@ -343,6 +353,10 @@
 
 
     <script>
+        $(document).ready(function(
+            var tab = $('[data-tab'='first']).tabs('getSelected');
+            tab.panel('refresh');
+            )
         var ctx = document.getElementById("myChart").getContext('2d');
         var myChart = new Chart(ctx, {
             type: 'bar',

@@ -45,7 +45,7 @@
 
                     {% if complaint.feedback == None %}
                     <form method='POST'>{% csrf_token %}
-                    <td>  <textarea class="ui textarea" rows="2" id="feed" name="feedback" required="true"></textarea><br>
+                    <td>  <textarea class="ui textarea" rows="2" id="feed" name="feedback" required></textarea><br>
                       <p id="update_feed"></p>
                     <input type="hidden" id="com_id" name="com_id" value={{complaint.id}} />
                     <input type="button" id="feed_com" name="feed_com" class="ui small right floated primary button" value="Submit"/>
@@ -59,6 +59,13 @@
                   <script type="text/javascript">
                         $('#feed_com').click(function(e)
                                                             {
+
+                                                               if(document.getElementById("feed").value == '')
+                                                                {
+                                                                    alert("Please write something in the response!")
+                                                                    document.getElementById("feed").focus();
+                                                                }
+
                                                               $.ajax({
                                                                 type:'post',
                                                                 url:'/healthcenter/compounder/',
@@ -76,6 +83,9 @@
                                                               }
                                                             });
                                                           });
+
+{% comment %} if(trimfield(document.getElementById("feedback").value) == ''){alert("Please fill out the feedback!") document.getElementById("feedback").focus();}{% endcomment %}
+
       </script>
                   </tr>
               </tbody>

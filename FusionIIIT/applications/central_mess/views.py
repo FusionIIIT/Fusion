@@ -1,16 +1,21 @@
-import datetime
+from datetime import date
+from datetime import datetime
+from django.core.exceptions import ObjectDoesNotExist
+from django.contrib import messages
 from datetime import date, datetime
-
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db import transaction
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
-
+from django.contrib import messages
+from django.views.generic import View
+from django.db.models import Q
+from applications.central_mess.utils import render_to_pdf
+from django.contrib.auth.models import User
 from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, HoldsDesignation
-
 from .forms import MinuteForm
 from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
                      Mess_minutes, Mess_reg, Messinfo, Monthly_bill,
@@ -24,7 +29,6 @@ def mess(request):
     holds_designations = HoldsDesignation.objects.filter(user=user)
     desig = holds_designations
     print(desig)
-
     form = MinuteForm()
     current_date = date.today()
     mess_reg = Mess_reg.objects.last()
@@ -38,6 +42,11 @@ def mess(request):
     count8 = 0
     nonveg_total_bill = 0
     rebate_count = 0
+    #
+    # @periodic_task(run_every=(crontab(hour="*", minute="*", day_of_week="*")))
+    #     print("Start")
+    #     now = datetime.now()
+    #     print(now)
 
     if extrainfo.user_type == 'student':
         student = Student.objects.get(id=extrainfo)
@@ -50,10 +59,11 @@ def mess(request):
         meeting = Mess_meeting.objects.all()
         minutes = Mess_minutes.objects.all()
         sprequest = Special_request.objects.filter(status='1')
-        splrequest = Special_request.objects.all()
+        splrequest = Special_request.objects.filter(student_id=student).order_by('-app_date')
         feed = Feedback.objects.all()
         messinfo = Messinfo.objects.get(student_id=student)
         count = 0
+        #variable y stores the menu items
         y = Menu.objects.all()
         x = Nonveg_menu.objects.all()
 
@@ -227,19 +237,22 @@ def placeorder(request):
 
         stu = Messinfo.objects.get(student_id=student)
         if stu.mess_option == 'mess1':
-            dish = Nonveg_menu.objects.get(
-                                           dish=request.POST.get("dish"),
-                                           order_interval=request.POST['interval'])
-            order_interval = dish.order_interval
-            order_date = datetime.now().date()
-            nonveg_obj = Nonveg_data(student_id=student, order_date=order_date,
-                                     order_interval=order_interval, dish=dish)
-            nonveg_obj.save()
-            return HttpResponseRedirect("/mess")
+            try:
+                dishn = Nonveg_menu.objects.get(dish=request.POST.get("dish"))
+
+                order_interval = request.POST.get("interval")
+                order_date = datetime.now().date()
+                nonveg_obj = Nonveg_data(student_id=student, order_date=order_date,
+                                         order_interval=order_interval, dish=dishn)
+                nonveg_obj.save()
+                messages.success(request, 'Your request is forwarded !!', extra_tags='successmsg')
+                return HttpResponseRedirect('/mess')
+            except ObjectDoesNotExist:
+                return HttpResponse("seems like object error")
+
 
         else:
             return HttpResponse("you can't apply for this application")
-
 
 @csrf_exempt
 @login_required
@@ -250,7 +263,7 @@ def submit(request):
 
     if extrainfo.user_type == 'student':
         student = Student.objects.get(id=extrainfo)
-        fdate = datetime.datetime.now().date()
+        fdate = datetime.now().date()
         description = request.POST.get('description')
         feedback_type = request.POST.get('feedback_type')
         feedback_obj = Feedback(student_id=student, fdate=fdate,
@@ -276,6 +289,13 @@ def vacasubmit(request):
         start_date = request.POST.get('start_date')
         end_date = request.POST.get('end_date')
         purpose = request.POST.get('purpose')
+        date_today = str(datetime.now().date())
+        if(start_date<date_today)or(end_date<start_date):
+            data = {
+                'status': 2
+            }
+            return JsonResponse(data)
+
         vaca_obj = Vacation_food(student_id=student, start_date=start_date,
                                  end_date=end_date, purpose=purpose)
 
@@ -295,6 +315,7 @@ def menusubmit(request):
     extrainfo = ExtraInfo.objects.get(user=user)
     holds_designations = HoldsDesignation.objects.filter(user=user)
     desig = holds_designations
+    context = {}
     for d in desig:
 
         if d.designation.name == 'mess_convener':
@@ -428,12 +449,18 @@ def regadd(request):
 def leaverequest(request):
     flag = 1
     user = request.user
+    today = str(datetime.now().date())
     extrainfo = ExtraInfo.objects.get(user=user)
     student = Student.objects.get(id=extrainfo)
     leave_type = request.POST.get('leave_type')
     start_date = request.POST.get('start_date')
     end_date = request.POST.get('end_date')
     purpose = request.POST.get('purpose')
+    if(start_date < today)or(end_date<start_date):
+        data = {
+            'status': 3
+        }
+        return JsonResponse(data)
 
     rebates = Rebate.objects.filter(student_id=student)
 
@@ -493,23 +520,34 @@ def invitation(request):
     return HttpResponseRedirect("/mess")
 
 
-def responserebate(request, ap_id):
-    leaves = Rebate.objects.get(pk=ap_id)
+# def responserebate(request, ap_id):
+#     leaves = Rebate.objects.get(pk=ap_id)
 
-    if(request.POST.get('submit') == 'approve'):
-        leaves.status = '2'
+#     if(request.POST.get('submit') == 'approve'):
+#         leaves.status = '2'
 
-    else:
-        leaves.status = '0'
+#     else:
+#         leaves.status = '0'
+#     leaves.save()
+#     return HttpResponseRedirect("/mess")
+
+
+def responserebate(request):
+    id = request.POST["id"]
+    leaves = Rebate.objects.get(pk=id)
+    leaves.status = request.POST["status"]
     leaves.save()
-    return HttpResponseRedirect("/mess")
-
+    data = {
+        'message':'You responded to request !'
+    }
+    return JsonResponse(data)
 
 def placerequest(request):
+    # This is for placing special food request
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
     if extrainfo.user_type == 'student':
-        print (request.POST)
+        print(request.POST)
         extrainfo = ExtraInfo.objects.get(user=user)
         student = Student.objects.get(id=extrainfo)
         fr = request.POST.get("start_date")
@@ -517,38 +555,181 @@ def placerequest(request):
         print (fr, to, "dates")
         food1 = request.POST.get("food1")
         food2 = request.POST.get("food2")
-        purpose = request.POST.get("purpose")
-
-        print ("Hello")
+        purpose = request.POST.get('purpose')
+        print(purpose)
+        # date_format = "%Y-%m-%d"
+        date_today = datetime.now().date()
+        date_today = str(date_today)
+        print(date_today)
+        if (date_today > to)or(to < fr):
+            data = {
+                'status': 3
+            # case when the to date has passed
+            }
+            messages.error(request, "Invalid dates")
+            return JsonResponse(data)
         spfood_obj = Special_request(student_id=student, start_date=fr, end_date=to,
                                      item1=food1, item2=food2, request=purpose)
-        spfood_obj.save()
-        data = {
-             'status': 1,
-        }
-        return JsonResponse(data)
+        if Special_request.objects.filter(student_id=student, start_date=fr, end_date=to,
+                                     item1=food1, item2=food2, request=purpose).exists():
+            data = {
+                'status': 2,
+            }
+            return JsonResponse(data)
+        else:
+            spfood_obj.save()
+            data = {
+                 'status': 1,
+            }
+            return JsonResponse(data)
 
 
-def responsespl(request, ap_id):
-    sprequest = Special_request.objects.get(pk=ap_id)
-    if(request.POST.get('submit') == 'approve'):
-        sprequest.status = '2'
-    else:
-        sprequest.status = '0'
+# def responsespl(request, ap_id):
+#     sprequest = Special_request.objects.get(pk=ap_id)
+#     if(request.POST.get('submit') == 'approve'):
+#         sprequest.status = '2'
+#     else:
+#         sprequest.status = '0'
+#
+#     sprequest.save()
+#     return HttpResponseRedirect("/mess")
 
+def responsespl(request):
+    sprequest = Special_request.objects.get(pk=request.POST["id"])
+    sprequest.status = request.POST["status"]
     sprequest.save()
-    return HttpResponseRedirect("/mess")
+    data = {
+        'message':'You responded to the request !'
+    }
+    return JsonResponse(data)
 
 def updatecost(request):
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
-
-    cost = request.POST.get("newcost")
-
-    monthlybill = Monthly_bill.objects.all()
-
+    today = datetime.today()
+    year_now = today.year
+    month_now = today.strftime('%B')
+    print(month_now)
+    print(year_now)
+    cost = request.POST.get("amount")
+    data = {
+        'status': 1,
+    }
+    monthlybill = Monthly_bill.objects.filter(Q(month=month_now) & Q(year=year_now))
     for temp in monthlybill:
+        print(temp)
+        print(temp.year)
         temp.amount = cost
         temp.save()
+    print(temp)
+    return JsonResponse(data)
 
-    return HttpResponseRedirect("/mess")
+
+def billgenerate(request):
+    user = request.user
+    extrainfo = ExtraInfo.objects.get(user=user)
+    nonveg_data = Nonveg_data.objects.all()
+    today = datetime.today()
+    year_now = today.year
+    month_now = today.strftime('%B')
+    amount_m = int(request.POST["amount"])
+    print(amount_m)
+    # amount_m = 2400
+    data = {
+        'status': 1,
+    }
+    mess_info = Messinfo.objects.all()
+    students = Student.objects.all()
+    for temp in mess_info:
+        print(temp)
+        count = 0
+        rebate_amount = 0
+        nonveg_total_bill = 0
+        rebates = Rebate.objects.filter(student_id=temp.student_id)
+        for item in rebates:
+            d1 = item.start_date
+            d2 = item.end_date
+            item.duration = abs((d2 - d1).days)+1
+            item.save()
+
+        for items in rebates:
+            if items.leave_type == 'casual':
+                count += item.duration
+        rebate_count = count
+        rebate_amount = rebate_count*80
+        total_bill = rebate_amount + nonveg_total_bill + amount_m
+        monthly_bill_obj = Monthly_bill(student_id=temp.student_id,
+                                        month=month_now,
+                                        year=year_now,
+                                        amount=amount_m,
+                                        rebate_count=rebate_count,
+                                        rebate_amount=rebate_amount,
+                                        nonveg_total_bill=nonveg_total_bill,
+                                        total_bill=total_bill)
+        if Monthly_bill.objects.filter(student_id=temp.student_id, month=month_now, year=year_now):
+            if Monthly_bill.objects.filter(student_id=temp.student_id, month=month_now, year=year_now,
+                                           total_bill=total_bill):
+                print("exists")
+            else:
+                Monthly_bill.objects.filter(student_id=temp.student_id, month=month_now, year=year_now). \
+                    update(student_id=temp.student_id,
+                           month=month_now,
+                           year=year_now,
+                           amount=amount_m,
+                           rebate_amount=rebate_amount,
+                           rebate_count=rebate_count,
+                           nonveg_total_bill=nonveg_total_bill,
+                           total_bill=total_bill
+                           )
+                # print("updated")
+    else:
+        monthly_bill_obj.save()
+        # print("generate")
+    # for temp in students:
+    #     monthly_bill_obj = Monthly_bill(student_id=temp, month=month_now, year=year_now, amount=amount_m)
+    #     if Monthly_bill.objects.filter(student_id=temp, month=month_now, year=year_now):
+    #         print('exists')
+    #     else:
+    #         monthly_bill_obj.save()
+    return JsonResponse(data)
+
+    
+class MenuPDF(View):
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        extrainfo = ExtraInfo.objects.get(user=user)
+        y = Menu.objects.all()
+
+        if extrainfo.user_type=='student':
+            student = Student.objects.get(id=extrainfo)
+            messinfo = Messinfo.objects.get(student_id=student)
+            mess_option = messinfo.mess_option
+            context = {
+                'menu': y,
+                'mess_option': mess_option
+            }
+            if mess_option=='mess2':
+                return render_to_pdf('messModule/menudownloadable2.html', context)
+            else:
+                return render_to_pdf('messModule/menudownloadable1.html', context)
+        else:
+            context = {
+                'menu': y,
+                'mess_option': 'mess2'
+            }
+            return render_to_pdf('messModule/menudownloadable2.html', context)
+        # return HttpResponse(pdf, content_type='application/pdf')
+
+
+class MenuPDF1(View):
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        extrainfo = ExtraInfo.objects.get(user=user)
+        y = Menu.objects.all()
+        context = {
+            'menu': y,
+            'mess_option': 'mess1'
+        }
+        return render_to_pdf('messModule/menudownloadable1.html', context)
+
+
