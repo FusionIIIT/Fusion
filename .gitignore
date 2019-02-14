@@ -101,4 +101,4 @@ FusionIIIT/Fusion/settings.py
 # dbinsertscripts
 FusionIIIT/dbinsertscripts
 
-FusionIIIT/fusion.db
+FusionIIIT/Fusion/fusion.db
