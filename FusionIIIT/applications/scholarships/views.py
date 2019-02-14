@@ -61,6 +61,9 @@ def spacs(request):
         return HttpResponseRedirect('/spacs/convener_view')
     elif hd1:
         return HttpResponseRedirect('/spacs/staff_view')
+    else:
+        return HttpResponseRedirect('/spacs/faculty_view')
+
 
 
 @login_required(login_url='/accounts/login')
@@ -561,6 +564,29 @@ def staff_view(request):
                    'awards': awards, 'gold': gold,
                    'silver': silver, 'dandm': dandm, 'winners': winners,
                    'con': con, 'assis': assis,'hd': hd, 'hd1': hd1})
+
+
+def faculty_view(request):
+    mcm = Mcm.objects.all()
+    gold = Director_gold.objects.all()
+    silver = Director_silver.objects.all()
+    dandm = Proficiency_dm.objects.all()
+    student = Student.objects.all()
+    awards = Award_and_scholarship.objects.all()
+    winners = Previous_winner.objects.all()
+    con = Designation.objects.get(name='spacsconvenor')
+    assis = Designation.objects.get(name='spacsassistant')
+    hd = HoldsDesignation.objects.get(designation=con)
+    hd1 = HoldsDesignation.objects.get(designation=assis)
+
+    return render(request, 'scholarshipsModule/scholarships_faculty.html',
+              {'mcm': mcm, 'student': student,
+               'awards': awards, 'gold': gold,
+               'silver': silver, 'dandm': dandm, 'winners': winners,
+               'con': con, 'assis': assis,'hd': hd, 'hd1': hd1})
+
+
+
 
 
 def convener_catalogue(request):
