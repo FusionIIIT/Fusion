@@ -62,7 +62,7 @@ def spacs(request):
     elif hd1:
         return HttpResponseRedirect('/spacs/staff_view')
     else:
-        return HttpResponseRedirect('/spacs/faculty_view')
+        return HttpResponseRedirect('/spacs/stats')
 
 
 
@@ -566,7 +566,7 @@ def staff_view(request):
                    'con': con, 'assis': assis,'hd': hd, 'hd1': hd1})
 
 
-def faculty_view(request):
+def stats(request):
     mcm = Mcm.objects.all()
     gold = Director_gold.objects.all()
     silver = Director_silver.objects.all()
@@ -579,7 +579,7 @@ def faculty_view(request):
     hd = HoldsDesignation.objects.get(designation=con)
     hd1 = HoldsDesignation.objects.get(designation=assis)
 
-    return render(request, 'scholarshipsModule/scholarships_faculty.html',
+    return render(request, 'scholarshipsModule/stats.html',
               {'mcm': mcm, 'student': student,
                'awards': awards, 'gold': gold,
                'silver': silver, 'dandm': dandm, 'winners': winners,
