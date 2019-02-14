@@ -1,6 +1,16 @@
 {% block newsession %}
 
     {% comment %}The tab menu starts here!{% endcomment %}
+    <script>
+      var color;
+        $(document).ready(function () {
+            $("#venue_type").change(function () {
+                color = $(this);
+            });
+        });
+        console.log(color)
+
+    </script>
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="newsession">
             New Session
@@ -15,37 +25,56 @@
                 <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
 
                     <div class="field">
-                        <label>Club</label>
-                        <select class="ui search fluid dropdown" name="club" required>
-                            <option value="">Select</option>
-                            {% for i in Club_name %}
-                                {% if request.user.username in i.co_ordinator|stringformat:"s" or request.user.username in i.co_coordinator|stringformat:"s" %}
-                                    <option value="{{ i.club_name }}">{{ i.club_name }} </option>
-                                {% endif %}
-                            {% endfor %}
-                        </select>
+                        <label> {{ club_details }} </label>
                     </div>
-                
-                    <div class="three fields">
+                    <div class="field" id="dest_choices">
+                        <label>Venue </label>
+                        {{ choice }}
+                    </div>
+                    <div class="Two fields">
                         <div class="field">
-                            <label>Venue</label>
-                            <input placeholder="Venue" name="venue" required>
-                        </div>
+                            <select  class="ui search dropdown" name="venue_type" id="venue_type" onchange="display_club_session()" required>
+                                <option   value="">Select</option>
+                                      {% for i in venue_type  %}
 
-                        <div class="field">
-                            <label>Date</label>
-                            <div class="ui input left icon">
-                                <i class="calendar icon"></i>
-                                <input type="date" data-date-format="YYYY-MM-DD" placeholder="From" name="date" required> 
-                            </div>
+                                            <option id="selected_value" value="{{ i }}">{{ i }} </option>
+                                    {% endfor %}
+                            </select>
                         </div>
-
                         <div class="field">
-                            <label>Time</label>
-                            <input type="time" class="ui large input" name="time" required>
+                            <select id="set_choices" att="" class="ui search dropdown" name="venue_details" id="venue_details" onchange="display_club_session()" required>
+                                <option value="">Select</option>
+
+                            </select>
                         </div>
                     </div>
+                    <div class="Two fields">
+                      <div class="field">
+                        <label>Date</label>
+                        <div class="ui input left icon">
+                            <i class="calendar icon"></i>
+                            <input type="date" data-date-format="YYYY-MM-DD" placeholder="From" id = "sessions_date" name="date" oninput="showSessions()" required>
+                        </div>
+                      </div>
 
+                   </div>
+
+                    <div class="Two fields">
+                      <div class="field">
+                          <label>Start Time</label>
+                          <input type="time" class="ui large input" name="start_time" required>
+                      </div>
+
+                        <div class="field">
+                            <label>End Time</label>
+                            <input type="time" class="ui large input" name="end_time" required>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Poster (if any)</label>
+                        <input class="ui input" id="fileUpload1" onchange="return ValidateExtension1();" type="file" name="session_poster" required></input>
+                        <span id="lblError1" style="color: red;"></span>
+                    </div>
                     <div class="field">
                         <label>Details & Description</label>
                         <textarea rows="2" name="d_d" required></textarea>
@@ -64,5 +93,55 @@
         <br>
         <div class="extra content"></div>
     </div>
+
+    
+    <script>
+            function getDifference(a, b)
+                {
+                    var i = 0;
+                    var j = 0;
+                    var result = "";
+
+                    while (j < b.length)
+                    {
+                        if (a[i] != b[j] || i == a.length)
+                            result += b[j];
+                        else
+                            i++;
+                        j++;
+                    }
+                    return result;
+                }
+        $('#venue_type').change(function(){
+             var choice = $('#venue_type option:selected').text();
+             $('#set_choices').empty();
+             choice = choice.toString();
+             var item=[];
+               {% for key, values in venue_details.items %}
+                  var choice_key = "{{ key }}";
+                  console.log(choice_key);
+                  console.log(choice)
+                if(getDifference(choice,choice_key)=="")
+                    {   
+                         
+                        {% for j in values %}
+                        item.push("{{ j }}")
+                        {% endfor %}
+                    }          
+                {% endfor %}
+            $.each(item, function (i, item) {
+                  $('#set_choices').append($('<option>', { 
+                      value: item,
+                      text : item 
+                  }));
+            });  
+                 
+                console.log(item);
+        });
+
+    </script>
+
+
+
 
 {% endblock %}

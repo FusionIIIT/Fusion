@@ -1,6 +1,6 @@
 {% block applyform %}
     {% comment %}The tab menu starts here!{% endcomment %}
-   
+
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="clubmembershipform">
             Club Membership Form
@@ -76,7 +76,7 @@
         <div class="extra content"></div>
     </div>
 
-    
+
 
     <div class="ui tab" data-tab="newclubform">
         <div class="ui vertical segment">
@@ -109,9 +109,7 @@
                             <label>Co-ordinator</label>
                             <select class="ui search fluid dropdown" id="co" name="co" required>
                                 <option value="">Select</option>
-                                {% for i in Students %}
-                                <option value="{{ i }}">{{ i }}</option>
-                                {% endfor %}
+
                             </select>
                         </div>
 
@@ -119,24 +117,20 @@
                             <label>Co Co-ordinator</label>
                                 <select class="ui search fluid dropdown" id="coco" name="coco" required>
                                     <option value="">Select</option>
-                                    {% for i in Students %}
-                                    <option value="{{ i }}">{{ i }}</option>
-                                    {% endfor %}
+
                                 </select>
                         </div>
-                        
+
                     </div>
 
                     <div class="eight wide field">
                         <label>Faculty Incharge</label>
                             <select class="ui search fluid dropdown" id="faculty" name="faculty" required>
                                 <option value="">Select</option>
-                                {% for i in Faculty %}
-                                <option value="{{ i }}" >{{ i }}</option>
-                                {% endfor %}
+                    
                             </select>
                     </div>
-                
+
 
                     <div class="field">
                         <label>Attachments (if any)</label>
