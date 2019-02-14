@@ -240,7 +240,7 @@
                                       </div>
                                       <div class="ui secondary segment">
                                         <p><b> CTC (LPA): {{ sch.notify_id.ctc }}</b></p>
-                                        <p><b>{{ sch.title }} </b>| {{ sch.notify_id.description }} </p>
+                                        <p><b>{{ sch.title }} </b>| {{ sch.role.role }} </p>
                                         <p>Date/Time & Location: {{ sch.placement_date }} | {{ sch.time }} | {{ sch.location }}</p>
                                         <p>Job Description: {{ sch.description }}</p>
                                       </div>
@@ -303,7 +303,7 @@
                                      </div>
                                      <div class="ui secondary segment">
                                        <p><b> CTC (LPA): {{ sch.notify_id.ctc }}</b></p>
-                                       <p><b>{{ sch.title }} </b>| {{ sch.notify_id.description }} </p>
+                                       <p><b>{{ sch.title }} </b>| {{ sch.get_role }} </p>
                                        <p>Date/Time & Location: {{ sch.placement_date }} | {{ sch.time }} | {{ sch.location }}</p>
                                        <p>Job Description: {{ sch.description }}</p>
                                      </div>
@@ -383,6 +383,9 @@
                                             <div class="ui fluid large input">
                                                 {% comment %}The Institute Name input!{% endcomment %}
                                                 {{ form5.company_name }}
+                                                <datalist class="company_dropdown" id="company_dropdown1">
+                                                  
+                                                </datalist>
                                             </div>
                                         </div>
 
@@ -437,6 +440,14 @@
                                                 {% comment %}The Location input!{% endcomment %}
                                                 {{ form5.description }}
                                         </div>
+                                    </div>
+                                    <div class="field">
+                                        <label>Role Offered</label>
+                                          <input list="dropdown-menu1" name="role" id="txt_Search" type="text" />
+                                          <datalist class="dropdown-menu" id="dropdown-menu1">
+                                            
+                                          </datalist>
+                                          
                                     </div>
                                     <input type="file" name="attached_file">
                                     <div class="field">
@@ -654,7 +665,7 @@
 {% endblock %}
 
 
-{%  block javascript %}
+{% block javascript %}
     <link rel="stylesheet" src="{% static 'globals/css/jquery.clockinput.css' %}">
     <script type="text/javascript" src="{% static 'globals/js/editProfile.js' %}"></script>
     <script type="text/javascript" src="{% static 'globals/js/checkbox.js' %}"></script>
@@ -667,6 +678,63 @@
 
 
     <script type="text/javascript">
+
+      //---------------------role add dropdown----------------------------------------------------
+
+      // Ajax for company dropdown
+      $('#company_input').keyup( function(){
+        current_value = $('#company_input').val();
+
+        $.ajax({
+          type: 'POST',
+          url: '/placement/companyname_dropdown/',
+          data: {
+            'current_value': current_value,
+            'csrfmiddlewaretoken': '{{csrf_token}}'
+          },
+          dataType: 'json',
+          success: function(response){
+            $('.company_dropdown').html('');
+            for(var i=0;i<response.company_names.length;i++){
+
+              console.log(response.company_names[i]);
+              $('.company_dropdown').append('<option value="'+response.company_names[i]+'">'+response.company_names[i]+'</option>');
+            }
+          },
+          error: function(rs, e){
+            console.log('error');
+          },
+        });
+      });
+
+      // Ajax for role dropdown
+      $('#txt_Search').keyup( function(){
+        current_value = $('#txt_Search').val();
+
+        $.ajax({
+          type: 'POST',
+          url: '/placement/checking_roles/',
+          data: {
+            'current_value': current_value,
+            'csrfmiddlewaretoken': '{{csrf_token}}'
+          },
+          dataType: 'json',
+          success: function(response){
+            $('.dropdown-menu').html('');
+            for(var i=0;i<response.all_roles.length;i++){
+
+              console.log(response.all_roles[i]);
+              $('.dropdown-menu').append('<option value="'+response.all_roles[i]+'">'+response.all_roles[i]+'</option>');
+            }
+          },
+          error: function(rs, e){
+            console.log('error');
+          },
+        });
+      });
+
+
+      //----------------------calender--------------------------------
 
       function getToday(){
         return new Date();
