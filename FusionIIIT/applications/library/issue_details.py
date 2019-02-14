@@ -1,6 +1,6 @@
 import requests
+from applications.globals.models import ExtraInfo
 from bs4 import BeautifulSoup
-
 url1 = "http://172.27.20.250/webopac/"
 url2 ="frmissuesofuser.aspx?title=Issue%20Details%20of%20The%20%20Members"
 #r2 = requests.get(url1+url2)
@@ -12,7 +12,7 @@ viewgen = soup.find(id="__VIEWSTATEGENERATOR")['value']
 eventvalid = soup.find(id="__EVENTVALIDATION")['value']
 
 Status = "Complete"
-memberid = "2015181"
+ memberid = ExtraInfo.objects.get(user = request.user).id
 
 formfields={'__VIEWSTATE':viewstate,
 			"__VIEWSTATEGENERATOR":viewgen,
