@@ -337,12 +337,24 @@ def new_session(request):
 		end_time = request.POST.get("end_time")
 		desc = request.POST.get("d_d")
 		club_name = coordinator_club(request)
+		overlapping_Sessions = Session_info.objects.filter(date=date, start_time__lte=start_time, end_time__gte=end_time)
+		print("Hello bro this is awesome")
+		print(overlapping_Sessions.count())
+		res = "error"
+		if overlapping_Sessions.count() == 0:
+			print("This ran")
+			session = Session_info(club = club_name, venue = venue, date =date, start_time=start_time , end_time = end_time ,session_poster = session_poster , details = desc)
+			session.save()
+			res= "success"
+			# res = serializers.serialize('json', res)
+			return HttpResponse(res)
+			# messages.success(request,"Successfully created the session !!!")
+		else:
+			# res = serializers.serialize('json', res)
+			return HttpResponse(res)
+			# messages.error(request, "The time slot is already booked !!!")
 
-		session = Session_info(club = club_name, venue = venue, date =date+" "+start_time , end_time = end_time ,session_poster = session_poster , details = desc)
-		session.save()
-		messages.success(request,"Successfully created the session !!!")
-
-	return redirect('/gymkhana/')
+	# return redirect('/gymkhana/')
 
 @login_required
 def fest_budget(request):
@@ -436,13 +448,12 @@ def cancel(request):
 def date_sessions(request):
 	if(request.is_ajax()):
 		value = request.POST.get('date')
-		get_sessions = Session_info.objects.all()
+		# print(value)
+		get_sessions = Session_info.objects.filter(date=value)
+		# print(get_sessions)
 		dates = []
 		for i in get_sessions:
-			dat = i.date.strftime('%Y-%m-%d')
-			if (dat == value):
-				dates.append(i)
+			dates.append(i)
 		dates = serializers.serialize('json', dates)
-		print(dates)
 		# print(dates)
 		return HttpResponse(dates)

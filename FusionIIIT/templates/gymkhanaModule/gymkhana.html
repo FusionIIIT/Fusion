@@ -30,13 +30,23 @@
                 contentType: false, // NEEDED, DON'T OMIT THIS (requires jQuery 1.6+)
                 processData: false, // NEEDED, DON'T OMIT THIS
                 // ... Other options like success and etc
-                success: function(msg) {
-                    alert("success");
-                    form.reset();
-                },
-                error: function() {
-                    alert("unsuccessful");
+                success: function(response) {
+                    // response = JSON.parse(response);
+                    // console.log(response);
+                    if (response == "success") {
+                        $(".succ").modal('show');
+                        form.reset();
+                    }
+                    else
+                    {
+                        $(".err").modal('show');    
+                    }
+                    // alert("success") ;
                 }
+                // error: function() {
+                //     $(".err").modal('show');
+                //     alert("unsuccessful");
+                // }
             });
         }
     </script>
@@ -265,6 +275,36 @@
 
     </div>
     {% comment %}The grid ends here!{% endcomment %}
+    <div class="ui basic modal err">
+      <div class="ui icon header">
+        <i class="bell icon"></i>
+        <a class="ui orange label">Time Slot Fault</a>
+      </div>
+      <div class="content">
+        <p><center><b>The selected time slot for the given date and venue conflicts with already booked session.</center></b></p>
+      </div>
+      <div class="actions">
+        <div class="ui red basic cancel inverted button">
+          <i class="remove icon"></i>
+          Try Again
+        </div>
+      </div>
+    </div>
+    <div class="ui basic modal succ">
+      <div class="ui icon header">
+        <i class="bell icon"></i>
+        <a class="ui green label">Success</a>
+      </div>
+      <div class="content">
+        <p><center><b>Your application has been dispatched for further process</b></center>></p>
+      </div>
+      <div class="actions">
+        <div class="ui red basic cancel inverted button">
+          <i class="remove icon"></i>
+          Cancel
+        </div>
+      </div>
+    </div>
 
 {% endblock %}
 
@@ -278,6 +318,7 @@
                 type: "post",
                 data: {'date':date},
                 success: function(response){
+                    // console.log("hello")
                     // console.log(response)
                     response = JSON.parse(response);
                     $("#dateDetails").html('<h2>Booked Sessions</h2>');
@@ -286,9 +327,11 @@
                             $("#dateDetails").append(
                                 '<table class="ui celled table segment"><thead><tr>\
                                 <th>'+response[key].fields.club+'</th>\
-                                <th>'+response[key].fields.date.substring(11,19)+'<br><center>to</center>'+response[key].fields.end_time+'</th>\
+                                <th>'+response[key].fields.start_time+'<br><center>to</center>'+response[key].fields.end_time+'</th>\
                                 <th>'+response[key].fields.venue+'</th>\
-                                </tr></thead></table>') ;
+                                </tr></thead><tbody>\
+                                <tr><td colspan="3"><b>'+response[key].fields.status+'</b></td></tr>\
+                                </tbody></table>') ;
                         }
                     }
                     else
