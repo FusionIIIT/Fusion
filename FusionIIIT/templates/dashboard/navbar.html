@@ -21,7 +21,7 @@
                 <i class="comment icon"></i>Feedback</a>
             </div>
             <div class="item">
-                <form method="GET" action="/feedback">
+                <form method="GET" action="{% url 'globals:search' %}">
                     <div class="ui search">
                         <div class="ui action input">
                           <input type="text" name="q" placeholder="Search...">
