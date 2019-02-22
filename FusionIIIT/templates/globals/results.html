@@ -1,0 +1,22 @@
+{% load static %}
+
+{% block alerts %}
+	<div class="ui one cards" style="padding: 2px">
+        {% for result in sresults %}
+		<div class="ui card">
+			<div class="content">
+                <div class="header">
+                    <a href="{% url 'globals:profile' %}{{result.username}}"> {{result.first_name}} {{result.last_name}} </a>
+                </div>
+                <div class="meta">
+                    time ago
+                </div>
+
+                <div class="description">
+                    desc here
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% endblock %}
