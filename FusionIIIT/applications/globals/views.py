@@ -1067,5 +1067,8 @@ def search(request):
     name_q = Q()
     for token in words:
         name_q = name_q & (Q(first_name__icontains=token) | Q(last_name__icontains=token))
+    search_results = User.objects.filter(name_q)[:10]
     print(User.objects.filter(name_q))
-    return redirect("/")
+    # return redirect("/")
+    context = {'sresults':search_results}
+    return render(request, "globals/search.html", context)
