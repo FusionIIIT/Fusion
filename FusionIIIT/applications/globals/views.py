@@ -690,7 +690,7 @@ def profile(request, username=None):
 
     profile = get_object_or_404(ExtraInfo, Q(user=user))
     if(str(user.extrainfo.user_type)=='faculty'):
-        return HttpResponseRedirect('/eis/profile/' + username if username else '')
+        return HttpResponseRedirect('/eis/profile/' + (username if username else ''))
     if(str(user.extrainfo.department)=='department: Academics'):
         return HttpResponseRedirect('/aims')
     current = HoldsDesignation.objects.filter(Q(working=user, designation__name="student"))

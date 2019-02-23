@@ -321,7 +321,7 @@ def profile(request, username=None):
     for i in design:
         desig.append(str(i.designation))
 
-    context = {'user': extra_info,
+    context = {'user': user,
                'desig':desig,
                'pf':pf,
                'flag_rspc':flag_rspc,
