@@ -890,8 +890,7 @@ def profile(request, username=None):
                    'form10':form10, 'form11':form11, 'form12':form12, 'current':current}
         return render(request, "globals/student_profile.html", context)
     else:
-        context = {}
-        return render(request, "dashboard/dashboard.html", context)
+        return redirect("/")
 
 @login_required(login_url=LOGIN_URL)
 def logout_view(request):
@@ -1063,6 +1062,8 @@ def support_issue(request, id):
 
 def search(request):
     key = request.GET['q']
+    if len(key) < 3:
+        return render(request, "globals/search.html", {'sresults': ()})
     words = (w.strip() for w in key.split())
     name_q = Q()
     for token in words:
