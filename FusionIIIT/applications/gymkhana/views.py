@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.dateparse import parse_date
-
+from django.db.models import Q
 
 from applications.academic_information.models import Student
 from applications.globals.models import *
@@ -337,24 +337,15 @@ def new_session(request):
 		end_time = request.POST.get("end_time")
 		desc = request.POST.get("d_d")
 		club_name = coordinator_club(request)
-		overlapping_Sessions = Session_info.objects.filter(date=date, start_time__lte=start_time, end_time__gte=end_time)
-		print("Hello bro this is awesome")
-		print(overlapping_Sessions.count())
+		overlapping_Sessions = Session_info.objects.filter(date=date, venue=venue).filter(Q(start_time__lte=start_time, end_time__gt=start_time)|Q(start_time__lt=end_time, end_time__gte=end_time))
 		res = "error"
 		if overlapping_Sessions.count() == 0:
-			print("This ran")
 			session = Session_info(club = club_name, venue = venue, date =date, start_time=start_time , end_time = end_time ,session_poster = session_poster , details = desc)
 			session.save()
-			res= "success"
-			# res = serializers.serialize('json', res)
+			res = "success"
 			return HttpResponse(res)
-			# messages.success(request,"Successfully created the session !!!")
 		else:
-			# res = serializers.serialize('json', res)
 			return HttpResponse(res)
-			# messages.error(request, "The time slot is already booked !!!")
-
-	# return redirect('/gymkhana/')
 
 @login_required
 def fest_budget(request):
@@ -448,12 +439,9 @@ def cancel(request):
 def date_sessions(request):
 	if(request.is_ajax()):
 		value = request.POST.get('date')
-		# print(value)
 		get_sessions = Session_info.objects.filter(date=value)
-		# print(get_sessions)
 		dates = []
 		for i in get_sessions:
 			dates.append(i)
 		dates = serializers.serialize('json', dates)
-		# print(dates)
 		return HttpResponse(dates)
