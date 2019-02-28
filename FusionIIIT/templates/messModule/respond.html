@@ -129,73 +129,95 @@
                                                           padding-top: 1%;
                                                           padding-bottom: 1.5%;
                                                           margin: auto;">
-            <thead>
-            <tr>
-                <th>
-                    Date Of Application
-                </th>
+            <!--<thead>-->
+            <!--<tr>-->
+                <!--<th>-->
+                    <!--Date Of Application-->
+                <!--</th>-->
 
-                <th class="four wide">
-                    Student
-                </th>
+                <!--<th class="four wide">-->
+                    <!--Student-->
+                <!--</th>-->
 
-                <th>
-                    Reason
-                </th>
+                <!--<th>-->
+                    <!--Reason-->
+                <!--</th>-->
 
-                <th class="four wide">
-                    Items to be changed
-                </th>
+                <!--<th class="four wide">-->
+                    <!--Items to be changed-->
+                <!--</th>-->
 
-                <th class="two wide">
-                    Items to be added
-                </th>
+                <!--<th class="two wide">-->
+                    <!--Items to be added-->
+                <!--</th>-->
 
-                <th class="one wide">
-                    Approve or Reject
-                </th>
-            </tr>
-            </thead>
+                <!--<th class="one wide">-->
+                    <!--Approve or Reject-->
+                <!--</th>-->
+            <!--</tr>-->
+            <!--</thead>-->
 
             <tbody>
             {% for list in newmenu %}
             {% if list.status == '1' %}
             <tr id="menu-{{item.pk}}">
-                <td>{{list.app_date}}</td>
-                <td>
-                    <h4 class="ui image header">
-                        <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
-                        <div class="content">
-                            Mess Convener
-                        </div>
-                    </h4>
-                </td>
-
-                <td>
-                    {{list.reason}}
-                </td>
-
-                <td>
-                    {{list.dish}}
-                </td>
-
-                <td>
-                    {{list.request}}
-                </td>
-
-                <td>
-
-
+                <b>Date of Application:</b> {{list.app_date}}
+                <br>
+                <b>Student:</b> Mess Convener
+                <br>
+                <b>Reason:</b> {{list.reason}}
+                <br>
+                <b>Items to be changed: </b> {{list.dish}}
+                <br>
+                <b>Items to be added:</b> {{list.request}}
+                <br>
+                <b>Accept or Reject :</b>
                     <form action="/mess/{{list.pk}}/response/" method="post">
-                        {% csrf_token %}
-                        <div class="ui buttons">
-                            <button class="ui negative button" type="submit" name="submit" value="reject">R</button>
-                            <div class="or"></div>
-                            <button class="ui positive button" type="submit" name="submit" value="approve">A</button>
-                        </div>
+                                {% csrf_token %}
+                                <div class="ui buttons">
+                                    <button class="ui negative button" type="submit" name="submit" value="reject">R</button>
+                                    <div class="or"></div>
+                                    <button class="ui positive button" type="submit" name="submit" value="approve">A</button>
+                                </div>
                     </form>
-                </td>
+                <hr>
             </tr>
+            <!--<tr id="menu-{{item.pk}}">-->
+                <!--<td>{{list.app_date}}</td>-->
+                <!--<td>-->
+                    <!--<h4 class="ui image header">-->
+                        <!--<img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">-->
+                        <!--<div class="content">-->
+                            <!--Mess Convener-->
+                        <!--</div>-->
+                    <!--</h4>-->
+                <!--</td>-->
+
+                <!--<td>-->
+                    <!--{{list.reason}}-->
+                <!--</td>-->
+
+                <!--<td>-->
+                    <!--{{list.dish}}-->
+                <!--</td>-->
+
+                <!--<td>-->
+                    <!--{{list.request}}-->
+                <!--</td>-->
+
+                <!--<td>-->
+
+
+                    <!--<form action="/mess/{{list.pk}}/response/" method="post">-->
+                        <!--{% csrf_token %}-->
+                        <!--<div class="ui buttons">-->
+                            <!--<button class="ui negative button" type="submit" name="submit" value="reject">R</button>-->
+                            <!--<div class="or"></div>-->
+                            <!--<button class="ui positive button" type="submit" name="submit" value="approve">A</button>-->
+                        <!--</div>-->
+                    <!--</form>-->
+                <!--</td>-->
+            <!--</tr>-->
             {% endif %}
             {% endfor %}
             </tbody>
@@ -216,68 +238,90 @@
                                                           padding-top: 1%;
                                                           padding-bottom: 1.5%;
                                                           margin: auto;">
-            <thead>
-            <tr>
-                <th> Date Of Application</th>
-                <th class="four wide">
-                    Student
-                </th>
+            <!--<thead>-->
+            <!--<tr>-->
+                <!--<th> Date Of Application</th>-->
+                <!--<th class="four wide">-->
+                    <!--Student-->
+                <!--</th>-->
 
-                <th>
-                    Reason
-                </th>
+                <!--<th>-->
+                    <!--Reason-->
+                <!--</th>-->
 
-                <th class="two wide">
-                    From
-                </th>
+                <!--<th class="two wide">-->
+                    <!--From-->
+                <!--</th>-->
 
-                <th class="two wide">
-                    To
-                </th>
+                <!--<th class="two wide">-->
+                    <!--To-->
+                <!--</th>-->
 
-                <th class="one wide">
-                    Approve
-                </th>
-            </tr>
-            </thead>
+                <!--<th class="one wide">-->
+                    <!--Approve-->
+                <!--</th>-->
+            <!--</tr>-->
+            <!--</thead>-->
 
             <tbody>
             {% for item in vaca_all %}
             {% if item.status == '1' %}
             <tr>
-                <td>{{item.app_date}}</td>
-                <td>
-                    <h4 class="ui image header">
-                        <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
-                        <div class="content">
-                            {{item.student_id.id}}
-                        </div>
-                    </h4>
-                </td>
-
-                <td>
-                    {{item.purpose}}
-                </td>
-
-                <td>
-                    {{item.start_date}}
-                </td>
-
-                <td>
-                    {{item.end_date}}
-                </td>
-
-                <td>
+                <b>Date of Application:</b> {{item.app_date}}
+                <br>
+                <b>Student:</b> {{item.student_id.id}}
+                <br>
+                <b>Reason:</b> {{item.purpose}}
+                <br>
+                <b>From:</b> {{item.start_date}}
+                <br>
+                <b>To:</b> {{item.end_date}}
+                <br>
+                <b>Approve:</b>
                     <form action="/mess/{{item.pk}}/processvacafood/" method="post">
-                        {% csrf_token %}
-                        <div class="ui buttons">
-                            <button class="ui negative button" type="submit" name="submit" value="reject">R</button>
-                            <div class="or"></div>
-                            <button class="ui positive button" type="submit" name="submit" value="approve">A</button>
-                        </div>
+                            {% csrf_token %}
+                            <div class="ui buttons">
+                                <button class="ui negative button" type="submit" name="submit" value="reject">R</button>
+                                <div class="or"></div>
+                                <button class="ui positive button" type="submit" name="submit" value="approve">A</button>
+                            </div>
                     </form>
-                </td>
+                <hr>
             </tr>
+            <!--<tr>-->
+                <!--<td>{{item.app_date}}</td>-->
+                <!--<td>-->
+                    <!--<h4 class="ui image header">-->
+                        <!--<img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">-->
+                        <!--<div class="content">-->
+                            <!--{{item.student_id.id}}-->
+                        <!--</div>-->
+                    <!--</h4>-->
+                <!--</td>-->
+
+                <!--<td>-->
+                    <!--{{item.purpose}}-->
+                <!--</td>-->
+
+                <!--<td>-->
+                    <!--{{item.start_date}}-->
+                <!--</td>-->
+
+                <!--<td>-->
+                    <!--{{item.end_date}}-->
+                <!--</td>-->
+
+                <!--<td>-->
+                    <!--<form action="/mess/{{item.pk}}/processvacafood/" method="post">-->
+                        <!--{% csrf_token %}-->
+                        <!--<div class="ui buttons">-->
+                            <!--<button class="ui negative button" type="submit" name="submit" value="reject">R</button>-->
+                            <!--<div class="or"></div>-->
+                            <!--<button class="ui positive button" type="submit" name="submit" value="approve">A</button>-->
+                        <!--</div>-->
+                    <!--</form>-->
+                <!--</td>-->
+            <!--</tr>-->
             {% endif %}
             {% endfor %}
             </tbody>
