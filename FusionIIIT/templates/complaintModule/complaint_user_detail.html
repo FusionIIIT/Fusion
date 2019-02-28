@@ -75,14 +75,23 @@
                         <form method="post" action=".">
                             {% csrf_token %}
                         <div class="ui header">
-                            Complaint Details of
-                            <div>Complaint ID : {{ detail.complainer }}</div>
-                        </div>
+                            <h3><label><b>Complainer Details:</b></label></h3>
+                            <div><i>Complainer :</i> 
+                            {{detail.complainer.user.first_name}}
+                            {{detail.complainer.user.last_name}}
+                        </br> <i>Complainer ID :</i> {{ detail.complainer.id }} </div>
+                        </br></br>
                         <div class="fields">
 
                             <div class="eight wide field">
-                                <h3><label>Details :</label></h3>
-                                    {{ detail.details }}
+                                <h3><label><b>Complaint Details :</b></label></h3>
+                        
+                                    <div><i>Complaint ID :</i> {{ comp_id }}</br> <i>Complaint Details :</i>  <font color="red">{{detail.details }} </font></div>
+                                    
+                                   
+                                
+                               
+                                    
                             </div>
 
                         </div>

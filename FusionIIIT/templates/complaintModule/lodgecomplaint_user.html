@@ -10,8 +10,8 @@
 
     <div class="ui active tab" data-tab="complaint">
         <div class="ui vertical segment">
-            <form class="ui form" style="padding-left: 24px; padding-right: 24px;" method="POST"
-                  action="./check_complaint/">
+            <form class="ui form" style="padding-left: 24px; padding-right: 24px;" method="POST" enctype="multipart/form-data" 
+                  action="">
                 {% csrf_token %}
                 <div class="ui header">
                     Add a new Complaint:
@@ -23,8 +23,8 @@
 
                     <div class="eight wide field">
                         <label>Complaint Type</label>
-                        <div class="ui fluid search selection dropdown">
-                            <input name="complaint_type" type="hidden">
+                        <div class="ui selection dropdown">
+                            <input name="complaint_type" type="hidden" name="complaint_type" required="True">
                             <i class="dropdown icon"></i>
 
                             <div class="default text">Select Complaint Type</div>
@@ -60,8 +60,8 @@
 
                     <div class="eight wide field">
                         <label>Location</label>
-                        <div class="ui fluid search selection dropdown">
-                            <input name="Location" type="hidden">
+                        <div class="ui selection dropdown">
+                            <input name="Location" type="hidden" required="True">
                             <i class="dropdown icon"></i>
 
                             <div class="default text">Select Location</div>
@@ -107,20 +107,25 @@
                 <div class="field">
                     <label>Specific Location</label>
                     <div class="ui large input">
-                        <input placeholder="Specific Location" name="specific_location" required>
+                        <input placeholder="Room Number, Floor , Block etc." name="specific_location" required="True">
                     </div>
                 </div>
 
                 <div class="field">
                     <label>Complaint Details</label>
-                    <textarea rows="2" name="details" required></textarea>
+                    <textarea rows="2" placeholder="What is your Complaint?" name="details" required="True"></textarea>
                 </div>
+
+                <div class = "field">
+                      <label for="file">Attach Files ( PDF, JPEG, PNG, JPG )</label>
+                      <input type="file" id="file" name="myfile" accept=".pdf, .jpg, .jpeg, .png" >
+                </div> 
                     Complaint Will be Register with your User ID : {{ comp_id }}
-                <input type="text" name="comp_id" style="visibility: hidden;" value="{{ comp_id }}" >
+                <input type="text"  name="comp_id" style="visibility: hidden;" value="{{ comp_id }}" >
 
                 <br>
 
-                <button class="ui large primary button right floated" onclick= "myfunction()">
+                <button class="ui large primary button right floated" onclick= "sub()">
                     Submit
                 </button>
 
@@ -134,11 +139,53 @@
         </div>
     </div>
 
-    <script>
+   <script>
     function myfunction() {
         alert("Complaint Successfully Launched");
     }
-            </script>
+    function sub(){
+        var f = $('#lodgecomplaint_form').serialize();
+        var input1= $('input[name="specific_location"]').val();
+        var input2 = $('input[name="Location"]').val();
+        var input3 =  $('input[name="complaint_type"]').val() ;
+        var input4 =$('input[name="details"]').val() ;
+        var input5= $('input[name="myfile"]').val();
+        if(input1=="" || input2=="" || input3=="" || input4=="")
+        {
+            alert("Please fill all the details!")
+        }
+        else
+        {
+            $.ajax({
+                type : 'POST',
+                url : 'check_complaint/',
+                data : f,
+                success : function (){
+
+                    alert("Complain successfully lodged");
+
+                    /*var table = document.getElementById("view_meeting");
+                    var row = table.insertRow();
+                    var cell1 = row.insertCell(0);
+                    var cell2 = row.insertCell(1);
+                    var cell3 = row.insertCell(2);
+                    var cell4 = row.insertCell(3);
+                    var cell5 = row.insertCell(4);
+                    cell1.innerHTML =   input1 ;
+                    cell2.innerHTML =   input2;
+                    cell3.innerHTML = input3;
+                    cell4.innerHTML =  input4;
+                    cell5.innerHTML =  input5;
+                    */
+                },
+                error : function (){
+                    alert ('Complain successfully lodged');
+
+                }
+            });
+        }
+    }
+    </script>
 {#                {% endif %}#}
 
 {#       {%  if messages %}#}

@@ -684,13 +684,14 @@ def dashboard(request):
 
 
 @login_required(login_url=LOGIN_URL)
-def profile(request):
-    user = request.user
+def profile(request, username=None):
+    user = get_object_or_404(User, Q(username=username)) if username else request.user
+    print('user', user)
+
     profile = get_object_or_404(ExtraInfo, Q(user=user))
-    if(str(request.user.extrainfo.user_type)=='faculty'):
-        return HttpResponseRedirect('/eis/profile')
-    #             print(str(request.user.extrainfo.department))
-    if(str(request.user.extrainfo.department)=='department: Academics'):
+    if(str(user.extrainfo.user_type)=='faculty'):
+        return HttpResponseRedirect('/eis/profile/' + (username if username else ''))
+    if(str(user.extrainfo.department)=='department: Academics'):
         return HttpResponseRedirect('/aims')
     current = HoldsDesignation.objects.filter(Q(working=user, designation__name="student"))
     if current:
@@ -889,8 +890,7 @@ def profile(request):
                    'form10':form10, 'form11':form11, 'form12':form12, 'current':current}
         return render(request, "globals/student_profile.html", context)
     else:
-        context = {}
-        return render(request, "dashboard/dashboard.html", context)
+        return redirect("/")
 
 @login_required(login_url=LOGIN_URL)
 def logout_view(request):
@@ -1059,3 +1059,24 @@ def support_issue(request, id):
         "support_count": support_count,
     }
     return HttpResponse(json.dumps(context), "application/json")
+
+def search(request):
+    key = request.GET['q']
+    if len(key) < 3:
+        return render(request, "globals/search.html", {'sresults': ()})
+    words = (w.strip() for w in key.split())
+    name_q = Q()
+    for token in words:
+        name_q = name_q & (Q(first_name__icontains=token) | Q(last_name__icontains=token))
+    search_results = User.objects.filter(name_q)[:15]
+    search_extrainfo = []
+    # print(search_results)
+    # print(search_extrainfo)
+    for result in search_results:
+        search_extrainfo.append(ExtraInfo.objects.get(user=result))
+    # print(User.objects.filter(name_q))
+    # return redirect("/")
+
+    # zipped tuples sent, accessed in template by dot operator and indices 0 & 1
+    context = {'sresults':zip(search_results, search_extrainfo)}
+    return render(request, "globals/search.html", context)

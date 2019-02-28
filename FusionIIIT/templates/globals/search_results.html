@@ -1,0 +1,18 @@
+{% load static %}
+
+{% block searchresults %}
+    {% if not sresults %}
+        <p>No results to show. Please try again with a query longer than than 2 letters</p>
+    {% endif %}
+	<div class="ui cards" style="padding: 2px">
+        {% for result in sresults %}
+		<a class="ui card" href="{% url 'globals:profile' %}{{result.0.username}}">
+            <div class="content">
+                <img class="right floated mini ui image" src="{% static 'globals/img/zlatan.jpg' %}">
+                <div class="header">{{result.0.first_name}} {{result.0.last_name}}</div>
+                <div class="meta">{{result.1.user_type}} in {{result.1.department.name}}</div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+{% endblock %}

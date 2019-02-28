@@ -51,12 +51,13 @@
         <a class="active item" data-tab="submitfeedback">
             Feedback
         </a>
+         
     </div>
 
     <div class="ui active tab" data-tab="complaint">
         <div class="ui vertical segment">
             <form class="ui form" style="padding-left: 24px; padding-right: 24px;" method="POST"
-                  action=".">
+                  action="">
                 {% csrf_token %}
                 <div class="ui header">
                     Submit Feedback
@@ -115,19 +116,20 @@
                                     <div class="item" data-value=4><i class="star half empty icon"></i>Excellent</div>
                                     <div class="item" data-value=3><i class="empty star icon"></i>Good</div>
                                     <div class="item" data-value=2><i class="thumbs up icon"></i>Average</div>
-                                    <div class="item" data-value=2><i class="thumbs down icon"></i>Not Satisfy</div>
+                                    <div class="item" data-value=1><i class="thumbs down icon"></i>Not Satisfied</div>
                               </div>
                         </div>
 
 
                     </div>
                 </div>
-                  Feedback Will be Register with your <b>User ID</b>
+                  Feedback Will be Register with your <b>User ID : </b>
+                  {{ a.complainer.user.username }}
                 <input type="text" name="comp_id" style="visibility: hidden;" value="{{ comp_id }}" >
 
                 <br>
 
-                <button class="ui large primary button right floated">
+                <button class="ui large primary button right floated" onclick="myfunction()">
                     Submit
                 </button>
 
@@ -140,7 +142,8 @@
             <div class="ui divider"></div>
         </div>
     </div>
-            </div>
+
+</div>
             {% comment %}The ... end here!{% endcomment %}
 
             {% comment %}The ... starts here!{% endcomment %}
@@ -168,6 +171,22 @@
 
 {% endblock %}
 
+    <script>
+    function myfunction() {
+        alert("Feedback Submiited");
+    }
+            </script>
+{#                {% endif %}#}
+
+{#       {%  if messages %}#}
+{#                 <ul class = "messages">#}
+{#                    {%  for message in messages %}#}
+{#                    <li{% if message.tags %} class = "{{ message.tags }}"{%  endif %}>{{ message }}</li>#}
+{#                    {%  endfor %}#}
+{#                 </ul>#}
+{#       {%  endif %}#}
+
+
 {% block javascript %}
     <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
     <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
@@ -175,6 +194,3 @@
 
 {% endblock %}
 
-{% block css %}
-
-{% endblock %}

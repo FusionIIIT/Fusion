@@ -2,10 +2,13 @@
 {% block feedback %}
 
     {% comment %}The tab menu starts here!{% endcomment %}
+    
+
     <div class="ui pointing secondary menu ">
         <a class="active item" data-tab="feedback">
-            Feedback
+            Feedback for Complaints
         </a>
+        
 
     </div>
 
@@ -13,13 +16,17 @@
         <div class="ui vertical segment">
 
             <table class="ui very basic collapsing celled sortable table"
-                   style="padding-left: 2.5%;
-                                                          padding-right: 2.5%;
+                   style="padding-left: 0.5%;
+                                                          padding-right: 0.5%;
                                                           padding-top: 1%;
                                                           padding-bottom: 1.5%;
                                                           margin: auto;">
                 <thead>
                 <tr>
+                   <!-- <th>
+                        Complaint</br>ID
+                    </th>--> 
+
                     <th class="three wide column">
                         Date &ensp;&ensp;&ensp;&ensp;&ensp;
 
@@ -34,7 +41,8 @@
                     </th>
 
                     <th>
-                        Specific Location
+                        Specific </br> Location
+                        
                     </th>
 
                     <th class="three wide column">
@@ -45,10 +53,11 @@
                         Status
                     </th>
                     <th class="three wide column">
-                        Worker Name
+                        Worker</br>
+                        Name
                     </th>
                     <th class="three wide column">
-                        Submit Feedback
+                        Feedback
                     </th>
                 </tr>
                 </thead>
@@ -58,7 +67,7 @@
 
                 <tbody>
                 <tr>
-
+            
                     <td>
                         {{ a.complaint_date }}
                     </td>
@@ -76,7 +85,7 @@
                     </td>
 
                     <td>
-                        <a href="./detail/{{ a.id }}/"> Click here!</a>
+                        <a href="./detail/{{ a.id }}/"> <button class="ui inverted basic button" data-tooltip="Click here to view details" ><i class="large green info icon"></i></button></a>
                     </td>
 
                     <td>
@@ -90,10 +99,13 @@
                             <div class="field">
                                 <center>
                                     <a href="./{{ a.id }}">
-                                    <button class="ui green icon button" data-tooltip="Click here to submit" >
-                                        <i class="send icon"></i>
+                                    <button class="ui green icon button" data-tooltip="Click here to give FeedBack" >
+                                       <i class="large comments icon"></i>
                                     </button>
                                     </a>
+                                   <!-- <button class="ui green icon button" data-tooltip="Click here to submit"  onclick="./{{ a.id }}">
+                                        <i class="send icon"></i>
+                                    </button> -->
                                 </center>
 
                             </div>
@@ -110,10 +122,6 @@
                     {% endif %}
                 {% endfor %}
             </table>
-
-
-
-
             <br>
             <div class="ui divider"></div>
             <div class="extra content">
@@ -121,7 +129,24 @@
                     <i class="large green checkmark icon"></i> : Completed &ensp;&ensp;&ensp;&ensp;&ensp;
                 </div>
             </div>
-        </div>
+        
+        <!--<div class="ui divider"></div>
+            <div class="extra content">
+                <div class="" style="text-align: center;">
+                    <a href="./caretakerfb/">
+                    <button class="ui green icon button" data-tooltip="Feedback For a Particular Caretaker"  >Feedback For a </br> Particular Caretaker</button>
+                </a>
+            </div>
+        </div>-->
     </div>
+    </div>
+
+
+
+
+
+
+
+
 
 {% endblock %}
