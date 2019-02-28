@@ -40,7 +40,7 @@ def officeOfDeanStudents(request):
     budget_alloted = Club_info.objects.all().exclude(alloted_budget=0)
     designation = HoldsDesignation.objects.all().filter(working=request.user)
 
-    """getting roll and designation(s) of the active user in roll_"""
+    # getting roll and designation(s) of the active user in roll_
     desig = list(HoldsDesignation.objects.all().filter(working = request.user).values_list('designation'))
     b = [i for sub in desig for i in sub]
     roll_=[]
@@ -48,10 +48,11 @@ def officeOfDeanStudents(request):
         name_ = get_object_or_404(Designation, id = i)
         roll_.append(str(name_.name))
 
-    HALL_NO = (('HALL-1','hall-1'),('HALL-3','hall-3'),('HALL-4','hall-4'))
+    # getting hostel allotment entries corresponding to each Hall
+    HALL_NO = (('HALL-1', 'hall-1'), ('HALL-3', 'hall-3'), ('HALL-4', 'hall-4'))
     hall=[]
     for i in HALL_NO:
-        if(str(i[1])):
+        if str(i[1]):
             hall.append(str(i[1]))
 
     context = {'meetingMinutes': minutes,
@@ -68,19 +69,20 @@ def officeOfDeanStudents(request):
                 'budget_alloted': budget_alloted,
                 'all_designation': roll_,
               }
+
     return render(request, "officeModule/officeOfDeanStudents/officeOfDeanStudents.html", context)
 
 @login_required
 def holdingMeeting(request):
-    """title= request.POST.get('title')"""
+
+    """getting input form data from POST request"""
     date = request.POST.get('date')
     Time = request.POST.get('time')
     Venue = request.POST.get('venue')
     Agenda = request.POST.get('agenda')
     Minutes_File = request.POST.get('minutes_file')
-   # print(Venue," ",date," ", Time," ",Agenda)
-    p=Meeting(venue=Venue,date=date,time=Time,agenda=Agenda,minutes_file= Minutes_File)
-
+    """inserting a new record with these values in database"""
+    p = Meeting(venue=Venue, date=date, time=Time, agenda=Agenda, minutes_file=Minutes_File)
     p.save()
     return HttpResponse('ll')
 
@@ -91,7 +93,6 @@ def meetingMinutes(request):
     b=Meeting.objects.get(pk=id)
     b.minutes_file=file
     b.save()
-    #return HttpResponseRedirect('/office/officeOfDeanStudents/first')
     return render(request, "officeModule/officeModule/officeOfDeanStudents/holdingMeetings.html", context)
 
 @login_required
@@ -107,17 +108,17 @@ def budgetApproval(request):
     id_r=request.POST.getlist('check')
     remark=request.POST.getlist('remark')
     for i in range(len(id_r)):
-        a=Club_budget.objects.get(id=id_r[i])
-        a.status='confirmed'
-        a.remarks=request.POST.get(id_r[i])
-        budget= request.POST.get('amount '+ id_r[i])
-        spentBudget=a.club.spent_budget
-        availBudget= a.club.avail_budget
-        b=Club_info.objects.get(club_name = a.club.club_name )
-        b.spent_budget= (spentBudget+int(budget))
-        b.avail_budget= (availBudget- int(budget))
-        a.save()
-        b.save()
+        Club_budget_object = Club_budget.objects.get(id=id_r[i])
+        Club_budget_object.status = 'confirmed'
+        Club_budget_object.remarks = request.POST.get(id_r[i])
+        budget = request.POST.get('amount ' + id_r[i])
+        spentBudget = Club_budget_object.club.spent_budget
+        availBudget = Club_budget_object.club.avail_budget
+        Club_info_object = Club_info.objects.get(club_name = Club_budget_object.club.club_name )
+        Club_info_object.spent_budget = (spentBudget + int(budget))
+        Club_info_object.avail_budget = (availBudget - int(budget))
+        Club_budget_object.save()
+        Club_info_object.save()
     return HttpResponseRedirect('/office/officeOfDeanStudents')
 
 @login_required
@@ -125,10 +126,10 @@ def budgetRejection(request):
     id_r=request.POST.getlist('check')
     remark=request.POST.getlist('remark')
     for i in range(len(id_r)):
-        a=Club_budget.objects.get(id=id_r[i]);
-        a.status='rejected'
-        a.remarks=request.POST.get(id_r[i])
-        a.save()
+        Club_budget_object=Club_budget.objects.get(id=id_r[i]);
+        Club_budget_object.status='rejected'
+        Club_budget_object.remarks=request.POST.get(id_r[i])
+        Club_budget_object.save()
     return HttpResponseRedirect('/office/officeOfDeanStudents')
 
 
@@ -136,11 +137,11 @@ def budgetRejection(request):
 def clubApproval(request):
     id_r=request.POST.getlist('check')
     for i in range(len(id_r)):
-        a=Club_info.objects.get(pk=id_r[i])
-        co_ordinator= a.co_ordinator.id.user
-        co_co = a.co_coordinator.id.user
-        a.status='confirmed'
-        a.save()
+        Club_info_object=Club_info.objects.get(pk=id_r[i])
+        co_ordinator= Club_info_object.co_ordinator.id.user
+        co_co = Club_info_object.co_coordinator.id.user
+        Club_info_object.status='confirmed'
+        Club_info_object.save()
         designation = get_object_or_404(Designation, name="co-ordinator")
         designation1 = get_object_or_404(Designation, name="co co-ordinator")
         HoldsDesig= HoldsDesignation(user=co_ordinator,working=co_ordinator,designation=designation)
@@ -154,28 +155,29 @@ def clubApproval(request):
 def clubRejection(request):
     id_r=request.POST.getlist('check')
     for i in range(len(id_r)):
-        a=Club_info.objects.get(pk=id_r[i]);
-        a.status='rejected'
-        a.save()
+        Club_info_object=Club_info.objects.get(pk=id_r[i]);
+        Club_info_object.status='rejected'
+        Club_info_object.save()
     return HttpResponseRedirect('/office/officeOfDeanStudents')
 
 @login_required
 def budgetAllot(request):
     id_r=request.POST.get('id')
     budget= request.POST.get('budget')
-    a= Club_info.objects.get(pk=id_r)
-    a.alloted_budget=int(budget)
-    a.avail_budget= int(budget)
-    a.save()
+    Club_info_object= Club_info.objects.get(pk=id_r)
+    Club_info_object.alloted_budget=int(budget)
+    Club_info_object.avail_budget= int(budget)
+    Club_info_object.save()
     return HttpResponseRedirect('/office/officeOfDeanStudents')
+
 
 @login_required
 def budgetAllotEdit(request):
     id_r=request.POST.get('id')
     budget= request.POST.get('budget')
-    a= Club_info.objects.get(pk=id_r)
-    a.alloted_budget=int(budget)
-    a.avail_budget= int(budget)
-    a.spent_budget= int(0)
-    a.save()
+    Club_info_object= Club_info.objects.get(pk=id_r)
+    Club_info_object.alloted_budget=int(budget)
+    Club_info_object.avail_budget= int(budget)
+    Club_info_object.spent_budget= int(0)
+    Club_info_object.save()
     return HttpResponseRedirect('/office/officeOfDeanStudents')
