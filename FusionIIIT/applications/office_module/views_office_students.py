@@ -148,9 +148,18 @@ def budgetRejection(request):
     return HttpResponseRedirect('/office/officeOfDeanStudents')
 
 
+
+
+"""
+    View for club Approval initiated by the Dean_S
+    Inputs:- Club name, coordinator, cocoordinator details, designation
+    Output :- Updates the club approval status to approved        
+    An object Club_info_object is created and accessed in newClubApprovalsModal.html 
+"""
 @login_required
 def clubApproval(request):
     id_r=request.POST.getlist('check')
+    """changing club approval status from open to confirmed and added to the field"""
     for i in range(len(id_r)):
         Club_info_object=Club_info.objects.get(pk=id_r[i])
         co_ordinator= Club_info_object.co_ordinator.id.user
@@ -166,6 +175,15 @@ def clubApproval(request):
     return HttpResponseRedirect('/office/officeOfDeanStudents')
     return render(request, "officeModule/officeModule / officeOfDeanStudents / newClubApprovals.html", context)
 
+
+
+"""
+    View for club Rejection initiated by the Dean_S
+    Inputs:- All the budgets in open state
+    Output :- Updates the club approval status to rejected        
+    An object Club_info_object is created and accessed in newClubApprovalsModal.html 
+"""
+
 @login_required
 def clubRejection(request):
     id_r=request.POST.getlist('check')
@@ -174,6 +192,14 @@ def clubRejection(request):
         Club_info_object.status='rejected'
         Club_info_object.save()
     return HttpResponseRedirect('/office/officeOfDeanStudents')
+
+
+"""
+    View for allotment of budget initiated by the Dean_S
+    Inputs:- Unique id for club, budget object
+    Outputs:- Alloted budget, availed budget
+    An object Club_info_object saves the file and accessed in budgetAllotmentModal.html
+"""
 
 @login_required
 def budgetAllot(request):
@@ -185,6 +211,13 @@ def budgetAllot(request):
     Club_info_object.save()
     return HttpResponseRedirect('/office/officeOfDeanStudents')
 
+
+
+"""
+    View for the budgetALlotEdit initiated by the Junior Suprintendent
+    Output: club alloted budget, availed budget, spent budget
+    An object Club_info_object saves the file and is accessed in budgetAllotmentModal.html 
+"""
 
 @login_required
 def budgetAllotEdit(request):
