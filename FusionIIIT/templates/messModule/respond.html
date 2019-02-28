@@ -172,9 +172,9 @@
                 <b>Items to be added:</b> {{list.request}}
                 <br>
                 <b>Accept or Reject :</b>
-                    <form action="/mess/{{list.pk}}/response/" method="post">
+                    <form action="/mess/{{list.pk}}/response/" method="post" >
                                 {% csrf_token %}
-                                <div class="ui buttons">
+                                <div class="ui buttons" align="right">
                                     <button class="ui negative button" type="submit" name="submit" value="reject">R</button>
                                     <div class="or"></div>
                                     <button class="ui positive button" type="submit" name="submit" value="approve">A</button>
