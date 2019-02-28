@@ -72,6 +72,12 @@ def officeOfDeanStudents(request):
 
     return render(request, "officeModule/officeOfDeanStudents/officeOfDeanStudents.html", context)
 
+"""
+    View for the meeting being called by Dean_Student
+    Inputs:- Agenda, Date, Time, Venue, Minutes_File
+        (*) Minutes file is to be added by JuniorSuprintendent
+    An object holdMeeting object is being created and accessed in the holding_form.html template. 
+"""
 @login_required
 def holdingMeeting(request):
 
@@ -79,28 +85,37 @@ def holdingMeeting(request):
     date = request.POST.get('date')
     Time = request.POST.get('time')
     Venue = request.POST.get('venue')
-    Agenda = request.POST.get('agenda')
     Minutes_File = request.POST.get('minutes_file')
     """inserting a new record with these values in database"""
     p = Meeting(venue=Venue, date=date, time=Time, agenda=Agenda, minutes_file=Minutes_File)
     p.save()
     return HttpResponse('ll')
 
+
+"""
+    View for the minutes of the meeting initiated by the Junior Suprintendent
+    Inputs:- file
+        (*) Minutes file is to be added by JuniorSuprintendent
+    An object meeting_object saves the file 
+"""
+
+
 @login_required
 def meetingMinutes(request):
     file=request.FILES['minutes_file']
     id=request.POST.get('id')
-    b=Meeting.objects.get(pk=id)
-    b.minutes_file=file
-    b.save()
+    meeting_object=Meeting.objects.get(pk=id)
+    meeting_object.minutes_file=file
+    meeting_object.save()
+    #return HttpResponseRedirect('/office/officeOfDeanStudents/first')
     return render(request, "officeModule/officeModule/officeOfDeanStudents/holdingMeetings.html", context)
 
 @login_required
 def hostelRoomAllotment(request):
     file=request.FILES['hostel_file']
     hall_no=request.POST.get('hall_no')
-    p=hostel_allotment(allotment_file=file,hall_no=hall_no)
-    p.save()
+    hostel_allotment_object=hostel_allotment(allotment_file=file,hall_no=hall_no)
+    hostel_allotment_object.save()
     return HttpResponseRedirect('/office/officeOfDeanStudents')
 
 @login_required
