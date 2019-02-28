@@ -5,6 +5,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.dateparse import parse_date
 from django.db.models import Q
+from bisect import bisect
 
 from applications.academic_information.models import Student
 from applications.globals.models import *
@@ -337,15 +338,18 @@ def new_session(request):
 		end_time = request.POST.get("end_time")
 		desc = request.POST.get("d_d")
 		club_name = coordinator_club(request)
-		overlapping_Sessions = Session_info.objects.filter(date=date, venue=venue).filter(Q(start_time__lte=start_time, end_time__gt=start_time)|Q(start_time__lt=end_time, end_time__gte=end_time))
-		res = "error"
-		if overlapping_Sessions.count() == 0:
+		res = conflict_algorithm(date, start_time, end_time, venue)
+		if(res == "success"):
 			session = Session_info(club = club_name, venue = venue, date =date, start_time=start_time , end_time = end_time ,session_poster = session_poster , details = desc)
 			session.save()
-			res = "success"
-			return HttpResponse(res)
-		else:
-			return HttpResponse(res)
+		return HttpResponse(res)
+		# overlapping_Sessions = Session_info.objects.filter(date=date, venue=venue).filter(Q(start_time__lte=start_time, end_time__gt=start_time)|Q(start_time__lt=end_time, end_time__gte=end_time))
+		# res = "error"
+		# if overlapping_Sessions.count() == 0:
+		# 	res = "success"
+		# 	return HttpResponse(res)
+		# else:
+		# 	return HttpResponse(res)
 
 @login_required
 def fest_budget(request):
@@ -439,9 +443,48 @@ def cancel(request):
 def date_sessions(request):
 	if(request.is_ajax()):
 		value = request.POST.get('date')
-		get_sessions = Session_info.objects.filter(date=value)
+		get_sessions = Session_info.objects.filter(date=value).order_by('start_time')
 		dates = []
 		for i in get_sessions:
 			dates.append(i)
 		dates = serializers.serialize('json', dates)
 		return HttpResponse(dates)
+
+#this algorithm uses binary search to find out lower bound for date and determine any overlapping slot 
+def conflict_algorithm(date, start_time, end_time, venue):
+	booked_Sessions = Session_info.objects.filter(date=date, venue=venue).order_by('start_time')
+	booked_Sessions_desc = Session_info.objects.filter(date=date, venue=venue).order_by('-start_time')
+	if not booked_Sessions:
+		return "success"
+	else:
+		start_time = datetime.datetime.strptime(start_time, '%H:%M').time()
+		end_time = datetime.datetime.strptime(end_time, '%H:%M').time()
+		counter = 0 
+		for value in booked_Sessions_desc:
+			if ((value.end_time < start_time) or (value.end_time == start_time)):
+				break
+			else:
+				counter = counter + 1
+		counter = len(booked_Sessions)-counter-1
+		if(counter == -1):
+			counter = len(booked_Sessions)
+		if (len(booked_Sessions) == counter):
+			for value in booked_Sessions:
+				if(value.start_time < end_time):
+					return "error"
+				else:
+					return "success"
+				break
+		elif (counter == (len(booked_Sessions)-1)):
+			return "success"
+		else:
+			counter1 = 0
+			for value in booked_Sessions:
+				if (counter1 == counter+1):
+					if (value.start_time < end_time):
+						return "error"
+					else:
+						return "success"
+					break
+				else:
+					counter1 = counter1 + 1
