@@ -55,6 +55,9 @@
                         {% csrf_token %}
 
                 <tr>
+
+                    <!-- Fetch all the club details whose allotment status is open(not confirmed or declined)  -->
+
                     {% for i in budget_app %}
                     <td><input type="checkbox" name="check" value="{{i.id}}"></td>
                     <td > {{ i.club }}</td>
