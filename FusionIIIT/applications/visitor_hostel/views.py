@@ -36,44 +36,45 @@ def visitorhostel(request):
 
     available_rooms = {}
     cancel_booking_request = []
+
     # bookings for intender view
     if (user_designation == "Intender"):
-        all_bookings = BookingDetail.objects.all()
-        pending_bookings = BookingDetail.objects.filter(
-            Q(status="Pending") | Q(status="Forward"), intender=user)
-        active_bookings = BookingDetail.objects.filter(
-            status="Confirmed", intender=user).select_related()
+        all_bookings = BookingDetail.objects.all().order_by('booking_from')
+        pending_bookings = BookingDetail.objects.filter(Q(status="Pending") | Q(status="Forward"),  booking_to__gte=datetime.datetime.today(), intender=user).order_by('booking_from')
+        active_bookings = BookingDetail.objects.filter(status="Confirmed", booking_to__gte=datetime.datetime.today(), intender=user).select_related().order_by('booking_from')
+        dashboard_bookings = BookingDetail.objects.filter(Q(status = "Pending") | Q(status="Forward") | Q(status = "Confirmed") | Q(status = 'Rejected'), booking_to__gte=datetime.datetime.today(), intender=user).order_by('booking_from')
+        # print(dashboard_bookings.booking_from)
 
         visitors = {}
         for booking in active_bookings:
             temp = range(2, booking.person_count + 1)
             visitors[booking.id] = temp
 
-        complete_bookings = BookingDetail.objects.filter(
-            Q(status="Canceled") | Q(status="Complete"), intender=user).select_related()
-        canceled_bookings = BookingDetail.objects.filter(
-            status="Canceled", intender=user).select_related()
-        rejected_bookings = BookingDetail.objects.filter(
-            status='Rejected', intender=user)
+        complete_bookings = BookingDetail.objects.filter(booking_to__lt=datetime.datetime.today(), intender=user).select_related().order_by('booking_from')
+        canceled_bookings = BookingDetail.objects.filter(status="Canceled", intender=user).select_related().order_by('booking_from')
+        rejected_bookings = BookingDetail.objects.filter(status='Rejected', intender=user).order_by('booking_from')
+        cancel_booking_requested = BookingDetail.objects.filter(status='CancelRequested', intender=user).order_by('booking_from')
+
+        # pp = ExtraInfo.objects.all()
+        # phone_no = pp.filter(Q(user=user))
+        # print("my no. is ")
+        # print(phone_no)
 
     else:  # booking for caretaker and incharge view
-        all_bookings = BookingDetail.objects.all()
-        pending_bookings = BookingDetail.objects.filter(
-            Q(status="Pending") | Q(status="Forward"))
-        active_bookings = BookingDetail.objects.filter(Q(status="Confirmed") | Q(
-            status="CheckedIn"), booking_to__gte=datetime.datetime.today()).select_related()
-        cancel_booking_request = BookingDetail.objects.filter(
-            status="CancelRequested")
+        all_bookings = BookingDetail.objects.all().order_by('booking_from')
+        pending_bookings = BookingDetail.objects.filter(Q(status="Pending") | Q(status="Forward"), booking_to__gte=datetime.datetime.today()).order_by('booking_from')
+        active_bookings = BookingDetail.objects.filter(Q(status="Confirmed") | Q(status="CheckedIn"), booking_to__gte=datetime.datetime.today()).select_related().order_by('booking_from')
+        cancel_booking_request = BookingDetail.objects.filter(status="CancelRequested", booking_to__gte=datetime.datetime.today()).order_by('booking_from')
+        dashboard_bookings = BookingDetail.objects.filter(Q(status = "Pending") | Q(status="Forward") | Q(status = "Confirmed") | Q(status = 'Rejected'), booking_to__gte=datetime.datetime.today()).order_by('booking_from')
         visitors = {}
         for booking in active_bookings:
             temp = range(2, booking.person_count + 1)
             visitors[booking.id] = temp
 
-        complete_bookings = BookingDetail.objects.filter(
-            Q(status="Canceled") | Q(status="Complete")).select_related()
-        canceled_bookings = BookingDetail.objects.filter(
-            status="Canceled").select_related()
-        rejected_bookings = BookingDetail.objects.filter(status='Rejected')
+        complete_bookings = BookingDetail.objects.filter(Q(status="Canceled") | Q(status="Complete"), booking_to__lt=datetime.datetime.today()).select_related().order_by('booking_from')
+        canceled_bookings = BookingDetail.objects.filter(status="Canceled").select_related().order_by('booking_from')
+        cancel_booking_requested = BookingDetail.objects.filter(status='CancelRequested', booking_to__gte=datetime.datetime.today(), intender=user).order_by('booking_from')
+        rejected_bookings = BookingDetail.objects.filter(status='Rejected').order_by('booking_from')
         for booking in pending_bookings:
             booking_from = booking.booking_from
             booking_to = booking.booking_to
@@ -179,6 +180,7 @@ def visitorhostel(request):
                    'pending_bookings': pending_bookings,
                    'active_bookings': active_bookings,
                    'canceled_bookings': canceled_bookings,
+                   'dashboard_bookings' : dashboard_bookings,
                    'bills': bills,
                    # 'all_rooms_status' : all_rooms_status,
                    'available_rooms': available_rooms,
@@ -196,6 +198,7 @@ def visitorhostel(request):
                    'current_balance': current_balance,
                    'rejected_bookings': rejected_bookings,
                    'cancel_booking_request': cancel_booking_request,
+                   'cancel_booking_requested' : cancel_booking_requested,
                    'user_designation': user_designation})
 
 # Get methods for bookings
@@ -245,32 +248,57 @@ def get_booking_form(request):
 
 @login_required(login_url='/accounts/login/')
 def request_booking(request):
+
+    print("meawwww");
     if request.method == 'POST':
+        flag=0
         intender = request.POST.get('intender')
         user = User.objects.get(id=intender)
         booking_id = "VH"+str(datetime.datetime.now())
         category = request.POST.get('category')
         person_count = request.POST.get('number-of-people')
         bookingObject = []
-        if person_count:
+        if person_count and (int(person_count)<20):
             person_count = person_count
+
         else:
-            person_count = 1
+            flag = 1    # for error
+
+        #     person_count = 1
         purpose_of_visit = request.POST.get('purpose-of-visit')
         booking_from = request.POST.get('booking_from')
         booking_to = request.POST.get('booking_to')
-        bookingObject = BookingDetail.objects.create(purpose=purpose_of_visit,
+        number_of_rooms = request.POST.get('number-of-rooms')
+        print(number_of_rooms)
+        # no_of_days = int(booking_from) - int(booking_to)
+        print(booking_from)
+
+        if (int(person_count)<int(number_of_rooms)):
+            flag=1
+
+        # d1 = datetime.date(booking_to)
+        # d2 = datetime.date(booking_from)
+        # no_of_days = abs((d2 - d1).days)
+        # print("days are !!!")
+        # print(no_of_days)
+        # print("up   @@")
+        print("flag --")
+        print(flag)
+
+        if flag ==0:
+            print("hhhhere")
+            bookingObject = BookingDetail.objects.create(purpose=purpose_of_visit,
                                                      intender=user,
                                                      booking_from=booking_from,
                                                      booking_to=booking_to,
                                                      visitor_category=category,
-                                                     person_count=person_count)
+                                                     person_count=person_count,
+                                                     number_of_rooms=number_of_rooms)
 
         doc = request.FILES.get('files-during-booking-request')
         if doc:
             print("hello")
-            filename, file_extenstion = os.path.splitext(
-                request.FILES.get('files-during-booking-request').booking_id)
+            filename, file_extenstion = os.path.splitext(request.FILES.get('files-during-booking-request').booking_id)
             filename = booking_id
             full_path = settings.MEDIA_ROOT + "/VhImage/"
             url = settings.MEDIA_URL + filename + file_extenstion
@@ -287,6 +315,55 @@ def request_booking(request):
         return HttpResponseRedirect('/visitorhostel/')
     else:
         return HttpResponseRedirect('/visitorhostel/')
+
+
+@login_required(login_url='/accounts/login/')
+def update_booking(request):
+    if request.method == 'POST':
+        user = request.user
+        print(request.POST)
+
+        booking_id = request.POST.get('booking-id')
+
+        category = request.POST.get('category')
+        person_count = request.POST.get('number-of-people')
+        bookingObject = []
+        if person_count:
+            person_count = person_count
+        else:
+            person_count = 1
+        purpose_of_visit = request.POST.get('purpose-of-visit')
+        booking_from = request.POST.get('booking_from')
+        booking_to = request.POST.get('booking_to')
+        number_of_rooms = request.POST.get('number-of-rooms')
+
+        # remark = request.POST.get('remark')
+        print("UUUUUUUUU")
+        print(booking_from)
+        print(booking_to)
+        print(category)
+        print("pehle")
+        booking = BookingDetail.objects.get(id=booking_id)
+        print(booking)
+        print(booking.booking_from)
+        booking.person_count = person_count
+        booking.number_of_rooms = number_of_rooms
+        booking.booking_from = booking_from
+        booking.booking_to = booking_to
+        booking.purpose = purpose_of_visit
+        booking.save()
+        print(booking.booking_from)
+        # BookingDetail.objects.filter(id=booking_id).update(person_count=person_count,
+        #                                                     purpose=purpose_of_visit,
+        #                                                     booking_from=booking_from,
+        #                                                     booking_to=booking_to,
+        #                                                     number_of_rooms=number_of_rooms)
+        booking = BookingDetail.objects.get(id=booking_id)
+
+        return HttpResponseRedirect('/visitorhostel/')
+    else:
+        return HttpResponseRedirect('/visitorhostel/')
+
 
 
 @login_required(login_url='/accounts/login/')
@@ -327,11 +404,11 @@ def cancel_booking(request):
         booking = BookingDetail.objects.get(id=booking_id)
         x = 0
         if charges:
-            Bill.objects.create(booking=booking, meal_bill=x, room_bill=int(
-                charges), caretaker=user, payment_status=True)
+            Bill.objects.create(booking=booking, meal_bill=x, room_bill=int(charges), caretaker=user, payment_status=True)
         else:
-            Bill.objects.create(booking=booking, meal_bill=x,
-                                room_bill=x, caretaker=user, payment_status=True)
+            Bill.objects.create(booking=booking, meal_bill=x, room_bill=x, caretaker=user, payment_status=True)
+
+        complete_bookings = BookingDetail.objects.filter(Q(status="Canceled") | Q(status="Complete"), booking_to__lt=datetime.datetime.today()).select_related().order_by('booking_from')
         return HttpResponseRedirect('/visitorhostel/')
     else:
         return HttpResponseRedirect('/visitorhostel/')
@@ -342,8 +419,7 @@ def cancel_booking_request(request):
     if request.method == 'POST':
         booking_id = request.POST.get('booking-id')
         remark = request.POST.get('remark')
-        BookingDetail.objects.filter(id=booking_id).update(
-            status='CancelRequested', remark=remark)
+        BookingDetail.objects.filter(id=booking_id).update(status='CancelRequested', remark=remark)
         return HttpResponseRedirect('/visitorhostel/')
     else:
         return HttpResponseRedirect('/visitorhostel/')
@@ -589,6 +665,71 @@ def edit_room_status(request):
         return HttpResponseRedirect('/visitorhostel/')
     else:
         return HttpResponseRedirect('/visitorhostel/')
+
+
+
+@login_required(login_url='/accounts/login/')
+def bill_between_dates(request):
+    if request.method == 'POST':
+        date_1 = request.POST.get('start_date')
+        date_2 = request.POST.get('end_date')
+        print("@@@@@@@@@@       ooooooooooooooo")
+        print(date_1)
+        print(date_2)
+        bill_range_bw_dates = bill_range(date_1, date_2)
+        meal_total = 0
+        room_total = 0
+        print("YYYYYYYYYYY")
+        for i in bill_range_bw_dates:
+            meal_total = meal_total + i.meal_bill
+            room_total = room_total + i.room_bill
+        total_bill = meal_total + room_total
+        return render(request, "vhModule/booking_bw_dates.html", {'booking_bw_dates': bill_range_bw_dates, 
+                                                                    'meal_total' : meal_total, 
+                                                                    'room_total' :room_total,
+                                                                    'total_bill' : total_bill 
+                                                                    })
+    else:
+        return HttpResponseRedirect('/visitorhostel/')
+
+
+
+def bill_range(date1,date2):
+
+
+    bookings = BookingDetail.objects.filter(Q(booking_from__lte=date1, booking_to__gte=date1) | Q(booking_from__gte=date1,
+                                                                                                                      booking_to__lte=date2) | Q(booking_from__lte=date2, booking_to__gte=date2) | Q(booking_from__lte=date1, booking_to__gte=date1) | Q(booking_from__gte=date1, booking_to__lte=date2) | Q(booking_from__lte=date2, booking_to__gte=date2))
+    # bill_details = Bill.objects.filter(Q(booking__booking_from__lte=date1, booking__booking_to__gte=date1, booking__status="Confirmed") | Q(booking__booking_from__gte=date1,
+    #                                                                                                                   booking__booking_to__lte=date2, booking__status="Confirmed") | Q(booking__booking_from__lte=date2, booking__booking_to__gte=date2, status="Confirmed") | Q(booking_from__lte=date1, booking__booking_to__gte=date1, status="CheckedIn") | Q(booking__booking_from__gte=date1, booking__booking_to__lte=date2, booking__status="CheckedIn") | Q(booking__booking_from__lte=date2, booking__booking_to__gte=date2, booking__status="CheckedIn"))
+    bookings_bw_dates = []
+    booking_ids = []
+    for booking_id in bookings:
+        booking_ids.append(booking_id.id)
+
+    print("bill ids")
+    print(booking_ids)
+    all_bill = Bill.objects.all().order_by('-id')
+    print("tada tada")
+    print(all_bill)
+    print("tada")
+
+    for b_id in booking_ids:
+        print(b_id)
+        # bill_id = Bill.objects.get(booking__pk=b_id)
+        # p = Bill.objects.filter(booking__pk=b_id).exists()
+        print("ppp")
+        # print(p)
+        if Bill.objects.filter(booking__pk=b_id).exists() :
+            bill_id = Bill.objects.get(booking__pk=b_id)
+            bookings_bw_dates.append(bill_id)
+            print(bill_id)
+            print(bill_id.meal_bill)
+            print(bill_id.room_bill)
+
+
+    print("hmari bill id")
+    print(bookings_bw_dates)
+    return bookings_bw_dates
 
 
 def booking_details(date1, date2):

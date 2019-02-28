@@ -1,5 +1,5 @@
 from django.shortcuts import render
-
+from applications.globals.models import ExtraInfo
    #   """
    #   This Function is used to View the Issued Items of the user acording to the tags.
    #   The Data is scraped from the institutes library module hosted on the web OPAC server.
@@ -37,7 +37,7 @@ def libraryModule(request):
         eventvalid = soup.find(id="__EVENTVALIDATION")['value']
         
         Status = "Complete"
-        memberid = "74"
+        memberid = ExtraInfo.objects.get(user = request.user).id
         
         formfields={'__VIEWSTATE':viewstate,
                     "__VIEWSTATEGENERATOR":viewgen,
@@ -94,7 +94,7 @@ def libraryModule(request):
         formfields={'__VIEWSTATE':viewstate,
                      "__VIEWSTATEGENERATOR":viewgen,
                      '__EVENTVALIDATION':eventvalid,
-                     'ctl00$ContentPlaceHolder1$txtuserid':'74',
+                     'ctl00$ContentPlaceHolder1$txtuserid':memberid,
                      'ctl00$ContentPlaceHolder1$cmdcheck': 'Enter'}
         r3 = requests.post(url1+url2,cookies=r1.cookies,data=formfields) 
         #print(r1.status_code)
@@ -185,3 +185,4 @@ def libraryModule(request):
         context={"data1": yo, "due": due, "data2": yo1}
         print(request.user)
         return render(request, "libraryModule/libraryModule.html", context)
+

@@ -440,7 +440,7 @@ class EmployeeCommonFormOffline(forms.Form):
     purpose = forms.CharField(widget=forms.Textarea)
     application_date = forms.DateField(label='Application Date')
     USER_CHOICES = [(usr.username, "{} {}".format(usr.first_name, usr.last_name))
-                        for usr in User.objects.all()]
+                        for usr in User.objects.filter(extrainfo__user_type__in=["faculty","staff"]) ]
 
     leave_user_select = forms.ChoiceField(label='Choose Employee',choices=USER_CHOICES)
 
@@ -457,7 +457,7 @@ class AdminReplacementFormOffline(forms.Form):
     admin_end_date = forms.DateField(label='To')
 
     USER_CHOICES = [(usr.username, "{} {}".format(usr.first_name, usr.last_name))
-                        for usr in User.objects.all() ]
+                        for usr in User.objects.filter(extrainfo__user_type__in=["faculty","staff"]) ]
         # print(USER_CHOICES)
     admin_rep = forms.ChoiceField(label='Administrative Responsibility To: ',
                                                      choices=USER_CHOICES)
@@ -508,7 +508,7 @@ class AcademicReplacementFormOffline(forms.Form):
     acad_end_date = forms.DateField(label='To')
 
     USER_CHOICES = [(usr.username, "{} {}".format(usr.first_name, usr.last_name))
-                        for usr in User.objects.all() ]
+                        for usr in User.objects.filter(extrainfo__user_type="faculty") ]
 
     acad_rep = forms.ChoiceField(label='Academic Responsibility To: ',
                                                     choices=USER_CHOICES)
