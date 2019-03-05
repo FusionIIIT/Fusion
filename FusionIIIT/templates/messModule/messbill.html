@@ -51,8 +51,8 @@
 
 <div class="ui tab" data-tab="generatebill" id="generatebill">
     <div class="ui vertical segment">
-        <!--action="{% url 'mess:billgenerate' %}"-->
-         <form method="post" action="{% url 'mess:billgenerate' %}">
+        <!--action="{% url 'mess:generate_mess_bill' %}"-->
+         <form method="post" action="{% url 'mess:generate_mess_bill' %}">
              {% csrf_token %}
                     <div class="field">
                         <div class="two fields">
@@ -91,7 +91,7 @@
         function updatecost(){
             $.ajax({
                 type: 'POST',
-                url: 'updatecost/',
+                url: 'update_cost/',
                 dataType: 'json',
                 data: {
                     'csrfmiddlewaretoken' : '{{ csrf_token }}',
@@ -110,10 +110,10 @@
             });
         return false;
     }
-     function billgenerate(){
+     function generate_mess_bill(){
             $.ajax({
                 type: 'POST',
-                url: 'billgenerate/',
+                url: 'generate_mess_bill/',
                 dataType: 'json',
                 data{
                 'csrfmiddlewaretoken' : '{{ csrf_token }}',

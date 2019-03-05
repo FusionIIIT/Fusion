@@ -376,7 +376,15 @@ def submit_mess_menu(request):
 
 
 @login_required
-def response(request):
+def menu_change_response(request):
+    """
+    This function is to respond to mess menu requests
+    :param request:
+        stat: Accept or reject a request
+    :variables:
+
+    :return:
+    """
     user = request.user
     # extra_info = ExtraInfo.objects.get(user=user)
     holds_designations = HoldsDesignation.objects.filter(user=user)
@@ -444,13 +452,25 @@ def response(request):
 
 
 @login_required
-def processvacafood(request, ap_id):
-    user = request.user
-    extrainfo = ExtraInfo.objects.get(user=user)
-    holds_designations = HoldsDesignation.objects.filter(user=user)
-    desig = holds_designations
+def response_vacation_food(request, ap_id):
+    """
+    This function records the response to vacation food requests
+    :param request:
+        user: Current user
 
-    for d in desig:
+    :param ap_id:
+
+    :variables:
+        holds_designations: Designation of the current user
+        applications: Object of application with the given id
+    :return:
+    """
+    user = request.user
+    # extra_info = ExtraInfo.objects.get(user=user)
+    holds_designations = HoldsDesignation.objects.filter(user=user)
+    designation = holds_designations
+
+    for d in designation:
         if d.designation.name == 'mess_manager':
             applications = Vacation_food.objects.get(pk=ap_id)
 
@@ -511,7 +531,7 @@ def regsubmit(request):
 
 @login_required
 @transaction.atomic
-def regadd(request):
+def start_mess_registration(request):
     """
        This function is to start mess registration
        @request:
@@ -524,13 +544,12 @@ def regadd(request):
        @variables:
     """
     user = request.user
-    extrainfo = ExtraInfo.objects.get(user=user)
+    # extra_info = ExtraInfo.objects.get(user=user)
     holds_designations = HoldsDesignation.objects.filter(user=user)
-    desig = holds_designations
+    designation = holds_designations
 
-    for d in desig:
+    for d in designation:
         if d.designation.name == 'mess_manager':
-
             sem = request.POST.get('sem')
             start_reg = request.POST.get('start_date')
             end_reg = request.POST.get('end_date')
@@ -542,26 +561,26 @@ def regadd(request):
 
 @transaction.atomic
 @csrf_exempt
-def leaverequest(request):
+def mess_leave_request(request):
     """
         This function is to record and validate leave requests
         @request:
             user: Current user
             leave_type: Type of leave
-            start_date: Strting date of the leave
+            start_date: Starting date of the leave
             end_date: Date of return
             purpose: Purpose of the leave
         @variables:
             today: Date today in string format
             student: Information od student submitting the request
             rebates: Record of past leave requests of the student
-            rebate_obj:  Rebate object that stores current infromation
+            rebate_object:  Rebate object that stores current infromation
     """
     flag = 1
     user = request.user
     today = str(datetime.now().date())
-    extrainfo = ExtraInfo.objects.get(user=user)
-    student = Student.objects.get(id=extrainfo)
+    extra_info = ExtraInfo.objects.get(user=user)
+    student = Student.objects.get(id=extra_info)
     leave_type = request.POST.get('leave_type')
     start_date = request.POST.get('start_date')
     end_date = request.POST.get('end_date')
@@ -584,16 +603,18 @@ def leaverequest(request):
             b = datetime.strptime(str(start_date), date_format)
             c = datetime.strptime(str(r.end_date), date_format)
             d = datetime.strptime(str(end_date), date_format)
-            print((b <= a and (d >= a and d <= c)) or (b >= a and (d >= a and d <= c)) or (b <= a and (d >= c)) or ((b >= a and b<=c) and (d >= c)))
-            print((b >= a and b<=c) and (d >= c))
-            if ((b <= a and (d >= a and d <= c)) or (b >= a and (d >= a and d <= c)) or (b <= a and (d >= c)) or ((b >= a and b<=c) and (d >= c))):
+            print((b <= a and (d >= a and d <= c)) or (b >= a and (d >= a and d <= c))
+                  or (b <= a and (d >= c)) or ((b >= a and b<=c) and (d >= c)))
+            print((b >= a and b <= c) and (d >= c))
+            if ((b <= a and (d >= a and d <= c)) or (b >= a and (d >= a and d <= c))
+                    or (b <= a and (d >= c)) or ((b >= a and b<=c) and (d >= c))):
                 flag = 0
                 break
 
     if flag == 1:
-        rebate_obj = Rebate(student_id=student, leave_type=leave_type, start_date=start_date,
-                                end_date=end_date, purpose=purpose)
-        rebate_obj.save()
+        rebate_object = Rebate(student_id=student, leave_type=leave_type, start_date=start_date,
+                               end_date=end_date, purpose=purpose)
+        rebate_object.save()
 
     data = {
             'status': flag,
@@ -605,6 +626,11 @@ def leaverequest(request):
 @login_required
 @transaction.atomic
 def minutes(request):
+    """
+    To upload the minutes of the meeting
+    :param request:
+    :return:
+    """
     if request.method == 'POST' and request.FILES:
         form = MinuteForm(request.POST, request.FILES)
         if form.is_valid():
@@ -729,7 +755,7 @@ def place_request(request):
             return JsonResponse(data)
 
 
-# def responsespl(request, ap_id):
+# def special_request_response(request, ap_id):
 #     sprequest = Special_request.objects.get(pk=ap_id)
 #     if(request.POST.get('submit') == 'approve'):
 #         sprequest.status = '2'
@@ -739,21 +765,27 @@ def place_request(request):
 #     sprequest.save()
 #     return HttpResponseRedirect("/mess")
 
-def responsespl(request):
+def special_request_response(request):
     """
        This function is to respond to special request for food submitted by students
        @variables:
-       sprequest: data corresponding to id of the special request being accepted or rejected
+       special_request: data corresponding to id of the special request being accepted or rejected
     """
-    sprequest = Special_request.objects.get(pk=request.POST["id"])
-    sprequest.status = request.POST["status"]
-    sprequest.save()
+    special_request = Special_request.objects.get(pk=request.POST["id"])
+    special_request.status = request.POST["status"]
+    special_request.save()
     data = {
         'message':'You responded to the request !'
     }
     return JsonResponse(data)
 
-def updatecost(request):
+
+def update_cost(request):
+    """
+    This function is to update the base cost of the monthly central mess bill
+    :param request:
+    :return:
+    """
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
     today = datetime.today()
@@ -765,8 +797,8 @@ def updatecost(request):
     data = {
         'status': 1,
     }
-    monthlybill = Monthly_bill.objects.filter(Q(month=month_now) & Q(year=year_now))
-    for temp in monthlybill:
+    monthly_bill = Monthly_bill.objects.filter(Q(month=month_now) & Q(year=year_now))
+    for temp in monthly_bill:
         print(temp)
         print(temp.year)
         temp.amount = cost
@@ -775,7 +807,7 @@ def updatecost(request):
     return JsonResponse(data)
 
 
-def billgenerate(request):
+def generate_mess_bill(request):
     """
         This function is to generate the bill of the students
         @variables:
@@ -860,13 +892,13 @@ class MenuPDF(View):
 
     def post(self, request, *args, **kwargs):
         user = request.user
-        extrainfo = ExtraInfo.objects.get(user=user)
+        extra_info = ExtraInfo.objects.get(user=user)
         y = Menu.objects.all()
 
-        if extrainfo.user_type=='student':
-            student = Student.objects.get(id=extrainfo)
-            messinfo = Messinfo.objects.get(student_id=student)
-            mess_option = messinfo.mess_option
+        if extra_info.user_type=='student':
+            student = Student.objects.get(id=extra_info)
+            mess_info = Messinfo.objects.get(student_id=student)
+            mess_option = mess_info.mess_option
             context = {
                 'menu': y,
                 'mess_option': mess_option

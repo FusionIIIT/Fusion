@@ -221,7 +221,7 @@
                 <b>To:</b> {{item.end_date}}
                 <br>
                 <b>Approve:</b>
-                    <form action="/mess/{{item.pk}}/processvacafood/" method="post">
+                    <form action="/mess/{{item.pk}}/response_vacation_food/" method="post">
                             {% csrf_token %}
                             <div class="ui buttons">
                                 <button class="ui negative button" type="submit" name="submit" value="reject">R</button>
@@ -255,7 +255,7 @@
                 <!--</td>-->
 
                 <!--<td>-->
-                    <!--<form action="/mess/{{item.pk}}/processvacafood/" method="post">-->
+                    <!--<form action="/mess/{{item.pk}}/response_vacation_food/" method="post">-->
                         <!--{% csrf_token %}-->
                         <!--<div class="ui buttons">-->
                             <!--<button class="ui negative button" type="submit" name="submit" value="reject">R</button>-->
