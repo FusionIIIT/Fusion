@@ -450,41 +450,35 @@ def date_sessions(request):
 		dates = serializers.serialize('json', dates)
 		return HttpResponse(dates)
 
-#this algorithm uses binary search to find out lower bound for date and determine any overlapping slot 
+#this algorithm checks if the passed slot time coflicts with any of already booked sessions 
 def conflict_algorithm(date, start_time, end_time, venue):
-	booked_Sessions = Session_info.objects.filter(date=date, venue=venue).order_by('start_time')
-	booked_Sessions_desc = Session_info.objects.filter(date=date, venue=venue).order_by('-start_time')
-	if not booked_Sessions:
+	#converting string to datetime type variable
+	start_time = datetime.datetime.strptime(start_time, '%H:%M').time()
+	end_time = datetime.datetime.strptime(end_time, '%H:%M').time()
+	booked_Sessions = Session_info.objects.filter(date=date, venue=venue)
+
+	#placing start time and end time in tuple fashion inside this list
+	slots = [(start_time, end_time)]
+	for value in booked_Sessions:
+		slots.append((value.start_time, value.end_time))
+	slots.sort()
+	#if there isn't any slot present for the selected day just book the session
+	if (len(slots) == 1):
 		return "success"
 	else:
-		start_time = datetime.datetime.strptime(start_time, '%H:%M').time()
-		end_time = datetime.datetime.strptime(end_time, '%H:%M').time()
-		counter = 0 
-		for value in booked_Sessions_desc:
-			if ((value.end_time < start_time) or (value.end_time == start_time)):
+		#this whole logic checks if the end time of any slot is less than the start time of next slot
+		counter = slots[0][1]
+		flag = 0 
+		i=1
+		while i < len(slots):
+			print(counter)
+			if (slots[i][0] < counter):
+				print("error ", i)
+				flag = 1
 				break
-			else:
-				counter = counter + 1
-		counter = len(booked_Sessions)-counter-1
-		if(counter == -1):
-			counter = len(booked_Sessions)
-		if (len(booked_Sessions) == counter):
-			for value in booked_Sessions:
-				if(value.start_time < end_time):
-					return "error"
-				else:
-					return "success"
-				break
-		elif (counter == (len(booked_Sessions)-1)):
+			counter = slots[i][1]
+			i = i + 1 
+		if (flag == 0):
 			return "success"
 		else:
-			counter1 = 0
-			for value in booked_Sessions:
-				if (counter1 == counter+1):
-					if (value.start_time < end_time):
-						return "error"
-					else:
-						return "success"
-					break
-				else:
-					counter1 = counter1 + 1
+			return "error"
