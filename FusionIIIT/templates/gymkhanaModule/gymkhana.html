@@ -20,35 +20,60 @@
             // alert(b);
             event.preventDefault();
             var form = document.getElementById(b); // You need to use standard javascript object here
-            var formData = new FormData(form);
-            form.reset();
-            //alert(formData);
-            $.ajax({
-                url: a,
-                data: formData,
-                enctype: "multipart/form-data",
-                type: 'POST',
-                contentType: false, // NEEDED, DON'T OMIT THIS (requires jQuery 1.6+)
-                processData: false, // NEEDED, DON'T OMIT THIS
-                // ... Other options like success and etc
-                success: function(response) {
-                    // response = JSON.parse(response);
-                    // console.log(response);
-                    if (response == "success") {
-                        $(".succ").modal('show');
-                        form.reset();
-                    }
-                    else
-                    {
-                        $(".err").modal('show');    
-                    }
-                    // alert("success") ;
+            var i, startTime, endTime ;
+            var empty = new Array() ;
+            for (i=0 ; i<form.length; i++){
+                if(form.elements[i].value == "" && form.elements[i].name != ""){
+                    empty.push(form.elements[i].name);
                 }
-                // error: function() {
-                //     $(".err").modal('show');
-                //     alert("unsuccessful");
-                // }
-            });
+                else if (form.elements[i].name=="start_time"){
+                    startTime = form.elements[i].value ;
+                }
+                else if (form.elements[i].name=="end_time"){
+                    endTime = form.elements[i].value ;
+                }
+            }
+            //this array contains names of all the input fields included in newsession form
+            if(empty && empty.length && !(empty.length == 1 && empty[0] == "session_poster")){
+                // code to be executed if some fields are empty except session poster field
+                console.log("empty") ;
+                if (endTime <= startTime)
+                    $("#errorContent").append("<p><b>Start Time should be strictly less than end time.</b></p>");
+                $(".formErrors").modal('show') ;
+                form.reset();
+            }
+            else if (endTime <= startTime)
+            {
+                console.log("time problem") ;
+                $("#errorContent").html("<p><b>Start Time should be strictly less than end time.</b></p>");
+                $(".formErrors").modal('show') ;
+                form.reset();
+            }
+            else{
+                var formData = new FormData(form);
+                form.reset();
+                $.ajax({
+                    url: a,
+                    data: formData,
+                    enctype: "multipart/form-data",
+                    type: 'POST',
+                    contentType: false, // NEEDED, DON'T OMIT THIS (requires jQuery 1.6+)
+                    processData: false, // NEEDED, DON'T OMIT THIS
+                    // ... Other options like success and etc
+                    success: function(response) {
+                        // response = JSON.parse(response);
+                        // console.log(response);
+                        if (response == "success") {
+                            $(".succ").modal('show');
+                            form.reset();
+                        }
+                        else
+                        {
+                            $(".err").modal('show');    
+                        }
+                    }
+                });
+            }
         }
     </script>
 
@@ -276,6 +301,8 @@
 
     </div>
     {% comment %}The grid ends here!{% endcomment %}
+
+    <!-- time slot error modal -->
     <div class="ui basic modal err">
       <div class="ui icon header">
         <i class="bell icon"></i>
@@ -291,13 +318,35 @@
         </div>
       </div>
     </div>
+    <!-- form successfull submission modal -->
     <div class="ui basic modal succ">
       <div class="ui icon header">
         <i class="bell icon"></i>
         <a class="ui green label">Success</a>
       </div>
       <div class="content">
-        <p><center><b>Your application has been dispatched for further process</b></center>></p>
+        <p><center><b>Your application has been dispatched for further process</b></center></p>
+      </div>
+      <div class="actions">
+        <div class="ui red basic cancel inverted button">
+          <i class="remove icon"></i>
+          Cancel
+        </div>
+      </div>
+    </div>
+    <!-- form errors modal -->
+    <div class="ui basic modal formErrors">
+      <div class="ui icon header">
+        <i class="bell icon"></i>
+        <a class="ui red label">Error</a>
+      </div>
+      <div class="content">
+        <center>
+            <div id="errorContent">
+                <!-- This content will change based on type of error -->
+                <p><b>All the fields are required except session poster</b></p>
+            </div>
+        </center>
       </div>
       <div class="actions">
         <div class="ui red basic cancel inverted button">
