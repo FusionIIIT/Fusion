@@ -7,10 +7,10 @@ app_name = 'mess'
 urlpatterns = [
 
     url(r'^$', views.mess, name='mess'),
-    url(r'^placeorder/', views.placeorder, name='placeorder'),
-    url(r'^submit/', views.submit, name='submit'),
-    url(r'^vacasubmit/', views.vacasubmit, name='vacasubmit'),
-    url(r'^menusubmit/', views.menusubmit, name='menusubmit'),
+    url(r'^place_order/', views.place_order, name='place_order'),
+    url(r'^submit_mess_feedback/', views.submit_mess_feedback, name='submit_mess_feedback'),
+    url(r'^mess_vacation_submit/', views.mess_vacation_submit, name='mess_vacation_submit'),
+    url(r'^submit_mess_menu/', views.submit_mess_menu, name='submit_mess_menu'),
     url(r'^regsubmit/', views.regsubmit, name='regsubmit'),
     url(r'^regadd/', views.regadd, name='regadd'),
     url(r'^menudownload/', views.MenuPDF.as_view(), name='MenuPDF'),

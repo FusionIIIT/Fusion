@@ -106,7 +106,7 @@
         function feedback(){
             $.ajax({
                 type: 'POST',
-                url: 'submit/',
+                url: 'submit_mess_feedback/',
                 dataType: 'json',
                 data: {
                     'csrfmiddlewaretoken' : '{{ csrf_token }}',
