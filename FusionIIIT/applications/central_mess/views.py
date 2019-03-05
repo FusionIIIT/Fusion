@@ -331,32 +331,72 @@ def menusubmit(request):
 
 
 @login_required
-def response(request, ap_id):
+def response(request):
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
     holds_designations = HoldsDesignation.objects.filter(user=user)
     desig = holds_designations
-
+    ap_id = request.POST.get('idm')
+    stat = request.POST['status']
     for d in desig:
         if d.designation.name == 'mess_manager':
             application = Menu_change_request.objects.get(pk=ap_id)
-
-            if(request.POST.get('submit') == 'approve'):
+            print(stat)
+            if(stat == '2'):
                 application.status = 2
                 meal = application.dish
                 obj = Menu.objects.get(dish=meal.dish)
                 obj.dish = application.request
                 obj.save()
+                data = {
+                    'status': '2'
+                }
 
-            elif(request.POST.get('submit') == 'reject'):
+            elif(stat == '0'):
                 application.status = 0
+                data['status'] = '1'
+                data = {
+                    'status': '1'
+                }
 
             else:
                 application.status = 1
+                data = {
+                    'status': '0'
+                }
 
         application.save()
 
-    return HttpResponseRedirect("/mess")
+    return JsonResponse(data)
+
+
+# @login_required
+# def response(request, ap_id):
+#     user = request.user
+#     extrainfo = ExtraInfo.objects.get(user=user)
+#     holds_designations = HoldsDesignation.objects.filter(user=user)
+#     desig = holds_designations
+#
+#     for d in desig:
+#         if d.designation.name == 'mess_manager':
+#             application = Menu_change_request.objects.get(pk=ap_id)
+#
+#             if(request.POST.get('submit') == 'approve'):
+#                 application.status = 2
+#                 meal = application.dish
+#                 obj = Menu.objects.get(dish=meal.dish)
+#                 obj.dish = application.request
+#                 obj.save()
+#
+#             elif(request.POST.get('submit') == 'reject'):
+#                 application.status = 0
+#
+#             else:
+#                 application.status = 1
+#
+#         application.save()
+#
+#     return HttpResponseRedirect("/mess")
 
 
 @login_required
@@ -386,6 +426,7 @@ def processvacafood(request, ap_id):
 @login_required
 @transaction.atomic
 def regsubmit(request):
+
     i = 0
     j = 0
     month_1 = ['January', 'February', 'March', 'April', 'May', 'June']
@@ -427,6 +468,17 @@ def regsubmit(request):
 @login_required
 @transaction.atomic
 def regadd(request):
+    """
+       This function is to start mess registration
+       @request:
+           user: Current user
+           sem: Semester for which registration is started
+           start_reg: Start Date
+           end_reg: End Date
+           holds_designations: designation of current user to validate proper platform
+           mess_reg_obj: Object of Mess_reg to store current values
+       @variables:
+    """
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
     holds_designations = HoldsDesignation.objects.filter(user=user)
@@ -447,6 +499,20 @@ def regadd(request):
 @transaction.atomic
 @csrf_exempt
 def leaverequest(request):
+    """
+        This function is to record and validate leave requests
+        @request:
+            user: Current user
+            leave_type: Type of leave
+            start_date: Strting date of the leave
+            end_date: Date of return
+            purpose: Purpose of the leave
+        @variables:
+            today: Date today in string format
+            student: Information od student submitting the request
+            rebates: Record of past leave requests of the student
+            rebate_obj:  Rebate object that stores current infromation
+    """
     flag = 1
     user = request.user
     today = str(datetime.now().date())
@@ -489,7 +555,6 @@ def leaverequest(request):
             'status': flag,
     }
 
-
     return JsonResponse(data)
 
 
@@ -508,6 +573,16 @@ def minutes(request):
 @csrf_exempt
 @transaction.atomic
 def invitation(request):
+    """
+       This function is to schedule a mess committee meeting
+       @request:
+           date: Date of the meeting
+           venue: Venue of the meeting
+           time: Time of the meeting
+           agenda: Agenda of the meeting
+       @variables:
+           invitation_obj: Object of Mess_meeting with current values of date, venue, agenda, meeting time
+    """
     date = request.POST.get('date')
     venue = request.POST.get('venue')
     agenda = request.POST.get('agenda')
@@ -520,7 +595,7 @@ def invitation(request):
     return HttpResponseRedirect("/mess")
 
 
-# def responserebate(request, ap_id):
+# def rebate_response(request, ap_id):
 #     leaves = Rebate.objects.get(pk=ap_id)
 
 #     if(request.POST.get('submit') == 'approve'):
@@ -532,8 +607,17 @@ def invitation(request):
 #     return HttpResponseRedirect("/mess")
 
 
-def responserebate(request):
-    id = request.POST["id"]
+def rebate_response(request):
+    """
+       This function is to respond to rebate requests
+       @variables:
+       id: id of the rebate request
+       leaves: Object corresponding to the id of the rebate request
+       @return:
+       data: returns the status of the application
+    """
+    print("in \n\n\n\n\\n\n\n\n\\n\n\n\n\\n\n\n\n")
+    id = request.POST.get('id_rebate')
     leaves = Rebate.objects.get(pk=id)
     leaves.status = request.POST["status"]
     leaves.save()
@@ -542,14 +626,31 @@ def responserebate(request):
     }
     return JsonResponse(data)
 
-def placerequest(request):
+
+def place_request(request):
     # This is for placing special food request
+    """
+        This function is to place special food requests ( used by students )
+        @variables:
+        user: Current user
+        student: Information regarding the student placing the request
+        purpose: The purpose for the special food request *taken from "purpose" POST method
+        date_today: String of today's date allows checking dates to avoid reduntant values
+        spfood_obj: Special Request object to store values to be updated
+        @request:
+        fr: Start Date of the food request *taken from form "start_date" POST method
+        to: End Date of the food request *taken from form "end_date" POST method
+        food1: Food option 1 *taken from form "food1" POST method
+        food2: Food option 2 *taken from form "food2" POST method
+        @return:
+        data['status']: returns status of the application
+    """
     user = request.user
-    extrainfo = ExtraInfo.objects.get(user=user)
-    if extrainfo.user_type == 'student':
+    extra_info = ExtraInfo.objects.get(user=user)
+    if extra_info.user_type == 'student':
         print(request.POST)
-        extrainfo = ExtraInfo.objects.get(user=user)
-        student = Student.objects.get(id=extrainfo)
+        extra_info = ExtraInfo.objects.get(user=user)
+        student = Student.objects.get(id=extra_info)
         fr = request.POST.get("start_date")
         to = request.POST.get("end_date")
         print (fr, to, "dates")
@@ -595,6 +696,11 @@ def placerequest(request):
 #     return HttpResponseRedirect("/mess")
 
 def responsespl(request):
+    """
+       This function is to respond to special request for food submitted by students
+       @variables:
+       sprequest: data corresponding to id of the special request being accepted or rejected
+    """
     sprequest = Special_request.objects.get(pk=request.POST["id"])
     sprequest.status = request.POST["status"]
     sprequest.save()
@@ -626,6 +732,18 @@ def updatecost(request):
 
 
 def billgenerate(request):
+    """
+        This function is to generate the bill of the students
+        @variables:
+        user: stores current user infromatiob
+        nonveg_data : stores records of nonveg ordered by a student
+        year_now: current year
+        month_now: current month
+        amount_m: monhly base amount
+        students: information of all students
+        mess_info: Mess Information, mainly choice of mess
+        rebates: Rebate records of students
+        """
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
     nonveg_data = Nonveg_data.objects.all()
@@ -695,6 +813,7 @@ def billgenerate(request):
 
     
 class MenuPDF(View):
+
     def post(self, request, *args, **kwargs):
         user = request.user
         extrainfo = ExtraInfo.objects.get(user=user)
@@ -722,6 +841,7 @@ class MenuPDF(View):
 
 
 class MenuPDF1(View):
+    # This function is to generate the menu in pdf format (downloadable) for mess 1
     def post(self, request, *args, **kwargs):
         user = request.user
         extrainfo = ExtraInfo.objects.get(user=user)

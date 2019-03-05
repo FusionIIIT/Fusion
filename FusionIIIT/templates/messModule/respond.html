@@ -99,7 +99,7 @@
                     </div>
 
                     <!--
-                    <form action="{{item.pk}}/responserebate/" method="POST" >
+                    <form action="{{item.pk}}/rebate_response/" method="POST" >
                     {% csrf_token %}
                     <div class="ui buttons">
                         <button class="ui negative button" name="submit" value="reject" >R</button>
@@ -129,38 +129,10 @@
                                                           padding-top: 1%;
                                                           padding-bottom: 1.5%;
                                                           margin: auto;">
-            <!--<thead>-->
-            <!--<tr>-->
-                <!--<th>-->
-                    <!--Date Of Application-->
-                <!--</th>-->
-
-                <!--<th class="four wide">-->
-                    <!--Student-->
-                <!--</th>-->
-
-                <!--<th>-->
-                    <!--Reason-->
-                <!--</th>-->
-
-                <!--<th class="four wide">-->
-                    <!--Items to be changed-->
-                <!--</th>-->
-
-                <!--<th class="two wide">-->
-                    <!--Items to be added-->
-                <!--</th>-->
-
-                <!--<th class="one wide">-->
-                    <!--Approve or Reject-->
-                <!--</th>-->
-            <!--</tr>-->
-            <!--</thead>-->
-
             <tbody>
             {% for list in newmenu %}
             {% if list.status == '1' %}
-            <tr id="menu-{{item.pk}}">
+            <tr id="menu-{{list.pk}}">
                 <b>Date of Application:</b> {{list.app_date}}
                 <br>
                 <b>Student:</b> Mess Convener
@@ -172,52 +144,23 @@
                 <b>Items to be added:</b> {{list.request}}
                 <br>
                 <b>Accept or Reject :</b>
-                    <form action="/mess/{{list.pk}}/response/" method="post" >
-                                {% csrf_token %}
-                                <div class="ui buttons" align="right">
-                                    <button class="ui negative button" type="submit" name="submit" value="reject">R</button>
-                                    <div class="or"></div>
-                                    <button class="ui positive button" type="submit" name="submit" value="approve">A</button>
-                                </div>
-                    </form>
-                <hr>
-            </tr>
-            <!--<tr id="menu-{{item.pk}}">-->
-                <!--<td>{{list.app_date}}</td>-->
-                <!--<td>-->
-                    <!--<h4 class="ui image header">-->
-                        <!--<img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">-->
-                        <!--<div class="content">-->
-                            <!--Mess Convener-->
-                        <!--</div>-->
-                    <!--</h4>-->
-                <!--</td>-->
+                <div class="ui buttons">
+                        <button class="accm ui positive button" name="submit" value="approve"  data-accm="{{list.pk}}" onclick="acceptReqMess({{list.pk}})">A</button>
 
-                <!--<td>-->
-                    <!--{{list.reason}}-->
-                <!--</td>-->
-
-                <!--<td>-->
-                    <!--{{list.dish}}-->
-                <!--</td>-->
-
-                <!--<td>-->
-                    <!--{{list.request}}-->
-                <!--</td>-->
-
-                <!--<td>-->
-
-
-                    <!--<form action="/mess/{{list.pk}}/response/" method="post">-->
-                        <!--{% csrf_token %}-->
-                        <!--<div class="ui buttons">-->
-                            <!--<button class="ui negative button" type="submit" name="submit" value="reject">R</button>-->
-                            <!--<div class="or"></div>-->
-                            <!--<button class="ui positive button" type="submit" name="submit" value="approve">A</button>-->
-                        <!--</div>-->
+                        <div class="or"></div>
+                        <button class="ui negative button" name="submit" value="reject" onclick="rejectReqMess({{list.pk}})">R</button>
+                    <!--<form action="/mess/{{list.pk}}/response/" method="post" >-->
+                                <!--{% csrf_token %}-->
+                                <!--<div class="ui buttons" align="right">-->
+                                    <!--<button class="ui negative button" type="submit" name="submit" value="reject">R</button>-->
+                                    <!--<div class="or"></div>-->
+                                    <!--<button class="ui positive button" type="submit" name="submit" value="approve">A</button>-->
+                                <!--</div>-->
                     <!--</form>-->
-                <!--</td>-->
-            <!--</tr>-->
+                <hr>
+                </div>
+            </tr>
+
             {% endif %}
             {% endfor %}
             </tbody>
@@ -340,11 +283,11 @@ function acceptReq(id){
          document.getElementById('accr-'+id).style.visibility='hidden';
          $.ajax({
                 type: 'POST',
-                url: 'responserebate',
+                url: 'rebate_response',
                 dataType: 'json',
                 data: {
                     'csrfmiddlewaretoken' : '{{ csrf_token }}',
-                    'id':$("button.acc").attr("data-acc"),
+                    'id_rebate':$("button.acc").attr("data-acc"),
                     'status':'2',
 
                 },
@@ -365,11 +308,11 @@ function acceptReq(id){
          document.getElementById('accr-'+id).style.visibility='hidden';
          $.ajax({
                 type: 'POST',
-                url: 'responserebate',
+                url: 'rebate_response',
                 dataType: 'json',
                 data: {
                     'csrfmiddlewaretoken' : '{{ csrf_token }}',
-                    'id':$("button.acc").attr("data-acc"),
+                    'id_rebate':$("button.acc").attr("data-acc"),
                     'status':'0',
 
                 },
@@ -384,6 +327,51 @@ function acceptReq(id){
                 }
             });
 
+         }
+
+
+         function acceptReqMess(id){
+
+         $.ajax({
+                type: 'POST',
+                url: 'response',
+                dataType: 'json',
+                data: {
+                    'csrfmiddlewaretoken' : '{{ csrf_token }}',
+                    'idm':$("button.accm").attr("data-accm"),
+                    'status':'2',
+                },
+                success: function(data) {
+                    document.getElementById('menu-'+id).style.visibility='hidden';
+                    alert("Request has been accepted");
+                },
+                error: function(data, err) {
+                    alert(err.message);
+                }
+            });
+         }
+         function rejectReqMess(id){
+             $.ajax({
+                    type: 'POST',
+                    url: 'response',
+                    dataType: 'json',
+                    data: {
+                        'csrfmiddlewaretoken' : '{{ csrf_token }}',
+                        'idm':$("button.accm").attr("data-accm"),
+                        'status':'0',
+                    },
+                    success: function(data) {
+                        document.getElementById('menu-'+id).style.visibility='hidden';
+                        if(data.status == '1')
+                        {
+                            alert("Application Rejected");
+                        }
+                            alert(data.message);
+                    },
+                    error: function(data, err) {
+                        alert(err.message);
+                    }
+                });
          }
 
 </script>
