@@ -228,7 +228,7 @@ class MessMinutes(models.Model):
         return '{} - {}'.format(self.meeting_date.meet_date, self.mess_minutes)
 
 
-class MenuChangeequest(models.Model):
+class MenuChangeRequest(models.Model):
     dish = models.ForeignKey(Menu, on_delete=models.CASCADE)
     reason = models.TextField()
     request = models.CharField(max_length=100)

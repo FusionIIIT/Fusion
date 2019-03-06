@@ -9,7 +9,7 @@ from django.contrib import messages
 from django.views.generic import View
 from django.db.models import Q
 from .forms import MinuteForm
-from .models import (Feedback, Menu, MenuChangeequest, MessMeeting,
+from .models import (Feedback, Menu, MenuChangeRequest, MessMeeting,
                      MessMinutes, MessRegistration, MessInformation, MonthlyBill,
                      NonVegData, NonVegMenu, Payments, Rebate,
                      SpecialRequest, VacationFood)
@@ -118,7 +118,7 @@ def add_menu_change_request(request):
         dish = Menu.objects.get(dish=request.POST.get("dish"))
         new_dish = request.POST.get("newdish")
         reason = request.POST.get("reason")
-        menu_object = MenuChangeequest(dish=dish, request=new_dish, reason=reason)
+        menu_object = MenuChangeRequest(dish=dish, request=new_dish, reason=reason)
         menu_object.save()
         data = {
             'status': 1

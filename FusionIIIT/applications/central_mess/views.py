@@ -15,7 +15,7 @@ from django.contrib.auth.models import User
 from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, HoldsDesignation
 from .forms import MinuteForm
-from .models import (Feedback, Menu, MenuChangeequest, MessMeeting,
+from .models import (Feedback, Menu, MenuChangeRequest, MessMeeting,
                      MessMinutes, MessRegistration, MessInformation, MonthlyBill,
                      NonVegData, NonVegMenu, Payments, Rebate,
                      SpecialRequest, VacationFood)
