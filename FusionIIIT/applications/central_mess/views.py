@@ -1,5 +1,3 @@
-from django.core.exceptions import ObjectDoesNotExist
-from django.contrib import messages
 from datetime import date, datetime
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -9,9 +7,7 @@ from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from django.views.generic import View
-from django.db.models import Q
 from applications.central_mess.utils import render_to_pdf
-from django.contrib.auth.models import User
 from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, HoldsDesignation
 from .forms import MinuteForm
