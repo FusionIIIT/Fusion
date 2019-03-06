@@ -22,7 +22,8 @@ from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
 from .handlers import (add_nonveg_order, add_mess_feedback, add_vacation_food_request,
                        add_menu_change_request, handle_menu_change_response, handle_vacation_food_request,
                        add_mess_registration_time, add_leave_request, add_mess_meeting_invitation,
-                       handle_rebate_response, add_special_food_request)
+                       handle_rebate_response, add_special_food_request,
+                       handle_special_request, add_bill_base_amount)
 
 
 def mess(request):
@@ -490,6 +491,9 @@ def rebate_response(request):
     return JsonResponse(data)
 
 
+@login_required
+@transaction.atomic
+@csrf_exempt
 def place_request(request):
     # This is for placing special food request
     """
@@ -508,21 +512,21 @@ def place_request(request):
         return JsonResponse(data)
 
 
+@login_required
+@transaction.atomic
+@csrf_exempt
 def special_request_response(request):
     """
        This function is to respond to special request for food submitted by students
-       @variables:
-       special_request: data corresponding to id of the special request being accepted or rejected
+       data: message regarding the request
     """
-    special_request = Special_request.objects.get(pk=request.POST["id"])
-    special_request.status = request.POST["status"]
-    special_request.save()
-    data = {
-        'message':'You responded to the request !'
-    }
+    data = handle_special_request(request)
     return JsonResponse(data)
 
 
+@login_required
+@transaction.atomic
+@csrf_exempt
 def update_cost(request):
     """
     This function is to update the base cost of the monthly central mess bill
@@ -530,23 +534,8 @@ def update_cost(request):
     :return:
     """
     user = request.user
-    extrainfo = ExtraInfo.objects.get(user=user)
-    today = datetime.today()
-    year_now = today.year
-    month_now = today.strftime('%B')
-    print(month_now)
-    print(year_now)
-    cost = request.POST.get("amount")
-    data = {
-        'status': 1,
-    }
-    monthly_bill = Monthly_bill.objects.filter(Q(month=month_now) & Q(year=year_now))
-    for temp in monthly_bill:
-        print(temp)
-        print(temp.year)
-        temp.amount = cost
-        temp.save()
-    print(temp)
+    # extrainfo = ExtraInfo.objects.get(user=user)
+    data = add_bill_base_amount(request)
     return JsonResponse(data)
 
 
@@ -563,6 +552,7 @@ def generate_mess_bill(request):
         mess_info: Mess Information, mainly choice of mess
         rebates: Rebate records of students
         """
+    # todo generate proper logic for generate_mess_bill
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
     nonveg_data = Nonveg_data.objects.all()
@@ -606,7 +596,7 @@ def generate_mess_bill(request):
         if Monthly_bill.objects.filter(student_id=temp.student_id, month=month_now, year=year_now):
             if Monthly_bill.objects.filter(student_id=temp.student_id, month=month_now, year=year_now,
                                            total_bill=total_bill):
-                print("exists")
+                print("ok")
             else:
                 Monthly_bill.objects.filter(student_id=temp.student_id, month=month_now, year=year_now). \
                     update(student_id=temp.student_id,
@@ -618,16 +608,8 @@ def generate_mess_bill(request):
                            nonveg_total_bill=nonveg_total_bill,
                            total_bill=total_bill
                            )
-                # print("updated")
     else:
         monthly_bill_obj.save()
-        # print("generate")
-    # for temp in students:
-    #     monthly_bill_obj = Monthly_bill(student_id=temp, month=month_now, year=year_now, amount=amount_m)
-    #     if Monthly_bill.objects.filter(student_id=temp, month=month_now, year=year_now):
-    #         print('exists')
-    #     else:
-    #         monthly_bill_obj.save()
     return JsonResponse(data)
 
     

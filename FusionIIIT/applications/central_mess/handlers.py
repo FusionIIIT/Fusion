@@ -12,7 +12,7 @@ from .forms import MinuteForm
 from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
                      Mess_minutes, Mess_reg, Messinfo, Monthly_bill,
                      Nonveg_data, Nonveg_menu, Payments, Rebate,
-                     Special_request, Vacation_food)
+                     Special_request, Vacation_food, MessBillBase)
 
 
 def add_nonveg_order(request, student):
@@ -131,7 +131,6 @@ def add_menu_change_request(request):
         return data
 
 
-@transaction.atomic
 def handle_menu_change_response(request):
     # TODO logic here is flawed if the same dish is use more than once then it will give an error !!!
     #  or if there are two requests on the same dish
@@ -178,7 +177,6 @@ def handle_menu_change_response(request):
     return data
 
 
-@transaction.atomic
 def handle_vacation_food_request(request, ap_id):
     """
        This function records the response to vacation food requests
@@ -209,7 +207,6 @@ def handle_vacation_food_request(request, ap_id):
     return data
 
 
-@transaction.atomic
 def add_mess_registration_time(request):
     """
            This function is to start mess registration
@@ -234,7 +231,6 @@ def add_mess_registration_time(request):
     return data
 
 
-@transaction.atomic
 def add_leave_request(request, student):
     """
         This function is to record and validate leave requests
@@ -293,7 +289,6 @@ def add_leave_request(request, student):
     return data
 
 
-@transaction.atomic
 def add_mess_meeting_invitation(request):
     """
        This function is to schedule a mess committee meeting
@@ -317,7 +312,6 @@ def add_mess_meeting_invitation(request):
     return data
 
 
-@transaction.atomic
 def handle_rebate_response(request):
     """
        This function is to respond to rebate requests
@@ -337,7 +331,6 @@ def handle_rebate_response(request):
     return data
 
 
-@transaction.atomic
 def add_special_food_request(request, student):
     """
         This function is to place special food requests ( used by students )
@@ -386,3 +379,45 @@ def add_special_food_request(request, student):
             'status': 1,
         }
         return data
+
+
+def handle_special_request(request):
+    """
+       This function is to respond to special request for food submitted by students
+       @variables:
+       special_request: data corresponding to id of the special request being accepted or rejected
+    """
+    special_request = Special_request.objects.get(pk=request.POST["id"])
+    special_request.status = request.POST["status"]
+    special_request.save()
+    data = {
+        'message': 'You responded to the request !'
+    }
+    return data
+
+
+def add_bill_base_amount(request):
+    """
+    This function is to update the base cost of the monthly central mess bill
+    :param request:
+    :return:
+    """
+    # today = datetime.today()
+    # year_now = today.year
+    # month_now = today.strftime('%B')
+    cost = request.POST.get("amount")
+    data = {
+        'status': 1,
+    }
+    # monthly_bill = Monthly_bill.objects.filter(Q(month=month_now) & Q(year=year_now))
+    amount = MessBillBase.objects.first()
+    amount.bill_amount = cost
+    amount.save()
+    # for temp in monthly_bill:
+    #     print(temp)
+    #     print(temp.year)
+    #     temp.amount = cost
+    #     temp.save()
+    # print(temp)
+    return data
+
