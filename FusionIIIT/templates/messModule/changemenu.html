@@ -28,7 +28,7 @@
                         </div>
                         <div class="ui twelve wide column">
                             <div class="ui active tab" data-tab="changemenu">
-                                <form class="ui form" method="post" action="{% url 'mess:submit_mess_menu'%}">
+                                <form class="ui form" method="post" action="{% url 'mess:messmenusubmit'%}">
                                     {% csrf_token %}
                                     <div class="ui row">
                                         <div class="three fields">
