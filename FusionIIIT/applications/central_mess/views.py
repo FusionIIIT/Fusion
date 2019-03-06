@@ -63,7 +63,8 @@ def mess(request):
         messinfo = Messinfo.objects.get(student_id=student)
         count = 0
         #variable y stores the menu items
-        y = Menu.objects.all()
+        mess_optn = Messinfo.objects.get(student_id=student)
+        y = Menu.objects.filter(mess_option=mess_optn.mess_option)
         x = Nonveg_menu.objects.all()
 
         for item in rebates:

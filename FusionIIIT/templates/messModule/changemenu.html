@@ -5,7 +5,7 @@
             Request For Menu Change
         </a>
     </div>
-    <div class="ui active tab" data-tab="changemenu">
+    <div class="ui active tab" data-tab="changemenu" id="menu_change_div">
         <div class="ui vertical segment">
 
             {% comment %}Form Tag starts here!{% endcomment %}
@@ -21,26 +21,60 @@
                     <div class="ui row">
                         <div class="ui sixteen wide column">
                             <div class="ui active tab" data-tab="changemenu">
-                                <form class="ui form" method="post" action="{% url 'mess:messmenusubmit'%}">
+                                <!--<form class="ui form" method="post" action="{% url 'mess:messmenusubmit'%}">-->
+                                <form class="ui form" method="post" >
                                     {% csrf_token %}
                                     <div class="ui row">
                                         <div>
                                             <label>
-                                                Dish
+                                                Meal Time
                                             </label>
                                             <br>
-                                            <select class="ui search fluid dropdown" name="dish" id="dish">
-                                                {% for item in menu %}
-                                                <option value="{{item.dish}}">{{item.dish}}-{{item.meal_time}}</option>
-                                                {% endfor %}
+                                            <select class="ui search fluid dropdown" name = "mealtime" id="mealtime" onchange="menuChange()">
+                                                <option value="MB">Monday Breakfast</option>
+                                                <option value="ML">Monday Lunch</option>
+                                                <option value="MD">Monday Dinner</option>
+                                                <option value="TB">Tuesday Breakfast</option>
+                                                <option value="TL">Tuesday Lunch</option>
+                                                <option value="TD">Tuesday Dinner</option>
+                                                <option value="WB">Wednesday Breakfast</option>
+                                                <option value="WL">Wednesday Lunch</option>
+                                                <option value="WD">Wednesday Dinner</option>
+                                                <option value="THB">Thursday Breakfast</option>
+                                                <option value="THL">Thursday Lunch</option>
+                                                <option value="THD">Thursday Dinner</option>
+                                                <option value="FB">Friday Breakfast</option>
+                                                <option value="FL">Friday Lunch</option>
+                                                <option value="FD">Friday Dinner</option>
+                                                <option value="SB">Saturday Breakfast</option>
+                                                <option value="SL">Saturday Lunch</option>
+                                                <option value="SD">Saturday Dinner</option>
+                                                <option value="SUB">Sunday Breakfast</option>
+                                                <option value="SUL">Sunday Lunch</option>
+                                                <option value="SUD">Sunday Dinner</option>
                                             </select>
+                                            <div id="dish" onload="">
+                                                <label>Current Menu:</label>
+                                                <br>
+                                                {% for item in menu %}
+                                                <div id="{{item.meal_time}}">
+                                                    {{item.dish}}
+                                                </div>
+                                                {% endfor %}
+
+                                            </div>
+                                            <!--<select class="ui search fluid dropdown" name="dish" id="dish">-->
+                                                <!--{% for item in menu %}-->
+                                                <!--<option value="{{item.dish}}">{{item.dish}}-{{item.meal_time}} id="{{item.pk}}"></option>-->
+                                                <!--{% endfor %}-->
+                                            <!--</select>-->
                                             <br>
                                             <label>
                                                 Change To
                                             </label>
                                             <br>
                                             <div class="ui input">
-                                                <input placeholder="Food" name="newdish" required>
+                                                <input placeholder="Food" name="newdish" id = "newdish" required = "true">
                                             </div>
                                             <br>
                                             <br>
@@ -49,14 +83,14 @@
                                             </label>
                                             <br>
                                             <div class="ui input">
-                                                <input placeholder="Why?" name="reason" required= "true">
+                                                <input placeholder="Why?" name="reason" id="reason" required= "true">
                                             </div>
 
                                         </div> 
                                     </div>
                                     <div class="ui row">
                                         <br>
-                                        <button type="submit" class="ui primary button right floated">
+                                        <button type="submit" class="ui primary button right floated" onclick="return change_menu()">
                                             Place Request
                                         </button>
                                     </div>
@@ -70,8 +104,39 @@
             </div>
         </div>
     </div>
+{% block javascript %}
+<script>
 
 
+    function menuChange(){
+      var meal = document.getElementById("mealtime").value;
+      console.log(meal);
+    }
+        function change_menu(){
+            $.ajax({
+                type: 'POST',
+                url: 'messmenusubmit/',
+                dataType: 'json',
+                data: {
+                    'csrfmiddlewaretoken' : '{{ csrf_token }}',
+                    'dish':
+                    'new_dish': $("#newdish").val(),
+                    'reason': $("#reason").val()
+                },
+                success: function(data) {
+                    if(data.status){
+                        alert("Data Inserted Successfully");
+                        $("#menu_change_div").load(location.href+" #menu_change_div>*","")
+                    }
+                },
+                error: function(data, err) {
+                    alert(err.message);
+                    $("#menu_change_div").load(location.href+" #menu_change_div>*","")
+                }
+            });
+        return false;
+    }
 
-
+</script>
+{% endblock %}
 {% endblock %}
