@@ -1,5 +1,3 @@
-from datetime import date
-from datetime import datetime
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib import messages
 from datetime import date, datetime
@@ -21,6 +19,10 @@ from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
                      Mess_minutes, Mess_reg, Messinfo, Monthly_bill,
                      Nonveg_data, Nonveg_menu, Payments, Rebate,
                      Special_request, Vacation_food)
+from .handlers import (add_nonveg_order, add_mess_feedback, add_vacation_food_request,
+                       add_menu_change_request, handle_menu_change_response, handle_vacation_food_request,
+                       add_mess_registration_time, add_leave_request, add_mess_meeting_invitation,
+                       handle_rebate_response, add_special_food_request)
 
 
 def mess(request):
@@ -229,163 +231,143 @@ def mess(request):
 @login_required
 @transaction.atomic
 @csrf_exempt
-def placeorder(request):
+def place_order(request):
+    """
+    This function is to place non-veg food orders
+    :param request:
+        user: Current user
+        order_interval: Time of the day for which order is placed eg breakfast/lunch/dinner
+    :variables:
+        extra_info: Extra information about the current user. From model ExtraInfo
+        student: Student information about the current user
+        student_mess: Mess choices of the student
+        dish_request: Predefined dish available
+    :return:
+    """
     user = request.user
-    extrainfo = ExtraInfo.objects.get(user=user)
-    if extrainfo.user_type == 'student':
-        student = Student.objects.get(id=extrainfo)
+    extra_info = ExtraInfo.objects.get(user=user)
 
-        stu = Messinfo.objects.get(student_id=student)
-        if stu.mess_option == 'mess1':
-            try:
-                dishn = Nonveg_menu.objects.get(dish=request.POST.get("dish"))
+    if extra_info.user_type == 'student':
+        student = Student.objects.get(id=extra_info)
+        student_mess = Messinfo.objects.get(student_id=student)
 
-                order_interval = request.POST.get("interval")
-                order_date = datetime.now().date()
-                nonveg_obj = Nonveg_data(student_id=student, order_date=order_date,
-                                         order_interval=order_interval, dish=dishn)
-                nonveg_obj.save()
-                messages.success(request, 'Your request is forwarded !!', extra_tags='successmsg')
-                return HttpResponseRedirect('/mess')
-            except ObjectDoesNotExist:
-                return HttpResponse("seems like object error")
-
-
+        if student_mess.mess_option == 'mess1':
+            add_nonveg_order(request, student)
+            return HttpResponseRedirect('/mess')
+        elif student_mess.mess_option == 'mess2':
+            messages.info(request,"You cannot apply for non veg food")
         else:
-            return HttpResponse("you can't apply for this application")
+            return HttpResponse("you can't apply for this application sorry for the inconvenience")
+
 
 @csrf_exempt
 @login_required
 @transaction.atomic
-def submit(request):
+def submit_mess_feedback(request):
+    """
+    This function is to record the feedback submitted
+    :param request:
+        user: Current logged in user
+    :variable:
+         extra_info: Extra information of the user
+    :return:
+        data: to record success or any errors
+    """
     user = request.user
-    extrainfo = ExtraInfo.objects.get(user=user)
-
-    if extrainfo.user_type == 'student':
-        student = Student.objects.get(id=extrainfo)
-        fdate = datetime.now().date()
-        description = request.POST.get('description')
-        feedback_type = request.POST.get('feedback_type')
-        feedback_obj = Feedback(student_id=student, fdate=fdate,
-                                description=description,
-                                feedback_type=feedback_type)
-
-        feedback_obj.save()
-        data = {
-            'status': 1
-        }
+    extra_info = ExtraInfo.objects.get(user=user)
+    student = Student.objects.get(id=extra_info)
+    if extra_info.user_type == 'student':
+        data = add_mess_feedback(request, student)
         return JsonResponse(data)
 
 
 @csrf_exempt
 @login_required
 @transaction.atomic
-def vacasubmit(request):
+def mess_vacation_submit(request):
+    """
+    This function is to record vacation food requests
+    :param request:
+        user: Current user information
+    :variables:
+    :return:
+        data: JsonResponse
+    """
     user = request.user
-    extrainfo = ExtraInfo.objects.get(user=user)
-
-    if extrainfo.user_type == 'student':
-        student = Student.objects.get(id=extrainfo)
-        start_date = request.POST.get('start_date')
-        end_date = request.POST.get('end_date')
-        purpose = request.POST.get('purpose')
-        date_today = str(datetime.now().date())
-        if(start_date<date_today)or(end_date<start_date):
-            data = {
-                'status': 2
-            }
-            return JsonResponse(data)
-
-        vaca_obj = Vacation_food(student_id=student, start_date=start_date,
-                                 end_date=end_date, purpose=purpose)
-
-        vaca_obj.save()
-        #return HttpResponseRedirect("/mess")
-        data = {
-             'status':1
-         }
-
+    extra_info = ExtraInfo.objects.get(user=user)
+    student = Student.objects.get(id=extra_info)
+    if extra_info.user_type == 'student':
+        data = add_vacation_food_request(request, student)
         return JsonResponse(data)
 
 
 @login_required
 @transaction.atomic
-def menusubmit(request):
+def submit_mess_menu(request):
+    """
+    This function is to record mess menu change requests
+    :param request:
+        user:Current user
+    :return:
+    """
+    # TODO add ajax for this
     user = request.user
-    extrainfo = ExtraInfo.objects.get(user=user)
     holds_designations = HoldsDesignation.objects.filter(user=user)
-    desig = holds_designations
+    designation = holds_designations
     context = {}
-    for d in desig:
-
+    # A user may hold multiple designations
+    for d in designation:
         if d.designation.name == 'mess_convener':
-
-            dish = Menu.objects.get(dish=request.POST.get("dish"))
-            newdish = request.POST.get("newdish")
-            reason = request.POST.get("reason")
-            app_obj = Menu_change_request(dish=dish, request=newdish, reason=reason)
-            app_obj.save()
-            return HttpResponseRedirect("/mess")
+            data = add_menu_change_request(request)
+            if data['status'] == 1:
+                return HttpResponseRedirect("/mess")
 
     return render(request, 'mess.html', context)
 
 
 @login_required
-def response(request, ap_id):
+def menu_change_response(request):
+    """
+    This function is to respond to mess menu requests
+    :param request:
+        user: Current user
+    :return:
+    """
     user = request.user
-    extrainfo = ExtraInfo.objects.get(user=user)
     holds_designations = HoldsDesignation.objects.filter(user=user)
-    desig = holds_designations
-
-    for d in desig:
+    designation = holds_designations
+    for d in designation:
         if d.designation.name == 'mess_manager':
-            application = Menu_change_request.objects.get(pk=ap_id)
-
-            if(request.POST.get('submit') == 'approve'):
-                application.status = 2
-                meal = application.dish
-                obj = Menu.objects.get(dish=meal.dish)
-                obj.dish = application.request
-                obj.save()
-
-            elif(request.POST.get('submit') == 'reject'):
-                application.status = 0
-
-            else:
-                application.status = 1
-
-        application.save()
-
-    return HttpResponseRedirect("/mess")
+           data = handle_menu_change_response(request)
+        return JsonResponse(data)
 
 
 @login_required
-def processvacafood(request, ap_id):
+def response_vacation_food(request, ap_id):
+    """
+    This function records the response to vacation food requests
+    :param request:
+        user: Current user
+    :param ap_id:
+    :variables:
+        holds_designations: Designation of the current user
+    :return:
+    """
     user = request.user
-    extrainfo = ExtraInfo.objects.get(user=user)
+    # extra_info = ExtraInfo.objects.get(user=user)
     holds_designations = HoldsDesignation.objects.filter(user=user)
-    desig = holds_designations
+    designation = holds_designations
 
-    for d in desig:
+    for d in designation:
         if d.designation.name == 'mess_manager':
-            applications = Vacation_food.objects.get(pk=ap_id)
-
-            if(request.POST.get('submit') == 'approve'):
-                applications.status = '2'
-
-            elif(request.POST.get('submit') == 'reject'):
-                applications.status = '0'
-
-            else:
-                applications.status = '1'
-
-            applications.save()
+            data = handle_vacation_food_request(request, ap_id)
     return HttpResponseRedirect("/mess")
 
 
 @login_required
 @transaction.atomic
 def regsubmit(request):
+
     i = 0
     j = 0
     month_1 = ['January', 'February', 'March', 'April', 'May', 'June']
@@ -426,76 +408,47 @@ def regsubmit(request):
 
 @login_required
 @transaction.atomic
-def regadd(request):
+def start_mess_registration(request):
+    """
+       This function is to start mess registration
+       @request:
+           user: Current user
+           designation: designation of current user to validate proper platform
+    """
+    #   TODO ajax convert add a section to see previous sessions as well as close a session
     user = request.user
-    extrainfo = ExtraInfo.objects.get(user=user)
-    holds_designations = HoldsDesignation.objects.filter(user=user)
-    desig = holds_designations
-
-    for d in desig:
+    designation = HoldsDesignation.objects.filter(user=user)
+    for d in designation:
         if d.designation.name == 'mess_manager':
-
-            sem = request.POST.get('sem')
-            start_reg = request.POST.get('start_date')
-            end_reg = request.POST.get('end_date')
-            mess_reg_obj = Mess_reg(sem=sem, start_reg=start_reg, end_reg=end_reg)
-            mess_reg_obj.save()
-
+            data = add_mess_registration_time(request)
             return HttpResponseRedirect("/mess")
 
 
 @transaction.atomic
 @csrf_exempt
-def leaverequest(request):
-    flag = 1
+def mess_leave_request(request):
+    """
+        This function is to record and validate leave requests
+        @request:
+            user: Current user
+        @variables:
+            student: Information od student submitting the request
+    """
     user = request.user
-    today = str(datetime.now().date())
-    extrainfo = ExtraInfo.objects.get(user=user)
-    student = Student.objects.get(id=extrainfo)
-    leave_type = request.POST.get('leave_type')
-    start_date = request.POST.get('start_date')
-    end_date = request.POST.get('end_date')
-    purpose = request.POST.get('purpose')
-    if(start_date < today)or(end_date<start_date):
-        data = {
-            'status': 3
-        }
-        return JsonResponse(data)
-
-    rebates = Rebate.objects.filter(student_id=student)
-
-    for r in rebates:
-        if r.status == '1' or r.status == '2':
-            print(r.start_date)
-            print("compare")
-            print(start_date)
-            date_format = "%Y-%m-%d"
-            a = datetime.strptime(str(r.start_date), date_format)
-            b = datetime.strptime(str(start_date), date_format)
-            c = datetime.strptime(str(r.end_date), date_format)
-            d = datetime.strptime(str(end_date), date_format)
-            print((b <= a and (d >= a and d <= c)) or (b >= a and (d >= a and d <= c)) or (b <= a and (d >= c)) or ((b >= a and b<=c) and (d >= c)))
-            print((b >= a and b<=c) and (d >= c))
-            if ((b <= a and (d >= a and d <= c)) or (b >= a and (d >= a and d <= c)) or (b <= a and (d >= c)) or ((b >= a and b<=c) and (d >= c))):
-                flag = 0
-                break
-
-    if flag == 1:
-        rebate_obj = Rebate(student_id=student, leave_type=leave_type, start_date=start_date,
-                                end_date=end_date, purpose=purpose)
-        rebate_obj.save()
-
-    data = {
-            'status': flag,
-    }
-
-
+    extra_info = ExtraInfo.objects.get(user=user)
+    student = Student.objects.get(id=extra_info)
+    data = add_leave_request(request, student)
     return JsonResponse(data)
 
 
 @login_required
 @transaction.atomic
 def minutes(request):
+    """
+    To upload the minutes of the meeting
+    :param request:
+    :return:
+    """
     if request.method == 'POST' and request.FILES:
         form = MinuteForm(request.POST, request.FILES)
         if form.is_valid():
@@ -508,102 +461,74 @@ def minutes(request):
 @csrf_exempt
 @transaction.atomic
 def invitation(request):
-    date = request.POST.get('date')
-    venue = request.POST.get('venue')
-    agenda = request.POST.get('agenda')
-    time = request.POST.get('time')
-    invitation_obj = Mess_meeting(meet_date=date, agenda=agenda, venue=venue, meeting_time=time)
-    invitation_obj.save()
-    # data = {
-    #         'status': 1,
-    # }
+    """
+       This function is to schedule a mess committee meeting
+       @request:
+       @variables:
+    """
+    # todo add ajax to this page as well
+    data = add_mess_meeting_invitation(request)
     return HttpResponseRedirect("/mess")
 
 
-# def responserebate(request, ap_id):
-#     leaves = Rebate.objects.get(pk=ap_id)
-
-#     if(request.POST.get('submit') == 'approve'):
-#         leaves.status = '2'
-
-#     else:
-#         leaves.status = '0'
-#     leaves.save()
-#     return HttpResponseRedirect("/mess")
-
-
-def responserebate(request):
-    id = request.POST["id"]
-    leaves = Rebate.objects.get(pk=id)
-    leaves.status = request.POST["status"]
-    leaves.save()
-    data = {
-        'message':'You responded to request !'
-    }
+@login_required
+@transaction.atomic
+@csrf_exempt
+def rebate_response(request):
+    """
+       This function is to respond to rebate requests
+       :param request: user: Current user
+       @variables: designation : designation of the user
+       @return:
+            data: returns the status of the application
+    """
+    user = request.user
+    designation = HoldsDesignation.objects.filter(user=user)
+    for d in designation:
+        if d.designation.name == 'mess_manager':
+            data = handle_rebate_response(request)
     return JsonResponse(data)
 
-def placerequest(request):
+
+def place_request(request):
     # This is for placing special food request
+    """
+        This function is to place special food requests ( used by students )
+        @variables:
+        user: Current user
+        @return:
+        data['status']: returns status of the application
+    """
     user = request.user
-    extrainfo = ExtraInfo.objects.get(user=user)
-    if extrainfo.user_type == 'student':
-        print(request.POST)
-        extrainfo = ExtraInfo.objects.get(user=user)
-        student = Student.objects.get(id=extrainfo)
-        fr = request.POST.get("start_date")
-        to = request.POST.get("end_date")
-        print (fr, to, "dates")
-        food1 = request.POST.get("food1")
-        food2 = request.POST.get("food2")
-        purpose = request.POST.get('purpose')
-        print(purpose)
-        # date_format = "%Y-%m-%d"
-        date_today = datetime.now().date()
-        date_today = str(date_today)
-        print(date_today)
-        if (date_today > to)or(to < fr):
-            data = {
-                'status': 3
-            # case when the to date has passed
-            }
-            messages.error(request, "Invalid dates")
-            return JsonResponse(data)
-        spfood_obj = Special_request(student_id=student, start_date=fr, end_date=to,
-                                     item1=food1, item2=food2, request=purpose)
-        if Special_request.objects.filter(student_id=student, start_date=fr, end_date=to,
-                                     item1=food1, item2=food2, request=purpose).exists():
-            data = {
-                'status': 2,
-            }
-            return JsonResponse(data)
-        else:
-            spfood_obj.save()
-            data = {
-                 'status': 1,
-            }
-            return JsonResponse(data)
+    extra_info = ExtraInfo.objects.get(user=user)
+    if extra_info.user_type == 'student':
+        extra_info = ExtraInfo.objects.get(user=user)
+        student = Student.objects.get(id=extra_info)
+        data = add_special_food_request(request, student)
+        return JsonResponse(data)
 
 
-# def responsespl(request, ap_id):
-#     sprequest = Special_request.objects.get(pk=ap_id)
-#     if(request.POST.get('submit') == 'approve'):
-#         sprequest.status = '2'
-#     else:
-#         sprequest.status = '0'
-#
-#     sprequest.save()
-#     return HttpResponseRedirect("/mess")
-
-def responsespl(request):
-    sprequest = Special_request.objects.get(pk=request.POST["id"])
-    sprequest.status = request.POST["status"]
-    sprequest.save()
+def special_request_response(request):
+    """
+       This function is to respond to special request for food submitted by students
+       @variables:
+       special_request: data corresponding to id of the special request being accepted or rejected
+    """
+    special_request = Special_request.objects.get(pk=request.POST["id"])
+    special_request.status = request.POST["status"]
+    special_request.save()
     data = {
         'message':'You responded to the request !'
     }
     return JsonResponse(data)
 
-def updatecost(request):
+
+def update_cost(request):
+    """
+    This function is to update the base cost of the monthly central mess bill
+    :param request:
+    :return:
+    """
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
     today = datetime.today()
@@ -615,8 +540,8 @@ def updatecost(request):
     data = {
         'status': 1,
     }
-    monthlybill = Monthly_bill.objects.filter(Q(month=month_now) & Q(year=year_now))
-    for temp in monthlybill:
+    monthly_bill = Monthly_bill.objects.filter(Q(month=month_now) & Q(year=year_now))
+    for temp in monthly_bill:
         print(temp)
         print(temp.year)
         temp.amount = cost
@@ -625,7 +550,19 @@ def updatecost(request):
     return JsonResponse(data)
 
 
-def billgenerate(request):
+def generate_mess_bill(request):
+    """
+        This function is to generate the bill of the students
+        @variables:
+        user: stores current user infromatiob
+        nonveg_data : stores records of nonveg ordered by a student
+        year_now: current year
+        month_now: current month
+        amount_m: monhly base amount
+        students: information of all students
+        mess_info: Mess Information, mainly choice of mess
+        rebates: Rebate records of students
+        """
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
     nonveg_data = Nonveg_data.objects.all()
@@ -695,15 +632,16 @@ def billgenerate(request):
 
     
 class MenuPDF(View):
+
     def post(self, request, *args, **kwargs):
         user = request.user
-        extrainfo = ExtraInfo.objects.get(user=user)
+        extra_info = ExtraInfo.objects.get(user=user)
         y = Menu.objects.all()
 
-        if extrainfo.user_type=='student':
-            student = Student.objects.get(id=extrainfo)
-            messinfo = Messinfo.objects.get(student_id=student)
-            mess_option = messinfo.mess_option
+        if extra_info.user_type=='student':
+            student = Student.objects.get(id=extra_info)
+            mess_info = Messinfo.objects.get(student_id=student)
+            mess_option = mess_info.mess_option
             context = {
                 'menu': y,
                 'mess_option': mess_option
@@ -722,6 +660,7 @@ class MenuPDF(View):
 
 
 class MenuPDF1(View):
+    # This function is to generate the menu in pdf format (downloadable) for mess 1
     def post(self, request, *args, **kwargs):
         user = request.user
         extrainfo = ExtraInfo.objects.get(user=user)
