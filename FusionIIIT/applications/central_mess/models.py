@@ -90,7 +90,7 @@ MESS_OPTION = (
 )
 
 
-class MessInformation(models.Model):
+class Messinfo(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     mess_option = models.CharField(max_length=20, choices=MESS_OPTION,
                                    default='mess2')
@@ -102,13 +102,13 @@ class MessInformation(models.Model):
         return '{} - {}'.format(self.student_id.id, self.mess_option)
 
 
-class MessRegistration(models.Model):
+class Mess_reg(models.Model):
     sem = models.IntegerField(default='1')
     start_reg = models.DateField(default=datetime.date.today)
     end_reg = models.DateField(default=datetime.date.today)
 
 
-class MonthlyBill(models.Model):
+class Monthly_bill(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     month = models.CharField(max_length=20, default=datetime.date.today().month)
     year = models.IntegerField(default=datetime.date.today().year)

@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
-                     Mess_minutes, MessRegistration, MessInformation, MonthlyBill,
+                     Mess_minutes, Mess_reg, Messinfo, Monthly_bill,
                      Nonveg_data, Nonveg_menu, Payments, Rebate,
                      Special_request, Vacation_food)
 
@@ -9,7 +9,7 @@ from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
 
 
 class MessinfoAdmin(admin.ModelAdmin):
-    model = MessInformation
+    model = Messinfo
     fieldsets = [
         ('mess_option', {'fields': ['mess_option']}),
         ('student_id', {'fields': ['student_id']}),
@@ -39,7 +39,7 @@ class MenuAdmin(admin.ModelAdmin):
 
 
 class Mess_regAdmin(admin.ModelAdmin):
-    model = MessRegistration
+    model = Mess_reg
     fieldsets = [
         ('sem', {'fields': ['sem']}),
         ('start_reg', {'fields': ['start_reg']}),
@@ -50,7 +50,7 @@ class Mess_regAdmin(admin.ModelAdmin):
 
 
 class Monthly_billAdmin(admin.ModelAdmin):
-    model = MonthlyBill
+    model = Monthly_bill
     fieldsets = [
         ('student_id', {'fields': ['student_id']}),
         ('month', {'fields': ['month']}),
@@ -177,10 +177,10 @@ class FeedbackAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Mess_minutes, Mess_minutesAdmin),
-admin.site.register(MessInformation, MessinfoAdmin),
+admin.site.register(Messinfo, MessinfoAdmin),
 admin.site.register(Menu, MenuAdmin),
-admin.site.register(MessRegistration, Mess_regAdmin),
-admin.site.register(MonthlyBill, Monthly_billAdmin),
+admin.site.register(Mess_reg, Mess_regAdmin),
+admin.site.register(Monthly_bill, Monthly_billAdmin),
 admin.site.register(Payments, PaymentsAdmin),
 admin.site.register(Rebate, RebateAdmin),
 admin.site.register(Vacation_food, Vacation_foodAdmin),

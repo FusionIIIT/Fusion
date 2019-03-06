@@ -10,7 +10,7 @@ from django.views.generic import View
 from django.db.models import Q
 from .forms import MinuteForm
 from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
-                     Mess_minutes, MessRegistration, MessInformation, MonthlyBill,
+                     Mess_minutes, Mess_reg, Messinfo, Monthly_bill,
                      Nonveg_data, Nonveg_menu, Payments, Rebate,
                      Special_request, Vacation_food)
 
@@ -219,14 +219,14 @@ def add_mess_registration_time(request):
                start_reg: Start Date
                end_reg: End Date
                holds_designations: designation of current user to validate proper platform
-               mess_reg_obj: Object of MessRegistration to store current values
+               mess_reg_obj: Object of Mess_reg to store current values
            @variables:
            :return data: Status of the application
     """
     sem = request.POST.get('sem')
     start_reg = request.POST.get('start_date')
     end_reg = request.POST.get('end_date')
-    mess_reg_obj = MessRegistration(sem=sem, start_reg=start_reg, end_reg=end_reg)
+    mess_reg_obj = Mess_reg(sem=sem, start_reg=start_reg, end_reg=end_reg)
     mess_reg_obj.save()
     data = {
         'status': 1
