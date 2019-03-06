@@ -1,4 +1,5 @@
 {% load static %}
+{% block body %}
 {% block respondtorequests %}
 
 <div class="ui pointing secondary menu">
@@ -292,7 +293,10 @@
         <div class="ui divider"></div>
 
     </div>
-</div>
+{% endblock %}
+{% endblock %}
+
+{% block javascript %}
 <script>
 
 function acceptReq(id){
