@@ -147,7 +147,7 @@ def handle_menu_change_response(request):
     """
     ap_id = request.POST.get('idm')
     stat = request.POST['status']
-    application = MenuChangeRequest.objects.get(pk=ap_id)
+    application = MenuChangeequest.objects.get(pk=ap_id)
     print(stat)
     if stat == '2':
         application.status = 2
