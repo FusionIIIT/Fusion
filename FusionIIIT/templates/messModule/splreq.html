@@ -48,7 +48,7 @@
                         <div class="or"></div>
               <button class="btn-rj ui negative button" name="submit" value="reject" data-va ="{{var.pk}}" onclick="rejectSplReq({{var.pk}})" >R</button>
                         </div>
-                        <!--<form action="{{var.pk}}/responsespl/" method="POST">-->
+                        <!--<form action="{{var.pk}}/special_request_response/" method="POST">-->
                         <!--{% csrf_token %}-->
                         <!--<div class="ui buttons">-->
                                     <!--<button class="acbtn ui positive button" name="submit" value="approve" onclick="acceptSplReq({{var.pk}})">A</button>-->
@@ -73,7 +73,7 @@ function acceptSplReq(id){
 
          $.ajax({
                 type: 'POST',
-                url: 'responsespl',
+                url: 'special_request_response',
                 dataType: 'json',
                 data: {
                     'csrfmiddlewaretoken' : '{{ csrf_token }}',
@@ -97,7 +97,7 @@ function acceptSplReq(id){
 
          $.ajax({
                 type: 'POST',
-                url: 'responsespl',
+                url: 'special_request_response',
                 dataType: 'json',
                 data: {
                     'csrfmiddlewaretoken' : '{{ csrf_token }}',
