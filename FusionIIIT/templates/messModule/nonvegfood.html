@@ -29,7 +29,7 @@
         <div class="ui vertical segment">
 
             {% comment %}Form Tag starts here!{% endcomment %}
-            <form method="post" action="{% url 'mess:place_order' %}">
+            <form method="post" action="{% url 'mess:placeorder' %}">
                 {% csrf_token %}
                 {% comment %}The add a new skill Accordian starts here!{% endcomment %}
                 <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
@@ -60,7 +60,7 @@
 
                             <div class="ui twelve wide column">
                                 <div class="ui active tab" data-tab="breakfast">
-                                    <form class="ui form" method="post" action="{% url 'mess:place_order' %}">
+                                    <form class="ui form" method="post" action="{% url 'mess:placeorder' %}">
                                         <div class="ui row">
                                             <div class="two fields">
                                                 {% for x in nonveg %}
@@ -87,7 +87,7 @@
                                 </div>
 
                                 <div class="ui tab" data-tab="lunch">
-                                    <form class="ui form" method="post" action="{% url 'mess:place_order' %}">
+                                    <form class="ui form" method="post" action="{% url 'mess:placeorder' %}">
                                         {% csrf_token %}
                                         <div class="ui row">
                                             <div class="two fields">
@@ -116,7 +116,7 @@
                                 </div>
 
                                 <div class="ui tab" data-tab="dinner">
-                                    <form class="ui form" method="post" action="{% url 'mess:place_order' %}">
+                                    <form class="ui form" method="post" action="{% url 'mess:placeorder' %}">
                                         {% csrf_token %}
                                         <div class="ui row">
                                             
