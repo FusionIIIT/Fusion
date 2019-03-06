@@ -1,9 +1,9 @@
 from django.contrib import admin
 
-from .models import (Feedback, Menu, MenuChangeequest, MessMeeting,
-                     MessMinutes, MessRegistration, MessInformation, MonthlyBill,
-                     NonVegData, NonVegMenu, Payments, Rebate,
-                     SpecialRequest, VacationFood)
+from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
+                     Mess_minutes, MessRegistration, MessInformation, MonthlyBill,
+                     Nonveg_data, Nonveg_menu, Payments, Rebate,
+                     Special_request, Vacation_food)
 
 # Register your models here.
 
@@ -19,7 +19,7 @@ class MessinfoAdmin(admin.ModelAdmin):
 
 
 class Mess_minutesAdmin(admin.ModelAdmin):
-    model = MessMeeting
+    model = Mess_meeting
     fieldsets = [
         ('meeting_date', {'fields': ['meeting_date']}),
         ('mess_minutes', {'fields': ['mess_minutes']}),
@@ -93,7 +93,7 @@ class RebateAdmin(admin.ModelAdmin):
 
 
 class Vacation_foodAdmin(admin.ModelAdmin):
-    model = VacationFood
+    model = Vacation_food
     fieldsets = [
         ('student_id', {'fields': ['student_id']}),
         ('start_date', {'fields': ['start_date']}),
@@ -107,7 +107,7 @@ class Vacation_foodAdmin(admin.ModelAdmin):
 
 
 class Nonveg_menuAdmin(admin.ModelAdmin):
-    model = NonVegMenu
+    model = Nonveg_menu
     fieldsets = [
         ('dish', {'fields': ['dish']}),
         ('price', {'fields': ['price']}),
@@ -118,7 +118,7 @@ class Nonveg_menuAdmin(admin.ModelAdmin):
 
 
 class Nonveg_dataAdmin(admin.ModelAdmin):
-    model = NonVegData
+    model = Nonveg_data
     fieldsets = [
         ('student_id', {'fields': ['student_id']}),
         ('order_date', {'fields': ['order_date']}),
@@ -130,7 +130,7 @@ class Nonveg_dataAdmin(admin.ModelAdmin):
 
 
 class Special_requestAdmin(admin.ModelAdmin):
-    model = SpecialRequest
+    model = Special_request
     fieldsets = [
         ('student_id', {'fields': ['student_id']}),
         ('start_date', {'fields': ['start_date']}),
@@ -144,7 +144,7 @@ class Special_requestAdmin(admin.ModelAdmin):
 
 
 class Menu_change_requestAdmin(admin.ModelAdmin):
-    model = MenuChangeequest
+    model = Menu_change_request
     fieldsets = [
         ('dish', {'fields': ['dish']}),
         ('request', {'fields': ['request']}),
@@ -154,7 +154,7 @@ class Menu_change_requestAdmin(admin.ModelAdmin):
 
 
 class Mess_meetingAdmin(admin.ModelAdmin):
-    model = MessMeeting
+    model = Mess_meeting
     fieldsets = [
         ('meet_date', {'fields': ['meet_date']}),
         ('agenda', {'fields': ['agenda']}),
@@ -176,17 +176,17 @@ class FeedbackAdmin(admin.ModelAdmin):
     list_display = ('student_id', 'fdate', 'description', 'feedback_type')
 
 
-admin.site.register(MessMinutes, Mess_minutesAdmin),
+admin.site.register(Mess_minutes, Mess_minutesAdmin),
 admin.site.register(MessInformation, MessinfoAdmin),
 admin.site.register(Menu, MenuAdmin),
 admin.site.register(MessRegistration, Mess_regAdmin),
 admin.site.register(MonthlyBill, Monthly_billAdmin),
 admin.site.register(Payments, PaymentsAdmin),
 admin.site.register(Rebate, RebateAdmin),
-admin.site.register(VacationFood, Vacation_foodAdmin),
-admin.site.register(SpecialRequest, Special_requestAdmin),
-admin.site.register(NonVegMenu, Nonveg_menuAdmin),
-admin.site.register(NonVegData, Nonveg_dataAdmin),
-admin.site.register(MessMeeting, Mess_meetingAdmin),
+admin.site.register(Vacation_food, Vacation_foodAdmin),
+admin.site.register(Special_request, Special_requestAdmin),
+admin.site.register(Nonveg_menu, Nonveg_menuAdmin),
+admin.site.register(Nonveg_data, Nonveg_dataAdmin),
+admin.site.register(Mess_meeting, Mess_meetingAdmin),
 admin.site.register(Feedback, FeedbackAdmin),
-admin.site.register(MenuChangeequest, Menu_change_requestAdmin)
+admin.site.register(Menu_change_request, Menu_change_requestAdmin)
