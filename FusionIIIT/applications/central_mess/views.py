@@ -16,7 +16,7 @@ from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, HoldsDesignation
 from .forms import MinuteForm
 from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
-                     Mess_minutes, Mess_reg, Messinfo, Monthly_bill,
+                     Mess_minutes, MessRegistration, MessInformation, MonthlyBill,
                      Nonveg_data, Nonveg_menu, Payments, Rebate,
                      Special_request, Vacation_food)
 from .handlers import (add_nonveg_order, add_mess_feedback, add_vacation_food_request,
@@ -33,7 +33,7 @@ def mess(request):
     print(desig)
     form = MinuteForm()
     current_date = date.today()
-    mess_reg = Mess_reg.objects.last()
+    mess_reg = MessRegistration.objects.last()
     count1 = 0
     count2 = 0
     count3 = 0
@@ -55,7 +55,7 @@ def mess(request):
         vaca_obj = Vacation_food.objects.filter(student_id=student)
         feedback_obj = Feedback.objects.filter(student_id=student)
         data = Nonveg_data.objects.filter(student_id=student)
-        monthly_bill = Monthly_bill.objects.filter(student_id=student)
+        monthly_bill = MonthlyBill.objects.filter(student_id=student)
         payments = Payments.objects.filter(student_id=student)
         rebates = Rebate.objects.filter(student_id=student)
         meeting = Mess_meeting.objects.all()
@@ -63,7 +63,7 @@ def mess(request):
         sprequest = Special_request.objects.filter(status='1')
         splrequest = Special_request.objects.filter(student_id=student).order_by('-app_date')
         feed = Feedback.objects.all()
-        messinfo = Messinfo.objects.get(student_id=student)
+        messinfo = MessInformation.objects.get(student_id=student)
         count = 0
         #variable y stores the menu items
         y = Menu.objects.all()
@@ -80,7 +80,7 @@ def mess(request):
                 count += item.duration
 
         for f in feed:
-            mess_opt = Messinfo.objects.get(student_id=f.student_id)
+            mess_opt = MessInformation.objects.get(student_id=f.student_id)
             if f.feedback_type == 'Maintenance' and mess_opt.mess_option == 'mess1':
                 count1 += 1
 
@@ -94,7 +94,7 @@ def mess(request):
                 count4 += 1
 
         for f in feed:
-            mess_opt = Messinfo.objects.get(student_id=f.student_id)
+            mess_opt = MessInformation.objects.get(student_id=f.student_id)
             if f.feedback_type == 'Maintenance' and mess_opt.mess_option == 'mess2':
                 count5 += 1
 
@@ -193,7 +193,7 @@ def mess(request):
         y = Menu.objects.all()
 
         for f in feed:
-            mess_opt = Messinfo.objects.get(student_id=f.student_id)
+            mess_opt = MessInformation.objects.get(student_id=f.student_id)
             if f.feedback_type == 'Maintenance' and mess_opt.mess_option == 'mess1':
                 count1 += 1
 
@@ -207,7 +207,7 @@ def mess(request):
                 count4 += 1
 
         for f in feed:
-            mess_opt = Messinfo.objects.get(student_id=f.student_id)
+            mess_opt = MessInformation.objects.get(student_id=f.student_id)
             if f.feedback_type == 'Maintenance' and mess_opt.mess_option == 'mess2':
                 count5 += 1
 
@@ -249,7 +249,7 @@ def place_order(request):
 
     if extra_info.user_type == 'student':
         student = Student.objects.get(id=extra_info)
-        student_mess = Messinfo.objects.get(student_id=student)
+        student_mess = MessInformation.objects.get(student_id=student)
 
         if student_mess.mess_option == 'mess1':
             add_nonveg_order(request, student)
@@ -378,25 +378,25 @@ def regsubmit(request):
     if extrainfo.user_type == 'student':
         student = Student.objects.get(id=extrainfo)
         mess = request.POST.get('mess_type')
-        mess_info_inst = Messinfo.objects.get(student_id=student)
+        mess_info_inst = MessInformation.objects.get(student_id=student)
         mess_info_inst.mess_option = mess
         mess_info_inst.save()
-        mess_reg = Mess_reg.objects.last()
+        mess_reg = MessRegistration.objects.last()
 
-        if Monthly_bill.objects.filter(student_id=student):
+        if MonthlyBill.objects.filter(student_id=student):
             return HttpResponseRedirect("/mess")
 
         else:
 
             if mess_reg.end_reg.strftime("%B") in month_1:
                 while i<=5:
-                    monthly_bill_obj = Monthly_bill(student_id=student, month=month_1[i])
+                    monthly_bill_obj = MonthlyBill(student_id=student, month=month_1[i])
                     monthly_bill_obj.save()
                     i = i+1
 
             else:
                 while j<=5:
-                    monthly_bill_obj = Monthly_bill(student_id=student, month=month_2[j])
+                    monthly_bill_obj = MonthlyBill(student_id=student, month=month_2[j])
                     monthly_bill_obj.save()
                     j = j+1
 
@@ -540,7 +540,7 @@ def update_cost(request):
     data = {
         'status': 1,
     }
-    monthly_bill = Monthly_bill.objects.filter(Q(month=month_now) & Q(year=year_now))
+    monthly_bill = MonthlyBill.objects.filter(Q(month=month_now) & Q(year=year_now))
     for temp in monthly_bill:
         print(temp)
         print(temp.year)
@@ -575,7 +575,7 @@ def generate_mess_bill(request):
     data = {
         'status': 1,
     }
-    mess_info = Messinfo.objects.all()
+    mess_info = MessInformation.objects.all()
     students = Student.objects.all()
     for temp in mess_info:
         print(temp)
@@ -595,7 +595,7 @@ def generate_mess_bill(request):
         rebate_count = count
         rebate_amount = rebate_count*80
         total_bill = rebate_amount + nonveg_total_bill + amount_m
-        monthly_bill_obj = Monthly_bill(student_id=temp.student_id,
+        monthly_bill_obj = MonthlyBill(student_id=temp.student_id,
                                         month=month_now,
                                         year=year_now,
                                         amount=amount_m,
@@ -603,12 +603,12 @@ def generate_mess_bill(request):
                                         rebate_amount=rebate_amount,
                                         nonveg_total_bill=nonveg_total_bill,
                                         total_bill=total_bill)
-        if Monthly_bill.objects.filter(student_id=temp.student_id, month=month_now, year=year_now):
-            if Monthly_bill.objects.filter(student_id=temp.student_id, month=month_now, year=year_now,
+        if MonthlyBill.objects.filter(student_id=temp.student_id, month=month_now, year=year_now):
+            if MonthlyBill.objects.filter(student_id=temp.student_id, month=month_now, year=year_now,
                                            total_bill=total_bill):
                 print("exists")
             else:
-                Monthly_bill.objects.filter(student_id=temp.student_id, month=month_now, year=year_now). \
+                MonthlyBill.objects.filter(student_id=temp.student_id, month=month_now, year=year_now). \
                     update(student_id=temp.student_id,
                            month=month_now,
                            year=year_now,
@@ -623,8 +623,8 @@ def generate_mess_bill(request):
         monthly_bill_obj.save()
         # print("generate")
     # for temp in students:
-    #     monthly_bill_obj = Monthly_bill(student_id=temp, month=month_now, year=year_now, amount=amount_m)
-    #     if Monthly_bill.objects.filter(student_id=temp, month=month_now, year=year_now):
+    #     monthly_bill_obj = MonthlyBill(student_id=temp, month=month_now, year=year_now, amount=amount_m)
+    #     if MonthlyBill.objects.filter(student_id=temp, month=month_now, year=year_now):
     #         print('exists')
     #     else:
     #         monthly_bill_obj.save()
@@ -640,7 +640,7 @@ class MenuPDF(View):
 
         if extra_info.user_type=='student':
             student = Student.objects.get(id=extra_info)
-            mess_info = Messinfo.objects.get(student_id=student)
+            mess_info = MessInformation.objects.get(student_id=student)
             mess_option = mess_info.mess_option
             context = {
                 'menu': y,
