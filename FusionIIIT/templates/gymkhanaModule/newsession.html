@@ -27,9 +27,12 @@
                     <div class="field">
                         <label> {{ club_details }} </label>
                     </div>
+                    <div class="field" id="dest_choices">
+                        <label>Venue </label>
+                        {{ choice }}
+                    </div>
                     <div class="Two fields">
                         <div class="field">
-                            <label>Venue </label>
                             <select  class="ui search dropdown" name="venue_type" id="venue_type" onchange="display_club_session()" required>
                                 <option   value="">Select</option>
                                       {% for i in venue_type  %}
