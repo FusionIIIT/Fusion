@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import (Feedback, Menu, MenuChangeRequest, MessMeeting,
+from .models import (Feedback, Menu, MenuChangeequest, MessMeeting,
                      MessMinutes, MessRegistration, MessInformation, MonthlyBill,
                      NonVegData, NonVegMenu, Payments, Rebate,
                      SpecialRequest, VacationFood)
@@ -144,7 +144,7 @@ class Special_requestAdmin(admin.ModelAdmin):
 
 
 class Menu_change_requestAdmin(admin.ModelAdmin):
-    model = MenuChangeRequest
+    model = MenuChangeequest
     fieldsets = [
         ('dish', {'fields': ['dish']}),
         ('request', {'fields': ['request']}),
@@ -189,4 +189,4 @@ admin.site.register(NonVegMenu, Nonveg_menuAdmin),
 admin.site.register(NonVegData, Nonveg_dataAdmin),
 admin.site.register(MessMeeting, Mess_meetingAdmin),
 admin.site.register(Feedback, FeedbackAdmin),
-admin.site.register(MenuChangeRequest, Menu_change_requestAdmin)
+admin.site.register(MenuChangeequest, Menu_change_requestAdmin)
