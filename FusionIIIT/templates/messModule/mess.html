@@ -62,7 +62,7 @@
                         Special Food Request | Choose mess
                         <i class="right floated chevron right icon"></i>
                     </a>
-                
+
                     {% if messinfo.mess_option == 'mess1' %}
                     <a class="item" data-tab="sixth">
                         Apply For Nonveg | ChecK History
@@ -83,7 +83,7 @@
                     </a>
                 {% endif %}
 
-                {% if info.user_type == 'student' and d.designation.name == 'mess_convener' %}   
+                {% if info.user_type == 'student' and d.designation.name == 'mess_convener' %}
                     <a class="item" data-tab="eighth">
                         Change Menu
                         <i class="right floated chevron right icon"></i>
@@ -163,7 +163,7 @@
                     </a>
 
                 {% endif %}
-            {% endfor %}   
+            {% endfor %}
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
 
@@ -360,7 +360,6 @@
         var ctx = document.getElementById("myChart").getContext('2d');
         var myChart = new Chart(ctx, {
             type: 'bar',
-
             data: {
                 labels: ["Food", "Hygiene", "Maintenance", "Others"],
                 datasets: [{
@@ -385,7 +384,6 @@
                     borderWidth: 1
                 }]
             },
-
             options: {
                 scales: {
                     yAxes: [{
@@ -396,12 +394,9 @@
                 }
             }
         });
-
-
         var ctx = document.getElementById("myChart2").getContext('2d');
         var myChart = new Chart(ctx, {
             type: 'bar',
-
             data: {
                 labels: ["Food", "Hygiene", "Maintenance", "Others"],
                 datasets: [{
@@ -426,7 +421,6 @@
                     borderWidth: 1
                 }]
             },
-
             options: {
                 scales: {
                     yAxes: [{
