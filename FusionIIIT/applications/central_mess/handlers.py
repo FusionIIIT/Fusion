@@ -9,10 +9,10 @@ from django.contrib import messages
 from django.views.generic import View
 from django.db.models import Q
 from .forms import MinuteForm
-from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
-                     Mess_minutes, MessRegistration, MessInformation, MonthlyBill,
-                     Nonveg_data, Nonveg_menu, Payments, Rebate,
-                     Special_request, Vacation_food)
+from .models import (Feedback, Menu, MenuChangeequest, MessMeeting,
+                     MessMinutes, MessRegistration, MessInformation, MonthlyBill,
+                     NonVegData, NonVegMenu, Payments, Rebate,
+                     SpecialRequest, VacationFood)
 
 
 def add_nonveg_order(request, student):
@@ -27,14 +27,14 @@ def add_nonveg_order(request, student):
         student: Student information about the current user
         student_mess: Mess choices of the student
         dish_request: Predefined dish available
-        nonveg_object: Object of Nonveg_data
+        nonveg_object: Object of NonVegData
     :return:
     """
     try:
-        dish_request = Nonveg_menu.objects.get(dish=request.POST.get("dish"))
+        dish_request = NonVegMenu.objects.get(dish=request.POST.get("dish"))
         order_interval = request.POST.get("interval")
         order_date = datetime.now().date()
-        nonveg_object = Nonveg_data(student_id=student, order_date=order_date,
+        nonveg_object = NonVegData(student_id=student, order_date=order_date,
                                     order_interval=order_interval, dish=dish_request)
         nonveg_object.save()
         # messages.success(request, 'Your request is forwarded !!', extra_tags='successmsg')
@@ -81,7 +81,7 @@ def add_vacation_food_request(request, student):
         :param student: Student placing the order
         :variables:
             date_today: to record the date of the application
-            vacation_object: to store current values for object of 'Vacation_food'
+            vacation_object: to store current values for object of 'VacationFood'
         :return:
             data: status = 1 or 2
     """
@@ -95,8 +95,8 @@ def add_vacation_food_request(request, student):
             'status': 2
         }
         return data
-    vacation_object = Vacation_food(student_id=student, start_date=start_date,
-                                    end_date=end_date, purpose=purpose)
+    vacation_object = VacationFood(student_id=student, start_date=start_date,
+                                   end_date=end_date, purpose=purpose)
     vacation_object.save()
     data = {
         'status': 1
@@ -118,7 +118,7 @@ def add_menu_change_request(request):
         dish = Menu.objects.get(dish=request.POST.get("dish"))
         new_dish = request.POST.get("newdish")
         reason = request.POST.get("reason")
-        menu_object = Menu_change_request(dish=dish, request=new_dish, reason=reason)
+        menu_object = MenuChangeequest(dish=dish, request=new_dish, reason=reason)
         menu_object.save()
         data = {
             'status': 1
@@ -140,14 +140,14 @@ def handle_menu_change_response(request):
         :param request:
             stat: Accept or reject a request
             ap_id: id of the application being accepted or rejected
-        :variable application: Object of Menu_change_request
+        :variable application: Object of MenuChangeequest
 
         :return: data with status of the application
             5 for error
     """
     ap_id = request.POST.get('idm')
     stat = request.POST['status']
-    application = Menu_change_request.objects.get(pk=ap_id)
+    application = MenuChangeequest.objects.get(pk=ap_id)
     print(stat)
     if stat == '2':
         application.status = 2
@@ -193,7 +193,7 @@ def handle_vacation_food_request(request, ap_id):
        :return:
     """
 
-    applications = Vacation_food.objects.get(pk=ap_id)
+    applications = VacationFood.objects.get(pk=ap_id)
     if request.POST.get('submit') == 'approve':
         applications.status = '2'
 
@@ -303,13 +303,13 @@ def add_mess_meeting_invitation(request):
            time: Time of the meeting
            agenda: Agenda of the meeting
        @variables:
-           invitation_obj: Object of Mess_meeting with current values of date, venue, agenda, meeting time
+           invitation_obj: Object of MessMeeting with current values of date, venue, agenda, meeting time
     """
     date = request.POST.get('date')
     venue = request.POST.get('venue')
     agenda = request.POST.get('agenda')
     time = request.POST.get('time')
-    invitation_obj = Mess_meeting(meet_date=date, agenda=agenda, venue=venue, meeting_time=time)
+    invitation_obj = MessMeeting(meet_date=date, agenda=agenda, venue=venue, meeting_time=time)
     invitation_obj.save()
     data = {
             'status': 1,
@@ -372,9 +372,9 @@ def add_special_food_request(request, student):
         }
         messages.error(request, "Invalid dates")
         return JsonResponse(data)
-    spfood_obj = Special_request(student_id=student, start_date=fr, end_date=to,
+    spfood_obj = SpecialRequest(student_id=student, start_date=fr, end_date=to,
                                  item1=food1, item2=food2, request=purpose)
-    if Special_request.objects.filter(student_id=student, start_date=fr, end_date=to,
+    if SpecialRequest.objects.filter(student_id=student, start_date=fr, end_date=to,
                                       item1=food1, item2=food2, request=purpose).exists():
         data = {
             'status': 2,

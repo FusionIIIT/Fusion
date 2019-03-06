@@ -162,7 +162,7 @@ class Rebate(models.Model):
         return str(self.student_id.id)
 
 
-class Vacation_food(models.Model):
+class VacationFood(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     start_date = models.DateField(default=datetime.date.today)
     end_date = models.DateField(default=datetime.date.today)
@@ -174,7 +174,7 @@ class Vacation_food(models.Model):
         return str(self.student_id.id)
 
 
-class Nonveg_menu(models.Model):
+class NonVegMenu(models.Model):
     dish = models.CharField(max_length=20)
     price = models.IntegerField()
     order_interval = models.CharField(max_length=20, choices=INTERVAL,
@@ -184,19 +184,19 @@ class Nonveg_menu(models.Model):
         return '{} - {}'.format(self.dish, self.price)
 
 
-class Nonveg_data(models.Model):
+class NonVegData(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     order_date = models.DateField(default=datetime.date.today)
     order_interval = models.CharField(max_length=20, choices=INTERVAL,
                                       default='Breakfast')
-    dish = models.ForeignKey(Nonveg_menu, on_delete=models.CASCADE)
+    dish = models.ForeignKey(NonVegMenu, on_delete=models.CASCADE)
     app_date = models.DateField(default=datetime.date.today)
 
     def __str__(self):
         return str(self.student_id.id)
 
 
-class Special_request(models.Model):
+class SpecialRequest(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     start_date = models.DateField(default=datetime.date.today)
     end_date = models.DateField(default=datetime.date.today)
@@ -210,7 +210,7 @@ class Special_request(models.Model):
         return str(self.student_id.id)
 
 
-class Mess_meeting(models.Model):
+class MessMeeting(models.Model):
     meet_date = models.DateField()
     agenda = models.TextField()
     venue = models.TextField()
@@ -220,15 +220,15 @@ class Mess_meeting(models.Model):
         return '{} - {}'.format(self.meet_date, self.agenda)
 
 
-class Mess_minutes(models.Model):
-    meeting_date = models.OneToOneField(Mess_meeting, on_delete=models.CASCADE)
+class MessMinutes(models.Model):
+    meeting_date = models.OneToOneField(MessMeeting, on_delete=models.CASCADE)
     mess_minutes = models.FileField(upload_to='central_mess/')
 
     def __str__(self):
         return '{} - {}'.format(self.meeting_date.meet_date, self.mess_minutes)
 
 
-class Menu_change_request(models.Model):
+class MenuChangeequest(models.Model):
     dish = models.ForeignKey(Menu, on_delete=models.CASCADE)
     reason = models.TextField()
     request = models.CharField(max_length=100)

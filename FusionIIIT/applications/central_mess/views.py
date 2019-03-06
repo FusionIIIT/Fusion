@@ -15,10 +15,10 @@ from django.contrib.auth.models import User
 from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, HoldsDesignation
 from .forms import MinuteForm
-from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
-                     Mess_minutes, MessRegistration, MessInformation, MonthlyBill,
-                     Nonveg_data, Nonveg_menu, Payments, Rebate,
-                     Special_request, Vacation_food)
+from .models import (Feedback, Menu, MenuChangeequest, MessMeeting,
+                     MessMinutes, MessRegistration, MessInformation, MonthlyBill,
+                     NonVegData, NonVegMenu, Payments, Rebate,
+                     SpecialRequest, VacationFood)
 from .handlers import (add_nonveg_order, add_mess_feedback, add_vacation_food_request,
                        add_menu_change_request, handle_menu_change_response, handle_vacation_food_request,
                        add_mess_registration_time, add_leave_request, add_mess_meeting_invitation,
@@ -52,22 +52,22 @@ def mess(request):
 
     if extrainfo.user_type == 'student':
         student = Student.objects.get(id=extrainfo)
-        vaca_obj = Vacation_food.objects.filter(student_id=student)
+        vaca_obj = VacationFood.objects.filter(student_id=student)
         feedback_obj = Feedback.objects.filter(student_id=student)
-        data = Nonveg_data.objects.filter(student_id=student)
+        data = NonVegData.objects.filter(student_id=student)
         monthly_bill = MonthlyBill.objects.filter(student_id=student)
         payments = Payments.objects.filter(student_id=student)
         rebates = Rebate.objects.filter(student_id=student)
-        meeting = Mess_meeting.objects.all()
-        minutes = Mess_minutes.objects.all()
-        sprequest = Special_request.objects.filter(status='1')
-        splrequest = Special_request.objects.filter(student_id=student).order_by('-app_date')
+        meeting = MessMeeting.objects.all()
+        minutes = MessMinutes.objects.all()
+        sprequest = SpecialRequest.objects.filter(status='1')
+        splrequest = SpecialRequest.objects.filter(student_id=student).order_by('-app_date')
         feed = Feedback.objects.all()
         messinfo = MessInformation.objects.get(student_id=student)
         count = 0
         #variable y stores the menu items
         y = Menu.objects.all()
-        x = Nonveg_menu.objects.all()
+        x = NonVegMenu.objects.all()
 
         for item in rebates:
             d1 = item.start_date
@@ -168,10 +168,10 @@ def mess(request):
 
     elif extrainfo.user_type == 'staff':
         # make info with diff name and then pass context
-        newmenu = Menu_change_request.objects.all()
-        vaca_all = Vacation_food.objects.all()
+        newmenu = MenuChangeequest.objects.all()
+        vaca_all = VacationFood.objects.all()
         y = Menu.objects.all()
-        x = Nonveg_menu.objects.all()
+        x = NonVegMenu.objects.all()
         leave = Rebate.objects.filter(status='1')
         context = {
                    'menu': y,
@@ -187,7 +187,7 @@ def mess(request):
         return render(request, "messModule/mess.html", context)
 
     elif extrainfo.user_type == 'faculty':
-        meeting = Mess_meeting.objects.all()
+        meeting = MessMeeting.objects.all()
         minutes = Mess_minutes.objects.all()
         feed = Feedback.objects.all()
         y = Menu.objects.all()
@@ -514,7 +514,7 @@ def special_request_response(request):
        @variables:
        special_request: data corresponding to id of the special request being accepted or rejected
     """
-    special_request = Special_request.objects.get(pk=request.POST["id"])
+    special_request = SpecialRequest.objects.get(pk=request.POST["id"])
     special_request.status = request.POST["status"]
     special_request.save()
     data = {
@@ -565,7 +565,7 @@ def generate_mess_bill(request):
         """
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
-    nonveg_data = Nonveg_data.objects.all()
+    nonveg_data = NonVegData.objects.all()
     today = datetime.today()
     year_now = today.year
     month_now = today.strftime('%B')

@@ -1,9 +1,9 @@
 from django import forms
 
-from .models import Mess_minutes
+from .models import MessMinutes
 
 
 class MinuteForm(forms.ModelForm):
     class Meta:
-        model = Mess_minutes
+        model = MessMinutes
         fields = ('meeting_date', 'mess_minutes')
