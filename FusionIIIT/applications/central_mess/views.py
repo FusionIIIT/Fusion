@@ -25,11 +25,11 @@ from .handlers import (add_nonveg_order, add_mess_feedback, add_vacation_food_re
 def mess(request):
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
+    current_date = date.today()
     holds_designations = HoldsDesignation.objects.filter(user=user)
     desig = holds_designations
     print(desig)
     form = MinuteForm()
-    current_date = date.today()
     mess_reg = Mess_reg.objects.last()
     count1 = 0
     count2 = 0
@@ -664,9 +664,13 @@ def menu_change_request(request):
     user = request.user
     holds_designations = HoldsDesignation.objects.filter(user=user)
     newmenu = Menu_change_request.objects.all()
+    extrainfo = ExtraInfo.objects.get(user=user)
+    current_date = date.today()
     context = {
         'newmenu': newmenu,
-        'desig': holds_designations
+        'desig': holds_designations,
+        'current_date': current_date,
+        'info': extrainfo,
     }
     # return HttpResponse("hi")
     return render(request, "messModule/respondmenu.html", context)
