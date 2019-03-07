@@ -14,7 +14,7 @@
 
 	<div class="ui cards" style="padding: 2px">
         {% for user in sresults %}
-		<a class="ui card" href="{% url 'globals:profile' %}{{user.0.username}}">
+		<a class="ui card" href="{% url 'globals:profile' %}{{user.username}}">
             <div class="content">
                 <img class="right floated mini ui image" src="{% static 'globals/img/zlatan.jpg' %}">
                 <div class="header">{{user.first_name}} {{user.last_name}}</div>

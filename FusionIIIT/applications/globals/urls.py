@@ -10,7 +10,7 @@ urlpatterns = [
     url(r'^dashboard/$', views.dashboard, name='dashboard'),
     url(r'^about/', views.about, name='about'),
     # generic profile endpoint, displays or redirects appropriately
-    url(r'^profile/(?P<username>\w+)/$', views.profile, name='profile'),
+    url(r'^profile/(?P<username>.+)/$', views.profile, name='profile'),
     # profile of currently logged user
     url(r'^profile/$', views.profile, name='profile'),
     url(r'^search/$', views.search, name='search'),

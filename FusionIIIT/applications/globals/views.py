@@ -1070,6 +1070,7 @@ def support_issue(request, id):
     }
     return HttpResponse(json.dumps(context), "application/json")
 
+@login_required(login_url=LOGIN_URL)
 def search(request):
     """
     Search endpoint.
@@ -1089,7 +1090,7 @@ def search(request):
     words = (w.strip() for w in key.split())
     name_q = Q()
     for token in words:
-        name_q = name_q & (Q(first_name__startswith=token) | Q(last_name__startswith=token))#search constraints
+        name_q = name_q & (Q(first_name__icontains=token) | Q(last_name__icontains=token))#search constraints
     search_results = User.objects.filter(name_q)[:15]
     if len(search_results) == 0:
         search_results = []
