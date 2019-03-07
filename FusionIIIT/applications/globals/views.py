@@ -1067,16 +1067,9 @@ def search(request):
     words = (w.strip() for w in key.split())
     name_q = Q()
     for token in words:
-        name_q = name_q & (Q(first_name__icontains=token) | Q(last_name__icontains=token))
+        name_q = name_q & (Q(first_name__startswith=token) | Q(last_name__startswith=token))#search constraints
     search_results = User.objects.filter(name_q)[:15]
-    search_extrainfo = []
-    # print(search_results)
-    # print(search_extrainfo)
-    for result in search_results:
-        search_extrainfo.append(ExtraInfo.objects.get(user=result))
-    # print(User.objects.filter(name_q))
-    # return redirect("/")
-
-    # zipped tuples sent, accessed in template by dot operator and indices 0 & 1
-    context = {'sresults':zip(search_results, search_extrainfo)}
+    if len(search_results) == 0:
+        search_results = []
+    context = {'sresults':search_results}
     return render(request, "globals/search.html", context)
