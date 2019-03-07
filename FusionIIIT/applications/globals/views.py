@@ -682,9 +682,19 @@ def dashboard(request):
     }
     return render(request, "dashboard/dashboard.html", context)
 
-
 @login_required(login_url=LOGIN_URL)
 def profile(request, username=None):
+    """
+    Generic endpoint for views.
+    If it's a faculty, redirects to /eis/profile/*
+    If it's a student, displays the profile.
+    If the department is 'department: Academics:, redirects to /aims/
+    Otherwise, redirects to root
+
+    Args:
+        username: Username of the user. If None,
+            displays the profile of currently logged-in user
+    """
     user = get_object_or_404(User, Q(username=username)) if username else request.user
     print('user', user)
 
@@ -1061,6 +1071,18 @@ def support_issue(request, id):
     return HttpResponse(json.dumps(context), "application/json")
 
 def search(request):
+    """
+    Search endpoint.
+    Renders search results populated with results from 'q' GET query.
+    If length of the query is less than 3 or no results are found, shows a
+    helpful message instead.
+    Algorithm: Includes the first 15 users whose first/last name starts with the query words.
+               Thus, searching 'Atu Gu' will return 'Atul Gupta' as one result.
+
+               Note: All the words in the query must be matched.
+               While, searching 'Atul Kumar', the word 'Kumar' won't match either 'Atul' or 'Gupta'
+               and thus it won't be included in the search results.
+    """
     key = request.GET['q']
     if len(key) < 3:
         return render(request, "globals/search.html", {'sresults': ()})
