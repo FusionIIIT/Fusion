@@ -661,9 +661,12 @@ class MenuPDF1(View):
 
 
 def menu_change_request(request):
+    user = request.user
+    holds_designations = HoldsDesignation.objects.filter(user=user)
     newmenu = Menu_change_request.objects.all()
     context = {
         'newmenu': newmenu,
+        'desig': holds_designations
     }
     # return HttpResponse("hi")
     return render(request, "messModule/respondmenu.html", context)
