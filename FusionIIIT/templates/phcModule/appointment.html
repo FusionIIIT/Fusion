@@ -44,13 +44,20 @@
                     <label><br></label>
 
                     <div >
-                      <input type="submit" id="appo" name="Submit" value="Submit" class="ui small right floated primary button" />
+                      <input type="submit" id="appo" name="Submit" value="Submit" onClick="window.location.reload();" class="ui small right floated primary button" />
+					  
                     </div>
 
                 </div>
             </form>
           <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
           <script type="text/javascript">
+		  
+		  function trimfield(str)
+                                       {
+                                         return str.replace(/^\s+|\s+$/g,'');
+                                       }
+									   
                   $('#doc').change(function()
                   {
                       $.ajax({
@@ -73,6 +80,13 @@
 
                 $('#appo').on('click',function(e){
                      e.preventDefault();
+					 
+					 if(trimfield(document.getElementById("description").value) == '')
+                       {
+                       alert("*Please fill out the Description!")
+                       document.getElementById("description").focus();
+                        }
+						else{
                      $.ajax({
                      type:'post',
                      url:'/healthcenter/student/',
@@ -85,13 +99,15 @@
                      },
                      success: function(data){
                        if (data.status == 1){
-                         alert("Appointment requested.Check history for the status of appointment. ")
-                         document.getElementById("doc").value=""
-                         document.getElementById("date").value=""
-                         document.getElementById("description").value=""
+                         alert("Your request for appointment has been accepted.Check history for the status of appointment. ")
+                         document.getElementById("doc").value=" "
+                         document.getElementById("date").value=" "
+                         document.getElementById("description").value=" "
                        }
+					   
                    }
                   });
+				  }
                 });
 
               </script>
@@ -103,6 +119,7 @@
         <div class="extra segment"></div>
 
     </div>
+
     {% comment %}the doctor appointment tab ends here {% endcomment %}
 
     {% comment %}the ambulance appointment tab starts here {% endcomment %}
@@ -137,19 +154,27 @@
                 <div class="field">
                     <label><br></label>
                     <div >
-                      <input type="button" id="amb_submit" name="amb_submit" value="Submit"class="ui large right floated primary button" />
+                      <input type="button" id="amb_submit" name="amb_submit" onClick="window.location.reload();" value="Submit"class="ui large right floated primary button" />
                     </div>
                 </div>
 
             </form>
             <script type="text/javascript">
+			
+			function trimfield(str)
+                                       {
+                                         return str.replace(/^\s+|\s+$/g,'');
+                                       }
+									   
               $('#amb_submit').click(function(e)
+			  
+			  
                                                   {
                                                     var startDate = document.getElementById('start_date').value;
                                                     var endDate = document.getElementById('end_date').value;
                                                     var start = new Date(startDate);
                                                     var end=new Date(endDate);
-                                                    var today = new Date();
+                                                    var today = new Date(new Date().setHours(0,0,0,0));
 
                                                     $('#stdt').html('');
                                                     $('#endt').html('');
@@ -164,6 +189,13 @@
                                                         return false;
                                                     }
                                                   }
+												  
+												  if(trimfield(document.getElementById("reason").value) == '')
+                       {
+                       alert("*Please fill out Details!")
+                       document.getElementById("reason").focus();
+                        }
+											else{
                                                     $.ajax({
                                                       type:'post',
                                                       url:'/healthcenter/student/',
@@ -182,6 +214,8 @@
 
                                                     }
                                                   });
+												  }
+												  
                                                 });
 
 </script>

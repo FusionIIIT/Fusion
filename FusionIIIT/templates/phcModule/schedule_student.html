@@ -17,10 +17,10 @@
                   <thead>
 
                     <tr>
-                      <th>Schedule</th>
+                      <td style="font-weight:bold;color:black;">Schedule</td>
                       {% for d in doctors %}
                       {{count.doctor_count}}
-                      <th>{{d.doctor_name}}</th>
+                      <td style="font-weight:bold;color:black;">{{d.doctor_name}}</td>
                       {% endfor %}
                     <tr>
                       {% for p,day in days %}
@@ -48,7 +48,10 @@
                       {% endfor %}                  </thead>
               </table>
         </div>
-      </div>
+		</div>
     </div>
     {% comment %}the view schedule tab ends here {% endcomment %}
+	
+	
+
 {% endblock %}
