@@ -1758,8 +1758,12 @@ def PlacementStatistics(request):
         if form.is_valid():
             if form.cleaned_data['stuname']:
                 stuname = form.cleaned_data['stuname']
+                first_name = stuname.split(" ")[0]
+                last_name = stuname.split(" ")[1]
             else:
                 stuname = ''
+                first_name = ''
+                last_name = ''
             if form.cleaned_data['ctc']:
                 ctc = form.cleaned_data['ctc']
             else:
@@ -1774,34 +1778,47 @@ def PlacementStatistics(request):
                 rollno = ''
             if form.cleaned_data['year']:
                 year = form.cleaned_data['year']
-                s = Student.objects.filter((Q(id__in=ExtraInfo.objects.filter
-                    (Q(user__in=User.objects.filter
-                       (Q(first_name__icontains=stuname)),
+                s = Student.objects.filter((Q(id__in=ExtraInfo.objects.filter(
+                    Q(user__in=User.objects.filter(
+                        first_name__icontains=first_name,
+                        last_name__icontains=last_name),
                        id__icontains=rollno))
                     )))
 
                 p = PlacementRecord.objects.filter(Q(placement_type="PLACEMENT", name__icontains=cname, ctc__gte=ctc, year=year))
 
-                placementrecord = StudentRecord.objects.filter(Q(record_id__in=PlacementRecord.objects.filter(Q(placement_type="PLACEMENT", name__icontains=cname, ctc__gte=ctc, year=year)), unique_id__in=Student.objects.filter((Q(id__in=ExtraInfo.objects.filter(Q(user__in=User.objects.filter(Q(first_name__icontains=stuname)),id__icontains=rollno)))))))
+                placementrecord = StudentRecord.objects.filter(
+                    Q(record_id__in=PlacementRecord.objects.filter(
+                        Q(placement_type="PLACEMENT", name__icontains=cname, ctc__gte=ctc, year=year)),
+                    unique_id__in=Student.objects.filter(
+                        (Q(id__in=ExtraInfo.objects.filter(
+                            Q(user__in=User.objects.filter(
+                                first_name__icontains=first_name,
+                                last_name__icontains=last_name,
+                            id__icontains=rollno))))))))
             else:
-                print('dfd')
-                s = Student.objects.filter((Q(id__in=ExtraInfo.objects.filter
-                    (Q(user__in=User.objects.filter
-                       (Q(first_name__icontains=stuname)),
+                s = Student.objects.filter((Q(id__in=ExtraInfo.objects.filter(
+                    Q(user__in=User.objects.filter(
+                        first_name__icontains=first_name,
+                        last_name__icontains=last_name),
                        id__icontains=rollno))
                     )))
 
-                p = PlacementRecord.objects.filter(Q(placement_type="PLACEMENT", name__icontains=cname, ctc__gte=ctc))
+                p = PlacementRecord.objects.filter(
+                    Q(placement_type="PLACEMENT", name__icontains=cname, ctc__gte=ctc))
 
                 placementrecord = StudentRecord.objects.filter(
                     Q(record_id__in=PlacementRecord.objects.filter(
                     Q(placement_type="PLACEMENT", name__icontains=cname, ctc__gte=ctc)),
                     unique_id__in=Student.objects.filter(
                     (Q(id__in=ExtraInfo.objects.filter(
-                    Q(user__in=User.objects.filter(Q(first_name__icontains=stuname)),
+                    Q(user__in=User.objects.filter(
+                        first_name__icontains=first_name,
+                        last_name__icontains=last_name),
                     id__icontains=rollno)))))))
 
-            request.session['stuname'] = stuname
+            request.session['first_name'] = first_name
+            request.session['last_name'] = last_name
             request.session['ctc'] = ctc
             request.session['cname'] = cname
             request.session['rollno'] = rollno
@@ -1846,7 +1863,8 @@ def PlacementStatistics(request):
                     s = Student.objects.filter(
                         (Q(id__in=ExtraInfo.objects.filter(
                         Q(user__in=User.objects.filter(
-                        Q(first_name__icontains=request.session['stuname'])),
+                        Q(first_name__icontains=request.session['first_name'],
+                        last_name__icontains=request.session['last_name'])),
                        id__icontains=request.session['rollno']))
                     )))
 
@@ -1865,12 +1883,14 @@ def PlacementStatistics(request):
                             unique_id__in=Student.objects.filter(
                             (Q(id__in=ExtraInfo.objects.filter(
                             Q(user__in=User.objects.filter(
-                            Q(first_name__icontains=request.session['stuname'])),
+                            Q(first_name__icontains=request.session['first_name'],
+                            last_name__icontains=request.session['last_name'])),
                             id__icontains=request.session['rollno'])))))))
                 else:
                     s = Student.objects.filter((Q(id__in=ExtraInfo.objects.filter
                     (Q(user__in=User.objects.filter
-                       (Q(first_name__icontains=request.session['stuname'])),
+                       (Q(first_name__icontains=request.session['first_name'],
+                        last_name__icontains=request.session['last_name'])),
                        id__icontains=request.session['rollno']))
                     )))
 
@@ -1887,7 +1907,8 @@ def PlacementStatistics(request):
                         unique_id__in=Student.objects.filter(
                         (Q(id__in=ExtraInfo.objects.filter(
                         Q(user__in=User.objects.filter(
-                        Q(first_name__icontains=request.session['stuname'])),
+                        Q(first_name__icontains=request.session['first_name'],
+                        last_name__icontains=request.session['last_name'])),
                         id__icontains=request.session['rollno'])))))))
             except:
                 print('except')
@@ -1933,8 +1954,12 @@ def PlacementStatistics(request):
         if form.is_valid():
             if form.cleaned_data['stuname']:
                 stuname = form.cleaned_data['stuname']
+                first_name = stuname.split(" ")[0]
+                last_name = stuname.split(" ")[1]
             else:
                 stuname = ''
+                first_name = ''
+                last_name = ''
             if form.cleaned_data['ctc']:
                 ctc = form.cleaned_data['ctc']
             else:
@@ -1956,7 +1981,8 @@ def PlacementStatistics(request):
                                                        unique_id__in=Student.objects.filter
                                                        ((Q(id__in=ExtraInfo.objects.filter
                                                            (Q(user__in=User.objects.filter
-                                                              (Q(first_name__icontains=stuname)),
+                                                              (Q(first_name__icontains=first_name,
+                                                            last_name__icontains=last_name)),
                                                               id__icontains=rollno))
                                                            )))))
             else:
@@ -1967,10 +1993,12 @@ def PlacementStatistics(request):
                                                        unique_id__in=Student.objects.filter
                                                        ((Q(id__in=ExtraInfo.objects.filter
                                                            (Q(user__in=User.objects.filter
-                                                              (Q(first_name__icontains=stuname)),
+                                                              (Q(first_name__icontains=first_name,
+                                                            last_name__icontains=last_name)),
                                                               id__icontains=rollno))
                                                            )))))
-            request.session['stuname'] = stuname
+            request.session['first_name'] = first_name
+            request.session['last_name'] = last_name
             request.session['ctc'] = ctc
             request.session['cname'] = cname
             request.session['rollno'] = rollno
@@ -2016,7 +2044,8 @@ def PlacementStatistics(request):
                         unique_id__in=Student.objects.filter((
                         Q(id__in=ExtraInfo.objects.filter(
                         Q(user__in=User.objects.filter(
-                        Q(first_name__icontains=request.session['stuname'])),
+                        Q(first_name__icontains=request.session['first_name'],
+                        last_name__icontains=request.session['last_name'])),
                         id__icontains=request.session['rollno'])))))))
                 else:
                     pbirecord = StudentRecord.objects.filter(
@@ -2026,7 +2055,8 @@ def PlacementStatistics(request):
                                                            unique_id__in=Student.objects.filter(
                                                             (Q(id__in=ExtraInfo.objects.filter(
                                                             Q(user__in=User.objects.filter(
-                        Q(first_name__icontains=request.session['stuname'])),
+                        Q(first_name__icontains=request.session['first_name'],
+                        last_name__icontains=request.session['last_name'])),
                         id__icontains=request.session['rollno'])))))))
             except:
                 print('except')
@@ -2070,10 +2100,15 @@ def PlacementStatistics(request):
         officer_statistics_past_higher_search = 1
         form = SearchHigherRecord(request.POST)
         if form.is_valid():
+            # getting all the variables send through form
             if form.cleaned_data['stuname']:
                 stuname = form.cleaned_data['stuname']
+                first_name = stuname.split(" ")[0]
+                last_name = stuname.split(" ")[1]
             else:
                 stuname = ''
+                first_name = ''
+                last_name = ''
             if form.cleaned_data['test_type']:
                 test_type = form.cleaned_data['test_type']
             else:
@@ -2092,6 +2127,7 @@ def PlacementStatistics(request):
                 rollno = ''
             if form.cleaned_data['year']:
                 year = form.cleaned_data['year']
+                # result of the query when year is given
                 higherrecord = StudentRecord.objects.filter(Q(record_id__in=PlacementRecord.objects.filter
                                                        (Q(placement_type="HIGHER STUDIES",
                                                           test_type__icontains=test_type,
@@ -2100,10 +2136,12 @@ def PlacementStatistics(request):
                                                        unique_id__in=Student.objects.filter
                                                        ((Q(id__in=ExtraInfo.objects.filter
                                                            (Q(user__in=User.objects.filter
-                                                              (Q(first_name__icontains=stuname)),
+                                                              (Q(first_name__icontains=first_name,
+                                                            last_name__icontains=last_name)),
                                                               id__icontains=rollno))
                                                            )))))
             else:
+                # result of the query when year is not given
                 higherrecord = StudentRecord.objects.filter(
                     Q(record_id__in=PlacementRecord.objects.filter
                                                        (Q(placement_type="HIGHER STUDIES",
@@ -2113,10 +2151,12 @@ def PlacementStatistics(request):
                                                        unique_id__in=Student.objects.filter
                                                        ((Q(id__in=ExtraInfo.objects.filter
                                                            (Q(user__in=User.objects.filter
-                                                              (Q(first_name__icontains=stuname)),
+                                                              (Q(first_name__icontains=first_name,
+                                                                last_name__icontains=last_name)),
                                                               id__icontains=rollno))
                                                            )))))
-            request.session['stuname'] = stuname
+            request.session['first_name'] = first_name
+            request.session['last_name'] = last_name
             request.session['test_score'] = test_score
             request.session['uname'] = uname
             request.session['test_type'] = test_type
@@ -2152,37 +2192,37 @@ def PlacementStatistics(request):
                 pagination_higher = 0
     else:
         if request.GET.get('page') != None:
-            print('--------------------page value none')
             try:
                 if request.session['year']:
                     higherrecord = StudentRecord.objects.filter(
                         Q(record_id__in=PlacementRecord.objects.filter(
                             Q(placement_type="HIGHER STUDIES",
-                                                          test_type__icontains=request.session['test_type'],
-                                                          name__icontains=request.session['uname'],
-                                                          year=request.session['year'],
-                                                          test_score__gte=request.session['test_score'])),
-                                                       unique_id__in=Student.objects.filter(
-                                                        (Q(id__in=ExtraInfo.objects.filter(
-                                                            Q(user__in=User.objects.filter(
-                                                            Q(first_name__icontains=request.session['stuname'])),
-                                                            id__icontains=request.session['rollno']))
-                                                           )))))
+                              test_type__icontains=request.session['test_type'],
+                              name__icontains=request.session['uname'],
+                              year=request.session['year'],
+                              test_score__gte=request.session['test_score'])),
+                           unique_id__in=Student.objects.filter(
+                            (Q(id__in=ExtraInfo.objects.filter(
+                                Q(user__in=User.objects.filter(
+                                Q(first_name__icontains=request.session['first_name'],
+                                last_name__icontains=request.session['last_name'])),
+                                id__icontains=request.session['rollno']))
+                               )))))
                 else:
                     higherrecord = StudentRecord.objects.filter(
-                        Q(record_id__in=PlacementRecord.objects.filter
-                                                           (Q(placement_type="HIGHER STUDIES",
-                                                              test_type__icontains=request.session['test_type'],
-                                                              name__icontains=request.session['uname'],
-                                                              test_score__gte=request.session['test_score'])),
-                                                           unique_id__in=Student.objects.filter
-                                                           ((Q(id__in=ExtraInfo.objects.filter
-                                                               (Q(user__in=User.objects.filter
-                                                                  (Q(first_name__icontains=request.session['stuname'])),
-                                                                  id__icontains=request.session['rollno']))
-                                                               )))))
+                        Q(record_id__in=PlacementRecord.objects.filter(
+                            Q(placement_type="HIGHER STUDIES",
+                          test_type__icontains=request.session['test_type'],
+                          name__icontains=request.session['uname'],
+                          test_score__gte=request.session['test_score'])),
+                       unique_id__in=Student.objects.filter
+                       ((Q(id__in=ExtraInfo.objects.filter(
+                        Q(user__in=User.objects.filter(
+                            Q(first_name__icontains=request.session['first_name'],
+                        last_name__icontains=request.session['last_name'])),
+                              id__icontains=request.session['rollno']))
+                           )))))
             except:
-                print('except')
                 higherrecord = ''
 
             if higherrecord != '':

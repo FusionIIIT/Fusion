@@ -370,7 +370,7 @@ class SearchPlacementRecord(forms.Form):
                                                               'class': 'field'}),
                               label="stuname", required=False)
     year = forms.IntegerField(label="year", required=False)
-    ctc = forms.DecimalField(label="ctc", required=False)
+    ctc = forms.CharField(label="ctc", required=False)
     roll = forms.CharField(widget=forms.NumberInput(attrs={ 'min':0,
                                                             'max_length': 10,
                                                             'class': 'form-control'}),
