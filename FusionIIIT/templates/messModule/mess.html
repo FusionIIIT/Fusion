@@ -158,7 +158,15 @@ Central Mess
 
             {% if info.user_type == 'staff' and d.designation.name == 'mess_manager' %}
                 <a class="item" data-tab="seventh">
-                    Respond To Requests
+                    Leave Requests
+                    <i class="right floated chevron right icon"></i>
+
+                </a><a class="item" data-tab="nineteenth">
+                    Menu Requests
+                    <i class="right floated chevron right icon"></i>
+
+                </a><a class="item" data-tab="twenty">
+                    Vacation Food Requests
                     <i class="right floated chevron right icon"></i>
                 </a>
 
@@ -274,7 +282,7 @@ Central Mess
         {% comment %}The ... starts here!{% endcomment %}
         <div class="ui tab segment" data-tab="seventh">
             {% block respondtorequests %}
-            {% include 'messModule/respond.html' %}
+            {% include 'messModule/respondtoleave.html' %}
             {% endblock %}
         </div>
         {% comment %}The ... ends here!{% endcomment %}
@@ -364,6 +372,23 @@ Central Mess
             {% endblock %}
         </div>
         {% comment %}The ... ends here!{% endcomment %}
+        <div class="ui tab segment" data-tab="nineteenth">
+            {% block respondmenu %}
+            {% include 'messModule/respondmenu.html' %}
+            {% endblock %}
+        </div>
+
+         <div class="ui tab segment" data-tab="twenty">
+            {% block respondvacationfood %}
+            {% include 'messModule/respondvacationfood.html' %}
+            {% endblock %}
+        </div>
+
+        <div class="ui tab segment" data-tab="seventh">
+            {% block respondtorequests %}
+            {% include 'messModule/respondtoleave.html' %}
+            {% endblock %}
+        </div>
 
     </div>
     <!--closing tag of 8 wide column-->
