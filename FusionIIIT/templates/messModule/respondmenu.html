@@ -8,7 +8,7 @@
         Respond to Menu Change
     </a>
 
-    <a class="item" data-tab="menupastrecords">
+    <a class="item" data-tab="menupastrecords" onclick="getMenu()">
         Past Records
     </a>
 
@@ -70,7 +70,46 @@
 
 <div class="ui tab" data-tab="menupastrecords">
     <div class="ui vertical segment">
+      {% for list in newmenu %}
+            {% if list.status == '2' %}
 
+                <div class="content" id="menuap-{{list.pk}}">
+                    <p style="text-align: center; "><strong>Accepted</strong></p>
+                    <b>Date of Application:</b> {{list.app_date}}
+                    <br>
+                    <b>Student:</b> Mess Convener
+                    <br>
+                    <b>Reason:</b> {{list.reason}}
+                    <br>
+                    <b>Items changed: </b> {{list.dish}}
+                    <br>
+                    <b>Items added:</b> {{list.request}}
+                    <br>
+
+                </div>
+                <hr>
+
+            {% endif %}
+        {% if list.status == '0' %}
+
+                <div class="content" id="menurp-{{list.pk}}">
+                    <p style="text-align: center; "><strong>Rejected</strong></p>
+                    <b>Date of Application:</b> {{list.app_date}}
+                    <br>
+                    <b>Student:</b> Mess Convener
+                    <br>
+                    <b>Reason:</b> {{list.reason}}
+                    <br>
+                    <b>Items changed: </b> {{list.dish}}
+                    <br>
+                    <b>Items added:</b> {{list.request}}
+                    <br>
+
+                </div>
+                <hr>
+
+            {% endif %}
+      {% endfor %}
 
 
     </div>
@@ -80,6 +119,24 @@
 
 {% block javascript %}
 <script>
+        <!--function getMenu(){-->
+            <!--console.log("responding");-->
+            <!--$.ajax({-->
+                <!--type: 'POST',-->
+                <!--url: 'menurequest/',-->
+                <!--dataType: 'json',-->
+                <!--data: {-->
+                    <!--'csrfmiddlewaretoken' : '{{ csrf_token }}',-->
+                    <!--'status' : 1-->
+                <!--},-->
+                <!--success: function(data) {-->
+                    <!--$("#rec").html("<strong>"+data.newmenu+"</strong>");-->
+                <!--},-->
+                <!--error: function(data, err) {-->
+                    <!--alert(err.message);-->
+                <!--}-->
+            <!--});-->
+        <!--}-->
          function acceptReqMess(id){
 
          $.ajax({

@@ -7,6 +7,8 @@ from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from django.views.generic import View
+from django.core import serializers
+from django.forms.models import model_to_dict
 from applications.central_mess.utils import render_to_pdf
 from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, HoldsDesignation
@@ -171,18 +173,8 @@ def mess(request):
         y = Menu.objects.all()
         x = Nonveg_menu.objects.all()
         leave = Rebate.objects.filter(status='1')
-        context = {
-                   'menu': y,
-                   'vaca_all': vaca_all,
-                   'info': extrainfo,
-                   'leave': leave,
-                   'current_date': current_date,
-                   'mess_reg': mess_reg,
-                   'desig': desig,
-        }
-        # }        context = {
+        # context = {
         #            'menu': y,
-        #            'newmenu': newmenu,
         #            'vaca_all': vaca_all,
         #            'info': extrainfo,
         #            'leave': leave,
@@ -190,6 +182,16 @@ def mess(request):
         #            'mess_reg': mess_reg,
         #            'desig': desig,
         # }
+        context = {
+                   'menu': y,
+                   'newmenu': newmenu,
+                   'vaca_all': vaca_all,
+                   'info': extrainfo,
+                   'leave': leave,
+                   'current_date': current_date,
+                   'mess_reg': mess_reg,
+                   'desig': desig,
+        }
 
         return render(request, "messModule/mess.html", context)
 
@@ -662,15 +664,20 @@ class MenuPDF1(View):
 
 def menu_change_request(request):
     user = request.user
-    holds_designations = HoldsDesignation.objects.filter(user=user)
-    newmenu = Menu_change_request.objects.all()
-    extrainfo = ExtraInfo.objects.get(user=user)
-    current_date = date.today()
-    context = {
-        'newmenu': newmenu,
-        'desig': holds_designations,
-        'current_date': current_date,
-        'info': extrainfo,
-    }
+    # holds_designations = HoldsDesignation.objects.filter(user=user)
+    newmenu = Menu_change_request.objects.filter(status=2)
+    # extrainfo = ExtraInfo.objects.get(user=user)
+    # current_date = date.today()
+    data = model_to_dict(newmenu)
+    # json_models = serializers.serialize("json", newmenu)
+    # data = {
+    #     'newmenu': model_data,
+    # }
+    return JsonResponse(data)
     # return HttpResponse("hi")
-    return render(request, "messModule/respondmenu.html", context)
+    # return HttpResponse(model_data,
+    #                     mimetype='application/json')
+    # return HttpResponse(simplejson.dumps(data),
+    #                     mimetype='application/json')
+    # return JsonResponse(data)
+    # return render(request, "messModule/respondmenu.html", context)
