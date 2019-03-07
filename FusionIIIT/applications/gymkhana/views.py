@@ -4,7 +4,8 @@ from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.dateparse import parse_date
-
+from django.db.models import Q
+from bisect import bisect
 
 from applications.academic_information.models import Student
 from applications.globals.models import *
@@ -337,12 +338,18 @@ def new_session(request):
 		end_time = request.POST.get("end_time")
 		desc = request.POST.get("d_d")
 		club_name = coordinator_club(request)
-
-		session = Session_info(club = club_name, venue = venue, date =date+" "+start_time , end_time = end_time ,session_poster = session_poster , details = desc)
-		session.save()
-		messages.success(request,"Successfully created the session !!!")
-
-	return redirect('/gymkhana/')
+		res = conflict_algorithm(date, start_time, end_time, venue)
+		if(res == "success"):
+			session = Session_info(club = club_name, venue = venue, date =date, start_time=start_time , end_time = end_time ,session_poster = session_poster , details = desc)
+			session.save()
+		return HttpResponse(res)
+		# overlapping_Sessions = Session_info.objects.filter(date=date, venue=venue).filter(Q(start_time__lte=start_time, end_time__gt=start_time)|Q(start_time__lt=end_time, end_time__gte=end_time))
+		# res = "error"
+		# if overlapping_Sessions.count() == 0:
+		# 	res = "success"
+		# 	return HttpResponse(res)
+		# else:
+		# 	return HttpResponse(res)
 
 @login_required
 def fest_budget(request):
@@ -436,13 +443,42 @@ def cancel(request):
 def date_sessions(request):
 	if(request.is_ajax()):
 		value = request.POST.get('date')
-		get_sessions = Session_info.objects.all()
+		get_sessions = Session_info.objects.filter(date=value).order_by('start_time')
 		dates = []
 		for i in get_sessions:
-			dat = i.date.strftime('%Y-%m-%d')
-			if (dat == value):
-				dates.append(i)
+			dates.append(i)
 		dates = serializers.serialize('json', dates)
-		print(dates)
-		# print(dates)
 		return HttpResponse(dates)
+
+#this algorithm checks if the passed slot time coflicts with any of already booked sessions 
+def conflict_algorithm(date, start_time, end_time, venue):
+	#converting string to datetime type variable
+	start_time = datetime.datetime.strptime(start_time, '%H:%M').time()
+	end_time = datetime.datetime.strptime(end_time, '%H:%M').time()
+	booked_Sessions = Session_info.objects.filter(date=date, venue=venue)
+
+	#placing start time and end time in tuple fashion inside this list
+	slots = [(start_time, end_time)]
+	for value in booked_Sessions:
+		slots.append((value.start_time, value.end_time))
+	slots.sort()
+	#if there isn't any slot present for the selected day just book the session
+	if (len(slots) == 1):
+		return "success"
+	else:
+		#this whole logic checks if the end time of any slot is less than the start time of next slot
+		counter = slots[0][1]
+		flag = 0 
+		i=1
+		while i < len(slots):
+			print(counter)
+			if (slots[i][0] < counter):
+				print("error ", i)
+				flag = 1
+				break
+			counter = slots[i][1]
+			i = i + 1 
+		if (flag == 0):
+			return "success"
+		else:
+			return "error"

@@ -113,13 +113,21 @@
         }
 
         function display_club_session() {
-            var data1 = "_"+document.getElementById('club_session_').value+"_";
-            //alert(e);
-            document.getElementById(data1).hidden = false;
+            var data1 = document.getElementById('club_session_').value;
+            {% for i in Club_session %}
+            var x =  "{{ i.club.club_name }}";
+              if(data1==x)
+                 {
+                    $('#output #jtr #jvenue').append("{{ i.venue }}<br><br>");
+                    $('#output #jtr #jdate').append("{{ i.date }}<br><br>");
+                    $('#output #jtr #jtime').append("{{ i.start_time }}-{{ i.end_time }}<br><br>");
+                    $('#output #jtr #jdetails').append("{{ i.details }}<br><br>");
+
+                  }
+            {% endfor %}
         }
         function display_club_events() {
             var data1 = "_"+document.getElementById('club_events_').value+"_event";
-            //alert(e);
             document.getElementById(data1).hidden = false;
         }
     </script>
@@ -281,19 +289,11 @@
                     <label>Club</label>
                     <select class="ui search fluid dropdown" name="club" id="club_session_" onchange="display_club_session()" required>
                         <option value="">Select</option>
-                        {% if "co-ordinator" in Curr_desig or "co co-ordinator" in Curr_desig %}
+                        
                             {% for i in Club_name %}
-                                {% if request.user.username in i.co_ordinator|stringformat:"s" and i.status == "confirmed" %}
+                                
                                     <option value="{{ i.club_name }}">{{ i.club_name }} </option>
-                                {% endif %}
                             {% endfor %}
-                        {% else %}
-                            {% for i in Club_member %}
-                                {% if request.user.username in i.member.id.user|stringformat:"s" and i.status == "confirmed" %}
-                                    <option value="{{ i.club.club_name }}">{{ i.club.club_name }} </option>
-                                {% endif %}
-                            {% endfor %}
-                        {% endif %}
                     </select>
                 </div>
             </form>
@@ -303,12 +303,15 @@
                    style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
                 <thead>
                 <tr>
-                    <th class="five wide column">
+                    <th class="three wide column">
                         Venue
                     </th>
 
                     <th>
                         Date
+                    </th>
+                    <th>
+                        Time
                     </th>
 
                     <th>
@@ -322,40 +325,26 @@
                 </tr>
                 </thead>
 
-                <tbody>
-                {% for i in Club_session %}
-                    <tr id="_{{ i.club }}_" hidden="true">
-                        <td>
-                            {{ i.venue }}
+                <tbody id="output">
+                    
+                     
+                    <tr id="jtr" >
+                        <td id="jvenue">
+                       
                         </td>
 
-                        <td>
-                            {{ i.date }}
+                        <td id="jdate">
+                            
+                        </td>
+                        <td id="jtime">
+                            
                         </td>
 
-                        <td>
-                            {{ i.details }}
+                        <td id="jdetails">
+                            
                         </td>
-
-<!--                         <td>
-                            <h4 class="ui image header">
-                                <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
-                                <div class="content">
-                                    {{ i.co_ordinator }}
-                                </div>
-                            </h4>
-                        </td>
- -->
-                        <!-- <td>
-                            {% comment %}
-                                TODO: Add the attachment here!
-                            {% endcomment %}
-                            <a class="ui inverted circular icon button" style="margin: auto;" target="_blank" href="{{ i.budget_file.url }}">
-                                <i class="large attach black icon"></i>
-                            </a>
-                         --></td>
                     </tr>
-                {% endfor %}
+               
                 </tbody>
             </table>
 
