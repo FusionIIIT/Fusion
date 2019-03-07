@@ -3,7 +3,7 @@ from django.shortcuts import render , get_object_or_404
 from django.http import HttpResponse , HttpResponseRedirect
 from applications.academic_information.models import Meeting
 from .models import Constants,hostel_allotment,Budget
-from applications.gymkhana.models import Club_budget,Club_info
+from applications.gymkhana.models import Club_budget,Club_info, Session_info
 from applications.globals.models import *
 import json
 from django.contrib.auth.decorators import login_required
@@ -33,6 +33,7 @@ def officeOfDeanStudents(request):
     final_minutes = Meeting.objects.all().exclude(minutes_file="")
     hall_allotment = hostel_allotment.objects.all()
     clubNew = Club_info.objects.all().filter(status='open')
+    session_requests = Session_info.objects.all()
     club = Club_info.objects.all().exclude(status='open')
     budgets = Club_info.objects.all().filter(status='confirmed')
     approved_budgets = Club_budget.objects.all().filter(status='confirmed')
@@ -62,6 +63,7 @@ def officeOfDeanStudents(request):
                 'budget_app': budget_app,
                 'p_budget': past_budget,
                 'clubNew': clubNew,
+                'session_requests' : session_requests,
                 'club': club,
                 'budgets': budgets,
                 'approved_budgets': approved_budgets,

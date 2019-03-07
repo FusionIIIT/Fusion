@@ -62,8 +62,8 @@
                         Hostel Room Allotment
                         <i class="right floated chevron right icon"></i>
                     </a>
-                    <a class="item" data-tab="seventh">
-                        Hostel Room Allotment
+                    <a class="item" data-tab="eleventh">
+                        Club Session
                         <i class="right floated chevron right icon"></i>
                     </a>
                     <a class="item" data-tab="tenth">
@@ -150,6 +150,14 @@
                 {% endblock %}
             </div>
             <!--Club budget allotment ends here!-->
+
+             <!--Club session room allotment starts  here!-->
+            <div class="ui tab segment" data-tab="eleventh">
+                {% block form11 %}
+                    {% include 'officeModule/officeOfDeanStudents/sessionRoomAllotment.html' %}
+                {% endblock %}
+            </div>
+            <!--Club session room allotment ends here!-->
 
         </div>
         <!--The central-rail segment ends here!-->
