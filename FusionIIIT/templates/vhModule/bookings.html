@@ -1,8 +1,7 @@
 {% load static %}
 {% block bookings %}
 
-
-<i class="plus square icon" style="float: right; font-size: 2em;" onclick="requestModal()"></i>
+<button style="background-color: white;border: none; float: right; font-size: 2em; display: block;" data-tooltip="Place Request" onclick="requestModal()"><i class="plus square icon"></i></button>
 
 <div class="ui pointing secondary menu">
     <a class="active item" data-tab="booking-requests">
@@ -18,6 +17,11 @@
     <a class="item" data-tab="active-bookings">
         Active Bookings
     </a>
+    {% elif user_designation == 'Intender' %}
+    <a class="item" data-tab="active-bookings">
+        Active Bookings
+    </a>
+
     {% endif %}
 <!-- 
     <a class="item" data-tab="rejected-bookings">
@@ -70,22 +74,22 @@
 
                             <td>
                                 {% if booking.status == "Pending" %}
-                                    <i class="yellow exclamation icon"></i>
+                                    <button class="tiny ui inverted basic button" data-tooltip="Pending"><i class="yellow exclamation icon"></i></button>
                                 
                                 {% elif booking.status == "Confirmed" %}
-                                    <i class="green check icon"></i>
+                                    <button class="tiny ui inverted basic button" data-tooltip="Confirmed"><i class="green check icon"></i></button>
 
                                 {% elif booking.status == "Forward" %}
-                                    <i class="green arrow right icon"></i>
+                                    <button class="tiny ui inverted basic button" data-tooltip="Forward"><i class="green arrow right icon"></i></button>
 
                                 {% elif booking.status == "Rejected" %}
-                                    <i class="red trash icon"></i>
+                                    <button class="tiny ui inverted basic button" data-tooltip="Rejected"><i class="red trash icon"></i></button>
 
-                                % elif booking.status == "Canceled" %}
-                                    <i class="red close icon"></i>
+                                {% elif booking.status == "Canceled" %}
+                                    <button class="tiny ui inverted basic button" data-tooltip="Canceled"><i class="red close icon"></i></button>
 
                                 {% elif booking.status == "Complete" %}
-                                    <i class="green calender check icon"></i>
+                                    <button class="tiny ui inverted basic button" data-tooltip="Complete"><i class="green calender check icon"></i></button>
                                 {% else %}
 
                                     {{ booking.status }}
@@ -93,7 +97,10 @@
 
                             </td>
 
-                            <td class="update" onclick="updateBookingModal('{{ booking.id }}')"><i class="eye icon"></i></td>
+                            <td class="update" onclick="updateBookingModal('{{ booking.id }}')">
+                                <button style="background-color: white; border: none; float: right; font-size: 2em; display: block;" data-tooltip="View Request">
+                                    <i class="tiny eye icon"></i>
+                                </button></td>
                             <td>
                             {% if booking.status == "Confirmed" %}
                                     <div class="ui large green button center floated"  onclick="bookingRequestModal('{{ booking.id }}')">
@@ -130,37 +137,45 @@
                             <td>{{ booking.visitor_category }}</td>
                             <td>
                                 {% if booking.status == "Pending" %}
-                                    <i class="yellow exclamation icon"></i>
+                                    <button class="tiny ui inverted basic button" data-tooltip="Pending"><i class="yellow exclamation icon"></i></button>
                                 
                                 {% elif booking.status == "Confirmed" %}
-                                    <i class="green check icon"></i>
+                                    <button class="tiny ui inverted basic button" data-tooltip="Confirmed"><i class="green check icon"></i></button>
 
                                 {% elif booking.status == "Forward" %}
-                                    <i class="green arrow right icon"></i>
+                                    <button class="tiny ui inverted basic button" data-tooltip="Forward"><i class="green arrow right icon"></i></button>
 
                                 {% elif booking.status == "Rejected" %}
-                                    <i class="red trash icon"></i>
+                                    <button class="tiny ui inverted basic button" data-tooltip="Rejected"><i class="red trash icon"></i></button>
 
-                                % elif booking.status == "Canceled" %}
-                                    <i class="red close icon"></i>
+                                {% elif booking.status == "Canceled" %}
+                                    <button class="tiny ui inverted basic button" data-tooltip="Canceled"><i class="red close icon"></i></button>
 
                                 {% elif booking.status == "Complete" %}
-                                    <i class="green calender check icon"></i>
+                                    <button class="tiny ui inverted basic button" data-tooltip="Complete"><i class="green calender check icon"></i></button>
                                 {% else %}
 
                                     {{ booking.status }}
                                 {% endif %}
 
                             </td>
-                            <td class="update" onclick="updateBookingModal('{{ booking.id }}')"><i class="eye icon"></i></td>
+                            <td class="update" onclick="updateBookingModal('{{ booking.id }}')"> 
+                                <button style="background-color: white;border: none; float: right; font-size: 2em; display: block;" data-tooltip="View Request">
+                                <i class="tiny eye icon"></i></button>
+                            </td>
 
                             {% if user_designation == 'Intender' %}
 
                                 {% if booking.status == "Confirmed" %}
-                                    <td class="delete" onclick="bookingDetailsModal('{{ booking.id }}')"><i class="close icon"></i></td>
+                                    <td class="delete" onclick="bookingDetailsModal('{{ booking.id }}')">
+                                        <button style="background-color: white;border: none; float: right; font-size: 2em; display: block;" data-tooltip="Cancel Your Request">
+                                        <i class="tiny close icon"></i>
+                                    </button></td>
                                 {% else %}
                                 
-                                <td class="delete" onclick="bookingRequestModal('{{ booking.id }}')"><i class="close icon"></i></td>
+                                <td class="delete" onclick="bookingRequestModal('{{ booking.id }}')">
+                                    <button style="background-color: white;border: none; float: right; font-size: 2em; display: block;" data-tooltip="Cancel Your Request">
+                                    <i class="tiny close icon"></i></button></td>
                                 {% endif %}
                             {% endif %}
 
@@ -231,22 +246,22 @@
                             <td>{{ booking.visitor_category }}</td>
                             <td>
                                 {% if booking.status == "Pending" %}
-                                    <i class="yellow exclamation icon"></i>
+                                    <button class="tiny ui inverted basic button" data-tooltip="Pending"><i class="yellow exclamation icon"></i></button>
                                 
                                 {% elif booking.status == "Confirmed" %}
-                                    <i class="green check icon"></i>
+                                    <button class="tiny ui inverted basic button" data-tooltip="Confirmed"><i class="green check icon"></i></button>
 
                                 {% elif booking.status == "Forward" %}
-                                    <i class="green arrow right icon"></i>
+                                    <button class="tiny ui inverted basic button" data-tooltip="Forward"><i class="green arrow right icon"></i></button>
 
                                 {% elif booking.status == "Rejected" %}
-                                    <i class="red trash icon"></i>
+                                    <button class="tiny ui inverted basic button" data-tooltip="Rejected"><i class="red trash icon"></i></button>
 
-                                % elif booking.status == "Canceled" %}
-                                    <i class="red close icon"></i>
+                                {% elif booking.status == "Canceled" %}
+                                    <button class="tiny ui inverted basic button" data-tooltip="Canceled"><i class="red close icon"></i></button>
 
                                 {% elif booking.status == "Complete" %}
-                                    <i class="green calender check icon"></i>
+                                    <button class="tiny ui inverted basic button" data-tooltip="Complete"><i class="green calender check icon"></i></button>
                                 {% else %}
 
                                     {{ booking.status }}
@@ -431,25 +446,26 @@
                             <td onclick=bookingDetailsModal('{{ booking.id }}')>{{ booking.visitor_category }}</td>
                             <td>
                                 {% if booking.status == "Pending" %}
-                                    <i class="yellow exclamation icon"></i>
+                                    <button class="tiny ui inverted basic button" data-tooltip="Pending"><i class="yellow exclamation icon"></i></button>
                                 
                                 {% elif booking.status == "Confirmed" %}
-                                    <i class="green check icon"></i>
+                                    <button class="tiny ui inverted basic button" data-tooltip="Confirmed"><i class="green check icon"></i></button>
 
                                 {% elif booking.status == "Forward" %}
-                                    <i class="green arrow right icon"></i>
+                                    <button class="tiny ui inverted basic button" data-tooltip="Forward"><i class="green arrow right icon"></i></button>
 
                                 {% elif booking.status == "Rejected" %}
-                                    <i class="red trash icon"></i>
+                                    <button class="tiny ui inverted basic button" data-tooltip="Rejected"><i class="red trash icon"></i></button>
 
                                 {% elif booking.status == "Canceled" %}
-                                    <i class="red close icon"></i>
+                                    <button class="tiny ui inverted basic button" data-tooltip="Canceled"><i class="red close icon"></i></button>
 
                                 {% elif booking.status == "Complete" %}
-                                    <i class="green calender check icon"></i>
-
+                                    <button class="tiny ui inverted basic button" data-tooltip="Complete"><i class="green calender check icon"></i></button>
                                 {% else %}
-                                    {{ booking.status }}
+                                <button class="tiny ui inverted basic button" data-tooltip="Complete"><i class="green calender check icon"></i></button>
+
+                                    <!-- {{ booking.status }} -->
                                 {% endif %}
 
                             </td>

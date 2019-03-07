@@ -66,7 +66,7 @@ class RoomDetail(models.Model):
 
 class BookingDetail(models.Model):
     intender = models.ForeignKey(User, on_delete=models.CASCADE)
-    visitor_category = models.CharField(max_length=1, choices=VISITOR_CATEGORY)
+    visitor_category = models.CharField(max_length=1, choices=VISITOR_CATEGORY, default='C')
     person_count = models.IntegerField(default=1)
     purpose = models.TextField(default="Hi!")
     booking_from = models.DateField()
@@ -81,7 +81,7 @@ class BookingDetail(models.Model):
     number_of_rooms =  models.IntegerField(default=1,null=True,blank=True)
     
     def __str__(self):
-        return '%s ----> %s - %s id is %s' % (self.intender, self.visitor, self.status, self.id)
+        return '%s ----> %s - %s id is %s and category is %s' % (self.intender, self.visitor, self.status, self.id, self.visitor_category)
 
 
 class MealRecord(models.Model):

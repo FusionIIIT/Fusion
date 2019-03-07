@@ -5,7 +5,7 @@
 
 {% for booking in dashboard_bookings %}
 <div class="ui modal booking" id='update-booking-{{ booking.id }}'>
-  <div class="header"> View Booking</div>
+  <div class="header"> Booking Details</div>
   <div class="scrolling content">
     <form class="ui large form" id="behen-ka-bhai">
     
@@ -53,17 +53,24 @@
 
         <div class="field">
             <div class="three fields">
-
                 <div class="field">
+                    <label>Category</label>
+
+                    <div class="ui fluid input">
+                        <input value="{{ booking.visitor_category }}" name="category-{{ booking.id }}" type="text" readonly>
+                    </div>
+                </div>
+
+              <!--   <div class="field">
                     <label>Category </label>
 
                     <div class="ui fluid search selection dropdown">
                         <input name="category-{{ booking.id }}" value="{{ booking.visitor_category }}" type="text" required="True" readonly>
-                        <!-- <i class="dropdown icon"></i> -->
+                        <i class="dropdown icon"></i>
 
-                        <!-- <div class="default text">{{ booking.visitor_category }}</div> -->
+                        <div class="default text">{{ booking.visitor_category }}</div>
 
-                        <!-- <div class="menu">
+                        <div class="menu">
                             <div class="item" data-value="A">
                                 A
                             </div>
@@ -79,9 +86,9 @@
                             <div class="item" data-value="D">
                                 D
                             </div>
-                        </div> -->
+                        </div>
                     </div>
-                </div>
+                </div> -->
 
                 <div class="field">
                     <label>Number Of People</label>

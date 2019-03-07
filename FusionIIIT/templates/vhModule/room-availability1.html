@@ -5,6 +5,9 @@
             Room Availability
         </a>
     </div>
+    {% for room in available_rooms %}
+        {}
+    {% endfor %}
 
     <form class="ui form" id="find-room-status">
         <div class="two fields">
@@ -28,7 +31,7 @@
                 </div>
             </div>
         </div>
-        <div class="ui large primary button right floated" onclick="find_available_rooms()">
+        <div class="ui large primary button right floated" onclick="find_available_rooms( '{{ available_rooms }}' )">
                         Submit
         </div>
     </form>
