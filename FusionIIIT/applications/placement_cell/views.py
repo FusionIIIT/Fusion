@@ -26,7 +26,7 @@ from django.core import serializers
 
 from applications.academic_information.models import Student
 from applications.globals.models import (DepartmentInfo, ExtraInfo,
-                                         HoldsDesignation)
+                                        HoldsDesignation)
 
 from .forms import (AddAchievement, AddChairmanVisit, AddCourse, AddEducation,
                     AddExperience, AddPatent, AddProfile, AddProject,
@@ -38,9 +38,109 @@ from .models import (Achievement, ChairmanVisit, Course, Education, Experience,
                      Has, NotifyStudent, Patent, PlacementRecord,
                      PlacementSchedule, PlacementStatus, Project, Publication,
                      Skill, StudentPlacement, StudentRecord, Role, CompanyDetails)
+'''
+    @variables:
+            user - logged in user
+            profile - variable for extrainfo
+            studentrecord - storing all fetched student record from database
+            years - yearwise record of student placement
+            records - all the record of placement record table
+            tcse - all record of cse
+            tece - all record of ece
+            tme - all record of me
+            tadd - all record of student
+            form respective form object
+            stuname - student name obtained from the form
+            ctc - salary offered obtained from the form
+            cname - company name obtained from the form
+            rollno - roll no of student obtained from the form
+            year - year of placement obtained from the form
+            s - extra info data of the student obtained from the form
+            p - placement data of the student obtained from the form
+            placementrecord - placement record of the student obtained from the form
+            pbirecord - pbi data of the student obtained from the form
+            test_type - type of higher study test obtained from the form
+            uname - name of universty obtained from the form
+            test_score - score in the test obtained from the form
+            higherrecord - higher study record of the student obtained from the form
+            current - current user on a particular designation
+            status - status of the sent invitation by placement cell regarding placement/pbi
+            institute - institute for previous education obtained from the form
+            degree - degree for previous education obtained from the form
+            grade - grade for previous education obtained from the form
+            stream - stream for previous education obtained from the form
+            sdate - start date for previous education obtained from the form
+            edate - end date for previous education obtained from the form
+            education_obj - object variable of Education table
+            about_me - about me data obtained from the form
+            age - age data obtained from the form
+            address - address obtained from the form
+            contact - contact obtained from the form
+            pic - picture obtained from the form
+            skill - skill of the user obtained from the form
+            skill_rating - rating of respective skill obtained from the form
+            has_obj - object variable of Has table
+            achievement - achievement of user obtained from the form
+            achievement_type - type of achievement obtained from the form
+            description - description of respective achievement obtained from the form
+            issuer - certifier of respective achievement obtained from the form
+            date_earned - date of the respective achievement obtained from the form
+            achievement_obj - object variable of Achievement table
+            publication_title - title of the publication obtained from the form
+            description - description of respective publication obtained from the form
+            publisher - publisher of respective publication obtained from the form
+            publication_date - date of respective publication obtained from the form
+            publication_obj - object variable of Publication table
+            patent_name - name of patent obtained from the form
+            description - description of respective patent obtained from the form
+            patent_office - office of respective patent obtained from the form
+            patent_date - date of respective patent obtained from the form
+            patent_obj - object variable of Patent table
+            course_name - name of the course obtained from the form
+            description description of respective course obtained from the form
+            license_no - license_no of respective course obtained from the form
+            sdate - start date of respective course obtained from the form
+            edate - end date of respective course obtained from the form
+            course_obj - object variable of Course table
+            project_name - name of project obtained from the form
+            project_status - status of respective project obtained from the form
+            summary - summery of the respective project obtained from the form
+            project_link - link of the respective project obtained from the form
+            sdate - start date of respective project obtained from the form
+            edate - end date of respective project obtained from the form
+            project_obj - object variable of Project table
+            title - title of any kind of experience obtained from the form
+            status - status of the respective experience obtained from the form
+            company - company from which respective experience is gained as obtained from the form
+            location - location of the respective experience obtained from the form
+            description - description of respective experience obtained from the form
+            sdate - start date of respective experience obtained from the form
+            edate - end date of respective experience obtained from the form
+            experience_obj - object variable of Experience table
+            context - to sent the relevant context for html rendering
+            company_name - name of visiting comapany obtained from the form
+            location -location of visiting company obtained from the form
+            description - description of respective company obtained from the form
+            visiting_date - visiting date of respective company obtained from the form
+            visit_obj -object variable of ChairmanVisit table
+            notify - object of NotifyStudent table
+            schedule - object variable of PlacementSchedule table
+            q1 - all data of Has table
+            q3 - all data of Student table
+            st - all data of Student table
+            spid - id of student to be debar
+            sr - record from StudentPlacement of student having id=spid
+            achievementcheck - checking for achievent to be shown in cv
+            educationcheck - checking for education to be shown in cv
+            publicationcheck - checking for publication to be shown in cv
+            patentcheck - checking for patent to be shown in cv
+            internshipcheck - checking for internship to be shown in cv
+            projectcheck - checking for project to be shown in cv
+            coursecheck - checking for course to be shown in cv
+            skillcheck - checking for skill to be shown in cv
+'''
 
-# from weasyprint import HTML
-
+# Ajax for the company name dropdown
 def CompanyNameDropdown(request):
     if request.method == 'POST':
         current_value = request.POST.get('current_value')
@@ -55,6 +155,8 @@ def CompanyNameDropdown(request):
 
         return JsonResponse(context)
 
+
+# Ajax for all the roles in the dropdown
 def CheckingRoles(request):
     if request.method == 'POST':
         current_value = request.POST.get('current_value')
@@ -67,7 +169,17 @@ def CheckingRoles(request):
 
 @login_required
 def Placement(request):
+    '''
+    function include the functionality of first tab of UI
+    for student, placement officer & placement chairman
 
+    placement officer & placement chairman
+        - can add schedule
+        - can delete schedule
+    student
+        - accepted or declined schedule
+
+    '''
     user = request.user
     profile = get_object_or_404(ExtraInfo, Q(user=user))
     schedule_tab = 1
@@ -78,22 +190,27 @@ def Placement(request):
     current2 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement officer"))
     current = HoldsDesignation.objects.filter(Q(working=user, designation__name="student"))
 
+    # If the user is Student
     if current:
         student = get_object_or_404(Student, Q(id=profile.id))
         placementschedule = PlacementSchedule.objects.filter(
-            Q(placement_date__gte=date.today())).values_list('notify_id',
-            flat=True)
+            Q(placement_date__gte=date.today())).values_list('notify_id', flat=True)
 
-        placementstatus = PlacementStatus.objects.filter(Q(unique_id=student,
-                                    notify_id__in=placementschedule)).order_by('-timestamp')
+        placementstatus = PlacementStatus.objects.filter(
+            Q(unique_id=student,
+            notify_id__in=placementschedule)).order_by('-timestamp')
+
+        # Student view for showing accepted or declined schedule
         if request.method == 'POST':
             if 'studentapprovesubmit' in request.POST:
                 status = PlacementStatus.objects.filter(
-                    pk=request.POST['studentapprovesubmit']).update(invitation='ACCEPTED',
+                    pk=request.POST['studentapprovesubmit']).update(
+                    invitation='ACCEPTED',
                     timestamp=timezone.now())
             if 'studentdeclinesubmit' in request.POST:
                 status = PlacementStatus.objects.filter(
-                    Q(pk=request.POST['studentdeclinesubmit'])).update(invitation='REJECTED',
+                    Q(pk=request.POST['studentdeclinesubmit'])).update(
+                    invitation='REJECTED',
                     timestamp=timezone.now())
             if 'educationsubmit' in request.POST:
                 form = AddEducation(request.POST)
@@ -264,6 +381,7 @@ def Placement(request):
     if not (current or current1 or current2):
         return redirect('/placement/statistics/')
 
+    # delete the schedule
     if 'deletesch' in request.POST:
         delete_sch_key = request.POST['delete_sch_key']
         try:
@@ -271,8 +389,8 @@ def Placement(request):
         except Exception as e:
             print('---- \n\n record not found')
 
+    # saving all the schedule details
     if 'schedulesubmit' in request.POST:
-        print(request.POST)
         form5 = AddSchedule(request.POST, request.FILES)
         if form5.is_valid():
             print('valid')
@@ -333,7 +451,9 @@ def Placement(request):
 
 @login_required
 def deleteInvitationStatus(request):
-    print('coming------deleteInvitation-----status\n\n')
+    '''
+    function to delete the invitation that has been sent to the students
+    '''
     user = request.user
     strecord_tab = 1
     mnpbi_tab = 0
@@ -351,7 +471,7 @@ def deleteInvitationStatus(request):
         delete_invit_status_key = request.POST['deleteinvitationstatus']
 
         try:
-            PlacementStatus.objects.get(pk = delete_invit_status_key).delete()
+            PlacementStatus.objects.get(pk=delete_invit_status_key).delete()
         except Exception as e:
             print('---- \n\n record not found')
 
@@ -387,8 +507,10 @@ def deleteInvitationStatus(request):
     return render(request, 'placementModule/studentrecords.html', context)
 
 
-
 def InvitationStatus(request):
+    '''
+    function to check the invitation status
+    '''
     user = request.user
     strecord_tab = 1
     mnpbi_tab = 0
@@ -401,8 +523,8 @@ def InvitationStatus(request):
     is_disabled = 0
     paginator = ''
     page_range = ''
-    print(request.GET.get('page'))
 
+    # invitation status for placement
     if 'studentplacementsearchsubmit' in request.POST:
         mnplacement_post = 1
         form = ManagePlacementRecord(request.POST)
@@ -440,7 +562,7 @@ def InvitationStatus(request):
                                                               (Q(first_name__icontains=stuname)),
                                                               id__icontains=rollno))
                                                            )))))
-
+            # pagination stuff starts from here
             total_query = placementstatus.count()
 
             if total_query > 30:
@@ -469,6 +591,7 @@ def InvitationStatus(request):
             else:
                 no_pagination = 0
     else:
+        # when the request from pagination with some page number
         if request.GET.get('page') != None:
             try:
                 placementstatus = PlacementStatus.objects.filter(Q(notify_id__in=NotifyStudent.objects.filter
@@ -514,7 +637,7 @@ def InvitationStatus(request):
             else:
                 no_pagination = 0
 
-
+    # invitation status for pbi
     if 'studentpbisearchsubmit' in request.POST:
         mnpbi_tab = 1
         mnpbi_post = 1
@@ -664,6 +787,9 @@ def InvitationStatus(request):
 
 @login_required
 def StudentRecords(request):
+    '''
+        function for searching the records of student
+    '''
     user = request.user
     strecord_tab = 1
     no_pagination = 0
@@ -679,7 +805,7 @@ def StudentRecords(request):
     current1 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement chairman"))
     current2 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement officer"))
 
-
+    # querying the students details a/c to the input data
     if 'recordsubmit' in request.POST:
         print('search')
         student_record_check = 1
@@ -737,11 +863,8 @@ def StudentRecords(request):
                 cpi__gte=cpi)).filter(Q(pk__in=StudentPlacement.objects.filter(
                     Q(debar=debar, placed_type=placed_type)).values('unique_id_id'))).order_by('id')
 
-
-            print('after request --- students')
-
+            # pagination stuff starts from here
             st = students
-
             student_record_check= 1
             total_query = students.count()
 
@@ -774,6 +897,7 @@ def StudentRecords(request):
             else:
                 no_pagination = 0
     else:
+        # when the request came from pagintion with some page no.
         if request.GET.get('page') != None:
             try:
                 students = Student.objects.filter(Q(id__in=ExtraInfo.objects.filter(Q(user__in=User.objects.filter(Q(first_name__icontains=request.session['name'])),
@@ -831,6 +955,7 @@ def StudentRecords(request):
                 sr.debar = "NOT DEBAR"
                 sr.save()
 
+    # pdf generation logic
     if 'pdf_gen_std_record' in request.POST:
         print('coming--generate--pdf')
 
@@ -859,6 +984,7 @@ def StudentRecords(request):
 
         return render_to_pdf('placementModule/pdf_student_record.html', context)
 
+    # excel generation logic
     if 'excel_gen_std_record' in request.POST:
         print('coming--generate--excel')
 
@@ -888,7 +1014,7 @@ def StudentRecords(request):
         return export_to_xls(students)
 
 
-    # invitecheck=0;
+    # for sending the invite to students for particular schedule
     if 'sendinvite' in request.POST:
         # invitecheck=1;
         print('send invitation coming')
@@ -970,6 +1096,11 @@ def StudentRecords(request):
 
 @login_required
 def ManageRecords(request):
+    '''
+        function to manage the records
+        - can add the records under placement | pbi | higher studies
+        - can also search the records under placement | pbi | higher studies
+    '''
     user = request.user
     mnrecord_tab = 1
     pagination_placement = 0
@@ -999,6 +1130,7 @@ def ManageRecords(request):
     if len(current) == 0:
         current = None
 
+    # for adding the new data for student under higher studies category
     if 'studenthigheraddsubmit' in request.POST:
         officer_statistics_past_higher_add = 1
         form = SearchHigherRecord(request.POST)
@@ -1018,6 +1150,8 @@ def ManageRecords(request):
                                                              (Q(id=rollno))))))
             studentr.save()
             placementr.save()
+
+    # for adding the new data for student under pbi category
     if 'studentpbiaddsubmit' in request.POST:
         officer_statistics_past_pbi_add = 1
         form = SearchPbiRecord(request.POST)
@@ -1035,6 +1169,7 @@ def ManageRecords(request):
                                                              (Q(id=rollno))))))
             studentr.save()
             placementr.save()
+    # for adding the new data for student under placement category
     if 'studentplacementaddsubmit' in request.POST:
         officer_statistics_past_add = 1
         form = SearchPlacementRecord(request.POST)
@@ -1053,6 +1188,7 @@ def ManageRecords(request):
             studentr.save()
             placementr.save()
 
+    # for searching the student details under placement category
     if 'studentplacementrecordsubmit' in request.POST:
         officer_statistics_past = 1
         form = SearchPlacementRecord(request.POST)
@@ -1228,6 +1364,7 @@ def ManageRecords(request):
         else:
             placementrecord = ''
 
+    # for searching the student details under pbi category
     if 'studentpbirecordsubmit' in request.POST:
         officer_statistics_past_pbi_search = 1
         form = SearchPbiRecord(request.POST)
@@ -1366,6 +1503,7 @@ def ManageRecords(request):
         else:
             pbirecord = ''
 
+    # for searching the student details under higher studies category
     if 'studenthigherrecordsubmit' in request.POST:
         officer_statistics_past_higher_search = 1
         form = SearchHigherRecord(request.POST)
@@ -1547,6 +1685,9 @@ def ManageRecords(request):
 
 @login_required
 def PlacementStatistics(request):
+    '''
+    logic of the view shown under Placement Statistics tab
+    '''
     user = request.user
     statistics_tab = 1
 
@@ -1610,6 +1751,7 @@ def PlacementStatistics(request):
     if len(current) == 0:
         current = None
 
+    # results of the searched query under placement tab
     if 'studentplacementrecordsubmit' in request.POST:
         officer_statistics_past = 1
         form = SearchPlacementRecord(request.POST)
@@ -1784,6 +1926,7 @@ def PlacementStatistics(request):
         else:
             placementrecord = ''
 
+    # results of the searched query under pbi tab
     if 'studentpbirecordsubmit' in request.POST:
         officer_statistics_past_pbi_search = 1
         form = SearchPbiRecord(request.POST)
@@ -1922,6 +2065,7 @@ def PlacementStatistics(request):
         else:
             pbirecord = ''
 
+    # results of the searched query under higher studies tab
     if 'studenthigherrecordsubmit' in request.POST:
         officer_statistics_past_higher_search = 1
         form = SearchHigherRecord(request.POST)
@@ -2102,7 +2246,6 @@ def PlacementStatistics(request):
     return render(request, 'placementModule/placementstatistics.html', context)
 
 
-
 def cv(request, username):
     # Retrieve data or whatever you need
     """
@@ -2190,9 +2333,6 @@ def cv(request, username):
     publication = Publication.objects.filter(Q(unique_id=student))
     patent = Patent.objects.filter(Q(unique_id=student))
 
-    # print(studentplacement)
-    # print(skills)
-
     return render_to_pdf('placementModule/cv.html', {'pagesize': 'A4', 'user': user,
                                                      'profile': profile, 'projects': project,
                                                      'student': studentplacement,
@@ -2234,6 +2374,10 @@ def render_to_pdf(template_src, context_dict):
 
 
 def export_to_xls(qs):
+    """
+    The function is used to generate the file in the xls format.
+    Embeds the data into the file.
+    """
     response = HttpResponse(content_type='application/ms-excel')
     response['Content-Disposition'] = 'attachment; filename="report.xls"'
 
