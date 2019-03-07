@@ -173,7 +173,6 @@ def mess(request):
         leave = Rebate.objects.filter(status='1')
         context = {
                    'menu': y,
-                   'newmenu': newmenu,
                    'vaca_all': vaca_all,
                    'info': extrainfo,
                    'leave': leave,
@@ -181,6 +180,16 @@ def mess(request):
                    'mess_reg': mess_reg,
                    'desig': desig,
         }
+        # }        context = {
+        #            'menu': y,
+        #            'newmenu': newmenu,
+        #            'vaca_all': vaca_all,
+        #            'info': extrainfo,
+        #            'leave': leave,
+        #            'current_date': current_date,
+        #            'mess_reg': mess_reg,
+        #            'desig': desig,
+        # }
 
         return render(request, "messModule/mess.html", context)
 
@@ -651,3 +660,10 @@ class MenuPDF1(View):
         return render_to_pdf('messModule/menudownloadable1.html', context)
 
 
+def menu_change_request(request):
+    newmenu = Menu_change_request.objects.all()
+    context = {
+        'newmenu': newmenu,
+    }
+    # return HttpResponse("hi")
+    return render(request, "messModule/respondmenu.html", context)

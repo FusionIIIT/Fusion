@@ -7,6 +7,7 @@ app_name = 'mess'
 urlpatterns = [
 
     url(r'^$', views.mess, name='mess'),
+    url(r'^menurequest/', views.menu_change_request, name='menu_change_request'),
     url(r'^placeorder/', views.place_order, name='placeorder'),
     url(r'^submitmessfeedback/', views.submit_mess_feedback, name='submitmessfeedback'),
     url(r'^messvacationsubmit/', views.mess_vacation_submit, name='messvacationsubmit'),
@@ -23,10 +24,10 @@ urlpatterns = [
     url(r'^minutes', views.minutes, name='minutes'),
     url(r'^placerequest', views.place_request, name='placerequest'),
     url(r'^rebateresponse', views.rebate_response, name='rebateresponse'),
-    # url(r'^(?P<ap_id>[0-9]+)/rebateresponse/', views.rebate_response, name='rebateresponse'),
     url(r'^specialrequestresponse', views.special_request_response, name='specialrequestresponse'),
-    # url(r'^(?P<ap_id>[0-9]+)/specialrequestresponse/', views.special_request_response, name='specialrequestresponse'),
     url(r'^updatcost', views.update_cost, name='updatcost'),
     url(r'^generatemessbill', views.generate_mess_bill, name='generatemessbill'),
+
+
 
 ]
