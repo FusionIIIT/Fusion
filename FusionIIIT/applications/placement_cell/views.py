@@ -517,7 +517,9 @@ def InvitationStatus(request):
     mnplacement_post = 0
     mnpbi_post = 0
     invitation_status_tab = 1
-    placementstatus = []
+    placementstatus_placement = []
+    placementstatus_pbi = []
+    mnplacement_tab = 1
 
     no_pagination = 1
     is_disabled = 0
@@ -552,7 +554,7 @@ def InvitationStatus(request):
             request.session['mn_cname'] = cname
             request.session['mn_rollno'] = rollno
 
-            placementstatus = PlacementStatus.objects.filter(Q(notify_id__in=NotifyStudent.objects.filter
+            placementstatus_placement = PlacementStatus.objects.filter(Q(notify_id__in=NotifyStudent.objects.filter
                                                        (Q(placement_type="PLACEMENT",
                                                           company_name__icontains=cname,
                                                           ctc__gte=ctc)),
@@ -563,13 +565,13 @@ def InvitationStatus(request):
                                                               id__icontains=rollno))
                                                            )))))
             # pagination stuff starts from here
-            total_query = placementstatus.count()
+            total_query = placementstatus_placement.count()
 
             if total_query > 30:
                 no_pagination = 1
-                paginator = Paginator(placementstatus, 30)
+                paginator = Paginator(placementstatus_placement, 30)
                 page = request.GET.get('page', 1)
-                placementstatus = paginator.page(page)
+                placementstatus_placement = paginator.page(page)
                 page = int(page)
                 total_page = int(page + 3)
 
@@ -594,7 +596,7 @@ def InvitationStatus(request):
         # when the request from pagination with some page number
         if request.GET.get('page') != None:
             try:
-                placementstatus = PlacementStatus.objects.filter(Q(notify_id__in=NotifyStudent.objects.filter
+                placementstatus_placement = PlacementStatus.objects.filter(Q(notify_id__in=NotifyStudent.objects.filter
                                                        (Q(placement_type="PLACEMENT",
                                                           company_name__icontains=request.session['mn_cname'],
                                                           ctc__gte=request.session['mn_ctc'])),
@@ -605,17 +607,17 @@ def InvitationStatus(request):
                                                               id__icontains=request.session['mn_rollno']))
                                                            )))))
             except:
-                placementstatus = []
+                placementstatus_placement = []
 
-            if placementstatus != '':
-                total_query = placementstatus.count()
+            if placementstatus_placement != '':
+                total_query = placementstatus_placement.count()
             else:
                 total_query = 0
 
             if total_query > 30:
-                paginator = Paginator(placementstatus, 30)
+                paginator = Paginator(placementstatus_placement, 30)
                 page = request.GET.get('page', 1)
-                placementstatus = paginator.page(page)
+                placementstatus_placement = paginator.page(page)
                 page = int(page)
                 total_page = int(page + 3)
 
@@ -664,7 +666,7 @@ def InvitationStatus(request):
             request.session['mn_pbi_ctc'] = ctc
             request.session['mn_pbi_cname'] = cname
             request.session['mn_pbi_rollno'] = rollno
-            placementstatus = PlacementStatus.objects.filter(
+            placementstatus_pbi = PlacementStatus.objects.filter(
                 Q(notify_id__in=NotifyStudent.objects.filter(
                 Q(placement_type="PBI",
                 company_name__icontains=cname,
@@ -675,17 +677,15 @@ def InvitationStatus(request):
                 Q(first_name__icontains=stuname)),
                 id__icontains=rollno))))))).order_by('id')
 
-            total_query = placementstatus.count()
+            total_query = placementstatus_pbi.count()
             print(total_query)
 
             if total_query > 30:
                 no_pagination = 1
-                print(placementstatus)
-                paginator = Paginator(placementstatus, 30)
-                print(paginator)
+                paginator = Paginator(placementstatus_pbi, 30)
                 page = request.GET.get('pbi_page', 1)
                 print(page)
-                placementstatus = paginator.page(page)
+                placementstatus_pbi = paginator.page(page)
                 page = int(page)
                 total_page = int(page + 3)
 
@@ -712,7 +712,7 @@ def InvitationStatus(request):
             mnpbi_post = 1
             no_pagination = 1
             try:
-                placementstatus = PlacementStatus.objects.filter(
+                placementstatus_pbi = PlacementStatus.objects.filter(
                     Q(notify_id__in=NotifyStudent.objects.filter(
                     Q(placement_type="PBI",
                     company_name__icontains=request.session['mn_pbi_cname'],
@@ -724,16 +724,16 @@ def InvitationStatus(request):
                                                   id__icontains=request.session['mn_pbi_rollno']))
                                                )))))
             except:
-                placementstatus = ''
+                placementstatus_pbi = ''
 
-            if placementstatus != '':
-                total_query = placementstatus.count()
+            if placementstatus_pbi != '':
+                total_query = placementstatus_pbi.count()
             else:
                 total_query = 0
             if total_query > 30:
-                paginator = Paginator(placementstatus, 30)
+                paginator = Paginator(placementstatus_pbi, 30)
                 page = request.GET.get('page', 1)
-                placementstatus = paginator.page(page)
+                placementstatus_pbi = paginator.page(page)
                 page = int(page)
                 total_page = int(page + 3)
 
@@ -762,7 +762,6 @@ def InvitationStatus(request):
     current1 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement chairman"))
     current2 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement officer"))
 
-
     context = {
         'form1': form1,
         'form9': form9,
@@ -771,7 +770,9 @@ def InvitationStatus(request):
         'invitation_status_tab': invitation_status_tab,
         'mnplacement_post': mnplacement_post,
         'mnpbi_tab': mnpbi_tab,
-        'placementstatus': placementstatus,
+        'mnplacement_tab': mnplacement_tab,
+        'placementstatus_placement': placementstatus_placement,
+        'placementstatus_pbi': placementstatus_pbi,
         'current1': current1,
         'current2': current2,
         'strecord_tab': strecord_tab,
@@ -1022,7 +1023,6 @@ def StudentRecords(request):
         form13 = SendInvite(request.POST)
 
         if form13.is_valid():
-            print('send invitation valid')
             if form13.cleaned_data['company']:
                 print('valid')
                 if form13.cleaned_data['rollno']:
@@ -1066,9 +1066,8 @@ def StudentRecords(request):
                         programme = programme,
                         cpi__gte = cpi
                     )
-                ).exclude(id__in = PlacementStatus.objects.filter(notify_id=notify).values_list('unique_id', flat=True))
-
-                print(len(students))
+                ).exclude(id__in = PlacementStatus.objects.filter(
+                    notify_id=notify).values_list('unique_id', flat=True))
 
                 PlacementStatus.objects.bulk_create( [PlacementStatus(notify_id=notify,
                             unique_id=student,)for student in students] )
