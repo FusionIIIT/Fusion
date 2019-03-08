@@ -1,15 +1,13 @@
 from datetime import date, datetime
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
 from django.db import transaction
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from django.views.generic import View
-from django.core import serializers
 from django.forms.models import model_to_dict
-from applications.central_mess.utils import render_to_pdf
+from .utils import render_to_pdf
 from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, HoldsDesignation
 from .forms import MinuteForm
@@ -228,13 +226,18 @@ def mess(request):
 
             elif f.feedback_type == 'Others' and mess_opt.mess_option == 'mess2':
                 count8 += 1
-
+            context = {
+                 'info': extrainfo,
+                 'menu': y,
+                 'meeting': meeting,
+                 'minutes': minutes,
+                 'count1': count1,
+                 'count2': count2, 'count3': count3, 'feed': feed,
+                 'count4': count4, 'form': form, 'count5': count5,
+                 'count6': count6, 'count7': count7, 'count8': count8, 'desig': desig
+            }
         return render(request, 'messModule/mess.html',
-                      {'info': extrainfo, 'menu': y, 'meeting': meeting,
-                       'minutes': minutes, 'count1': count1,
-                       'count2': count2, 'count3': count3, 'feed': feed,
-                       'count4': count4, 'form': form, 'count5': count5,
-                       'count6': count6, 'count7': count7, 'count8': count8, 'desig': desig})
+                     )
 
 
 @login_required
@@ -331,7 +334,7 @@ def submit_mess_menu(request):
             if data['status'] == 1:
                 return HttpResponseRedirect("/mess")
 
-    return render(request, 'mess.html', context)
+    return render(request, 'messModule/mess.html', context)
 
 
 @login_required
@@ -491,6 +494,9 @@ def rebate_response(request):
        @return:
             data: returns the status of the application
     """
+    data = {
+        'status': 1
+    }
     user = request.user
     designation = HoldsDesignation.objects.filter(user=user)
     for d in designation:
