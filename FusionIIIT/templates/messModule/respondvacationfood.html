@@ -1,0 +1,63 @@
+{% load static %}
+{% block body %}
+{% block respondvacationfood %}
+
+<div class="ui pointing secondary menu">
+
+    <a class="active item" data-tab="respondtovacafoodrequests">
+        Respond to Vacation Food Requests
+    </a>
+    <a class="item" data-tab="pastvacafoodrequests">
+        Past Requests
+    </a>
+</div>
+
+<div class="ui active tab" data-tab="respondtovacafoodrequests">
+    <div class="ui vertical segment">
+
+            {% for item in vaca_all %}
+            {% if item.status == '1' %}
+            <div>
+                <div class="content">
+                    <b>Date of Application:</b> {{item.app_date}}
+                    <br>
+                    <b>Student:</b> {{item.student_id.id}}
+                    <br>
+                    <b>Reason:</b> {{item.purpose}}
+                    <br>
+                    <b>From:</b> {{item.start_date}}
+                    <br>
+                    <b>To:</b> {{item.end_date}}
+                    <br>
+                </div>
+                <div class="right floated content">
+                    <b>Approve:</b>
+                    <form action="/mess/{{item.pk}}/responsevacationfood/" method="post">
+                        {% csrf_token %}
+                        <div class="ui buttons">
+                            <button class="ui negative button" type="submit" name="submit" value="reject">R</button>
+                            <div class="or"></div>
+                            <button class="ui positive button" type="submit" name="submit" value="approve">A</button>
+                        </div>
+                    </form>
+                </div>
+                <hr>
+            </div>
+
+            {% endif %}
+            {% endfor %}
+    </div>
+        <!--</table>-->
+
+        <br>
+
+        <div class="ui divider"></div>
+
+</div>
+<div class="ui tab" data-tab="pastvacafoodrequests">
+    <div class="ui vertical segment">
+
+    </div>
+</div>
+{% endblock %}
+{% endblock %}

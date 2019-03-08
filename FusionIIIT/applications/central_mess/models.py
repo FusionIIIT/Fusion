@@ -108,6 +108,11 @@ class Mess_reg(models.Model):
     end_reg = models.DateField(default=datetime.date.today)
 
 
+class MessBillBase(models.Model):
+    bill_amount = models.PositiveIntegerField(default=0)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+
 class Monthly_bill(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     month = models.CharField(max_length=20, default=datetime.date.today().month)
