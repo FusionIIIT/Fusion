@@ -140,10 +140,6 @@
             <thead>
             <tr>
                 <th class="four wide">
-                    Date
-                </th>
-
-                <th class="four wide">
                     Student
                 </th>
 
@@ -165,6 +161,31 @@
             </thead>
 
             <tbody>
+            {% for item in leave %}
+                {% if item.status == '2' %}
+                <tr>
+                <th class="four wide">
+                    {{item.student_id.id}}
+                </th>
+
+                <th class="four wide">
+                    {{item.leave_type}}
+                </th>
+
+                <th class="two wide">
+                    {{item.start_date}}
+                </th>
+
+                <th class="two wide">
+                    {{item.end_date}}
+                </th>
+                <th class="one wide">
+                    Accepted
+                </th>
+            </tr>
+                {% endif %}
+            {% endfor %}
+            </tbody>
 
         </table>
 

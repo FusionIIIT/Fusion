@@ -29,19 +29,19 @@
 
             <tr id="menu-{{list.pk}}">
                 <div class="content">
-                    <b>Date of Application:</b> {{list.app_date}}
+                    <strong>Date of Application:</strong> {{list.app_date}}
                     <br>
-                    <b>Student:</b> Mess Convener
+                    <strong>Student:</strong> Mess Convener
                     <br>
-                    <b>Reason:</b> {{list.reason}}
+                    <strong>Reason:</strong> {{list.reason}}
                     <br>
-                    <b>Items to be changed: </b> {{list.dish}}
+                    <strong>Items to be changed: </strong> {{list.dish}}
                     <br>
-                    <b>Items to be added:</b> {{list.request}}
+                    <strong>Items to be added:</strong> {{list.request}}
                     <br>
                 </div>
                 <div class="right floated content">
-                    <b>Accept or Reject :</b>
+                    <strong>Accept or Reject :</strong>
                     <div class="ui buttons">
                         <button class="accm ui positive button" name="submit" value="approve" data-accm="{{list.pk}}"
                                 onclick="acceptReqMess({{list.pk}})">A
@@ -75,15 +75,15 @@
 
                 <div class="content" id="menuap-{{list.pk}}">
                     <p style="text-align: center; "><strong>Accepted</strong></p>
-                    <b>Date of Application:</b> {{list.app_date}}
+                    <strong>Date of Application:</strong> {{list.app_date}}
                     <br>
-                    <b>Student:</b> Mess Convener
+                    <strong>Student:</strong> Mess Convener
                     <br>
-                    <b>Reason:</b> {{list.reason}}
+                    <strong>Reason:</strong> {{list.reason}}
                     <br>
-                    <b>Items changed: </b> {{list.dish}}
+                    <strong>Items changed: </strong> {{list.dish}}
                     <br>
-                    <b>Items added:</b> {{list.request}}
+                    <strong>Items added:</strong> {{list.request}}
                     <br>
 
                 </div>
@@ -94,15 +94,15 @@
 
                 <div class="content" id="menurp-{{list.pk}}">
                     <p style="text-align: center; "><strong>Rejected</strong></p>
-                    <b>Date of Application:</b> {{list.app_date}}
+                    <strong>Date of Application:</strong> {{list.app_date}}
                     <br>
-                    <b>Student:</b> Mess Convener
+                    <strong>Student:</strong> Mess Convener
                     <br>
-                    <b>Reason:</b> {{list.reason}}
+                    <strong>Reason:</strong> {{list.reason}}
                     <br>
-                    <b>Items changed: </b> {{list.dish}}
+                    <strong>Items changed: </strong> {{list.dish}}
                     <br>
-                    <b>Items added:</b> {{list.request}}
+                    <strong>Items added:</strong> {{list.request}}
                     <br>
 
                 </div>
