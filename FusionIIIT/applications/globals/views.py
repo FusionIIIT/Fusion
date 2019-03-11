@@ -685,18 +685,12 @@ def dashboard(request):
 
 @login_required(login_url=LOGIN_URL)
 def profile(request, username=None):
-<<<<<<< HEAD
-    user = get_object_or_404(User, Q(username=username)) if username else request.user
-    print('user', user)
-
-=======
     """
     Generic endpoint for views.
     If it's a faculty, redirects to /eis/profile/*
     If it's a student, displays the profile.
     If the department is 'department: Academics:, redirects to /aims/
     Otherwise, redirects to root
-
     Args:
         username: Username of the user. If None,
             displays the profile of currently logged-in user
@@ -704,7 +698,6 @@ def profile(request, username=None):
     user = get_object_or_404(User, Q(username=username)) if username else request.user
 
     editable = request.user == user
->>>>>>> upstream/master
     profile = get_object_or_404(ExtraInfo, Q(user=user))
     if(str(user.extrainfo.user_type)=='faculty'):
         return HttpResponseRedirect('/eis/profile/' + (username if username else ''))
@@ -1079,9 +1072,6 @@ def support_issue(request, id):
     }
     return HttpResponse(json.dumps(context), "application/json")
 
-<<<<<<< HEAD
-def search(request):
-=======
 @login_required(login_url=LOGIN_URL)
 def search(request):
     """
@@ -1091,36 +1081,19 @@ def search(request):
     helpful message instead.
     Algorithm: Includes the first 15 users whose first/last name starts with the query words.
                Thus, searching 'Atu Gu' will return 'Atul Gupta' as one result.
-
                Note: All the words in the query must be matched.
                While, searching 'Atul Kumar', the word 'Kumar' won't match either 'Atul' or 'Gupta'
                and thus it won't be included in the search results.
     """
->>>>>>> upstream/master
     key = request.GET['q']
     if len(key) < 3:
         return render(request, "globals/search.html", {'sresults': ()})
     words = (w.strip() for w in key.split())
     name_q = Q()
     for token in words:
-<<<<<<< HEAD
-        name_q = name_q & (Q(first_name__icontains=token) | Q(last_name__icontains=token))
-    search_results = User.objects.filter(name_q)[:15]
-    search_extrainfo = []
-    # print(search_results)
-    # print(search_extrainfo)
-    for result in search_results:
-        search_extrainfo.append(ExtraInfo.objects.get(user=result))
-    # print(User.objects.filter(name_q))
-    # return redirect("/")
-
-    # zipped tuples sent, accessed in template by dot operator and indices 0 & 1
-    context = {'sresults':zip(search_results, search_extrainfo)}
-=======
         name_q = name_q & (Q(first_name__icontains=token) | Q(last_name__icontains=token))#search constraints
     search_results = User.objects.filter(name_q)[:15]
     if len(search_results) == 0:
         search_results = []
     context = {'sresults':search_results}
->>>>>>> upstream/master
     return render(request, "globals/search.html", context)
