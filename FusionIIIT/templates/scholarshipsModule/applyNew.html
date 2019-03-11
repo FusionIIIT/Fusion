@@ -26,6 +26,7 @@
 
     <div class="ui active tab" data-tab="mcm" id="mcm_a">
         <div class="ui vertical segment">
+<!-- Arihant: Notification feature for Mcm awards-->
           {% if show_mcm_flag == True %}
             <div class="ui header">
                 Application Form for Merit Cum Means (MCM) Scholarship:
@@ -322,6 +323,7 @@
 
     <div class="ui tab" data-tab="medals">
             <div class="ui vertical segment" id="form_part1">
+<!-- Arihant: Notification feature for Convocation awards-->
               {%  if show_convocation_flag == True %}
                     <div class="ui header">
                             Please read below instructions before applying for any of the Convocation Medals:
@@ -1002,7 +1004,7 @@
                 Form.fileURL.focus();
                 }
             }
-
+//Arihant: after user presses accepts button for mcm notification
             $(document).on('click','#apply_mcm_btn',function (event) {
                     event.preventDefault();
                     $.ajax({
@@ -1020,7 +1022,7 @@
                         }
                     });
                 });
-
+//Arihant: after user presses accepts button for convocation notification
                 $(document).on('click','#apply_convocation_btn',function (event) {
                         event.preventDefault();
                         $.ajax({

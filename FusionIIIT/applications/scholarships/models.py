@@ -146,7 +146,7 @@ class Previous_winner(models.Model):
         db_table = 'Previous_winner'
 
 
-
+# Arihant here we have Added two extra columns in release table
 class Release(models.Model):
     startdate = models.DateField(default=datetime.date.today)
     enddate = models.DateField()
@@ -159,7 +159,7 @@ class Release(models.Model):
     class Meta:
         db_table = 'Release'
 
-#Abhi new class added for keeping track of notifications and applied application by students
+#Abhilash: new class added for keeping track of notifications and applied application by students
 class Notification(models.Model):
     student_id = models.ForeignKey(ExtraInfo, on_delete = models.CASCADE)
     notification_mcm_flag = models.BooleanField(default=False)

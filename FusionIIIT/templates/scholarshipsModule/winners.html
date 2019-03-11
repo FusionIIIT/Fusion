@@ -116,6 +116,7 @@
     <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
 
     <script>
+      //Arihant:Showing Previous Winners
         $(document).on('submit','#winners_form',function (event) {
                 event.preventDefault();
                 $('#winners_table tbody').find("tr:gt(0)").remove();
