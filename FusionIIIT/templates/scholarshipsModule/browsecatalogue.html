@@ -5,7 +5,19 @@
         <a class="active item" data-tab="catalog">
             Catalogue
         </a>
+
+        <a class="item" data-tab="smd">
+            Spacs Members Details
+        </a>
+
+        <a class="item" data-tab="paw">
+            Previous Award Winners
+        </a>
     </div>
+
+
+
+
 
     <div class="ui active tab" data-tab="catalog">
         <div class="ui vertical segment">
@@ -18,25 +30,38 @@
                     {% endfor %}
                 </div>
               </div>
+
+            <div class="ui grid row">
+                <div class="twelve wide column centered">  <label class="ui header" id="content_heading">   </label> </div>
+            </div>
+            <div class="ui grid row">
+                <div class="two wide column"></div>
+                <div class="twelve wide column centered">
+                    <div class="content" id="fill_content"> </div>
+                </div>
+
+            </div>
+            </div>
+        </div>
+
+        <div class="ui tab " data-tab="smd">
+          <div class="ui vertical segment">
+                {% block aboutspacs %}
+                    {% include 'scholarshipsModule/aboutspacs.html' with hd=hd hd1=hd1 %}
+                {% endblock %}
+                </div>
+        </div>
+
+        <div class="ui tab " data-tab="paw">
+            <div class="ui vertical segment">
+              {% block winners %}
+                  {% include 'scholarshipsModule/winners.html' with winners=winners %}
+              {% endblock %}
             </div>
         </div>
 
 
 
-    </div>
-    <div class="ui vertical segment">
-        <div class="ui grid row">
-            <div class="twelve wide column centered">  <label class="ui header" id="content_heading">   </label> </div>
-        </div>
-        <div class="ui grid row">
-            <div class="two wide column"></div>
-            <div class="twelve wide column centered">
-                <div class="content" id="fill_content"> </div>
-            </div>
-
-        </div>
-
-    </div>
 
 {% endblock %}
 

@@ -6,6 +6,31 @@
         <a class="active item" data-tab="inviteapplications">
             Invite Applications
         </a>
+
+        <a class="item" data-tab="aa">
+                Announce Award
+        </a>
+
+        <a class="item" data-tab="bsa">
+            Browse Submitted Applications
+        </a>
+
+    </div>
+
+    <div class="ui tab" data-tab="aa">
+      <div class="ui vertical segment">
+        {% block notionalprize %}
+            {% include 'scholarshipsModule/notionalprize.html' with ch=ch %}
+        {% endblock %}
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="bsa">
+       <div class="ui vertical segment">
+        {% block browsecat %}
+            {% include 'scholarshipsModule/browse1.html' %}
+        {% endblock %}
+        </div>
     </div>
 
     <div class="ui active tab" data-tab="inviteapplications">
@@ -16,35 +41,40 @@
                     <div class="six wide field">
                         <label>Type</label>
                         <select class="ui fluid search selection large dropdown" name="type" required>
-                                <option value="">Select</option> 
+                                <option value="">Select</option>
                                 <option value="Convocation Medals">Convocation Medals</option>
                                 <option value="Mcm Scholarship">Mcm Scholarship</option>
                             </select>
                     </div>
+                    <div class="field">
+                        <div class="sixteen wide field">
+                            <label>Batch</label>
+                               <input type="text" value="all" name="batch" placeholder="All Batches"  required>
+                        </div>
+                   </div>
 
-                  
                 </div>
 
                 <div class="two fields">
                     <div class="field">
                         <label>Start date</label>
-                       
+
                             <div class="ui input large left icon">
                                 <i class="calendar icon"></i>
                                 <input type="text" name="From" placeholder="YYYY-MM-DD" required>
                             </div>
-                        
+
                     </div>
 
                     <div class="field">
                         <label>End Date</label>
-                        
+
                             <div class="ui input large left icon">
                                 <i class="calendar icon"></i>
                                 <input type="text" name="To" placeholder="YYYY-MMM-DD" required>
                             </div>
                         </div>
-                    
+
                 </div>
                 <div class="field">
                     <div class="sixteen wide field">

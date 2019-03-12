@@ -14,6 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 
+import notifications.urls
 from django.conf import settings
 from django.conf.urls import include, url
 from django.conf.urls.static import static
@@ -44,6 +45,7 @@ urlpatterns = [
     url(r'^academic-procedures/', include('applications.academic_procedures.urls',
                                           namespace='procedures')),
     url(r'^aims/', include('applications.academic_information.urls')),
+    url(r'^notifications/', include(notifications.urls, namespace='notifications')),
 
 ]
 if settings.DEBUG:

@@ -5,9 +5,9 @@ from django.forms import ValidationError as VE
 from django.forms.formsets import BaseFormSet
 from django.utils import timezone
 
-from applications.leave.models import LeavesCount, LeaveSegment, LeaveType
+from applications.leave.models import LeavesCount, LeaveSegment, LeaveType, LeaveSegmentOffline
 
-from .helpers import get_leave_days, get_special_leave_count, get_user_choices
+from .helpers import get_leave_days, get_special_leave_count, get_user_choices, get_vacation_leave_count
 
 
 class StudentApplicationForm(forms.Form):
@@ -108,8 +108,13 @@ class LeaveSegmentForm(forms.Form):
 
         def check_special_leave_overlap(start_date, end_date, leave_type_id):
             leave_type = LeaveType.objects.get(id=leave_type_id)
-            if leave_type.name.lower() in ['restricted', 'vacation']:
+            if leave_type.name.lower() in ['restricted']:
                 count = get_special_leave_count(start_date, end_date, leave_type.name.lower())
+                if count < 0:
+                    return 'The period for this leave doesn\'t match with holiday calendar' \
+                           '. Check Academic Calendar.'
+            elif leave_type.name.lower() in ['vacation']:
+                count = get_vacation_leave_count(start_date,end_date,leave_type.name.lower())
                 if count < 0:
                     return 'The period for this leave doesn\'t match with holiday calendar' \
                            '. Check Academic Calendar.'
@@ -338,5 +343,256 @@ class BaseAdminFormSet(BaseFormSet):
 
 
 class BaseCommonFormSet(BaseFormSet):
+    def clean(self):
+        pass
+
+
+class LeaveSegmentFormOffline(forms.Form):
+
+    try:
+        LEAVE_TYPES = list((leave_type.id, leave_type.name)
+                           for leave_type in LeaveType.objects.all())
+    except:
+        LEAVE_TYPES = []
+
+    #Changed by Abhay Gupta
+    l_type_fac=list((leave_type.id, leave_type.name) for leave_type in LeaveType.objects.all())
+    l_type_staff=list((leave_type.id, leave_type.name) for leave_type in LeaveType.objects.filter(for_staff=1))
+    #l_type=list(leave_type.name for leave_type in LeaveType.objects.all())
+    
+    leave_type = forms.ChoiceField(label='Leave Type', choices=LEAVE_TYPES)
+    start_date = forms.DateField(label='Leave From', required=True)
+    end_date = forms.DateField(label='Leave To', required=True)
+    document = forms.FileField(label='Related Document', required=False)
+    start_half = forms.BooleanField(label='Half Day at start', required=False)
+    end_half = forms.BooleanField(label='Half Day at end', required=False)
+    address = forms.CharField(label='Out of Station Address', required=False)
+
+    
+        
+
+    def clean(self, *args, **kwargs):
+        super(LeaveSegmentFormOffline, self).clean(*args, **kwargs)
+        data = self.cleaned_data
+        errors = dict()
+
+        def check_special_leave_overlap(start_date, end_date, leave_type_id):
+            leave_type = LeaveType.objects.get(id=leave_type_id)
+            if leave_type.name.lower() in ['restricted']:
+                count = get_special_leave_count(start_date, end_date, leave_type.name.lower())
+                if count < 0:
+                    return 'The period for this leave doesn\'t match with holiday calendar' \
+                           '. Check Academic Calendar.'
+            elif leave_type.name.lower() in ['vacation']:
+                count = get_vacation_leave_count(start_date,end_date,leave_type.name.lower())
+                if count < 0:
+                    return 'The period for this leave doesn\'t match with holiday calendar' \
+                           '. Check Academic Calendar.'
+
+            return ''
+
+        if data['start_date'] < data['end_date']:
+            error = check_special_leave_overlap(data.get('start_date'), data.get('end_date'),
+                                                data.get('leave_type'))
+
+            if error:
+                if 'leave_type' in errors:
+                    errors['leave_type'].append(error)
+                else:
+                    errors['leave_type'] = [error, ]
+
+        elif data['start_date'] == data['end_date']:
+
+
+            if data['start_half'] and data['end_half']:
+                errors['start_half'] = ['Invalid Input']
+                errors['end_half'] = ['Invalid Input']
+
+            else:
+                error = check_special_leave_overlap(data.get('start_date'), data.get('end_date'),
+                                                    data.get('leave_type'))
+                if error:
+                    if 'leave_type' in errors:
+                        errors['leave_type'].append(error)
+                    else:
+                        errors['leave_type'] = [error, ]
+        else:
+            errors['start_date'] = ['Start date must not be more than End date.']
+
+
+
+        leave_type = LeaveType.objects.filter(id=data['leave_type']).first()
+        if leave_type and leave_type.requires_proof and not data.get('document'):
+            errors['document'] = [f'{leave_type.name} requires a document for proof.']
+
+        leave_type = LeaveType.objects.filter(id=data['leave_type']).first()
+        if leave_type and leave_type.requires_address and not data.get('address'):
+            errors['document'] = [f'{leave_type.name} requires Out of Station address.']
+
+        
+        if errors.keys():
+            raise VE(errors)
+
+        return self.cleaned_data
+
+class EmployeeCommonFormOffline(forms.Form):
+
+    purpose = forms.CharField(widget=forms.Textarea)
+    application_date = forms.DateField(label='Application Date')
+    USER_CHOICES = [(usr.username, "{} {}".format(usr.first_name, usr.last_name))
+                        for usr in User.objects.filter(extrainfo__user_type__in=["faculty","staff"]) ]
+
+    leave_user_select = forms.ChoiceField(label='Choose Employee',choices=USER_CHOICES)
+
+    #is_station = forms.BooleanField(initial=False, required=False)
+    
+    def clean(self):
+        super(EmployeeCommonFormOffline, self).clean()
+        data = self.cleaned_data
+
+        return self.cleaned_data
+
+class AdminReplacementFormOffline(forms.Form):
+    admin_start_date = forms.DateField(label='From')
+    admin_end_date = forms.DateField(label='To')
+
+    USER_CHOICES = [(usr.username, "{} {}".format(usr.first_name, usr.last_name))
+                        for usr in User.objects.filter(extrainfo__user_type__in=["faculty","staff"]) ]
+        # print(USER_CHOICES)
+    admin_rep = forms.ChoiceField(label='Administrative Responsibility To: ',
+                                                     choices=USER_CHOICES)
+
+    def clean(self):
+        super(AdminReplacementFormOffline, self).clean()
+        data = self.cleaned_data
+
+        start_date, end_date = data['admin_start_date'], data['admin_end_date']
+
+        errors = dict()
+
+        if start_date > end_date:
+            errors['admin_start_date'] = ['Start Date must not be more than End Date']
+
+        now = timezone.now().date()
+        if data['admin_start_date'] < now:
+            error = 'You have inserted past date.'
+            if 'admin_start_date' in errors:
+                errors['admin_start_date'].append(error)
+            else:
+                errors['admin_start_date'] = error
+
+        if data['admin_end_date'] < now:
+            error = 'You have inserted past date.'
+            if 'admin_end_date' in errors:
+                errors['admin_end_date'].append(error)
+            else:
+                errors['admin_end_date'] = error
+
+        return self.cleaned_data
+"""
+        rep_user = User.objects.get(username=data['admin_rep'])
+
+        if LeaveSegmentOffline.objects.filter(Q(leave__applicant=rep_user),
+                                       ~Q(leave__status='rejected'),
+                                       Q(start_date__range=[start_date, end_date]) |
+                                       Q(end_date__range=[start_date, end_date])).exists():
+
+            errors['admin_rep'] = [f'{rep_user.get_full_name()} may be on leave in this period.']
+"""
+
+
+
+
+class AcademicReplacementFormOffline(forms.Form):
+    acad_start_date = forms.DateField(label='From')
+    acad_end_date = forms.DateField(label='To')
+
+    USER_CHOICES = [(usr.username, "{} {}".format(usr.first_name, usr.last_name))
+                        for usr in User.objects.filter(extrainfo__user_type="faculty") ]
+
+    acad_rep = forms.ChoiceField(label='Academic Responsibility To: ',
+                                                    choices=USER_CHOICES)
+
+    def clean(self):
+        super(AcademicReplacementFormOffline, self).clean()
+        data = self.cleaned_data
+        errors = dict()
+        start_date, end_date = data['acad_start_date'], data['acad_end_date']
+
+        if start_date > end_date:
+            errors['acad_start_date'] = ['Start Date must not be more than End Date']
+
+        now = timezone.now().date()
+        if data['acad_start_date'] < now:
+            error = 'You have inserted past date.'
+            if 'acad_start_date' in errors:
+                errors['acad_start_date'].append(error)
+            else:
+                errors['acad_start_date'] = error
+
+        if data['acad_end_date'] < now:
+            error = 'You have inserted past date.'
+            if 'acad_end_date' in errors:
+                errors['acad_end_date'].append(error)
+            else:
+                errors['acad_end_date'] = error
+
+        
+        return self.cleaned_data
+
+class BaseLeaveFormSetOffline(BaseFormSet):
+
+    """def __init__(self, *args, **kwargs):
+        if 'user' in kwargs:
+            self.user = kwargs.pop('user')
+        
+        super(BaseLeaveFormSetOffline, self).__init__(*args, **kwargs)"""
+
+    def clean(self):
+        super(BaseLeaveFormSetOffline, self).clean()
+        curr_year = timezone.now().year
+        data = self.cleaned_data
+        leave_counts = LeavesCount.objects.filter(user=User.objects.get(username=data['leave_user_select']), year=curr_year)
+        mapping = dict()
+        for form in self.forms:
+            try:
+                data = form.cleaned_data
+                leave_type = LeaveType.objects.get(id=data.get('leave_type'))
+                #if leave_type.is_station:
+                #    continue
+
+                count = get_leave_days(data.get('start_date'), data.get('end_date'),
+                                       leave_type, data.get('start_half'), data.get('end_half'))
+
+                if leave_type in mapping.keys():
+                    mapping[leave_type] += count
+                else:
+                    mapping[leave_type] = count
+            except:
+                raise VE('Some error occured, please contact admin.')
+
+        for key, value in mapping.items():
+            tp = leave_counts.get(leave_type=key)
+            if tp.remaining_leaves < value:
+                raise VE(f'There are only {tp.remaining_leaves} {tp.leave_type.name} '
+                         f'Leaves remaining and you have filled {value}.')
+
+
+
+class BaseLeaveFormSetOffline(BaseFormSet):
+    def clean(self):
+        pass
+
+class BaseAcadFormSetOffline(BaseFormSet):
+    def clean(self):
+        pass
+
+
+class BaseAdminFormSetOffline(BaseFormSet):
+    def clean(self):
+        pass
+
+
+class BaseCommonFormSetOffline(BaseFormSet):
     def clean(self):
         pass

@@ -1,19 +1,19 @@
 {% block applyform %}
     {% comment %}The tab menu starts here!{% endcomment %}
-    
+
     <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script>
         $(function(){
             $("#co-or").change(function(){
                var selected = $(this).find('option:selected');
                var extra = selected.data('foo');
-               $('#co_or_name').val(extra); 
+               $('#co_or_name').val(extra);
             });
 
             $("#coco-or").change(function(){
                var selected = $(this).find('option:selected');
                var extra = selected.data('foo');
-               $('#coco_or_name').val(extra); 
+               $('#coco_or_name').val(extra);
             });
         });
     </script> -->
@@ -25,10 +25,10 @@
         var yyyy = today.getFullYear();
          if(dd<10){
                 dd='0'+dd
-            } 
+            }
             if(mm<10){
                 mm='0'+mm
-            } 
+            }
 
         today = dd+'/'+mm+'/'+yyyy;
         // document.getElementById("datefield").setAttribute("min", today);
@@ -55,52 +55,13 @@
                     </select>
                 </div>
 
-                <!-- <div class="two fields">
-                    <div class="eight wide field">
-                        <label>Co-ordinator</label>
-                        <select class="ui search fluid dropdown" id="co-or">
-                            <option value="">Select</option>
-                            {% for i in Students %}
-                                {% if i.user.username != request.user.username %}
-                                <option value="{{ i.user.username }}" data-foo = "{{i.user.first_name}} {{i.user.last_name}}">{{ i.user.username }}</option>
-                                {%endif%}
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <div class="eight wide field">
-                        <label>Name</label>
-                        <input id="co_or_name" placeholder="Name" class="ui large input" disabled />
-                    </div>
-                </div>
-
-
-                <div class="two fields">
-                    <div class="eight wide field">
-                        <label>Co Co-ordinator</label>
-                            <select class="ui search fluid dropdown" id="coco-or">
-                                <option value="">Select</option>
-                                {% for i in Students %}
-                                {% if i.user.username != request.user.username %}
-                                <option value="{{ i.user.username }}" data-foo = "{{i.user.first_name}} {{i.user.last_name}}">{{ i.user.username }}</option>
-                                {%endif%}
-                                {% endfor %}
-                            </select>
-                    </div>
-                    
-                    <div class="eight wide field">
-                        <label>Name</label>
-                        <input id="coco_or_name" placeholder="Name" class="ui large input" disabled />
-                    </div>
-                </div> -->
+              
                 <div class="two fields">
                     <div class="eight wide field">
                         <label>Co-ordinator</label>
                         <select class="ui search fluid dropdown" id="co" name="co" required>
                             <option value="">Select</option>
-                            {% for i in Students %}
-                            <option value="{{ i }}">{{ i }}</option>
-                            {% endfor %}
+
                         </select>
                     </div>
 
@@ -108,12 +69,10 @@
                         <label>Co Co-ordinator</label>
                             <select class="ui search fluid dropdown" id="coco" name="coco" required>
                                 <option value="">Select</option>
-                                {% for i in Students %}
-                                <option value="{{ i }}">{{ i }}</option>
-                                {% endfor %}
+
                             </select>
                     </div>
-                    
+
                 </div>
 
                 <div class="three fields">
@@ -143,3 +102,4 @@
     <br>
     <div class="extra content"></div>
 {% endblock %}
+>>>>>>> 15fd3b2b82c66fece36348ed6af27e45c14df9a1

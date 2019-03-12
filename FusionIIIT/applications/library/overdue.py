@@ -1,6 +1,6 @@
 import requests
+from applications.globals.models import ExtraInfo
 from bs4 import BeautifulSoup
-
 url1 = "http://172.27.20.250/webopac/"
 url2 ="CircTotalFineUserWise.aspx?title=Over%20Due%20Details%20of%20MembersD"
 #r2 = requests.get(url1+url2)
@@ -10,10 +10,11 @@ soup = BeautifulSoup(r2.content,"html5lib")
 viewstate = soup.find(id="__VIEWSTATE")['value']
 viewgen = soup.find(id="__VIEWSTATEGENERATOR")['value']
 eventvalid = soup.find(id="__EVENTVALIDATION")['value']
+memberid = ExtraInfo.objects.get(user = request.user).id
 formfields={'__VIEWSTATE':viewstate,
 			"__VIEWSTATEGENERATOR":viewgen,
             '__EVENTVALIDATION':eventvalid,
-            'ctl00$ContentPlaceHolder1$txtuserid':'74',
+            'ctl00$ContentPlaceHolder1$txtuserid':memberid,
             'ctl00$ContentPlaceHolder1$cmdcheck': 'Enter'}
 r3 = requests.post(url1+url2,cookies=r1.cookies,data=formfields) 
 #print(r1.status_code)
