@@ -1,0 +1,78 @@
+{% load static %}
+{% block messcommittee %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="mess_members">
+            Members
+        </a>
+
+        <a class="item" data-tab="members_action">
+            Add/Remove
+        </a>
+    </div>
+    {% comment %} tab menu ends here {% endcomment %}
+
+    {% comment %} Committee sections starts here {% endcomment %}
+    <div class="ui active tab" data-tab="mess_members">
+        <div class = "ui vertical segment">
+            <p> Members in Mess Committee </p>
+            {% for items in members %}
+                <p> {{ items.user }} - {{ items.designation }}</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="ui tab"data-tab="members_action">
+        <button class="ui primary fluid button" onclick="addMessCommittee()"> Add </button>
+        <br>
+        <button class="ui primary fluid button"> Remove </button>
+    </div>
+
+    <div class="ui modal" id="addMember" style="padding: 5%;">
+        <div class="header">Add To Mess Committee</div>
+        <div class="ui vertical segment">
+            <div class="ui form">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="field">
+                        <label>Roll Number:</label>
+                        <input type="number" placeholder="Student Roll Number Here" id="roll_number">
+                    </div>
+                    <div class="field">
+                        <button class="ui primary fluid button" onclick="addMess()"> Add </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+
+    function addMessCommittee() {
+        $('#addMember').modal('show');
+    }
+    function addMess() {
+        $.ajax(
+            {
+                type: 'POST',
+                url: 'addmesscommittee/',
+                dataType: 'json',
+                data: {
+                    'csrfmiddlewaretoken': '{{ csrf_token }}',
+                    'rollnumber': $("#roll_number").val(),
+                },
+                success: function (data) {
+                    if (data.status) {
+                        alert("Data Inserted Successfully");
+                    }
+                },
+                error: function (data, err) {
+                    alert(err.message);
+                }
+            }
+        );
+    }
+</script>
+{% endblock %}

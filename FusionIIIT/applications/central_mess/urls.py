@@ -23,6 +23,7 @@ urlpatterns = [
     url(r'^invitation', views.invitation, name='invitation'),
     url(r'^minutes', views.minutes, name='minutes'),
     url(r'^placerequest', views.place_request, name='placerequest'),
+    url(r'^addmesscommittee', views.add_mess_committee, name='addmesscommittee'),
     url(r'^rebateresponse', views.rebate_response, name='rebateresponse'),
     url(r'^specialrequestresponse', views.special_request_response, name='specialrequestresponse'),
     url(r'^updatcost', views.update_cost, name='updatcost'),

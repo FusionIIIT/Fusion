@@ -7,6 +7,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from django.views.generic import View
 from django.forms.models import model_to_dict
+from django.db.models import Q
 from .utils import render_to_pdf
 from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, HoldsDesignation
@@ -61,6 +62,7 @@ def mess(request):
         splrequest = Special_request.objects.filter(student_id=student).order_by('-app_date')
         feed = Feedback.objects.all()
         messinfo = Messinfo.objects.get(student_id=student)
+        newmenu = Menu_change_request.objects.all()
         count = 0
         #variable y stores the menu items
         mess_optn = Messinfo.objects.get(student_id=student)
@@ -133,6 +135,7 @@ def mess(request):
         context = {
                    'menu': y,
                    'messinfo': messinfo,
+                   'newmenu': newmenu,
                    'monthly_bill': monthly_bill,
                    'payments': payments,
                    'nonveg': x,
@@ -168,6 +171,10 @@ def mess(request):
         # make info with diff name and then pass context
         newmenu = Menu_change_request.objects.all()
         vaca_all = Vacation_food.objects.all()
+        # members_mess = HoldsDesignation.objects.filter(designation__name='mess_convener')
+        members_mess = HoldsDesignation.objects.filter(Q(designation__name='mess_convener')
+                                                       | Q(designation__name='mess_committee'))
+        print(members_mess)
         y = Menu.objects.all()
         x = Nonveg_menu.objects.all()
         leave = Rebate.objects.filter(status='1')
@@ -181,6 +188,7 @@ def mess(request):
         #            'desig': desig,
         # }
         context = {
+                   'members': members_mess,
                    'menu': y,
                    'newmenu': newmenu,
                    'vaca_all': vaca_all,
@@ -317,7 +325,7 @@ def mess_vacation_submit(request):
 @transaction.atomic
 def submit_mess_menu(request):
     """
-    This function is to record mess menu change requests
+    This function is to record mess menu change requests by the  mess_committee
     :param request:
         user:Current user
     :return:
@@ -328,11 +336,10 @@ def submit_mess_menu(request):
     designation = holds_designations
     context = {}
     # A user may hold multiple designations
-    for d in designation:
-        if d.designation.name == 'mess_convener':
-            data = add_menu_change_request(request)
-            if data['status'] == 1:
-                return HttpResponseRedirect("/mess")
+
+    data = add_menu_change_request(request)
+    if data['status'] == 1:
+        return HttpResponseRedirect("/mess")
 
     return render(request, 'messModule/mess.html', context)
 
@@ -670,20 +677,16 @@ class MenuPDF1(View):
 
 def menu_change_request(request):
     user = request.user
-    # holds_designations = HoldsDesignation.objects.filter(user=user)
     newmenu = Menu_change_request.objects.filter(status=2)
-    # extrainfo = ExtraInfo.objects.get(user=user)
-    # current_date = date.today()
     data = model_to_dict(newmenu)
-    # json_models = serializers.serialize("json", newmenu)
-    # data = {
-    #     'newmenu': model_data,
-    # }
     return JsonResponse(data)
-    # return HttpResponse("hi")
-    # return HttpResponse(model_data,
-    #                     mimetype='application/json')
-    # return HttpResponse(simplejson.dumps(data),
-    #                     mimetype='application/json')
-    # return JsonResponse(data)
-    # return render(request, "messModule/respondmenu.html", context)
+
+
+def add_mess_committee(request):
+    roll_number = request.POST['rollnumber']
+    add_obj = HoldsDesignation.objects.get(id=roll_number)
+    print(add_obj)
+    data = {
+        'status': 1
+    }
+    return JsonResponse(data)
