@@ -616,10 +616,11 @@ def convener_catalogue(request):
 def get_winners(request):
     award_name = request.GET.get('award_name')
     batch_year = int(request.GET.get('batch'))
+    programme_name = request.GET.get('programme')
     award=Award_and_scholarship.objects.get(award_name=award_name)
     print(award_name,award)
     print(batch_year)
-    winners=Previous_winner.objects.filter(year=batch_year,award_id=award)
+    winners=Previous_winner.objects.filter(year=batch_year,award_id=award,programme=programme_name)
     context={}
     context['student_name']=[]
     context['student_program'] = []

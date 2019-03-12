@@ -136,9 +136,10 @@ class Notional_prize(models.Model):
     class Meta:
         db_table = 'Notional_prize'
 
-
+#Addition: a column programme added
 class Previous_winner(models.Model):
     student = models.ForeignKey(Student)
+    programme = models.CharField(max_length=10,default='B.Tech')
     year = models.IntegerField(default=datetime.datetime.now().year)
     award_id = models.ForeignKey(Award_and_scholarship)
 
@@ -146,7 +147,7 @@ class Previous_winner(models.Model):
         db_table = 'Previous_winner'
 
 
-# Arihant here we have Added two extra columns in release table
+#To Do:to reduce the last unused column
 class Release(models.Model):
     startdate = models.DateField(default=datetime.date.today)
     enddate = models.DateField()
