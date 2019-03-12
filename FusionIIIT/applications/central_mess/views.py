@@ -8,9 +8,10 @@ from django.contrib import messages
 from django.views.generic import View
 from django.forms.models import model_to_dict
 from django.db.models import Q
+from django.contrib.auth.models import User
 from .utils import render_to_pdf
 from applications.academic_information.models import Student
-from applications.globals.models import ExtraInfo, HoldsDesignation
+from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 from .forms import MinuteForm
 from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
                      Mess_minutes, Mess_reg, Messinfo, Monthly_bill,
@@ -684,8 +685,14 @@ def menu_change_request(request):
 
 def add_mess_committee(request):
     roll_number = request.POST['rollnumber']
-    add_obj = HoldsDesignation.objects.get(id=roll_number)
-    print(add_obj)
+    add_obj = HoldsDesignation.objects.get(user__username=roll_number)
+    designation = Designation.objects.get(name='mess_committee')
+    add_user = User.objects.get(username=roll_number)
+    print(designation)
+    designation_object = HoldsDesignation(user=add_user, working = add_user ,designation=designation)
+    print(designation_object)
+    designation_object.save()
+    print(add_user)
     data = {
         'status': 1
     }
