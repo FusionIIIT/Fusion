@@ -131,7 +131,7 @@
                         <div class="eight wide field ">
                             <label>Brother's name</label>
                             <div class="ui large input">
-                                <input placeholder="Brother's Name" name="brother_name" type="text" required>
+                                <input placeholder="Brother's Name" name="brother_name" type="text" required pattern="[A-Za-z]*">
                             </div>
                         </div>
                         <div class="eight wide field ">
@@ -145,7 +145,7 @@
                         <div class="eight wide field ">
                             <label>Sisters's Name</label>
                             <div class="ui large input">
-                                <input placeholder="Sister's Name"  name="sister_name" type="text" required>
+                                <input placeholder="Sister's Name"  name="sister_name" type="text" required pattern="[A-Za-z]*">
                             </div>
                         </div>
                         <div class="eight wide field ">
@@ -159,20 +159,20 @@
                         <div class=" field">
                             <label>Father's Annual Income</label>
                             <div class="ui large input">
-                                <input placeholder=" Income" name="father_income" type="number" required>
+                                <input placeholder=" Income" name="father_income" type="number" required min="0">
                             </div>
                         </div>
                         <div class=" field">
                             <label>Mother's Annual Income</label>
                             <div class="ui large input">
-                                <input placeholder="Income" name="mother_income" type="number" required>
+                                <input placeholder="Income" name="mother_income" type="number" required min="0">
                             </div>
                         </div>
 
                         <div class=" field">
                             <label>Other sources Annual Income</label>
                             <div class="ui large input">
-                                <input placeholder="Income" name="other_income" type="number">
+                                <input placeholder="Income" name="other_income" type="number" min="0">
                             </div>
                         </div>
 
@@ -525,7 +525,7 @@
                     <div class="four wide field ">
                         <label>ECE topic Percentage</label>
                         <div class="ui large input">
-                            <input placeholder="ECE %" type="number" name="ece_percentage" required>
+                            <input placeholder="ECE %" type="number" name="ece_percentage" required min="0" max="100">
                         </div>
                     </div>
                 </div>
@@ -540,7 +540,7 @@
                     <div class="four wide field ">
                         <label>ME topic Percentage</label>
                         <div class="ui large input">
-                            <input placeholder="ME %" type="number" name="mech_percentage" required>
+                            <input placeholder="ME %" type="number" name="mech_percentage" required min="0" max="100">
                         </div>
                     </div>
                 </div>
@@ -554,7 +554,7 @@
                     <div class="four wide field ">
                         <label>CSE topic Percentage</label>
                         <div class="ui large input">
-                            <input placeholder="CSE %" type="number" name="cse_percentage" required>
+                            <input placeholder="CSE %" type="number" name="cse_percentage" required min="0" max="100">
                         </div>
                     </div>
                 </div>
@@ -569,7 +569,7 @@
                     <div class="four wide field ">
                         <label>Design topic Percentage</label>
                         <div class="ui large input">
-                            <input placeholder="Design %" type="number" name="design_percentage" required>
+                            <input placeholder="Design %" type="number" name="design_percentage" required min="0" max="100">
                         </div>
                     </div>
                 </div>
