@@ -26,7 +26,7 @@
     </div>
 
 
-    <div class="ui tab"data-tab="members_action">
+    <div class="ui tab" data-tab="members_action">
         <button class="ui primary fluid button" onclick="addMessCommittee()">
             Add to Mess Committee
         </button>
@@ -126,19 +126,19 @@
                     if (data.status === 1) {
                         {#$('#mess_student').style.visibility = 'visible';#}
                         alert(data.message);
-                        ("#mess_committee_tab").load(location.href+" #mess_committee_tab>*","")
+                        ("#mess_committee_tab").load(location.href+" #mess_committee_tab>*","");
                         {#$('#mess').style.display = "block";#}
                         {#$('#mess').show();#}
                         {#$("#mess_committee_tab").load(location.href+" #mess_committee_tab>*","")#}
                     }
                     else if (data.status === 2) {
                         alert(data.message);
-                        ("#mess_committee_tab").load(location.href+" #mess_committee_tab>*","")
+                        ("#mess_committee_tab").load(location.href+" #mess_committee_tab>*","");
                     }
                 },
                 error: function (data, err) {
                     alert(err.message);
-                    ("#mess_committee_tab").load(location.href+" #mess_committee_tab>*","")
+                    ("#mess_committee_tab").load(location.href+" #mess_committee_tab>*","");
 
                 }
             }
@@ -159,7 +159,7 @@
                     if (data.status === 1) {
                         {#$('#mess_student').style.visibility = 'visible';#}
                         alert(data.message);
-                        ("#mess_committee_tab").load(location.href+" #mess_committee_tab>*","")
+                        ("#mess_committee_tab").load(location.href+" #mess_committee_tab>*","");
                         {#$('#mess').style.display = "block";#}
                         {#$('#mess').show();#}
                         {#$("#mess_committee_tab").load(location.href+" #mess_committee_tab>*","")#}
