@@ -8,7 +8,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from django.views.generic import View
 from django.db.models import Q
+from django.contrib.auth.models import User
 from .forms import MinuteForm
+from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
                      Mess_minutes, Mess_reg, Messinfo, Monthly_bill,
                      Nonveg_data, Nonveg_menu, Payments, Rebate,
@@ -424,3 +426,23 @@ def add_bill_base_amount(request):
     # print(temp)
     return data
 
+
+def add_mess_committee(request, roll_number):
+    designation = Designation.objects.get(name='mess_committee')
+    add_obj = HoldsDesignation.objects.filter(Q(user__username=roll_number) & Q(designation=designation))
+    if add_obj:
+        data = {
+            'status': 2,
+            'message': roll_number + " is already a part of mess committee"
+        }
+        return data
+    else:
+        add_user = User.objects.get(username=roll_number)
+        designation_object = HoldsDesignation(user=add_user, working=add_user, designation=designation)
+        print(designation_object)
+        designation_object.save()
+        data = {
+            'status': 1,
+            'message': roll_number + " is added to Mess Committee"
+        }
+        return data

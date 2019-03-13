@@ -21,7 +21,7 @@ from .handlers import (add_nonveg_order, add_mess_feedback, add_vacation_food_re
                        add_menu_change_request, handle_menu_change_response, handle_vacation_food_request,
                        add_mess_registration_time, add_leave_request, add_mess_meeting_invitation,
                        handle_rebate_response, add_special_food_request,
-                       handle_special_request, add_bill_base_amount)
+                       handle_special_request, add_bill_base_amount, add_mess_committee)
 
 
 def mess(request):
@@ -667,7 +667,7 @@ class MenuPDF1(View):
     # This function is to generate the menu in pdf format (downloadable) for mess 1
     def post(self, request, *args, **kwargs):
         user = request.user
-        extrainfo = ExtraInfo.objects.get(user=user)
+        # extrainfo = ExtraInfo.objects.get(user=user)
         y = Menu.objects.all()
         context = {
             'menu': y,
@@ -677,23 +677,29 @@ class MenuPDF1(View):
 
 
 def menu_change_request(request):
-    user = request.user
     newmenu = Menu_change_request.objects.filter(status=2)
     data = model_to_dict(newmenu)
     return JsonResponse(data)
 
 
-def add_mess_committee(request):
+def submit_mess_committee(request):
     roll_number = request.POST['rollnumber']
-    add_obj = HoldsDesignation.objects.get(user__username=roll_number)
-    designation = Designation.objects.get(name='mess_committee')
-    add_user = User.objects.get(username=roll_number)
-    print(designation)
-    designation_object = HoldsDesignation(user=add_user, working = add_user ,designation=designation)
-    print(designation_object)
-    designation_object.save()
-    print(add_user)
+    data = add_mess_committee(request, roll_number)
+    return JsonResponse(data)
+
+
+def remove_mess_committee(request):
+    member_id = request.POST['member_id']
+    data_m = member_id.split("-")
+    roll_number = data_m[1]
+    if data_m[0] == 'mess_committee':
+        designation = Designation.objects.get(name='mess_committee')
+    else:
+        designation = Designation.objects.get(name='mess_convener')
+    remove_object = HoldsDesignation.objects.get(Q(user__username=roll_number) & Q(designation=designation))
+    remove_object.delete()
     data = {
-        'status': 1
+        'status': 1,
+        'message': 'Successfully removed '
     }
     return JsonResponse(data)

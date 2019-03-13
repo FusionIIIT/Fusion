@@ -247,9 +247,10 @@ Central Mess
 
 
 <script>
-        $(document).ready(function(
-            var tab = $([data-tab = 'first']).tabs('getSelected');
-            tab.panel('refresh');
+        $(document).ready(function() {
+                var tab = $([data-tab = 'first']).tabs('getSelected');
+                tab.panel('refresh');
+            }
             )
         var ctx = document.getElementById("myChart").getContext('2d');
         var myChart = new Chart(ctx, {
