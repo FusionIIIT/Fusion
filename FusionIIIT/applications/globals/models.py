@@ -85,6 +85,9 @@ class DepartmentInfo(models.Model):
 
 
 class ExtraInfo(models.Model):
+    """
+    Extra Info to augment the default User model from django
+    """
     id = models.CharField(max_length=20, primary_key=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=20, choices=Constants.TITLE_CHOICES, default='Dr.')
@@ -112,6 +115,13 @@ class ExtraInfo(models.Model):
 
 
 class HoldsDesignation(models.Model):
+    """
+    Records designations held by users.
+
+    'user' refers to the permanent/tenured holder of the designation.
+    'working' always refers to the user who's holding the title, either permanently or temporarily
+    Use 'working' to handle permissions in code
+    """
     user = models.ForeignKey(User, related_name='holds_designations', on_delete=models.CASCADE)
     working = models.ForeignKey(User, related_name='current_designation', on_delete=models.CASCADE)
     designation = models.ForeignKey(Designation, related_name='designees', on_delete=models.CASCADE)

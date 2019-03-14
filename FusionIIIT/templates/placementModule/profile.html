@@ -3,7 +3,7 @@
 
 {% block profile %}
 
-    <div hidden id="editModal" class="ui modal" ">
+    <div hidden id="editModal" class="ui modal">
         <div class="header">
             Edit Profile
         </div>
@@ -24,8 +24,10 @@
     <div class="ui fluid card">
         <div class="content">
             <div class="ui header">
+            About Me
+            </div>
+            {% comment %}
               <form method="POST" action="/profile/" enctype="multipart/form-data" class="ui form" role="form">
-                About Me
 
                   {{ form14.non_field_errors }}
                   {% csrf_token %}
@@ -40,17 +42,19 @@
 
               -->
                 </form>
+            {% endcomment %}
 
 
 
         <form method="POST" action="/profile/" class="ui form" role="form">
                     {% csrf_token %}
+                {% if editable %}
                   <input type="button" value="Edit" class="ui red mini button right floated" id="editButton" onclick='javascript:showModal()'>
                 <!--$('.ui.modal')
                   .modal() onclick='javascript:editStudent()
                 ; -->
                   <input type="submit" value="Save" class="ui red mini button right floated" name="profilesubmit" id="saveButton" style="display: none">
-            </div>
+                {% endif %}
 
 
 

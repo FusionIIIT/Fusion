@@ -7,6 +7,7 @@ from django.core.files.storage import FileSystemStorage
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 from PIL import Image
 
 from applications.academic_information.models import Student
@@ -682,12 +683,22 @@ def dashboard(request):
     }
     return render(request, "dashboard/dashboard.html", context)
 
-
 @login_required(login_url=LOGIN_URL)
 def profile(request, username=None):
-    user = get_object_or_404(User, Q(username=username)) if username else request.user
-    print('user', user)
+    """
+    Generic endpoint for views.
+    If it's a faculty, redirects to /eis/profile/*
+    If it's a student, displays the profile.
+    If the department is 'department: Academics:, redirects to /aims/
+    Otherwise, redirects to root
 
+    Args:
+        username: Username of the user. If None,
+            displays the profile of currently logged-in user
+    """
+    user = get_object_or_404(User, Q(username=username)) if username else request.user
+
+    editable = request.user == user
     profile = get_object_or_404(ExtraInfo, Q(user=user))
     if(str(user.extrainfo.user_type)=='faculty'):
         return HttpResponseRedirect('/eis/profile/' + (username if username else ''))
@@ -696,7 +707,7 @@ def profile(request, username=None):
     current = HoldsDesignation.objects.filter(Q(working=user, designation__name="student"))
     if current:
         student = get_object_or_404(Student, Q(id=profile.id))
-        if request.method == 'POST':
+        if editable and request.method == 'POST':
             if 'studentapprovesubmit' in request.POST:
                 status = PlacementStatus.objects.filter(pk=request.POST['studentapprovesubmit']).update(invitation='ACCEPTED', timestamp=timezone.now())
             if 'studentdeclinesubmit' in request.POST:
@@ -737,10 +748,10 @@ def profile(request, username=None):
                     skill = form.cleaned_data['skill']
                     skill_rating = form.cleaned_data['skill_rating']
                     try:
-                      skill_id = Skill.objects.get(skill=skill)
+                        skill_id = Skill.objects.get(skill=skill)
                     except Exception as e:
-                      skill_id = Skill.objects.create(skill=skill)
-                      skill_id.save()
+                        skill_id = Skill.objects.create(skill=skill)
+                        skill_id.save()
                     has_obj = Has.objects.create(unique_id=student,
                                                  skill_id=skill_id,
                                                  skill_rating = skill_rating)
@@ -887,7 +898,9 @@ def profile(request, username=None):
                    'projects': project, 'achievements': achievement, 'publications': publication,
                    'patent': patent, 'form': form, 'form1': form1, 'form14': form14,
                    'form5': form5, 'form6': form6, 'form7': form7, 'form8': form8,
-                   'form10':form10, 'form11':form11, 'form12':form12, 'current':current}
+                   'form10':form10, 'form11':form11, 'form12':form12, 'current':current,
+                   'editable': editable
+                   }
         return render(request, "globals/student_profile.html", context)
     else:
         return redirect("/")
@@ -1060,23 +1073,29 @@ def support_issue(request, id):
     }
     return HttpResponse(json.dumps(context), "application/json")
 
+@login_required(login_url=LOGIN_URL)
 def search(request):
+    """
+    Search endpoint.
+    Renders search results populated with results from 'q' GET query.
+    If length of the query is less than 3 or no results are found, shows a
+    helpful message instead.
+    Algorithm: Includes the first 15 users whose first/last name starts with the query words.
+               Thus, searching 'Atu Gu' will return 'Atul Gupta' as one result.
+
+               Note: All the words in the query must be matched.
+               While, searching 'Atul Kumar', the word 'Kumar' won't match either 'Atul' or 'Gupta'
+               and thus it won't be included in the search results.
+    """
     key = request.GET['q']
     if len(key) < 3:
         return render(request, "globals/search.html", {'sresults': ()})
     words = (w.strip() for w in key.split())
     name_q = Q()
     for token in words:
-        name_q = name_q & (Q(first_name__icontains=token) | Q(last_name__icontains=token))
+        name_q = name_q & (Q(first_name__icontains=token) | Q(last_name__icontains=token))#search constraints
     search_results = User.objects.filter(name_q)[:15]
-    search_extrainfo = []
-    # print(search_results)
-    # print(search_extrainfo)
-    for result in search_results:
-        search_extrainfo.append(ExtraInfo.objects.get(user=result))
-    # print(User.objects.filter(name_q))
-    # return redirect("/")
-
-    # zipped tuples sent, accessed in template by dot operator and indices 0 & 1
-    context = {'sresults':zip(search_results, search_extrainfo)}
+    if len(search_results) == 0:
+        search_results = []
+    context = {'sresults':search_results}
     return render(request, "globals/search.html", context)
