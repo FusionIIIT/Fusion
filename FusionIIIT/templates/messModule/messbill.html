@@ -20,16 +20,19 @@
                 {% csrf_token %}
                 <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
                     <div class="two fields">
+                        <header>Current Amount <br><br> {{ bill_base.bill_amount }}</header>
                         <div class="field">
                             <label>Enter bill amount for the current month</label>
-                            <input name="amount" id="amount" type="number">
+                            <input name="amount" id="amount" type="number"
+                                   placeholder={{ bill_base.bill_amount }}>
                         </div>
-                    </div>
-                    <div class="field">
+                        <div class="field">
                         <button class="ui primary button right floated" type="submit" name="submit"
                                 onclick="updatecost()">Update
                         </button>
                     </div>
+                    </div>
+
                 </div>
                 <br>
             </form>

@@ -18,7 +18,7 @@ from .forms import MinuteForm
 from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
                      Mess_minutes, Mess_reg, Messinfo, Monthly_bill,
                      Nonveg_data, Nonveg_menu, Payments, Rebate,
-                     Special_request, Vacation_food)
+                     Special_request, Vacation_food, MessBillBase)
 from .handlers import (add_nonveg_order, add_mess_feedback, add_vacation_food_request,
                        add_menu_change_request, handle_menu_change_response, handle_vacation_food_request,
                        add_mess_registration_time, add_leave_request, add_mess_meeting_invitation,
@@ -175,10 +175,7 @@ def mess(request):
         return render(request, "messModule/mess.html", context)
 
     elif extrainfo.user_type == 'staff':
-
-        # data = Glucose.objects.values('category__name') \
-        #     .annotate(num_values=Count('value'), average=Avg('value')) \
-        #     .order_by('-average')
+        current_bill = MessBillBase.objects.latest('timestamp')
         nonveg_orders = Nonveg_data.objects.filter(order_date=today_g)\
             .values('dish__dish','order_interval').annotate(total=Count('dish'))
         print(nonveg_orders)
@@ -194,6 +191,7 @@ def mess(request):
         leave = Rebate.objects.filter(status='1')
 
         context = {
+                   'bill_base': current_bill,
                    'today': today_g,
                    'nonveg_orders': nonveg_orders,
                    'members': members_mess,
