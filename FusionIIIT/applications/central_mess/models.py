@@ -160,6 +160,7 @@ class Rebate(models.Model):
     status = models.CharField(max_length=20, choices=STATUS, default='1')
     app_date = models.DateField(default=datetime.date.today)
     leave_type = models.CharField(choices=LEAVE_TYPE, max_length=20, default="casual")
+    # leave_document = models.FileField(upload_to='central_mess/')
 
     def __str__(self):
         return str(self.student_id.id)

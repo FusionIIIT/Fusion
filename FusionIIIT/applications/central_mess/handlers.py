@@ -1,5 +1,6 @@
 from django.core.exceptions import ObjectDoesNotExist
 from datetime import date, datetime
+from datetime import timedelta
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
@@ -15,6 +16,11 @@ from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
                      Mess_minutes, Mess_reg, Messinfo, Monthly_bill,
                      Nonveg_data, Nonveg_menu, Payments, Rebate,
                      Special_request, Vacation_food, MessBillBase)
+
+
+today_g = datetime.today()
+year_g = today_g.year
+tomorrow_g = today_g + timedelta(days=1)
 
 
 def add_nonveg_order(request, student):
@@ -35,7 +41,7 @@ def add_nonveg_order(request, student):
     try:
         dish_request = Nonveg_menu.objects.get(dish=request.POST.get("dish"))
         order_interval = request.POST.get("interval")
-        order_date = datetime.now().date()
+        order_date = tomorrow_g
         nonveg_object = Nonveg_data(student_id=student, order_date=order_date,
                                     order_interval=order_interval, dish=dish_request)
         nonveg_object.save()
@@ -252,6 +258,7 @@ def add_leave_request(request, student):
     """
     flag = 1
     today = str(datetime.now().date())
+    # leave_doc = request.FILES['myfile']
     leave_type = request.POST.get('leave_type')
     start_date = request.POST.get('start_date')
     end_date = request.POST.get('end_date')
@@ -407,23 +414,14 @@ def add_bill_base_amount(request):
     :param request:
     :return:
     """
-    # today = datetime.today()
-    # year_now = today.year
     # month_now = today.strftime('%B')
     cost = request.POST.get("amount")
     data = {
         'status': 1,
     }
-    # monthly_bill = Monthly_bill.objects.filter(Q(month=month_now) & Q(year=year_now))
-    amount = MessBillBase.objects.first()
-    amount.bill_amount = cost
-    amount.save()
-    # for temp in monthly_bill:
-    #     print(temp)
-    #     print(temp.year)
-    #     temp.amount = cost
-    #     temp.save()
-    # print(temp)
+    amount_object = MessBillBase(bill_amount=cost)
+    amount_object.save()
+
     return data
 
 

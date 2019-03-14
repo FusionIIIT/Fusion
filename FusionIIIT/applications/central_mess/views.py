@@ -29,6 +29,7 @@ today_g = datetime.today()
 year_g = today_g.year
 # tomorrow_g = today_g + datetime.timedelta(days=1)
 
+
 def mess(request):
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
