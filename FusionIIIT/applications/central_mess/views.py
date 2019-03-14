@@ -6,6 +6,7 @@ from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from django.views.generic import View
+from django.db.models import Count
 from django.forms.models import model_to_dict
 from django.db.models import Q
 from django.contrib.auth.models import User
@@ -24,6 +25,9 @@ from .handlers import (add_nonveg_order, add_mess_feedback, add_vacation_food_re
                        handle_rebate_response, add_special_food_request,
                        handle_special_request, add_bill_base_amount, add_mess_committee)
 
+today_g = datetime.today()
+year_g = today_g.year
+# tomorrow_g = today_g + datetime.timedelta(days=1)
 
 def mess(request):
     user = request.user
@@ -170,7 +174,13 @@ def mess(request):
         return render(request, "messModule/mess.html", context)
 
     elif extrainfo.user_type == 'staff':
-        nonveg_orders = Nonveg_data.objects.all().order_by('-app_date')
+
+        # data = Glucose.objects.values('category__name') \
+        #     .annotate(num_values=Count('value'), average=Avg('value')) \
+        #     .order_by('-average')
+        nonveg_orders = Nonveg_data.objects.filter(order_date=today_g)\
+            .values('dish__dish','order_interval').annotate(total=Count('dish'))
+        print(nonveg_orders)
         # make info with diff name and then pass context
         newmenu = Menu_change_request.objects.all()
         vaca_all = Vacation_food.objects.all()
@@ -183,6 +193,7 @@ def mess(request):
         leave = Rebate.objects.filter(status='1')
 
         context = {
+                   'today': today_g,
                    'nonveg_orders': nonveg_orders,
                    'members': members_mess,
                    'menu': y,
