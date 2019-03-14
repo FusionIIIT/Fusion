@@ -1,0 +1,181 @@
+{% load static %}
+{% block messcommittee %}
+
+<div id="mess_committee_tab">
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="mess_members">
+            Members
+        </a>
+
+        <a class="item" data-tab="members_action">
+            Add/Remove
+        </a>
+    </div>
+{% comment %} tab menu ends here {% endcomment %}
+
+    {% comment %} Committee sections starts here {% endcomment %}
+    <div class="ui active tab" data-tab="mess_members">
+        <div class = "ui vertical segment">
+            <p> Members in Mess Committee </p>
+            {% for items in members %}
+                <p> {{ items.user }} - {{ items.designation }}</p>
+            {% endfor %}
+        </div>
+    </div>
+
+
+    <div class="ui tab"data-tab="members_action">
+        <button class="ui primary fluid button" onclick="addMessCommittee()">
+            Add to Mess Committee
+        </button>
+        <br>
+        <button class="ui primary fluid button" onclick="removeMessMember()">
+            Remove from Mess Committee
+        </button>
+        <br>
+        <button class="ui primary fluid button">
+            Select Mess Convener
+        </button>
+    </div>
+
+
+    <div class="ui modal" id="addMember" style="padding: 2.5%;">
+        <div class="header">Add To Mess Committee</div>
+        <div class="ui vertical segment">
+            <div class="ui form">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="field">
+                        <label>Roll Number:</label>
+                        <input type="number" placeholder="Student Roll Number Here" id="roll_number">
+                    </div>
+{#                    <div  class="field" id="mess_student">#}
+{#                        <label>Mess:</label>#}
+{#                        <strong id="mess_number"> Added to mess Committee </strong>#}
+{#                    </div>#}
+                    <div class="field">
+                        <button class="ui primary fluid button" onclick="addMess()"> Add </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% comment %} Modal for Adding mess committee end here {% endcomment %}
+
+
+{% comment %} MOdal for Removing Mess Committee meber starts here {% endcomment %}
+    <div class="ui modal" id="removeMember" style="padding: 2.5%;">
+        <div class="header">Remove from Mess Committee</div>
+            <div class="ui vertical segment">
+                <div class="ui form">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="field">
+                            <label>Select Member</label>
+                            <select class="ui search fluid dropdown" name="member" id="member_id">
+                                {% for item in members %}
+                                <option value={{ item.designation }}-{{ item.user }} id={{ item.pk }}>
+                                    {{ item.user }} - {{ item.designation }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="field">
+                            <button class="ui primary fluid button" onclick="removeMess()"> Remove </button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+    </div>
+{% comment %} Modal for Removing Mess Committee ends here {% endcomment %}
+
+
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+
+    function addMessCommittee() {
+        {#$('#mess_student').style.visibility = 'hidden';#}
+        $('#addMember').modal('show');
+        {#$('#mess').hide();#}
+        {#$('#mess').style.display = "none";#}
+
+    }
+
+    function removeMessMember() {
+        $('#removeMember').modal('show');
+    }
+
+    function addMess() {
+        $.ajax(
+            {
+                type: 'POST',
+                url: 'addmesscommittee/',
+                dataType: 'json',
+                data: {
+                    'csrfmiddlewaretoken': '{{ csrf_token }}',
+                    'rollnumber': $("#roll_number").val(),
+                },
+                success: function (data) {
+                    if (data.status === 1) {
+                        {#$('#mess_student').style.visibility = 'visible';#}
+                        alert(data.message);
+                        ("#mess_committee_tab").load(location.href+" #mess_committee_tab>*","")
+                        {#$('#mess').style.display = "block";#}
+                        {#$('#mess').show();#}
+                        {#$("#mess_committee_tab").load(location.href+" #mess_committee_tab>*","")#}
+                    }
+                    else if (data.status === 2) {
+                        alert(data.message);
+                        ("#mess_committee_tab").load(location.href+" #mess_committee_tab>*","")
+                    }
+                },
+                error: function (data, err) {
+                    alert(err.message);
+                    ("#mess_committee_tab").load(location.href+" #mess_committee_tab>*","")
+
+                }
+            }
+        );
+    }
+
+    function removeMess() {
+        $.ajax(
+            {
+                type: 'POST',
+                url: 'removemesscommittee/',
+                dataType: 'json',
+                data: {
+                    'csrfmiddlewaretoken': '{{ csrf_token }}',
+                    'member_id': $("#member_id").val(),
+                },
+                success: function (data) {
+                    if (data.status === 1) {
+                        {#$('#mess_student').style.visibility = 'visible';#}
+                        alert(data.message);
+                        ("#mess_committee_tab").load(location.href+" #mess_committee_tab>*","")
+                        {#$('#mess').style.display = "block";#}
+                        {#$('#mess').show();#}
+                        {#$("#mess_committee_tab").load(location.href+" #mess_committee_tab>*","")#}
+                    }
+                    else if (data.status === 2) {
+                        alert(data.message);
+                        ("#mess_committee_tab").load(location.href+" #mess_committee_tab>*","")
+                    }
+                },
+                error: function (data, err) {
+                    alert(err.message);
+                    ("#mess_committee_tab").load(location.href+" #mess_committee_tab>*","")
+
+                }
+            }
+        );
+    }
+</script>
+{% endblock %}

@@ -1,7 +1,5 @@
 import datetime
-
 from django.db import models
-
 from applications.academic_information.models import Student
 
 # Create your models here.

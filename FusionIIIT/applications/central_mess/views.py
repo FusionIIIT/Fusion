@@ -1,17 +1,17 @@
 from datetime import date, datetime
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
 from django.db import transaction
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from django.views.generic import View
-from django.core import serializers
 from django.forms.models import model_to_dict
-from applications.central_mess.utils import render_to_pdf
+from django.db.models import Q
+from django.contrib.auth.models import User
+from .utils import render_to_pdf
 from applications.academic_information.models import Student
-from applications.globals.models import ExtraInfo, HoldsDesignation
+from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 from .forms import MinuteForm
 from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
                      Mess_minutes, Mess_reg, Messinfo, Monthly_bill,
@@ -21,7 +21,7 @@ from .handlers import (add_nonveg_order, add_mess_feedback, add_vacation_food_re
                        add_menu_change_request, handle_menu_change_response, handle_vacation_food_request,
                        add_mess_registration_time, add_leave_request, add_mess_meeting_invitation,
                        handle_rebate_response, add_special_food_request,
-                       handle_special_request, add_bill_base_amount)
+                       handle_special_request, add_bill_base_amount, add_mess_committee)
 
 
 def mess(request):
@@ -63,6 +63,7 @@ def mess(request):
         splrequest = Special_request.objects.filter(student_id=student).order_by('-app_date')
         feed = Feedback.objects.all()
         messinfo = Messinfo.objects.get(student_id=student)
+        newmenu = Menu_change_request.objects.all()
         count = 0
         #variable y stores the menu items
         mess_optn = Messinfo.objects.get(student_id=student)
@@ -135,6 +136,7 @@ def mess(request):
         context = {
                    'menu': y,
                    'messinfo': messinfo,
+                   'newmenu': newmenu,
                    'monthly_bill': monthly_bill,
                    'payments': payments,
                    'nonveg': x,
@@ -170,6 +172,10 @@ def mess(request):
         # make info with diff name and then pass context
         newmenu = Menu_change_request.objects.all()
         vaca_all = Vacation_food.objects.all()
+        # members_mess = HoldsDesignation.objects.filter(designation__name='mess_convener')
+        members_mess = HoldsDesignation.objects.filter(Q(designation__name='mess_convener')
+                                                       | Q(designation__name='mess_committee'))
+        print(members_mess)
         y = Menu.objects.all()
         x = Nonveg_menu.objects.all()
         leave = Rebate.objects.filter(status='1')
@@ -183,6 +189,7 @@ def mess(request):
         #            'desig': desig,
         # }
         context = {
+                   'members': members_mess,
                    'menu': y,
                    'newmenu': newmenu,
                    'vaca_all': vaca_all,
@@ -228,13 +235,18 @@ def mess(request):
 
             elif f.feedback_type == 'Others' and mess_opt.mess_option == 'mess2':
                 count8 += 1
-
+            context = {
+                 'info': extrainfo,
+                 'menu': y,
+                 'meeting': meeting,
+                 'minutes': minutes,
+                 'count1': count1,
+                 'count2': count2, 'count3': count3, 'feed': feed,
+                 'count4': count4, 'form': form, 'count5': count5,
+                 'count6': count6, 'count7': count7, 'count8': count8, 'desig': desig
+            }
         return render(request, 'messModule/mess.html',
-                      {'info': extrainfo, 'menu': y, 'meeting': meeting,
-                       'minutes': minutes, 'count1': count1,
-                       'count2': count2, 'count3': count3, 'feed': feed,
-                       'count4': count4, 'form': form, 'count5': count5,
-                       'count6': count6, 'count7': count7, 'count8': count8, 'desig': desig})
+                     )
 
 
 @login_required
@@ -314,7 +326,7 @@ def mess_vacation_submit(request):
 @transaction.atomic
 def submit_mess_menu(request):
     """
-    This function is to record mess menu change requests
+    This function is to record mess menu change requests by the  mess_committee
     :param request:
         user:Current user
     :return:
@@ -325,13 +337,12 @@ def submit_mess_menu(request):
     designation = holds_designations
     context = {}
     # A user may hold multiple designations
-    for d in designation:
-        if d.designation.name == 'mess_convener':
-            data = add_menu_change_request(request)
-            if data['status'] == 1:
-                return HttpResponseRedirect("/mess")
 
-    return render(request, 'mess.html', context)
+    data = add_menu_change_request(request)
+    if data['status'] == 1:
+        return HttpResponseRedirect("/mess")
+
+    return render(request, 'messModule/mess.html', context)
 
 
 @login_required
@@ -491,6 +502,9 @@ def rebate_response(request):
        @return:
             data: returns the status of the application
     """
+    data = {
+        'status': 1
+    }
     user = request.user
     designation = HoldsDesignation.objects.filter(user=user)
     for d in designation:
@@ -653,7 +667,7 @@ class MenuPDF1(View):
     # This function is to generate the menu in pdf format (downloadable) for mess 1
     def post(self, request, *args, **kwargs):
         user = request.user
-        extrainfo = ExtraInfo.objects.get(user=user)
+        # extrainfo = ExtraInfo.objects.get(user=user)
         y = Menu.objects.all()
         context = {
             'menu': y,
@@ -663,21 +677,29 @@ class MenuPDF1(View):
 
 
 def menu_change_request(request):
-    user = request.user
-    # holds_designations = HoldsDesignation.objects.filter(user=user)
     newmenu = Menu_change_request.objects.filter(status=2)
-    # extrainfo = ExtraInfo.objects.get(user=user)
-    # current_date = date.today()
     data = model_to_dict(newmenu)
-    # json_models = serializers.serialize("json", newmenu)
-    # data = {
-    #     'newmenu': model_data,
-    # }
     return JsonResponse(data)
-    # return HttpResponse("hi")
-    # return HttpResponse(model_data,
-    #                     mimetype='application/json')
-    # return HttpResponse(simplejson.dumps(data),
-    #                     mimetype='application/json')
-    # return JsonResponse(data)
-    # return render(request, "messModule/respondmenu.html", context)
+
+
+def submit_mess_committee(request):
+    roll_number = request.POST['rollnumber']
+    data = add_mess_committee(request, roll_number)
+    return JsonResponse(data)
+
+
+def remove_mess_committee(request):
+    member_id = request.POST['member_id']
+    data_m = member_id.split("-")
+    roll_number = data_m[1]
+    if data_m[0] == 'mess_committee':
+        designation = Designation.objects.get(name='mess_committee')
+    else:
+        designation = Designation.objects.get(name='mess_convener')
+    remove_object = HoldsDesignation.objects.get(Q(user__username=roll_number) & Q(designation=designation))
+    remove_object.delete()
+    data = {
+        'status': 1,
+        'message': 'Successfully removed '
+    }
+    return JsonResponse(data)
