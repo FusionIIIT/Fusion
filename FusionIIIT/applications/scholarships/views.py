@@ -459,6 +459,7 @@ def student_view(request):
 
 
     else:
+        #start of database queries
         mcm = Mcm.objects.all()
         ch = Constants.batch
         time = Constants.time
@@ -480,14 +481,27 @@ def student_view(request):
         assis = Designation.objects.get(name='spacsassistant')
         hd = HoldsDesignation.objects.get(designation=con)
         hd1 = HoldsDesignation.objects.get(designation=assis)
-
-        # Arihant: Here we are fetching the flags from the Notification table of student
         x = Notification.objects.get(student_id = request.user.extrainfo.id)
+        
+        # Arihant: Here we are fetching the flags from the Notification table of student
+        #end of database queries
+        
+
+        #notification flags
+        for dates in release:
+            if check_date(dates.startdate,dates.enddate):
+                print('correct date found not deleting',dates.enddate)
+            else:
+                print('enddate exceed deleting now',dates.enddate)
+                Release.objects.filter(id=dates.id).delete()
+
+        release = Release.objects.all()
         notif_mcm_flag = x.notification_mcm_flag
-        print('printing flag',notif_mcm_flag)
+        #print('printing flag',notif_mcm_flag)
         notif_convocation_flag  = x.notification_convocation_flag
         show_mcm_flag=x.invite_mcm_accept_flag
         show_convocation_flag=x.invite_covocation_accept_flag
+        #end
         return render(request, 'scholarshipsModule/scholarships_student.html',
                   {'mcm': mcm, 'time': time, 'ch': ch, 'awards': awards, 'spi': spi,
                    'student': student,'student_batch':student_batch, 'winners': winners, 'release': release,
@@ -696,3 +710,10 @@ def get_content(request):
         context['result']='Failure'
 
     return HttpResponse(json.dumps(context), content_type='get_content/json')
+
+def check_date(start_date, end_date):
+    current_date = datetime.date.today()
+    if current_date >= start_date and current_date <= end_date:
+        return True
+    else:
+        return False
