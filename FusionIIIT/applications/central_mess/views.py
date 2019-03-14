@@ -10,6 +10,7 @@ from django.forms.models import model_to_dict
 from django.db.models import Q
 from django.contrib.auth.models import User
 from .utils import render_to_pdf
+from background_task import background
 from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 from .forms import MinuteForm
@@ -169,6 +170,7 @@ def mess(request):
         return render(request, "messModule/mess.html", context)
 
     elif extrainfo.user_type == 'staff':
+        nonveg_orders = Nonveg_data.objects.all().order_by('-app_date')
         # make info with diff name and then pass context
         newmenu = Menu_change_request.objects.all()
         vaca_all = Vacation_food.objects.all()
@@ -179,16 +181,9 @@ def mess(request):
         y = Menu.objects.all()
         x = Nonveg_menu.objects.all()
         leave = Rebate.objects.filter(status='1')
-        # context = {
-        #            'menu': y,
-        #            'vaca_all': vaca_all,
-        #            'info': extrainfo,
-        #            'leave': leave,
-        #            'current_date': current_date,
-        #            'mess_reg': mess_reg,
-        #            'desig': desig,
-        # }
+
         context = {
+                   'nonveg_orders': nonveg_orders,
                    'members': members_mess,
                    'menu': y,
                    'newmenu': newmenu,
