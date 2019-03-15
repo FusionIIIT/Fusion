@@ -11,6 +11,7 @@ from django.views.generic import View
 from django.db.models import Q
 from django.contrib.auth.models import User
 from .forms import MinuteForm
+from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
                      Mess_minutes, Mess_reg, Messinfo, Monthly_bill,
@@ -444,3 +445,60 @@ def add_mess_committee(request, roll_number):
             'message': roll_number + " is added to Mess Committee"
         }
         return data
+
+
+def generate_bill():
+    student_all = Student.objects.all()
+    month_t = datetime.now().month - 1
+    first_day_of_this_month = date.today().replace(day=1)
+    last_day_prev_month = first_day_of_this_month - timedelta(days=1)
+    previous_month = last_day_prev_month.strftime('%B')
+    # previous_month = month_t.strftime("%B")
+    print(previous_month)
+    amount_c = MessBillBase.objects.latest('timestamp')
+    for student in student_all:
+        nonveg_total_bill=0
+        rebate_count = 0
+        total = 0
+        nonveg_data = Nonveg_data.objects.filter(student_id=student)
+        rebates = Rebate.objects.filter(student_id=student)
+        for order in nonveg_data:
+            if order.order_date.strftime("%B") == previous_month:
+                nonveg_total_bill = nonveg_total_bill + order.dish.price
+        for r in rebates:
+            if r.status == '2':
+                if r.start_date.strftime("%B") == previous_month:
+                    rebate_count = rebate_count + abs((r.end_date - r.start_date).days) + 1
+        rebate_amount = rebate_count*amount_c.bill_amount/30
+        total = amount_c.bill_amount + nonveg_total_bill + rebate_amount
+        bill_object = Monthly_bill(student_id=student,
+                                   month=previous_month,
+                                   amount=amount_c.bill_amount,
+                                   rebate_count=rebate_count,
+                                   rebate_amount=rebate_amount,
+                                   nonveg_total_bill=nonveg_total_bill,
+                                   total_bill=total)
+        if Monthly_bill.objects.filter(student_id=student,
+                                       month=previous_month,
+                                       year = year_g,
+                                       total_bill=total):
+            print("exists")
+        elif Monthly_bill.objects.filter(student_id=student,
+                                       month=previous_month,
+                                       year = year_g):
+            Monthly_bill.objects.filter(student_id=student,
+                                        month=previous_month,
+                                        year=year_g).update(student_id=student,
+                                                            month=previous_month,
+                                                            amount=amount_c.bill_amount,
+                                                            rebate_count=rebate_count,
+                                                            rebate_amount=rebate_amount,
+                                                            nonveg_total_bill=nonveg_total_bill,
+                                                            total_bill=total)
+            # bill_object.update()
+            print(student)
+        else:
+            bill_object.save()
+            print(student)
+
+    return 1

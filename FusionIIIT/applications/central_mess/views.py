@@ -23,7 +23,7 @@ from .handlers import (add_nonveg_order, add_mess_feedback, add_vacation_food_re
                        add_menu_change_request, handle_menu_change_response, handle_vacation_food_request,
                        add_mess_registration_time, add_leave_request, add_mess_meeting_invitation,
                        handle_rebate_response, add_special_food_request,
-                       handle_special_request, add_bill_base_amount, add_mess_committee)
+                       handle_special_request, add_bill_base_amount, add_mess_committee, generate_bill)
 
 today_g = datetime.today()
 year_g = today_g.year
@@ -114,30 +114,30 @@ def mess(request):
             elif f.feedback_type == 'Others' and mess_opt.mess_option == 'mess2':
                 count8 += 1
 
-        for bill in monthly_bill:
-
-            for z in data:
-                if z.order_date.strftime("%B") == bill.month:
-                    nonveg_total_bill = nonveg_total_bill + z.dish.price
-                    bill.nonveg_total_bill = nonveg_total_bill
-
-                else:
-                    bill.nonveg_total_bill = 0
-
-            for r in rebates:
-                if r.status == '2':
-                    print(bill.month)
-                    print(r.start_date.strftime("%B"))
-                    if r.start_date.strftime("%B") == bill.month:
-                        rebate_count = rebate_count + abs((r.end_date - r.start_date).days) + 1
-                        bill.rebate_count = rebate_count
-
-                    else:
-                        bill.rebate_count = 0
-
-            bill.rebate_amount = bill.rebate_count*79
-            bill.total_bill = bill.amount - bill.rebate_amount + bill.nonveg_total_bill
-            bill.save()
+        # for bill in monthly_bill:
+        #
+        #     for z in data:
+        #         if z.order_date.strftime("%B") == bill.month:
+        #             nonveg_total_bill = nonveg_total_bill + z.dish.price
+        #             bill.nonveg_total_bill = nonveg_total_bill
+        #
+        #         else:
+        #             bill.nonveg_total_bill = 0
+        #
+        #     for r in rebates:
+        #         if r.status == '2':
+        #             print(bill.month)
+        #             print(r.start_date.strftime("%B"))
+        #             if r.start_date.strftime("%B") == bill.month:
+        #                 rebate_count = rebate_count + abs((r.end_date - r.start_date).days) + 1
+        #                 bill.rebate_count = rebate_count
+        #
+        #             else:
+        #                 bill.rebate_count = 0
+        #
+        #     bill.rebate_amount = bill.rebate_count*79
+        #     bill.total_bill = bill.amount - bill.rebate_amount + bill.nonveg_total_bill
+        #     bill.save()
 
         context = {
                    'menu': y,
@@ -581,62 +581,10 @@ def generate_mess_bill(request):
         """
     # todo generate proper logic for generate_mess_bill
     user = request.user
-    extrainfo = ExtraInfo.objects.get(user=user)
-    nonveg_data = Nonveg_data.objects.all()
-    today = datetime.today()
-    year_now = today.year
-    month_now = today.strftime('%B')
-    amount_m = int(request.POST["amount"])
-    print(amount_m)
-    # amount_m = 2400
-    data = {
-        'status': 1,
+    int = generate_bill()
+    data ={
+        'status': 1
     }
-    mess_info = Messinfo.objects.all()
-    students = Student.objects.all()
-    for temp in mess_info:
-        print(temp)
-        count = 0
-        rebate_amount = 0
-        nonveg_total_bill = 0
-        rebates = Rebate.objects.filter(student_id=temp.student_id)
-        for item in rebates:
-            d1 = item.start_date
-            d2 = item.end_date
-            item.duration = abs((d2 - d1).days)+1
-            item.save()
-
-        for items in rebates:
-            if items.leave_type == 'casual':
-                count += item.duration
-        rebate_count = count
-        rebate_amount = rebate_count*80
-        total_bill = rebate_amount + nonveg_total_bill + amount_m
-        monthly_bill_obj = Monthly_bill(student_id=temp.student_id,
-                                        month=month_now,
-                                        year=year_now,
-                                        amount=amount_m,
-                                        rebate_count=rebate_count,
-                                        rebate_amount=rebate_amount,
-                                        nonveg_total_bill=nonveg_total_bill,
-                                        total_bill=total_bill)
-        if Monthly_bill.objects.filter(student_id=temp.student_id, month=month_now, year=year_now):
-            if Monthly_bill.objects.filter(student_id=temp.student_id, month=month_now, year=year_now,
-                                           total_bill=total_bill):
-                print("ok")
-            else:
-                Monthly_bill.objects.filter(student_id=temp.student_id, month=month_now, year=year_now). \
-                    update(student_id=temp.student_id,
-                           month=month_now,
-                           year=year_now,
-                           amount=amount_m,
-                           rebate_amount=rebate_amount,
-                           rebate_count=rebate_count,
-                           nonveg_total_bill=nonveg_total_bill,
-                           total_bill=total_bill
-                           )
-    else:
-        monthly_bill_obj.save()
     return JsonResponse(data)
 
     
