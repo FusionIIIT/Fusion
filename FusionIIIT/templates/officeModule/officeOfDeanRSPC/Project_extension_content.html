@@ -28,11 +28,11 @@
         </th>
 
         <th class="four wide column">
-            Date1
+            Date
         </th>
-         <th class="four wide column">
+         <!--<th class="four wide column">
             view Details
-        </th>
+        </th>-->
     </tr>
     </thead>
 
@@ -45,14 +45,14 @@
 
         <td class="collapsing">
             <div class="ui fitted checkbox">
-                <input type="checkbox" value={{pr.id}} name="id"> <label></label>
+                <input type="checkbox" value={{pr.id}} name="id[]"> <label></label>
             </div>
         </td>
 
         <td>
             {% for pr1 in project %}
                 {%if pr1 == pr.project_id %}
-                    {{pr1.PI_id}}
+                    {{pr1.PI_id.user.first_name}} {{pr1.PI_id.user.last_name}}
                 {%endif%}
             {%endfor%}
         </td>
@@ -93,9 +93,9 @@
             {%endfor%}
 
         </td>
-        <td>
+        <!--<td>
            <a href="/office/officeOfDeanRSPC/{{pr.id}}/" target="_blank">Details</a>
-        </td>
+        </td>-->
 
     </tr>
     {%comment%} endif {%endcomment%}
@@ -152,8 +152,9 @@
 <!-- <div class="ui primary right floated button"><a href="" target="_blank" style="color:white;">View Details</a></div> -->
 <!-- <a href="/officeOfDeanRSPC/app/"><div class="ui primary right floated button">Approve Selected</div></a> -->
 {% if "Dean (R&D)" in desig %}
-<button class="ui primary right floated button" type="submit" name="approve" value="approve">Approve</button>
-<button class="ui primary right floated button" type="submit" name="reject" value="reject">Reject</button>
+<button class="ui primary right floated button" type="submit"  name="approve" value="approve" >Approve</button>
+<button class="ui primary right floated button" type="submit"  name="reject" value="reject">Reject</button>
+<button class="ui primary right floated button" type="submit"  name="forward" value="approve" >Forward</button>
 <!-- <button class="ui primary right floated button" type="submit" name="forward" value="forward">Forward Selected</button>
  -->{% endif %}
 
