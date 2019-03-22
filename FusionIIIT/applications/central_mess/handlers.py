@@ -1,6 +1,7 @@
 from django.core.exceptions import ObjectDoesNotExist
 from datetime import date, datetime
 from datetime import timedelta
+from threading import Thread
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
@@ -501,4 +502,3 @@ def generate_bill():
             bill_object.save()
             print(student)
 
-    return 1

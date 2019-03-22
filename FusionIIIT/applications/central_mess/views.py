@@ -1,6 +1,7 @@
 from datetime import date, datetime, timedelta
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
+from threading import Thread
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
@@ -571,8 +572,8 @@ def generate_mess_bill(request):
     """
         This function is to generate the bill of the students
         @variables:
-        user: stores current user infromatiob
-        nonveg_data : stores records of nonveg ordered by a student
+        user: stores current user information
+        nonveg_data : stores records of non-veg ordered by a student
         year_now: current year
         month_now: current month
         amount_m: monhly base amount
@@ -582,7 +583,10 @@ def generate_mess_bill(request):
         """
     # todo generate proper logic for generate_mess_bill
     user = request.user
-    int = generate_bill()
+    t1 = Thread(target=generate_bill, args=())
+    t1.setDaemon(True)
+    t1.start()
+    # int = generate_bill()
     data ={
         'status': 1
     }
