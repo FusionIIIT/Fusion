@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
@@ -27,6 +27,7 @@ from .handlers import (add_nonveg_order, add_mess_feedback, add_vacation_food_re
 
 today_g = datetime.today()
 year_g = today_g.year
+tomorrow_g = today_g + timedelta(days=1)
 # tomorrow_g = today_g + datetime.timedelta(days=1)
 
 
@@ -654,5 +655,19 @@ def remove_mess_committee(request):
     data = {
         'status': 1,
         'message': 'Successfully removed '
+    }
+    return JsonResponse(data)
+
+
+def get_leave_data(request):
+    leave_data = Rebate.objects.filter(Q(start_date__lte=today_g)&Q(end_date__gte=today_g)).count()
+    leave_data_t = Rebate.objects.filter(Q(start_date__lte=tomorrow_g)&Q(end_date__gte=tomorrow_g)).count()
+    data = {
+        'status': 1,
+        'message': 'HI I AM WORKING',
+        'today': today_g.date(),
+        'tomorrow': tomorrow_g.date(),
+        'counttoday': leave_data,
+        'counttomorrow':leave_data_t
     }
     return JsonResponse(data)

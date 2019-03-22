@@ -7,7 +7,7 @@
         Respond to Leave Requests
     </a>
 
-    <a class="item" data-tab="leavepastrecords" onclick="getLeave()">
+    <a class="item" data-tab="leavepastrecords">
         Past Records
     </a>
 
@@ -16,6 +16,11 @@
 
 <div class="ui active tab" data-tab="respondtoleaverequests">
     <div class="ui vertical segment">
+    <div>
+        <button class="ui primary fluid button" onclick="getLeave()">
+            Get Leave Data:
+        </button>
+    </div>
         <table class="ui very basic collapsing celled large sortable table"
                style="padding-left: 2.5%;
                                                           padding-right: 2.5%;
@@ -195,6 +200,21 @@
 
     </div>
 </div>
+    <div class="ui modal" id="leavedata" style="padding: 2.5%;">
+        <div class="ui vertical segment">
+            <header>Statistics for Today</header>
+            <br>
+            <div id="leave_today">
+
+            </div>
+            <br><br>
+            <header>Statistics for Tomorrow</header>
+            <br>
+            <div id="leave_tomorrow">
+
+            </div>
+        </div>
+    </div>
 {% endblock %}
 {% endblock %}
 
@@ -252,7 +272,25 @@ function acceptReq(id){
 
          }
         function getLeave(){
+            $('#leavedata').modal('show');
+            $.ajax({
+                type: 'GET',
+                url: 'getleave',
+                dataType: 'json',
+                data:{
+                },
+                success: function(data) {
 
+                        $('#leave_today').html("Number of students taking leave on " + data.today +
+                            " is " +data.counttoday);
+                        $('#leave_tomorrow').html("Number of students taking leave on " + data.tomorrow +
+                            " is " +data.counttomorrow);
+
+                },
+                error: function(data, err) {
+                    alert(err.message);
+                }
+            });
         }
 
 </script>
