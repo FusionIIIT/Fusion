@@ -675,3 +675,22 @@ def get_leave_data(request):
         'counttomorrow':leave_data_t
     }
     return JsonResponse(data)
+
+
+def accept_vacation_leaves(request):
+    start_date_leave = request.GET['start_date']
+    end_date_leave = request.GET['end_date']
+    leave_data = Rebate.objects.filter(Q(start_date__gte=start_date_leave)
+                                       &Q(end_date__lte=end_date_leave)
+                                       &Q(leave_type="vacation")
+                                       &Q(status='1'))
+    if leave_data:
+        for item in leave_data:
+            item.status = '2'
+            item.save()
+
+    data = {
+        'status': 1,
+        'display': 'Vacation Leaves Successfully Accepted'
+    }
+    return JsonResponse(data)

@@ -18,7 +18,11 @@
     <div class="ui vertical segment">
     <div>
         <button class="ui primary fluid button" onclick="getLeave()">
-            Get Leave Data:
+            Get Leave Data
+        </button>
+        <br>
+        <button class="ui primary fluid button" onclick="dateVacation()">
+            Accept Vacation leaves
         </button>
     </div>
         <table class="ui very basic collapsing celled large sortable table"
@@ -215,6 +219,46 @@
             </div>
         </div>
     </div>
+
+    <div class="ui small modal" id="dateVacationModal" style="padding: 1.5%;">
+        <div class="ui vertical segment">
+            <header><strong>Accept Vacation Leave between dates:</strong></header>
+            <br>
+            <form method="get">
+{#                {% csrf_token %}#}
+            <div class="ui grid">
+                <div class="eight wide column">
+                    <label>Leave From:</label>
+                    <br>
+                    <br>
+                    <div class="ui calendar">
+                        <div class="ui input left icon">
+                            <input name="start_date" type="date" placeholder="From" required="true"
+                                   id="startDate">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="eight wide column">
+                    <label>Leave To:</label>
+                    <br>
+                    <br>
+                    <div class="ui calendar">
+                        <div class="ui input left icon">
+                            <input name="start_date" type="date" placeholder="From" required="true"
+                                   id="endDate">
+                        </div>
+                    </div>
+                </div>
+            </div>
+                <div>
+                    <button class="ui primary right floated button" onclick="acceptLeaveDates()" type="submit">
+                        Accept
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 {% endblock %}
 {% endblock %}
 
@@ -286,6 +330,26 @@ function acceptReq(id){
                         $('#leave_tomorrow').html("Number of students taking leave on " + data.tomorrow +
                             " is " +data.counttomorrow);
 
+                },
+                error: function(data, err) {
+                    alert(err.message);
+                }
+            });
+        }
+        function dateVacation(){
+            $('#dateVacationModal').modal('show');
+        }
+        function acceptLeaveDates(){
+            $.ajax({
+                type: 'GET',
+                url: 'acceptleave',
+                dataType: 'json',
+                data:{
+                    'start_date': $("#startDate").val(),
+                    'end_date': $("#endDate").val(),
+                },
+                success: function(data) {
+                    alert(data.display);
                 },
                 error: function(data, err) {
                     alert(err.message);
