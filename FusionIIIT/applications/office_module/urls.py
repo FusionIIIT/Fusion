@@ -27,7 +27,10 @@ urlpatterns = [
     url(r'^officeOfDeanRSPC/forwarded1/$',views.hod_closure,name='hod_closure'),
     url(r'^officeOfDeanRSPC/forwarded2/$',views.hod_extension,name='hod_extension'),
     url(r'^officeOfDeanRSPC/forwarded3/$',views.hod_allocation,name='hod_allocation'),
-    url(r'^officeOfDeanRSPC/(?P<pr_id>[0-9]+)/$',views.pdf,name='pdf'),
+    url(r'^officeOfDeanRSPC/registration_details/(?P<pr_id>[0-9]+)/$',views.reg_details,name='reg_details'),
+    url(r'^officeOfDeanRSPC/extension_details/(?P<pr_id>[0-9]+)/$',views.ext_details,name='ext_details'),
+    url(r'^officeOfDeanRSPC/closure_details/(?P<pr_id>[0-9]+)/$',views.closure_details,name='closure_details'),
+    url(r'^officeOfDeanRSPC/reallocation_details/(?P<pr_id>[0-9]+)/$',views.reallocate_details,name='reallocate_details'),
 
     url(r'^eisModulenew/profile', views.eisModulenew, name='eisModulenew'),
 

@@ -111,8 +111,12 @@
         {% comment %}
             The central-rail segment starts here!
         {% endcomment %}
+
+
         <div class="eight wide column">
             {% comment %}The Details start here!{% endcomment %}
+
+
             <div class="ui active tab segment" data-tab="first">
                 {% block personaldetails %}
                     {% include 'eisModulenew/personaldetails.html' %}
@@ -209,7 +213,30 @@
 
             {% comment %}The Publications ends here!{% endcomment %}
 
+            {% comment %}Block for Displaying Messages{% endcomment %}
+            {% if messages %}
+                {% for message in messages %}
+                    {% if message.tags == "success" %}
+                    <div class="ui positive message">
+                        <i class="close icon"></i>
+                        <div class="header">
+                            Successful!
+                        </div>
+                    {% else %}
+                    <div class="ui negative message">
+                        <i class="close icon"></i>
+                        <div class="header">
+                            Alert!
+                        </div>
+                    {% endif %}
+                        <p>{{message}}</p>
+                </div>
+                {% endfor %}
+            {% endif %}
+
         </div>
+
+
         {% comment %}The central-rail segment ends here!{% endcomment %}
 
         {% comment %}The right-rail segment starts here!{% endcomment %}
@@ -271,6 +298,14 @@
             }
         }
 
+        $('.message .close')
+  .on('click', function() {
+    $(this)
+      .closest('.message')
+      .transition('fade')
+    ;
+  })
+;
 
 
         $('#example1').calendar();
