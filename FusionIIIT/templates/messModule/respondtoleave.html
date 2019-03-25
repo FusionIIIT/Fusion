@@ -7,9 +7,9 @@
         Respond to Leave Requests
     </a>
 
-    <a class="item" data-tab="leavepastrecords">
-        Past Records
-    </a>
+{#    <a class="item" data-tab="leavepastrecords">#}
+{#        Past Records#}
+{#    </a>#}
 
 </div>
 
@@ -133,77 +133,77 @@
 <!-- end leave request-->
 
 <!--leav request past records-->
-<div class ="ui tab" data-tab="leavepastrecords" id="pastmessleave">
-    <div class="ui vertical segment">
-        <!--<div class="ui pointing tertiary menu>">-->
-            <!--<a class="active item" id="acceptedleave" data-tab="acceptedleave" onclick="getAcceptedLeave()">Accepted Requests</a>-->
-
-            <!--<a class="item" id="rejectedleave" data-tab="rejectedleave">Rejected Requests</a>-->
-        <!--</div>-->
-        <table id="leaverecords" class="ui very basic collapsing celled large sortable table"
-               style="padding-left: 2.5%;
-                                                          padding-right: 2.5%;
-                                                          padding-top: 1%;
-                                                          padding-bottom: 1.5%;
-                                                          margin: auto;">
-            <thead>
-            <tr>
-                <th class="four wide">
-                    Student
-                </th>
-
-                <th class="four wide">
-                    Type
-                </th>
-
-                <th class="two wide">
-                    From
-                </th>
-
-                <th class="two wide">
-                    To
-                </th>
-                <th class="one wide">
-                    Status
-                </th>
-            </tr>
-            </thead>
-
-            <tbody>
-            {% for item in leave %}
-                {% if item.status == '2' %}
-                <tr>
-                <th class="four wide">
-                    {{item.student_id.id}}
-                </th>
-
-                <th class="four wide">
-                    {{item.leave_type}}
-                </th>
-
-                <th class="two wide">
-                    {{item.start_date}}
-                </th>
-
-                <th class="two wide">
-                    {{item.end_date}}
-                </th>
-                <th class="one wide">
-                    Accepted
-                </th>
-            </tr>
-                {% endif %}
-            {% endfor %}
-            </tbody>
-
-        </table>
-
-        <br>
-
-        <div class="ui divider"></div>
-
-    </div>
-</div>
+{#<div class ="ui tab" data-tab="leavepastrecords" id="pastmessleave">#}
+{#    <div class="ui vertical segment">#}
+{#        <!--<div class="ui pointing tertiary menu>">-->#}
+{#            <!--<a class="active item" id="acceptedleave" data-tab="acceptedleave" onclick="getAcceptedLeave()">Accepted Requests</a>-->#}
+{##}
+{#            <!--<a class="item" id="rejectedleave" data-tab="rejectedleave">Rejected Requests</a>-->#}
+{#        <!--</div>-->#}
+{#        <table id="leaverecords" class="ui very basic collapsing celled large sortable table"#}
+{#               style="padding-left: 2.5%;#}
+{#                                                          padding-right: 2.5%;#}
+{#                                                          padding-top: 1%;#}
+{#                                                          padding-bottom: 1.5%;#}
+{#                                                          margin: auto;">#}
+{#            <thead>#}
+{#            <tr>#}
+{#                <th class="four wide">#}
+{#                    Student#}
+{#                </th>#}
+{##}
+{#                <th class="four wide">#}
+{#                    Type#}
+{#                </th>#}
+{##}
+{#                <th class="two wide">#}
+{#                    From#}
+{#                </th>#}
+{##}
+{#                <th class="two wide">#}
+{#                    To#}
+{#                </th>#}
+{#                <th class="one wide">#}
+{#                    Status#}
+{#                </th>#}
+{#            </tr>#}
+{#            </thead>#}
+{##}
+{#            <tbody>#}
+{#            {% for item in leave %}#}
+{#                {% if item.status == '2' %}#}
+{#                <tr>#}
+{#                <th class="four wide">#}
+{#                    {{item.student_id.id}}#}
+{#                </th>#}
+{##}
+{#                <th class="four wide">#}
+{#                    {{item.leave_type}}#}
+{#                </th>#}
+{##}
+{#                <th class="two wide">#}
+{#                    {{item.start_date}}#}
+{#                </th>#}
+{##}
+{#                <th class="two wide">#}
+{#                    {{item.end_date}}#}
+{#                </th>#}
+{#                <th class="one wide">#}
+{#                    Accepted#}
+{#                </th>#}
+{#            </tr>#}
+{#                {% endif %}#}
+{#            {% endfor %}#}
+{#            </tbody>#}
+{##}
+{#        </table>#}
+{##}
+{#        <br>#}
+{##}
+{#        <div class="ui divider"></div>#}
+{##}
+{#    </div>#}
+{#</div>#}
     <div class="ui modal" id="leavedata" style="padding: 2.5%;">
         <div class="ui vertical segment">
             <header>Statistics for Today</header>
@@ -349,10 +349,11 @@ function acceptReq(id){
                     'end_date': $("#endDate").val(),
                 },
                 success: function(data) {
-                    alert(data.display);
+                    $('#dateVacationModal').modal('hide');
+                    {#alert(data.display);#}
                 },
                 error: function(data, err) {
-                    alert(err.message);
+                    {#alert(err.message);#}
                 }
             });
         }
