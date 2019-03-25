@@ -320,7 +320,8 @@ def project_registration_permission(request):
     if 'approve' in request.POST:
         id_list = request.POST.getlist('id[]')
         for id in id_list:
-            obj = Project_Registration.objects.get(pk=id)
+            #obj = Project_Registration.objects.get(pk=id)
+            obj = get_object_or_404(Project_Registration, pk=id)
             if "Pending" in obj.DRSPC_response or "Disapprove" in obj.DRSPC_response:
 
                 # approved project should be registered in project displayed to Dean RSPC
@@ -360,14 +361,14 @@ def project_registration_permission(request):
     elif "forward" in request.POST:
         id_list = request.POST.getlist('id[]')
         for id in id_list:
-            obj = Project_Registration.objects.get(pk=id)
+            obj = get_object_or_404(Project_Registration, pk=id)
             if obj.DRSPC_response == 'Pending':
                 obj.DRSPC_response = "Forward"
                 obj.save()
     elif "reject" in request.POST:
         id_list = request.POST.getlist('id[]')
         for id in id_list:
-            obj = Project_Registration.objects.get(pk=id)
+            obj = get_object_or_404(Project_Registration, pk=id)
             # print(obj.DRSPC_response)
             if obj.DRSPC_response == 'Pending':
                 obj.DRSPC_response = "Disapprove"
@@ -386,7 +387,7 @@ def project_extension(request):
 
     """Project extension details added"""
     project_id = request.POST.get('project_id')
-    ob = Project_Registration.objects.get(id=project_id)
+    ob = get_object_or_404(Project_Registration, pk=project_id)
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
     if extrainfo.id == ob.PI_id.id:
@@ -426,9 +427,9 @@ def project_extension_permission(request):
     if 'approve' in request.POST:
         id_list = request.POST.getlist('id[]')
         for id in id_list:
-            obj = Project_Extension.objects.get(pk=id)
+            obj = get_object_or_404(Project_Extension, pk=id)
             if "Pending" in obj.DRSPC_response or "Disapprove" in obj.DRSPC_response:
-                ob = Project_Registration.objects.get(pk=obj.project_id.id)
+                ob = get_object_or_404(Project_Registration, pk=obj.project_id.id)
                 pf = int(ob.PI_id.id)
                 title = ob.project_title
                 ptype = ob.project_type
@@ -450,14 +451,14 @@ def project_extension_permission(request):
     elif 'forward' in request.POST:
         id_list = request.POST.getlist('id[]')
         for id in id_list:
-            obj = Project_Extension.objects.get(pk=id)
+            obj = get_object_or_404(Project_Extension, pk=id)
             if obj.DRSPC_response == 'Pending':
                 obj.DRSPC_response = 'Forward'
                 obj.save()
     elif 'reject' in request.POST:
         id_list = request.POST.getlist('id[]')
         for id in id_list:
-            obj = Project_Extension.objects.get(pk=id)
+            obj = get_object_or_404(Project_Extension, pk=id)
             if obj.DRSPC_response == 'Pending':
                 obj.DRSPC_response = 'Disapprove'
                 obj.save()
@@ -475,7 +476,7 @@ def project_closure(request):
 
     """Project closure conditions added"""
     project_id = request.POST.get('project_id')
-    extrainfo1 = Project_Registration.objects.get(id=project_id)
+    extrainfo1 = get_object_or_404(Project_Registration, pk=project_id)
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
     if extrainfo.id == extrainfo1.PI_id.id:
@@ -529,7 +530,7 @@ def project_closure_permission(request):
     if 'approve' in request.POST:
         id_list = request.POST.getlist('id[]')
         for id in id_list:
-            obj = Project_Closure.objects.get(pk=id)
+            obj = get_object_or_404(Project_Closure, pk=id)
             if obj.DRSPC_response == 'Pending':
                 print("bb")
                 obj.DRSPC_response = 'Approve'
@@ -537,14 +538,14 @@ def project_closure_permission(request):
     elif 'forward' in request.POST:
         id_list = request.POST.getlist('id[]')
         for id in id_list:
-            obj = Project_Closure.objects.get(pk=id)
+            obj = get_object_or_404(Project_Closure, pk=id)
             if obj.DRSPC_response == 'Pending':
                 obj.DRSPC_response = 'Forward'
                 obj.save()
     elif 'reject' in request.POST:
         id_list = request.POST.getlist('id[]')
         for id in id_list:
-            obj = Project_Closure.objects.get(pk=id)
+            obj = get_object_or_404(Project_Closure, pk=id)
             print(obj.DRSPC_response)
             if obj.DRSPC_response == 'Pending':
                 obj.DRSPC_response = 'Disapprove'
@@ -562,7 +563,7 @@ def project_reallocation(request):
 
     """Project reallocation details added"""
     project_id = request.POST.get('project_id')
-    ob1 = Project_Registration.objects.get(id=project_id)
+    ob1 = get_object_or_404(Project_Registration, pk=project_id)
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
     if extrainfo.id == ob1.PI_id.id:
@@ -602,7 +603,7 @@ def project_reallocation_permission(request):
     if 'approve' in request.POST:
         id_list = request.POST.getlist('id[]')
         for id in id_list:
-            obj = Project_Reallocation.objects.get(pk=id)
+            obj = get_object_or_404(Project_Reallocation, pk=id)
             if "Pending" in obj.DRSPC_response or "Disapprove" in obj.DRSPC_response:
                 ob = Project_Registration.objects.get(pk=obj.project_id.id)
                 pf = int(ob.PI_id.id)
@@ -623,14 +624,14 @@ def project_reallocation_permission(request):
     elif 'forward' in request.POST:
         id_list = request.POST.getlist('id[]')
         for id in id_list:
-            obj = Project_Reallocation.objects.get(pk=id)
+            obj = get_object_or_404(Project_Reallocation, pk=id)
             if obj.DRSPC_response == 'Pending':
                 obj.DRSPC_response = 'Forward'
                 obj.save()
     elif 'reject' in request.POST:
         id_list = request.POST.getlist('id[]')
         for id in id_list:
-            obj = Project_Reallocation.objects.get(pk=id)
+            obj = get_object_or_404(Project_Reallocation, pk=id)
             print(obj.DRSPC_response)
             if obj.DRSPC_response == 'Pending':
                 obj.DRSPC_response = 'Disapprove'
