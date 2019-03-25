@@ -29,7 +29,6 @@ from .handlers import (add_nonveg_order, add_mess_feedback, add_vacation_food_re
 today_g = datetime.today()
 year_g = today_g.year
 tomorrow_g = today_g + timedelta(days=1)
-# tomorrow_g = today_g + datetime.timedelta(days=1)
 
 
 def mess(request):
@@ -49,13 +48,6 @@ def mess(request):
     count6 = 0
     count7 = 0
     count8 = 0
-    nonveg_total_bill = 0
-    rebate_count = 0
-    #
-    # @periodic_task(run_every=(crontab(hour="*", minute="*", day_of_week="*")))
-    #     print("Start")
-    #     now = datetime.now()
-    #     print(now)
 
     if extrainfo.user_type == 'student':
         student = Student.objects.get(id=extrainfo)
@@ -115,31 +107,6 @@ def mess(request):
 
             elif f.feedback_type == 'Others' and mess_opt.mess_option == 'mess2':
                 count8 += 1
-
-        # for bill in monthly_bill:
-        #
-        #     for z in data:
-        #         if z.order_date.strftime("%B") == bill.month:
-        #             nonveg_total_bill = nonveg_total_bill + z.dish.price
-        #             bill.nonveg_total_bill = nonveg_total_bill
-        #
-        #         else:
-        #             bill.nonveg_total_bill = 0
-        #
-        #     for r in rebates:
-        #         if r.status == '2':
-        #             print(bill.month)
-        #             print(r.start_date.strftime("%B"))
-        #             if r.start_date.strftime("%B") == bill.month:
-        #                 rebate_count = rebate_count + abs((r.end_date - r.start_date).days) + 1
-        #                 bill.rebate_count = rebate_count
-        #
-        #             else:
-        #                 bill.rebate_count = 0
-        #
-        #     bill.rebate_amount = bill.rebate_count*79
-        #     bill.total_bill = bill.amount - bill.rebate_amount + bill.nonveg_total_bill
-        #     bill.save()
 
         context = {
                    'menu': y,
