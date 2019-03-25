@@ -343,13 +343,7 @@ def new_session(request):
 			session = Session_info(club = club_name, venue = venue, date =date, start_time=start_time , end_time = end_time ,session_poster = session_poster , details = desc)
 			session.save()
 		return HttpResponse(res)
-		# overlapping_Sessions = Session_info.objects.filter(date=date, venue=venue).filter(Q(start_time__lte=start_time, end_time__gt=start_time)|Q(start_time__lt=end_time, end_time__gte=end_time))
-		# res = "error"
-		# if overlapping_Sessions.count() == 0:
-		# 	res = "success"
-		# 	return HttpResponse(res)
-		# else:
-		# 	return HttpResponse(res)
+		
 
 @login_required
 def fest_budget(request):
