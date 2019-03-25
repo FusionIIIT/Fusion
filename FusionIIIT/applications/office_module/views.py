@@ -387,7 +387,13 @@ def project_extension(request):
 
     """Project extension details added"""
     project_id = request.POST.get('project_id')
-    ob = get_object_or_404(Project_Registration, pk=project_id)
+    #ob = get_object_or_404(Project_Registration, pk=project_id)
+    try:
+        ob = Project_Registration.objects.get(pk=project_id)
+    except:
+        messages.error(request, 'Project ID not found! Try again')
+        return HttpResponseRedirect('/eis/profile')
+
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
     if extrainfo.id == ob.PI_id.id:
@@ -476,7 +482,12 @@ def project_closure(request):
 
     """Project closure conditions added"""
     project_id = request.POST.get('project_id')
-    extrainfo1 = get_object_or_404(Project_Registration, pk=project_id)
+    try:
+        extrainfo1 = Project_Registration.objects.get(pk=project_id)
+    except:
+        messages.error(request, 'Project ID not found! Try again')
+        return HttpResponseRedirect('/eis/profile')
+
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
     if extrainfo.id == extrainfo1.PI_id.id:
@@ -563,7 +574,11 @@ def project_reallocation(request):
 
     """Project reallocation details added"""
     project_id = request.POST.get('project_id')
-    ob1 = get_object_or_404(Project_Registration, pk=project_id)
+    try:
+        ob1 = Project_Registration.objects.get(pk=project_id)
+    except:
+        messages.error(request, 'Project ID not found! Try again')
+        return HttpResponseRedirect('/eis/profile')
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
     if extrainfo.id == ob1.PI_id.id:
