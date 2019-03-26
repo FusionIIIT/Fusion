@@ -1,0 +1,985 @@
+{% load static %}
+{% block awards %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <body>
+
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="mcm">
+            Mcm Scholarship
+        </a>
+
+        <a class="item" data-tab="medals">
+            Convocation Medals
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="mcm">
+        <div class="ui vertical segment">
+            <div class="ui header">
+                Application Form for Merit Cum Means (MCM) Scholarship:
+            
+            
+            <a class="right floated item" style="padding-left:50px" href="https://drive.google.com/open?id=1Ylcj_ZX_h-0TTZ_zOGVF1JLEJE1_YQGD" target="_blank">
+                <button class="ui primary button">
+                    Form A
+                    <i class="right floated download icon"></i>
+                </button>
+            </a>
+            <a class="right floated item" href="https://drive.google.com/open?id=1AfSw3S5xXgbDn81hg6f2qgQiT_digXT9" target="_blank">
+                <button class="ui primary button">
+                    Form B
+                    <i class="right floated download icon"></i>
+                </button>
+            </a>
+            <a class="right floated item" href="https://drive.google.com/open?id=1LfqINHXpb_zmOrmJ4IGkCAjQJrHBBVXM" target="_blank">
+                <button class="ui primary button">
+                    Form C
+                    <i class="right floated download icon"></i>
+                </button>
+            </a>
+            </div>
+            <div class="content">
+                <div class="description">
+                    <form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;" enctype="multipart/form-data">
+                        {% csrf_token %} 
+                <div class="three fields">
+                        <div class="six wide field ">
+                                <label>Category</label>
+                                <div class="ui large input">
+                                    <input value="{{request.user.extrainfo.student.category}}" name="category" type="text" readonly>
+                                </div>
+                            </div>
+                            <div class="eight wide field ">
+                                <label>Hall No.</label>
+                                <div class="ui large input">
+                                    <input value="{{request.user.extrainfo.student.hall_no}}" name="hall_no" type="text" readonly>
+                                </div>
+                            </div>
+                        
+                <div class="four wide field">
+                        <label>Room no</label>
+                        <div class="ui large input">
+                            <input value="{{request.user.extrainfo.student.hall_no}}" name="room_no" type="number" readonly>
+                        </div>
+                    </div>
+                </div>
+                <div class="two fields">
+                    <div class="eight wide field ">
+                        <label>Father's Name/Guardian's</label>
+                        <div class="ui large input">
+                            <input placeholder="Fathers Name" type="text" value="{{request.user.extrainfo.student.father_name}}" readonly>
+                        </div>
+                    </div>
+                    <div class="eight wide field ">
+                            <label>Father Occupation</label>
+                            <select class="ui fluid search large dropdown" name="father_occ" required>
+                                    <option value="">Select</option>
+                                    {% for p,v in source %}
+                                    <option value="{{p}}">{{v}}</option>
+                                    {% endfor %}
+        
+                                </select>
+                        </div>
+                </div>
+
+                <div class="two fields">
+                    <div class="eight wide field ">
+                        <label>Mother's Name</label>
+                        <div class="ui large input">
+                            <input placeholder="Mother's Name" type="text" value="{{request.user.extrainfo.student.mother_name}}" readonly>
+                        </div>
+                    </div>
+                    <div class="eight wide field ">
+                            <label>Mother Occupation</label>
+                            <select class="ui fluid search large dropdown" name="mother_occ" required>
+                                    <option  value="">Select</option>
+                                    {% for p,v in mother_occ %}
+                                    <option value="{{p}}">{{v}}</option>
+                                    {% endfor %}
+        
+                            </select>
+                        </div>
+                </div>
+
+                <div class="two fields">
+                    <div class="eight wide field">
+                        <label>Father's Occupation Description</label>
+                        <div class="ui large input">
+                            <input placeholder="Father's Occupation Description" type="text" name="father_occ_desc" required>
+                        </div>
+                    </div>
+                    <div class="eight wide field">
+                        <label>Mother's Occupation Description</label>
+                        <div class="ui large input">
+                            <input placeholder="Mother's Occupation Description" type="text" name="mother_occ_desc" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="two fields">
+                        <div class="eight wide field ">
+                            <label>Brother's name</label>
+                            <div class="ui large input">
+                                <input placeholder="Brother's Name" name="brother_name" type="text" required>
+                            </div>
+                        </div>
+                        <div class="eight wide field ">
+                            <label>Brother's Occupation</label>
+                            <div class="ui large input">
+                                <input placeholder="Brother occupation" name="brother_occupation" type="text" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="two fields">
+                        <div class="eight wide field ">
+                            <label>Sisters's Name</label>
+                            <div class="ui large input">
+                                <input placeholder="Sister's Name"  name="sister_name" type="text" required>
+                            </div>
+                        </div>
+                        <div class="eight wide field ">
+                            <label>Sisters's Occupation</label>
+                            <div class="ui large input">
+                                <input placeholder="Sister's occupation" name="sister_occupation" type="text" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="three fields">
+                        <div class=" field">
+                            <label>Father's Annual Income</label>
+                            <div class="ui large input">
+                                <input placeholder=" Income" name="father_income" type="number" required>
+                            </div>
+                        </div>
+                        <div class=" field">
+                            <label>Mother's Annual Income</label>
+                            <div class="ui large input">
+                                <input placeholder="Income" name="mother_income" type="number" required>
+                            </div>
+                        </div>
+                       
+                        <div class=" field">
+                            <label>Other sources Annual Income</label>
+                            <div class="ui large input">
+                                <input placeholder="Income" name="other_income" type="number">
+                            </div>
+                        </div>
+                             
+                    </div>
+                    
+                <div class="two fields">
+                    <div class="eight wide field ">
+                        <label># of Four Wheeler</label>
+                        <div class="ui large input">
+                            <input placeholder="Number of 4 Wheelers" type="number" name="four_wheeler" required>
+                        </div>
+                    </div>
+                    <div class="eight wide field ">
+                        <label>Four Wheeler Description</label>
+                        <div class="ui large input">
+                            <input placeholder="Description" type="text" name="four_wheeler_desc" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="two fields">
+                    <div class="eight wide field ">
+                        <label># of Two Wheeler</label>
+                        <div class="ui large input">
+                            <input placeholder="Number of 2 Wheelers" type="number" name="two_wheeler" required>
+                        </div>
+                    </div>
+                    <div class="eight wide field ">
+                        <label>Two Wheeler Description</label>
+                        <div class="ui large input">
+                            <input placeholder="Description" type="text" name="two_wheeler_desc" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="three fields">
+                    <div class=" field">
+                        <label>House Type</label>
+                        <div class="ui fluid search selection large dropdown">
+                            <input name="house" type="hidden" required>
+                            <i class="dropdown icon"></i>
+
+                            <div class="default text" data-value="">Select</div>
+
+                            <div class="menu">
+                                <div class="item" data-value="rented">
+                                    Rented
+                                </div>
+                                <div class="item" data-value="owned">
+                                    Owned
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class=" field">
+                        <label>Plot Area</label>
+                        <div class="ui large input">
+                            <input placeholder="Income" type="number" name="plot_area" required>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Constructed Area</label>
+                        <div class="ui large input">
+                            <input placeholder="Other Source's Income" type="number" name="constructed_area" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="two fields">
+                    <div class="eight wide field ">
+                        <label>Fees 10th</label>
+                        <div class="ui large input">
+                            <input placeholder="Fees 10th" type="number" name="school_fee" required>
+                        </div>
+                    </div>
+                    <div class="eight wide field ">
+                        <label>Name of the School</label>
+                        <div class="ui large input">
+                            <input placeholder="School Name" type="text" name="school_name" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="two fields">
+                    <div class="eight wide field ">
+                        <label>Fees 12th Standard</label>
+                        <div class="ui large input">
+                            <input placeholder="Fees 12th Standard" type="number" name="college_fee" required>
+                        </div>
+                    </div>
+                    <div class="eight wide field ">
+                        <label>Name of the College</label>
+                        <div class="ui large input">
+                            <input placeholder="College Name" type="text" name="college_name" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="two fields">
+                    <div class="six wide field ">
+                        <label>Amount of Educational Bank Loan</label>
+                        <div class="ui large input">
+                            <input placeholder="Amount" type="number" name="loan_amount" required>
+                        </div>
+                    </div>
+                    <div class="eight wide field ">
+                        <label>Bank Name</label>
+                        <div class="ui large input">
+                            <input placeholder="Bank Name" type="text" name="bank_name" required>
+                        </div>
+                    </div>
+                </div>
+                <div class=" two fields">
+
+                    <div class=" field">
+                        <label>Required Attachments</label>
+                        <div class="ui large input">
+                            <input placeholder="Income" type="file" name="income_certificate" required>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <a class="right floated item">
+                            <label><br></label>
+                            <button class="ui primary large right floated button" name="Submit_mcm">
+                                Submit
+                            </button>
+                        </a>
+                    </div>
+                </div>
+                <div><br/><br/></div>
+            </form>
+                
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="medals">
+            <div class="ui vertical segment" id="form_part1">
+                    <div class="ui header">
+                            Please read below instructions before applying for any of the Convocation Medals:
+                        </div>
+            
+                        <div class="content">
+                            <div class="description">
+                                <label>Brief Description for Cultural:</label>
+                                    <p>This includes the following. <br/>
+                                        Write the level of participation in Cultural activities during your stay at IIITDMJ (Relevant documents are required to be uploaded.)<br/>
+                                        (a) Performance on the field – single, group (Main participant or side participant)<br/>
+                                        (b) Did you win any prize/medal/award while performing above mentioned activity?<br/>
+                                        (c) Managing cultural activity<br/>
+                                        (d) Generating fund for the conduction of activity<br/>
+                                        (e) Mention above points clearly whether the activity was performed inside IIITDMJ or
+                                        outside IIITDMJ<br/>
+                                        Please click on the PROCEED button below to fill the form.
+                                         <br/>
+                                    </p>
+                                    <br><br>
+                                
+                            </div>
+                        </div>
+                    <button type="button" class="ui primary large right floated button" onclick="java_script_:dis(1)" >Proceed</button>
+               <br><br> </div>
+        
+                    <div class="ui vertical segment" id="form_part2" style="display:none">
+                            <div class="ui large input">
+                                    <div class="sixteen wide field">
+                                    <label>Award</label>
+                                    
+                                    <select class="ui fluid search large dropdown" name="award" id="award" onchange="java_script_:show(this.options[this.selectedIndex].value)">
+                                        <option selected hidden default>Select</option>
+                                        <option value="silver">Director Silver Medal</option>
+                                        <option value="gold">Director Gold Medal</option>
+                                        <option value="dandm">D&M Proficiency Gold Medal</option>
+                                        
+                                    </select>
+                                </div>
+                            </div>
+                            <br>
+                        
+
+    <div class="ui tab" id="dandm">
+        <div class="ui active tab" data-tab="dandm">
+            <div class="ui vertical segment">
+                <form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;" enctype="multipart/form-data">
+                    {% csrf_token %} 
+                    <div class="field">
+                            <label>PBI Project/Design Project</label>
+                            <div class="ui large input">
+                                <input placeholder="Project" type="text" name="title" required>
+                            </div>
+                        </div>
+                        <div class="three fields">
+                                <div class="six wide field">
+                                        <label>Hall no</label>
+                                        <div class="ui large input">
+                                                <input placeholder="Room no."  name="room_no" value="{{request.user.extrainfo.student.hall_no}}" type="number" readonly>
+                                            </div>
+                                        </div>
+                                
+                                    <div class="six wide field">
+                                        <label>Room no</label>
+                                        <div class="ui large input">
+                                            <input placeholder="Room no."  name="room_no" type="text" value="{{request.user.extrainfo.student.room_no}}" readonly>
+                                        </div>
+                                    </div>
+                
+                                    <div class="six wide field">
+                                            <label>Type</label>
+                                            <select class="ui fluid search selection large dropdown" name="award" required>
+                                                    <option value="">Select</option> 
+                                                    <option value="D&M Proficiency Gold Medal">D&M Proficiency Gold Medal</option>
+                                                    <option value="IIITDM Proficiency Prizes">IIITDM Proficiency Prizes</option>
+                                            </select>
+                                     </div>
+                                </div>
+               
+                           <div class="two fields">
+                                <div class="eight wide field ">
+                                    <label>Father's Name</label>
+                                    <div class="ui large input">
+                                        <input placeholder="Fathers Name" name="father_name" type="text" value="{{request.user.extrainfo.student.father_name}}" readonly>
+                                    </div>
+                                </div>
+                                <div class="eight wide field ">
+                                    <label>Mother's Name</label>
+                                    <div class="ui large input">
+                                        <input placeholder="Mother's Name" name="mother_name" type="text" value="{{request.user.extrainfo.student.mother_name}}" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="two fields">
+                              <div class="field">
+                                        <label>Permanent Address:</label>
+                                        <textarea rows="2" name="p_address" readonly>{{request.user.extrainfo.address}}</textarea>
+                                    </div>
+                
+                                   <div class="field">
+                                        <label>Correspondance Address:</label>
+                                        <textarea rows="2" name="c_address" required></textarea>
+                                    </div>
+                                </div>
+                        <div class="two fields">
+                            <div class="field">
+                                <label>Nearest Police Station</label>
+                                    <div class="ui large input">
+                                        <input placeholder="Police Station" name="nps" type="text" required>
+                                    </div>
+                            </div>
+                            <div class="field">
+                                <label>Nearest Railway Station</label>
+                                    <div class="ui large input">
+                                        <input placeholder="Railway Station" name="nrs" type="text" required>
+                                    </div>
+                            </div>
+                        </div> 
+                        <div class="two fields">
+                                <div class="twelve wide field">
+                                        <div class="sixteen wide field">
+                                            <label>Financial Assistance</label required>
+                        
+                                               <textarea rows="3" name="financial_assitance" required></textarea>
+                                        </div>
+                                   </div>
+                                <div class="four wide field">
+                                    <label>Grand Total Amount</label>
+                                        <div class="ui large input">
+                                            <input placeholder="Total" name="grand_total" type="number" required>
+                                        </div>
+                                </div>
+                            </div>  
+                            <div class="eight wide field">
+                                <label>Number Of Student</label>
+                                <select class="ui fluid search selection large dropdown" name="students" required>
+                                    <option value="">Select</option>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5</option>
+                                </select>
+                            </div>
+
+                            <div class="five fields">
+                                <div class="three wide field ">
+                                    <label>Student 1 Roll No.</label>
+                                    <div class="ui large input">
+                                        <input placeholder="Student1" type="number" name="roll_no1" required>
+                                    </div>
+                                </div>
+                                <div class="three wide field ">
+                                    <label>Student 2 Roll No.</label>
+                                    <div class="ui large input">
+                                        <input placeholder="Student2" type="number" name="roll_no2">
+                                    </div>
+                                </div>
+                                <div class="three wide field ">
+                                        <label>Student 3 Roll No.</label>
+                                        <div class="ui large input">
+                                            <input placeholder="Student3" type="number" name="roll_no3">
+                                        </div>
+                                    </div>
+                                    <div class="three wide field ">
+                                            <label>Student 4 Roll No.</label>
+                                            <div class="ui large input">
+                                                <input placeholder="Student4" type="number" name="roll_no4">
+                                            </div>
+                                        </div>
+                                        <div class="three wide field ">
+                                                <label>Student 5 Roll No.</label>
+                                                <div class="ui large input">
+                                                    <input placeholder="Student5" type="number" name="roll_no5">
+                                                </div>
+                                            </div>
+                                
+                            </div>
+
+                <div class="two fields">
+                    <div class="twelve wide field ">
+                        <label>ECE topic</label>
+                        <div class="ui large input">
+                            <input placeholder="Ece topics" type="text" name="ece_topic" required>
+                        </div>
+                    </div>
+                    <div class="four wide field ">
+                        <label>ECE topic Percentage</label>
+                        <div class="ui large input">
+                            <input placeholder="ECE %" type="number" name="ece_percentage" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="two fields">
+                    <div class="twelve wide field ">
+                        <label>ME topic</label>
+                        <div class="ui large input">
+                            <input placeholder="Me topics" type="text" name="mech_topic" required>
+                        </div>
+                    </div>
+                    <div class="four wide field ">
+                        <label>ME topic Percentage</label>
+                        <div class="ui large input">
+                            <input placeholder="ME %" type="number" name="mech_percentage" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="two fields">
+                    <div class="twelve wide field ">
+                        <label>CSE topic</label>
+                        <div class="ui large input">
+                            <input placeholder="CSE topics" type="text" name="cse_topic" required>
+                        </div>
+                    </div>
+                    <div class="four wide field ">
+                        <label>CSE topic Percentage</label>
+                        <div class="ui large input">
+                            <input placeholder="CSE %" type="number" name="cse_percentage" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="two fields">
+                    <div class="twelve wide field ">
+                        <label>Design topic</label>
+                        <div class="ui large input">
+                            <input placeholder="Design topics" type="text" name="design_topic" required>
+                        </div>
+                    </div>
+                    <div class="four wide field ">
+                        <label>Design topic Percentage</label>
+                        <div class="ui large input">
+                            <input placeholder="Design %" type="number" name="design_percentage" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Brief Description:</label>
+                    <textarea rows="5" name="brief_description" required></textarea>
+                </div>
+                <div class="field">
+                    <label>Justification:</label>
+                    <textarea rows="3" name="justification" required></textarea>
+                </div>
+
+                <div class="two fields">
+                        <div class="field" style="width:700px;">
+                                <a class="right floated item">
+                               <label><br></label>               
+                               <div class="seven wide field">
+                                   <label>Upload file</label>
+                                   <div class="ui fluid input">
+                                       <input type="file" name="myfile" required>
+                                   </div>
+                               </div>
+                           </div>
+                    <div class="field">
+                      <a class="right floated item">
+                                <label><br></label>
+                                <button type="submit" name="Submit_dandm" class="ui primary large right floated button">
+                                    Submit
+                                </button>
+                        </a>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Brief Description:</label>
+                    <p>This includes the following. <br/>
+                    (a) Give the details of the list of papers you have studied for doing the project.<br/>
+                    (b) Whether any publication, conference proceeding, conference paper presentation etc? If
+                    yes, give proper details<br/>
+                    (c) If some experimental setup, show the estimated cost:<br/>
+                    (d) If some theoretical model development, discuss in brief:<br/>
+                    (e) If some simulation results, what software/s did you use? <br/><br/>
+                    </p>
+                </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="ui tab" id="gold">
+         <div class="ui active tab" data-tab="goldmedal">
+                <div class="ui vertical segment">
+                    <form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;" enctype="multipart/form-data">
+                        {% csrf_token %} 
+                        <div class="two fields">
+                                <div class="eight wide field">
+                                        <label>Hall no</label>
+                                        <div class="ui large input">
+                                                <input placeholder="Room no."  name="room_no" value="{{request.user.extrainfo.student.hall_no}}" type="number" readonly>
+                                            </div>
+                                        </div>
+                                
+                                    <div class="eight wide field">
+                                        <label>Room no</label>
+                                        <div class="ui large input">
+                                            <input placeholder="Room no."  name="room_no" type="text" value="{{request.user.extrainfo.student.room_no}}" readonly>
+                                        </div>
+                                    </div>
+                
+                                    
+                                </div>
+               
+                           <div class="two fields">
+                                <div class="eight wide field ">
+                                    <label>Father's Name</label>
+                                    <div class="ui large input">
+                                        <input placeholder="Fathers Name" name="father_name" type="text" value="{{request.user.extrainfo.student.father_name}}" readonly>
+                                    </div>
+                                </div>
+                                <div class="eight wide field ">
+                                    <label>Mother's Name</label>
+                                    <div class="ui large input">
+                                        <input placeholder="Mother's Name" name="mother_name" type="text" value="{{request.user.extrainfo.student.mother_name}}" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="two fields">
+                              <div class="field">
+                                        <label>Permanent Address:</label>
+                                        <textarea rows="2" name="p_address" readonly>{{request.user.extrainfo.address}}</textarea>
+                                    </div>
+                
+                                   <div class="field">
+                                        <label>Correspondance Address:</label>
+                                        <textarea rows="2" name="c_address" required></textarea>
+                                    </div>
+                                </div>
+                        <div class="two fields">
+                            <div class="field">
+                                <label>Nearest Police Station</label>
+                                    <div class="ui large input">
+                                        <input placeholder="Police Station" name="nps" type="text" required>
+                                    </div>
+                            </div>
+                            <div class="field">
+                                <label>Nearest Railway Station</label>
+                                    <div class="ui large input">
+                                        <input placeholder="Railway Station" name="nrs" type="text" required>
+                                    </div>
+                            </div>
+                        </div>   
+                        <div class="two fields">
+                                <div class="twelve wide field">
+                                        <div class="sixteen wide field">
+                                            <label>Financial Assistance</label required>
+                        
+                                               <textarea rows="3" name="financial_assitance" required></textarea>
+                                        </div>
+                                   </div>
+                                <div class="four wide field">
+                                    <label>Grand Total Amount</label>
+                                        <div class="ui large input">
+                                            <input placeholder="Total" name="grand_total" type="number" required>
+                                        </div>
+                                </div>
+                            </div>
+                        <div class="field">
+                                <div class="sixteen wide field">
+                                    <label>Brief Description of Academic Achievement:</label>
+                                       <textarea rows="5" name="academic_achievements" required></textarea>
+                                </div>
+                           </div>
+       
+                           <div class="field">
+                                <div class="sixteen wide field">
+                                    <label>Brief Description of Science and Technology (Inside IIITDMJ) Achievement:</label>
+                                       <textarea rows="5" name="science_inside" required></textarea>
+                                </div>
+                           </div>
+       
+                           <div class="field">
+                                <div class="sixteen wide field">
+                                    <label>Brief Description of Science and Technology (Outside IIITDMJ) Achievement:</label>
+                                       <textarea rows="5" name="science_outside" required></textarea>
+                                </div>
+                           </div>
+       
+                           <div class="field">
+                                <div class="sixteen wide field">
+                                    <label>Brief Description of Games and Sports (Inside IIITDMJ) Achievement:</label>
+                                       <textarea rows="5" name="games_inside" required></textarea>
+                                </div>
+                           </div>
+                           <div class="field">
+                                <div class="sixteen wide field">
+                                    <label>Brief Description of Games and Sports (Outside IIITDMJ) Achievement:</label>
+                                       <textarea rows="5" name="games_outside" required></textarea>
+                                </div>
+                           </div>
+       
+                           <div class="field">
+                                <div class="sixteen wide field">
+                                    <label>Brief Description of Cultural (Inside IIITDMJ) Achievement:</label>
+                                       <textarea rows="5" name="cultural_inside" required></textarea>
+                                </div>
+                           </div>
+                           <div class="field">
+                                <div class="sixteen wide field">
+                                    <label>Brief Description of Cultural (Outside IIITDMJ) Achievement:</label>
+                                       <textarea rows="5" name="cultural_outside" required></textarea>
+                                </div>
+                           </div>
+       
+       
+                           <div class="field">
+                                <div class="sixteen wide field">
+                                    <label>Brief Description of Social Service:</label>
+                                       <textarea rows="5" name="social" required></textarea>
+                                </div>
+                           </div>
+                           <div class="field">
+                                <div class="sixteen wide field">
+                                    <label>Brief Description of Corporate Service:</label>
+                                       <textarea rows="5" name="coorporate" required></textarea>
+                                </div>
+                           </div>
+                           <div class="field">
+                                <div class="sixteen wide field">
+                                    <label>Brief Description of Hall related Activities:</label>
+                                       <textarea rows="5" name="hall_activities" required></textarea>
+                                </div>
+                           </div>
+                           <div class="field">
+                                <div class="sixteen wide field">
+                                    <label>Brief Description of Gymkhana Activities:</label>
+                                       <textarea rows="5" name="gymkhana_activities" required></textarea>
+                                </div>
+                           </div>
+                           <div class="field">
+                                <div class="sixteen wide field">
+                                    <label>Brief Description of Institute Realated activities:</label>
+                                       <textarea rows="5" name="institute_activities" required></textarea>
+                                </div>
+                           </div>
+                           <div class="field">
+                                <div class="sixteen wide field">
+                                    <label>Brief Description of Student Counselling Activities:</label>
+                                       <textarea rows="5" name="counselling_activities" required></textarea>
+                                </div>
+                           </div>
+                           <div class="field">
+                                <div class="sixteen wide field">
+                                    <label>Brief Description of Other Activities:</label>
+                                       <textarea rows="5" name="other_activities" required></textarea>
+                                </div>
+                           </div>
+                           <div class="field">
+                                <div class="sixteen wide field">
+                                    <label>Justification:</label>
+                                       <textarea rows="3" name="justification" required></textarea>
+                                </div>
+                           </div>
+                           <div class=" two fields" style="width:700px;">
+                                   <div class="field">
+                                           <a class="right floated item">
+                                          <label><br></label>               
+                                          <div class="seven wide field">
+                                              <label>Upload files</label>
+                                              <div class="ui fluid input">
+                                                  <input type="file" name="myfile" required>
+                                              </div>
+                                          </div>
+                                      </div>
+   
+                               <div class="field">
+                                   <a class="right floated item">
+                                       <label><br></label>
+                                       <button class="ui primary large right floated button" name="Submit_gold">
+                                           Submit
+                                       </button>
+                                   </a>
+                               </div>
+                           </div>
+                    </form>
+            </div>
+         </div>
+        </div>
+        
+        
+    <div class="ui tab" id="silver">
+     <div class="ui active tab" data-tab="goldmedal">
+            <div class="ui vertical segment">
+                <form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;" enctype="multipart/form-data">
+                    {% csrf_token %} 
+            <div class="three fields">
+                    <div class="six wide field">
+                            <label>Hall no</label>
+                            <div class="ui large input">
+                                    <input placeholder="Room no."  name="room_no" value="{{request.user.extrainfo.student.hall_no}}" type="number" readonly>
+                                </div>
+                            </div>
+                    
+                        <div class="six wide field">
+                            <label>Room no</label>
+                            <div class="ui large input">
+                                <input placeholder="Room no."  name="room_no" type="text" value="{{request.user.extrainfo.student.room_no}}" readonly>
+                            </div>
+                        </div>
+    
+                        <div class="six wide field">
+                                <label>Type</label>
+                                <select class="ui fluid search selection large dropdown" name="award" required>
+                                        <option value="">Select</option> 
+                                        <option value="Director Silver Medal Games and Sports">Director Silver Medal Games and Sports</option>
+                                        <option value="Director Silver Medal Cultural">Director Silver Medal Cultural</option>
+                                </select>
+                         </div>
+                    </div>
+   
+               <div class="two fields">
+                    <div class="eight wide field ">
+                        <label>Father's Name</label>
+                        <div class="ui large input">
+                            <input placeholder="Fathers Name" name="father_name" type="text" value="{{request.user.extrainfo.student.father_name}}" readonly>
+                        </div>
+                    </div>
+                    <div class="eight wide field ">
+                        <label>Mother's Name</label>
+                        <div class="ui large input">
+                            <input placeholder="Mother's Name" name="mother_name" type="text" value="{{request.user.extrainfo.student.mother_name}}" readonly >
+                        </div>
+                    </div>
+                </div>
+                <div class="two fields">
+                  <div class="field">
+                            <label>Permanent Address:</label>
+                            <textarea rows="2" name="p_address" readonly>{{request.user.extrainfo.address}}</textarea>
+                        </div>
+    
+                       <div class="field">
+                            <label>Correspondance Address:</label>
+                            <textarea rows="2" name="c_address" required></textarea>
+                        </div>
+                    </div>
+            <div class="two fields">
+                <div class="field">
+                    <label>Nearest Police Station</label>
+                        <div class="ui large input">
+                            <input placeholder="Police Station" name="nps" type="text" required>
+                        </div>
+                </div>
+                <div class="field">
+                    <label>Nearest Railway Station</label>
+                        <div class="ui large input">
+                            <input placeholder="Railway Station" name="nrs" type="text" required>
+                        </div>
+                </div>
+            </div>   
+            <div class="two fields">
+                    <div class="twelve wide field">
+                            <div class="sixteen wide field">
+                                <label>Financial Assistance</label required>
+            
+                                   <textarea rows="3" name="financial_assitance" required></textarea>
+                            </div>
+                       </div>
+                    <div class="four wide field">
+                        <label>Grand Total Amount</label>
+                            <div class="ui large input">
+                                <input placeholder="Total" name="grand_total" type="number" required>
+                            </div>
+                    </div>
+                </div>   
+            <div class="field">
+                    <div class="sixteen wide field">
+                        <label>Brief Description of Games and Sports/Cultural Achievement: (INSIDE IIITDMJ)</label required>
+    
+                           <textarea rows="5" name="inside_achievements" required></textarea>
+                    </div>
+               </div>
+    
+    
+               <div class="field">
+                    <div class="sixteen wide field">
+                        <label>Brief Description of Game and Sports/Cultural Achievement: (OUTSIDE IIITDMJ)</label>
+    
+                           <textarea rows="5" name="outside_achievements" required></textarea>
+                    </div>
+               </div>
+    
+    
+               <div class="field">
+                    <div class="sixteen wide field">
+                        <label>Justification:</label>
+                           <textarea rows="3" name="justification" required></textarea>
+                    </div>
+               </div>
+        
+                        <div class="two fields">
+                                <div class="field" style="width:700px;">
+                                        <a class="right floated item">
+                                       <label><br></label>               
+                                       <div class="seven wide field">
+                                           <label>Upload file</label>
+                                           <div class="ui fluid input">
+                                               <input type="file" name="myfile" required>
+                                           </div>
+                                       </div>
+                                   </div>
+
+                            <div class="field">
+                              <a class="right floated item">
+                                        <label><br></label>
+                                        <button type="submit" name="Submit_silver" class="ui primary large right floated button">
+                                            Submit
+                                        </button>
+                                </a>
+                            </div>
+                        </div>
+    
+                </form>
+        </div>
+     </div>
+    </div>
+             </div>                
+</div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+  <!--<script type="text/javascript">
+    $(document).on('submit','#common_info',function(e){
+                    e.preventDefault();
+                    console.log('alert');
+
+                    $.ajax({
+                        type='POST',
+                        url:'/spacs/student_view/',
+                        data:{
+                            c_address:$('#c_address').val(),
+                            financial_assitance:$('#financial_assistance').val(),
+                            nps:$('#nps').val(),
+                            nrs:$('#nrs').val(),
+                            grand_total:$('#grand_total').val(),
+                            csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()
+                        },
+                        success:function(){
+                            console.log('success');
+                            alert("created");
+                        }
+
+                    });
+            });
+            </script>-->
+    <script>
+    function show(aval) {
+                if (aval == "gold") {
+                silver.style.display='none';
+                dandm.style.display='none';
+                gold.style.display='inline-block';
+                Form.fileURL.focus();
+                } 
+                if (aval == "silver") {
+                dandm.style.display='none';
+                gold.style.display='none';
+                silver.style.display='inline-block';
+                Form.fileURL.focus();
+                } 
+                if (aval == "dandm") {
+                silver.style.display='none';
+                gold.style.display='none';
+                dandm.style.display='inline-block';
+                Form.fileURL.focus();
+                }
+            }
+        </script>
+    <script>
+    function dis(aval) {
+        if(aval == 1)
+        {
+            form_part1.style.display='none';
+            form_part2.style.display='inline-block';
+            form_part3.style.display='none';
+        }
+        else if(aval == 2)
+        {
+            form_part1.style.display='none';
+            form_part2.style.display='none';
+            form_part3.style.display='inline-block';
+        }
+    }
+    </script>
+</body>
+{%  endblock %}

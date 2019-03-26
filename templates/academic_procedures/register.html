@@ -1,0 +1,150 @@
+{% load static %}
+{% block resiterstudent %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="complainthistory">
+            Pre-Registration
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="complainthistory">
+    <div class="ui vertical segment">
+        {% if prd %}
+            {% if details.regflag %}
+              <B><CENTER>   You have already registered </B></CENTER>
+            {% else %}
+            <table class="ui very basic collapsing celled sortable table"
+                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                           padding-bottom: 1.5%;
+                                                          margin: auto;">
+                <thead>
+
+                <tr>
+                    <th>
+                    </th>
+
+                    <th>
+                        Course ID
+                    </th>
+
+                    <th>
+                        Course Name
+                    </th>
+
+                    <th>
+                        Credits
+                    </th>
+                    <th>
+                        Semester
+                    </th>
+                    <th>
+                        Select
+                    </th>
+                </tr>
+                </thead>
+
+                <tbody>
+
+                    <form id='student_register' action='/academic-procedures/register/'>
+                    {% csrf_token %}
+                    <input type="text" hidden="true" id="mincr" value="{{mincr.credits}}">
+                    {% for items in courses_list %}
+                        <tr>
+                            <td>
+                            </td>
+                            <td>
+                              {{ items.course_id }}
+                              {% if items.optional %}
+                            <B>     <div style="color:green;">    (optional)</B> </div>
+
+                              {% endif %}
+                                <input type="text" name='course_id' value='{{ items.course_id}}' hidden="True">
+                            </td>
+                            <td>
+                                {{ items.course_name}}
+                                <input type="text" name='course_name' value='{{ items.course_name}}' hidden="True">
+                            </td>
+                            <td>
+                                {{items.sem}}
+                                <input type="text" name='semester' value='{{ items.sem}}' hidden="True">
+                             </td>
+                             <td>
+                                {{ items.credits }}
+                                <input type="text" name='credits' value='{{ items.credits}}' hidden="True">
+                             </td>
+                             <td><B>
+                {% if items.optional %}
+                    <input name="choice" type="checkbox" value="{{ items.course_id }}" data-valuetwo="{{items.credits}}">
+                {% else %}
+                    <input name="choice" type="checkbox" value="{{ items.course_id }}" data-valuetwo="{{items.credits}}" onclick="return false;" checked hidden="True">
+                      <div style="color:red;"> (Compulsory)   </div>
+                {% endif %}
+                <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
+                             </td></B>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <br>
+            <div class="ui divider"></div>
+
+            <div class="extra content">
+                <div class="" style="text-align: center;">
+                    <button class="ui primary button">Register</button>
+                </div>
+            </div>
+            </form>
+             {% endif %}
+             {% else %}
+                <B><CENTER>   Pre Registration date hasn't come yet </B></CENTER>
+             {% endif %}
+
+
+
+    </div>
+    </div>
+
+
+
+{% endblock %}
+
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+$(function() {
+    $("#student_register").submit(function(event) {
+
+        var inp = document.getElementsByTagName("input");
+        var count = 0;
+        for(var i=0; i<inp.length;i++){
+            if(inp[i].type=="checkbox" && inp[i].checked==true){
+                count = count + parseInt(inp[i].getAttribute("data-valuetwo"));
+            }
+        }
+        var min = parseInt(document.getElementById("mincr").value);
+
+        if (count <= min){
+            alert("You Can't Register as Minimum Credits: " + min);
+            window.location = "/academic-procedures/main/"
+        }else{
+             event.preventDefault();
+            var friendForm = $(this);
+
+            var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
+            // if success:
+            posting.done(function(data) {
+                alert('You have successfully registered');
+                window.location = "/academic-procedures/main/";
+            });
+            // if failure
+            posting.fail(function(data) {
+                alert('Registration Failed');
+                window.location = "/academic-procedures/main/";
+            });
+            }
+    });
+});
+</script>

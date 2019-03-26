@@ -1,0 +1,54 @@
+{% block form1 %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="tab3content1">
+        Project Registration
+        </a>
+
+        <a class="active item" data-tab="tab3content2">
+        Project Closure
+        </a>
+
+
+        <a class="active item" data-tab="tab3content3">
+        Project Extension
+        </a>
+
+        <a class="active item" data-tab="tab3content4">
+        Fund Allocation
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="tab3content1">
+        <div class="ui vertical segment">
+            {% block tab3content1 %}
+                {% include 'officeModule/officeOfDeanRSPC/Applications_content.html' %}
+            {% endblock %}
+        </div>
+    </div>
+
+     <div class="ui tab" data-tab="tab3content2">
+        <div class="ui vertical segment">
+            {% block tab3content2 %}
+                {% include 'officeModule/officeOfDeanRSPC/Project_closure_content.html' %}
+            {% endblock %}
+        </div>
+    </div>
+
+     <div class="ui tab" data-tab="tab3content3">
+        <div class="ui vertical segment">
+            {% block tab3content3 %}
+                {% include 'officeModule/officeOfDeanRSPC/Project_extension_content.html' %}
+            {% endblock %}
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="tab3content4">
+        <div class="ui vertical segment">
+            {% block tab3content4 %}
+                {% include 'officeModule/officeOfDeanRSPC/Fund_allocation_content.html' %}
+            {% endblock %}
+        </div>
+    </div>
+{% endblock form1 %}

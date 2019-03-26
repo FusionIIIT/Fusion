@@ -1,0 +1,287 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Module
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}
+            The left-rail segment starts here!
+        {% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+
+                {% comment %}
+                TODO: Instead of Name write the position like "Office Of Dean Academics!"
+                {% endcomment %}
+
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu starts here!{% endcomment %}
+
+            <div class="ui huge fluid vertical pointing menu"
+                 style="max-width: 320px;">
+                 {% if "Dean Academic" in all_desig %}
+                <a class="active item" data-tab="first">
+                    Assistantship
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+                {% if "Dean Academic" in all_desig %}
+                <a class="item" data-tab="second">
+                    Scholarships
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+                {% if "Dean Academic" in all_desig %}
+                <a class="item" data-tab="third">
+                    Submitted Thesis
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+                <!-- {% if "Dean Academic" in all_desig %}
+                <a class="item" data-tab="fourth">
+                     Floated  Courses
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+                {% if "Dean Academic" in all_desig %}
+                <a class="item" data-tab="fifth">
+                     Applications
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}-->
+                {% if "Dean Academic" in all_desig %}
+                <a class="item" data-tab="sixth">
+                     Sem Results
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+                {% if "dracad" in all_desig %}
+                <a class="item" data-tab="second">
+                    Scholarships
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+                {% if "dracad" in all_desig %}
+                <a class="item" data-tab="sixth">
+                     Sem Results
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+                {% if "academic_user" in all_desig %}
+                <a class="active item" data-tab="seventh">
+                    Assistantship form upload
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+                {% if "academic_user" in all_desig %}
+                <a class="item" data-tab="eight">
+                    Scholarship form upload
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+                {% if "academic_user" in all_desig %}
+                <a class="item" data-tab="ninth">
+                    Initiating Assistantship
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+                {% if "academic_user" in all_desig %}
+                <a class="item" data-tab="tenth">
+                     Thesis upload
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+                {% if "academic_user" in all_desig %}
+                <a class="item" data-tab="eleven">
+                     Applications
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+                {% if "academic_user" in all_desig %}
+                <a class="item" data-tab="twelve">
+                     Sem Results
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+            </div>
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+
+        {% comment %}
+            The central-rail segment starts here!
+        {% endcomment %}
+        <div class="eight wide column">
+            {% comment %}The Details start here!{% endcomment %}
+
+            {% comment %}The Assistantship start here!{% endcomment %}
+            <div class="ui tab segment" data-tab="first">
+                {% block form1 %}
+                    {% include 'officeModule/officeOfDeanAcademics/assistantship.html' %}
+                {% endblock %}
+            </div>
+
+            {% comment %}The Scholarships start here!{% endcomment %}
+            <div class="ui tab segment" data-tab="second">
+               {% block form2 %}
+                    {% include 'officeModule/officeOfDeanAcademics/scholarship.html' %}
+                {% endblock %}
+            </div>
+
+            {% comment %}The Thesis start here!{% endcomment %}
+            <div class="ui tab segment" data-tab="third">
+                {% block form3 %}
+                    {% include 'officeModule/officeOfDeanAcademics/thesis.html' %}
+                {% endblock %}
+            </div>
+
+            {% comment %}The Courses start here!{% endcomment %}
+            <div class="ui tab segment" data-tab="fourth">
+                 {% block form4 %}
+                    {% include 'officeModule/officeOfDeanAcademics/courses.html' %}
+                {% endblock %}
+            </div>
+
+            {% comment %}The Applications start here!{% endcomment %}
+            <div class="ui tab segment" data-tab="fifth">
+                  {% block form5 %}
+                    {% include 'officeModule/officeOfDeanAcademics/applications.html' %}
+                {% endblock %}
+            </div>
+
+            {% comment %}The Sem results start here!{% endcomment %}
+            <div class="ui tab segment" data-tab="sixth">
+                  {% block form6 %}
+                    {% include 'officeModule/officeOfDeanAcademics/semresults.html' %}
+                {% endblock %}
+            </div>
+
+            <div class="ui tab segment" data-tab="seventh">
+                  {% block form7 %}
+                    {% include 'officeModule/officeOfDeanAcademics/assistantshipform.html' %}
+                {% endblock %}
+            </div>
+
+            <div class="ui tab segment" data-tab="eight">
+                  {% block form8 %}
+                    {% include 'officeModule/officeOfDeanAcademics/scholarshipform.html' %}
+                {% endblock %}
+            </div>
+
+            <div class="ui tab segment" data-tab="ninth">
+                  {% block form9 %}
+                    {% include 'officeModule/officeOfDeanAcademics/creatingassistantship.html' %}
+                {% endblock %}
+            </div>
+
+            <div class="ui tab segment" data-tab="tenth">
+                  {% block form10 %}
+                    {% include 'officeModule/officeOfDeanAcademics/thesisupload.html' %}
+                {% endblock %}
+            </div>
+
+            <div class="ui tab segment" data-tab="eleven">
+                  {% block form11 %}
+                    {% include 'officeModule/officeOfDeanAcademics/semresults.html' %}
+                {% endblock %}
+            </div>
+
+            <div class="ui tab segment" data-tab="twelve">
+                  {% block form12 %}
+                    {% include 'officeModule/officeOfDeanAcademics/semresults.html' %}
+                {% endblock %}
+            </div>
+
+            {% comment %}The Publications ends here!{% endcomment %}
+
+        </div>
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            <div class="row">
+                <div class="ui row">
+                    <h3 class="ui header" style="padding-left: 16px;">
+                        Office Of Academics
+                    </h3>
+                </div>
+            </div>
+
+        <div class="ui divider"></div>
+
+            <div class="row">
+                <div class="ui row">
+                    <div id="textSegmentDiv">
+                        <div class="ui active large text loader"
+                             id="loader">
+                            Loading ...
+                        </div>
+
+                        <div id="textLoader" style="max-height: 87.5vh; overflow-y: auto; overflow-x: hidden;">
+                            {% block alerts %}
+                                {% include 'officeModule/officeOfDeanAcademics/alerts.html' %}
+                            {% endblock %}
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+    </div>
+    {% comment %}The grid ends here!{% endcomment %}
+
+
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+
+    <script>
+        $(document).ready(function(){
+            $("#textLoader").toggle();
+            $("#replacement-card").toggle();
+            setTimeout(loader, 1750);
+        });
+
+        function loader() {
+            $("#textLoader").toggle();
+            $("#replacement-card").toggle();
+            $("#loader").removeClass("active");
+            $("#loader").addClass("disabled");
+        }
+    </script>
+
+{% endblock %}

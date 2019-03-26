@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    {% load static %}
+
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Quiz</title>
+		<meta name="description" content="Examples for creative website header animations using Canvas and JavaScript" />
+		<meta name="keywords" content="header, canvas, animated, creative, inspiration, javascript" />
+		<meta name="author" content="Codrops" />
+		<script src="https://code.jquery.com/jquery-3.2.1.js" integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE=" crossorigin="anonymous"></script>
+		<link rel="stylesheet" type="text/css" href="{% static 'globals/css/semantic.min.css' %}">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css" />		<script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
+		<link  href="http://cdnjs.cloudflare.com/ajax/libs/fotorama/4.6.4/fotorama.css" rel="stylesheet"> <!-- 3 KB -->
+		<script src="http://cdnjs.cloudflare.com/ajax/libs/fotorama/4.6.4/fotorama.js"></script> <!-- 16 KB -->
+		<script type="text/javascript" src="{% static 'globals/js/semantic.min.js' %}"></script>
+		<script type="text/javascript" src="{% static 'globals/js/dropdown.js' %}"></script>
+    <meta charset="utf-8">
+    <style media="screen">
+      #demo{
+        text-align: center;
+        font-size: 60px;
+      }
+    </style>
+    <script type="text/javascript">
+    document.onkeydown = function(e) {
+      switch (event.keyCode) {
+          case 116 : //F5 button
+              event.returnValue = false;
+              event.keyCode = 0;
+              return false;
+          case 82 : //R button
+              if (event.ctrlKey) {
+                  e.preventDefault(e);
+                  event.keyCode = 0;
+                  return false;
+              }
+      }
+    }
+    window.onunload = function () {
+           var r = confirm( "Press a button!" )
+           if ( r == true ) {
+               alert( "You pressed OK!" )
+           }
+           else {
+               alert( "You pressed Cancel!" )
+           }
+
+       };
+
+    </script>
+    <title>Past Contests</title>
+  </head>
+  <body oncontextmenu="return false;">
+
+		<div>
+      <h1 class="ui massive center aligned header"> {{contest.quiz_name}}</h1>
+      <h4 class="ui massive center aligned header"> Total Marks {{totalmarks}}</h4>
+
+      <div class="total_question ui segment" style="margin:4em" >
+      <h3 class="ui massive margin-left aligned header"><b>Description</b>: {{contest.description}}</h3>
+      <h3 class="ui massive margin-left aligned header"><b>Rules</b>:  {% for x in rules %}
+        <p>{{forloop.counter}}){{x}}</p>
+        {% endfor %}</h3>
+
+
+
+
+                {% for q in questions %}
+
+                  <div class="question_image centered fourteen wide column ui segment" style="margin-top:1em;padding:2em;">
+                    <p><b>Question {{forloop.counter }}</b>&nbsp;: {{ q.question.question }}&nbsp;&nbsp;&nbsp;<b>Marks {{q.question.marks}}</b></p>
+                  <div class="ui divider">
+                  </div>
+
+                  {% if q.question.image %}
+                  <div class="image centered fourteen wide column">
+                    <img src="{{q.question.image}}" style="width:25%;height:25%">
+                  </div>
+                  {% endif %}
+                      <div style="margin:2em">
+                      <b>A)</b> &nbsp;{{ q.question.options1 }}
+                      </div>
+                      <br>
+                      <div style="margin:2em">
+                      <b>B)</b> &nbsp;{{q.question.options2}}
+                      </div>
+                      <br>
+                      <div style="margin:2em">
+                      <b>C)</b> &nbsp;{{q.question.options3}}
+                      </div>
+                      <br>
+                      <div style="margin:2em">
+                      <b>D)</b> &nbsp;{{q.question.options4}}
+                      </div>
+                      <br>
+                      {% if q.question.options5 %}
+                      <div style="margin:2em">
+                      <b>E)</b> &nbsp;{{q.question.options5}}
+                      </div>
+                      <br>
+
+                      {% endif %}
+                      <br>
+                    </div>
+
+                {% endfor %}
+
+
+
+
+    </div>
+    <script>
+      var past=1;
+      var count={{contest.number_of_question}};
+      // changing background color on hovering
+      var flag=0;
+      $('.qt').mouseover(function(){
+        if(flag!=1)
+        {
+          qt=$(this).attr('data');
+          color=$(this).css("background-color");
+          $('#qt'+qt).css({'background':'grey'});
+        }
+        else {
+          flag=0;
+        }
+      });
+
+      $('.qt').mouseout(function(){
+        if(flag!=1)
+        {
+          qt=$(this).attr('data');
+          $('#qt'+qt).css({'background':color});
+        }
+        else {
+          flag=0;
+        }
+      });
+
+      $('.next').click(function(){
+        $('#question'+id).css({'display':'none'});
+        $('#ann'+id).css({'display':'none'});
+        $('#qt'+id).css({'background':'white'});
+        id++;
+        if(id>count)
+        {
+          id=1;
+        }
+        $('#question'+id).css({'display':'block'});
+        $('#ann'+id).css({'display':'block'});
+        $('#qt'+id).css({'background':'green'});
+      });
+
+      // displying the 1st question initially
+      id = $('.questions').attr('data');
+      $('#question'+id).css({'display':'block'});
+      $('#ann'+id).css({'display':'block'});
+      $('#qt'+id).css({'background':'green'});
+
+      // displaying the corresponding question on click
+      $('.qt').click(function(event){
+        flag=1;
+        qt=$(this).attr('data');
+        $('#question'+id).css({'display':'none'});
+        $('#ann'+id).css({'display':'none'});
+        $('#qt'+id).css({'background':'white'});
+        id=qt;
+        $('#question'+id).css({'display':'block'});
+        $('#ann'+id).css({'display':'block'});
+        $('#qt'+id).css({'background':'green'});
+      });
+
+      $(document).ready(function(){
+      $('.ui.accordion').accordion('refresh');
+
+      });
+      $('#signupdivert').click(function(e){
+        $('#loginblock').css({'display':'none'});
+        $('#signupblock').css({'display': 'block'});
+      });
+      $('#logindivert').click(function(e){
+        $('#loginblock').css({'display':'block'});
+        $('#signupblock').css({'display': 'none'});
+      });
+      $('.ui.sidebar')
+          .sidebar('attach events', '#navbar #sidebartrigger')
+          // .sidebar('setting', 'transition', 'overlay')
+          // .sidebar('toggle')
+      ;
+      $('.special.cards .image').dimmer({
+        on: 'hover'
+      });
+      //for timer
+      var duration= {{days}}*86400+{{hours}}*3600+{{minutes}}*60+{{seconds}};
+      // alert(duration);
+      // var duration= {{contest.d_day}}*86400+{{contest.d_hour}}*3600+{{contest.d_minute}}*60;
+    </script>
+    {% include "coursemanagement/timer.html" %}
+    {% block timerjs %}
+    {% endblock %}
+    <script type="text/javascript">
+      //ajax cheking
+      $('.submit_bt').click(function(event){
+        event.preventDefault();
+        pk=$(this).attr('data-pk');
+        var ans = $('input[name=answer'+pk+']:checked').val();
+        var csrf = $('input[name=csrfmiddlewaretoken]').val();
+        // alert("pk="+pk+"/nans"+ans);
+        $.ajax({
+          type: 'POST',
+          url:'/ocms/{{contest.pk}}/ajax',
+          data:{ 'question':pk, 'answer': ans, 'csrfmiddlewaretoken':csrf, },
+          success: function(data){
+            console.log(data);
+            $('#question'+id).css({'display':'none'});
+            $('#ann'+id).css({'display':'none'});
+            $('#qt'+id).css({'background':'white'});
+            id++;
+            if(id>{{contest.number_of_question}})
+            {
+              id=1;
+            }
+            $('#question'+id).css({'display':'block'});
+            $('#ann'+id).css({'display':'block'});
+            $('#qt'+id).css({'background':'green'});
+          },
+          error: function(data,err){
+            alert(err);
+          },
+        });
+      });
+      $('#finish').click(function(event){
+        event.preventDefault();
+        $.ajax({
+          type:'POST',
+          url:'/ocms/{{contest.pk}}/submit',
+          data:{csrfmiddlewaretoken: '{{ csrf_token }}'},
+          success: function(data){
+            alert(data.message+"\nYour Score="+data.score);
+            localStorage.setItem("finished", "1");
+            window.close();
+
+          },
+          error: function(data,err){
+            alert(err);
+          }
+        });
+      });
+    </script>
+
+  </body>
+</html>

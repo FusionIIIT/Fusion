@@ -1,0 +1,71 @@
+{% load static %}
+{% block winners %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="inviteapplications">
+            Invite Applications
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="inviteapplications">
+        <div class="ui vertical segment">
+            <form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;">
+                {% csrf_token %}
+                <div class="two fields">
+                    <div class="six wide field">
+                        <label>Type</label>
+                        <select class="ui fluid search selection large dropdown" name="type" required>
+                                <option value="">Select</option> 
+                                <option value="Convocation Medals">Convocation Medals</option>
+                                <option value="Mcm Scholarship">Mcm Scholarship</option>
+                            </select>
+                    </div>
+
+                  
+                </div>
+
+                <div class="two fields">
+                    <div class="field">
+                        <label>Start date</label>
+                       
+                            <div class="ui input large left icon">
+                                <i class="calendar icon"></i>
+                                <input type="text" name="From" placeholder="YYYY-MM-DD" required>
+                            </div>
+                        
+                    </div>
+
+                    <div class="field">
+                        <label>End Date</label>
+                        
+                            <div class="ui input large left icon">
+                                <i class="calendar icon"></i>
+                                <input type="text" name="To" placeholder="YYYY-MMM-DD" required>
+                            </div>
+                        </div>
+                    
+                </div>
+                <div class="field">
+                    <div class="sixteen wide field">
+                        <label>Remarks:</label>
+                           <textarea rows="3" name="remarks"></textarea>
+                    </div>
+               </div>
+
+                <div class="field">
+                    <label><br></label>
+                    <button name="Submit" type="submit" class="ui primary large right floated button">
+                        Submit
+                    </button>
+                </div>
+
+                <br>
+                <br>
+            </form>
+
+            <div class="ui divider"></div>
+        </div>
+    </div>
+
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+{% block body %}
+{% block splreq %}
+<div class="ui pointing secondary menu">
+    <a class="active item" data-tab="splreq">
+        Special Request
+    </a>
+</div>
+<div class="ui active tab" data-tab="splreq">
+    <div class="ui vertical strip segment"
+         style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+
+            <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
+              <thead>
+                <tr>
+                  <th>App Date</th>
+                  <th>Student Id</th>
+                  <th>Start Date</th>
+                  <th>End Date</th>
+                  <th>Food1</th>
+                  <!-- <th>Food2</th> -->
+                  <th>purpose</th>
+                  <th>accept/reject</th>
+                </tr>
+              </thead>
+              <tbody>
+                  {% for var in sprequest %}
+                <tr>
+                    <th class="four wide">
+                        {{var.app_date}}
+                    </th>
+                    <td>
+                        <h4 class="ui image header">
+                            <div class="content">{{var.student_id.id}}</div>
+                        </h4>
+                    </td>
+                    <td>{{var.start_date}}</td>
+                    <td>{{var.end_date}}</td>
+                    <td>{{var.item1}}</td>
+                    <!-- <td>{{var.item2}}</td> -->
+                    <td>{{var.request}}</td>
+                    <td>
+                        <form action="{{var.pk}}/responsespl/" method="POST">
+                        {% csrf_token %}
+                        <div class="ui buttons">
+                        <button class="ui negative button" name="submit" value="reject" >R</button>
+                        <div class="or"></div>
+                        <button class="ui positive button" name="submit" value="approve" >A</button>
+                        </div>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+
+              </tbody>
+            </table>
+    </div>
+</div>
+
+{% endblock %}
+{% endblock %}

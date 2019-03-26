@@ -1,0 +1,276 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+{% block body %}
+{% block leaveRequest %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="leave">
+            Apply for Leave
+        </a>
+
+        <a class="item" data-tab="leavestatus">
+            Status
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="leave">
+        <div class="ui vertical segment">
+
+            {% comment %}Form Tag starts here!{% endcomment %}
+            <form method="POST">
+                {% csrf_token %}
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                    <div class="ui header">
+                        Apply for Leave:
+                    </div>
+
+                    <br>
+
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Mess:</label>
+                            <input value={{messinfo.mess_option}} class="ui large input" readonly>
+                        </div>
+
+                        <div class="two fields">
+                            <div class="twelve wide field">
+                                <label>Leave Type:</label>
+                                <select name="leave_type" class="ui fluid dropdown" required="true" id="leave_type">
+                                    {% comment %}
+                                        TODO: A backend code to stop sending of empty values to database (SELECT OPTION)
+                                    {% endcomment %}
+                                    <option value="">Select</option>
+                                    {% if count >= 10 %}
+                                    <option value="" readonly>Casual Leave(not allowed)</option>
+                                    {% else %}
+                                    <option value="casual">Casual Leave(took {{count}} leaves)</option>
+                                    {% endif %}
+                                    <option value="vacation">Vacation Leave</option>
+                                </select>
+                            </div>
+
+                            <div class="field">
+                                <label><br></label>
+                                <button class="ui primary fluid button" onclick="return lsrequest()">
+                                    Submit
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Leave From:</label>
+                            <div class="ui calendar" id="rangestart">
+                                <div class="ui input left icon">
+                                    <i class="calendar icon"></i>
+                                    <input name="start_date" type="text" placeholder="From" required="true" id="start_date">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label>Leave To:</label>
+                            <div class="ui calendar" id="rangeend">
+                                <div class="ui input left icon">
+                                    <i class="calendar icon"></i>
+                                    <input name="end_date" type="text" placeholder="To" required="true" id="end_date">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    {% comment %}
+                        TODO: Make this Optional
+                    {% endcomment %}
+                    <div class="field">
+                        <label>Purpose:</label>
+                        <textarea name="purpose" rows="2" required="true" id="purpose"></textarea>
+                        
+                    </div>
+
+                </div>
+            </form>
+            {% comment %}Form Tag ends here!{% endcomment %}
+
+
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="leavestatus">
+
+        <div class="ui vertical segment" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                
+            <br>
+
+            <div class="content">
+                <div class="description">
+
+                    <table class="ui very basic collapsing celled large sortable table"
+                           style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                        <thead>
+                        <tr>
+                            <th>
+                                App_date
+                            </th>
+
+                            <th>
+                                Type
+                            </th>
+
+                            <th>
+                                From
+                            </th>
+
+                            <th>
+                                To
+                            </th>
+
+                            <th>
+                                Duration
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+                        </tr>
+                        </thead>
+
+                        {% for item in rebates %}
+                        <tbody id="ls_table">
+                        <tr>
+                            <td>
+                                {{item.app_date}}
+                            </td>
+
+                            <td>
+                                {{item.leave_type}}
+                            </td>
+
+                            <td>
+                                {{item.start_date}}
+                            </td>
+
+                            <td>
+                                {{item.end_date}}
+                            </td>
+
+                            <td>
+                               {{item.duration}}
+                            </td>
+
+                            <td>
+                                {% if item.status == '2' %}
+                                    <i class="large green checkmark icon"></i>
+
+                                {% elif item.status == '1' %}
+                                    <i class="large orange warning icon"></i>
+
+                                {% else %}
+                                    <i class="large red x icon"></i>
+
+                                {% endif %}
+                            </td>
+                        </tr>
+                        </tbody>
+                        {% endfor %}
+                    </table>
+                    <br>
+                </div>
+            </div>
+        </div>
+
+        <br>
+
+        <div class="extra content">
+            <div class="" style="text-align: center;">
+                <i class="large green checkmark icon"></i> : Approved &ensp;&ensp;&ensp;&ensp;&ensp;
+                <i class="large orange warning icon"></i> : Pending &ensp;&ensp;&ensp;&ensp;&ensp;
+                <i class="large red x icon"></i> : Declined
+            </div>
+        </div>
+
+    </div>
+{% endblock %}
+{% endblock %}
+
+
+{% block javascript %}
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+
+<script>
+        function lsrequest(){
+
+            event.preventDefault();
+
+            var calendarOpts = {
+                type: 'date',
+                formatter: {
+                date: function (date, settings) {
+                    if (!date) return '';
+                    var day = date.getDate() + '';
+                    if (day.length < 2) {
+                        day = '0' + day;
+                    }
+                    var month = (date.getMonth() + 1) + '';
+                     if (month.length < 2) {
+                        month = '0' + month;
+                }
+                var year = date.getFullYear();
+                return year + '-' + month + '-' + day;
+            }
+        }
+    };
+    $('.ui.calendar').calendar(calendarOpts);
+
+
+            $.ajax({
+                type: 'POST',
+                url: 'leave/',
+                dataType: 'json',
+                data: {
+                    'csrfmiddlewaretoken' : '{{ csrf_token }}',
+                    'leave_type':$("#leave_type").val(),
+                    'start_date':$("#start_date").val(),
+                    'end_date':$("#end_date").val(),
+                    'purpose':$("#purpose").val()
+                },                
+                success: function(data) {
+                    if(data.status){
+                        alert("Data Inserted Successfully");
+                        
+                        /*$('#ls_table').prepend("<tr><td>"+ $("#leave_type").val()+ "</td><td>"+ 
+                            $("#start_date").val() + "</td><td>" + $("end_date").val()+
+                            "</td><td>"+ $("#purpose").val()+ "</td></tr>")*/
+
+                        document.getElementById('leave_type').value="";
+                        document.getElementById('start_date').value="";
+                        document.getElementById('end_date').value="";
+                        document.getElementById('purpose').value="";
+                        
+                    }
+                    else{
+                        alert("Already applied for leaves in the respective dates"); 
+                    }
+                },
+                error: function(data, err) {
+                    alert(err.message);
+                }
+            });
+        return false;
+    }
+    
+
+
+</script>
+{% endblock %}

@@ -1,0 +1,343 @@
+{% block education %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="internships">
+            Internships
+        </a>
+
+        <a class="item" data-tab="projects">
+            Projects
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="internships">
+
+        <div class="ui vertical segment">
+            {% comment %}Form Tag starts here!{% endcomment %}
+            <form method="post" class="ui form" role="form">
+                {% comment %}The add a new internship Accordian starts here!{% endcomment %}
+                <div class="ui active accordion field">
+                    <div class="title">
+                        <i class="icon dropdown"></i>
+                        Add a new Internship!
+                    </div>
+                    {{ form8.non_field_errors }}
+                    <div class="active content">
+                        <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                          {% csrf_token %}
+                            <div class="two fields">
+                                <div class="eleven wide field">
+                                  {{ form8.company.errors }}
+                                    <label for="{{ form8.company.id_for_label }}">
+                                      Organisation Name:</label>
+                                    <div class="ui fluid large input">
+                                        {% comment %}The Institute Name input!{% endcomment %}
+                                        {{ form8.company }}
+                                    </div>
+                                </div>
+
+                                <div class="five wide field">
+                                  {{ form8.location.errors }}
+                                <label for="{{ form8.location.id_for_label }}">
+                                  Location:</label>
+                                <div class="ui fluid large input">
+                                    {% comment %}The Institute Name input!{% endcomment %}
+                                    {{ form8.location }}
+                                </div>
+                            </div>
+
+                        </div>
+
+                        {% comment %}The start and end date input{% endcomment %}
+                        <div class="two fields">
+                            <div class="field">
+                              {{ form8.sdate.errors }}
+                                <label for="{{ form8.sdate.id_for_label }}">
+                                  Start Date (yyyy-mm-dd):</label>
+                                <div class="ui calendar" id="rangestart2">
+                                    <div class="ui input left icon">
+                                        <i class="calendar icon"></i>
+                                        {{ form8.sdate }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="field">
+                              {{ form8.edate.errors }}
+                                <label for="{{ form8.edate.id_for_label }}">
+                                  End Date (yyyy-mm-dd):</label>
+                                <div class="ui calendar" id="rangeend2">
+                                    <div class="ui input left icon">
+                                        <i class="calendar icon"></i>
+                                        {{ form8.edate }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="two fields">
+                            <div class="sixteen wide field">
+                              {{ form8.description.errors }}
+                                <label for="{{ form8.description.id_for_label }}">
+                                  Description:</label>
+                                <div class="ui fluid large input">
+                                    {% comment %}The Institute description input!{% endcomment %}
+                                    {{ form8.description }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="fields">
+                            <div class="eight wide field">
+                              {{ form8.title.errors }}
+                                <label for="{{ form3.title.id_for_label }}">
+                                    Internship Title
+                                </label>
+
+                                <div class="ui large input">
+                                    {{ form8.title }}
+                                </div>
+                            </div>
+
+                            <div class="five wide field">
+                              {{ form8.status.errors }}
+                                <label for="{{ form3.status.id_for_label }}">
+                                    Status
+                                </label>
+
+                                {{ form8.status }}
+
+                            </div>
+
+                            <div class="three wide field">
+                                <label><br></label>
+                                <button name="experiencesubmit" value="experiencesubmit" class="ui fluid large primary button" type="submit">
+                                    Submit
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+        </div>
+        {% comment %}The add a new internship Accordian ends here!{% endcomment %}
+        </form>
+        {% comment %}Form Tag ends here!{% endcomment %}
+
+        {% if experiences %}
+        <div class="ui divider"></div>
+
+        <table class="ui fixed sortable celled table">
+            <thead>
+            <tr>
+                <th class="four wide">Organisation Name</th>
+                <th class="two wide">Title</th>
+                <th class="three wide">Status</th>
+                <th class="three wide">Start Date</th>
+                <th class="two wide">End Date</th>
+                <th class="two wide">Location</th>
+                <th class="three wide">Description</th>
+                <th class="two wide">Delete</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for experience in experiences %}
+            <tr>
+                <td>
+                    {{ experience.company }}
+                </td>
+
+                <td>
+                    {{ experience.title }}
+                </td>
+
+                <td>
+                    {{ experience.status }}
+                </td>
+
+                <td>
+                    {{ experience.sdate }}
+                </td>
+
+                <td>
+                    {{ experience.edate }}
+                </td>
+
+                <td>
+                    {{ experience.location }}
+                </td>
+
+                <td>
+                    {{ experience.description }}
+                </td>
+
+                <td>
+                  <form method="post" class="ui form" role="form">
+                    {% csrf_token %}
+                    <button name="deleteexp" value="{{ experience.pk }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
+                        <i class="delete red icon"></i>
+                    </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+
+    </div>
+    </div>
+    <div class="ui tab" data-tab="projects">
+        <div class="ui vertical segment">
+            {% comment %}Form Tag starts here!{% endcomment %}
+            <form method="post" class="ui form" role="form">
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui active accordion field">
+                    <div class="title">
+                        <i class="icon dropdown"></i>
+                        Add a new Project!
+                    </div>
+                    {{ form6.non_field_errors }}
+                    <div class="active content">
+                        <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                          {% csrf_token %}
+                            <div class="two fields">
+                                <div class="field">
+                                  {{ form6.project_name.errors }}
+                                    <label>
+                                        Project Name:
+                                    </label>
+
+                                    <div class="ui large input">
+                                        {{ form6.project_name }}
+                                    </div>
+                                </div>
+
+                                <div class="field">
+                                  {{ form6.project_status.errors }}
+                                    <label>
+                                        Status
+                                    </label>
+
+                                    <div class="ui large input">
+                                        {{ form6.project_status }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="field">
+                              {{ form6.project_link.errors }}
+                                <label>Project Link:</label>
+                                <div class="ui large input fluid">
+                                    {{ form6.project_link }}
+                                </div>
+                            </div>
+
+                            {% comment %}The start and end date input{% endcomment %}
+                            <div class="two fields">
+                                <div class="field">
+                                  {{ form6.sdate.errors }}
+                                    <label>Start Date (yyyy-mm-dd):</label>
+                                    <div class="ui calendar" id="rangestart3">
+                                        <div class="ui input left icon">
+                                            <i class="calendar icon"></i>
+                                            {{ form6.sdate }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="field">
+                                  {{ form6.edate.errors }}
+                                    <label>End Date (yyyy-mm-dd):</label>
+                                    <div class="ui calendar" id="rangeend3">
+                                        <div class="ui input left icon">
+                                            <i class="calendar icon"></i>
+                                            {{ form6.edate }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="two fields">
+                                <div class="twelve wide field">
+                                  {{ form6.summary.errors }}
+                                    <label>Description:</label>
+                                    <!--textarea rows="2">
+                                        {% comment %}The Institute Name input!{% endcomment %}
+                                    </textarea-->
+                                    {{ form6.summary }}
+                                </div>
+
+                                <div class="four wide field">
+                                    <label><br></label>
+                                    <button name="projectsubmit" value="projectsubmit" class="ui fluid large primary button" type="submit">
+                                        Submit
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                {% comment %}The add a new project Accordian ends here!{% endcomment %}
+            </form>
+            {% comment %}Form Tag ends here!{% endcomment %}
+
+            {% if projects %}
+            <div class="ui divider"></div>
+
+            <table class="ui fixed sortable celled table">
+                <thead>
+                <tr>
+                    <th class="three wide">Project Name</th>
+                    <th class="three wide">Status</th>
+                    <th class="three wide">Start Date</th>
+                    <th class="three wide">End Date</th>
+                    <th class="five wide">Description</th>
+                    <th class="two wide">Link</th>
+                    <th class="two wide">Delete</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for project in projects %}
+                <tr>
+                    <td>
+                        {{ project.project_name }}
+                    </td>
+
+                    <td>
+                        {{ project.project_status }}
+                    </td>
+
+                    <td>
+                        {{ project.sdate }}
+                    </td>
+
+                    <td>
+                        {{ project.edate }}
+                    </td>
+
+                    <td>
+                        {{ project.summary }}
+                    </td>
+
+                    <td>
+                        <a href="{{ project.project_link }}">Click Here</a>
+                    </td>
+
+                    <td>
+                      <form method="post" class="ui form" role="form">
+                        {% csrf_token %}
+                        <button name="deletepro" value="{{ project.pk }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
+                            <i class="delete red icon"></i>
+                        </button>
+                        </form>
+                    </td>
+
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

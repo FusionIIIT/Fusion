@@ -1,0 +1,312 @@
+{% block education %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="education">
+            Education
+        </a>
+
+        <a class="item" data-tab="courses">
+            Certificate Courses
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="education">
+
+        <div class="ui vertical segment">
+            {% comment %}Form Tag starts here!{% endcomment %}
+            <form method="post" class="ui form" role="form">
+                {% comment %}The add a new education Accordian starts here!{% endcomment %}
+                <div class="ui active accordion field">
+                    <div class="title">
+                        <i class="icon dropdown"></i>
+                        Add a new Educational Qualification!
+                    </div>
+                    {{ form.non_field_errors }}
+                    <div class="active content">
+                        <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                          {% csrf_token %}
+                            <div class="two fields">
+                                <div class="field">
+                                    {{ form.degree.errors }}
+                                    <label for="{{ form.degree.id_for_label }}">
+                                        Degree
+                                    </label>
+                                    <div class="ui large input">
+                                      {{ form.degree }}
+                                    </div>
+                                </div>
+
+                                <div class="field">
+                                  {{ form.stream.errors }}
+                                    <label for="{{ form.stream.id_for_label }}">
+                                        Stream
+                                    </label>
+                                    <div class="ui large input">
+                                      {{ form.stream }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% comment %}The start and end date input{% endcomment %}
+                            <div class="two fields">
+                                <div class="field">
+                                {{ form.sdate.errors }}
+                                    <label for="{{ form.sdate.id_for_label }}">
+                                    Start Date: (yyyy-mm-dd)</label>
+                                    <div class="ui calendar" id="rangestart">
+                                        <div class="ui input left icon">
+                                            <i class="calendar icon"></i>
+                                            {{ form.sdate }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="field">
+                                {{ form.edate.errors }}
+                                    <label for="{{ form.edate.id_for_label }}">
+                                    End Date: (yyyy-mm-dd)</label>
+                                    <div class="ui calendar" id="rangeend">
+                                        <div class="ui input left icon">
+                                            <i class="calendar icon"></i>
+                                            {{ form.edate }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="two fields">
+                                <div class="twelve wide field">
+                                {{ form.institute.errors }}
+                                    <label  for="{{ form.institute.id_for_label }}">
+                                    Institute Name:</label>
+                                    <div class="ui fluid large input">
+                                    {{ form.institute }}
+                                    </div>
+                                </div>
+                                <div class="field">
+                                {{ form.grade.errors }}
+                                    <label for="{{ form.grade.id_for_label }}">
+                                        Grade
+                                    </label>
+                                    <div class="ui large input">
+                                      {{ form.grade }}
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="two fields">
+                              <div class="four wide field">
+                                  <label><br></label>
+                                  <button name="educationsubmit" name="educationsubmit" class="ui fluid large primary button" type="submit">
+                                      Submit
+                                  </button>
+                              </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% comment %}The add a new Education Accordian ends here!{% endcomment %}
+            </form>
+            {% comment %}Form Tag ends here!{% endcomment %}
+
+            {% if educations %}
+            <div class="ui divider"></div>
+
+            <table class="ui fixed sortable celled table">
+                <thead>
+                <tr>
+                    <th class="four wide">Institute Name</th>
+                    <th class="two wide">Degree</th>
+                    <th class="three wide">Stream</th>
+                    <th class="three wide">Start Date</th>
+                    <th class="three wide">End Date</th>
+                    <th class="two wide">Grade</th>
+                    <th class="two wide">Delete</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for education in educations %}
+                <tr>
+                    <td>
+                        {{ education.institute }}
+                    </td>
+
+                    <td>
+                        {{ education.degree }}
+                    </td>
+
+                    <td>
+                        {{ education.stream }}
+                    </td>
+
+                    <td>
+                        {{ education.sdate }}
+                    </td>
+
+                    <td>
+                        {{ education.edate }}
+                    </td>
+
+                    <td>
+                        {{ education.grade }}
+                    </td>
+
+                    <td>
+                      <form method="post" class="ui form" role="form">
+                        {% csrf_token %}
+                        <button name="deleteedu" value="{{ education.pk }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
+                            <i class="delete red icon"></i>
+                        </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+        </div>
+    </div>
+    <div class="ui tab" data-tab="courses">
+            <div class="ui vertical segment">
+            {% comment %}Form Tag starts here!{% endcomment %}
+            <form method="post" class="ui form" role="form">
+                {% comment %}The add a new Course Accordian starts here!{% endcomment %}
+                <div class="ui active accordion field">
+                    <div class="title">
+                        <i class="icon dropdown"></i>
+                        Add a new Course!
+                    </div>
+                    {{ form11.non_field_errors }}
+                    <div class="active content">
+                        <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                          {% csrf_token %}
+                            <div class="two fields">
+                                <div class="twelve wide field">
+                                  {{ form11.course_name.errors }}
+                                  <label for="{{ form11.course_name.id_for_label }}">
+                                        Course Name:
+                                    </label>
+
+                                    <div class="ui large input">
+                                      {{ form11.course_name }}
+                                    </div>
+                                </div>
+
+                                <div class="four wide field">
+                                  {{ form11.license_no.errors }}
+                                  <label for="{{ form11.license_no.id_for_label }}">
+                                        License Number:
+                                    </label>
+
+                                    <div class="ui large input">
+                                      {{ form11.license_no }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% comment %}The start and end date input{% endcomment %}
+                            <div class="two fields">
+                                <div class="field">
+                                  {{ form11.sdate.errors }}
+                                  <label for="{{ form11.sdate.id_for_label }}">
+                                      Start Date:(yyyy-mm-dd)
+                                    </label>
+                                    <div class="ui calendar" id="rangestart1">
+                                        <div class="ui input left icon">
+                                            <i class="calendar icon"></i>
+                                            {{ form11.sdate }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="field">
+                                  {{ form11.edate.errors }}
+                                  <label for="{{ form11.edate.id_for_label }}">
+                                      End Date: (yyyy-mm-dd)
+                                    </label>
+                                    <div class="ui calendar" id="rangeend1">
+                                        <div class="ui input left icon">
+                                            <i class="calendar icon"></i>
+                                            {{ form11.edate }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="two fields">
+                                <div class="twelve wide field">
+                                  {{ form11.description.errors }}
+                                    <label for="{{ form11.description.id_for_label }}">
+                                      Description:
+                                    </label>
+                                    {{ form11.description }}
+                                </div>
+
+                                <div class="four wide field">
+                                    <label><br></label>
+                                    <button name="coursesubmit" value="coursesubmit" class="ui fluid large primary button" type="submit">
+                                        Submit
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                {% comment %}The add a new Course Accordian ends here!{% endcomment %}
+            </form>
+            {% comment %}Form Tag ends here!{% endcomment %}
+
+            {% if courses %}
+            <div class="ui divider"></div>
+
+            <table class="ui fixed sortable celled table">
+                <thead>
+                <tr>
+                    <th class="four wide">Institute Name</th>
+                    <th class="four wide">License No</th>
+                    <th class="three wide">Start Date</th>
+                    <th class="three wide">End Date</th>
+                    <th class="four wide">Description</th>
+                    <th class="two wide">Delete</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for course in courses %}
+                <tr>
+                    <td>
+                        {{ course.course_name }}
+                    </td>
+
+                    <td>
+                        {{ course.license_no }}
+                    </td>
+
+                    <td>
+                        {{ course.sdate }}
+                    </td>
+
+                    <td>
+                        {{ course.edate }}
+                    </td>
+
+                    <td>
+                        {{ course.description }}
+                    </td>
+
+                    <td>
+                      <form method="post" class="ui form" role="form">
+                        {% csrf_token %}
+                        <button name="deletecourse" value="{{ course.pk }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
+                            <i class="delete red icon"></i>
+                        </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

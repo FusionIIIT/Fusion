@@ -1,0 +1,68 @@
+{% block newsession %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="newsession">
+            New Session
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="newsession">
+        <div class="ui vertical segment">
+            <form method="post" id="new_session_form">
+            {% csrf_token %}
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                    <div class="field">
+                        <label>Club</label>
+                        <select class="ui search fluid dropdown" name="club" required>
+                            <option value="">Select</option>
+                            {% for i in Club_name %}
+                                {% if request.user.username in i.co_ordinator|stringformat:"s" or request.user.username in i.co_coordinator|stringformat:"s" %}
+                                    <option value="{{ i.club_name }}">{{ i.club_name }} </option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                
+                    <div class="three fields">
+                        <div class="field">
+                            <label>Venue</label>
+                            <input placeholder="Venue" name="venue" required>
+                        </div>
+
+                        <div class="field">
+                            <label>Date</label>
+                            <div class="ui input left icon">
+                                <i class="calendar icon"></i>
+                                <input type="date" data-date-format="YYYY-MM-DD" placeholder="From" name="date" required> 
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label>Time</label>
+                            <input type="time" class="ui large input" name="time" required>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Details & Description</label>
+                        <textarea rows="2" name="d_d" required></textarea>
+                    </div>
+
+                    <div class="field">
+                        <button class="ui primary button right floated" type="submit" onclick="form_submit('new_session','new_session_form',event)">
+                            Submit
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <br>
+            <br>
+        </div>
+        <br>
+        <div class="extra content"></div>
+    </div>
+
+{% endblock %}

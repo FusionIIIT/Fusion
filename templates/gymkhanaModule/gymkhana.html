@@ -1,0 +1,276 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+    Gymkhana Module
+{% endblock %}
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    <script type="text/javascript">
+
+
+        function form_submit(a,b,event){
+            a = '/gymkhana/'+a+'/';
+            // alert(a);
+            // alert(b);
+            event.preventDefault();
+            var form = document.getElementById(b); // You need to use standard javascript object here
+            var formData = new FormData(form);
+            form.reset();
+            //alert(formData);
+            $.ajax({
+                url: a,
+                data: formData,
+                enctype: "multipart/form-data",
+                type: 'POST',
+                contentType: false, // NEEDED, DON'T OMIT THIS (requires jQuery 1.6+)
+                processData: false, // NEEDED, DON'T OMIT THIS
+                // ... Other options like success and etc
+                success: function(msg) {
+                    alert("success");
+                    form.reset();
+                },
+                error: function() {
+                    alert("unsuccessful");
+                }
+            });
+        }
+    </script>
+
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}
+            The left-rail segment starts here!
+        {% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu starts here!{% endcomment %}
+
+            <div class="ui huge fluid vertical pointing menu"
+                 style="max-width: 320px;">
+
+                {% if "Junior Superintendent" not in Curr_desig and "Dean_s" not in Curr_desig %}
+
+                    <a class="item" data-tab="first">
+                        Apply
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    <a class="item" data-tab="last">
+                        Submitted requests
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                {% endif %}
+
+                <a class="item" data-tab="twelth">
+                    View Club Details
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                {% if "co-ordinator" in Curr_desig and "co co-ordinator" in Curr_desig %}
+                    <a class="item" data-tab="fifth">
+                        New Session
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                {% endif %}
+
+                {% if "co-ordinator" in Curr_desig or request.user.username == "root" %}
+                    <a class="item" data-tab="sixth">
+                        Member Requests
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    <a class="item" data-tab="eighth">
+                        Update Activity Calender
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    <a class="item" data-tab="ninth">
+                        Submit Club report
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    <a class="item" data-tab="second">
+                        Club Budget
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                {% endif %}
+
+                <a class="item" data-tab="third">
+                    Member Records
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <!-- {% with '"dean(S)"' as list %}
+                {% if request.user.holdsdesignation.designation.name in list %}
+                <a class="item" data-tab="seventh">
+                    Approval Requests
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+                {% endwith %} -->
+                {% if "Junior Superintendent" in Curr_desig or request.user.username == "root" %}
+
+                    <a class="item" data-tab="fourth">
+                        Fest Budget
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    <a class="item" data-tab="tenth">
+                        Change Co and Co-Co
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    <a class="item" data-tab="eleventh">
+                        Submit Event report
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                {% endif %}
+            </div>
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+
+
+        {% comment %}
+            The central-rail segment starts here!
+        {% endcomment %}
+        <div class="eight wide column">
+            {% comment %}The Details start here!{% endcomment %}
+
+            <div class="ui tab segment" data-tab="first">
+                {% block applyform %}
+                    {% include 'gymkhanaModule/applyform.html' %}
+                {% endblock %}
+            </div>
+
+            {% comment %}The Personal Details end here!{% endcomment %}
+
+            {% comment %}The Publications starts here!{% endcomment %}
+
+            <div class="ui tab segment" data-tab="second">
+                {% block clubbudget %}
+                    {% include 'gymkhanaModule/clubbudget.html' %}
+                {% endblock %}
+            </div>
+            <div class="ui tab segment" data-tab="sixth">
+                {% block memberrequests %}
+                    {% include 'gymkhanaModule/memberrequests.html' %}
+                {% endblock %}
+            </div>
+             <div class="ui tab segment" data-tab="eighth">
+                {% block activityCalender %}
+                    {% include 'gymkhanaModule/activityCalender.html' %}
+                {% endblock %}
+            </div>
+             <div class="ui tab segment" data-tab="eleventh">
+                {% block eventReport %}
+                    {% include 'gymkhanaModule/eventReport.html' %}
+                {% endblock %}
+            </div>
+            <div class="ui tab segment" data-tab="ninth">
+                {% block clubReport %}
+                    {% include 'gymkhanaModule/otherReport.html' %}
+                {% endblock %}
+            </div>
+
+            {% comment %}The Publications ends here!{% endcomment %}
+
+
+            {% comment %}The Publications starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="third">
+                {% block memberrecords %}
+                    {% include 'gymkhanaModule/memberrecords.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The Publications ends here!{% endcomment %}
+
+
+            {% comment %}The Publications starts here!{% endcomment %}
+
+            <div class="ui tab segment" data-tab="fourth">
+                {% block festbudget %}
+                    {% include 'gymkhanaModule/festbudget.html' %}
+                {% endblock %}
+            </div>
+
+            {% comment %}The Publications ends here!{% endcomment %}
+
+
+            {% comment %}The Publications starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="fifth">
+                {% block newsession %}
+                    {% include 'gymkhanaModule/newsession.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The Publications ends here!{% endcomment %}
+
+
+            {% comment %}The Publications starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="seventh">
+                {% block approvalrequests %}
+                    {% include 'gymkhanaModule/approvalrequests.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The Publications ends here!{% endcomment %}
+
+            {% comment %}The Publications starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="tenth">
+                {% block change_head %}
+                    {% include 'gymkhanaModule/change_head.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The Publications ends here!{% endcomment %}
+
+            <div class="ui tab segment" data-tab="twelth">
+                {% block view_budget %}
+                    {% include 'gymkhanaModule/club_details.html' %}
+                {% endblock %}
+            </div>
+
+            <div class="ui tab segment" data-tab="last">
+                {% block pendingrequest %}
+                    {% include 'gymkhanaModule/pending_request.html' %}
+                {% endblock %}
+            </div>
+        </div>
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            <div class="row">
+                {% comment %}
+                    TODO: the right rail!
+                {% endcomment %}
+            </div>
+        </div>
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+    </div>
+    {% comment %}The grid ends here!{% endcomment %}
+
+{% endblock %}
+
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+{% endblock %}

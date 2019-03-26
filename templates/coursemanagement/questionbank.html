@@ -1,0 +1,56 @@
+{% load static %} {% block questionbank %}
+
+<div class="ui active tab segment" data-tab="questionbank">
+    <h4 class="ui dividing header">Question Banks </h4>
+
+
+    {% if questionbank %}
+    <table class="ui very basic collapsing celled table" id="qbtable">
+      <thead>
+        <tr>
+          <th>S.No.</th>
+          <th>Name</th>
+          <th></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for qb in questionbank %}
+          <tr id="qb{{qb.pk}}">
+            <td>{{forloop.counter}}</td>
+            <td>{{qb.name}}</td>
+            <td>
+               <a href="/ocms/{{course.course_id}}/edit_bank/{{qb.pk}}"class="ui blue button">
+                 Open Question Bank
+               </a>
+            </td>
+            <td>
+          <i class="remove icon qbremove" id="{{qb.pk}}" data-pk="{{qb.pk}}"></i></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="row" style="margin-left:20px">
+        <h4 class="ui header">No Question Banks added till Now</h4><br>
+    </div>
+    {% endif %}
+    <div class="ui blue button" id="create_qbank">
+      Create a New Question Bank
+    </div>
+    <form class="ui large form" style="display:none" id="qbank" method="post" action="/ocms/{{course.course_id}}/create_bank">
+      {% csrf_token %} {% if errors %} {{errors}} {% endif %}
+      <br/>
+      <div class="field">
+        <label>Question Bank Name</label>
+        <input type="text" name="qbname" placeholder="Name">
+      </div>
+      <input type="submit" class="ui primary button" value="Create" />
+    </form>
+
+</div>
+<script>
+
+</script>
+
+{% endblock %}

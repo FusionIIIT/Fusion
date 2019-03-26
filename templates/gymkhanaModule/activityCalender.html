@@ -1,0 +1,68 @@
+{% block newsession %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+
+    <script type="text/javascript">
+        function ValidateExtension2() {
+            var allowedFiles = [".doc", ".docx", ".pdf"];
+            var fileUpload = document.getElementById("fileUpload2");
+            var lblError = document.getElementById("lblError2");
+            var regex = new RegExp("([a-zA-Z0-9\s_\\.\-:])+(" + allowedFiles.join('|') + ")$");
+            if (!regex.test(fileUpload.value.toLowerCase())) {
+                lblError.innerHTML = "Please upload files having extensions: <b>" + allowedFiles.join(', ') + "</b> only.";
+                fileUpload2.value = "";
+                return false;
+            }
+            lblError.innerHTML = "";
+            return true;
+        }
+
+    </script>
+
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="newsession">
+            Update Activity Calender
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="eventReport">
+        <div class="ui vertical segment">
+            <form method="Post" id="activity_calender" enctype="multipart/form-data">
+            {% csrf_token %}
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                    <div class="two fields">
+                        <div class="eight wide field">
+                            <label>Club</label>
+                            <select class="ui search fluid dropdown" name="club" default required />
+                                <option value="">Select</option>
+                                {% for i in Club_name %}
+                                    {% if request.user.username in i.co_ordinator|stringformat:"s" %}
+                                        <option value="{{ i.club_name }}">{{ i.club_name }} </option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="eight wide field">
+                            <label>Activity Calender</label>
+                            <input type="File" id="fileUpload2" class="ui large input" name="act_file" onchange="return ValidateExtension2()" accept=".pdf" required  />
+                            <span id="lblError2" style="color: red;"></span>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <button class="ui primary button right floated" type="submit" onclick="form_submit('act_calender','activity_calender',event)">
+                            Submit
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <br>
+            <br>
+        </div>
+        <br>
+        <div class="extra content"></div>
+    </div>
+
+{% endblock %}

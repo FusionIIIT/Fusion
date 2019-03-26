@@ -1,0 +1,129 @@
+<form method='POST'>
+    {% csrf_token %}
+    {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+    <div class="ui form" style="padding: 8px; padding-left: 56px; padding-right: 12px;">
+        <div class="two fields">
+            <div class="twelve wide field">
+                <label>Item</label>
+                <input type="text" placeholder="Search" class="ui search large input" name="item">
+            </div>
+            
+
+            <div class="four wide field">
+                <label><br></label>
+                <button class="ui primary submit button" type="submit" name="vendor_search">
+                    Search
+                    <i class="ui right floated search icon"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</form>
+
+<div class="ui divider"></div>
+
+     <table class="ui very basic collapsing celled sortable table"
+       style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+    <thead>
+    <tr>
+
+        <th class="two wide column">
+            Sr.#
+        </th>
+
+        <th>
+            Vendor Name
+        </th>
+
+        <th>
+            Address
+        </th>
+
+        <th class="three wide column">
+            Items
+        </th>
+    </tr>
+    </thead>
+    <tbody>
+    {% if matchv %}
+    {% for j in matchv %}
+    <tr>
+        <td>
+            {{ j.id }}
+        </td>
+
+        <td>
+           {{ j.vendor_name }}
+        </td>
+            
+        <td>
+                {{ j.vendor_address }}
+        </td>
+
+        <td>
+                {{ j.vendor_item }}
+        </td>
+        <td>
+                <div class="collapsing">
+                        <a href="{% url 'office:delete_vendor' j.pk %}" class="ui red right floated button">Delete</a> 
+                </div>
+        </td>
+        
+       
+    </tr>
+    {% endfor %}
+    {% endif %}
+
+    {% for j in p %}
+    <tr>
+        <td>
+            {{ j.id }}
+        </td>
+
+        <td>
+           {{ j.vendor_name }}
+        </td>
+            
+        <td>
+                {{ j.vendor_address }}
+        </td>
+
+        <td>
+                {{ j.vendor_item }}
+        </td>
+
+        <td>
+                <div class="collapsing">
+                        <a href="{% url 'office:delete_vendor' j.pk %}" class="ui red right floated button">Delete</a> 
+                </div>
+        </td>
+
+        <td>
+            <div class="collapsing">
+                <a href="{% url 'office:edit_vendor' j.pk %}" class="ui blue right floated button">Edit</a> 
+            </div>
+    </td>
+               
+    </tr>
+    {% endfor %}
+   
+    </tbody>
+
+
+</table>
+
+
+<br>
+<!--
+<div class="ui right floated button">Edit Selected</div>
+<div class="ui red right floated button">Delete Selected</div>
+<br>
+<br>
+-->
+
+<div class="ui divider"></div>
+

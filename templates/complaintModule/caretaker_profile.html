@@ -1,0 +1,68 @@
+{% load static %}
+{% block caretaker_profile %}
+       {% comment %}The ... start here!{% endcomment %}
+    <div class="ui pointing secondary menu ">
+        <a class="active item" data-tab="caretaker_profile">
+                        Caretaker Profile
+        </a>
+    </div>
+    <div class="ui active tab" data-tab="caretaker_profile">
+            <div class="ui vertical segment">
+                Below caretaker working in : <b>{{ area }}</b>
+            <br>
+                {% for i in all_caretaker %}
+                <div class="ui header">
+                    <div>Caretaker ID :{{ i.staff_id }}</div>
+                       <div class="fields">
+                            <div class="eight wide field">
+                                <h4><label>Name :
+                                    {{ i.staff_id.user.username }}</label></h4>
+                            </div>
+                        </div>
+                </div>
+
+                    <div class="extra content">
+                        <div class=""  >
+                            <div class="eight wide field">
+                                <label>Sex : </label>
+                                {{ i.staff_id.sex }}
+                            </div>
+                            <div class="eight wide field">
+                                <label>Phone No : </label>
+                                {{ i.staff_id.phone_no }}
+                            </div>
+                            <div class="eight wide field">
+                                <label>Rating : </label>
+
+                                &ensp;&ensp;&ensp;&ensp;&ensp;
+                                <div class="ui massive star rating" >
+                                        {% if i.rating == 5 %}
+                                            <i class="icon active"></i><i class="icon active"></i><i class="icon active"></i>
+                                            <i class="icon active"></i><i class="icon active"></i>
+                                        {% elif i.rating == 4 %}
+                                            <i class="icon active"></i><i class="icon active"></i><i class="icon active"></i>
+                                            <i class="icon active"></i><i class="icon"></i>
+                                        {% elif i.rating == 3 %}
+                                            <i class="icon active"></i><i class="icon active"></i><i class="icon active"></i>
+                                            <i class="icon"></i><i class="icon"></i>
+                                        {% elif i.rating == 2 %}
+                                            <i class="icon active"></i><i class="icon active"></i><i class="icon"></i>
+                                            <i class="icon"></i><i class="icon"></i>
+                                        {% elif i.rating == 1 %}
+                                            <i class="icon active"></i><i class="icon"></i><i class="icon"></i>
+                                            <i class="icon"></i><i class="icon"></i>
+                                        {% elif i.rating == 0 %}
+                                            <i class="icon"></i><i class="icon"></i><i class="icon"></i>
+                                            <i class="icon"></i><i class="icon"></i>
+                                        {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ui divider"></div>
+                {% endfor %}
+            </div>
+
+        </div>
+
+{% endblock %}

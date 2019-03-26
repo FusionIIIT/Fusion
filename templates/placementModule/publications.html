@@ -1,0 +1,258 @@
+{% block publications %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="publications">
+            Publications
+        </a>
+
+        <a class="item" data-tab="patents">
+            Patents
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="publications">
+
+        <div class="ui vertical segment">
+            {% comment %}Form Tag starts here!{% endcomment %}
+            <form method="post" class="ui form" role="form">
+                {% comment %}The add a new Publication Accordian starts here!{% endcomment %}
+                <div class="ui active accordion field">
+                    <div class="title">
+                        <i class="icon dropdown"></i>
+                        Add a new Publication!
+                    </div>
+                    {{ form5.non_field_errors }}
+                    <div class="active content">
+                        <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                            {% csrf_token %}
+                            <div class="two fields">
+                                <div class="eleven wide field">
+                                    {{ form5.publication_title.errors }}
+                                    <label for="{{ form5.publication_title.id_for_label }}">Publication Title:</label>
+                                    <div class="ui fluid large input">
+                                        {% comment %}The Institute Name input!{% endcomment %}
+                                        {{ form5.publication_title }}
+                                    </div>
+                                </div>
+
+                            <div class="field">
+                                {{ form5.publication_date.errors }}
+                                <label for="{{ form5.publication_date.id_for_label }}">Date (yyyy-mm-dd): Published:</label>
+                                <div class="ui calendar" id="rangestart2">
+                                    <div class="ui input large left icon">
+                                        <i class="calendar icon"></i>
+                                        {{ form5.publication_date }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="fields">
+                            <div class="eight wide field">
+                              {{ form5.description.errors }}
+                                <label for="{{ form5.description.id_for_label }}">
+                                    Description:
+                                </label>
+
+                                <div class="ui large input">
+                                    {{ form5.description }}
+                                </div>
+                            </div>
+
+                                <div class="field">
+                                  {{ form5.publisher.errors }}
+                                    <label for="{{ form5.publisher.id_for_label }}">
+                                        Publisher:
+                                    </label>
+
+                                    <div class="ui large input">
+                                        {{ form5.publisher }}
+                                    </div>
+                                </div>
+
+                            <div class="field">
+                                <label><br></label>
+                                <button name="publicationsubmit" value="publicationsubmit" class="ui fluid large primary button" type="submit">
+                                    Submit
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+        </div>
+        {% comment %}The add a new Publication Accordian ends here!{% endcomment %}
+        </form>
+        {% comment %}Form Tag ends here!{% endcomment %}
+
+        {% if publications %}
+        <div class="ui divider"></div>
+
+        <table class="ui fixed sortable celled table">
+            <thead>
+            <tr>
+                <th class="four wide">Publication Title</th>
+                <th class="three wide">Publisher</th>
+                <th class="seven wide">Description</th>
+                <th class="four wide">Date Published</th>
+                <th class="two wide">Delete</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for publication in publications %}
+            <tr>
+                <td>
+                    {{ publication.publication_title }}
+                </td>
+
+                <td>
+                    {{ publication.publisher }}
+                </td>
+
+                <td>
+                    {{ publication.description }}
+                </td>
+
+                <td>
+                    {{ publication.publication_date }}
+                </td>
+
+                <td>
+                  <form method="post" class="ui form" role="form">
+                    {% csrf_token %}
+                    <button name="deletepub" value="{{ publication.pk }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
+                        <i class="delete red icon"></i>
+                    </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+
+    </div>
+    </div>
+    <div class="ui tab" data-tab="patents">
+        <div class="ui vertical segment">
+            {% comment %}Form Tag starts here!{% endcomment %}
+            <form method="post" class="ui form" role="form">
+                {% comment %}The add a new Publication Accordian starts here!{% endcomment %}
+                <div class="ui active accordion field">
+                    <div class="title">
+                        <i class="icon dropdown"></i>
+                        Add a new Patent!
+                    </div>
+                    {{ form7.non_field_errors }}
+                    <div class="active content">
+                        <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                          {% csrf_token %}
+                            <div class="two fields">
+                                <div class="eleven wide field">
+                                  {{ form7.patent_name.errors }}
+                                    <label for="{{ form7.patent_name.id_for_label }}">Patent Name:</label>
+                                    <div class="ui fluid large input">
+                                        {% comment %}The Patent Name input!{% endcomment %}
+                                        {{ form7.patent_name }}
+                                    </div>
+                                </div>
+
+                            <div class="field">
+                              {{ form7.patent_date.errors }}
+                                <label for="{{ form7.patent_date.id_for_label }}">Patent Date (yyyy-mm-dd):</label>
+                                <div class="ui calendar" id="rangestart2">
+                                    <div class="ui input large left icon">
+                                        <i class="calendar icon"></i>
+                                        {{ form7.patent_date }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="fields">
+                            <div class="eight wide field">
+                              {{ form7.description.errors }}
+                                <label for="{{ form7.description.id_for_label }}">
+                                    Description:
+                                </label>
+
+                                <div class="ui large input">
+                                    {{ form7.description }}
+                                </div>
+                            </div>
+
+                                <div class="field">
+                                  {{ form7.patent_office.errors }}
+                                    <label for="{{ form7.patent_office.id_for_label }}">
+                                        Patent Office:
+                                    </label>
+
+                                    <div class="ui large input">
+                                        {{ form7.patent_office }}
+                                    </div>
+                                </div>
+
+                            <div class="field">
+                                <label><br></label>
+                                <button name="patentsubmit" value="patentsubmit" class="ui fluid large primary button" type="submit">
+                                    Submit
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+        </div>
+        {% comment %}The add a new Publication Accordian ends here!{% endcomment %}
+        </form>
+            {% comment %}Form Tag ends here!{% endcomment %}
+
+
+            {% if patent %}
+            <div class="ui divider"></div>
+
+            <table class="ui fixed sortable celled table">
+                <thead>
+                <tr>
+                    <th class="three wide">Patent Name</th>
+                    <th class="three wide">Patent Office</th>
+                    <th class="six wide">Description</th>
+                    <th class="three wide">Date Published</th>
+                    <th class="two wide">Delete</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for paten in patent %}
+                <tr>
+                    <td>
+                        {{ paten.patent_name }}
+                    </td>
+
+                    <td>
+                        {{ paten.patent_office }}
+                    </td>
+
+                    <td>
+                        {{ paten.description }}
+                    </td>
+
+                    <td>
+                        {{ paten.patent_date }}
+                    </td>
+
+                    <td>
+                      <form method="post" class="ui form" role="form">
+                        {% csrf_token %}
+                        <button name="deletepat" value="{{ paten.pk }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
+                            <i class="delete red icon"></i>
+                        </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

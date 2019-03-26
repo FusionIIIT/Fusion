@@ -1,0 +1,65 @@
+{% load static %}
+
+{% block interviewrequest %}
+    {% if placementstatus %}
+    <div class="ui cards">
+        {% for ps in placementstatus %}
+        {% if ps.invitation == 'PENDING' or ps.invitation == 'Pending' %}
+        {% if ps.placed == 'Not Placed' or ps.placed == 'NOT PLACED' %}
+
+        <div class="ui fluid card">
+            <div class="content">
+                <div class="header">
+                    {{ ps.notify_id.placement_type }} Invitation
+                </div>
+                <div class="meta">
+                    {{ ps.notify_id.company_name }} , CTC: {{ ps.notify_id.ctc }}
+                </div>
+
+                <div class="ui divider"></div>
+
+                <div class="description">
+                    <p>{{ ps.notify_id.description }} </p>
+                    <p>Do you want to accept the invitation?</p>
+                </div>
+            </div>
+            <div class="extra content">
+                <div class="ui two buttons">
+                  <form method="post" class="ui form" role="form">
+                    {% csrf_token %}
+                    <button name="studentapprovesubmit" value="{{ ps.pk }}" class="ui basic green button" type="submit">Approve</button>
+                  </form>
+                  <form method="post" class="ui form" role="form">
+                    {% csrf_token %}
+                    <button name="studentdeclinesubmit" value="{{ ps.pk }}" class="ui basic red button" type="submit">Decline</button>
+                  </form>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% endif %}
+
+        {% if ps.placed == 'Placed' or ps.placed == 'PLACED' %}
+        <div class="ui fluid card">
+            <div class="content">
+                <div class="header">
+                    {{ ps.notify_id.placement_type }} CONGRATULATIONS
+                </div>
+                <div class="meta">
+                    {{ ps.notify_id.company_name }} , CTC: {{ ps.notify_id.ctc }}
+                </div>
+
+                <div class="ui divider"></div>
+
+                <div class="description">
+                    <p><b>Congatulations</b> on the Placement.</p>
+                    <p>We wish you all the luck for your future.</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% endfor %}
+    </div>
+    {% endif %}
+{% endblock %}

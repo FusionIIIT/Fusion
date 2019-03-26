@@ -1,0 +1,91 @@
+{% load static %}
+{% block changemenu %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="changemenu">
+            Request For Menu Change
+        </a>
+    </div>
+    <div class="ui active tab" data-tab="changemenu">
+        <div class="ui vertical segment">
+
+            {% comment %}Form Tag starts here!{% endcomment %}
+            {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+            <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                <div class="ui header">
+                    Menu Card:
+                </div>
+                <br>
+
+                <div class="ui stackable grid doubling">
+                    <div class="ui row">
+                        <div class="four wide column">
+                            <div class="ui secondary vertical pointing small menu">
+                                <a class="active item" data-tab="changemenu">
+                                    Change Menu
+                                </a>
+                            </div>
+                        </div>
+                        <div class="ui twelve wide column">
+                            <div class="ui active tab" data-tab="changemenu">
+                                <form class="ui form" method="post" action="{% url 'mess:menusubmit'%}">
+                                    {% csrf_token %}
+                                    <div class="ui row">
+                                        <div class="three fields">
+                                            <div class="field">
+                                                <label>
+                                                    Dish
+                                                </label>
+
+                                                <select class="ui search fluid dropdown" name="dish" id="dish">
+                                                    {% for item in menu %}
+                                                    <option value="{{item.dish}}">{{item.dish}}-{{item.meal_time}}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+
+                                            <div class="field">
+                                                <label>
+                                                    Change To
+                                                </label>
+
+                                                <div class="ui input">
+                                                    <input placeholder="Food" name="newdish" required>
+                                                </div>
+                                            </div>
+
+                                            <div class="field">
+                                                <label>
+                                                    Reason
+                                                </label>
+
+                                                <div class="ui input">
+                                                    <input placeholder="Why?" name="reason" required="true">
+                                                </div>
+                                            </div>
+
+                                        </div> 
+                                    </div>
+                                
+
+                                    <div class="ui row">
+                                        <br>
+                                        <button type="submit" class="ui primary button right floated">
+                                            Place Request
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                            
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+{% endblock %}

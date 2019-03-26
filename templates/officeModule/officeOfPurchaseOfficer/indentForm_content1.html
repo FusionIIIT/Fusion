@@ -1,0 +1,205 @@
+<div class="ui vertical segment">
+        <form class= "ui form" method = "POST" id = "apply_purchase" action="{% url 'office:apply_purchase' %}">
+            {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+            <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                
+                    {%csrf_token%}
+    
+                <div class="field">
+                    <label>Item/Equipment (with General Specifications)</label>
+                    <textarea rows="2" name="item_name" id="item_name"></textarea>
+                </div>
+    
+                <div class="two fields">
+                    <!-- <div class="field">
+                        <label>Present Stock Situation</label>
+                        <select class="ui search fluid dropdown">
+                            <option value="">Select</option>
+                            <option value="available">Available</option>
+                            <option value="processing">Processing</option>
+                            <option value="unavailable">Unavailable</option>
+                        </select>
+                    </div> -->
+                    <div class="field">
+                        <label>Quantity</label>
+                        <input type="text" placeholder="Quantity" name="quantity" id="quantity" >
+                    </div>
+    
+                    <div class="field">
+                        <label>Estimated Cost</label>
+                        <input placeholder="estimated_cost" class="ui large input" id="expected_cost" name="expected_cost" onchange="quantityInputOnChange(this.value)">
+                    </div>
+                </div>
+    
+                <div class="three fields" id="lpcFields" style="display: none;">
+                    <div class="field" id="lpc1">
+                        <label>LPC Member 1</label>
+                        <input class="ui large fluid input" name="local_comm_mem1_id" id="local_comm_mem1_id">
+                    </div>
+    
+                    <div class="field" id="lpc2">
+                        <label>LPC Member 2</label>
+                        <input class="ui large fluid input" name="local_comm_mem2_id" id="local_comm_mem2_id">
+                    </div>
+                                            
+                    <div class="field" id="lpc3">
+                        <label>LPC Member 3</label>
+                        <input class="ui large fluid input" name="local_comm_mem3_id" id="local_comm_mem3_id">
+                    </div>
+                </div>
+    
+                <div class="field">
+                    <label>Nature of indent</label>
+                    <br>
+    
+                    <div class="inline six fields">
+                        <label>a)</label>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    
+                        <div class="field">
+                            <div class="ui large radio checkbox">
+                                <input type="radio" name="nature_of_item1" id="nature_of_item1">
+                                <label> Equipment </label>
+                            </div>
+                        </div>
+    
+                        <div class="field">
+                            <div class="ui large radio checkbox">
+                                <input  type="radio" name="nature_of_item1" id="nature_of_item1">
+                                <label> Machinery </label>
+                            </div>
+                        </div>
+    
+                        <div class="field">
+                            <div class="ui large radio checkbox">
+                                <input type="radio" name="nature_of_item1" id="nature_of_item1">
+                                <label> Furniture </label>
+                            </div>
+                        </div>
+    
+                        <div class="field">
+                            <div class="ui large radio checkbox">
+                                <input  type="radio" name="nature_of_item1" id="nature_of_item1">
+                                <label> Fixture </label>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <div class="inline six fields">
+                        <label>b)</label>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    
+                        <div class="field">
+                            <div class="ui large radio checkbox">
+                                <input name="nature_of_item2" id="nature_of_item2" type="radio">
+                                <label> Consumable</label>
+                            </div>
+                        </div>
+    
+                        <div class="three wide field">
+                            <div class="ui large radio checkbox">
+                                <input name="nature_of_item2" id="nature_of_item2" type="radio">
+                                <label> Non-Consumable</label>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <!-- <div class="inline six fields">
+                        <label>c)</label>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    
+                        <div class="field">
+                            <div class="ui large radio checkbox">
+                                <input name="nature_c" type="radio">
+                                <label> Import Required</label>
+                            </div>
+                        </div>
+    
+                        <div class="three wide field">
+                            <div class="ui large radio checkbox">
+                                <input name="nature_c" type="radio">
+                                <label> Not-Required</label>
+                            </div>
+                        </div>
+                    </div> -->
+    
+                    <!-- <div class="inline six fields">
+                        <label>d)</label>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    
+                        <div class="field">
+                            <div class="ui large radio checkbox">
+                                <input name="nature_d" type="radio">
+                                <label> New Item</label>
+                            </div>
+                        </div>
+    
+                        <div class="three wide field">
+                            <div class="ui large radio checkbox">
+                                <input name="nature_d" type="radio">
+                                <label> Replacement</label>
+                            </div>
+                        </div>
+                    </div> 
+    
+                    <div class="field" style="padding-left: 36px; padding-right: 36px;">
+                        <label>Details (if replacement)</label>
+                        <textarea rows="2"></textarea>
+                    </div>
+                    -->
+    
+                </div>
+    
+                <div class="two fields">
+                    <div class="field" >
+                                <label>Budgetary Head</label>
+                                <select class="ui search fluid dropdown">
+                                    <option name="budgetary_head" id="budgetary_head">Select</option>
+                                    <option  name="budgetary_head" id="budgetary_head">Atul Gupta</option>
+                                    <option name="budgetary_head" id="budgetary_head">MK Bajpai</option>
+                                    <option name="budgetary_head" id="budgetary_head">P Khanna</option>
+                                    <option  name="budgetary_head" id="budgetary_head">P Tandon</option>
+                                    <option name="budgetary_head" id="budgetary_head">Sraban Mohanty</option>
+    
+                                </select>
+                    </div>
+                    
+                    
+                    <!-- <div class="field">
+                        <label>Inspecting Authority</label>
+                        <select class="ui search fluid dropdown" placeholder="Inspecting Authority" name="inspecting_authority_id" id="inspecting_authority_id">
+                                {% for i in faculty %}
+                        <option  value="{{ i.id }}">{{i.id.user.first_name}}></option>
+                        
+                                {% endfor %}
+                        </select>
+                    </div> -->
+                    <div class="field">
+                        <label>Expected Delivery Date</label>
+                        <div class="ui calendar" id="rangestart">
+                            <div class="ui input left icon">
+                                <i class="calendar icon"></i>
+                                <input type="text" placeholder="Expected Delivery Date" name="expected_purchase_date" id="expected_purchase_date">
+                                <!--  expected_purchase_date|expected_purchase_date:"YYYY-mm-dd"  -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+    
+                <br>
+    
+                <div class="field">
+                    <label>Purpose & Justification (if necessary)</label>
+                    <textarea rows="2" name="purpose" id="purpose"></textarea>
+                </div>
+    
+                <div class="field">
+                    <button class="ui primary button right floated" type="submit" name="submit" id="submit">
+                        Submit
+                    </button>
+                </div>
+            </div>
+        </form>
+        <br>
+        <br>
+    </div>

@@ -1,0 +1,238 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+{% block body %}
+{% block vacationfoodrequest %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="vactionfoodrequest">
+            Apply
+        </a>
+
+        <a class="item" data-tab="vactionfoodrequeststatus">
+            Status
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="vactionfoodrequest">
+        <div class="ui vertical segment">
+
+            {% comment %}Form Tag starts here!{% endcomment %}
+            <form method="POST">
+                {% csrf_token %}
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                    <div class="ui header">
+                        Apply for Food during Vacations:
+                    </div>
+
+                    <br>
+
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Mess:</label>
+                            <input value={{messinfo.mess_option}} class="ui large input" readonly id="mess">
+                        </div>
+                    </div>
+
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Leave From:</label>
+                            <div class="ui calendar" id="rangestart">
+                                <div class="ui input left icon">
+                                    <i class="calendar icon"></i>
+                                    <input name="start_date" type="text" placeholder="From" required="true" id="sdate">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label>Leave To:</label>
+                            <div class="ui calendar" id="rangestart">
+                                <div class="ui input left icon">
+                                    <i class="calendar icon"></i>
+                                    <input name="end_date" type="text" placeholder="To" required="true" id="edate">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Purpose:</label>
+                        <textarea rows="2" name="purpose" id="purpose1"></textarea>
+                    </div>
+
+                    <div class="field">
+                        <button class="ui primary button right floated" onclick="return vacarequest()">
+                            Submit
+                        </button>
+                    </div>
+                </div>
+            </form>
+            {% comment %}Form Tag ends here!{% endcomment %}
+
+            <br>
+            <br>
+
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="vactionfoodrequeststatus">
+        
+
+        <div class="ui vertical segment" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                
+            <br>
+
+            <div class="content">
+                <div class="description">
+
+                    <table class="ui very basic collapsing celled large sortable table"
+                           style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                        <thead>
+                        <tr>
+                            <th>
+                                Date Of Application
+                            </th>
+
+                            <th>
+                                From
+                            </th>
+
+                            <th>
+                                To
+                            </th>
+
+                            <th>
+                                Purpose
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        {% for req in vaca %}
+                        <tr>
+                            <td>
+                                {{req.app_date}}
+                            </td>
+
+                            <td>
+                                {{req.start_date}}
+                            </td>
+
+                            <td>
+                                {{req.end_date}}
+                            </td>
+
+                            <td>
+                                {{req.purpose}}
+                            </td>
+
+                            <td>
+                                {% if req.status == '1' %}
+                                <i class="large orange warning icon"></i>
+
+                                {% elif req.status == '0' %}
+                                <i class="large red x icon"></i>
+
+                                {% else %}
+                                <i class="large green checkmark icon"></i>
+                                
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        
+                        </tbody>
+                    </table>
+                    <br>
+                </div>
+            </div>
+        </div>
+
+        <br>
+
+        <div class="extra content">
+            <div class="" style="text-align: center;">
+                <i class="large green checkmark icon"></i> : Approved &ensp;&ensp;&ensp;&ensp;&ensp;
+                <i class="large orange warning icon"></i> : Pending &ensp;&ensp;&ensp;&ensp;&ensp;
+                <i class="large red x icon"></i> : Declined
+            </div>
+        </div>
+        <div class="ui divider"></div>
+    </div>
+{% endblock %}
+{% endblock %}
+
+{% block javascript %}
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+
+<script>
+        function vacarequest(){
+
+            event.preventDefault();
+
+            var calendarOpts = {
+                type: 'date',
+                formatter: {
+                date: function (date, settings) {
+                    if (!date) return '';
+                    var day = date.getDate() + '';
+                    if (day.length < 2) {
+                        day = '0' + day;
+                    }
+                    var month = (date.getMonth() + 1) + '';
+                     if (month.length < 2) {
+                        month = '0' + month;
+                }
+                var year = date.getFullYear();
+                return year + '-' + month + '-' + day;
+            }
+        }
+    };
+    $('.ui.calendar').calendar(calendarOpts);
+
+
+            $.ajax({
+                type: 'POST',
+                url: 'vacasubmit/',
+                dataType: 'json',
+                data: {
+                    'csrfmiddlewaretoken' : '{{ csrf_token }}',
+                    'start_date':$("#sdate").val(),
+                    'end_date':$("#edate").val(),
+                    'purpose':$("#purpose1").val()
+                },          
+                success: function(data) {
+                    if(data.status){
+                        alert("Data Inserted Successfully");
+
+                        document.getElementById('sdate').value="";
+                        document.getElementById('edate').value="";
+                        document.getElementById('purpose1').value="";
+                    }
+                },
+                error: function(data, err) {
+                    alert(err.message);
+                }
+            });
+        return false;
+    }
+    
+
+
+</script>
+{% endblock %}

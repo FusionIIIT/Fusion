@@ -1,0 +1,136 @@
+{% load static %}
+{% block resolvecomplaint %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="resolvecomplaint">
+            Resolve Complaints
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="resolvecomplaint">
+        <div class="ui vertical segment">
+            <table class="ui very basic collapsing celled sortable table"
+                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                <thead>
+                <tr>
+                    <th>
+                        Student
+                    </th>
+
+                    <th class="one wide column">
+                        Date
+                    </th>
+
+                    <th>
+                        Type
+                    </th>
+
+                    <th>
+                        Location
+                    </th>
+
+                    <th>
+                        Specific Location
+                    </th>
+
+                    <th class="three wide column">
+                        Details
+                    </th>
+
+                    <th class="four wide column">
+                        Status
+                    </th>
+                    <th class="two large column">
+                        Worker Name
+                    </th>
+                    <th class="two large column">
+                        Feedback
+                    </th>
+                </tr>
+                </thead>
+
+                {% for a in history %}
+                    {% if a.status == 2 %}
+                <tbody>
+                <tr>
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                            <div class="content">
+                                 {{ a.complainer.user }}
+                                <div class="sub header">
+                                </div>
+                            </div>
+                        </h4>
+                    </td>
+                    <td>
+                        {{ a.complaint_date }}
+                    </td>
+                    <td>
+                        {{ a.complaint_type }}
+                    </td>
+                    <td>
+                        {{ a.location }}
+                    </td>
+                    <td>
+                        {{ a.specific_location }}
+                    </td>
+                    <td>
+                        <a href="./detail2/{{ a.id }}/"> Click here!</a>
+                    </td>
+                    <td>
+                          <i class="large green checkmark icon"></i>
+                    </td>
+                    <td>
+                        <b>{{ a.worker_id }}</b>
+                    </td>
+                    <td>
+                        {{ a.feedback }}
+                        {% if a.feedback != '' %}
+                            <td>
+                            <div class="field">
+                                <center>
+                                    <a href="./deletecomplaint/{{ a.id }}">
+                                    <button class="ui green icon button" data-tooltip="Click here to delete complaint" >
+                                        <i class="send icon"></i>
+                                    </button>
+                                    </a>
+                                </center>
+                            </div>
+                            </td>
+                        {% else %}
+                            <td>
+                                <button class="ui disabled button">Delete</button>
+                            </td>
+                        {% endif %}
+                    </td>
+                </tr>
+
+
+                </tbody>
+                    {% endif %}
+                {% endfor %}
+            </table>
+
+            <br>
+            <div class="ui divider"></div>
+
+
+
+            <div class="extra content">
+                <div class="" style="text-align: center;">
+                    <i class="large green checkmark icon"></i> : Completed &ensp;&ensp;&ensp;&ensp;&ensp;
+
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+{% endblock %}

@@ -1,0 +1,64 @@
+{% block hostelRoomAllotment%}
+
+<h3>Hostel Allotment</h3> 
+<div class="ui pointing secondary menu">
+                                <a class=" active item" data-tab="new_allotment">
+                                New Allotment
+                               </a>
+                                <a class="item" data-tab="Allotment">
+                                 All Allotment
+                                </a>
+</div>
+<div class="ui tab active segment" data-tab="new_allotment">
+	<form class="ui  form" action="hostelRoomAllotment/"  enctype="multipart/form-data" method="post">
+    {% csrf_token %}
+	<div class="fields">
+	<div class="eight wide field">
+	<label>Hall No.</label>
+	<div class="ui selection dropdown">
+  	<input type="hidden" name="hall_no">
+  	<i class="dropdown icon"></i>
+  	<div class="default text">Hall No.</div>
+  	<div class="menu">
+     
+      {% for i in hall %}
+
+     
+
+    <div class="item" data-value="{{ i }}">{{ i }}</div>
+    
+      {% endfor %}
+  </div>
+</div>
+</div>
+
+	<div class="eight wide field">
+    <label>Allotment file(.xls)</label>
+    <input type="file" name="hostel_file" placeholder="Allotment File" >
+</div>
+</div>
+<button class="ui button" type="submit">Submit</button>
+	</form>
+</div>
+<div class="ui tab segment" data-tab="Allotment">
+	<table class="ui very basic celled table">
+		<thead>
+		<tr>
+			<th class= "eight wide">HAll</th>
+			<th class= "eight wide">File</th>
+			
+		</tr>
+	</thead>
+	<tr>
+    {% for items in hall_allotment %}
+		<td >{{ items.hall_no }}</td>
+		<td><a class="ui inverted circular icon button" style="margin: auto;"  href="/media/{{ items.allotment_file }}" target="blank">
+                            <i class="large attach black icon"></i>
+                        </a></td>
+	</tr>
+  {% endfor %}
+	</table>
+
+</div> 
+
+{%endblock hostelRoomAllotment%}

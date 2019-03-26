@@ -1,0 +1,163 @@
+{% load static %}
+
+{% block profile %}
+    <!--About Me card starts here!-->
+    <div class="ui fluid card">
+        <div class="content">
+            <div class="ui header">
+              <form method="POST" action="/dashboard/" enctype="multipart/form-data" class="ui form" role="form">
+                About Me
+
+                  {{ form14.non_field_errors }}
+                  {% csrf_token %}
+                <!--  <div class="ui red mini button right floated">
+                    <label  for="{{ form.pic.id_for_label }}">
+                         <i class="file icon"></i>
+                         Change Profile Picture</label>
+                         <input name=pic type="file" id="file" value="{{ profile.profile_picture }}" style="display:none">                         {{ form.pic }}
+                     <button type="submit">Upload</button>
+
+                  </div>
+
+              -->
+                </form>
+                  <form method="POST" action="/dashboard/" class="ui form" role="form">
+                    {% csrf_token %}
+                  <input type="submit" value="Save Profile Details" class="ui red mini button right floated" name="profilesubmit">
+            </div>
+
+            <div class="ui divider"></div>
+
+            <div class="ui large fluid input">
+                <input name=about
+                          rows=5
+                          type="text"
+                          style="width: 100%;"
+                          value="{{ profile.about_me }}"/>
+            </div>
+        </div>
+
+    </div>
+    <!--About Me card ends here!-->
+
+
+    <!--The start of details card!-->
+    <div class="ui fluid card">
+        <div class="content">
+            <div class="ui header">Details</div>
+            <div class="ui divider"></div>
+
+            <span>
+                <table class="ui definition table">
+                    <tbody>
+                        <tr>
+                            <td>
+                                Age
+                            </td>
+
+                            <td>
+                              <div class="ui fluid input">
+                                <input name=age
+                                          rows=5
+                                          type="text"
+                                          style="width: 100%;"
+                                          value="{{ profile.dob }}"/>
+                              </div>
+                            </td>
+                        </tr>
+
+                        <!--<tr>
+                            <td>
+                                Desired Future Option:
+                            </td>
+
+                            <td>
+                              {% if student.future_aspect == "HIGHER STUDIES" %}
+                                <label>Higher Studies</label> &ensp;
+                                <div class="ui toggle checkbox"
+                                     style="margin-top: 8px;">
+                                    <label>Placement</label>
+                                    <input name=fut type="checkbox" tabindex="1" value="1">
+                                </div>
+                              {% else %}
+                                <label>Higher Studies</label> &ensp;
+                                <div class="ui toggle checked checkbox"
+                                    style="margin-top: 8px;">
+                                    <label>Placement</label>
+                                    <input name=fut type="checkbox" value="2" tabindex="2" checked="">
+                                </div>
+                              {% endif %}
+                            </td>
+                        </tr>-->
+
+                        <tr>
+                            <td>
+                                Address
+                            </td>
+
+                            <td>
+                              <div class="ui fluid input">
+                                <input name=address
+                                          rows=5
+                                          type="text"
+                                          style="width: 100%;"
+                                          value="{{ profile.address }}"/>
+                              </div>
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </span>
+        </div>
+    </div>
+    <!--End of details card!-->
+
+    <!--The contact details card starts here!-->
+    <div class="ui fluid card">
+        <div class="content">
+            <div class="ui header">Contact Details</div>
+            <div class="ui divider"></div>
+
+            <span>
+                <table class="ui definition table">
+                    <tbody>
+                        <tr>
+                            <td>
+                                Contact
+                            </td>
+
+                            <td>
+
+                                <div class="ui large fluid input">
+                                    <a><i class="phone icon" id="contactIcon"></i>
+                                    <input name=contact type="text" value="{{ profile.phone_no }}">
+                                    </a>
+                                </div>
+                            </td>
+
+                        </tr>
+
+                        <tr>
+                            <td>
+                                Mail
+                            </td>
+
+                            <td>
+                                <span>
+                                    <a><i class="mail icon" id="mailIcon"></i>
+                                    {{ user.email }}
+                                    </a>
+                                </span>
+
+                            </td>
+                        </tr>
+
+                        </form>
+                    </tbody>
+                </table>
+            </span>
+        </div>
+    </div><!--The contact details card ends here!-->
+
+{% endblock %}

@@ -1,0 +1,129 @@
+{% load static %}
+{% block studentlist %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"> </script>
+    <script type="text/javascript">
+    $(document).on('submit','#query_form',function(e)
+    {
+        e.preventDefault();
+        $('.ajaxProgress').show();
+        var url_ = '/academic-procedures/acad_person/student_list';
+        console.log(url_);
+        $.ajax({
+            type:'POST',
+            url: url_,
+            data:{
+                d1 :$('#1').val() ,
+                d2 :$('#2').val() ,
+                csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()
+            },
+            success: function(jsondata)
+            {
+              console.log(jsondata);
+              $('#student_data').html(jsondata.html);
+              $('.ajaxProgress').show();
+            },
+            error: function(data)
+            {
+              alert("Some Error Occured")
+            }
+        });
+    });
+    </script>
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="complainthistory">
+            Verify Courses for Semester {{ date.semflag }} {{ date.year }}
+        </a>
+    </div>
+
+
+        <div class="ui vertical segment">
+
+          <form id='query_form' action='/academic-procedures/acad_person/student_list' method="POST">
+{% csrf_token %}
+          {% comment %} Drop down to select year{% endcomment %}
+          <table>
+            <tr>
+              <td>
+                <B>
+                  &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  Select Batch Year:
+                  &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                </B>
+              </td>
+              <td>
+            <select class="ui dropdown" id="1">
+              <option value=""> Select Batch </option>
+              {% for i in query_option1 %}
+              <option value="{{ i }}"> {{ i }} </option>
+              {% endfor %}
+            </select>
+              </td>
+            </tr>
+            <tr>
+          {% comment %} Drop down to select Branch{% endcomment %}
+            <td>
+            <b>&nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+               Select Batch Branch:
+               &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+               &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+               &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b>
+            </td>
+            <td>
+          <select class="ui dropdown" id="2">
+              <option value=""> Select Branch</option>
+              {% for i in query_option2 %}
+              <option value="{{ i }}"> {{ i }} </option>
+              {% endfor %}
+          </select>
+        </form>
+            </td>
+          </tr>
+        </table>
+        <br><center>
+        <button class="ui secondary button">
+            Fetch
+            </button>
+            <br>
+          </center>
+
+        </form>
+               <div id="student_data"></div>
+        {% comment %}  {% endcomment %}
+            <div class="ui divider">
+
+            </div>
+            {% comment %}for (var key in jsondata["student_obj"])
+            {
+              var t1="<table class=\"ui very basic "+
+              "collapsing celled sortable table\" style=\"padding-left: 2.5%;padding-right: 2.5%;"+
+              "padding-top: 1%;padding-bottom: 1.5%;margin: auto;\"><thead><tr> <th> Roll No.</th>"+
+              " <th> Student Name </th> <th> Branch </th> <th> </th></tr></thead><tbody>";
+
+                var v1=jsondata["student_obj"][key]['name'];
+                var v2=jsondata["student_obj"][key]['branch'];
+                var v3=jsondata["student_obj"][key]['roll_no'];
+                console.log(v1);
+                console.log(v2);
+                console.log(v3);
+                t1=t1+"<tr><td> "+v3+" </td> <td> "+v1+" </td> <td>"+v2+
+                    " </td><td> <A href=\"/academic-procedures/acad_person/verifyCourse/?id="+
+                    v3+" target=\"_blank\" class=\"ui blue label\">CHECK</a></td></B></tr>";
+                console.log(strr);
+                $("#student_data").append(strr);
+            }
+              $("#student_data").replaceWith(t1);
+              console.log(t1);
+              {% endcomment %}
+
+        </div>
+    </div>
+
+{% endblock %}

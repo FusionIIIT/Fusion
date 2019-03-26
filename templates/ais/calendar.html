@@ -1,0 +1,161 @@
+{% load static %}
+{% block calendar %}
+Academic Calendar
+<table class="ui celled table">
+    <thead>
+        <tr>
+            <th>Description</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+        </tr>
+    </thead>
+{% for i in academic_calendar %}
+          {% csrf_token %}
+    <tr>
+        <td>{{ i.description }}</td><input type="hidden" name="desc" value="{{ i.description }}">
+        <td>{{ i.from_date }}</td>
+        <td>{{ i.to_date }}</td>
+        <td><button class="ui button red create_btn" id="{{ forloop.counter }}">Edit</button>
+        <div class="ui modal {{forloop.counter}}">
+          <i class="close icon"></i>
+          <div class="header">
+            Academic Calendar
+          </div>
+          <div class="image content">
+            <div class="description">
+              <form class="ui form" id='update_calendar' action='/aims/update_calendar/'>
+                  {% csrf_token %}
+              <div class="field">
+                <label>Description:</label>
+                <input name="description" value="{{ i.description }}" type="text">
+                <input type="text" name="prev_desc" value="{{i.description}}" hidden="true">
+              </div>
+              <div class="ui calendar" id="date1">
+                  <label>From Date:</label><br>
+              <div class="ui input left icon">
+                <i class="calendar icon"></i>
+                <input type="date" placeholder="From Date" id="f_date" name="from_date">
+              </div>
+            </div><br>
+            <div class="ui calendar" id="date2">
+                <label>To Date:</label><br>
+              <div class="ui input left icon">
+                <i class="calendar icon"></i>
+                <input type="date" placeholder="To Date" id="to_date" name="to_date">
+              </div>
+            </div>
+            <hr>
+              <button class="ui button black create_btn" type="submit">Submit</button>
+              <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+              <script type="text/javascript">
+                      $(function() {
+                    $("#update_calendar").submit(function(event) {
+                            event.preventDefault();
+                            var friendForm = $(this);
+                            var start_date = $('#f_date').val();
+                            var end_date = $('#to_date').val();
+                            if(Date.parse(start_date) > Date.parse(end_date)){
+                                alert("Start Date must be less than End date");
+                            }else{
+                                var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
+                                posting.done(function(data) {
+                                    alert('Academic Calendar Updated');
+                                    window.location = "/aims/";
+                                });
+                                posting.fail(function(data) {
+                                    alert('Failed to update');
+                                    window.location = "/aims/";
+                                });
+                            }
+
+                        });
+                    });
+              </script>
+            </form>
+            </div>
+          </div>
+        </div>
+        <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+        <script type="text/javascript">
+            $(function(){
+            $("#{{forloop.counter}}").click(function(){
+                $(".{{forloop.counter}}").modal('show');
+            });
+            $(".{{forloop.counter}}").modal({
+                closable: true
+            });
+        });
+        </script>
+        </td>
+    </tr>
+{% endfor %}
+</table>
+{% endblock %}
+<button class="ui button yellow create_btn" type="button" id="test">Add More</button>
+      <div class="ui modal test">
+  <i class="close icon"></i>
+  <div class="header">
+    Academic Calendar
+  </div>
+  <div class="image content">
+    <div class="description">
+      <form class="ui form" id='add_calendar' action='/aims/add_calendar/' method='post'>
+          {% csrf_token %}
+      <div class="field">
+        <label>Description:</label>
+        <input name="description" placeholder="Enter the description..." type="text">
+      </div>
+      <div class="ui calendar" id="date1">
+          <label>From Date:</label><br>
+      <div class="ui input left icon">
+        <i class="calendar icon"></i>
+        <input type="date" placeholder="From Date" id="f_date" name="from_date">
+      </div>
+    </div><br>
+    <div class="ui calendar" id="date2">
+        <label>To Date:</label><br>
+      <div class="ui input left icon">
+        <i class="calendar icon"></i>
+        <input type="date" placeholder="To Date" id="to_date" name="to_date">
+      </div>
+    </div>
+    <hr>
+      <button class="ui button black create_btn" type="submit">Submit</button>
+    </form>
+    </div>
+  </div>
+</div>
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+    $(function(){
+        $("#test").click(function(){
+            $(".test").modal('show');
+        });
+        $(".test").modal({
+            closable: true
+        });
+    });
+    $(function() {
+    $("#add_calendar").submit(function(event) {
+            event.preventDefault();
+            var friendForm = $(this);
+            var start_date = $('#f_date').val();
+            var end_date = $('#to_date').val();
+            if(Date.parse(start_date) > Date.parse(end_date)){
+                alert("Start Date must be less than End date");
+                window.location = "/aims/";
+            }else{
+                var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
+                posting.done(function(data) {
+                    alert('Academic Calendar Updated');
+                    window.location = "/aims/";
+                });
+                posting.fail(function(data) {
+                    alert('Failed to update');
+                    window.location = "/aims/";
+                });
+            }
+
+        });
+    });
+</script>

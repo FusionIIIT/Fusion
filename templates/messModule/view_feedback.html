@@ -1,0 +1,145 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+{% block body %}
+{% block view_feedback %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="1">
+            Food Feedback
+        </a>
+        <a class=" item" data-tab="2">
+            Cleanliness Feedback
+        </a>
+        <a class=" item" data-tab="3">
+            Maintenance Feedback
+        </a>
+        <a class=" item" data-tab="4">
+            Others Feedback
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="1">
+        <div class="ui vertical segment">
+
+            <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
+                <thead>
+                <tr>
+                    <th>Fedback Date</th>
+                    <th>Student ID</th>
+                    <th>Feedback Type</th>
+                    <th>Description</th>
+                </tr>
+                </thead>
+                <tbody>
+                    {% for item in feed %}
+                    {% if item.feedback_type == 'Food' %}
+                <tr>
+                    <td>{{item.fdate}}</td>
+                    <td>{{item.student_id.id}}</td>
+                    <td>{{item.feedback_type}}</td>
+                    <td>{{item.description}}</td>
+                </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <br>
+            <br>
+        </div>
+    </div>
+    <div class="ui tab" data-tab="2">
+        <div class="ui vertical segment">
+
+            <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
+                <thead>
+                <tr>
+                    <th>Fedback Date</th>
+                    <th>Student ID</th>
+                    <th>Feedback Type</th>
+                    <th>Description</th>
+                </tr>
+                </thead>
+                <tbody>
+                    {% for item in feed %}
+                    {% if item.feedback_type == 'Cleanliness' %}
+                <tr>
+                    <td>{{item.fdate}}</td>
+                    <td>{{item.student_id.id}}</td>
+                    <td>{{item.feedback_type}}</td>
+                    <td>{{item.description}}</td>
+                </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <br>
+            <br>
+        </div>
+    </div>
+    <div class="ui  tab" data-tab="3">
+        <div class="ui vertical segment">
+
+            <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
+                <thead>
+                <tr>
+                    <th>Fedback Date</th>
+                    <th>Student ID</th>
+                    <th>Feedback Type</th>
+                    <th>Description</th>
+                </tr>
+                </thead>
+                <tbody>
+                    {% for item in feed %}
+                    {% if item.feedback_type == 'Maintenance' %}
+                <tr>
+                    <td>{{item.fdate}}</td>
+                    <td>{{item.student_id.id}}</td>
+                    <td>{{item.feedback_type}}</td>
+                    <td>{{item.description}}</td>
+                </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <br>
+            <br>
+        </div>
+    </div>
+    <div class="ui tab" data-tab="4">
+        <div class="ui vertical segment">
+
+            <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
+                <thead>
+                <tr>
+                    <th>Fedback Date</th>
+                    <th>Student ID</th>
+                    <th>Feedback Type</th>
+                    <th>Description</th>
+                </tr>
+                </thead>
+                <tbody>
+                    {% for item in feed %}
+                    {% if item.feedback_type == 'Others' %}
+                <tr>
+                    <td>{{item.fdate}}</td>
+                    <td>{{item.student_id.id}}</td>
+                    <td>{{item.feedback_type}}</td>
+                    <td>{{item.description}}</td>
+                </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <br>
+            <br>
+        </div>
+    </div>
+
+
+{% endblock %}
+{% endblock %}

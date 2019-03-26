@@ -1,0 +1,54 @@
+{% load static %}
+{% block schedule %}
+    {% comment %}the main tab starts here {% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="viewschedule">
+            View Schedule
+        </a>
+    </div>
+
+    {% comment %}the doctor appointment tab starts here {% endcomment %}
+    <div class="ui active tab" data-tab="viewschedule">
+        <div class="ui vertical segment">
+            <div class="field">
+
+              <table  border=1 class="ui very basic celled small fluid table"
+                     style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;">
+                  <thead>
+
+                    <tr>
+                      <th>Schedule</th>
+                      {% for d in doctors %}
+                      {{count.doctor_count}}
+                      <th>{{d.doctor_name}}</th>
+                      {% endfor %}
+                    <tr>
+                      {% for p,day in days %}
+                      {{count.empty_fine}}
+                      <tr>
+                        <td>{{day}}</td>
+
+                        {% for d in doctors %}
+                        {{count.empty_fine}}
+                        {% for s in schedule %}
+                        {% if s.day == p %}
+                        {% if d.id == s.doctor_id.id %}
+                        <td>{{s.from_time}}--{{s.to_time}}</td>
+                        {{count.increment}}
+                        {% else %}
+                        {% endif %}
+                        {% endif %}
+                        {% endfor %}
+                        {% if count.count == 0 %}
+                          <td></td>
+                        {% endif %}
+                      {% endfor %}
+                      </tr>
+
+                      {% endfor %}                  </thead>
+              </table>
+        </div>
+      </div>
+    </div>
+    {% comment %}the view schedule tab ends here {% endcomment %}
+{% endblock %}

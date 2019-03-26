@@ -1,0 +1,621 @@
+{% load static %}
+{% block placementstatistics %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="pastrecords">
+            Past Records
+        </a>
+
+        <a class="item" data-tab="batchstats">
+            Batch Statistics
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="pastrecords">
+        <div class="ui vertical segment">
+
+            <div class="ui three item menu">
+                <a class="{% if officer_statistics_past_pbi_search or officer_statistics_past_pbi_add or officer_statistics_past_higher_search or officer_statistics_past_higher_add %}item{% else %}active item{% endif %}" data-tab="Placement">
+                  Placement
+                </a>
+
+                <a class="{% if officer_statistics_past_pbi_search or officer_statistics_past_pbi_add %}active item{% else %}item{% endif %}" data-tab="PBI">
+                  PBI
+                </a>
+
+                <a class="{% if officer_statistics_past_higher_search or officer_statistics_past_higher_add %}active item{% else %}item{% endif %}" data-tab="HigherStudies">
+                  Higher Studies
+                </a>
+
+            </div>
+
+            <div class="ui active tab" data-tab="Placement">
+
+            <form method="post" class="ui form" role="form">
+            {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+            <div class="ui active accordion field">
+                <div class="title">
+                    <i class="icon dropdown"></i>
+                    Search a Student!
+                </div>
+                  {{ form2.non_field_errors }}
+                <div class="active content">
+                    <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                        {% csrf_token %}
+                        <div class="two fields">
+                        <div class="field">
+                          {{ form3.stuname.errors }}
+                                <label for="{{ form3.cname.id_for_label }}">
+                                    Student Name {% if profile.designation.name != 'student' %}(Only for searching records){% endif %}
+                                </label>
+
+                                <div class="ui large input">
+                                    {{ form3.stuname }}
+                                </div>
+                            </div>
+                            <div class="field">
+                              {{ form3.cname.errors }}
+                                    <label for="{{ form3.cname.id_for_label }}">
+                                        Company
+                                    </label>
+
+                                    <div class="ui large input">
+                                        {{ form3.cname }}
+                                    </div>
+                                </div>
+                                </div>
+                        <div class="three fields">
+                            <div class="field">
+                              {{ form3.roll.errors }}
+                                <label for="{{ form3.stuname.id_for_label }}">
+                                    Roll No
+                                </label>
+
+                                <div class="ui large input">
+                                    {{ form3.roll}}
+                                </div>
+                            </div>
+
+                            <div class="field">
+                              {{ form3.year.errors }}
+                                <label for="{{ form3.year.id_for_label }}">
+                                    Year
+                                </label>
+
+                                <div class="ui large input">
+                                    {{ form3.year }}
+                                </div>
+                            </div>
+
+                            <div class="field">
+                              {{ form3.ctc.errors }}
+                                <label for="{{ form3.ctc.id_for_label }}">
+                                    CTC (LPA)
+                                </label>
+
+                                <div class="ui large input">
+                                    {{ form3.ctc }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="two fields">
+                        <div class="field">
+                          <button name="studentplacementrecordsubmit" name="studentplacementrecordsubmit" class="ui fluid large primary button" type="submit">
+                              Search
+                          </button>
+                        </div>
+                        {% if current == None %}
+                        <div class="field">
+                            <button name="studentplacementaddsubmit" value="studentplacementaddsubmit" class="ui fluid large primary button" type="submit">
+                                Add
+                            </button>
+                        </div>
+                        {% endif %}
+                      </div>
+                    </div>
+                </div>
+            </div>
+            {% comment %}The add a new skill Accordian ends here!{% endcomment %}
+        </form>
+                    {% comment %}Form Tag ends here!{% endcomment %}
+
+                    {% if placementrecord == 1 %}
+                    <br>
+                {% elif placementrecord %}
+                <br>
+                <br>
+                <div class="ui divider"></div>
+                <br>
+
+            <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;">
+                <thead>
+                <tr>
+                    <th class="four wide">Student</th>
+                    <th class="two wide">Year</th>
+                    <th class="six wide">Company</th>
+                    <th class="two wide">CTC</th>
+                    {% if profile.designation.name != 'student' %}
+                    <th class="two wide">Delete</th>
+                    {% endif %}
+                </tr>
+                </thead>
+
+                <tbody>
+                  {% for student in placementrecord %}
+                  {% if student.record_id.placement_type == 'PLACEMENT' %}
+                <tr>
+                    <td>
+                        <h4 class="ui image header">
+                            <div class="content">
+                                {{ student.unique_id.id.user.first_name }} {{ student.unique_id.id.user.last_name }}
+                                <div class="sub header">
+                                    {{ student.unique_id.id.id }}
+                                </div>
+                            </div>
+                        </h4>
+                    </td>
+
+                    <td>
+                        {{ student.record_id.year }}
+                    </td>
+
+                    <td>
+                        {{ student.record_id.name }}
+                    </td>
+
+                    <td>
+                        {{ student.record_id.ctc }}
+                    </td>
+
+                    {% if current == None %}
+                    <td>
+                      <form method="post" class="ui form" role="form">
+                        {% csrf_token %}
+                        <button name="deleterecord" value="{{ student.pk }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
+                            <i class="delete red icon"></i>
+                        </button>
+                        </form>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% endif %}
+                {% endfor %}
+                </tbody>
+            </table>
+
+                {% else %}<center><hr><h5>Data Not Found</h5></center>
+
+                {% endif %}
+
+            </div>
+
+            <div class="ui tab" data-tab="PBI">
+
+
+                          <form method="post" class="ui form" role="form">
+                          {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                          <div class="ui active accordion field">
+                              <div class="title">
+                                  <i class="icon dropdown"></i>
+                                  Search a Student!
+                              </div>
+                                {{ form3.non_field_errors }}
+                              <div class="active content">
+                                  <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                                      {% csrf_token %}
+                                      <div class="two fields">
+                                      <div class="field">
+                                        {{ form3.stuname.errors }}
+                                              <label for="{{ form3.cname.id_for_label }}">
+                                                  Student Name {% if profile.designation.name != 'student' %}(Only for searching records){% endif %}
+                                              </label>
+
+                                              <div class="ui large input">
+                                                  {{ form3.stuname }}
+                                              </div>
+                                          </div>
+                                          <div class="field">
+                                            {{ form3.cname.errors }}
+                                                  <label for="{{ form3.cname.id_for_label }}">
+                                                      Company
+                                                  </label>
+
+                                                  <div class="ui large input">
+                                                      {{ form3.cname }}
+                                                  </div>
+                                              </div>
+                                              </div>
+                                      <div class="three fields">
+                                          <div class="field">
+                                            {{ form3.roll.errors }}
+                                              <label for="{{ form3.stuname.id_for_label }}">
+                                                  Roll No
+                                              </label>
+
+                                              <div class="ui large input">
+                                                  {{ form3.roll}}
+                                              </div>
+                                          </div>
+
+                                          <div class="field">
+                                            {{ form3.year.errors }}
+                                              <label for="{{ form3.year.id_for_label }}">
+                                                  Year
+                                              </label>
+
+                                              <div class="ui large input">
+                                                  {{ form3.year }}
+                                              </div>
+                                          </div>
+
+                                          <div class="field">
+                                            {{ form3.ctc.errors }}
+                                              <label for="{{ form3.ctc.id_for_label }}">
+                                                  CTC
+                                              </label>
+
+                                              <div class="ui large input">
+                                                  {{ form3.ctc }}
+                                              </div>
+                                          </div>
+                                      </div>
+                                      <div class="two fields">
+                                      <div class="field">
+                                        <button name="studentpbirecordsubmit" name="studentpbirecordsubmit" class="ui fluid large primary button" type="submit">
+                                            Search
+                                        </button>
+                                      </div>
+                                      {% if current == None %}
+                                      <div class="field">
+                                          <button name="studentpbiaddsubmit" value="studentpbiaddsubmit" class="ui fluid large primary button" type="submit">
+                                              Add
+                                          </button>
+                                      </div>
+                                      {% endif %}
+                                    </div>
+                                  </div>
+                              </div>
+                          </div>
+                          {% comment %}The add a new skill Accordian ends here!{% endcomment %}
+                      </form>
+
+                    <br>
+                    <br>
+                    <div class="ui divider"></div>
+                    <br>
+
+                    {% if pbirecord == 1 %}
+                    <br>
+                {% elif pbirecord %}
+                <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;">
+                    <thead>
+                    <tr>
+                        <th class="four wide">Student</th>
+                        <th class="two wide">Year</th>
+                        <th class="six wide">Company</th>
+                        <th class="two wide">CTC</th>
+                        {% if profile.designation.name != 'student' %}
+                        <th class="two wide">Delete</th>
+                        {% endif %}
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                  {% for student in pbirecord %}
+                      {% if student.record_id.placement_type == 'PBI' %}
+                    <tr>
+                        <td>
+                          <h4 class="ui image header">
+                                <div class="content">
+                                    {{ student.unique_id.id.user.first_name }} {{ student.unique_id.id.user.last_name }}
+                                    <div class="sub header">
+                                        {{ student.unique_id.id.id }}
+                                    </div>
+                                </div>
+                                  </h4>
+                        </td>
+
+                        <td>
+                            {{ student.record_id.year }}
+                        </td>
+
+                        <td>
+                            {{ student.record_id.name }}
+                        </td>
+
+                        <td>
+                            &#8377; {{ student.record_id.ctc }}
+                        </td>
+
+                        {% if current == None %}
+                        <td>
+                          <form method="post" class="ui form" role="form">
+                            {% csrf_token %}
+                            <button name="deleterecord" value="{{ student.pk }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
+                                <i class="delete red icon"></i>
+                            </button>
+                            </form>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endif %}
+                {% endfor %}
+
+                   </tbody>
+                      </table>
+
+                      {% else %}<center><h5>Data Not Found</h5></center>
+
+                      {% endif %}
+
+
+
+            </div>
+
+            <div class="ui tab" data-tab="HigherStudies">
+
+                 <form method="post" class="ui form" role="form">
+            {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+            <div class="ui active accordion field">
+                <div class="title">
+                    <i class="icon dropdown"></i>
+                    Search a Student!
+                </div>
+                {{ form4.non_field_errors }}
+                <div class="active content">
+                    <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                      {% csrf_token %}
+                      <div class="two fields">
+                      <div class="field">
+                        {{ form4.stuname.errors }}
+                          <label for="{{ form4.stuname.id_for_label }}">
+                              Student Name {% if profile.designation.name != 'student' %}(Only for searching records){% endif %}
+                          </label>
+                          <div class="ui large input">
+                              {{ form4.stuname }}
+
+                          </div>
+                      </div>
+                      <div class="field">
+                        {{ form4.roll.errors }}
+                          <label for="{{ form4.stuname.id_for_label }}">
+                              Roll No
+                          </label>
+
+                          <div class="ui large input">
+                              {{ form4.roll }}
+                          </div>
+                      </div>
+                      </div>
+                        <div class="three fields">
+
+                            <div class="field">
+                              {{ form4.year.errors }}
+                                    <label for="{{ form4.cname.id_for_label }}">
+                                        Year
+                                    </label>
+
+                                    <div class="ui large input">
+                                        {{ form4.year }}
+                                    </div>
+                                </div>
+                            <div class="field">
+                              {{ form4.test_type.errors }}
+                                <label for="{{ form4.test_type.id_for_label }}">
+                                    Exam
+                                </label>
+
+                                <div class="ui large input">
+                                    {{ form4.test_type }}
+                                </div>
+                            </div>
+
+                            <div class="field">
+                              {{ form4.test_score.errors }}
+                                <label for="{{ form4.test_score.id_for_label }}">
+                                    Minimum Test Score
+                                </label>
+
+                                <div class="ui large input">
+                                    {{ form4.test_score }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="field">
+                          {{ form4.uname.errors }}
+                                <label for="{{ form4.cname.id_for_label }}">
+                                    University
+                                </label>
+
+                                <div class="ui large input">
+                                    {{ form4.uname }}
+                                </div>
+                            </div>
+
+                          <div class="two fields">
+                        <div class="field">
+                          <button name="studenthigherrecordsubmit" name="studenthigherrecordsubmit" class="ui fluid large primary button" type="submit">
+                              Search
+                          </button>
+                        </div>
+                        {% if current == None %}
+                        <div class="field">
+                            <button name="studenthigheraddsubmit" value="studenthigheraddsubmit" class="ui fluid large primary button" type="submit">
+                                Add
+                            </button>
+                        </div>
+                        {% endif %}
+                      </div>
+                    </div>
+                </div>
+            </div>
+            {% comment %}The add a new skill Accordian ends here!{% endcomment %}
+        </form>
+
+
+                    <br>
+                    <br>
+                    <div class="ui divider"></div>
+                    <br>
+
+                    {% if higherrecord == 1 %}
+                    <br>
+                {% elif higherrecord %}
+                <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;">
+                    <thead>
+                    <tr>
+                        <th class="four wide">Student</th>
+                        <th class="two wide">Exam</th>
+                        <th class="six wide">University</th>
+                        <th class="two wide">Score</th>
+                        {% if profile.designation.name != 'student' %}
+                        <th class="two wide">Delete</th>
+                        {% endif %}
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                      {% for student in higherrecord %}
+
+                      {% if student.record_id.placement_type == 'HIGHER STUDIES' %}
+                    <tr>
+                        <td>
+                            <h4 class="ui image header">
+
+                                <div class="content">
+                                    {{ student.unique_id.id.user.first_name }} {{ student.unique_id.id.user.last_name }}
+                                    <div class="sub header">
+                                        {{ student.unique_id.id.id }}
+                                    </div>
+                                </div>
+                            </h4>
+                        </td>
+
+                        <td>
+                            {{ student.record_id.test_type }}
+                        </td>
+
+                        <td>
+                            {{ student.record_id.name }}
+                        </td>
+
+                        <td>
+                            {{ student.record_id.test_score }}
+                        </td>
+
+                        {% if current == None %}
+                        <td>
+                          <form method="post" class="ui form" role="form">
+                            {% csrf_token %}
+                            <button name="deleterecord" value="{{ student.pk }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
+                                <i class="delete red icon"></i>
+                            </button>
+                            </form>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endif %}
+                {% endfor %}
+         </tbody>
+            </table>
+
+            {% else %}<center><h5>Data Not Found</h5></center>
+
+            {% endif %}
+
+            </div>
+
+
+
+
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="batchstats">
+        <div class="ui vertical segment">
+
+            <div class="ui four item menu">
+              {% for year in years %}
+              {% if forloop.first %}
+                <a class="active item" data-tab="{{ year }}">{{ year.year }}</a>
+                {% else %}
+                <a class="item" data-tab="{{ year }}">{{ year.year }}</a>
+                {% endif %}
+                {% endfor %}
+            </div>
+            {% for year in years %}
+            {% if forloop.first %}
+            <div class="ui active tab" data-tab="{{ year }}">
+              {% else %}
+              <div class="ui tab" data-tab="{{ year }}">
+              {% endif %}
+
+                <table class="ui definition padded sortable celled table" style="margin: auto;">
+                    <thead>
+                    <tr>
+                        <th></th>
+                        <th class="two wide">CSE</th>
+                        <th class="two wide">ECE</th>
+                        <th class="two wide">ME</th>
+                        <th class="two wide">Total</th>
+                        <th class="two wide">Package</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                      {% for record in records %}
+                      {% if record.year == year.year %}
+                      {% if record.placement_type != "HIGHER STUDIES" %}
+                    <tr>
+                        <td>{{ record.name }}</td>
+                        <td>
+                          {{ record.name__count }}
+                        </td>
+                        <td>
+                          {{ record.year__count }}
+                        </td>
+                        <td>
+                          {{ record.placement_type__count }}
+                        </td>
+                        <td>{{ record.ctc__count }}</td>
+                        <td>{{ record.ctc }}</td>
+                    </tr>
+                    {% endif %}
+                    {% endif %}
+                    {% endfor %}
+                    <tr>
+                        <td>Total Offers</td>
+
+                        <td>
+                            {{ year.year__count.1 }}
+                        </td>
+
+                        <td>
+                            {{ year.year__count.2 }}
+                        </td>
+
+                        <td>
+                            {{ year.year__count.3 }}
+                        </td>
+
+                        <td>
+                            {{ year.year__count.0 }}
+                        </td>
+
+                        <td>
+
+                        </td>
+                    </tr>
+
+                    </tbody>
+
+                </table>
+                <br>
+                <div class="ui divider"></div>
+            </div>
+            {% endfor %}
+
+        </div>
+    </div>
+
+{% endblock %}

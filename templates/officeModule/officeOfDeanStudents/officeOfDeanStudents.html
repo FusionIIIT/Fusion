@@ -1,0 +1,231 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Module
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}
+            The left-rail segment starts here!
+        {% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+
+                {% comment %}
+                TODO: Instead of Name write the position like "Office Of Dean Students!"
+                {% endcomment %}
+
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu starts here!{% endcomment %}
+
+            <div class="ui huge fluid vertical pointing menu"
+                 style="max-width: 320px;">
+                 {% if "Dean_s" in all_designation %}
+                    <a class="active item" data-tab="zero">
+                     Budgets
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                 {% endif %}
+
+                 {% if "Dean_s" in all_designation %}
+                <a class="item" data-tab="first">
+
+                    Meetings
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+                {% if "Dean_s" in all_designation %}
+                <a class="item" data-tab="second">
+                    Budget Approvals
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+
+                {% if "Dean_s" in all_designation %}
+                 <a class="item" data-tab="fifth">
+                    New Club Approvals
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+
+
+                {% if "Junior Superintendent" in all_designation %}
+                     <a class="item" data-tab="sixth">
+                        Meeting minutes
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                {% endif %}
+                {% if "Junior Superintendent" in all_designation %}
+                 <a class="item" data-tab="seventh">
+                    Hostel Room Allotment
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+
+                {% if "Junior Superintendent" in all_designation %}
+                 <a class="item" data-tab="tenth">
+                    Budget allotment
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+            </div>
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+
+        {% comment %}
+            The central-rail segment starts here!
+        {% endcomment %}
+
+        <div class="eight wide column">
+            {% comment %}The Details start here!{% endcomment %}
+
+            {% comment %}The Holding meetings start here!{% endcomment %}
+            <div class="ui tab segment" data-tab="zero">
+                {% block form0 %}
+                    {% include 'officeModule/officeOfDeanStudents/budgets.html' %}
+                     {{ all_designations }}
+                {% endblock %}
+            </div>
+            {% comment %}The Holding meetings end here!{% endcomment %}
+
+            {% comment %}The Holding meetings start here!{% endcomment %}
+            <div class="ui tab segment" data-tab="first">
+                {% block form1 %}
+                    {% include 'officeModule/officeOfDeanStudents/holdingMeetings.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The Holding meetings end here!{% endcomment %}
+
+
+            {% comment %}The budget approvals starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="second">
+                {% block form2 %}
+                    {% include 'officeModule/officeOfDeanStudents/budgetApproval.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The budget approvals ends here!{% endcomment %}
+
+            {% comment %}The New Club Approvals starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="fifth">
+                {% block form5 %}
+                    {% include 'officeModule/officeOfDeanStudents/newClubApprovals.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The New CLub Approvals ends here!{% endcomment %}
+
+            {% comment %}The Meeting minutes starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="sixth">
+                {% block form6 %}
+                    {% include 'officeModule/officeOfDeanStudents/meetingMinutes.html' %}
+                {% endblock %}
+
+            </div>
+            {% comment %}The Meeting minutes ends here!{% endcomment %}
+
+            {% comment %}The Hostel Room Allotment starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="seventh">
+                {% block form7 %}
+                    {% include 'officeModule/officeOfDeanStudents/hostelRoomAllotment.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The Hostel Room Allotment ends here!{% endcomment %}
+
+            {% comment %}Club budget allotment starts  here!{% endcomment %}
+            <div class="ui tab segment" data-tab="tenth">
+                {% block form10 %}
+                    {% include 'officeModule/officeOfDeanStudents/budgetAllotment.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}Club budget allotment ends here!{% endcomment %}
+
+        </div>
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            <div class="row">
+                <div class="ui row">
+                    <h3 class="ui header" style="padding-left: 16px;">
+                        Office Of Dean Students
+                    </h3>
+                </div>
+            </div>
+
+            <div class="ui divider"></div>
+
+            <div class="row">
+                <div class="ui row">
+                    <div id="textSegmentDiv">
+                        <div class="ui active large text loader"
+                             id="loader">
+                            Loading ...
+                        </div>
+
+                        <div id="textLoader" style="max-height: 87.5vh; overflow-y: auto; overflow-x: hidden;">
+                            {% block alerts %}
+                                {% include 'officeModule/officeOfDeanStudents/alerts.html' %}
+                            {% endblock %}
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+    </div>
+    {% comment %}The grid ends here!{% endcomment %}
+
+
+
+{% endblock %}
+
+{% block javascript %}
+    <script>
+        $(document).ready(function(){
+            $("#textLoader").toggle();
+            $("#replacement-card").toggle();
+            setTimeout(loader, 175);
+        });
+
+        function loader() {
+            $("#textLoader").toggle();
+            $("#replacement-card").toggle();
+            $("#loader").removeClass("active");
+            $("#loader").addClass("disabled");
+        }
+    </script>
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/modal.js' %}"></script>
+    <script type="text/javascript" src="{% static 'visitor_hostel/visitor-hostel.js' %}"></script>
+{% endblock %}

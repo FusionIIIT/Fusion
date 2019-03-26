@@ -1,0 +1,70 @@
+{% load static %}
+{% block modal4 %}
+<script type="text/javascript">
+    function modalsshow(a){
+        var id= '.ui.modal.show.'+a;
+        // alert(id);
+        id=id.replace(" ",".");
+        $(id).modal('show');
+       }
+
+</script>
+
+{% for i in budgets %}
+<div class="ui modal show {{ i.pk }} ">
+	
+	<div class="header">{{ i.pk }}</div>
+	<div class="content">
+	<div class="ui label big">Alloted Budget</div> <label>{{ i.alloted_budget }}</label>
+	<div class="ui label big">Available Budget</div> <label>{{ i.avail_budget }}</label>
+	<div class="ui vertical segment">
+	<h3>Spendings this year</h3>
+	
+		<table class="ui very basic collapsing celled sortable table">
+		
+			<thead>
+                <tr>
+                    <th class="two wide column">
+                        Budget For
+                    </th>
+
+                    <th class="one wide column">
+                        PFA
+                    </th>
+                    <th class="four wide column">
+                        Amount
+                    </th>
+                    <th class="four wide column">
+                        Remark
+                    </th>
+                </tr>
+             </thead>
+              {% for i1 in approved_budgets %}
+            {% if i.pk in i1.club|stringformat:"s" %}
+             <tbody>
+
+             	<tr>
+             	<td> {{i1.budget_for}}</td>
+             	<td><a class="ui inverted circular icon button" style="margin: auto;"  href="/media/{{ i1.budget_file }}" target="blank">
+                            <i class="large attach black icon"></i>
+                        </a></td>
+                 <td>{{i1.budget_amt}}</td>
+                 <td>{{ i1.remarks}}</td>
+             </tr>
+             	{% endif %}
+                {% endfor %}
+             </tbody>
+             
+		
+</table>
+	
+
+</div>
+
+
+</div>
+
+</div>
+{% endfor %}
+
+{% endblock %}

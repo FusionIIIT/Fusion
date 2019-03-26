@@ -1,0 +1,392 @@
+{% load static %}
+
+{% block css %}
+  <style type="text/css">
+
+  </style>
+
+{% endblock %}
+
+{% block studentrecords %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="{% if invitecheck == 0 %}active item{% else %}item{% endif %}" data-tab="search">
+            Search
+        </a>
+
+        <a class="{% if invitecheck == 0 %}item{% else %}active item{% endif %}" data-tab="sendinvite">
+            Send Invitation
+        </a>
+    </div>
+
+    {% if not students and student_record_check == 1 %}
+      <div class="ui error message">
+        <i class="close icon"></i>
+        <div class="header">
+          There is no such record of this type.
+        </div>
+        <ul>
+          <li>try changing some fields or,</li>
+          <li>include some more fields in search</li>
+        </ul>
+      </div>
+    {% endif %}
+    <div class="{% if invitecheck == 0 %}ui active tab{% else %}ui tab{% endif %}" data-tab="search">
+        <form method="post" class="ui form" role="form" action="{% url 'placement:search_record' %}">
+            {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+            <div class="ui active accordion field">
+                <div class="title">
+                    <i class="icon dropdown"></i>
+                    Search a Student!
+                </div>
+
+
+                {{ form1.non_field_errors }}
+                <div class="active content">
+                    <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                      {% csrf_token %}
+                        <div class="two fields">
+                            <div class="field">
+                              {{ form1.name.errors }}
+                                <label>
+                                    Name
+                                </label>
+
+                                <div class="ui large input">
+                                    {{ form1.name }}
+                                </div>
+                            </div>
+
+                            <div class="field">
+                              {{ form1.rollno.errors }}
+                                <label>
+                                    Roll Number or Year
+                                </label>
+
+                                <div class="ui large input">
+                                    {{ form1.rollno }}
+                                </div>
+                            </div>
+
+                            <div class="field">
+                              {{ form1.cpi.errors }}
+                                <label>
+                                    Min. CPI
+                                </label>
+
+                                {{ form1.cpi }}
+                            </div>
+                        </div>
+
+                        <div class="three fields">
+
+                            <div class="field">
+                              {{ form1.programme.errors }}
+                                <label>
+                                    Programme
+                                </label>
+                                {{ form1.programme }}
+                            </div>
+
+                            <div class="field">
+                              {{ form1.department.errors }}
+                                <label>
+                                    Department
+                                </label>
+                                {{ form1.department }}
+                            </div>
+
+                            <div class="field">
+                              {{ form1.debar.errors }}
+                                <label>Debarred</label>
+                                {{ form1.debar }}
+                            </div>
+
+                            <div class="field">
+                              {{ form1.placed_type.errors }}
+                                <label>Placed</label>
+                                {{ form1.placed_type }}
+                            </div>
+
+                        </div>
+
+                        <div class="two fields">
+                            <!--<div class="field">
+                              {{ form1.skill.errors }}
+                                <label>Skills</label>
+                                {{ form1.skill }}
+                            </div>-->
+                            <div class="field"></div>
+                            <div class="field" style="padding-top:40px">
+                                <button name="recordsubmit" value="recordsubmit" class="ui large primary button right floated" type="submit">
+                                    Search
+                                </button>
+                            </div>
+                        </div>
+
+                        {% comment %}
+                        <br><div class="ui divider"></div><br>
+                        <div class="three fields">
+                          <div class="two wide field"></div>
+                          <div class="fields">
+                            <div class="ui slider checkbox">
+                            <input type="checkbox" name="achievementcheck" value=1 checked="">
+                            <label>Achievements</label>
+                            </div>
+                          </div>
+                            <br><br>
+                          <div class="fields">
+                            <div class="ui slider checkbox">
+                            <input type="checkbox" name="educationcheck" value=1 checked="">
+                            <label>Education</label>
+                            </div>
+                          </div>
+                          <div class="fields">
+                            <div class="ui slider checkbox">
+                            <input type="checkbox" name="publicationcheck" value=1 checked="">
+                            <label>Publications</label>
+                            </div>
+                          </div>
+                        </div>
+                            <br><br>
+                        <div class="three fields">
+                          <div class="two wide field"></div>
+                          <div class="fields">
+                             <div class="ui slider checkbox">
+                             <input type="checkbox" name="internshipcheck" value=1 checked="">
+                             <label>Internships</label>
+                             </div>
+                           </div>
+                             <br><br>
+                           <div class="fields">
+                             <div class="ui slider checkbox">
+                             <input type="checkbox" name="projectcheck" value=1 checked="">
+                             <label>Projects</label>
+                             </div>
+                           </div>
+                            <br><br>
+                          <div class="fields">
+                            <div class="ui slider checkbox">
+                            <input type="checkbox" name="patentcheck" value=1 checked="">
+                            <label>Patents</label>
+                            </div>
+                          </div>
+                       </div>
+                            <br><br>
+
+                       <div class="three fields">
+                         <div class="two wide field"></div>
+                         <div class="fields">
+                            <div class="ui slider checkbox">
+                            <input type="checkbox" name="coursecheck" value=1 checked="">
+                            <label>Courses</label>
+                            </div>
+                          </div>
+                            <br><br>
+                          <div class="fields">
+                            <div class="ui slider checkbox">
+                            <input type="checkbox" name="skillcheck" value=1 checked="">
+                            <label>Skills</label>
+                            </div>
+                          </div><br>
+                          <div class="field">
+                              <button name="getcvsubmit" value="getcvsubmit" class="ui large primary button right floated" type="submit">
+                                  Get CVs
+                              </button>
+                          </div>
+                      </div>
+
+                      {% endcomment %}
+
+
+                    </div>
+                </div>
+            </div>
+            {% comment %}The add a new skill Accordian ends here!{% endcomment %}
+        </form>
+        {% comment %}Form Tag ends here!{% endcomment %}
+
+        {% if students %}
+
+        <!-- Pagination Section starts here  --->
+        {% if no_pagination %}
+        <center>
+          <div class="ui pagination menu">
+            {% if students.has_previous %}
+            <a href="?page={{students.previous_page_number}}" class="item">
+              Previous
+            </a>
+            {% endif %}
+
+            {% if is_disabled %}
+              <a href="?page=1" class="item">1</a>
+              <div class="disabled item">
+                ...
+              </div>
+            {% endif %}
+
+            {% for i in page_range %}
+              {% if students.number == i %}
+                <a href="?page={{i}}" class="active item">{{ i }} </a>
+              {% else %}
+                <a href="?page={{ i }}" class="item">{{ i }}</a>
+              {% endif %}
+            {% endfor %}
+
+            
+
+            {% if students.has_next %}
+            <div class="disabled item">
+              ...
+            </div>
+            <a href="?page={{students.next_page_number}}" class="item">
+              Next
+            </a>
+            {% endif %}
+          </div>
+        </center>
+        {% endif %}
+        <!-- Pagination Section ends here --->
+
+        <br>
+
+        <form action="{% url 'placement:html_to_pdf_view' %}">
+          <input style="float: right;" class="positive ui button" type="submit" name="generate_pdf" value="Download as PDF">
+        </form>
+
+        <br><br>
+
+        <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;">
+            <thead>
+            <tr>
+                <th>Student</th>
+                <th>CPI</th>
+                <th>Department</th>
+                <th>Discipline</th>
+                <th>View Profile</th>
+                <th>Placed</th>
+                <th>Debarred?</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for student in students %}
+            <tr>
+                <td>
+                    <div class="content">
+                        {{ student.id.user.first_name}} {{ student.id.user.last_name }}
+                        <div class="sub header">
+                            {{ student.id.id }}
+                        </div>
+                    </div>
+                </td>
+
+                <td>
+                    {{ student.cpi }}
+                </td>
+
+                <td>
+                    {{ student.programme }}
+                </td>
+
+                <td>
+                    {{ student.id.department.name }}
+                </td>
+
+                <td>
+                    <a class="ui inverted huge circular icon button" target="_blank" href="/placement/cv/{{ student.id.user.username }}/" style="margin: auto;">
+                        <i class="attach black icon"></i>
+                    </a>
+                </td>
+
+                <!-- <td>
+                  {% for sp in studentplacement %}
+                  {% if sp.unique_id == student %}
+                  {% if sp.placed_type == "PLACED" %}
+                  Yes
+                  {% else %}
+                  No
+                  {% endif %}
+                  {% endif %}
+                  {% endfor %}
+                </td>
+
+                <td>
+                  <form method="post" class="ui form" role="form">
+                    {% csrf_token %}
+                    {% for sp in studentplacement %}
+                    {% if sp.unique_id == student %}
+                    {% if sp.debar == "DEBAR" %}
+                    <button name="undebar" type="submit" class="ui green mini button right floated" value="{{ sp.pk }}">
+                    Undebar</button>
+                    {% else %}
+                    <button name="debar" type="submit" class="ui red mini button right floated" value="{{ sp.pk }}">
+                    Debar</button>
+                    {% endif %}
+                    {% endif %}
+                    {% endfor %}
+                  </form>
+                </td> -->
+            </tr>
+          {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+
+  
+    </div>
+
+
+
+  <div class="{% if invitecheck == 0 %}ui tab{% else %}ui active tab{% endif %}" data-tab="sendinvite">
+    <form method="post" class="ui form" role="form">
+      {{ form13.non_field_errors }}
+            {% csrf_token %}
+      <div class="field">
+          {{ form13.company.errors }}
+            <label>
+                Company Name
+            </label>
+            <div class="ui fluid large input">
+              {{ form13.company }}
+            </div>
+      </div>
+        <div class="field" >
+            <button name="sendinvite" value="sendinvite" class="ui large primary button right floated" type="submit">
+                Send
+            </button>
+        </div>
+        <br><div class="row"></div><br>
+    </form>
+  </div>
+
+    {% if students %}
+    <br>
+    <br>
+    <div class="ui divider"></div>
+
+
+    {% endif %}
+
+    {% if invitecheck == 1 %}
+    <div id="mydiv" class="ui positive message">
+      <div class="header">
+        Notification Sent!
+      </div>
+      <p>Placement <b>Invitation</b> is sent to selected students.</p>
+    </div>
+    {% endif %}
+
+    <script>
+
+    var fade_out = function() {
+      $("#mydiv").fadeOut().empty();
+    }
+
+    setTimeout(fade_out, 8000);
+
+    </script>
+
+
+{% endblock %}

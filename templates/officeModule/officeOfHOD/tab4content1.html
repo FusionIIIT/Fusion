@@ -1,0 +1,73 @@
+{% block tab4content1 %}
+{% for obj in pro %}
+<form action="{%url 'office:hod_work' %}" method ="POST">
+    {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+    <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+         {% csrf_token %}   
+         
+          <div class="three fields">
+            <div class="six wide field">
+                <label>Roll no</label>
+                <input value={{obj.roll_no}} class="ui large input" name="roll_no" readonly>
+            </div>
+
+            <div class="six wide field">
+                <label>Name</label>
+                <input value={{obj.name}} class="ui large input" name="name" readonly>
+            </div>
+            
+            <div class="four wide field">
+                <label>Programme</label>
+                <input value={{obj.programme}} class="ui large input"  name="programme" readonly>
+            </div>
+
+            <div class="four wide field">
+                <label>Branch</label>
+                <input value={{obj.branch}} class="ui large input" name="branch" readonly>
+            </div>
+        </div>
+        
+        <div class="three fields">
+            <div class="six wide field">
+                <label>Course 1</label>
+                <input value={{obj.course1}} class="ui large input"  name="course1" readonly>
+            </div>
+
+            <div class="six wide field">
+                <label>Course 2</label>
+                <input value={{obj.course2}} class="ui large input"  name="course2" readonly>
+            </div>
+            
+            <div class="six wide field">
+                <label>Course 3</label>
+                <input value={{obj.course3}} class="ui large input"  name="course3" readonly>
+            </div>
+        </div>
+        <label><b>Assigned Course</b></label>
+        <div class="two fields">
+	        <div class="six wide field">
+	                
+	                <select class="ui search fluid dropdown" name="assigned_course" required>
+	                    <option value="">Select</option>
+	                    <option value={{obj.course1}}>{{obj.course1}}</option>
+	                    <option value={{obj.course2}}>{{obj.course2}}</option>
+	                    <option value={{obj.course2}}>{{obj.course3}}</option>
+	                </select>
+	        </div>
+	
+		   	<div class="four wide field">
+	            <button class="ui primary button right floated" type="submit">
+	                Assigned
+	            </button>
+	        </div>
+
+	    </div>
+
+        
+	</div>
+
+<br>
+<div class="ui divider"></div>
+</form>
+{% endfor %}	
+{% endblock %}

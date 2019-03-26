@@ -1,0 +1,101 @@
+{% block reportform %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="newsession">
+            Club Event Report
+        </a>
+    </div>
+
+    <script type="text/javascript">
+        function ValidateExtension5() {
+            var allowedFiles = [".doc", ".docx", ".pdf"];
+            var fileUpload = document.getElementById("fileUpload5");
+            var lblError = document.getElementById("lblError5");
+            var regex = new RegExp("([a-zA-Z0-9\s_\\.\-:])+(" + allowedFiles.join('|') + ")$");
+            if (!regex.test(fileUpload.value.toLowerCase())) {
+                lblError.innerHTML = "Please upload files having extensions: <b>" + allowedFiles.join(', ') + "</b> only.";
+                fileUpload5.value = "";
+                return false;
+            }
+            lblError.innerHTML = "";
+            return true;
+        }
+    </script>
+
+    <div class="ui active tab" data-tab="eventReport">
+        <div class="ui vertical segment">
+            <form method="Post" id="event_report" enctype="multipart/form-data">
+            {% csrf_token %}
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                    <div class="two fields">
+                        <div class="eight wide field">
+                            <label>Club</label>
+                            <select class="ui search fluid dropdown" name="club" required>
+                                <option value="">Select</option>
+                                {% for i in Club_name %}
+                                    {% if request.user.username in i.co_ordinator|stringformat:"s" %}
+                                        <option value="{{ i.club_name }}">{{ i.club_name }} </option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="eight wide field">
+                            <label>Event Name</label>
+                            <input class="ui large input" name="event" required>
+                        </div>
+                    </div>
+
+                    <div class="sixteen wide field">
+                        <label>Student Incharge</label>
+                        <select class="ui search fluid dropdown" id="s_inc" name="s_inc" required>
+                            <option value="">Select</option>
+                            {% for i in Students %}
+                            <option value="{{ i }}" >{{ i }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="three fields">
+                        <div class="six wide field">
+                            <label>Report</label>
+                            <input type="File" id="fileUpload5" onchange="return ValidateExtension5()" placeholder="Venue" name="report" accept=".pdf" required>
+                            <span id="lblError5" style="color: red;"></span>
+                        </div>
+
+                        <div class="six wide field">
+                            <label>Date</label>
+                            <div class="ui input left icon">
+                                <i class="calendar icon"></i>
+                                <input type="date" data-date-format="YYYY-MM-DD" placeholder="From" name="date" required>
+                            </div>
+                        </div>
+
+                        <div class="four wide field">
+                            <label>Time</label>
+                            <input type="time" class="ui large input" name="time" required>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Details & Description</label>
+                        <textarea rows="2" name="d_d"></textarea>
+                    </div>
+
+                    <div class="field">
+                        <button class="ui primary button right floated" type="submit" onclick="form_submit('club_event_report','event_report',event)">
+                            Submit
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <br>
+            <br>
+        </div>
+        <br>
+        <div class="extra content"></div>
+    </div>
+
+{% endblock %}

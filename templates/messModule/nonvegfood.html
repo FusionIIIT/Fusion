@@ -1,0 +1,232 @@
+{% extends 'globals/base.html'%}
+{% load static %}
+{% block body %}
+{% block nonvegfood %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="nonvegfood">
+            Non-Vegetarian Food
+        </a>
+
+        <a class="item" data-tab="nonvegfoodhistory">
+            History
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="nonvegfood">
+        <div class="ui vertical segment">
+
+            {% comment %}Form Tag starts here!{% endcomment %}
+            <form method="post" action="{% url 'mess:placeorder' %}">
+                {% csrf_token %}
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                    <div class="ui header">
+                        A la Carte:
+                    </div>
+
+                    <br>
+
+                    <div class="ui stackable grid doubling">
+                        <div class="ui row">
+                            <div class="four wide column">
+                                <div class="ui secondary vertical pointing small menu">
+                                    <a class="active item" data-tab="breakfast">
+                                        Breakfast
+                                    </a>
+
+                                    <a class="item" data-tab="lunch">
+                                        Lunch
+                                    </a>
+
+                                    <a class="item" data-tab="dinner">
+                                        Dinner
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="ui twelve wide column">
+                                <div class="ui active tab" data-tab="breakfast">
+                                    <form class="ui form" method="post" action="{% url 'mess:placeorder' %}">
+                                        <div class="ui row">
+                                            <div class="two fields">
+                                                {% for x in nonveg %}
+                                                    {% if x.order_interval == 'Breakfast' %}
+                                                <div class="field">
+                                                    <input type="text" name="interval" value="breakfast" hidden>
+                                                    <div class="ui input">
+                                                        <input type="radio" name='dish' value='{{x.dish}}' id="dish">{{x.dish}} - {{x.price}}
+                                                    </div>
+                                                </div>
+                                                    {% endif %}
+                                                {% endfor %}
+                                                
+                                            </div>
+                                        </div> 
+
+                                        <div class="ui row">
+                                            <br>
+                                            <button type="submit" id="submit" class="ui primary button right floated">
+                                                Place Order
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <div class="ui tab" data-tab="lunch">
+                                    <form class="ui form" method="post" action="{% url 'mess:placeorder' %}">
+                                        {% csrf_token %}
+                                        <div class="ui row">
+                                            <div class="two fields">
+                                            {% for x in nonveg %}
+                                                    {% if x.order_interval == 'Lunch' %}
+                                                <div class="field">
+
+                                                    <div class="ui input">
+                                                        <input type="text" name="interval" value="lunch" hidden>
+                                                        <input type="radio" name='dish' value='{{x.dish}}' id="">{{x.dish}} - {{x.price}}
+                                                    </div>
+                                                </div>
+                                                    {% endif %}
+                                            {% endfor %}
+
+                                            </div>
+                                        </div>
+
+                                        <div class="ui row">
+                                            <br>
+                                            <button type="submit" id="submit" class="ui primary button right floated">
+                                                Place Order
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <div class="ui tab" data-tab="dinner">
+                                    <form class="ui form" method="post" action="{% url 'mess:placeorder' %}">
+                                        {% csrf_token %}
+                                        <div class="ui row">
+                                            
+                                            <div class="two fields">
+                                                {% for x in nonveg %}
+                                                    {% if x.order_interval == 'Dinner' %}
+                                                <div class="field">
+
+                                                    <div class="ui input">
+                                                        <input type="text" name="interval" value="dinner" hidden>
+                                                        <input type="radio" name='dish' value='{{x.dish}}' id="dish">{{x.dish}} - {{x.price}}
+                                                    </div>
+                                                </div>
+                                                    {% endif %}
+                                                {% endfor %}
+
+                                            </div>
+                                        </div>
+
+                                        <div class="ui row">
+                                            <br>
+                                            <button type="submit" id="submit" class="ui primary button right floated">
+                                                Place Order
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            {% comment %}Form Tag ends here!{% endcomment %}
+
+            <br>
+
+            <div class="ui divider"></div>
+
+        
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="nonvegfoodhistory">
+        <div class="ui vertical segment">
+
+            {% comment %} Rupee sign is &#8377; {% endcomment %}
+            <table class="ui very basic collapsing celled large sortable table"
+                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                <thead>
+                    <tr>
+                        <th>
+                            Student
+                        </th>
+
+                        <th>
+                            Date
+                        </th>
+
+                        <th>
+                            Type
+                        </th>
+
+                        <th>
+                            Food Item
+                        </th>
+
+                        <th>
+                            Qty.
+                        </th>
+
+                        <th>
+                            Amt.
+                        </th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for info in data %}
+                    <tr>
+                        <td>
+                            <h4 class="ui image header">
+                                <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                                <div class="content">
+                                    {{info.student_id}}
+                                </div>
+                            </h4>
+                        </td>
+
+                        <td>
+                            {{info.order_date}}
+                        </td>
+
+                        <td>
+                            {{info.order_interval}}
+                        </td>
+
+                        <td>
+                            {{info.dish}}
+                        </td>
+
+                        <td>
+                            1
+                        </td>
+
+                        <td>
+                            &#8377; {{info.dish.price}}
+                        </td>
+                    </tr>
+                    {% endfor %}
+
+                </tbody>
+            </table>
+
+            <br>
+            <div class="ui divider"></div>
+        </div>
+    </div>
+{% endblock %}
+{% endblock %}

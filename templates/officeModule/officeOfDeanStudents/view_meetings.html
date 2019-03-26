@@ -1,0 +1,41 @@
+{% include 'officeModule/officeOfDeanStudents/view_meeting_modal.html' %}
+<table class="ui very basic  celled table" id="view_meeting">
+                        <thead>
+                                            <tr>
+                                                <th>Title</th>
+                                                <th>Time</th>
+                                                <th>Date</th>
+                                                 <th>Venue</th>
+                                                 <th>File</th>
+                                                 <th> </th>
+                                            </tr>
+                        </thead>
+                        
+                            {% for details in final_minutes %}
+                            <tr onclick="modals('{{ details.pk }}')">
+                                <td>{{  details.title }}</td>
+                                <td>{{  details.time }}</td>
+                                <td>{{  details.date }}</td>
+                                <td>{{  details.venue }}</td>
+                                <td><a class="ui inverted circular icon button" style="margin: auto;"  href="/media/{{  details.minutes_file }}" target="blank">
+                            <i class="large attach black icon"></i>
+                        </a> </td>
+                        <td> <button class="ui compact icon button" onclick="modals('{{ details.pk }}')">
+                            <i class="expand icon"></i>
+                                </button></td>
+                        </tr>
+                        {% endfor %}
+                       
+                            {% for details in meetingMinutes%}
+                             <tr class="error" onclick="modals('{{ details.pk }}')">
+                                <td>{{  details.title }}</td>
+                                <td>{{  details.time }}</td>
+                                <td>{{  details.date }}</td>
+                                <td>{{  details.venue }}
+                                </td>
+                                <td> No file</td>
+                                </tr>
+                                {% endfor %}
+                        
+                         
+</table>

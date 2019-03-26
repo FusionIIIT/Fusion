@@ -1,0 +1,65 @@
+ {% block tab1content1 %}
+<form action="{%url 'office:p_extension' %}" method ="POST">
+    {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+    <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+         {% csrf_token %}
+
+        <div class="three fields">
+            <div class="six wide field">
+                <label>Project No</label>
+                <input value="" class="ui large input" name="project_id">
+            </div>
+
+            <div class="six wide field">
+                <label>Previous Duration</label>
+                <input value="" class="ui large input" name="">
+            </div>
+            
+             <div class="six wide field">
+                <label>Current Duration(Extended in Years)</label>
+                <input value="" class="ui large input" name="extended_duration">
+            </div>
+        </div>
+        
+<!--         <div class="three fields">
+            <div class="six wide field">
+                <label>Previous Duration</label>
+                <input value="" class="ui large input" name="">
+            </div>
+
+           <div class="six wide field">
+                <label>Current Duration(Extended in Years)</label>
+                <input value="" class="ui large input" name="extended_duration">
+            </div>
+            
+        </div> -->
+
+        <div class="two fields">
+            
+            <div class="six wide field">
+                <label>Extension Sactioned and Required up to(Enclose sanction letter) </label>
+                <input value="" class="ui large input" name="details">
+            </div>
+
+            <div class="six wide field">
+                <label>Any relevant additional details on extension sought/sanctioned.
+	
+                </label>
+               <textarea rows="3" name="extension_details"></textarea>
+            </div>
+        </div>
+
+       
+
+        <div class="field">
+            <button class="ui primary button right floated" type="submit">
+                Submit
+            </button>
+        </div>
+    </div>
+</form>
+
+<br>
+<br>
+<div class="ui divider"></div>
+  {% endblock %}

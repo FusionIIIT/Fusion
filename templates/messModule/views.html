@@ -1,0 +1,279 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+{% block body %}
+{% block views %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="menu1">
+            Menu 
+        </a>
+
+        <a class="item" data-tab="bill">
+            Bill
+        </a>
+
+        <a class="item" data-tab="paymenthistory">
+            Payment History
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="menu1">
+        <div class="ui vertical segment">
+            <table class="ui definition padded table" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                <thead>
+                <tr>
+                    <th></th>
+                    <th>Breakfast</th>
+                    <th>Lunch</th>
+                    <th>Dinner</th>
+                </tr>
+                </thead>
+
+                <tbody>
+
+                <tr>
+                    
+                    <td>Monday</td>
+                    {% for item in menu %}
+                        {% if item.mess_option == messinfo.mess_option %}
+                            {% if item.meal_time == 'MB' or item.meal_time == 'ML' or item.meal_time == 'MD' %}
+
+                                {% if item.meal_time == 'MB' %}
+                                    <td>{{item.dish}}</td>
+                                {% elif item.meal_time == 'ML' %}
+                                    <td>{{item.dish}}</td>
+                                {% elif item.meal_time == 'MD' %}
+                                    <td>{{item.dish}}</td>
+                                {% endif %}
+
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
+                </tr>
+
+                <tr>
+                    
+                    <td>Tuesday</td>
+                    {% for item in menu %}
+                        {% if item.mess_option == messinfo.mess_option %}
+
+                            {% if item.meal_time == 'TB' or item.meal_time == 'TL' or item.meal_time == 'TD' %}
+                                
+                                {% if item.meal_time == 'TB' %}
+                                    <td>{{item.dish}}</td>
+                                {% elif item.meal_time == 'TL' %}
+                                    <td>{{item.dish}}</td>
+                                {% elif item.meal_time == 'TD' %}
+                                    <td>{{item.dish}}</td>
+                                {% endif %}    
+
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
+
+                </tr>
+
+                <tr>
+                    
+                    <td>Wednesday</td>
+                    {% for item in menu %}
+                        {% if item.mess_option == messinfo.mess_option %}
+                            {% if item.meal_time == 'WB' or item.meal_time == 'WL' or item.meal_time == 'WD' %}
+                        
+                                {% if item.meal_time == 'WB' %}
+                                    <td>{{item.dish}}</td>
+                                {% elif item.meal_time == 'WL' %}
+                                    <td>{{item.dish}}</td>
+                                {% elif item.meal_time == 'WD' %}
+                                    <td>{{item.dish}}</td>
+                                {% endif %}
+
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+
+                <tr>
+                    
+                    <td>Thursday</td>
+                    {% for item in menu %}
+                        {% if item.mess_option == messinfo.mess_option %}
+                            {% if item.meal_time == 'THB' or item.meal_time == 'THL' or item.meal_time == 'THD' %}
+
+                        
+                                {% if item.meal_time == 'THB' %}
+                                    <td>{{item.dish}}</td>
+                                {% elif item.meal_time == 'THL' %}
+                                    <td>{{item.dish}}</td>
+                                {% elif item.meal_time == 'THD' %}
+                                    <td>{{item.dish}}</td>
+                                {% endif %}
+
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+
+                <tr>
+                    
+
+                    <td>Friday</td>
+                    {% for item in menu %}
+                        {% if item.mess_option == messinfo.mess_option %}
+                            {% if item.meal_time == 'FB' or item.meal_time == 'FL' or item.meal_time == 'FD' %}
+
+                                {% if item.meal_time == 'FB' %}
+                                    <td>{{item.dish}}</td>
+                                {% elif item.meal_time == 'FL' %}
+                                    <td>{{item.dish}}</td>
+                                {% elif item.meal_time == 'FD' %}
+                                    <td>{{item.dish}}</td>
+                                {% endif %}
+
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
+                </tr>
+
+                <tr>
+                   
+                    <td>Saturday</td>
+                    {% for item in menu %}
+                        {% if item.mess_option == messinfo.mess_option %}
+                            {% if item.meal_time == 'SB' or item.meal_time == 'SL' or item.meal_time == 'SD' %}
+
+                                {% if item.meal_time == 'SB' %}
+                                    <td>{{item.dish}}</td>
+                                {% elif item.meal_time == 'SL' %}
+                                    <td>{{item.dish}}</td>
+                                {% elif item.meal_time == 'SD' %}
+                                    <td>{{item.dish}}</td>
+                                {% endif %}
+
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
+                </tr>
+
+                <tr>
+                    
+                    <td>Sunday</td>
+                    {% for item in menu %}
+                        {% if item.mess_option == messinfo.mess_option %}
+                            {% if item.meal_time == 'SUB' or item.meal_time == 'SUL' or item.meal_time == 'SUD' %}
+
+                                {% if item.meal_time == 'SUB' %}
+                                    <td>{{item.dish}}</td>
+                                {% elif item.meal_time == 'SUL' %}
+                                    <td>{{item.dish}}</td>
+                                {% elif item.meal_time == 'SUD' %}
+                                    <td>{{item.dish}}</td>
+                                {% endif %}
+
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
+                </tr>
+                    
+                
+                </tbody>
+
+            </table>
+
+            <br>
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="bill">
+        <div class="ui vertical segment">
+
+            <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
+                <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Month</th>
+                    <th>Monthly bill</th>
+                    <th>Rebate Count</th>
+                    <th>Rebate Amt</th>
+                    <th>NonVeg Amt</th>
+                    <th>Total</th>
+                </tr></thead>
+                <tbody>
+                {% for stu in monthly_bill %}
+                <tr>
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                            <div class="content">
+                                {{stu.student_id}}
+                            </div>
+                        </h4>
+                    </td>
+                    <td>{{stu.month}}</td>
+                    <td>{{stu.amount}}</td>
+                    <td>{{stu.rebate_count}}</td>
+                    <td>{{stu.rebate_amount}}</td>
+                    <td>{{stu.nonveg_total_bill}}</td>
+                    <td>{{stu.total_bill}}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+            <br>
+            <br>
+
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="paymenthistory">
+        <table class="ui very basic collapsing celled table sortable" style="margin: auto;">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Sem</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for pay in payments %}
+                <tr>
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                            <div class="content">
+                                {{pay.student_id}}
+                            </div>
+                        </h4>
+                    </td>
+
+                    <td>{{pay.sem}}</td>
+
+                    <td>{{pay.amount_paid}}</td>
+
+                    <td><i class="ui large green checkmark icon"></i></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <br>
+
+        <div class="ui divider"></div>
+
+    </div>
+
+{% endblock %}
+{% endblock %}

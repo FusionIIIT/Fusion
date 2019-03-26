@@ -1,0 +1,317 @@
+{% load static %}
+{% block complainthistory %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+
+        <a class="active item" data-tab="complainthistory">
+            Complaint History
+        </a>
+        <a class="item" data-tab="overduecomplaint">
+            OverDue Complaint
+        </a>
+
+    </div>
+
+
+
+
+    <div class="ui active  tab" data-tab="complainthistory">
+        <div class="ui vertical segment">
+        <form method="post" action="./changestatus/">
+            {% csrf_token %}
+            <table class="ui very basic collapsing celled sortable table"
+                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                <thead>
+                <tr>
+                    <th>
+                        S.no
+                    </th>
+                    <th>
+                        Student
+                    </th>
+
+                    <th class="one wide column">
+                        Date&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;
+                    </th>
+
+                    <th>
+                        Type
+                    </th>
+
+                    <th>
+                        Location
+                    </th>
+
+                    <th>
+                        Specific Location
+                    </th>
+
+                    <th class="three wide column">
+                        Details
+                    </th>
+
+                    <th class="four wide column">
+                        Status
+                    </th>
+                    <th class="two large column">
+                        Worker Name
+                    </th>
+                </tr>
+                </thead>
+
+                {% for a in history %}
+
+                <tbody>
+                {% if a.delay > 1 %}
+                  <tr style="color: red;">
+                {% else %}
+                  <tr>
+                {% endif %}
+                    <td>
+                        {{ a.serial_no }} -
+                    </td>
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                            <div class="content">
+                                <a href="./{{ a.id }}/"> {{ a.complainer.user }}</a>
+                                <div class="sub header">
+
+                                </div>
+                            </div>
+                        </h4>
+                    </td>
+
+                    <td>
+                        {{ a.complaint_date }}
+                    </td>
+
+                    <td>
+                        {{ a.complaint_type }}
+                    </td>
+
+                    <td>
+                        {{ a.location }}
+                    </td>
+
+                    <td>
+                        {{ a.specific_location }}
+                    </td>
+
+                    <td>
+                        <a href="./detail2/{{ a.id }}/"> Click here!</a>
+                    </td>
+
+                    <td>
+                        {% if a.status == 0 %}
+                             <i class="large orange warning icon"></i>
+                             <input type="text" name="status{{ a.id }}" style="visibility: hidden; width: 1em;  height: 1em;" value="0" >
+                             <input type="text" name="complaint_id" style="visibility: hidden; width: 1em;  height: 1em;" value="{{ a.id }}" >
+                        {% elif a.status == 1 %}
+                             <i class="large orange add user icon"></i>
+                             <input type="text" name="status{{ a.id }}" style="visibility: hidden; width: 1em;  height: 1em;" value="1" >
+                             <input type="text" name="complaint_id" style="visibility: hidden; width: 1em;  height: 1em;" value="{{ a.id }}" >
+                        {% elif a.status == 2 %}
+                             <i class="large green checkmark icon"></i>
+                             <input type="text" name="status{{ a.id }}" style="visibility: hidden; width: 1em;  height: 1em;" value="2" >
+                             <input type="text" name="complaint_id" style="visibility: hidden; width: 1em;  height: 1em;" value="{{ a.id }}" >
+                        {% elif a.status == 3 %}
+                             <i class="large red x icon"></i>
+                             <input type="text" name="status{{ a.id }}" style="visibility: hidden; width: 1em;  height: 1em;" value="3" >
+                             <input type="text" name="complaint_id" style="visibility: hidden; width: 1em;  height: 1em;" value="{{ a.id }}" >
+                            {% endif %}
+
+                    </td>
+                    <td>
+                        {% if a.worker_id == NULL %}
+                            NOT ASSIGN
+                            <td></td>
+                        {% else %}
+                            <b>{{ a.worker_id }}</b>
+                            <td>
+                            <div class="ui secondary menu">
+                                <div class="ui dropdown item ">
+                                    Change Status
+                                    <i class="dropdown icon"></i>
+                                    <div class="menu">
+                                      <div class="item"><a href="./{{ a.id }}/1"><i class="large orange add user icon"></i>Worker assign</a></div>
+                                      <div class="item"><a href="./{{ a.id }}/2"><i class="large green checkmark icon"></i>Completed</a></div>
+                                      <div class="item"><a href="./{{ a.id }}/3"><i class="large red x icon"></i>Declined</a></div>
+                                    </div>
+                                  </div>
+                            </div>
+                            </td>
+                        {% endif %}
+                    </td>
+
+                </tr>
+                
+
+                </tbody>
+
+                {% endfor %}
+            </table>
+
+                <input type="text" name="total_complaint" style="visibility: hidden; width: 1em;  height: 1em;" >
+            <br>
+            <div class="ui divider"></div>
+
+            <div class="extra content">
+                <div class="" style="text-align: center;">
+                    <i class="large orange warning icon"></i> : Pending &ensp;&ensp;&ensp;&ensp;&ensp;
+                    <i class="large orange add user icon"></i> : Assign Worker &ensp;&ensp;&ensp;&ensp;&ensp;
+                    <i class="large green checkmark icon"></i> : Completed &ensp;&ensp;&ensp;&ensp;&ensp;
+                    <i class="large red x icon"></i> : Declined &ensp;&ensp;&ensp;&ensp;&ensp;
+
+                </div>
+            </div>
+        </form>
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="overduecomplaint">
+        <div class="ui vertical segment">
+             <table class="ui very basic collapsing celled sortable table"
+                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                <thead>
+                <tr>
+                    <th>
+                        Student
+                    </th>
+
+                    <th class="one wide column">
+                        Register Date
+                    </th>
+
+                    <th>
+                        Finish Date
+                    </th>
+                   <th>
+                        Specific Location
+                    </th>
+
+                    <th class="three wide column">
+                        Details
+                    </th>
+                    <th class="four wide column">
+                        Delay
+                    </th>
+                    <th class="four wide column">
+                        status
+                    </th>
+                    <th class="two large column">
+                        Worker Name
+                    </th>
+                </tr>
+                </thead>
+
+                {% for a in overduecomplaint %}
+
+                <tbody>
+                <tr>
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                            <div class="content">
+                                {{ a.complainer.user }}
+                                <div class="sub header">
+
+                                </div>
+                            </div>
+                        </h4>
+                    </td>
+
+                    <td>
+                        {{ a.complaint_date }}
+                    </td>
+
+                    <td>
+                        {{ a.complaint_finish }}
+                    </td>
+                    <td>
+                        {{ a.specific_location }}
+                    </td>
+
+                    <td>
+                        <a href="./detail2/{{ a.id }}/"> Click here!</a>
+                    </td>
+                    <td>
+                        {{ a.delay.days }} day
+                    </td>
+
+                    <td>
+                        {% if a.status == 0 %}
+                             <i class="large orange warning icon"></i>
+                             <input type="text" name="status{{ a.id }}" style="visibility: hidden; width: 1em;  height: 1em;" value="0" >
+                             <input type="text" name="complaint_id" style="visibility: hidden; width: 1em;  height: 1em;" value="{{ a.id }}" >
+                        {% elif a.status == 1 %}
+                             <i class="large orange add user icon"></i>
+                             <input type="text" name="status{{ a.id }}" style="visibility: hidden; width: 1em;  height: 1em;" value="1" >
+                             <input type="text" name="complaint_id" style="visibility: hidden; width: 1em;  height: 1em;" value="{{ a.id }}" >
+                        {% elif a.status == 2 %}
+                             <i class="large green checkmark icon"></i>
+                             <input type="text" name="status{{ a.id }}" style="visibility: hidden; width: 1em;  height: 1em;" value="2" >
+                             <input type="text" name="complaint_id" style="visibility: hidden; width: 1em;  height: 1em;" value="{{ a.id }}" >
+                        {% elif a.status == 3 %}
+                             <i class="large red x icon"></i>
+                             <input type="text" name="status{{ a.id }}" style="visibility: hidden; width: 1em;  height: 1em;" value="3" >
+                             <input type="text" name="complaint_id" style="visibility: hidden; width: 1em;  height: 1em;" value="{{ a.id }}" >
+                        {% endif %}
+
+                    </td>
+                    <td>
+                        {% if a.worker_id == NULL %}
+                            NOT ASSIGN
+                        {% else %}
+                            <b>{{ a.worker_id }}</b>
+                            <td>
+                            <div class="ui secondary menu">
+                                <div class="ui dropdown item ">
+                                    Change Status
+                                    <i class="dropdown icon"></i>
+                                    <div class="menu">
+                                      <div class="item"><a href="./{{ a.id }}/1"><i class="large orange add user icon"></i>Worker assign</a></div>
+                                      <div class="item"><a href="./{{ a.id }}/2"><i class="large green checkmark icon"></i>Completed</a></div>
+                                      <div class="item"><a href="./{{ a.id }}/3"><i class="large red x icon"></i>Declined</a></div>
+                                    </div>
+                                  </div>
+                            </div>
+                            </td>
+                        {% endif %}
+                    </td>
+
+                </tr>
+
+
+                </tbody>
+
+                {% endfor %}
+            </table>
+
+                <input type="text" name="total_complaint" style="visibility: hidden; width: 1em;  height: 1em;" >
+            <br>
+            <div class="ui divider"></div>
+
+            <div class="extra content">
+                <div class="" style="text-align: center;">
+                    <i class="large orange warning icon"></i> : Pending &ensp;&ensp;&ensp;&ensp;&ensp;
+                    <i class="large orange add user icon"></i> : Assign Worker &ensp;&ensp;&ensp;&ensp;&ensp;
+                    <i class="large green checkmark icon"></i> : Completed &ensp;&ensp;&ensp;&ensp;&ensp;
+                    <i class="large red x icon"></i> : Declined &ensp;&ensp;&ensp;&ensp;&ensp;
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+{% endblock %}

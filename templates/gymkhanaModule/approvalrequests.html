@@ -1,0 +1,207 @@
+{% load static %}
+{% block approvalrequests %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="clubbudget">
+            Club Budget
+        </a>
+
+        <a class="item" data-tab="newclub">
+            New Club Formation
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="clubbudget">
+        <div class="ui vertical segment">
+            <table class="ui very basic collapsing celled sortable table"
+                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                <thead>
+                <tr>
+                    <th>
+                    </th>
+
+                    <th class="four wide column">
+                        Co-ordinator
+                    </th>
+
+                    <th class="two wide column">
+                        Club
+                    </th>
+
+                    <th class="two wide column">
+                        Budget For
+                    </th>
+
+                    <th class="one wide column">
+                        PFA
+                    </th>
+
+                    <th class="four wide column">
+                        Description
+                    </th>
+                </tr>
+                </thead>
+
+                <tbody>
+                {% for i in Club_budget %}
+                    {% if i.status == "open" %}
+                        <tr>
+                            <td class="collapsing">
+                                <div class="ui fitted checkbox">
+                                    <input type="checkbox"  id="{{ i.club }} {{ i.budget_for }}" name="{{ i.club }} {{ i.budget_for }}" > <label></label>
+                                </div>
+                            </td>
+                            <td>
+                                <h4 class="ui image header">
+                                    <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                                    <div class="content">
+                                        {{ i.club.co_ordinator.id }}
+                                        <div class="sub header">
+                                            {{ i.club.co_ordinator.id.user.email }}
+                                        </div>
+                                    </div>
+                                </h4>
+                            </td>
+                            <td>
+                                {{ i.club.club_name }} Club
+                            </td>
+                            <td>
+                                {{ i.budget_for }}
+                            </td>
+                            <td>
+                                {% comment %}
+                                    TODO: Add the attachment here!
+                                {% endcomment %}
+                                <a class="ui inverted circular icon button" style="margin: auto;" target="_blank" href="{{ i.budget_file.url }}">
+                                    <i class="large attach black icon"></i>
+                                </a>
+                            </td>
+                            <td>
+                                {{ i.description }}
+                            </td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+                </tbody>
+            </table>
+
+
+            <br>
+
+            <div class="ui primary right floated button">Approve Selected</div>
+            <div class="ui red right floated button">Reject Selected</div>
+
+            <br>
+            <br>
+
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="newclub">
+        <div class="ui vertical segment">
+            <table class="ui very basic collapsing celled sortable table"
+                   style="padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                <thead>
+                <tr>
+                    <th>
+                    </th>
+
+                    <th class="three wide column">
+                        Club
+                    </th>
+
+                    <th class="three wide column">
+                        Coordinator
+                    </th>
+
+                    <th class="three wide column">
+                        Co-Coordinator
+                    </th>
+
+                    <th class="one wide column">
+                        PFA
+                    </th>
+                </tr>
+                </thead>
+
+                <tbody>
+                {% for i in Club_name %}
+                    {% if i.status == "open" %} 
+                        <tr>
+                            <td class="collapsing">
+                                <div class="ui fitted checkbox">
+                                    <input type="checkbox" id="{{ i.club_name }}" name="{{ i.club_name }}"><label></label>
+                                </div>
+                            </td>
+
+                            <td>
+                                <h4 class="ui header">
+                                    <div class="content">
+                                        {{ i.club_name }}
+                                        <div class="sub header">
+                                            {{ i.category }}
+                                        </div>
+                                    </div>
+                                </h4>
+                            </td>
+
+                            <td>
+                                <h4 class="ui image header">
+                                    <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                                    <div class="content">
+                                        {{ i.co_ordinator.id.id }}
+                                        <div class="sub header">
+                                            {{ i.co_ordinator.id.user.email }}
+                                        </div>
+                                    </div>
+                                </h4>
+                            </td>
+
+                            <td>
+                                <h4 class="ui image header">
+                                    <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                                    <div class="content">
+                                        {{ i.co_coordinator.id.id }}
+                                        <div class="sub header">
+                                            {{ i.co_coordinator.id.user.email }}
+                                        </div>
+                                    </div>
+                                </h4>
+                            </td>
+
+                            <td>
+                                {% comment %}
+                                    TODO: Add the attachment here!
+                                {% endcomment %}
+                                <a class="ui inverted circular icon button" style="margin: auto;" target="_blank" href="{{ i.club_file.url }}">
+                                    <i class="large attach black icon"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+                </tbody>
+            </table>
+
+            <br>
+
+            <div class="ui primary right floated button">Approve Selected</div>
+            <div class="ui red right floated button">Reject Selected</div>
+
+            <br>
+            <br>
+
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+{% endblock %}

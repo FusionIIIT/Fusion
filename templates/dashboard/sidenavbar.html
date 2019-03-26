@@ -1,0 +1,178 @@
+{% load static %}
+
+{% block sidenav %}
+    <div class="ui sidebar inverted vertical menu">
+        <div class="ui doubling stackable grid container">
+
+            <div class="ui inverted centered raised item"></div>
+
+            {% comment %}The User Item starts here!{% endcomment %}
+            <div class="ui inverted centered raised item">
+                <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui small circular centered image">
+
+                <br>
+
+                <div class="ui bottom attached inverted" style="text-align: center;">
+                    {% comment %}
+                        TODO: User Details!
+                    {% endcomment %}
+		    <h2 class="ui inverted header">{{request.user.first_name}} {{request.user.last_name}}</h2>
+		    <span class="ui inverted meta">{{request.user.extrainfo.user_type}}</span>
+                </div>
+
+            </div>
+            {% comment %}The User Item ends here!{% endcomment %}
+
+            <div class="ui divider inverted"></div>
+
+            {% comment %}The Modules Accordian starts here!{% endcomment %}
+            <div class="ui vertical inverted accordion fluid menu" style="margin-bottom: 24px;">
+                <div class="item">
+                    <a class="active title">
+                        <i class="dropdown icon"></i>
+                        <span class="ui inverted header">
+                            Modules
+                        </span>
+                    </a>
+                    <div class="active content">
+                        <div class="link items">
+			    {% if request.user.extrainfo.user_type == 'faculty' %}
+			    <a class = "item" href="/ocms">
+			        <h4> Course Management </h4>
+			    </a>
+			    {% else %}
+
+			    <a class = "item" href="/academic-procedures">
+			        <h4> Academics Module </h4>
+			    </a>
+			    {% endif %}
+          <a class = "item" href="/gymkhana">
+              <h4> Gymkhana Module </h4>
+          </a>
+            <a class = "item" href="/library/library">
+  			        <h4> Library Module </h4>
+  			    </a>
+    			    <a class="item" href="{% url 'spacs:spacs' %}">
+                                <h4>Awards & Scholarship</h4>
+                            </a>
+
+                            <a class="item" href="{% url 'complaint:complaint' %}">
+                                <h4>Complaint Module</h4>
+                            </a>
+                              {% if user.extrainfo.user_type != 'faculty' %}
+                            <a class="item" href="{% url 'mess:mess' %}">
+                                <h4>Central Mess Module</h4>
+                            </a>
+                            {% endif %}
+
+                            <a class="item" href="{% url 'healthcenter:healthcenter' %}">
+                                <h4>Health Center Module</h4>
+                            </a>
+
+                            <a class="item" href="{% url 'leave:leave' %}">
+                                <h4>Leave Module</h4>
+                            </a>
+
+                            <a class="item" href="{% url 'placement:placement' %}">
+                                <h4>Placement Module</h4>
+                            </a>
+
+                            <a class="item" href="{% url 'visitorhostel:visitorhostel' %}">
+                                <h4>Visitor Hostel Module</h4>
+                            </a>
+			    <a class="item" href="{% url 'filetracking:filetracking' %}">
+				<h4> File Tracking </h4>
+		            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% comment %}The Modules Accordian ends here!{% endcomment %}
+
+            {% comment %}The Profile Item starts here!{% endcomment %}
+            <a class="centered raised item" href="/dashboard">
+                <span class="inverted header">Profile</span>
+                <i class="large inverted user icon right floated"></i>
+            </a>
+            {% comment %}The Profile Item starts here!{% endcomment %}
+<a class="centered raised item" href="{% url 'office:officeOfDeanStudents'%}">
+    <span class="inverted header">Office Of Dean Students</span>
+    <i class="large inverted briefcase icon right floated"></i>
+</a>
+{% comment %}The email Item ends here!{% endcomment %}
+{% if "Dean (RSPC)" in desig %}
+{% comment %}The Profile Item starts here!{% endcomment %}
+<a class="centered raised item" href="{% url 'office:officeOfDeanRSPC'%}">
+    <span class="inverted header">Office Of Dean RSPC</span>
+    <i class="large inverted briefcase icon right floated"></i>
+</a>
+
+{% endif %}
+<a class="centered raised item" href="{% url 'office:officeOfDeanAcademics'%}">
+    <span class="inverted header">Office Of Dean Academics</span>
+    <i class="large inverted briefcase icon right floated"></i>
+</a>
+{% comment %}The email Item ends here!{% endcomment %}
+
+{% comment %}The Profile Item starts here!{% endcomment %}
+<a class="centered raised item" href="{% url 'office:directorOffice'%}">
+    <span class="inverted header">Director Office</span>
+    <i class="large inverted briefcase icon right floated"></i>
+</a>
+{% comment %}The email Item ends here!{% endcomment %}
+
+{% comment %}The Profile Item starts here!{% endcomment %}
+<a class="centered raised item" href="{% url 'office:officeOfPurchaseOfficer'%}">
+    <span class="inverted header">Office Of Purchase Officer</span>
+    <i class="large inverted briefcase icon right floated"></i>
+</a>
+{% comment %}The email Item ends here!{% endcomment %}
+
+{% comment %}The Profile Item starts here!{% endcomment %}
+<a class="centered raised item" href="{% url 'office:officeOfRegistrar'%}">
+    <span class="inverted header">Office Of Registrar</span>
+    <i class="large inverted briefcase icon right floated"></i>
+</a>
+{% comment %}The email Item ends here!{% endcomment %}
+
+{% comment %}The Profile Item starts here!{% endcomment %}
+<a class="centered raised item" href="{% url 'office:officeOfDeanPnD'%}">
+    <span class="inverted header">Office Of P & D</span>
+    <i class="large inverted briefcase icon right floated"></i>
+</a>
+{% comment %}The email Item ends here!{% endcomment %}
+
+
+{% comment %}The Profile Item starts here!{% endcomment %}
+<a class="centered raised item" href="{% url 'office:officeOfHOD'%}">
+    <span class="inverted header">Office Of HOD {Branch}</span>
+    <i class="large inverted briefcase icon right floated"></i>
+</a>
+<a class="centered raised item" href="/finance/finance">
+    <span class="inverted header">Finance and Accounts</span>
+    <i class="large inverted briefcase icon right floated"></i>
+</a>
+            {% comment %}The email Item ends here!{% endcomment %}
+
+
+
+
+            {% comment %}The Activity Log Item starts here!{% endcomment %}
+            <a class="centered raised item" href='/about'%}>
+                <span class="inverted header">Meet our team!</span>
+                  <i class="briefcase icon right floated"></i>
+            </a>
+            {% comment %}The Activity Log Item ends here!{% endcomment %}
+
+            {% comment %}The Logout Item starts here!{% endcomment %}
+            <a class="centered raised item" href='/accounts/logout'>
+                <span class="inverted header">Logout</span>
+                <i class="large inverted sign out icon right floated"></i>
+            </a>
+            <div class="item"></div>
+            {% comment %}The Logout Item ends here!{% endcomment %}
+
+        </div>
+    </div>
+
+{% endblock %}

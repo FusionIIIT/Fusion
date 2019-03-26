@@ -1,0 +1,181 @@
+{% load static %}
+{% block checkout %}
+
+
+{% for booking in active_bookings %}
+{% if booking.status == 'CheckedIn' %}
+
+<div class="ui modal" id="check-out-modal-{{ booking.id }}">
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="checkout">
+            Guest Check-Out
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="checkout">
+        <div class="ui vertical stripe team segment"
+             style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+
+            <form class="ui large form">
+                <div id="checkout">
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Name </label>
+                            &nbsp;
+                            <input  type="text" value=" {{ booking.intender }} " readonly >
+                        </div>
+
+                        <div class="field">
+                            <label>email</label>
+                            &nbsp;
+                            <input  type="email" value=" {{ booking.intender.email }} " readonly >
+                        </div>
+                    </div>
+
+
+                    {% for key, value in bills.items %}
+                    {% if key == booking.id %}
+
+                    <table class="ui sortable very basic celled table">
+                        <tbody>
+                        <tr>
+                            <td>
+                                <label>Room Bill </label>
+                            </td>
+                            <td>
+                                <input  type="text" value=" {{ value.room_bill }} " readonly >
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label>Mess Bill</label>
+                            </td>
+                            <td>
+                                <input  type="text" value=" {{ value.mess_bill }} " readonly >
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <label>Total Amount</label>
+                            </td>
+                            <td>
+                                <input type="text" value=" {{ value.total_bill }} " readonly>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="title">
+                        <h1>Details</h1>
+                    </div>
+
+                    <div class="ui divider"></div>
+                    <h2>Visitors Details</h2>
+
+                    <table class="ui sortable very basic celled table">
+                        <thead>
+                        <tr>
+                            <th>
+                                Visitors
+                            </th>
+
+                            <th>
+                                Email
+                            </th>
+                            <th>
+                                Mobile No
+                            </th>
+
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        {% for visitor in booking.visitor.all %}
+                        <tr>
+                            <td>
+                                {{ visitor.visitor_name }}
+                            </td>
+
+                            <td>
+                                {{ visitor.visitor_email }}
+                            </td>
+
+                            <td>
+                                {{ visitor.visitor_phone }}
+                            </td>
+
+                        </tr>
+                        {% endfor %}
+
+                        </tbody>
+                    </table>
+
+                    <h2>Room Details</h2>
+                    <div class="ui divider"></div>
+
+                    <table class="ui sortable very basic celled table">
+                        <thead>
+                        <tr>
+                            <th>
+                                Room Type
+                            </th>
+
+                            <th>
+                                Room No
+                            </th>
+                            <th>
+                                Floor
+                            </th>
+
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        {% for room in booking.rooms.all %}
+                        <tr>
+                            <td>
+
+                                {{ room.room_type }}
+                            </td>
+
+                            <td>
+                               {{ room.room_number }}
+                            </td>
+
+                            <td>
+                               {{ room.room_floor }}
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <div class="three fields">
+                        <div class="ten wide field"></div>
+                        <div class="six wide field">
+                            <label><br></label>
+                            <div class="ui large green right floated button" onclick="check_out('{{ booking.id }}', '{{ value.mess_bill }}' , '{{ value.room_bill }}')">
+                                Settle
+                            </div>
+                        </div>
+                        <!-- <div class="two wide field">
+                            <label><br></label>
+                            <div class="ui large center floated primary button">
+                                Print
+                            </div>
+                        </div> -->
+                    </div>
+                     {% endif %}
+                     {% endfor %}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+
+{% endblock %}
+

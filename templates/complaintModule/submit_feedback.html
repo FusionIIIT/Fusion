@@ -1,0 +1,180 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Complaint
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}
+            The left-rail segment starts here!
+        {% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+
+
+        {% comment %}
+            The central-rail segment starts here!
+        {% endcomment %}
+        <div class="eight wide column">
+            {% comment %}The ... start here!{% endcomment %}
+            <div class="ui active tab segment" data-tab="first">
+                <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="submitfeedback">
+            Feedback
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="complaint">
+        <div class="ui vertical segment">
+            <form class="ui form" style="padding-left: 24px; padding-right: 24px;" method="POST"
+                  action=".">
+                {% csrf_token %}
+                <div class="ui header">
+                    Submit Feedback
+                    <div>Complaint ID :{{ a.id }}</div>
+                </div>
+
+                <br>
+
+                <div class="fields">
+
+                    <div class="eight wide field">
+                        <label>Register Date :</label>
+                            {{ a.complaint_date }}
+                    </div>
+
+                    <div class="eight wide field">
+                        <label>Finished Date : </label>
+                            {{ a.complaint_finish }}
+                    </div>
+
+
+                </div>
+
+                <div class="fields">
+                    <div class="eight wide field">
+                        <label>Location : </label>
+                            {{ a.location }}
+                    </div>
+                    <div class="eight wide field">
+                        <label>Specific Location</label>
+                            {{ a.specific_location }}
+                    </div>
+
+                </div>
+
+                <div class="field">
+                    <label>Please fill feedback </label>
+                    <textarea rows="2" name="feedback"></textarea>
+                </div>
+
+
+                <div class="fields">
+
+                    <div class="eight wide field">
+                        Give some rating  :&ensp;&ensp;&ensp;&ensp;&ensp;
+
+                    </div>
+
+                    <div class="ten field">
+                        <div class="ui selection dropdown">
+                            <input type="hidden" name="rating">
+                            <i class="dropdown icon"></i>
+                              <div class="default text">Rating</div>
+                              <div class="menu">
+                                 <div class="item" data-value=5><i class="star icon"></i>Outstanding</div>
+                                    <div class="item" data-value=4><i class="star half empty icon"></i>Excellent</div>
+                                    <div class="item" data-value=3><i class="empty star icon"></i>Good</div>
+                                    <div class="item" data-value=2><i class="thumbs up icon"></i>Average</div>
+                                    <div class="item" data-value=2><i class="thumbs down icon"></i>Not Satisfy</div>
+                              </div>
+                        </div>
+
+
+                    </div>
+                </div>
+                  Feedback Will be Register with your <b>User ID</b>
+                <input type="text" name="comp_id" style="visibility: hidden;" value="{{ comp_id }}" >
+
+                <br>
+
+                <button class="ui large primary button right floated">
+                    Submit
+                </button>
+
+                <br>
+                <br>
+
+            </form>
+
+            <br>
+            <div class="ui divider"></div>
+        </div>
+    </div>
+            </div>
+            {% comment %}The ... end here!{% endcomment %}
+
+            {% comment %}The ... starts here!{% endcomment %}
+
+
+        </div>
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            <div class="row">
+                {% comment %}
+                    TODO: the right rail!
+                {% endcomment %}
+            </div>
+        </div>
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+    </div>
+
+    {% comment %}The grid ends here!{% endcomment %}
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+
+{% endblock %}
+
+{% block css %}
+
+{% endblock %}

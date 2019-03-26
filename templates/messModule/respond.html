@@ -1,0 +1,276 @@
+{% load static %}
+{% block respondtorequests %}
+
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="respondtoleaverequests">
+            Respond to Leave Requests
+        </a>
+
+        <a class="item" data-tab="respondtomenuchange">
+            Respond to Menu Change
+        </a>
+
+        <a class="item" data-tab="respondtovacafoodrequests">
+            Respond to Vacationfood Requests
+        </a>
+    </div>
+
+
+    <div class="ui active tab" data-tab="respondtoleaverequests">
+        <div class="ui vertical segment">
+            <table class="ui very basic collapsing celled large sortable table"
+                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                <thead>
+                <tr>
+                    <th class="four wide">
+                        Student
+                    </th>
+
+                    <th>
+                        Type
+                    </th>
+
+                    <th class="four wide">
+                        Purpose
+                    </th>
+
+                    <th class="two wide">
+                        From
+                    </th>
+
+                    <th class="two wide">
+                        To
+                    </th>
+
+                    <th class="one wide">
+                        Approve
+                    </th>
+                </tr>
+                </thead>
+
+                <tbody>
+                    {% for item in leave %}
+                <tr>
+                    <th>
+                        {{item.app_date}}
+                    </th>
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                            <div class="content">
+                                {{item.student_id.id}}
+                                <!-- <div class="sub header">
+                                    2015121
+                                </div> -->
+                            </div>
+                        </h4>
+                    </td>
+
+                    <td>
+                        {{item.leave_type}}
+                    </td>
+
+                    <td>
+                        {{item.purpose}}
+                    </td>
+
+                    <td>
+                        {{item.start_date}}
+                    </td>
+
+                    <td>
+                        {{item.end_date}}
+                    </td>
+
+                    <td>
+                        <form action="{{item.pk}}/responserebate/" method="POST" >
+                        {% csrf_token %}
+                        <div class="ui buttons">
+                            <button class="ui negative button" name="submit" value="reject" >R</button>
+                            <div class="or"></div>
+                            <button class="ui positive button" name="submit" value="approve" >A</button>
+                        </div>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+
+            <br>
+
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="respondtomenuchange">
+        <div class="ui vertical segment">
+            <table class="ui very basic collapsing celled large sortable table"
+                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                <thead>
+                <tr>
+                    <th>
+                        Date Of Application
+                    </th>
+
+                    <th class="four wide">
+                        Student
+                    </th>
+
+                    <th>
+                        Reason
+                    </th>
+
+                    <th class="two wide">
+                        From
+                    </th>
+
+                    <th class="two wide">
+                        To
+                    </th>
+
+                    <th class="one wide">
+                        Approve
+                    </th>
+                </tr>
+                </thead>
+
+                <tbody>
+                {% for list in newmenu %}
+                {% if list.status == '1' %}
+                <tr>
+                    <td>{{list.app_date}}</td>
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                            <div class="content">
+                                Mess Convener
+                            </div>
+                        </h4>
+                    </td>
+
+                    <td>
+                        {{list.reason}}
+                    </td>
+
+                    <td>
+                        {{list.dish}}
+                    </td>
+
+                    <td>
+                        {{list.request}}
+                    </td>
+
+                    <td>
+                        <form action="/mess/{{list.pk}}/response/" method="post">
+                        {% csrf_token %}
+                        <div class="ui buttons">
+                            <button class="ui negative button" type="submit" name="submit" value="reject">R</button>
+                            <div class="or"></div>
+                            <button class="ui positive button" type="submit" name="submit" value="approve">A</button>
+                        </div>
+                    </form>
+                    </td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+                </tbody>
+            </table>
+
+            <br>
+
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+
+<div class="ui tab" data-tab="respondtovacafoodrequests">
+        <div class="ui vertical segment">
+            <table class="ui very basic collapsing celled large sortable table"
+                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                <thead>
+                <tr>
+                    <th> Date Of Application </th>
+                    <th class="four wide">
+                        Student
+                    </th>
+
+                    <th>
+                        Reason
+                    </th>
+
+                    <th class="two wide">
+                        From
+                    </th>
+
+                    <th class="two wide">
+                        To
+                    </th>
+
+                    <th class="one wide">
+                        Approve
+                    </th>
+                </tr>
+                </thead>
+
+                <tbody>
+                {% for item in vaca_all %}
+                {% if item.status == '1' %}
+                <tr>
+                    <td>{{item.app_date}}</td>
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                            <div class="content">
+                                {{item.student_id.id}}
+                            </div>
+                        </h4>
+                    </td>
+
+                    <td>
+                        {{item.purpose}}
+                    </td>
+
+                    <td>
+                        {{item.start_date}}
+                    </td>
+
+                    <td>
+                        {{item.end_date}}
+                    </td>
+
+                    <td>
+                        <form action="/mess/{{item.pk}}/processvacafood/" method="post">
+                        {% csrf_token %}
+                        <div class="ui buttons">
+                            <button class="ui negative button" type="submit" name="submit" value="reject">R</button>
+                            <div class="or"></div>
+                            <button class="ui positive button" type="submit" name="submit" value="approve">A</button>
+                        </div>
+                    </form>
+                    </td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+                </tbody>
+            </table>
+
+            <br>
+
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+{% endblock %}

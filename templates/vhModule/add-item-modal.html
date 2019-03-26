@@ -1,0 +1,78 @@
+{% block additem %}
+
+      <div class="ui pointing secondary menu">
+            <a class="active item" data-tab="additem">
+                Add Item
+            </a>
+        </div>
+
+        <div class="ui active tab" data-tab="additem" style="padding: 16px;">
+            <div class="ui vertical segment">
+                <form class="ui form" id="add-item-form">
+                    <div id="item" class="reset-this-form">
+                        <div class="two fields">
+                            <div class="ten wide field">
+                                <label>Bill Id</label>
+                                <div class="ui large input">
+                                    <input placeholder="Bill Id" name="bill_number">
+                                </div>
+                            </div>
+                        </div>
+
+                        <h5 class="ui dividing header">Add Items</h5>
+
+                        <div class="four fields">
+                            <div class="field">
+                                <label>Item Name</label>
+                                <div class="ui input large">
+                                    <input placeholder="Item Name" name="item-name">
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label>Quantity</label>
+                                <div class="ui input large">
+                                    <input placeholder="Quantity" name="quantity_add" type="number">
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label>Cost</label>
+                                <div class="ui input large">
+                                    <input placeholder="Amount" name="cost" type="number">
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label>Consumable</label>
+                                <div class="ui fitted toggle checkbox">
+                                    <input type="checkbox" name="consumable"> <label></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="four fields">
+                        <div class="eight wide field"></div>
+                        <div class="four wide field">
+                            <!-- <div class="ui button right floated" id="add-more-items-inventory">
+                                Add Another Item
+                            </div> -->
+                        </div>
+                        <input type="hidden" name="csrf" value="{{ csrf_token }}">
+                        <div class=" two wide field">
+                            <div class="ui primary button" id="add-item-form-submit">
+                                Submit
+                            </div>
+                        </div>
+                        <div class=" two wide field"></div>
+                    </div>
+
+                    <br>
+                    <br>
+                </form>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

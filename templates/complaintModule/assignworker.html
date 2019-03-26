@@ -1,0 +1,238 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Complaint
+{% endblock %}
+
+
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}
+            The left-rail segment starts here!
+        {% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu starts here!{% endcomment %}
+            <div class="ui huge fluid vertical pointing menu"
+                 style="max-width: 320px;">
+
+                <a class=" item" href="/complaint/caretaker/">
+                     Manage Workers
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" href="/complaint/caretaker/" >
+                    Complaint History
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" href="/complaint/caretaker/" >
+                    Resolve Complaints
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+            </div>
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+        <div class="nine wide column">
+            {% comment %}The ... start here!{% endcomment %}
+            <div class="ui active tab segment" data-tab="first">
+
+                <div class="ui pointing secondary menu ">
+                    <a class="active item" data-tab="feedback">
+                        Assign Worker
+                    </a>
+                    <a class="item" data-tab="redirect">
+                        Redirect
+                    </a>
+                </div>
+
+                <div class="ui active tab large" data-tab="feedback">
+                    <div class="ui vertical segment">
+                        <form method="post" action=".">
+                            {% csrf_token %}
+                        <div class="ui header">
+                            Assign Worker to complaint
+                            <div>Complaint ID :{{ detail.complainer }}</div>
+                        </div>
+                        <br>
+                        <div class="fields">
+                            <div class="eight wide field">
+                                <h4><label>Complaint Date :
+                                    {{ detail.complaint_date }}</label></h4>
+                            </div>
+                            <div class="eight wide field" >
+                                <h4><label>Finished Date : </label>
+                                   <span style="color:red;"> {{ detail.complaint_finish }}</span></h4>
+                            </div>
+                        </div>
+                        <div class="fields">
+                            <div class="eight wide field">
+                                <h4><label>Complaint Type  :</label>
+                                    {{ detail.complaint_type }}</h4>
+                            </div>
+                            <div class="eight wide field">
+                                <h4><label>Location : </label>
+                                    {{ detail.location }}</h4>
+                            </div>
+                            <div class="eight wide field">
+                                <h4><label>Specific Location</label>
+                                    {{ detail.specific_location }}</h4>
+                            </div>
+
+                            <div class="eight wide field">
+                                <h4><label>Status :</label>
+                                    {% if detail.status == 0 %}
+                                         <i class="large orange warning icon"></i>Yet to assign Worker
+                                    {% elif detail.status == 1 %}
+                                        <i class="large orange add user icon"></i>Worker Assigned
+                                    {% elif detail.status == 2 %}
+                                        <i class="large green checkmark icon"></i>Completed
+                                    {% elif detail.status == 3 %}
+                                         <i class="large red x icon"></i>Complaint Rejected
+                                    {% endif %}
+                                </h4>
+                            </div>
+                        </div>
+                        <div class="field">
+                             <div class="eight wide field">
+                                <h4><label>Assign Worker :</label>
+                                    {% if flag == 'no_worker' %}
+                                        <B>NO WORKER PRESENT AT THE PLACE</B>
+                                    {% else %}
+                                        <select name="assign_worker">
+                                            {% for i in worker %}
+                                                <option value="{{ i.id }}">{{ i.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <button class="ui large primary button right floated" type="submit" name="submit" value="assign">
+                                             Submit
+                                        </button>
+                                    {% endif %}
+                                </h4>
+                             </div>
+                        </div>
+                        </form>
+                    </div>
+
+                    <br>
+
+                    <div class="extra content">
+                        <div class="" style="text-align: center;">
+                            <i class="large green checkmark icon"></i> : Completed &ensp;&ensp;&ensp;&ensp;&ensp;
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ui tab large" data-tab="redirect">
+                    <div class="ui vertical segment">
+                        <h4>If you think that this complaint does not belong to you .</br>
+                        You a can pass this complaint to required caretaker .</h4>
+                        <form method="post" action=".">
+                            {% csrf_token %}
+                        <div class="ui header">
+
+                            <div>Complaint ID :{{ detail.complainer }}</div>
+                        </div>
+                        <div class="fields">
+                            <div class="eight wide field">
+                                <h4><label>Complaint Type  :</label>
+                                    {{ detail.complaint_type }}</h4>
+                            </div>
+                            <div class="eight wide field">
+                                <h4><label>Location : </label>
+                                    {{ detail.location }}</h4>
+                            </div>
+                            <div class="eight wide field">
+                                <h4><label>Specific Location :</label>
+                                {{ detail.specific_location }}</h4>
+                            </div>
+
+                            <div class="eight wide field">
+
+                                    {% if detail.status != 0 %}
+
+                                        <H3>You have assigned a worker. First, remove the worker from this complaint then
+                                            <span style="color: red;">declined</span> this complaint.
+                                            .</H3>
+                                    {% else %}
+                                        <label>Choose particular caretaker from a drop down box :</label>
+                                        <select name="assign_caretaker">
+                                            {% for i in total_caretaker %}
+                                                <option value="{{ i.id }}">{{ i.id }}-{{ i.staff_id }}-{{ i.area }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <button class="ui large primary button right floated" type="submit" name="submit" value="redirect">
+                                             Submit
+                                        </button>
+                                    {% endif %}
+                            </div>
+                        </div>
+                        </form>
+                    </div>
+                </div>
+
+            {% comment %}The ... end here!{% endcomment %}
+
+
+            </div>
+
+
+
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            <div class="row">
+                {% comment %}
+                    TODO: the right rail!
+                {% endcomment %}
+            </div>
+        </div>
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+    </div>
+    {% comment %}The grid ends here!{% endcomment %}
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+
+{% endblock %}
+
+{% block css %}
+
+{% endblock %}
+

@@ -1,0 +1,163 @@
+{% load static %}
+{% block winners %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="winners">
+            Winners
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="winners">
+        <div class="ui vertical segment">
+        <form class="ui form" id="winners_form">
+
+            <div class="ui grid row">
+                <div class="one wide column"></div>
+
+                <div class="seven wide column">
+                    <label>Batch</label>
+                    <select class="ui fluid search large dropdown" id="batch_year" required>
+                        <option value="">Select</option>
+                        <option value="2013"> 2013 </option>
+                        <option value="2014"> 2014 </option>
+                        <option value="2015"> 2015 </option>
+                        <option value="2016"> 2016 </option>
+                        <option value="2017"> 2017 </option>
+                        <option value="2018"> 2018 </option>
+
+
+                    </select>
+                </div>
+
+                <div class="seven wide column">
+                    <label> Awards </label>
+                    <select class="ui fluid search large dropdown" id="award_name" required>
+                        <option value="">Select</option>
+                        {% for i in awards %}
+                        <option value="{{i.award_name}}">{{i.award_name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+            </div>
+            <div class="ui grid row">
+                <div class="twelve wide column"></div>
+                <div class="three wide column">
+                    <button name="Submit" type="submit" class="ui primary large right floated button">
+                        Submit
+                    </button>
+                </div>
+
+            </div>
+
+        </form>
+        <div class="ui divider"></div>
+        <div class="ui vertical segment">
+            <table id="winners_table" class="ui very basic collapsing celled sortable table"
+                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                <thead>
+                <tr >
+                    <th class="three wide">
+                        Roll No
+                    </th>
+                    <th class="five wide">
+                        Name
+                    </th>
+                    <th class="three wide">
+                        Programme
+                    </th>
+
+                </tr>
+                </thead>
+
+                <tbody>
+                    <tr style="display: None">
+                        <td>
+
+                        </td>
+
+                        <td>
+
+                        </td>
+
+                        <td>
+
+                        </td>
+
+                    </tr>
+
+
+                </tbody>
+            </table>
+
+           
+
+            <br>
+
+        </div>
+
+
+
+        </div>
+    </div>
+
+
+{% endblock %}
+
+
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+
+    <script>
+        $(document).on('submit','#winners_form',function (event) {
+                event.preventDefault();
+                $('#winners_table tbody').find("tr:gt(0)").remove();
+                var element = $('#winners_table tbody tr').first();
+                $.ajax({
+                    url: '/spacs/get_winners/',
+                    type: 'GET',
+                    data: {
+                        batch: $('#batch_year').val(),
+                        award_name: $('#award_name').val()
+                    },
+                    success: function (response) {
+                        if(response.result==='Success'){
+
+                            for(var i=0;i<response.student_name.length;i++){
+                                var student_name=response.student_name[i];
+                                var roll=response.roll[i];
+                                var student_program=response.student_program[i];
+                                txt="<tr>";
+                                txt += '<td>' + roll + '</td>' +
+                                '<td>' + student_name + '</td>' +
+                                '<td>' + student_program + '</td>';
+                                txt +='</tr>';
+                                element.after(txt);
+                            }
+
+                            console.log(response.result)
+                        }
+                        else{
+                            console.log(response.result);
+                        }
+
+                    }
+                });
+            });
+
+
+
+    </script>
+
+{% endblock javascript %}
+
+
+
+

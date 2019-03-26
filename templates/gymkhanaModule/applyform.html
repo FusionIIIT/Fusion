@@ -1,0 +1,165 @@
+{% block applyform %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+   
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="clubmembershipform">
+            Club Membership Form
+        </a>
+
+        <a class="item" data-tab="newclubform">
+            New Club Form
+        </a>
+    </div>
+
+    <script type="text/javascript">
+        function ValidateExtension() {
+            var allowedFiles = [".doc", ".docx", ".pdf"];
+            var fileUpload = document.getElementById("fileUpload");
+            var lblError = document.getElementById("lblError");
+            var regex = new RegExp("([a-zA-Z0-9\s_\\.\-:])+(" + allowedFiles.join('|') + ")$");
+            if (!regex.test(fileUpload.value.toLowerCase())) {
+                lblError.innerHTML = "Please upload files having extensions: <b>" + allowedFiles.join(', ') + "</b> only.";
+                return false;
+            }
+            lblError.innerHTML = "";
+            return true;
+        }
+
+    </script>
+
+    <div class="ui active tab" data-tab="clubmembershipform">
+        <div class="ui vertical segment">
+            <form method="Post" id="club_membership_form">
+            {% csrf_token %}
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Name</label>
+                            <input name="user_name" value="{{ request.user.extrainfo }}" placeholder="Name" class="ui large input" required />
+                        </div>
+
+                        <div class="field">
+                            <label>Email</label>
+                            <input name="email" placeholder="Email" class="ui large input" type="email" value="{{ request.user.email }}" required />
+                        </div>
+                    </div>
+                    <div class="ui eight field">
+                        <label>Club</label>
+                        <select class="ui search fluid dropdown" name="club" required />
+                            <option value="">Select</option>
+                            {% for i in Club_name %}
+                                {% if i.club_name not in Curr_club %}
+                                <option value="{{ i.club_name }}">{{ i.club_name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label>Achievements</label>
+                        <textarea rows="2" name="pda" required /></textarea>
+                    </div>
+
+                    <div class="field">
+                        <button class="ui primary button right floated" type="submit" onclick="form_submit('club_membership','club_membership_form',event)">
+                            Submit
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <br>
+            <br>
+        </div>
+        <br>
+        <div class="extra content"></div>
+    </div>
+
+    
+
+    <div class="ui tab" data-tab="newclubform">
+        <div class="ui vertical segment">
+            <form method="post" id="new_club_form" enctype="multipart/form-data">
+            {% csrf_token %}
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                    <div class="three fields">
+                        <div class="eight wide field">
+                            <label>Club</label>
+                            <input placeholder="Club" class="ui large input" name="club_name" required>
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Category</label>
+                            <select class="ui search fluid dropdown" name="category" required>
+                                <option value="">Select</option>
+                                <option value="Technical">Technical</option>
+                                <option value="Cultural">Cultural</option>
+                                <option value="Sports">Sports</option>
+                                <option value="Others">Others</option>
+                            </select>
+                        </div>
+
+                    </div>
+
+                    <div class="two fields">
+                        <div class="eight wide field">
+                            <label>Co-ordinator</label>
+                            <select class="ui search fluid dropdown" id="co" name="co" required>
+                                <option value="">Select</option>
+                                {% for i in Students %}
+                                <option value="{{ i }}">{{ i }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="eight wide field">
+                            <label>Co Co-ordinator</label>
+                                <select class="ui search fluid dropdown" id="coco" name="coco" required>
+                                    <option value="">Select</option>
+                                    {% for i in Students %}
+                                    <option value="{{ i }}">{{ i }}</option>
+                                    {% endfor %}
+                                </select>
+                        </div>
+                        
+                    </div>
+
+                    <div class="eight wide field">
+                        <label>Faculty Incharge</label>
+                            <select class="ui search fluid dropdown" id="faculty" name="faculty" required>
+                                <option value="">Select</option>
+                                {% for i in Faculty %}
+                                <option value="{{ i }}" >{{ i }}</option>
+                                {% endfor %}
+                            </select>
+                    </div>
+                
+
+                    <div class="field">
+                        <label>Attachments (if any)</label>
+                        <input class="ui input" id="fileUpload" onchange="return ValidateExtension()" type="file" name="file" accept=".pdf" required></input>
+                        <span id="lblError" style="color: red;"></span>
+                    </div>
+
+                    <div class="field">
+                        <label>Details & Description</label>
+                        <textarea rows="2" name="d_d" required></textarea>
+                    </div>
+
+                    <div class="field">
+                        <button class="ui primary button right floated" type="submit" onclick="form_submit('new_club','new_club_form',event)">
+                            Submit
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <br>
+            <br>
+        </div>
+        <br>
+        <div class="extra content"></div>
+    </div>
+{% endblock %}

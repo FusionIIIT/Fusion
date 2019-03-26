@@ -1,0 +1,125 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+    Visitor Hostel
+{% endblock %}
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    <div class="ui stackable doubling grid">
+
+        <div class="column"></div>
+
+        <div class="three wide column">
+
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+
+            <div class="ui divider"></div>
+
+            <div class="ui huge fluid vertical pointing menu"
+                 style="max-width: 320px;">
+
+                <a class=" active item" data-tab="first" id="bookings">
+                    Manage Bookings
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+
+<!--                 <a class="item" data-tab="second" id="bookaroom">
+                    Booking Form
+                    <i class="right floated chevron right icon"></i>
+                </a> -->
+
+                {% if user_designation == 'VhIncharge' or user_designation == 'VhCaretaker' %}
+                <a class="item" data-tab="third" id="roomstatus">
+                    Room Availability
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class=" item" data-tab="fourth" id="bookameal">
+                    Meals Record
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="fifth">
+                    Inventory
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <a class="item" data-tab="sixth">
+                    Accounts
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="eight wide column">
+            {% comment %}The Details start here!{% endcomment %}
+
+            <div class="ui active tab segment" data-tab="first">
+                {% block bookameal %}
+                    {% include 'vhModule/bookings.html' %}
+                {% endblock %}
+            </div>
+
+            <div class="ui tab segment" data-tab="third">
+                {% block bookaroom %}
+                    {% include 'vhModule/room-availability1.html' %}
+                {% endblock %}
+            </div>
+
+            <div class="ui tab segment" data-tab="fourth">
+                {% block bookings %}
+                    {% include 'vhModule/record-meal.html' %}
+                {% endblock %}
+            </div>
+
+            <div class="ui tab segment" data-tab="fifth">
+                {% block viewinventory %}
+                    {% include 'vhModule/view-inventory.html' %}
+                {% endblock %}
+            </div>
+
+            <div class="ui tab segment" data-tab="sixth">
+                {% block checkout %}
+                    {% include 'vhModule/accounts.html' %}
+                {% endblock %}
+            </div>
+
+            <div class="ui tab segment" data-tab="thirteen">
+                {% block cancelbooking %}
+                    {% include 'vhModule/cancelbooking.html' %}
+                {% endblock %}
+            </div>
+
+
+        </div>
+
+        <div class="three wide column">
+            <div class="row">
+                {% comment %}
+                    TODO: the right rail!
+                {% endcomment %}
+            </div>
+        </div>
+
+        <div class="column"></div>
+
+    </div>
+{% include 'vhModule/alert.html' %}
+{% endblock %}
+
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/modal.js' %}"></script>
+    <script type="text/javascript" src="{% static 'visitor_hostel/visitor-hostel.js' %}"></script>
+{% endblock %}

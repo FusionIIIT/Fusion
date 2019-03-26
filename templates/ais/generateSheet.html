@@ -1,0 +1,62 @@
+{% load static %}
+{% block generateSheet %}
+	<div class="ui pointing secondary menu">
+        <a class="active item" data-tab="academic">
+            Generate Student List Per Course
+        </a>
+    </div>
+
+    <div class="ui active tab segment" data-tab="academic">
+
+       <form class="ui form" action="/aims/generateSheet" method="post" id="form8">
+            {% csrf_token %}
+            <div class="field">
+                <label>This Semester Courses</label>
+                <div class="ui fluid search selection dropdown">
+                    <input type="hidden" name="year">
+                    <i class="dropdown icon"></i>
+                    <div class="default text">Select Course</div>
+                    <div class="menu">
+                    {% for i in this_sem_course %}
+                        <div class="item" name="" data-value="{{i.course_name}}">{{i.course_id}}:{{i.course_name}}</div>
+                    {% endfor %}
+                </div>
+                </div>
+            </div>
+            <div class="field">
+                <button class="ui fluid primary button" onclick="document.getElementById('form8').submit();">Generate Enrolled Student Excel Sheet
+                </button>
+            </div>
+        </form>
+        <br>
+        <form class="ui form" action="/aims/generateSheet" method="post" id="form9">
+             {% csrf_token %}
+             <div class="field">
+                 <label>Next Semester Courses</label>
+                 <div class="ui fluid search selection dropdown">
+                     <input type="hidden" name="year">
+                     <i class="dropdown icon"></i>
+                     <div class="default text">Select Course</div>
+                     <div class="menu">
+                     {% for i in next_sem_course %}
+                         <div class="item" name="" data-value="{{i.course_name}}">{{i.course_id}}:{{i.course_name}}</div>
+                     {% endfor %}
+                 </div>
+                 </div>
+             </div>
+             <div class="field">
+                 <button class="ui fluid primary button" onclick="document.getElementById('form9').submit();">Generate Enrolled Student Excel Sheet
+                 </button>
+             </div>
+         </form>
+         <BR>
+           <HR><BR>
+         <a target = "_blank" href="/aims/generate_preregistration_report" >
+           {% csrf_token %}
+           <button class="ui fluid red button">Generate PreRegistration Summary</button>
+         </a><BR><div style = "color:red;"> Warning : This might take a few minutes </div>
+         <HR>
+	</div>
+
+
+{% endblock %}

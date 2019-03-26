@@ -1,0 +1,387 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Placement
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+{{student_record_check}}
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}
+            The left-rail segment starts here!
+        {% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu starts here!{% endcomment %}
+            <div class="ui huge fluid vertical pointing menu"
+                 style="max-width: 320px;">
+                <!-- {% for c in current %}
+                 {% if c.designation.name == 'student' %}
+                <a class="active item" data-tab="first">
+                    Profile
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="second">
+                    Skills & Technologies
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="third">
+                    Education & Courses
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="fourth">
+                    Work Experience
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="fifth">
+                    Achievements
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="sixth">
+                    Publications
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+                {% endfor %}-->
+                {% for c in current %}
+                {% if c.designation.name == 'student' %}
+                 <a class="{% if officer_manage or officer_manage_pbi or officer_statistics_past or officer_statistics_past_add or officer_statistics_past_pbi_search or officer_statistics_past_pbi_add or officer_statistics_past_higher_search or officer_statistics_past_higher_add %}item{% else %}active item{% endif %}" data-tab="twelth">
+                     Placement Schedule
+                     <i class="right floated chevron right icon"></i>
+                 </a>
+                 {% endif %}
+                 {% endfor %}
+
+
+                {% for c in current2 %}
+                {% if c.designation.name == 'placement officer' %}
+                {% if students or invitecheck == 1 or student_record_check == 1 %}
+                    <a class="item" data-tab="twelth">
+                        Placement Schedule
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    <a class="{% if officer_manage or officer_manage_pbi or officer_statistics_past or officer_statistics_past_add or officer_statistics_past_pbi_search or officer_statistics_past_pbi_add or officer_statistics_past_higher_search or officer_statistics_past_higher_add %}item{% else %}active item{% endif %}" data-tab="ninth">
+                        Student Records
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                {% else %}
+                     <a class="{% if officer_manage or officer_manage_pbi or officer_statistics_past or officer_statistics_past_add or officer_statistics_past_higher_search or officer_statistics_past_higher_add or officer_statistics_past_pbi_add or officer_statistics_past_pbi_search%}item{% else %}active item{% endif %}" data-tab="twelth">
+                         Placement Schedule
+                         <i class="right floated chevron right icon"></i>
+                     </a>
+                     <a class="item" data-tab="ninth">
+                         Student Records
+                         <i class="right floated chevron right icon"></i>
+                     </a>
+                 {% endif %}
+                <a class="{% if officer_manage or officer_manage_pbi %}active item{% else %}item{% endif %}" data-tab="tenth">
+                    Manage Records
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+                {% endfor %}
+
+                {% for c in current1 %}
+                {% if c.designation.name == 'placement chairman' %}
+                {% if students %}
+                    <a class="item" data-tab="twelth">
+                        Placement Schedule
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    <a class="{% if officer_manage or officer_manage_pbi or officer_statistics_past or officer_statistics_past_add or officer_statistics_past_pbi_search or officer_statistics_past_pbi_add or officer_statistics_past_higher_search or officer_statistics_past_higher_add or chairman_visit_add %}item{% else %}active item{% endif %}" data-tab="ninth">
+                        Student Records
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                {% else %}
+                     <a class="{% if officer_manage or officer_manage_pbi or officer_statistics_past or officer_statistics_past_add or officer_statistics_past_higher_search or officer_statistics_past_higher_add or officer_statistics_past_pbi_add or officer_statistics_past_pbi_search or chairman_visit_add%}item{% else %}active item{% endif %}" data-tab="twelth">
+                         Placement Schedule
+                         <i class="right floated chevron right icon"></i>
+                     </a>
+                     <a class="item" data-tab="ninth">
+                         Student Records
+                         <i class="right floated chevron right icon"></i>
+                     </a>
+                 {% endif %}
+
+                <a class="{% if officer_manage or officer_manage_pbi %}active item{% else %}item{% endif %}" data-tab="tenth">
+                    Manage Records
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <a class="{% if chairman_visit_add %}active item{% else %}item{% endif %}" data-tab="seventh">
+                    Placement Visits
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+                {% endfor %}
+
+                <a class="{% if officer_statistics_past or officer_statistics_past_add or officer_statistics_past_pbi_add or officer_statistics_past_pbi_search or officer_statistics_past_higher_add or officer_statistics_past_higher_search %}active item{% else %}item{% endif %}" data-tab="eighth">
+                    Placement Statistics
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+            </div>
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+        {% comment %}
+            The central-rail segment starts here!
+        {% endcomment %}
+        <div class="eight wide column">
+          {% for c in current %}
+          {% if c.designation.name == 'student' %}
+            {% comment %}The Details start here!{% endcomment %}
+            <div class="ui tab segment" data-tab="first">
+                {% block profile %}
+                    {% include 'placementModule/profile.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The Personal Details end here!{% endcomment %}
+
+
+            {% comment %}The Skills & Technologies start here!{% endcomment %}
+            <div class="ui tab segment" data-tab="second">
+                {% block skills %}
+                    {% include 'placementModule/skills.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The Skills & Technologies end here!{% endcomment %}
+
+            {% comment %}The Education tab starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="third">
+                {% block education %}
+                    {% include 'placementModule/education.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The Education tab ends here!{% endcomment %}
+
+            {% comment %}The Education tab starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="fourth">
+                {% block workexperience %}
+                    {% include 'placementModule/workexperience.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The Education tab ends here!{% endcomment %}
+
+            {% comment %}The Achievements tab starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="fifth">
+                {% block achievements %}
+                    {% include 'placementModule/achievements.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The Achievements tab ends here!{% endcomment %}
+
+            {% comment %}The Achievements tab starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="sixth">
+                {% block publications %}
+                    {% include 'placementModule/publications.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The Achievements tab ends here!{% endcomment %}
+            {% endif %}
+            {% endfor %}
+
+
+
+            {% for c in current1 %}
+            {% if c.designation.name == 'placement chairman' %}
+            {% comment %}The Placement Visits tab starts here!{% endcomment %}
+            <div class="{% if chairman_visit_add %}ui active tab segment{% else %}ui tab segment{% endif %}" data-tab="seventh">
+                {% block placementvisits %}
+                    {% include 'placementModule/placementvisits.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The Placement Visits tab ends here!{% endcomment %}
+            {% endif %}
+            {% endfor %}
+
+            {% comment %}The Placement Statistics tab starts here!{% endcomment %}
+            {% if students or invitecheck == 1 or student_record_check == 1 %}
+                <div class="ui tab segment" data-tab="twelth">
+            {% else %}
+                <div class="{% if officer_manage or officer_manage_pbi or officer_statistics_past or officer_statistics_past_add or officer_statistics_past_pbi_add or officer_statistics_past_pbi_search or officer_statistics_past_higher_search or officer_statistics_past_higher_add or chairman_visit_add %}ui tab segment{% else %}ui active tab segment{% endif %}" data-tab="twelth">
+            {% endif %}
+                {% block activity %}
+                    {% include 'placementModule/activity.html' %}
+                {% endblock %}
+            </div>
+            <div class="{% if officer_statistics_past or officer_statistics_past_add or officer_statistics_past_higher_add or officer_statistics_past_higher_search or officer_statistics_past_pbi_search or officer_statistics_past_pbi_add %}ui active tab segment{% else %}ui tab segment{% endif %}" data-tab="eighth">
+                {% block placementstatistics %}
+                    {% include 'placementModule/placementstatistics.html' %}
+                {% endblock %}
+            </div>
+
+            {% comment %}The Placement Visits tab ends here!{% endcomment %}
+
+
+            {% if current == None %}
+            {% if students or invitecheck == 1 or student_record_check == 1 %}
+                {% comment %}The Placement Statistics tab starts here!{% endcomment %}
+                <div class="{% if officer_manage or officer_manage_pbi %}ui tab segment{% else %}ui active tab segment{% endif %}" data-tab="ninth">
+            {% else %}
+                <div class="ui tab segment" data-tab="ninth">
+            {% endif %}
+                {% block studentrecords %}
+                    {% include 'placementModule/studentrecords.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The Placement Visits tab ends here!{% endcomment %}
+
+            {% comment %}The Placement Statistics tab starts here!{% endcomment %}
+            <div class="{% if officer_manage or officer_manage_pbi %}ui active tab segment{% else %}ui tab segment{% endif %}" data-tab="tenth">
+                {% block managerecords %}
+                    {% include 'placementModule/managerecords.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The Placement Visits tab ends here!{% endcomment %}
+            {% endif %}
+        </div>
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+        
+<!-- ------------------------------------------------------------------------- -->
+
+
+        {% for c in current %}
+        {% if c.designation.name == 'student' %}
+        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            <div class="row">
+                {% comment %}
+                    TODO: the right rail!
+                {% endcomment %}
+
+                {% comment %}Generate CV {% endcomment %}
+                <div class="ui styled accordion">
+                    <div class="title">
+                        <i class="dropdown icon"></i>
+                        Want a C.V.?
+                        <div class="ui divider"></div>
+                    </div>
+                    <div class="content">
+                      <form method="POST" action="/placement/cv/{{ user.username }}/" class="ui form" role="form">
+                        {{ form.non_field_errors }}
+                        {% csrf_token %}
+                            <div class="ui slider checkbox">
+                            <input type="checkbox" name="achievementcheck" value=1 checked="">
+                            <label>Achievements</label>
+                            </div>
+                            <br><br>
+                            <div class="ui slider checkbox">
+                            <input type="checkbox" name="educationcheck" value=1 checked="">
+                            <label>Education</label>
+                            </div>
+                            <br><br>
+                            <div class="ui slider checkbox">
+                            <input type="checkbox" name="publicationcheck" value=1 checked="">
+                            <label>Publications</label>
+                            </div>
+                            <br><br>
+                            <div class="ui slider checkbox">
+                            <input type="checkbox" name="patentcheck" value=1 checked="">
+                            <label>Patents</label>
+                            </div>
+                            <br><br>
+                            <div class="ui slider checkbox">
+                            <input type="checkbox" name="internshipcheck" value=1 checked="">
+                            <label>Internships</label>
+                            </div>
+                            <br><br>
+                            <div class="ui slider checkbox">
+                            <input type="checkbox" name="projectcheck" value=1 checked="">
+                            <label>Projects</label>
+                            </div>
+                            <br><br>
+                            <div class="ui slider checkbox">
+                            <input type="checkbox" name="coursecheck" value=1 checked="">
+                            <label>Courses</label>
+                            </div>
+                            <br><br>
+                            <div class="ui slider checkbox">
+                            <input type="checkbox" name="skillcheck" value=1 checked="">
+                            <label>Skills</label>
+                            </div>
+                            <br><br>
+
+                          <button type="submit" class="ui primary large button">Generate</button>
+                    </form>
+                    </div>
+                </div>
+
+            </div>
+
+            <br>
+
+            {% block interviewrequest %}
+                {% include 'placementModule/interviewrequest.html' %}
+            {% endblock %}
+
+        </div>
+
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+        {% endif %}
+        {% endfor %}
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+    </div>
+    {% comment %}The grid ends here!{% endcomment %}
+
+
+
+{% endblock %}
+
+{%  block javascript %}
+    <link rel="stylesheet" src="{% static 'globals/css/jquery.clockinput.css' %}">
+    <script type="text/javascript" src="{% static 'globals/js/editProfile.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/checkbox.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+
+    <script type="text/javascript" src="{% static 'globals/js/jquery.clockinput.js' %}"></script>
+
+    <!--script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+            integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+            crossorigin="anonymous">
+    </script-->
+
+    <!--script>
+    $(document).ready(function() {
+
+      $("input[type=time]").clockInput(false);
+
+    })
+  </script-->
+
+    <script type="text/javascript" src="{% static 'globals/js/progress.js' %}"></script>
+
+{% endblock %}

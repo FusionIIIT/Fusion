@@ -1,0 +1,100 @@
+ {% block tab4content3 %}
+ <h3 align="center"> Teaching Credits Application Form </h3><br><br>
+<form action="{%url 'office:teaching_form' %}" method ="POST">
+    {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+    <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+         {% csrf_token %}
+         
+        <div class="three fields">
+            <div class="six wide field">
+                <label>Roll no.</label>
+                <input value="" class="ui large input" name="roll_no" required onkeypress="return isNumberKey(event)">
+            </div>
+
+            <div class="six wide field">
+                <label>Name</label>
+                <input value="" class="ui large input" name="name" required>
+            </div>
+            
+        </div>
+        
+        <div class="two fields">
+            <div class="six wide field">
+                <label>Programme</label>
+                <select class="ui search fluid dropdown" name="programme" required>
+                    <option value="">Select</option>
+                    <option value="Phd">Phd</option>
+                </select>
+            </div>
+
+            <div class="six wide field">
+                <label>Branch</label>
+                <select class="ui search fluid dropdown" name="branch" required>
+                    <option value="">Select</option>
+                    <option value="CSE">CSE</option>
+                    <option value="ME">ME</option>
+                    <option value="ECE">ECE</option>
+                </select>
+            </div>
+            
+        </div>
+        
+        <div class="three fields">
+            <div class="six wide field">
+                <label>Course 1</label>
+                <select class="ui search fluid dropdown" name="course1" required>
+                    <option value="">Select</option>
+                    <option value="Computer Graphics">Computer Graphics</option>
+                    <option value="Machine Learning">Machine Learning</option>
+                    <option value="Image Processing">Image Processing</option>
+                    <option value="Data Structure">Data Structure</option>
+                </select>
+            </div>
+
+            <div class="six wide field">
+                <label>Course 2</label>
+                <select class="ui search fluid dropdown" name="course2" required>
+                    <option value="">Select</option>
+                    <option value="Computer Graphics">Computer Graphics</option>
+                    <option value="Machine Learning">Machine Learning</option>
+                    <option value="Image Processing">Image Processing</option>
+                    <option value="Data Structure">Data Structure</option>
+                </select>
+            </div>
+
+            <div class="six wide field">
+                <label>Course 3</label>
+                <select class="ui search fluid dropdown" name="course3" required>
+                    <option value="">Select</option>
+                    <option value="Computer Graphics">Computer Graphics</option>
+                    <option value="Machine Learning">Machine Learning</option>
+                    <option value="Image Processing">Image Processing</option>
+                    <option value="Data Structure">Data Structure</option>
+                </select>
+            </div>
+
+        </div>
+
+        <div class="field">
+            <button class="ui primary button right floated" type="submit">
+                Submit
+            </button>
+        </div>
+    </div>
+</form>
+
+<br>
+<br>
+<div class="ui divider"></div>
+<script type="text/javascript">
+    
+    function isNumberKey(evt){
+    var charCode = (evt.which) ? evt.which : event.keyCode
+    if (charCode > 31 && (charCode < 48 || charCode > 57))
+        return false;
+    return true;
+}
+
+</script>
+
+  {% endblock %}

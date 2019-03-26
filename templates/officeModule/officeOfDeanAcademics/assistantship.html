@@ -1,0 +1,162 @@
+{% load static %}
+{% block form1 %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+
+     <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+     </head>
+  
+                <!--Assistantship Starts-->
+                    <form action="{% url 'office:formsubmit' %}" method="POST">
+                                  {% csrf_token %}
+                    
+                     <div class="ui active  tab " data-tab="cse">
+                    
+                    <div class="ui form">
+                          <div class="inline fields">
+                            <div class="field">
+                              <div class="ui radio checkbox">
+                                <input type="radio" value="CSE" name="frequency">
+                                <label> CSE </label>
+                              </div>
+                            </div>
+                            <div class="field">
+                              <div class="ui radio checkbox">
+                                <input type="radio" value="ECE" name="frequency">
+                                <label>ECE</label>
+                              </div>
+                            </div>
+                            <div class="field">
+                              <div class="ui radio checkbox">
+                                <input type="radio" value="ME" name="frequency">
+                                <label>ME</label>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                    <br>
+                    
+                    <table class="ui very basic collapsing celled table">
+                        <thead>
+                            <tr>
+                                <th>Branch</th>
+                                <th>Prof</th>
+                                <th>Student List</th>
+                                <th>Action</th>
+                                <th>Comments</th>
+                                
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for assist in assistantship %}
+                            <tr class="dataRow">
+                              <td>{{assist.instructor_id.instructor_id.department.name}}</td>
+                                <td>
+                                    <h4 class="ui image header">
+                                        <img src="{% static 'globals/img/matthew.png' %}" class="ui mini rounded image">
+                                        <div class="content">
+                                            {{assist.instructor_id.instructor_id.user.first_name}} {{assist.instructor_id.instructor_id.user.last_name}}
+                                        </div>
+                                    </h4>
+                                </td>
+                                <td>
+                                    <a href="/media/{{assist.file}}" target="_blank">View</a>
+                                </td>
+                                  {% if assist.action == 1 %}
+                                   <td>Approved</td>
+                                         <td>
+                                     <div class="ui form">
+                                        <div class="field">
+                                            <input rows="2" value="{{assist.comments}}" readonly ></input>
+                                        </div>
+                                        <!--<button class="ui primary loading button">Loading</button>-->
+                                    </div>
+                                  
+                                </td>
+                                  {% elif assist.action == 2 %}
+                                   <td>Rejected</td>
+                                         <td>
+                                     <div class="ui form">
+                                        <div class="field">
+                                            <input rows="2" value="{{assist.comments}}" readonly ></input>
+                                        </div>
+                                        <!--<button class="ui primary loading button">Loading</button>-->
+                                    </div>
+                                </td>
+                                  {% else %}
+                                  <td>
+                                   <div class="ui checkbox">
+                                      <input type="checkbox" name="example" value="{{assist.id}}">
+                                      <label></label>
+                                    </div></td>
+                                    <td>
+                                     <div class="ui form">
+                                        <div class="field">
+                                            <textarea rows="2" name="comment"></textarea>
+                                        </div>
+                                        <!--<button class="ui primary loading button">Loading</button>-->
+                                    </div>
+                                </td>
+                                        
+                                {% endif %}
+                                         
+                                
+                               
+                            </tr>
+                            {% endfor %}
+                            
+                        </tbody>
+                      
+                    </table>
+                         
+                                  <div class="ui   buttons">
+                                        <button class="ui button" name="approve" value="approve">Accept</button>
+                                        <div class="or"></div>
+                                         <button class="ui positive button" name="reject" value="reject">Reject</button>
+                                    </div>
+                                  </form>
+                </div> 
+                 <script>
+          $("input[type=radio]").change(function(){
+              var filter = this.value;
+                             console.log(filter);
+              if (filter == "ALL")
+                  $("tr.dataRow").css( "visibility", "visible" );
+              else $("tr.dataRow").css( "visibility", "collapse" );
+
+          if (filter == "CSE")
+                $("tr.dataRow").css( "visibility", "visible" );
+            else $("tr.dataRow").css( "visibility", "collapse" );
+            
+            if (filter == "ECE")
+                $("tr.dataRow").css( "visibility", "visible" );
+            else $("tr.dataRow").css( "visibility", "collapse" );
+            
+            if (filter == "ME")
+                $("tr.dataRow").css( "visibility", "visible" );
+            else $("tr.dataRow").css( "visibility", "collapse" );
+
+            if (filter == "DESIGN")
+                $("tr.dataRow").css( "visibility", "visible" );
+            else $("tr.dataRow").css( "visibility", "collapse" );
+
+              if (filter == "NS")
+                $("tr.dataRow").css( "visibility", "visible" );
+            else $("tr.dataRow").css( "visibility", "collapse" );
+
+              var matchFound = false;
+
+              $("tr.dataRow").find("td").each(function() {
+                $this = $(this);
+                
+                if (!matchFound){
+                    if ($this.html() == filter){
+                      matchFound = true;
+                      $this.parent().css( "visibility", "visible" );
+                    }
+                }
+              });
+          });
+              </script>    
+{% endblock form1%}

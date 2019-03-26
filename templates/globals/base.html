@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Fusion!
+        {% block title %}{% endblock %}
+    </title>
+
+    {% load staticfiles %}
+    <link rel="stylesheet" type="text/css" href="{% static 'globals/semantic-ui/components/reset.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'globals/semantic-ui/components/icon.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'globals/css/semantic.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'globals/css/mediaquery.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'globals/css/semantic-notify.css' %}">
+
+    <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"> </script>
+    <script type="text/javascript" src="{% static 'globals/js/jquery.formset.js' %}"> </script>
+    <script type="text/javascript" src="{% static 'globals/js/semantic-notify.js' %}"> </script>
+    <script type="text/javascript" src="{% static 'globals/js/ajax-post.js' %}"></script>
+    {% block css %}
+    {% endblock %}
+
+</head>
+
+{% comment %}style="background-color: rgba(189, 189, 189, 0.1);"{% endcomment %}
+<body id="body">
+
+{% block body %}
+    {% block navBar %}
+    {% endblock %}
+{% endblock %}
+
+    <div id="messages">
+        {% for message in messages %}
+            <div class="message" tag="{% if 'success' in message.tags %}green{% elif 'error' in message.tags %}red{% else %} blue {% endif %}" message="{{ message|safe }}"></div>
+        {% endfor %}
+    </div>
+</body>
+
+<script type="text/javascript" src="{% static 'globals/js/semantic.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'globals/js/dropdown.js' %}"></script>
+<script type="text/javascript" src="{% static 'globals/js/tab.js' %}"></script>
+
+<script>
+
+    $(document).ready(function() {
+
+        $('#messages').find('.message').each(function(){
+            $.uiAlert({
+                textHead: $(this).attr('message'), // header
+                text: '',
+                bgcolor: $(this).attr('tag'), // background-color
+                textcolor: '#fff', // color
+                position: 'bottom-left',// position . top And bottom ||  left / center / right
+                time: 3, // time
+            });
+        });
+
+        $('#new-notification')
+            .popup({
+                inline: true,
+                hoverable: true,
+                position: 'bottom left',
+                popup: $('#notificationPopup'),
+                on: 'click',
+                delay: {
+                    show: 250,
+                    hide: 500
+                }
+            })
+        ;
+    });
+</script>
+
+<script>
+    $(document).ready(function(){
+        newNotification();
+        newNotification();
+        newNotification();
+
+        $('.ui.accordion').accordion('refresh');
+        $('.ui.sidebar')
+        //.sidebar('toggle')
+            .sidebar('attach events', '#navbar #sidebartrigger')
+            .sidebar('setting', 'transition', 'overlay')
+        ;
+    });
+
+</script>
+
+<script>
+    function newNotification(){
+
+        console.log('A new Notification added!');
+
+        var notifactionName = document.createTextNode("Kanishka Munshi");
+        var notificationEmail = document.createTextNode("gmail@zlatan.com");
+        var notificationMessage = document.createTextNode("I have decided to go on a leave!");
+        var space = document.createElement("br");
+
+        var parent = document.getElementById("new-message-list");
+
+        var itemDiv = document.createElement("div");
+        itemDiv.className = "item";
+
+        var contentDiv = document.createElement("div");
+        contentDiv.className = "content";
+
+        var descriptionDiv = document.createElement("div");
+        descriptionDiv.className = "description";
+
+        var headerAnchor = document.createElement("a");
+        headerAnchor.className = "ui header";
+
+        var userAvatar = document.createElement("img");
+        userAvatar.src = "{% static 'globals/img/zlatan.jpg' %}";
+        userAvatar.className = "ui circular image right floated";
+
+        var dividerDiv = document.createElement("div");
+        dividerDiv.className = "ui divider";
+
+        parent.appendChild(itemDiv);
+        itemDiv.appendChild(contentDiv);
+        headerAnchor.appendChild(userAvatar);
+        contentDiv.appendChild(headerAnchor);
+        contentDiv.appendChild(descriptionDiv);
+        parent.appendChild(dividerDiv);
+
+        headerAnchor.appendChild(notifactionName);
+        descriptionDiv.appendChild(notificationEmail);
+        descriptionDiv.appendChild(space);
+        descriptionDiv.appendChild(notificationMessage);
+    }
+</script>
+
+{% block javascript %}
+{% endblock %}
+
+</html>

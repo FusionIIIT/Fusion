@@ -1,0 +1,38 @@
+{% load static %}
+
+{% block usercard %}
+
+    {% comment %}
+        TODO: Something!
+    {% endcomment %}
+    {% comment %}The Employee Image Card starts here!{% endcomment %}
+    <div class="ui large fluid raised card"
+         style="max-width: 320px;">
+
+        <div class="image">
+            <img src="{% static 'globals/img/zlatan.jpg' %}">
+        </div>
+
+        <div class="content">
+            {% comment %}
+                TODO: Add a If-Else here!
+            {% endcomment %}
+            <div class="ui large header" href="">
+                {{ request.user.first_name}}
+                {{ request.user.last_name}}
+                <span class="right floated meta">
+                    {{ request.user.extrainfo.department.name}}
+                </span>
+            </div>
+
+            <div class="meta">
+                <span>
+                    {{ Curr_desig }}
+                </span>
+            </div>
+        </div>
+    </div>
+    {% comment %}The Employee Image Card ends here!{% endcomment %}
+
+
+{% endblock %}

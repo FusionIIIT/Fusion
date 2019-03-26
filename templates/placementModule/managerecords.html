@@ -1,0 +1,339 @@
+{% load static %}
+{% block managerecords %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="{% if officer_manage_pbi %}item{% else %}active item{% endif %}" data-tab="manageplacementrecords">
+            Placement
+        </a>
+
+        <a class="{% if officer_manage_pbi %}active item{% else %}item{% endif %}" data-tab="managepbirecords">
+            P.B.I.
+        </a>
+    </div>
+
+    <div class="{% if officer_manage_pbi %}ui tab{% else %}ui active tab{% endif %}" data-tab="manageplacementrecords">
+
+      {% if not placementstatus and officer_manage %}
+        <div class="ui error message">
+          <i class="close icon"></i>
+          <div class="header">
+            There is no such record of this type.
+          </div>
+          <ul>
+            <li>try changing some fields or,</li>
+            <li>include some more fields in search</li>
+          </ul>
+        </div>
+      {% endif %}
+        <div class="ui vertical segment">
+            <form method="post" class="ui form" role="form">
+                <div class="ui active accordion field">
+                    <div class="title">
+                        <i class="icon dropdown"></i>
+                        Manage Placement Records!
+                    </div>
+                    {{ form11.non_field_errors }}
+                    <div class="active content">
+                        <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                          {% csrf_token %}
+                            <div class="three fields">
+                                <div class="eight wide field">
+                                  {{ form11.stuname.errors }}
+                                    <label for="{{ form11.stuname.id_for_label }}">Student</label>
+                                    <div class="ui fluid large input">
+                                        {{ form11.stuname }}
+                                    </div>
+                                </div>
+
+                                <div class="four wide field">
+                                  {{ form11.roll.errors }}
+                                    <label for="{{ form11.roll.id_for_label }}">Roll Number</label>
+                                    <div class="ui fluid large input">
+                                        {{ form11.roll }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% comment %}The start and end date input{% endcomment %}
+                            <div class="two fields">
+                              <div class="twelve wide field">
+                                {{ form11.company.errors }}
+                                  <label for="{{ form11.company.id_for_label }}">Company</label>
+                                  <div class="ui input">
+                                      {{ form11.company }}
+                                  </div>
+                              </div>
+
+                                <div class="four wide field">
+                                  {{ form11.ctc.errors }}
+                                    <label for="{{ form11.ctc.id_for_label }}">CTC</label>
+                                    <div class="ui input">
+                                        {{ form11.ctc }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="two fields">
+
+                            <div class="four wide field">
+                                <button name="studentplacementsearchsubmit" value="studentplacementsearchsubmit" class="ui fluid large primary button" type="submit">
+                                    Search
+                                </button>
+                            </div>
+                          </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            {% if placementstatus %}
+              <br>
+              <br>
+              <div class="ui divider"></div>
+
+              <div class="ui pointing pagination menu">
+                {% for student in placementstatus %}
+                  {% if forloop.counter0|divisibleby:10 %}
+                    <span align="right>">
+                      <a class="item {% if forloop.counter0 == 0 %}active{% endif %}" data-tab="student-{{ forloop.counter0 }}">
+                        {% widthratio forloop.counter|add:10 10 1 %}
+                      </a>
+                    </span>
+                  {% endif %}
+                {% endfor %}
+
+              </div>
+              {% for student in placementstatus %}
+                {% if forloop.counter0|divisibleby:10 %}
+                  <div class="ui {% if forloop.counter0 == 0 %}active {% endif %} tab segment" data-tab="student-{{ forloop.counter0 }}">
+
+                    <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;" id="student">
+                        <thead>
+                        <tr>
+                            <th class="four wide">Student</th>
+                            <th class="six wide">Company</th>
+                            <th class="two wide">CTC (LPA)</th>
+                            <th class="two wide">Invitation</th>
+                            <th class="two wide">Delete</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        {% endif %}
+                          {% if student.notify_id.placement_type == 'PLACEMENT' %}
+                        <tr>
+                            <td>
+                                <h4 class="ui image header">
+
+                                    <div class="content">
+                                      {{ student.unique_id.id.user.first_name }} {{ student.unique_id.id.user.last_name }}
+                                        <div class="sub header">
+                                          {{ student.unique_id.id.id }}
+                                        </div>
+                                    </div>
+                                </h4>
+                            </td>
+
+                            <td>
+                                {{ student.notify_id.company_name }}
+                            </td>
+
+                            <td>
+                                {{ student.notify_id.ctc }}
+                            </td>
+
+                            <td>
+                              {{ student.invitation }}
+                            </td>
+
+                            <td>
+                              <form method="post" class="ui form" role="form">
+                                {% csrf_token %}
+                                <button name="deleteinvite" value="{{ student.pk }}" class="ui inverted huge circular icon button" style="margin: auto;">
+                                    <i class="delete red icon"></i>
+                                </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endif %}
+                        {% if forloop.counter0|add:1|divisibleby:10 %}
+                        </tbody>
+                    </table>
+                  </div>
+                {% endif %}
+              {% endfor %}
+              {% if not placementstatus.all.count|divisibleby:10 %}
+               </tbody>
+                  </table>
+                      </div>
+              {% endif %}
+            {% endif %}
+
+        </div>
+    </div>
+
+    <div class="{% if officer_manage_pbi %}ui active tab{% else %}ui tab{% endif %}" data-tab="managepbirecords">
+      {% if not placementstatus and officer_manage_pbi %}
+        <div class="ui error message">
+          <i class="close icon"></i>
+          <div class="header">
+            There is no such record of this type.
+          </div>
+          <ul>
+            <li>try changing some fields or,</li>
+            <li>include some more fields in search</li>
+          </ul>
+        </div>
+      {% endif %}
+        <div class="ui vertical segment">
+          <form method="post" class="ui form" role="form">
+              <div class="ui active accordion field">
+                  <div class="title">
+                      <i class="icon dropdown"></i>
+                      Manage PBI Records!
+                  </div>
+                  {{ form9.non_field_errors }}
+                  <div class="active content">
+                      <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                        {% csrf_token %}
+                          <div class="three fields">
+                              <div class="eight wide field">
+                                {{ form9.stuname.errors }}
+                                  <label for="{{ form9.stuname.id_for_label }}">Student</label>
+                                  <div class="ui fluid large input">
+                                      {{ form9.stuname }}
+                                  </div>
+                              </div>
+
+                              <div class="four wide field">
+                                {{ form9.roll.errors }}
+                                  <label for="{{ form9.roll.id_for_label }}">Roll Number</label>
+                                  <div class="ui fluid large input">
+                                      {{ form9.roll }}
+                                  </div>
+                              </div>
+                          </div>
+
+                          {% comment %}The start and end date input{% endcomment %}
+                          <div class="two fields">
+                              <div class="twelve wide field">
+                                {{ form9.company.errors }}
+                                  <label for="{{ form9.company.id_for_label }}">Company</label>
+                                  <div class="ui input">
+                                      {{ form9.company }}
+                                  </div>
+                              </div>
+
+                              <div class="four wide field">
+                                {{ form9.ctc.errors }}
+                                  <label for="{{ form9.ctc.id_for_label }}">CTC</label>
+                                  <div class="ui input">
+                                      {{ form9.ctc }}
+                                  </div>
+                              </div>
+                          </div>
+
+                          <div class="two fields">
+
+                          <div class="four wide field">
+                              <button name="studentpbisearchsubmit" value="studentpbisearchsubmit" class="ui fluid large primary button" type="submit">
+                                  Search
+                              </button>
+                          </div>
+                        </div>
+                      </div>
+                  </div>
+              </div>
+          </form>
+
+          {% if placementstatus %}
+          <br>
+          <br>
+          <div class="ui divider"></div>
+
+          <div class="ui pointing pagination menu">
+                      {% for student in placementstatus %}
+                     {% if forloop.counter0|divisibleby:10 %}
+                         <span align="right>"><a class="{% if forloop.counter0 == 0 %}active {% endif %}item" data-tab="student-{{ forloop.counter0 }}">
+                             {% widthratio forloop.counter|add:10 10 1 %}
+          </a></span>
+                     {% endif %}
+                     {% endfor %}
+
+          </div>
+            {% for student in placementstatus %}
+
+                 {% if forloop.counter0|divisibleby:10 %}
+                 <div class="ui {% if forloop.counter0 == 0 %}active {% endif %} tab segment" data-tab="student-{{ forloop.counter0 }}">
+      }
+      }
+
+
+      <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;" id="student">
+          <thead>
+          <tr>
+            <th class="four wide">Student</th>
+            <th class="six wide">Company</th>
+            <th class="two wide">CTC (LPA)</th>
+            <th class="two wide">Invitation</th>
+            <th class="two wide">Delete</th>
+          </tr>
+          </thead>
+
+          <tbody>
+            {% endif %}
+            {% if student.notify_id.placement_type == 'PBI' %}
+          <tr>
+              <td>
+                  <h4 class="ui image header">
+
+                      <div class="content">
+                        {{ student.unique_id.id.user.first_name }} {{ student.unique_id.id.user.last_name }}
+                          <div class="sub header">
+                            {{ student.unique_id.id.id }}
+                          </div>
+                      </div>
+                  </h4>
+              </td>
+
+              <td>
+                  {{ student.notify_id.company_name }}
+              </td>
+
+              <td>
+                 {{ student.notify_id.ctc }}
+              </td>
+
+              <td>
+                  {{ student.invitation }}
+              </td>
+
+              <td>
+                <form method="post" class="ui form" role="form">
+                  {% csrf_token %}
+                  <button name="deleteinvite" value="{{ student.pk }}" class="ui inverted huge circular icon button" style="margin: auto;">
+                      <i class="delete red icon"></i>
+                  </button>
+                  </form>
+              </td>
+          </tr>
+          {% endif %}
+          {% if forloop.counter0|add:1|divisibleby:10 %}
+          </tbody>
+      </table></div>
+
+      {% endif %}
+      {% endfor %}
+      {% if not placementstatus.all.count|divisibleby:10 %}
+      </tbody>
+        </table>
+            </div>
+      {% endif %}
+
+      {% endif %}
+
+        </div>
+    </div>
+
+
+{% endblock %}

@@ -1,0 +1,77 @@
+{% load static %}
+{% block modal1 %}
+
+<script type="text/javascript">
+    function view_budget(a){
+        var id= '.ui.modal.club.'+a;
+        // alert(id);
+        $(id).modal('show');
+    }
+
+    function submit(a){
+        if(a=='approve'){
+            document.getElementById("modal_form").setAttribute("action", "budget_approval");
+            document.getElementById("modal_form").submit();
+        }
+        else{
+            document.getElementById("modal_form").setAttribute("action", "budget_rejection");
+            document.getElementById("modal_form").submit();
+        }
+    }
+
+
+</script>
+
+{% for i in budget_app %}
+
+<div class="ui modal club {{i.pk}} ">
+<div class="header">Club Budget approvals</div>
+  <div class="content">
+<form class="ui large form" action="" method="post" enctype="multipart/form-data" id="modal_form">
+    {% csrf_token %}
+        <input type="text" hidden="true" name="check" value="{{i.id}}" >
+
+         <div class="field">
+        <label>Club Name</label>
+        <input type="text" value="{{i.club}}" readonly ="true">
+        </div>
+
+        <div class="fields">
+
+        <div class="field">
+        <label>Club category</label>
+        <input type="text" value="{{ i.club.category }}" readonly="true">
+        </div>
+
+        <div class="field">
+        <label>Budget for</label>
+        <input type="text" value="{{ i.budget_for }}" readonly="true">
+        </div>
+         </div>
+
+         <div class="field">
+            <label>File</label>
+        <a class="ui inverted circular icon button" style="margin: auto;"  href="/media/{{ i.budget_file }}" target="blank">
+                            <i class="large attach black icon"></i>
+                        </a>
+        </div>
+        <div class="field">
+        <label>Description</label>
+        <input type="text" rows="2" value="{{ i.description }}" readonly="true"></textarea>
+         </div>
+        <div class="field">
+        <label>Remark</label>
+        <textarea rows="2" name="{{i.id}}"></textarea>
+         </div>
+
+                                    
+        <button onclick="submit('approve')" class="ui positive right floated button" type="submit" name="submit" id="approve" formaction="budget_approval">Approve</button>
+        <button onclick="submit('approve')" class="ui red right floated button" type="submit" name="submit" id="reject" formaction="budget_rejection">Reject</button>
+
+        <br> <br>
+    </form>
+  </div>
+</div>
+{% endfor %}
+
+{% endblock %}

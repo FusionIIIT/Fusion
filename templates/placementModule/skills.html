@@ -1,0 +1,83 @@
+{% block skills %}
+    <div class="ui vertical segment">
+        <div class="ui header">
+            Skills & Technologies
+        </div>
+
+        <div class="ui divider"></div>
+        <br>
+
+        {% comment %}
+        TODO: Add a proper JS logic for Skills!
+        {% endcomment %}
+
+        <form method="post" class="ui form" role="form">
+            {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+            <div class="ui active accordion field">
+                <div class="title">
+                    <i class="icon dropdown"></i>
+                    Add a new Skill/Technology
+                </div>
+                {{ form10.non_field_errors }}
+                <div class="active content fields">
+                  {% csrf_token %}
+                    <div class="two fields">
+                        <div class="one wide field"></div>
+                        <div class="eight wide field">
+                          {{ form10.skill.errors }}
+                          <label for="{{ form.skill.id_for_label }}">
+                            Skill/Technology:
+                          </label>
+                          {{ form10.skill }}
+                        </div>
+
+                        <div class="four wide field">
+                          {{ form10.skill_rating.errors }}
+                          <label for="{{ form10.skill_rating.id_for_label }}">
+                            Rate:
+                          </label>
+                            {{ form10.skill_rating }}
+                        </div>
+
+                        <div class="two wide field">
+                            <label><br></label>
+                            <button name="skillsubmit" value="skillsubmit" class="ui primary button" type="submit">Add</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% comment %}The add a new skill Accordian ends here!{% endcomment %}
+        </form>
+    </div>
+    {% if skills %}
+    <div class="extra content">
+        <div class="ui container stackable doubling grid" style="margin: 12px;">
+          {% for skill in skills %}
+            {% comment %}A skill row starts here!{% endcomment %}
+            <div class="ui row">
+                {% comment %}The Left margin{% endcomment %}
+                <div class="two wide column"></div>
+
+                <div class="ten wide column">
+                    <div class="ui indicating large progress active" data-percent="{{ skill.skill_rating }}">
+                              <div class="bar" style="width: {{ skill.skill_rating }}%;">
+                                <div class="progress">{{ skill.skill_rating }}%</div>
+                              </div>
+                              <div class="label">{{ skill.skill_id.skill }}</div>
+                            </div>
+                </div>
+                <div class="two wide column">
+                <form method="post" class="ui form" role="form">
+                  {% csrf_token %}
+                  <button name="deleteskill" value="{{ skill.pk }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
+                      <i class="delete red icon"></i>
+                  </button>
+                  </form>
+                  </div>
+            </div>
+            {% comment %}A skill row ends here!{% endcomment %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+{% endblock %}

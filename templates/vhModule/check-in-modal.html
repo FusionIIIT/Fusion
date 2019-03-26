@@ -1,0 +1,187 @@
+{% load static %}
+{% block checkin %}
+
+{% for booking in active_bookings %}
+<div class="ui modal" id="check-in-modal-{{ booking.id }}">
+  <div class="header">Guest Check In</div>
+  <div class="scrolling content">
+
+    <div class="ui pointing secondary menu">
+
+                <a class="item active" data-tab="details-1">
+                    Visitor 1 Details
+                </a>
+    {% for key, values in visitors.items %}
+        {% if key == booking.id %}
+        {% with values|length as vis_length %}
+            <input type="hidden" name="length-{{ booking.id }}" value="{{ vis_length }}">
+        {% endwith %}
+            {% for i in values %}
+
+                <a class="item" data-tab="details-{{ i }}">
+                    Visitor {{ i }} Details
+                </a>
+            {% endfor %}
+        {% endif %}
+    {% endfor %}
+    </div>
+
+    <div class="ui tab active" data-tab="details-1">
+        <div class="ui vertical stripe team segment"
+             style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+
+            <form class="ui large form" id="visitor-detail-{{ booking.id }}-1">
+
+                <div id="checkin">
+
+                    <div class="field">
+                        <div class="two fields">
+                            <div class="field">
+                                <label>Name (required*)</label>
+                                <input name="visitor-name-{{ booking.id }}-1" type="text">
+                            </div>
+
+                            <div class="field">
+                                <label>Email</label>
+                                <input placeholder="Email" type="email" name="email-{{ booking.id }}-1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <div class="two fields">
+                            <div class="field">
+                                <label>Phone (required*)</label>
+                                <input placeholder="Phone" type="tel" name="phone-{{ booking.id }}-1">
+                            </div>
+
+                            <div class="field">
+                                <label>Organization</label>
+                                <input placeholder="Organization" type="text" name="organization-{{ booking.id }}-1">
+                            </div>
+                        </div>
+                    </div>
+
+<!--                     <div class="two fields">
+                        <div class="field">
+                            <label>Arrival Date</label>
+                            <div class="ui calendar" id="rangestart">
+                                <div class="ui input left icon">
+                                    <i class="calendar icon"></i>
+                                    <input type="text" placeholder="Arrival Date" name="arrival-{{ booking.id }}-1">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label>Arrival Time:</label>
+                            <input placeholder="time" type="time" name="time-{{ booking.id }}-1">
+                        </div>
+
+                    </div> -->
+
+                    <div class="field">
+                        <label>Address:</label>
+                        <div class="ui fluid input">
+                            <input class="ui textarea" name="address-{{ booking.id }}-1">
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <br>
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+
+
+    {% for key, values in visitors.items %}
+        {% if key == booking.id %}
+            {% for i in values %}
+
+    <div class="ui tab" data-tab="details-{{ i }}">
+        <div class="ui vertical stripe team segment"
+             style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+
+            <form class="ui large form" id="visitor-detail-{{ booking.id }}-{{ i }}">
+
+                <div id="checkin">
+
+                    <div class="field">
+                        <div class="two fields">
+                            <div class="field">
+                                <label>Name (required*)</label>
+                                <input name="visitor-name-{{ booking.id }}-1" type="text">
+                            </div>
+
+                            <div class="field">
+                                <label>Email</label>
+                                <input placeholder="Email" type="email" name="email-{{ booking.id }}-{{ i }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <div class="two fields">
+                            <div class="field">
+                                <label>Phone (required*)</label>
+                                <input placeholder="Phone" type="tel" name="phone-{{ booking.id }}-{{ i }}">
+                            </div>
+                        </div>
+                    </div>
+
+<!--                     <div class="two fields">
+                        <div class="field">
+                            <label>Arrival Date</label>
+                            <div class="ui calendar" id="rangestart2">
+                                <div class="ui input left icon">
+                                    <i class="calendar icon"></i>
+                                    <input type="text" placeholder="Arrival Date" name="arrival-{{ booking.id }}-{{ i }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label>Arrival Time:</label>
+                            <input placeholder="time" type="time" name="time-{{ booking.id }}-{{ i }}">
+                        </div>
+                    </div> -->
+
+                    <div class="field">
+                        <label>Address:</label>
+                        <div class="ui fluid input">
+                            <input class="ui textarea" name="address-{{ booking.id }}-{{ i }}">
+                        </div>
+                    </div>
+
+
+                </div>
+            </form>
+
+            <br>
+            <div class="ui divider"></div>
+        </div>
+    </div>
+                {% endfor %}
+        {% endif %}
+    {% endfor %}
+
+    <div class="field">
+        <label><br></label>
+        <div class="ui large right floated primary button" id="checkin-submit" onclick="submit_visitor_details('{{ booking.id }}')">
+            Submit
+        </div>
+    </div>
+
+    <div class="ui divider"></div>
+    <br>
+    <br>
+
+</div>
+</div>
+
+{% endfor %}
+{% endblock %}

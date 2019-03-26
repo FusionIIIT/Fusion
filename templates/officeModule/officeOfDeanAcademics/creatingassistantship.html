@@ -1,0 +1,42 @@
+{% block form1 %}
+    <h3>Assistantship creation</h3>
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="meeting">
+            New Assistantship
+        </a>
+    </div>
+    <div class="ui active tab" data-tab="holding_meetings">
+    <div class="ui vertical segment">
+    <form class="ui  form" action="init_assistantship/" method="post" id="meeting">
+        {% csrf_token %}
+        <div class="field">
+            <label>Title</label>
+            <input type="text" name="title" placeholder="Title">
+        </div>
+        <div class="fields">
+            <div class="eight wide field">
+            <label>Date</label>
+            <input type="date" name="date" placeholder="date">
+            </div>
+            <div class="eight wide field">
+            <label>Time</label>
+            <input type="time" name="time" placeholder="Time">
+            </div>
+        </div>
+        <div class="field">
+            <label>Description</label>
+            <input type="text" name="venue">
+        </div>
+        <div class="field">
+                        <label>Details</label>
+                        <textarea rows="2" form="meeting" name="Agenda"></textarea>
+        </div>
+
+        <button class="ui button" type="submit">Submit</button>
+    </form>
+</div>
+</div>
+
+
+{% endblock form1%}

@@ -1,0 +1,127 @@
+{% load static %}
+{% block feedback %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu ">
+        <a class="active item" data-tab="feedback">
+            Feedback
+        </a>
+
+    </div>
+
+    <div class="ui active tab " data-tab="feedback">
+        <div class="ui vertical segment">
+
+            <table class="ui very basic collapsing celled sortable table"
+                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                <thead>
+                <tr>
+                    <th class="three wide column">
+                        Date &ensp;&ensp;&ensp;&ensp;&ensp;
+
+                    </th>
+
+                    <th>
+                        Type
+                    </th>
+
+                    <th>
+                        Location
+                    </th>
+
+                    <th>
+                        Specific Location
+                    </th>
+
+                    <th class="three wide column">
+                        Details
+                    </th>
+
+                    <th class="one wide column">
+                        Status
+                    </th>
+                    <th class="three wide column">
+                        Worker Name
+                    </th>
+                    <th class="three wide column">
+                        Submit Feedback
+                    </th>
+                </tr>
+                </thead>
+
+                {% for a in history %}
+                    {% if a.status == 2 %}
+
+                <tbody>
+                <tr>
+
+                    <td>
+                        {{ a.complaint_date }}
+                    </td>
+
+                    <td>
+                        {{ a.complaint_type }}
+                    </td>
+
+                    <td>
+                        {{ a.location }}
+                    </td>
+
+                    <td>
+                        {{ a.specific_location }}
+                    </td>
+
+                    <td>
+                        <a href="./detail/{{ a.id }}/"> Click here!</a>
+                    </td>
+
+                    <td>
+                        <i class="large green checkmark icon"></i>
+                    </td>
+                    <td>
+                        {{ a.worker_id }}
+                    </td>
+                    <td>
+                        {% if a.feedback == '' %}
+                            <div class="field">
+                                <center>
+                                    <a href="./{{ a.id }}">
+                                    <button class="ui green icon button" data-tooltip="Click here to submit" >
+                                        <i class="send icon"></i>
+                                    </button>
+                                    </a>
+                                </center>
+
+                            </div>
+                        {% else %}
+                            <div class="field">
+                                {{ a.feedback }}
+                            </div>
+                        {% endif %}
+                    </td>
+                </tr>
+
+
+                </tbody>
+                    {% endif %}
+                {% endfor %}
+            </table>
+
+
+
+
+            <br>
+            <div class="ui divider"></div>
+            <div class="extra content">
+                <div class="" style="text-align: center;">
+                    <i class="large green checkmark icon"></i> : Completed &ensp;&ensp;&ensp;&ensp;&ensp;
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

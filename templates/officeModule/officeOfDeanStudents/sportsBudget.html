@@ -1,0 +1,59 @@
+{% include 'officeModule/officeOfDeanStudents/technicalBudgetsModal.html' %}
+
+
+<div class="ui divider"></div>
+
+<table class="ui very basic collapsing celled sortable table"
+       style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+       <thead>
+    <tr>
+        
+
+     
+
+        <th class="four wide column">
+            Club Name
+        </th>
+
+        <th class="four wide column">
+            Budget allocated
+        </th>
+        <th class="four wide column">
+            Budget Expenditure
+        </th>
+        <th class="four wide column">
+            Budget available
+        </th>        
+
+    </tr>
+    </thead>
+
+    <tbody>
+        {% for details in budgets%}
+            {% if details.category == 'Sports' %}
+    <tr onclick="modals('{{ details.pk }}')">
+
+        <td>{{  details.club_name }}</td>
+        <td>{{  details.alloted_budget }}</td>
+        <td>{{  details.spent_budget }}</td>
+        <td>{{  details.avail_budget}}</td>
+        {%  endif %}
+        </tr>
+        {% endfor %}
+
+    </tbody>
+</table>
+
+
+<br>
+
+
+<br>
+<br>
+
+<div class="ui divider"></div>
+

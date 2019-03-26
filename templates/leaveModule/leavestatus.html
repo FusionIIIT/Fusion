@@ -1,0 +1,179 @@
+{% load static %}
+
+{% block leavestatus %}
+    <div class="ui vertical segment">
+        <div class="ui header">
+            Leave Status:
+        </div>
+
+        <div class="content">
+            <div class="description">
+
+                <table class="ui very basic celled large sortable table"
+                       style="text-align: center;
+                              padding-left: 2.5%;
+                              padding-right: 2.5%;
+                              padding-top: 1%;
+                              padding-bottom: 1.5%;
+                              margin: auto;">
+                    <thead>
+                    <tr>
+                        <th> S. No. </th>
+                        <th> Applied At </th>
+                        <th> Detail </th>
+                        <th> Status </th>
+                        <th> Generate Form </th>
+                        <th> Delete </th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for leave in user_leave_applications %}
+
+
+
+                            <tr id="leave-status-{{ leave.id }}">
+
+                                <div class="ui modal leave-detail-{{ leave.id }}">
+                                    <div class="header">
+                                        Detail of Leave
+                                    </div>
+                                    <div class="scrolling content">
+                                        <b>Durations of Leave</b>
+                                        <ul>
+                                            {% for segment in leave.segments.all %}
+                                                <li> From <b>{{ segment.start_date }}</b> To <b>{{ segment.end_date }}</b> </li>
+                                                <ul>
+                                                    <li><b>Type of Leave:</b> {{ segment.leave_type.name }} </li>
+                                                    <li> <b>Begin with Half Day:</b> {% if segment.start_half %} Yes {% else %} No {% endif %}
+                                                    <li> <b>End with Half Day:</b> {% if segment.end_half %} Yes {% else %} No {% endif %} </li>
+                                                </ul>
+                                            {% endfor %}
+
+                                        </ul>
+                                        {% if request.user.extrainfo.user_type != 'student' %}
+                                            <br>
+                                            <b> Replacements </b>
+                                            <ul>
+                                                {% for rep in leave.replace_segments.all %}
+                                                    <li>
+                                                        {{ rep.get_replacement_type_display }}
+                                                        from <b> {{ rep.start_date }} </b> to <b> {{ rep.end_date }} </b>
+                                                    </li>
+                                                    <ul>
+                                                        <li>
+                                                            <b> Replacer: </b> {{ rep.replacer.get_full_name }}
+                                                            <b>
+                                                                ({% if rep.status == 'accepted' %}
+                                                                    <span style='color: green;'> Accepted </span>
+                                                                {% elif 'rejected' in rep.status %}
+                                                                    <span style='color: red;'> {{ rep.status }} </span>
+                                                                    <ul>
+                                                                        <li> Remark: {{ rep.remark }} </li>
+                                                                    </ul>
+                                                                {% else %}
+                                                                    <span style='color: orange;'> Pending </span>
+                                                                {% endif %})
+                                                            </b>
+                                                        </li>
+                                                    </ul>
+                                                {% endfor %}
+
+                                            </ul>
+                                        {% endif %}
+                                        <br>
+                                        <b> Status </b>
+                                        <ul>
+                                            {% for leave_request in leave.leave_requests.all %}
+                                                <li> <b> {{ leave_request.get_permission_display }} </b>: {{ leave_request.requested_from.get_full_name }} </li>
+                                                <ul>
+                                                    <b>
+                                                        {% if leave_request.status == 'accepted' %}
+                                                            <span style='color: green;'> (Accepted) </span>
+                                                        {% elif leave_request.status == 'forwarded' %}
+                                                            <span style='color: green;'> (Forwarded) </span>
+                                                        {% elif 'rejected' in leave_request.status %}
+                                                            <span style='color: red;'> {{ leave_request.status }} </span>
+                                                            <ul>
+                                                                <li> <u> Remark: </u> {{ leave_request.remark }} </li>
+                                                            </ul>
+                                                        {% else %}
+                                                            <span style='color: orange;'> (Pending) </span>
+                                                        {% endif %}
+                                                    </b>
+                                                </ul>
+                                            {% endfor %}
+
+                                        </ul>
+                                    </div>
+                                    <div class="actions">
+                                        <div class="ui green positive button">
+                                            Ok
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <td> {{ forloop.counter }} </td>
+                                <td> {{ leave.timestamp }} </td>
+                                <td> <div class="ui green leave-detail button" data="{{ leave.id }}"> Detail </div></td>
+                                <td>
+                                    {% if leave.status == 'accepted' %}
+                                        <i class="check green icon"></i>
+                                    {% elif  leave.status == 'rejected' %}
+                                        <i class="close red icon"></i>
+                                    {% else %}
+                                        <i class="hourglass half orange icon"></i>
+                                    {% endif %}
+                                <td> <a href="/leave/generate-form?id={{ leave.id }}" class="ui button blue" target="_blank"> Generate </a> </td>
+                                <td> {% if leave.yet_not_started %} <a data="{{ leave.id }}" class="ui button red delete_leave"> Delete </a> {% endif %}
+                                 </td>
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <br>
+    <script type="text/javascript">
+        $('.leave-detail').on('click', function(e){
+            e.preventDefault();
+            var id = $(this).attr('data');
+            $('.leave-detail-'+id).modal('show');
+        });
+
+        $('.delete_leave').on('click', function(e){
+            e.preventDefault();
+            var d = window.confirm('Are you sure, you want to delete the application?');
+            if(d == false){
+                return;
+            }
+            var id = $(this).attr('data');
+            $.ajax({
+                type: 'post',
+                url: '/leave/delete-leave/',
+                data: {id: id},
+                success: function(data) {
+                    $('#leave-status-'+id).remove();
+                    $('.process-modal p').html('<center>'+data.message+'</center>');
+                    $('.process-modal').modal('show');
+                },
+                error: function(data, err) {
+                    $('.fail-modal').modal('show');
+                }
+            });
+        });
+
+    </script>
+    <div class="extra content">
+        <div class="" style="text-align: center;">
+            <i class="large green checkmark icon"></i> : Approved &ensp;&ensp;&ensp;&ensp;&ensp;
+            <i class="large orange hourglass half icon"></i> : Pending &ensp;&ensp;&ensp;&ensp;&ensp;
+            <i class="large red x icon"></i> : Declined
+        </div>
+    </div>
+
+{%  endblock %}

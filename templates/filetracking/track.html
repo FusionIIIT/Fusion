@@ -1,0 +1,37 @@
+{% extends 'filetracking/filetracking.html' %}
+{% load static %}
+
+{% block filetracking_tab %}
+    <div class="ui pointing secondary menu">
+        <h3>
+            <a class="active item" data-tab="track">
+            Track File
+            </a>
+        </h3>
+    </div>
+
+    {% comment %}The Technology segment starts here!{% endcomment %}
+
+    <div class="ui vertical stripe team segment" style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+
+        <form class="ui large form">
+            <div class="one field">
+
+                <label>File Ref No.</label>
+                <div class="ui action small input eleven wide field">
+                    <input type="number" placeholder="Search..." name="fileid">
+                    <a href="/filetracking/trackfile"><button class="ui teal button" name="track">Track</button></a>
+                </div>
+            </div>
+        </form>
+
+        <br>
+        <br>
+
+    </div>
+    {% comment %}The Technology segment ends here!{% endcomment %}
+
+    <br>
+
+{% endblock %}

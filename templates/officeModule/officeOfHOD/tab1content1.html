@@ -1,0 +1,55 @@
+<form>
+    {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+    <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+        <div class="two fields">
+            <div class="field">
+                <label>Fest</label>
+                <select class="ui search fluid dropdown">
+                    <option value="">Select</option>
+                    <option value="fest1">Fest #1</option>
+                    <option value="fest2">Fest #2</option>
+                    <option value="fest3">Fest #3</option>
+                    <option value="Others">Others</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="three fields">
+            <div class="six wide field">
+                <label>Coordinator</label>
+                <input value="Zlatan Ibrahimovic" class="ui large input" readonly>
+            </div>
+
+            <div class="six wide field">
+                <label>Email</label>
+                <input value="gmail@zlatan.com" class="ui large input" type="email" readonly>
+            </div>
+
+            <div class="four wide field">
+                <label>Roll Number</label>
+                <input value="2015121" class="ui large input" readonly>
+            </div>
+        </div>
+
+        <div class="field">
+            <label>Attachments (if any)</label>
+            <input class="ui input" type="file"></input>
+        </div>
+
+        <div class="field">
+            <label>Details & Description</label>
+            <textarea rows="2"></textarea>
+        </div>
+
+        <div class="field">
+            <button class="ui primary button right floated" type="submit">
+                Submit
+            </button>
+        </div>
+    </div>
+</form>
+
+<br>
+<br>
+<div class="ui divider"></div>

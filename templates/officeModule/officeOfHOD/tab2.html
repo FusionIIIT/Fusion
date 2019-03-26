@@ -1,0 +1,28 @@
+{% block tab2 %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="tab2content1">
+           CSE
+        </a>
+
+        <a class="item" data-tab="">
+            ECE
+        </a>
+		
+		<a class="item" data-tab="">
+            ME
+        </a>
+		 
+    </div>
+
+    <div class="ui active tab" data-tab="tab2content1">
+        <div class="ui vertical segment">
+            {% block tab2content1 %}
+                {% include 'officeModule/officeOfHOD/tab2content1.html' %}
+            {% endblock %}
+        </div>
+    </div>
+
+    
+{% endblock tab2 %}

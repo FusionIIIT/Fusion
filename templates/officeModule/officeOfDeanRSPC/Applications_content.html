@@ -1,0 +1,151 @@
+{% load static %}
+
+<table class="ui very basic collapsing celled sortable table"
+       style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+    <thead>
+    <tr>
+        <th class="one wide column">
+        </th>
+
+        <th class="one wide column">
+            Faculty Name
+        </th>
+
+        <th class="one wide column">
+            Project Title
+        </th>
+
+        <th class="four wide column">
+            project type
+        </th>
+
+        <th class="four wide column">
+            Status
+        </th>
+
+        <th class="four wide column">
+            Date
+        </th>
+         <th class="four wide column">
+            view Details
+        </th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <form action="{% url 'office:registration' %}" method="POST">
+        {% csrf_token %}
+         {% for pr in project %}
+    {% if pr.HOD_response == 'Forwarded'%}
+    <tr>
+
+        <td class="collapsing">
+            <div class="ui fitted checkbox">
+                <input type="checkbox" value={{pr.id}} name="id"> <label></label>
+            </div>
+        </td>
+
+        <td>
+             {{pr.PI_id}}
+        </td>
+
+        <td>
+             {{pr.project_title}}
+        </td>
+
+        <td>
+             {{pr.project_type}}
+        </td>
+
+        <td>
+            <i class="large red crossmark icon">{{pr.DRSPC_response}}</i>
+        </td>
+
+        <td>
+
+            {{pr.start_date}}
+
+        </td>
+        <td>
+           <a href="/office/officeOfDeanRSPC/{{pr.id}}/" target="_blank">Details</a>
+        </td>
+
+    </tr>
+    {% endif %}
+
+ {% endfor%}
+
+  <!-- {% for pr in project2 %}
+
+    <tr>
+
+        <td class="collapsing">
+            <div class="ui fitted checkbox">
+                <input type="checkbox" value={{pr.id}} name="id"> <label></label>
+            </div>
+        </td>
+
+        <td>
+
+             {{project.PI_id}}
+        </td>
+
+        <td>
+             {{pr.id}}
+        </td>
+
+        <td>
+             {{pr.project_type}}
+        </td>
+
+        <td>
+            <i class="large red crossmark icon">{{pr.DRSPC_response}}</i>
+        </td>
+
+        <td>
+
+            {{pr.start_date}}
+
+        </td>
+        <td>
+           <a href="/office/officeOfDeanRSPC/{{pr.id}}/" target="_blank">Details</a>
+        </td>
+
+    </tr>
+
+ {% endfor%} -->
+
+
+    </tbody>
+</table>
+
+
+<br>
+
+<!-- <div class="ui primary right floated button"><a href="" target="_blank" style="color:white;">View Details</a></div> -->
+<!-- <a href="/officeOfDeanRSPC/app/"><div class="ui primary right floated button">Approve Selected</div></a> -->
+{% if "Dean (RSPC)" in desig %}<button class="ui primary right floated button" type="submit" name="approve" value="approve">Approve</button>
+<button class="ui primary right floated button" type="submit" name="reject" value="reject">Reject</button>
+<!-- <button class="ui primary right floated button" type="submit" name="forward" value="forward">Forward Selected</button>
+ -->{% endif %}
+
+<!-- {% if request.user.extrainfo.designation.name == 'DeanRSPC'%}
+<button class="ui primary right floated button" type="submit" name="hodforward" value="hodforward">Forward Selected</button>
+{% endif %} -->
+
+</form>
+<br>
+<br>
+<div class="ui divider"></div>
+
+<div class="extra content">
+    <div class="" style="text-align: center;">
+        <i class="large green checkmark icon"></i> : Approved &ensp;&ensp;&ensp;&ensp;&ensp;
+        <i class="large orange warning icon"></i> : Pending &ensp;&ensp;&ensp;&ensp;&ensp;
+        <i class="large red x icon"></i> : Declined
+    </div>
+</div>

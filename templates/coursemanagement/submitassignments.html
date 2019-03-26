@@ -1,0 +1,194 @@
+{% load static %} {% block submitassignments %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'globals/css/demo.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'globals/css/component.css' %}" />
+<script>
+    (function(e, t, n) {
+        var r = e.querySelectorAll("html")[0];
+        r.className = r.className.replace(/(^|\s)no-js(\s|$)/, "$1js$2")
+    })(document, window, 0);
+
+</script>
+{% if Lecturer == 0 %}
+<div class="ui pointing secondary menu">
+    <a class="active item" data-tab="uploadassignment">
+           Assignments
+        </a>
+</div>
+<h3>Input</h3>
+
+<div class="ui active tab segment box" data-tab="uploadassignment">
+
+    <h4 class="ui dividing header">Submit Assignment</h4>
+    <form class="ui form" id="form3" enctype="multipart/form-data">
+      {% csrf_token %}
+        <div class="field">
+            <label> Topic</label>
+            <select class="ui selection dropdown"  id="assign_topic">
+              {% for assign in assignment %}
+              <option class="item" name="assign_topic" value="{{assign.pk}}">{{assign.assignment_name}}</option>
+              {% endfor %}
+            </select>
+
+        </div>
+        <div class="field">
+            <div class="One field">
+                <div class="field">
+                    <label> Name</label>
+                    <input placeholder="Name" name="name" type="text">
+                </div>
+
+            </div>
+        </div>
+
+        <div class="field">
+            <div class="fields">
+                <div class="twelve wide field">
+                    <label>Assignment File</label>
+                    <input placeholder="Assignment File" id="assign"   type="file">
+                </div>
+            </div>
+
+            <div class="fields">
+
+                <div class="two wide field ">
+                    <div class="ui labeled button " id="submit_assign" tabindex="0">
+                        <div class="ui blue button">
+                            <i class="save icon"></i>
+                        </div>
+                        <a class="ui basic blue left pointing label">Save</a>
+                    </div>
+                    <div class="load" id="load_submit_assign" style="display:none">
+                      <img src="{% static 'globals/img/loading.gif'%}" alt="#loading">
+                      <span >Your file is being uploaded!</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </form>
+    <br>
+    <div style="overflow:scroll;height:20em;overflow-x:hidden;">
+    <table class="ui fixed single line sortable celled table">
+        <thead>
+            <tr>
+                <th class="sorted ascending" style="width: 7%;">Sr.</th>
+                <th class="" style="width: 83%;">Name</th>
+                <th class="" style="width:10%">Action</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for assi in assignment %}
+              {% for sa in student_assignment %}
+                {% if sa.0.assignment_id.pk == assi.pk %}
+                  {% for s in sa %}
+                    {% if request.user.username == s.student_id.id.user.username %}
+                <tr>
+                  <td></td>
+                  <td>{{assi.assignment_name}}</td>
+                  <td> <a href="#"><i class="trash dustbin outline icon" data-pk="{{s.pk}}" id="dustbin_stuassignment_{{forloop.counter}}"style="font-size:1.3vw;color:red;"></i></a> </td>
+                </tr>
+                    {% endif %}
+                  {% endfor %}
+                {% endif %}
+            {% endfor %}
+            {% endfor %}
+        </tbody>
+
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="ui pointing secondary menu">
+    <a class="active item" data-tab="uploadassignment">
+           Assignments
+        </a>
+</div>
+
+<div class="ui active tab segment box" data-tab="uploadassignment">
+
+    <h4 class="ui dividing header">Create Assignment</h4>
+    <form class="ui form" id="form4" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="field">
+
+            <div class="One field">
+                <div class="field">
+                    <label> Name</label>
+                    <input placeholder="Name" name="name" type="text" required>
+                </div>
+            </div>
+
+        </div>
+        <div class="field">
+            <div class="fields">
+                <div class="twelve wide field">
+                    <label>Assignment File</label>
+                    <input placeholder="Slide File" id="assignment" name="doc" accept="application/msword, application/vnd.ms-excel, application/vnd.ms-powerpoint, application/pdf" type="file" required>
+                </div>
+            </div>
+            <div class="fields">
+                <div class="twelve wide field">
+                    <label>Submit Date</label>
+                    <!--
+                    <div class="ui calendar" id="submitdate">
+                        <div class="ui input left icon">
+                            <i class="calendar icon"></i>
+                            <input type="text" placeholder="Date">
+                        </div>
+                    </div>
+-->
+                    <input type="date" id="myDate" name="myDate" required>
+                    <br/>
+                </div>
+            </div>
+            <div class="fields">
+                <div class="two wide field">
+                    <div class="ui labeled button" id="add_assignment" tabindex="0">
+                        <div class="ui blue button">
+                            <i class="save icon"></i>
+                        </div>
+                        <a class="ui basic blue left pointing label">Save</a>
+                    </div>
+                    <div class="load" id="load_add_assignment" style="display:none">
+                      <img src="{% static 'globals/img/loading.gif'%}" alt="#loading">
+                      <span >Your file is being uploaded!</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+    <br>
+    <div style="overflow:scroll;height:20em; overflow-x:hidden;">
+    <table class="ui fixed single line sortable celled table" style="overflow:scroll;height:100px;">
+        <thead>
+            <tr>
+                <th class="sorted ascending" style="width: 7%;">Sr.</th>
+                <th class="" style="width: 83%;">Name</th>
+                <th class="" style="width:10%">Action</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for assi in assignment %}
+            <tr>
+                <td>{{forloop.counter}}</td>
+                <td>{{assi.assignment_name}}</td>
+                <td> <a href="#"><i class="trash dustbin outline icon" data-pk="{{assi.pk}}" id="dustbin_lecassignment_{{forloop.counter}}"style="font-size:1.3vw;color:red;"></i></a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+
+    </table>
+  </div>
+
+</div>
+
+{% endif %}
+
+<script type="text/javascript" src="{% static 'globals/js/semantic.min.js' %}"></script>
+
+{% endblock %}

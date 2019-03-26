@@ -1,0 +1,177 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Academic
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}
+            The left-rail segment starts here!
+        {% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu starts here!{% endcomment %}
+            <div class="ui huge fluid vertical pointing menu"
+                 style="max-width: 320px;">
+                 <a class="active item" data-tab="first">
+                     <B>Present Semester Courses</B>
+                     <i class="right floated chevron right icon"></i>
+                 </a>
+                 <a class="item" data-tab="second">
+                      <B>Next Semester Courses</B>
+                     <i class="right floated chevron right icon"></i>
+                 </a>
+
+                <a class="item" data-tab="third">
+                    Add Courses
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="fourth">
+                    Drop Courses
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="fifth">
+                    Final Registration
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <a class="item" data-tab="sixth">
+                    Pre Registration
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% if details.change_branch_flag %}
+                <a class="item" data-tab="seventh">
+                    Branch Change
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+
+            </div>
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+        {% comment %}
+            The central-rail segment starts here!
+        {% endcomment %}
+        <div class="eight wide column">
+
+            {% comment %}The ... start here!{% endcomment %}
+            <div class="ui tab segment" data-tab="third">
+                {%  include 'academic_procedures/addCourse.html' %}
+            </div>
+
+            <div class="ui active tab segment" data-tab="first">
+                {%  include 'academic_procedures/current_sem.html' %}
+            </div>
+            {% comment %}The ... end here!{% endcomment %}
+
+            {% comment %}The ... start here!{% endcomment %}
+            <div class="ui tab segment" data-tab="fourth">
+                {%  include 'academic_procedures/dropCourse.html' %}
+            </div>
+            {% comment %}The ... end here!{% endcomment %}
+
+            {% comment %}The ... start here!{% endcomment %}
+            <div class="ui tab segment" data-tab="second">
+                {%  include 'academic_procedures/registeredCourse.html' %}
+            </div>
+            {% comment %}The ... end here!{% endcomment %}
+
+
+
+            {% comment %}The ... start here!{% endcomment %}
+            <div class="ui tab segment" data-tab="seventh">
+                {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+                {% block changebranch %}
+                    {%  include 'academic_procedures/branchChange.html' %}
+                {%  endblock %}
+            </div>
+            {% comment %}The ... end here!{% endcomment %}
+
+
+
+            {% comment %}The ... starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="fifth">
+                {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+                {% block resolvecomplaint %}
+                    {%  include 'academic_procedures/finalregister.html' %}
+                {%  endblock %}
+            </div>
+            <div class="ui tab segment" data-tab="sixth">
+                {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+                {% block resiterstudent %}
+                    {%  include 'academic_procedures/register.html' %}
+                {%  endblock %}
+            </div>
+            {% comment %}The ... ends here!{% endcomment %}
+
+        </div>
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            <div class="row">
+                {% comment %}
+                    TODO: the right rail!
+                {% endcomment %}
+            </div>
+        </div>
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+    </div>
+    {% comment %}The grid ends here!{% endcomment %}
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+{% endblock %}

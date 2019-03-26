@@ -1,0 +1,216 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+{% block title %}
+Create Contest
+{% endblock %}
+{% block css %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.4/semantic.min.css" rel="stylesheet" type="text/css" />
+<link href="https://cdn.rawgit.com/mdehoog/Semantic-UI-Calendar/76959c6f7d33a527b49be76789e984a0a407350b/dist/calendar.min.css" rel="stylesheet" type="text/css" />
+{% endblock %}
+{% block body %}
+{% block navBar %}
+    {% include 'dashboard/navbar.html' %}
+{% endblock %}
+
+
+<div class="ui stackable doubling grid">
+
+    <div class="column"></div>
+
+    <div class="three wide column" >
+        {% block usercard %} {% include 'globals/usercard.html' %} {% endblock %}
+
+        <div class="ui divider"></div>
+
+
+        <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+
+            <a class="item sidetab" data-tab="first" data-num="11">
+              View Courses
+              <i class="right floated chevron right icon"></i>
+            </a>
+
+            <a class="item sidetab" data-tab="second" data-num="12">
+              Assignments
+              <i class="right floated chevron right icon"></i>
+            </a>
+
+            <a class="item sidetab" data-tab="third" data-num="13">
+              View Performance
+              <i class="right floated chevron right icon"></i>
+            </a>
+            {% if Lecturer == 1 %}
+            <a class="item sidetab" data-tab="fourth" data-num="14">
+              Add Content
+              <i class="right floated chevron right icon"></i>
+            </a>
+
+            <a class="item sidetab" data-tab="fifth" data-num="15">
+              Assessment
+              <i class="right floated chevron right icon"></i>
+          </a>
+          {% endif %}
+        </div>
+        
+    </div>
+    <div class="ui eight wide column "style="margin-bottom:5em">
+        <div class=" ui segment" style="padding:2em">
+            <h4 class="ui dividing header">{{questionbank.name}}</h4>
+            <div class="ui grid">
+              <div class="ui four column row">
+                <h4 class="ui header left floated column ">Topics</h4>
+                <i class="plus icon right floated column" id="add_topic"></i>
+
+                <table class="ui table">
+                  <thead>
+                    <tr><th class="twelve wide">Name</th>
+                    <th class="two wide">No. of Questions</th>
+                    <th class="two wide">Add more</th>
+                  </tr></thead>
+                  {% for topic_name,value in topics.items %}
+                  <tbody>
+
+                    <tr>
+                      <td class="twelve wide"><a href="/ocms/{{course.course_id}}/{{questionbank.pk}}/{{topic_name.pk}}">{{topic_name.topic_name}}</a></td>
+                      <td class="two wide">{{value}}</td>
+                      <td class="two wide"> <i class="plus icon add_q_to_bank" id="add_question{{topic_name.pk}} "data-pk="{{topic_name.pk}}"></i></td>
+                    </tr>
+
+                  </tbody>
+
+
+                  {% endfor %}
+                </table>
+                {% for topic_name, value in topics.items %}
+                <form class="ui large segment form" style="display:none" method="post" action="/ocms/{{course.course_id}}/{{questionbank.pk}}/{{topic_name.pk}}/add_question" id="add_question_topic{{topic_name.pk}}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="field">
+                     <label>State</label>
+                     <select name="topic" class="ui fluid dropdown">
+                       <option value="">Topic</option>
+                       {% for topic_name,value in topics.items %}
+                        <option value="{{topic_name.pk}}">{{topic_name.topic_name}}</option>
+                       {% endfor %}
+                     </select>
+                   </div>
+                    <div class="two fields">
+                      <div class="field">
+                        <label>Problem Statement</label>
+                          <div class="ui input left icon">
+                            <i class="comments icon"></i><input type="text" name="problem-statement" placeholder="Problem Statement" required>
+                          </div>
+                      </div>
+                      <div class="field">
+                        <label>Upload Image</label>
+                        <input type="file" name="image" placeholder="Browse">
+                      </div>
+                    </div>
+                    <br>
+                    <div class="two fields">
+                      <div class="field">
+                          <label>Option 1</label>
+                          <div class="ui input left icon">
+                              <i class="percent icon"></i> <input type="text" name="option1" placeholder="Option1" required>
+                          </div>
+                      </div>
+                      <div class="field">
+                        <label>Option 2</label>
+                          <div class="ui input left icon">
+                              <i class="percent icon"></i><input type="text" name="option2" placeholder="Option2" required>
+                          </div>
+                      </div>
+                    </div>
+                    <div class="three fields">
+                      <div class="field">
+                          <label>Option 3</label>
+                          <div class="ui input left icon">
+                              <i class="percent icon"></i><input type="text" name="option3" placeholder="Option3" required>
+                          </div>
+                      </div>
+                      <div class="field">
+                          <label>Option 4</label>
+                          <div class="ui input left icon">
+                              <i class="percent icon"></i><input type="text" name="option4" placeholder="Option4" >
+                          </div>
+                      </div>
+                      <div class="field">
+                        <label>Option 5</label>
+                          <div class="ui input left icon">
+                              <i class="percent icon"></i> <input type="text" name="option5" placeholder="Option5" >
+                          </div>
+                      </div>
+                    </div>
+                    <div class="two fields">
+                      <div class="field">
+                        <label>Answer</label>
+                          <div class="ui input left icon">
+                              <i class="percent icon"></i> <input type="text" name="answer" placeholder="Answer" required>
+                          </div>
+                      </div>
+
+                      <div class="field">
+                        <label>Score</label>
+                          <div class="ui input left icon">
+                              <i class="percent icon"></i> <input type="text" name="score" placeholder="score" required>
+                          </div>
+                      </div>
+                    </div>
+                    <input type="submit" class="ui primary button" value="Submit" />
+
+                </form>
+                {% endfor %}
+              </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <div class="column"></div>
+
+</div>
+
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'globals/js/editProfile.js' %}"></script>
+<script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+
+<script type="text/javascript" src="{% static 'globals/js/semantic.min.js' %}"></script>
+<script type="text/javascript">
+    $(document).ready(function(){
+        $('.ui.accordion').accordion('refresh');
+    });
+    $('.ui.sidebar')
+        .sidebar('attach events', '#navbar #sidebartrigger')
+    // .sidebar('setting', 'transition', 'overlay')
+    // .sidebar('toggle')
+    ;
+    $('.special.cards .image').dimmer({
+        on: 'hover'
+    });
+    var old = 0;
+    $('.add_q_to_bank').click(function(){
+      var pk=$(this).attr('data-pk');
+      if(old==pk)
+      {
+        old=0;
+      }
+      // alert(old);
+      var x = document.getElementById("add_question_topic"+pk);
+      var y = document.getElementById("add_question_topic"+old);
+      old = pk;
+      // alert(old);
+      if(x.style.display === "none")
+      {
+        x.style.display = "block";
+        y.style.display = "none"
+      }
+      else {
+        x.style.display = "none";
+      }
+
+    });
+
+</script>
+
+
+{% endblock %}

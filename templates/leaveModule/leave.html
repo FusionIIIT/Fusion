@@ -1,0 +1,267 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+    Leave
+{% endblock %}
+
+{% block body %}
+    <link href="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.css" rel="stylesheet" type="text/css" />
+
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+    <div class="ui fullscreen request-modal modal">
+        <i class="close icon"></i>
+        <div class="header">
+            Processing Leave Application
+        </div>
+        <div class="content">
+            <div class="ui form">
+                <h4 class="ui dividing header">Please Add a remark</h4>
+                <input type="hidden" class="process-type" value="reject" />
+                <input class="rep" type="hidden" value="" />
+                <input class="stud" type="hidden" value="" />
+                <input class="id" type="hidden" value="" />
+                <div class="field">
+                    <div class="field">
+                        <textarea class="remark" placeholder="Enter Remark"> </textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="actions">
+            <div id="send" class="ui button">Send</div>
+            <div class="ui cancel button">Cancel</div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+
+        $('#send').on('click', function(e) {
+            e.preventDefault();
+            $(this).html('<i class="notched black circle loading icon"></i>');
+            var id = $('.request-modal .id').val().split(' '),
+                remark = $('.request-modal .remark').val(),
+                rep = $('.request-modal .rep').val(),
+                process_type = $('.request-modal .process-type').val(),
+                stud = $('.request-modal .stud').val();
+            if (remark !== '') {
+                $.ajax({
+                    type: 'post',
+                    url: '/leave/process-request/',
+                    data: {
+                        id: id[0],
+                        rep: rep,
+                        stud: stud,
+                        status: process_type,
+                        remark: remark,
+                    },
+                    success: function(data) {
+                        if(rep !== ''){ $('.lrepbox-' + id[1]).remove(); }
+                        else { $('.leave-request-'+id).remove(); }
+                        $('.request-modal').modal('hide');
+                        // alert(data.message);
+                        $('.process-modal p').html('<center>'+data.message+'</center>');
+                        $('.process-modal').modal('show');
+                    },
+                    error: function(data, err) {
+                        if(err) {
+                            $('.request-modal').modal('hide');
+                            $('.fail-modal').modal('show');
+                        }
+                    }
+                });
+            } else {
+                $('.request-modal textarea').css({'border': 'solid 2px red'});
+            }
+        });
+
+    </script>
+    <div class="process-modal ui basic modal">
+        <div class="ui icon header">
+            <i class="check green icon"></i>
+            Status:
+        </div>
+        <div class="content">
+            <p></p>
+        </div>
+        <div class="actions">
+            <div class="ui green ok inverted button">
+                <i class="checkmark icon"></i>
+                Ok
+            </div>
+        </div>
+    </div>
+
+    <div class="fail-modal ui basic modal">
+        <div class="ui icon header">
+            <i class="close red icon"></i>
+            Some Error occured:
+        </div>
+        <div class="content">
+            <p>Please let us know <a href="/issue">here</a>. Add screenshot and as much detail as possible. <br>
+            We appreciate your patience. Thank you. </p>
+        </div>
+        <div class="actions">
+            <div class="ui green ok inverted button">
+                <i class="checkmark icon"></i>
+                Ok
+            </div>
+        </div>
+    </div>
+
+
+
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}The left-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}ROW #1 starts here!{% endcomment %}
+            <div class="row">
+                {% comment %}The Employee Image Card starts here!{% endcomment %}
+                {% block userCard %}
+                    {% include 'globals/usercard.html' %}
+                {% endblock %}
+                {% comment %}The Employee Image Card ends here!{% endcomment %}
+            </div>
+            {% comment %}ROW #1 ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}ROW #2 starts here!{% endcomment %}
+            <div class="row">
+                {% comment %}The Tab-Menu starts here!{% endcomment %}
+                <div class="ui large fluid vertical pointing menu"
+                     style="min-width: 240px;
+                            max-width: 320px;">
+                    <a class="active item" data-tab="first">
+                        Leave Application
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="item" data-tab="second">
+                        Leave Status
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    {% if request.user.extrainfo.user_type != 'student' %}
+                        <a class="item" data-tab="fourth">
+                            Approve
+                            <i class="right floated chevron right icon"></i>
+                        </a>
+                    {% endif %}
+                </div>
+                {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+            </div>
+            {% comment %}ROW #2 ends here!{% endcomment %}
+
+        </div>
+        {% comment %}The left-rail segment endss here!{% endcomment %}
+
+        {% comment %}The central-rail segment starts here!{% endcomment %}
+        <div class="eight wide column">
+            <div class="row">
+
+                {% comment %}The Leave Application Form starts here!{% endcomment %}
+                <div class="ui active tab segment" data-tab="first">
+                    {% block leaveapplicationform %}
+                        {% include 'leaveModule/leaveapplicationform.html' %}
+                    {% endblock %}
+                </div>
+                {% comment %}The Leave Application Form ends here!{% endcomment %}
+
+                {% comment %}The Leave Status starts here!{% endcomment %}
+                <div class="ui tab segment" data-tab="second">
+                    {% block leavestatus %}
+                        {% include 'leaveModule/leavestatus.html' %}
+                    {% endblock %}
+                </div>
+                {% comment %}The Leave Status ends here!{% endcomment %}
+
+
+                {% comment %}The Leave Balance starts here!
+                <div class="ui tab segment" data-tab="third">
+                    {% block leavebalance %}
+                        {% include 'leaveModule/leavebalance.html' %}
+                    {% endblock %}
+                </div>{% endcomment %}
+                {% comment %}The Leave Balance ends here!{% endcomment %}
+
+
+                {% comment %}The Approve Leave starts here!{% endcomment %}
+                {% if request.user.extrainfo.user_type != 'student' %}
+                    <div class="ui tab segment" data-tab="fourth">
+                        {% block approveleave %}
+                                {% include 'leaveModule/leaveapprove.html' %}
+                        {% endblock %}
+                    </div>
+                {% endif %}
+                {% comment %}The Approve Leave ends here!{% endcomment %}
+
+
+            </div>
+        </div>
+        {% comment %}The central-rail segment endss here!{% endcomment %}
+
+        {% comment %}The right-rail segment starts here!{% endcomment %}
+        {% if request.user.extrainfo.user_type != 'student' %}
+            <div class="three wide column">
+                <div class="ui row">
+                    <div id="textSegmentDiv">
+                        <div class="ui active large text loader"
+                             id="loader">
+                            Loading ...
+                        </div>
+
+                        <div id="textLoader" style="max-height: 87.5vh; overflow-y: auto; overflow-x: hidden;">
+                            {% block replacement %}
+                                {% include 'leaveModule/replacementrequest.html' %}
+                            {%  endblock %}
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+    </div>
+    {% comment %}The grid ends here!{% endcomment %}
+
+{% endblock %}
+
+{% block javascript %}
+
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/checkbox.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/addLeave.js' %}"></script>
+
+    <script>
+        $(document).ready(function(){
+            $('table').tablesort();
+            $("#textLoader").toggle();
+            $("#replacement-card").toggle();
+            setTimeout(loader, 200);
+        });
+
+        function loader() {
+            $("#textLoader").toggle();
+            $("#replacement-card").toggle();
+            $("#loader").removeClass("active");
+            $("#loader").addClass("disabled");
+        }
+    </script>
+
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+
+{% endblock %}

@@ -1,0 +1,70 @@
+ {% block tab1content1 %}
+<form  action="{%url 'office:p_reallocation' %}" method ="POST">
+    {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+    <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+          {% csrf_token %}
+        <div class="three fields">
+            <div class="six wide field">
+                <label>Project ID</label>
+                <input value="" class="ui large input" type="text" name="project_id">
+            </div>
+
+            <!-- <div class="four wide field">
+                <label>Principal Investigator</label>
+                <input value="" class="ui large input" type="text" name="name">
+            </div> -->
+
+            <div class="six wide field">
+                <label>PF No.</label>
+                <input value="" class="ui large input" type="text" name="pfno">
+            </div>
+
+             <div class="four wide field">
+                <label>Date</label>
+                <input value="" class="ui large input" type="date" name="date">
+            </div>
+        </div>
+        <p><b>Project Head from which expenditure is to be transferred </b></p>
+        <div class="three fields">
+           <div class="six wide field">
+                <label>Budget Head</label>
+                <input value="" class="ui large input" type="text" type="text" name="p_budget_head">
+            </div>
+            
+            <div class="four wide field">
+                <label>Amount </label>
+                <input value="" class="ui large input" type="text" name="p_amount">
+            </div>
+            
+        </div>
+        <p><b>Project Head to which expenditure is to be booked</b></p>
+        <div class="three fields">
+           <div class="six wide field">
+                <label>Budget Head</label>
+                <input value="" class="ui large input" type="text" name="n_budget_head">
+            </div>
+            
+            <div class="four wide field">
+                <label>Amount </label>
+                <input value="" class="ui large input" type="text" name="n_amount">
+            </div>
+        </div>
+        
+        <div class="field">
+            <label>Details & Description</label>
+            <textarea rows="2" name="reason"></textarea>
+        </div>
+       
+
+        <div class="field">
+            <button class="ui primary button right floated" type="submit">
+                Submit
+            </button>
+        </div>
+    </div>
+</form>
+
+<br>
+<br>
+<div class="ui divider"></div>
+  {% endblock %}

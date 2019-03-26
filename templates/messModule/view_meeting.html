@@ -1,0 +1,44 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+{% block body %}
+{% block view_meeting %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="meetinginformation">
+            Meeting information
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="meetinginformation">
+        <div class="ui vertical segment">
+
+            <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
+                <thead>
+                <tr>
+                    <th>Meeting Date</th>
+                    <th>Venue</th>
+                    <th>Agenda</th>
+                    <th>Time</th>
+                </tr>
+                </thead>
+                <tbody>
+                    {% for item in meeting %}
+                <tr>
+                    <td>{{item.meet_date}}</td>
+                    <td>{{item.venue}}</td>
+                    <td>{{item.agenda}}</td>
+                    <td>{{item.meeting_time}}</td>
+                </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <br>
+            <br>
+        </div>
+    </div>
+
+
+{% endblock %}
+{% endblock %}

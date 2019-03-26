@@ -1,0 +1,37 @@
+{% load notif_tags %}
+<div class="row">
+    <h3 class="ui dividing header" style="margin: auto; margin-top: 8px;">Notifications</h3>
+</div>
+<a class="ui right floated read-all" data="all" style="cursor: pointer; float: right;">Mark all as read</a>
+<div class="row">
+    <div class="column">
+        <div class="ui secondary vertical pointing compact menu notification-menu">
+            {% for notif_type in all_notif_types %}
+            <a class="{% if forloop.counter == 1 %}active {% endif %} item type-sorted-div" data-tab="{{ notif_type }}">
+                <span style="color: #000;">
+                    {{ notif_type }}
+                </span>
+                <div class="ui teal label type-label {{ notif_type }}-notification-label" data="{{ notif_type }}">
+                    {% get_count_type_unseen notif_type request.user %}
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        
+    </div>
+
+    <div class="three wide column notification-tabs">
+        {% for notif_type, notifications in type_sorted_notifs.items %}
+        <div class="ui {% if forloop.counter == 1 %}active {% endif %} tab" data-tab="{{ notif_type }}">
+            <a class="ui right floated small label read-all" data="{{ notif_type }}" title="Read all notifications of type {{ notif_type }}"><i class="ui checkmark icon"></i></a>
+            <div class="ui animated fluid list"
+                 id="new-message-list" style="min-width: 20vw; max-height: 28.5vh; overflow-y: auto;">
+                {% for notif in notifications %}
+					{% get_notification notif %}
+				{% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+<a class="ui bottom attached button" style="width: 100%;" href="/notifications/type-sorted-notifs">All notifications</a>

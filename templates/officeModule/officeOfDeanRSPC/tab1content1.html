@@ -1,0 +1,115 @@
+ {% block tab1content1 %}
+<form action="{%url 'office:p_register' %}" method ="POST">
+    {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+    <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+         {% csrf_token %}
+         
+        <div class="three fields">
+            <div class="six wide field">
+                <label>Project Title</label>
+                <input value="" class="ui large input" name="project_title">
+            </div>
+
+            <div class="six wide field">
+                <label>Sponsoring Agency</label>
+                <input value="" class="ui large input" name="sponsored_agency">
+            </div>
+            
+            <div class="four wide field">
+                <label>Project Start Date</label>
+                <input value="" class="ui large input" type="date" name="start_date">
+            </div>
+
+            <div class="four wide field">
+                <label>Fund Recieved Date</label>
+                <input value="" class="ui large input" type="date" name="fund_recieved_date">
+            </div>
+        </div>
+        
+        <div class="three fields">
+            <div class="six wide field">
+                <label>Project Duration</label>
+                <input value="" class="ui large input"  name="duration">
+            </div>
+
+            <div class="six wide field">
+                <label>Is there any Agreement(MoU)</label>
+                <select class="ui search fluid dropdown" name="agreement">
+                    <option value="Select">Select</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+            </div>
+            
+            <div class="four wide field">
+                <label>Total amount sanctioned</label>
+                <input value="" class="ui large input" type="number" name="amount_sanctioned">
+            </div>
+        </div>
+        
+        <div class="three fields">
+            <div class="six wide field">
+                <label>Project Type</label>
+                <select class="ui search fluid dropdown" name="project_type">
+                    <option value="sponsoered research">Sponsoered Research</option>
+                    <option value="consultancy">Consultancy</option>
+                    <option value="testing">Testing</option>
+                </select>
+            </div>
+
+            <div class="four wide field">
+                <label>CO_PI_ID</label>
+                <input class="ui large input" name="copi_name">
+            </div>
+
+            <div class="four wide field">
+                <label>Project Operated By</label>
+                <select class="ui search fluid dropdown" name="project_operated">
+                    <option value="Only By PI">Only By PI</option>
+                    <option value="PI and Co_pi">PI and Co_pi</option>
+                    
+                </select>
+            </div>
+
+        </div>
+
+        <div class="field">
+            <label>Attachments (if any)</label>
+            <input class="ui input" type="file"></input>
+        </div>
+
+        <div class="field">
+            <label>Details and Description</label>
+            <textarea rows="2" name="remarks"></textarea>
+        </div>
+
+        <div class="two fields">
+            <div class="six wide field">
+                <label>PI</label>
+                <input class="ui large input" name="pi_name" >
+            </div>
+
+           <!--  <div class="four wide field">
+                <label>Mobile No of PI</label>
+                <input class="ui large input" type="number" name="mobile_pi">
+            </div>
+             -->
+
+            <!-- <div class="four wide field">
+                <label>Mobile No of Co-PI</label>
+                <input class="ui large input" type="number" name="mobile_copi">
+            </div> -->
+        </div>
+
+        <div class="field">
+            <button class="ui primary button right floated" type="submit">
+                Submit
+            </button>
+        </div>
+    </div>
+</form>
+
+<br>
+<br>
+<div class="ui divider"></div>
+  {% endblock %}

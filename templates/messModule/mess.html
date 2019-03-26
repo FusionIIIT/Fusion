@@ -1,0 +1,427 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Central Mess
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}
+            The left-rail segment starts here!
+        {% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu starts here!{% endcomment %}
+            <div class="ui huge fluid vertical pointing menu"
+                 style="max-width: 320px;">
+
+            {% for d in desig %}
+                {% if info.user_type == 'student' and d.designation.name == 'student' %}
+                    <a class="active item" data-tab="first">
+                        Feedback
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="item" data-tab="second">
+                        Apply For Leave
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="item" data-tab="third">
+                        Apply For Vacation Food
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="item" data-tab="fourth">
+                        Menu | Bill | Payment Details
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="item" data-tab="fifth">
+                        Special Food Request | Choose mess
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                
+                    {% if messinfo.mess_option == 'mess1' %}
+                    <a class="item" data-tab="sixth">
+                        Apply For Nonveg | ChecK History
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    {% endif %}
+                {% endif %}
+
+                {% if info.user_type == 'student' and d.designation.name == 'mess_committee' %}
+                    <a class="item" data-tab="fifteenth">
+                        Meeting information
+                    </a>
+
+                    <a class="item" data-tab="tenth">
+                        Meeting Minutes
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                {% endif %}
+
+                {% if info.user_type == 'student' and d.designation.name == 'mess_convener' %}   
+                    <a class="item" data-tab="eighth">
+                        Change Menu
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="item" data-tab="ninth">
+                        Meeting Invitation
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="item" data-tab="eleventh">
+                        View Special Food Request
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="item" data-tab="seventeenth">
+                        Publish Minutes
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="item" data-tab="forteenth">
+                        View Feedback
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="item" data-tab="sixteenth">
+                        Feedback Statistics
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                {% endif %}
+
+                {% if info.user_type == 'staff' and d.designation.name == 'mess_manager' %}
+                    <a class="item" data-tab="seventh">
+                        Respond To Requests
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="item" data-tab="thirteenth">
+                        View Menu
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="item" data-tab="twelfth">
+                        Start Registration
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                {% endif %}
+
+                {% if info.user_type == 'faculty' and d.designation.name == 'mess_warden' %}
+
+                    <a class="item" data-tab="thirteenth">
+                        View Menu
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="item" data-tab="fifteenth">
+                        Meeting information
+                        <i class="right floated chevron right icon"></i>
+                     </a>
+
+                    <a class="item" data-tab="tenth">
+                        Meeting Minutes
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="item" data-tab="sixteenth">
+                        Feedback Statistics
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="item" data-tab="forteenth">
+                        View Feedback
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                {% endif %}
+            {% endfor %}   
+            </div>
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+        {% comment %}
+            The central-rail segment starts here!
+        {% endcomment %}
+        <div class="eight wide column">
+            {% comment %}The ... start here!{% endcomment %}
+            <div class="ui tab segment" data-tab="first">
+                {% block feedback %}
+                    {%  include 'messModule/feedback.html' %}
+                {%  endblock %}
+            </div>
+            {% comment %}The ... end here!{% endcomment %}
+
+
+            {% comment %}The ... starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="second">
+                {% block leaveRequest %}
+                    {%  include 'messModule/leaverequest.html' %}
+                {%  endblock %}
+            </div>
+            {% comment %}The ... ends here!{% endcomment %}
+
+
+            {% comment %}The ... starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="third">
+            {% block vacationfoodrequest %}
+                    {%  include 'messModule/vacationfoodrequest.html' %}
+                {%  endblock %}
+            </div>
+            {% comment %}The ... ends here!{% endcomment %}
+
+
+            {% comment %}The ... starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="fourth">
+            {% block views %}
+                    {%  include 'messModule/views.html' %}
+                {%  endblock %}
+            </div>
+            {% comment %}The ... ends here!{% endcomment %}
+
+
+            {% comment %}The ... starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="fifth">
+            {% block requests %}
+                    {%  include 'messModule/requests.html' %}
+                {%  endblock %}
+            </div>
+            {% comment %}The ... ends here!{% endcomment %}
+
+
+            {% comment %}The ... starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="sixth">
+            {% block nonvegfood %}
+                    {%  include 'messModule/nonvegfood.html' %}
+                {%  endblock %}
+            </div>
+            {% comment %}The ... ends here!{% endcomment %}
+
+            {% comment %}The ... starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="seventh">
+            {% block respondtorequests %}
+                    {%  include 'messModule/respond.html' %}
+                {%  endblock %}
+            </div>
+            {% comment %}The ... ends here!{% endcomment %}
+
+            {% comment %}The ... starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="eighth">
+            {% block changemenu %}
+                    {%  include 'messModule/changemenu.html' %}
+                {%  endblock %}
+            </div>
+            {% comment %}The ... ends here!{% endcomment %}
+
+            {% comment %}The ... starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="ninth">
+            {% block invitation %}
+                    {%  include 'messModule/invitation.html' %}
+                {%  endblock %}
+            </div>
+            {% comment %}The ... ends here!{% endcomment %}
+
+            {% comment %}The ... starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="tenth">
+            {% block view_minutes %}
+                    {%  include 'messModule/view_minutes.html' %}
+                {%  endblock %}
+            </div>
+            {% comment %}The ... ends here!{% endcomment %}
+
+            {% comment %}The ... starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="eleventh">
+            {% block splreq %}
+                    {%  include 'messModule/splreq.html' %}
+                {%  endblock %}
+            </div>
+            {% comment %}The ... ends here!{% endcomment %}
+
+            {% comment %}The ... starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="twelfth">
+            {% block registration %}
+                    {%  include 'messModule/registration.html' %}
+                {%  endblock %}
+            </div>
+            {% comment %}The ... ends here!{% endcomment %}
+
+            {% comment %}The ... starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="thirteenth">
+            {% block viewmenu %}
+                    {%  include 'messModule/viewmenu.html' %}
+                {%  endblock %}
+            </div>
+            {% comment %}The ... ends here!{% endcomment %}
+
+            {% comment %}The ... starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="forteenth">
+            {% block view_feedback %}
+                    {%  include 'messModule/view_feedback.html' %}
+                {%  endblock %}
+            </div>
+            {% comment %}The ... ends here!{% endcomment %}
+
+            {% comment %}The ... starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="fifteenth">
+            {% block view_meeting %}
+                    {%  include 'messModule/view_meeting.html' %}
+                {%  endblock %}
+            </div>
+            {% comment %}The ... ends here!{% endcomment %}
+
+            {% comment %}The ... starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="sixteenth">
+            {% block statistics %}
+                    {%  include 'messModule/statistics.html' %}
+                {%  endblock %}
+            </div>
+            {% comment %}The ... ends here!{% endcomment %}
+
+            {% comment %}The ... starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="seventeenth">
+            {% block minutes %}
+                    {%  include 'messModule/minutes.html' %}
+                {%  endblock %}
+            </div>
+            {% comment %}The ... ends here!{% endcomment %}
+
+        </div>
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            <div class="row">
+                {% comment %}
+                    TODO: the right rail!
+                {% endcomment %}
+            </div>
+        </div>
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+    </div>
+    {% comment %}The grid ends here!{% endcomment %}
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/chartjs/src/chart.js' %}"></script>
+
+
+
+    <script>
+        var ctx = document.getElementById("myChart").getContext('2d');
+        var myChart = new Chart(ctx, {
+            type: 'bar',
+
+            data: {
+                labels: ["Food", "Hygiene", "Maintenance", "Others"],
+                datasets: [{
+                    label: 'Feedback',
+                    data: [{{count2}},{{count3}},{{count1}},{{count4}}],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(255, 159, 64, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255,99,132,1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero:true
+                        }
+                    }]
+                }
+            }
+        });
+
+
+        var ctx = document.getElementById("myChart2").getContext('2d');
+        var myChart = new Chart(ctx, {
+            type: 'bar',
+
+            data: {
+                labels: ["Food", "Hygiene", "Maintenance", "Others"],
+                datasets: [{
+                    label: 'Feedback',
+                    data: [{{count6}},{{count7}},{{count5}},{{count8}}],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(255, 159, 64, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255,99,132,1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero:true
+                        }
+                    }]
+                }
+            }
+        });
+    </script>
+{% endblock %}
