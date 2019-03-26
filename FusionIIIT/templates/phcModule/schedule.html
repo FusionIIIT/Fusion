@@ -1,0 +1,154 @@
+{% load static %}
+{% block schedule %}
+    {% comment %}the main tab starts here {% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="viewschedule">
+            View Schedule
+        </a>
+
+        <a class="item" data-tab="editschedule">
+            Edit Schedule
+        </a>
+    </div>
+
+    {% comment %}the doctor appointment tab starts here {% endcomment %}
+    <div class="ui active tab" data-tab="viewschedule">
+        <div class="ui vertical segment">
+            <div class="field">
+                  <table  border=1 class="ui very basic celled small fluid table"
+                         style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;">
+                      <thead>
+
+                        <tr>
+                          <th>Schedule</th>
+                          {% for d in doctors %}
+                          {{count.doctor_count}}
+                          <th>{{d.doctor_name}}</th>
+                          {% endfor %}
+                        <tr>
+
+                          {% for p,day in days %}
+                          {{count.empty_fine}}
+                          <tr>
+                            <td>{{day}}</td>
+
+                            {% for d in doctors %}
+                            {{count.empty_fine}}
+                            {% for s in schedule %}
+                            {% if s.day == p %}
+                            {% if d.id == s.doctor_id.id %}
+                            <td>{{s.from_time}}--{{s.to_time}}</td>
+                            {{count.increment}}
+                            {% else %}
+                            {% endif %}
+                            {% endif %}
+                            {% endfor %}
+                            {% if count.count == 0 %}
+                              <td></td>
+                            {% endif %}
+                          {% endfor %}
+                          </tr>
+
+                          {% endfor %}
+                      </thead>
+                  </table>
+        </div>
+      </div>
+    </div>
+    {% comment %}the view schedule tab ends here {% endcomment %}
+    {% comment %}the edit schedule tab starts here {% endcomment %}
+    <div class="ui tab" data-tab="editschedule">
+      <div class="ui vertical segment">
+        <form class="ui form" method="POST" style="padding: 8px; padding-left: 24px; padding-right: 24px;">{% csrf_token %}
+            <div class="field">
+              <div class="two fields">
+                <div class="field">
+                    <label>Doctor</label>
+                    <select id="doctor_a" class="ui search fluid dropdown" name="doctor" required="true">
+                      <option value="" disabled selected>--SELECT--</option>
+                      {% for doctor in doctors %}
+                      <option value="{{doctor.id}}">{{doctor.doctor_name}}</option>
+                      {% endfor %}
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Day</label>
+                    <!-- on selection of doctor few days should be displayed -->
+                    <select id="day_a" class="ui search fluid dropdown" name="day" required="true">
+                      <option value="" disabled selected>--SELECT--</option>
+			                   {% for p,day in days %}
+                        <option value="{{p}}">{{day}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+              </div>
+              <div class="three fields">
+                <div class="field">
+                        <label>Time In</label>
+                        <input type="time" name="time_in" id="time_in" required="true">
+                        <!-- enter the time in  -->
+                    </div>
+
+                    <div class="field">
+                        <label>Time out </label>
+                        <input type="time" name="time_out" id="time_out" required="true">
+                    </div>
+                    <div class="field">
+                        <label>Room No</label>
+                        <input type="text" name="room" id="room" required="true">
+                    </div>
+
+                <div class="field">
+                    <label> </label>  <br><label></label>
+                      <input type="button" id="edit" name="edit" value="Submit"class="ui large right floated primary button" />
+
+                </div>
+                </div>
+              </div>
+          </form>
+
+
+         <script type="text/javascript">
+                     $('#edit').click(function(e){
+                                                         var doc = document.getElementById('doctor_a').value;
+                                                         var day = document.getElementById('day_a').value;
+                                                         var time_in = document.getElementById('time_in').value;
+                                                         var time_out = document.getElementById('time_out').value;
+                                                         var room = document.getElementById('room').value;
+                                                          if(doc=="" || day=="" || time_in==""|| room=="" || time_out=="")
+                                                         {
+                                                         $('#valid_sche').html("Enter Valid Information");
+                                                         return false;
+                                                         }
+                                                             $.ajax({
+                                                               type:'post',
+                                                               url:'/healthcenter/compounder/',
+                                                               data: {
+                                                               csrfmiddlewaretoken: '{{ csrf_token }}',
+                                                               doctor:$("#doctor_a").val(),
+                                                               day:$("#day_a").val(),
+                                                               room:$("#room").val(),
+                                                               time_in:$("#time_in").val(),
+                                                               time_out:$("#time_out").val(),
+                                                               edit:$("#edit").val()
+                                                             },
+                                                               success: function(data){
+                                                                   alert("edited schedule");
+                                                                   document.getElementById("doctor_a").value="";
+                                                                   document.getElementById("day_a").value="";
+                                                                   document.getElementById("room").value="";
+                                                                   document.getElementById("time_in").value="";
+                                                                   document.getElementById("time_out").value="";
+
+                                                             },
+                                                           });
+                                                           });
+                       </script>
+
+
+    </div>
+    </div>
+
+
+    {% comment %}the ambulance appointment tab ends here {% endcomment %}
+{% endblock %}

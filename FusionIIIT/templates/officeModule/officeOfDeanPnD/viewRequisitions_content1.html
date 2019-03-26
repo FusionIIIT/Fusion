@@ -1,0 +1,144 @@
+{% load static %}
+
+{% block tab3content1 %}
+<form>
+    {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+    <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+        <div class="three fields">
+            <div class="field">
+                <label>From</label>
+                <div class="ui calendar" id="rangestart">
+                    <div class="ui input left icon">
+                        <i class="calendar icon"></i>
+                        <input type="text" placeholder="From">
+                    </div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>To</label>
+                <div class="ui calendar" id="rangeend">
+                    <div class="ui input left icon">
+                        <i class="calendar icon"></i>
+                        <input type="text" placeholder="To">
+                    </div>
+                </div>
+            </div>
+
+            <div class="field">
+                {% comment %}The Dropdown field starts here!{% endcomment %}
+                <label>Department</label>
+
+                <div class="ui fluid search selection dropdown">
+                    <input name="department" type="hidden">
+                    <i class="dropdown icon"></i>
+
+                    <div class="default text">Select Department</div>
+
+                    <div class="menu">
+                        <div class="item" data-value="civil">
+                            Civil
+                        </div>
+
+                        <div class="item" data-value="electrical">
+                            Electrical
+                        </div>
+                    </div>
+                </div>
+                {% comment %}The Dropdown field ends here!{% endcomment %}
+            </div>
+        </div>
+
+        <div class="field">
+            <button class="ui primary button right floated" type="submit">
+                Search
+            </button>
+        </div>
+    </div>
+</form>
+
+<br>
+<br>
+<div class="ui divider"></div>
+<table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;">
+    <thead>
+    <tr>
+        <th>
+        Sr.No.
+        </th>
+        <th>
+            Requisition ID
+        </th>
+
+        <th>
+            Date
+        </th>
+
+        <th class="four wide column">
+            Requester
+        </th>
+
+        <th>
+            Building
+        </th>
+
+        <th>
+            Title
+        </th>
+
+        <th>
+            Work Assignment
+        </th>
+    </tr>
+    </thead>
+
+    <tbody>
+
+    {% for object in req%}
+    <tr>
+
+        <td>
+            {{forloop.counter}}
+        </td>
+        <td>
+            {{object.id}}
+        </td>
+        <td>
+            {{object.req_date}}
+        </td>
+        <td>
+        <h4 class="ui image header">
+                <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                <div class="content">
+                    {{object.userid.user.first_name}} {{object.userid.user.last_name}}
+                    <div class="sub header">
+                        {{object.userid.user.email}}
+                    </div>
+                </div>
+            </h4>
+        </td>
+        <td>
+            {{object.title}}
+        </td>
+
+        <td>
+            {{object.building}}
+        </td>
+        <td>
+            {% if object.assign_title == None  %}
+            Not made
+             {% else %}
+            made
+            {% endif %}
+        </td>
+</tr>
+    {% endfor %}
+    </tbody>
+    
+</table>
+<br>
+<div class="ui divider"></div>
+
+
+
+{% endblock %}

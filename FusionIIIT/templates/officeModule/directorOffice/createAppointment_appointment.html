@@ -1,0 +1,51 @@
+<div class="ui vertical segment">
+    <form method="POST" action="{%url 'office:appoint' %}">
+
+        {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+        {% csrf_token %}
+        <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+            <div class="field">
+                <label>Purpose of Appointment</label>
+                <textarea rows="2" name="purpose"></textarea>
+            </div>
+
+            <div class="two fields">
+                <div class="field">
+                    <label>Member Name</label>
+                    <input placeholder="Name" class="ui large input" name="member">
+                </div>
+
+            </div>
+
+            <div class="two fields">
+                <div class="field">
+                    <label>Venue</label>
+                    <input class="ui large input" placeholder="Meeting Room" name="venue">
+                </div>
+                <div class="field">
+                    <label>Date</label>
+                    <div class="ui calendar" id="rangestart">
+                        <div class="ui input left icon">
+                            <i class="calendar icon"></i>
+                            <input type="text" placeholder="Date" name="adate">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <br>
+
+            <div class="field">
+                <button class="ui primary button right floated" type="submit">
+                    Submit
+                </button>
+            </div>
+            {% csrf_token %}
+        </div>
+    </form>
+    <br>
+    <br>
+</div>
+<br>
+<div class="extra content"></div>

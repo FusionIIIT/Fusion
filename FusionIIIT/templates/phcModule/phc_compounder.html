@@ -1,0 +1,144 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+    Home
+{% endblock %}
+
+{% block body %}
+    <link href="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.css" rel="stylesheet" type="text/css" />
+
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}The left-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}ROW #1 starts here!{% endcomment %}
+            <div class="row">
+                {% comment %}The Employee Image Card starts here!{% endcomment %}
+                {% block userCard %}
+                    {% include 'globals/usercard.html' %}
+                {% endblock %}
+                {% comment %}The Employee Image Card ends here!{% endcomment %}
+            </div>
+            {% comment %}ROW #1 ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}ROW #2 starts here!{% endcomment %}
+            <div class="row">
+                {% comment %}The Tab-Menu starts here!{% endcomment %}
+                <div class="ui large fluid vertical pointing menu">
+                    <a class="active item" data-tab="third">
+                        Response
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    <a class="item" data-tab="fourth">
+                        Appointment
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    <a class="item" data-tab="fifth">
+                        Prescribe
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    <a class="item" data-tab="seventh">
+                        Manage Stock
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    <a class="item" data-tab="eigth">
+                        Schedule
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    <a class="item" data-tab="ninth">
+                        Doctors
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                </div>
+                {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+            </div>
+            {% comment %}ROW #2 ends here!{% endcomment %}
+
+        </div>
+        {% comment %}The left-rail segment ends here!{% endcomment %}
+
+        {% comment %}The central-rail segment starts here!{% endcomment %}
+        <div class="eight wide column">
+            {% comment %}The complaint/feedback starts here!{% endcomment %}
+            <div class="ui active tab segment" data-tab="third">
+                {% block feedback %}
+                    {% include 'phcModule/feedback_compounder.html' with all_complaints=all_complaints%}
+                {% endblock %}
+            </div>
+            {% comment %}The complaint/feedback ends here!{% endcomment %}
+
+            {% comment %}The ap `pointment approval tab starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="fourth">
+                {% block comapproval %}
+                    {% include 'phcModule/comapproval.html' with all_hospitals=all_hospitals all_ambulances=all_ambulances appointments_today=appointments_today appointments_approve=appointments_approve %}
+                {% endblock %}
+            </div>
+            {% comment %}The appointment approval tab ends here!{% endcomment %}
+
+            {% comment %}The compounder prescription tab starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="fifth">
+                {% block comp_prescription %}
+                    {% include 'phcModule/comp_prescription.html' with appointments_today=appointments_today stocks=stocks doctors=doctors users=users %}
+                {% endblock %}
+            </div>
+            {% comment %}The appointment approval tab ends here!{% endcomment %}
+
+
+            {% comment %}The Manage Stocks Form starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="seventh">
+                {% block stock %}
+                    {% include 'phcModule/manage_stock.html' with stocks=stocks inventories=inventories %}
+                {% endblock %}
+            </div>
+            {% comment %}The Manage Stocks Form ends here!{% endcomment %}
+
+            {% comment %}The Schedule Form starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="eigth">
+                {% block schedule %}
+                    {% include 'phcModule/schedule.html' with days=days count=count doctors=doctors%}
+                {% endblock %}
+            </div>
+            {% comment %}The Schedule Form ends here!{% endcomment %}
+            {% comment %}The Doctors starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="ninth">
+                {% block doctors %}
+                    {% include 'phcModule/doctors.html' with doctors=doctors%}
+                {% endblock %}
+            </div>
+            {% comment %}The Doctors Form ends here!{% endcomment %}
+        </div>
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+        </div>
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+
+    </div>
+    <div class="ui stackable doubling grid">
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+    </div>
+    {% comment %}The grid ends here!{% endcomment %}
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+{% endblock %}

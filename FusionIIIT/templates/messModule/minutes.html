@@ -1,0 +1,50 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+{% block body %}
+{% block minutes %}
+<div class="ui pointing secondary menu">
+    <a class="active item" data-tab="minutes">
+        Meeting Minutes
+    </a>
+</div>
+<div class="ui active tab" data-tab="minutes">
+    <div class="ui vertical stripe team segment"
+         style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+
+        <form class="ui form" method="POST" enctype="multipart/form-data" id="minutes" action="{% url 'mess:minutes' %}">
+            {% csrf_token %}
+                <div class="field">
+                    <div class="three fields">
+                        {{form.as_p}}
+                        <div class="field">
+                            <label><br></label>
+                            <input type="submit" value="Save" />
+                        </div>
+                    </div>
+                </div>            
+        </form>
+        <div class="ui divider"></div>
+
+        <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
+                <thead>
+                <tr>
+                    <th>Meeting Date - Agenda</th>
+                    <th>Minutes</th>
+                </tr>
+                </thead>
+                <tbody>
+                    {% for item in minutes %}
+                <tr>
+                    <td>{{item.meeting_date}}</td>
+                    <td><a href="{{item.mess_minutes.url}}">{{item.mess_minutes}}</a></td>
+                </tr>
+                {% endfor %}
+                </tbody>
+        </table>
+
+    </div>
+</div>
+
+{% endblock %}
+{% endblock %}

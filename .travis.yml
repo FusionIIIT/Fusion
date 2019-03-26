@@ -1,0 +1,9 @@
+language: python
+python:
+  - 3.6
+install:
+  - pip install -U setuptools
+  - pip install -r requirements.txt
+script:
+  - flake8 . --exclude manage.py,__pycache__,migrations --max-line-length=100
+  - timeout 10s isort

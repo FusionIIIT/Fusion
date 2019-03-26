@@ -1,0 +1,227 @@
+
+{% load static %}
+
+{% block publications %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="journal">
+            Journal
+        </a>
+
+        <a class="item" data-tab="conference">
+            Conference
+        </a>
+
+        <a class="item" data-tab="books">
+            Books
+        </a>
+    </div>
+
+
+    {% comment %}The Journal segment starts here!{% endcomment %}
+
+    <div class="ui active tab segment" data-tab="journal">
+        <h4 class="ui dividing header">Report:</h4>
+        <div class="ui pointing pagination menu">
+                {% for j in journal %}
+                {% if forloop.counter0|divisibleby:100 %}
+                    <span align="right"><a class="{% if forloop.counter0 == 0 %}active {% endif %}item" data-tab="j-{{ forloop.counter0 }}">
+                        {% widthratio forloop.counter|add:100 100 1 %}
+
+     </a></span>
+                {% endif %}
+
+                {% endfor %}
+
+            </div>
+
+     {% for j in journal %}
+
+            {% if forloop.counter0|divisibleby:100 %}
+            <div class="ui {% if forloop.counter0 == 0 %}active {% endif %} tab segment" data-tab="j-{{ forloop.counter0 }}">
+        <table class="ui fixed sortable celled table">
+            <thead>
+            <tr>
+
+                <th class="sorted ascending" style="width: 7%;">Sr.</th>
+                <th class="" style="width: 20%;" >Authors</th>
+                <th class="" style="width: 20%;">Title of Paper</th>
+                <th class="" style="width: 33%;">Journal Details</th>
+
+                <th class="" style="width: 12%;">Year</th>
+            </tr>
+            </thead>
+
+            <tbody style="max-height: 100px; overflow-y: auto;">
+            {% endif %}
+            <tr>
+                <td id="pub{{ forloop.counter }}Z"><div style="display: none;">{{ j.id }}</div>{{ forloop.counter }}.</td>
+                <td id="pub{{ forloop.counter }}A">{{ j.authors }}</td>
+                <td id="pub{{ forloop.counter }}B">{{ j.title_paper }}</td>
+                <td id="pub{{ forloop.counter }}C"><b>Name of the Journal: </b>{{ j.name_journal }}<br>
+                    <b>Volume No./Issue No.: </b>{{ j.volume_no }} <br>
+                                    <b>Page No.:</b> {{ j.page_no }}    <br>
+                                    <b>Paper Reference No. :</b> {{ j.reference_number }} <br>
+                                    <b>Date Of Submission :</b> {{ j.date_submission }}  <br>
+                                    <b>Date of Publication :</b> {{ j.date_publication }}  <br>
+                                    <b>SCI/SCIE        : </b>{{ j.is_sci }} <br>
+                                    <b>Date of Issuance :</b>  {{ j.doi }}
+
+                </td>
+
+                <td id="pub{{ forloop.counter }}D">{{ j.a_month }}/{{ j.year }}</td>
+            </tr>
+            {% if forloop.counter0|add:1|divisibleby:100 %}
+            </tbody>
+        </table>
+    </div>
+          {% endif %}
+            {% endfor %}
+     {% if not journal.all.count|divisibleby:100 %}
+     </tbody>
+        </table>
+            </div>
+ {% endif %}
+    </div>
+
+
+    {% comment %}The Journal segment ends here!{% endcomment %}
+
+
+
+    {% comment %}The Conference segment starts here!{% endcomment %}
+
+    <div class="ui tab segment" data-tab="conference">
+        <h4 class="ui dividing header">Report:</h4>
+        <div class="ui pointing pagination menu">
+                {% for c in conference %}
+                {% if forloop.counter0|divisibleby:100 %}
+                    <span align="right>"><a class="{% if forloop.counter0 == 0 %}active {% endif %}item" data-tab="c-{{ forloop.counter0 }}">
+                        {% widthratio forloop.counter|add:100 100 1 %}
+     </a></span>
+                {% endif %}
+                {% endfor %}
+
+            </div>
+     {% for c in conference %}
+
+            {% if forloop.counter0|divisibleby:100 %}
+            <div class="ui {% if forloop.counter0 == 0 %}active {% endif %} tab segment" data-tab="c-{{ forloop.counter0 }}">
+        <table class="ui fixed sortable celled table">
+            <thead>
+            <tr>
+              <!--  <th class="sorted ascending">Sr.</th>
+                <th class="">Authors</th>
+                <th class="">Title of Paper</th>
+                <th class="" colspan="2">Conference Detaiks</th>
+                <th class="">Uploaded Document</th>
+                <th class="">Year</th>
+                <th class="">Action</th>-->
+                 <th class="sorted ascending" style="width: 7%;">Sr.</th>
+                <th class="" style="width: 20%;" >Authors</th>
+                <th class="" style="width: 20%;">Title of Paper</th>
+                <th class=""  style="width: 33%;">Conference Details</th>
+
+                <th class="" style="width: 12%;">Year</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            {% endif %}
+            <tr>
+                <td id="con{{ forloop.counter }}Z"><div style="display: none;">{{ c.id }}</div>{{ forloop.counter }}.</td>
+                <td id="con{{ forloop.counter }}A">{{ c.authors }}</td>
+                <td id="con{{ forloop.counter }}B">{{ c.title_paper }}</td>
+                <td id="con{{ forloop.counter }}C">
+                    <b>Name of the Conference:</b> {{ c.name_journal }}  <br>
+                    <b>Venue/Host Institute:</b> {{ c.venue }}  <br>
+                    <b>Page No.:  </b>   {{ c.page_no }}         <br>
+                    <b>Date of Submission :</b>  {{ c.date_submission }}<br>
+                    <b>Start Date :</b>  {{ c.date_acceptance }} <br>
+                    <b>End Date : </b> {{ c.date_publication }} <br>
+                    <b>Conference Date(s)   : </b> {{ c.start_date }} to {{ c.end_date }}<br>
+                    <b>ISBN No.     :   </b> {{ c.issn_no }}
+
+                </td>
+
+                <td id="con{{ forloop.counter }}D">{{ c.a_month }}/{{ c.year }}</td>
+
+            </tr>
+            {% if forloop.counter0|add:1|divisibleby:100 %}
+            </tbody>
+        </table>
+    </div>
+          {% endif %}
+            {% endfor %}
+     {% if not conference.all.count|divisibleby:100 %}
+     </tbody>
+        </table>
+            </div>
+ {% endif %}
+    </div>
+    {% comment %}The Conference segment ends here!{% endcomment %}
+
+
+    {% comment %}The Books segment starts here!{% endcomment %}
+    <div class="ui tab segment" data-tab="books">
+        <h4 class="ui dividing header">Report:</h4>
+        <div class="ui pointing pagination menu">
+                {% for b in books %}
+                {% if forloop.counter0|divisibleby:20 %}
+                    <span align="right>"><a class="{% if forloop.counter0 == 0 %}active {% endif %}item" data-tab="b-{{ forloop.counter0 }}">
+                        {% widthratio forloop.counter|add:20 20 1 %}
+     </a></span>
+                {% endif %}
+                {% endfor %}
+
+            </div>
+     {% for b in books %}
+
+            {% if forloop.counter0|divisibleby:20 %}
+            <div class="ui {% if forloop.counter0 == 0 %}active {% endif %} tab segment" data-tab="b-{{ forloop.counter0 }}">
+        <table class="ui fixed sortable celled table">
+            <thead>
+            <tr>
+                <!--<th class="sorted ascending">Sr.</th>
+                <th class="">Published</th>
+                <th class="">Title</th>
+                <th class="">Publisher</th>
+                <th class="">Year</th>
+                <th class="">Co-authors</th>
+                <th class="">Action</th>-->
+
+                  <th class="sorted ascending" style="width: 7%;">Sr.</th>
+                <th class="" style="width: 20%;" >Published</th>
+                <th class="" style="width: 20%;">Title of Paper</th>
+                <th class=""  style="width: 17%;">Publisher</th>
+
+
+                <th class="" style="width: 11%;">Year</th>
+                <th style="width:17%">Co-authors</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            {% endif %}
+            <tr>
+                <td id="books{{ forloop.counter }}Z"><div style="display: none;">{{ b.id }}</div>{{ forloop.counter }}.</td>
+                <td id="books{{ forloop.counter }}A">{{ b.p_type }}</td>
+                <td id="books{{ forloop.counter }}B">{{ b.title }}</td>
+                <td id="books{{ forloop.counter }}C">{{ b.publisher }}</td>
+                <td id="books{{ forloop.counter }}D">{{ b.a_month }}/{{ b.pyear }}</td>
+                <td id="books{{ forloop.counter }}E">{{ b.co_authors }}</td>
+            </tr>
+            {% if forloop.counter0|add:1|divisibleby:20 %}
+            </tbody>
+        </table>
+    </div>
+          {% endif %}
+            {% endfor %}
+     {% if not conference.all.count|divisibleby:20 %}
+     </tbody>
+        </table>
+            </div>
+ {% endif %}
+    </div>
+    {% comment %}The Books segment ends here!{% endcomment %}
+{% endblock %}

@@ -1,0 +1,136 @@
+{% load static %}
+{% block complainthistory %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="complainthistory">
+            Add Course(s)
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="complainthistory">
+        <div class="ui vertical segment">
+        {% if adc_flag %}
+        {% if pre_register %}
+            {% if final_r %}
+                {% if show_list %}
+                    <form id='add_course_form' action='/academic-procedures/register/' method='post'>
+            <table class="ui very basic collapsing celled sortable table"
+                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+
+                <thead>
+                <tr>
+                    <th>
+                        #
+                    </th>
+
+                    <th>
+                        Course ID
+                    </th>
+
+                    <th>
+                        Course Name
+                    </th>
+
+                    <th>
+                        Credits
+                    </th>
+                    <th>
+                        Semester
+                    </th>
+                    <th>
+                        Select Course
+                    </th>
+                </tr>
+                </thead>
+
+                <tbody>
+
+                    {% csrf_token %}
+                            {% for items in show_list %}
+                            <tr>
+                            <td>
+                            </td>
+                            <td>
+                                {{ items.course_id }}
+                                {% if items.optional %}
+                              <B>       <div style="color:green;">  (optional)</B> </div>
+
+                                {% endif %}
+                                <input type="text" name='course_id' value='{{ items.course_id}}' hidden="True">
+                            </td>
+                            <td>
+                                {{ items.course_name}}
+                                <input type="text" name='course_name' value='{{ items.course_name}}' hidden="True">
+                            </td>
+                            <td>
+                              {{ items.credits }}
+
+                                <input type="text" name='semester' value='{{ items.sem}}' hidden="True">
+                             </td>
+                             <td>
+                                                                {{items.sem}}
+                                <input type="text" name='credits' value='{{ items.credits}}' hidden="True">
+                             </td>
+                             <td><B>
+                                <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
+                              {% if items.optional %}
+                                  <input name="choice" type="checkbox" value="{{ items.course_id }}">
+                              {% else %}
+                                  <input name="choice" type="checkbox" value="{{ items.course_id }}" onclick="return false;" checked hidden="True">
+                                    <div style="color:red;"> (Compulsory) </div>
+                              {% endif %}</B>
+
+                             </td>
+                        </tr>
+                        {% endfor %}
+                </tbody>
+
+            </table>
+
+
+            <div class="ui divider"></div>
+            <center><button class="ui positive basic button">Add Course(s)</button></center>
+        </form>
+        {% else %}<B><CENTER>
+            NO COURSES TO ADD </B></CENTER>
+        {% endif %}
+        {% else %}
+            <B><center>You need to Register to add Course</center></B>
+        {% endif %}
+        {% else %}
+            <B><center>You need to Register to add Course</center></B>
+        {% endif %}
+        {% else %}
+            <b><center>You have to wait for the date</center></b>
+        {% endif %}
+        </div>
+
+    </div>
+
+{% endblock %}
+
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+$(function() {
+    $("#add_course_form").submit(function(event) {
+
+        event.preventDefault();
+        var friendForm = $(this);
+
+        var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
+        posting.done(function(data) {
+            alert('Course Added Successfully');
+            window.location = "/academic-procedures/main/";
+        });
+        posting.fail(function(data) {
+            alert('Filed to add course, some error occured');
+            window.location = "/academic-procedures/main/";
+        });
+    });
+});
+</script>

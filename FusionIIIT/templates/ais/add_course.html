@@ -1,0 +1,52 @@
+{% load static %}
+{% block add_course %}
+<Center><strong><h2>Add Course</h2></strong></Center>
+<form action="/aims/add_course/" id="course_addtion">
+    {% csrf_token %}
+    <div class="ui form">
+        <table class="ui celled table">
+        <tr>
+            <td>Course ID:</td>
+            <td><input type="text" name="course_id" placeholder="Enter Here..."></td>
+        </tr>
+        <tr>
+            <td>Course Name:</td>
+            <td><input type="text" name="course_name" placeholder="Enter Here..."></td>
+        </tr>
+        <tr>
+            <td>Credits:</td>
+            <td><input type="text" name="course_credit" placeholder="Enter Here..."></td>
+        </tr>
+        <tr>
+            <td>Semester:</td>
+            <td><input type="text" name="course_semester" placeholder="Enter Here..."></td>
+        </tr>
+        <tr>
+            <td>Optional:</td>
+            <td><input type="checkbox" name="course_optional" ></td>
+        </tr>
+    </table>
+    </div>
+    <button class="ui button black create_btn" type="submit">Submit</button>
+</form>
+{% endblock %}
+
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+
+    $(function() {
+    $("#course_addtion").submit(function(event) {
+            event.preventDefault();
+            var friendForm = $(this);
+            var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
+            posting.done(function(data) {
+                alert('Course Added');
+                window.location = "/aims/";
+            });
+            posting.fail(function(data) {
+                alert('Failed to Add');
+                window.location = "/aims/";
+            });
+        });
+    });
+</script>

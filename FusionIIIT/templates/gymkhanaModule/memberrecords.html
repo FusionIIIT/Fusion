@@ -1,0 +1,107 @@
+{% load static %}
+{% block memberrecords %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="memberrecords">
+            Member Records
+        </a>
+    </div>
+
+    <script type="text/javascript">
+        function display() {
+            // body...
+            var data = document.getElementById('club_name').value;
+           // alert(data);
+            document.getElementById(data).hidden=false;
+            //alert("dd");
+        }
+    </script>
+
+    <div class="ui active tab" data-tab="memberrecords">
+        <div class="ui vertical segment">
+
+            <form class="ui form" style="padding-left: 32px; padding-right: 32px;">
+               <div class="sixteen wide field">
+                    <label>Club</label>
+                    <select class="ui search fluid dropdown" id="club_name" onchange="display();" required>
+                        <option value="">Select</option>
+                        {% for i in Club_name %}
+                            {% if i.status == "confirmed" %}
+                            <option value="{{ i.club_name }}">{{ i.club_name }} </option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+
+            <br>
+
+            <h4 class="ui dividing header" style="margin-left: 32px; margin-right: 32px;">Members</h4>
+
+            <table class="ui very basic collapsing celled sortable table"
+                   style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;" id="record_table">
+                <thead>
+                <tr>
+                    <th class="four wide column">
+                        <center>Name</center>
+                    </th>
+
+                    <th>
+                        Roll No.
+                    </th>
+
+                    <th>
+                        Club Name
+                    </th>
+
+                    <th>
+                        Category
+                    </th>
+
+                    <th class="six wide column">
+                        Achievements
+                    </th>
+                </tr>
+                </thead>
+
+                <tbody>
+                {% for i in Club_member %}
+                    {% if i.status == "confirmed" %}
+                    <tr id="{{ i.club.club_name }}" hidden="true">
+                        <td>
+                            <h4 class="ui image header">
+                                <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                                <div class="content">
+                                    {{ i.member.id.id }}
+                                </div>
+                            </h4>
+                        </td>
+
+                        <td>
+                            {{ i.member.id.user.username}}
+                        </td>
+
+                        <td>
+                            {{ i.club.club_name}}
+                        </td>
+
+                        <td>
+                            {{ i.club.category }}
+                        </td>
+
+                        <td>
+                            {{ i.description }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                {% endfor %}
+                </tbody>
+            </table>
+
+            <br>
+            <div class="ui divider"></div>
+        </div>
+    </div>
+
+{% endblock %}

@@ -1,0 +1,288 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Home
+{% endblock %}
+
+{% block css %}
+    <link rel="stylesheet" type="text/css" href="{% static 'globals/css/site.css' %}">
+    <style type="text/css">
+
+        .hidden.menu {
+            display: none;
+        }
+
+        .masthead.segment {
+            min-height: 700px;
+            padding: 1em 0em;
+        }
+        .masthead .logo.item img {
+            margin-right: 1em;
+        }
+        .masthead .ui.menu .ui.button {
+            margin-left: 0.5em;
+        }
+        .masthead h1.ui.header {
+            margin-top: 3em;
+            margin-bottom: 0em;
+            font-size: 4em;
+            font-weight: normal;
+        }
+        .masthead h2 {
+            font-size: 1.7em;
+            font-weight: normal;
+        }
+
+        .ui.vertical.stripe {
+            padding: 8em 0em;
+        }
+        .ui.vertical.stripe h3 {
+            font-size: 2em;
+        }
+        .ui.vertical.stripe .button + h3,
+        .ui.vertical.stripe p + h3 {
+            margin-top: 3em;
+        }
+        .ui.vertical.stripe .floated.image {
+            clear: both;
+        }
+        .ui.vertical.stripe p {
+            font-size: 1.33em;
+        }
+        .ui.vertical.stripe .horizontal.divider {
+            margin: 3em 0em;
+        }
+
+        .team.stripe.segment {
+            padding: 0em;
+        }
+        .team.stripe.segment .grid .column {
+            padding-top: 5em;
+            padding-bottom: 5em;
+        }
+
+        .footer.segment {
+            padding: 5em 0em;
+        }
+
+        .secondary.pointing.menu .toc.item {
+            display: none;
+        }
+
+        @media only screen and (max-width: 700px) {
+            .ui.fixed.menu {
+                display: none !important;
+            }
+            .secondary.pointing.menu .item,
+            .secondary.pointing.menu .menu {
+                display: none;
+            }
+            .secondary.pointing.menu .toc.item {
+                display: block;
+            }
+            .masthead.segment {
+                min-height: 350px;
+            }
+            .masthead h1.ui.header {
+                font-size: 2em;
+                margin-top: 1.5em;
+            }
+            .masthead h2 {
+                margin-top: 0.5em;
+                font-size: 1.5em;
+            }
+        }
+
+
+    </style>
+{% endblock %}
+
+{% block body %}
+    <!-- Following Menu -->
+    <div class="ui massive top fixed menu transition hidden">
+        <div class="ui container">
+            <a class="active item">Home</a>
+
+            <div class="right menu">
+                <div class="item">
+                    <a class="ui button" href="/accounts/login">
+                        Log in
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page Contents -->
+    <div class="pusher">
+    <div class="ui inverted vertical masthead center aligned segment">
+
+        <div class="ui container">
+            <div class="ui large secondary inverted pointing menu">
+
+                <a class="active item">Home</a>
+                <div class="right item">
+                    <a class="ui inverted button" href='/accounts/login'>
+                        Log in
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="ui text container">
+            <h1 class="ui inverted header">
+                FusionIIIT!
+            </h1>
+
+            <h3>
+                An Intranet Institute
+                <br>
+                Enterprise Resource Planning Application!
+            </h3>
+
+            <!--TODO-->
+
+            <a class="ui primary large button" href="/accounts/login">
+
+
+            Log in
+                <i class="right arrow icon"></i>
+            </a>
+        </div>
+
+    </div>
+
+    {% comment %}
+        The Second segment starts here!
+    {% endcomment %}
+    <div class="ui vertical stripe segment" style="background-color: #FFF;">
+        <div class="ui text container">
+            <h3 class="ui header">
+                Welcome to IIITDM Jabalpur's Enterprise Resource Management Project
+            </h3>
+
+            <p>
+                FusionIIIT is a unique project in its own sense that it has been designed and developed by the
+                Third year Undergraduate student of <BR> Computer Science and Engineering department </BR> IIITDM Jabalpur.
+                <BR>We are releasing 9 modules for Beta release:<BR>
+                - Central Mess<BR>
+                - Complaint System<BR>
+                - Awards and Scholarships<BR>
+                - Academics Modules<BR>
+                - Online Course Management<BR>
+                - Employee Information System<BR>
+                - Placement Cell<BR>
+                - Health Care<BR>
+                - File Tracking System<BR>
+                - Visitors Hostel Module<BR>
+                So, what are you waiting for, use your institue's gmail account to Sign In.
+            </p>
+
+            <h4 class="ui horizontal header divider">
+                <span>Gmail Sign In</span>
+            </h4>
+            <h3 class="ui header">
+                What if you can't Sign In using your Institute's Gmail Account
+            </h3>
+
+            <p>
+                <br> Drop a mail at <B>erp@iiitdmj.ac.in</B> or <B> anuraagsingh@iiitdmj.ac.in</B>
+                It will be fixed.</p>
+
+                <h4 class="ui horizontal header divider">
+                    <span>Feedback/Bug report</span>
+                </h4>
+            <h3 class="ui header">
+                What if something does'nt work?
+            </h3>
+
+            <p>
+                Yes we know, you probably feel disappointed.
+                <BR>Again you can drop a mail at <B>erp@iiitdmj.ac.in</B>. <BR>You can always give your feedback by clicking the top left corner of the top navigation bar.
+
+            </p>
+        </div>
+    </div>
+    {% comment %}
+        The Second Segment ends here!
+    {% endcomment %}
+
+
+    <div class="ui inverted vertical footer segment">
+        <div class="ui divider"></div>
+
+        <div class="ui container">
+            <div class="ui stackable inverted divided equal height stackable grid">
+
+                <!--TODO-->
+                <div class="six wide column">
+                    <img class="ui tiny image right floated"
+                         alt="ERP!"
+                         src=""
+                         style="margin-right: 2.5vw;">
+                </div>
+
+                <div class="three wide column">
+                    <h4 class="ui inverted header">
+                        About
+                    </h4>
+
+                    <div class="ui inverted link list">
+                        <a href="http://www.iiitdmj.ac.in" target="_blank" class="item">
+                            Sitemap
+                        </a>
+                        <a href="http://web.iiitdmj.ac.in" target="_blank" class="item">
+                            IntraWeb
+                        </a>
+                    </div>
+                </div>
+
+                <div class="six wide column">
+                    <h4 class="ui inverted header">
+                        Team
+                    </h4>
+
+                    <div class="ui inverted link list">
+                        <a class="item">
+                            3rd Year CSE
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascript %}
+    <script type="text/javascript" src="{% static 'globals/js/sidebar.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/transition.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/visibility.js' %}"></script>
+
+    <script>
+        $(document)
+            .ready(function() {
+
+                // fix menu when passed
+                $('.masthead')
+                    .visibility({
+                        once: false,
+                        onBottomPassed: function() {
+                            $('.fixed.menu').transition('fade in');
+                        },
+                        onBottomPassedReverse: function() {
+                            $('.fixed.menu').transition('fade out');
+                        }
+                    })
+                ;
+
+                // create sidebar and attach to menu open
+                $('.ui.sidebar')
+                    .sidebar('attach events', '.toc.item')
+                ;
+
+            })
+        ;
+    </script>
+{% endblock %}

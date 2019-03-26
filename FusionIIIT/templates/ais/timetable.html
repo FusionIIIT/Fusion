@@ -1,0 +1,231 @@
+{% load static %}
+{% block timetable %}
+
+ <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="academic">
+            Academic Time-Table
+        </a>
+        <a class=" item" data-tab="exam">
+            Exam Time-Table
+        </a>
+
+       
+    </div>
+
+ <div class="ui active tab segment" data-tab="academic">
+
+       <h4 class="ui dividing header">Edit Time Table</h4>
+
+       <form class="ui form" action="{% url 'academic_information:add_timetable' %}" method="post" id="form7">
+            {% csrf_token %}
+            <div class="field">
+                 <div class="three fields">
+                    <div class="field">
+                        <label>Day</label>
+                           <div class="ui fluid search selection dropdown">
+                                    <input type="hidden" name="year">
+                                    <i class="dropdown icon"></i>
+                                    <div class="default text">Year</div>
+                                    <div class="menu">
+                                        <div class="item" data-value="1st Year">1st Year</div>
+                                          <div class="item" data-value="2nd Year">2nd Year</div>
+                                          <div class="item" data-value="3rd Year">3rd Year</div>
+                                          <div class="item" data-value="4th Year">4th Year</div>
+                                          <div class="item" data-value="5th Year">5th Year</div>
+                                          <div class="item" data-value="6th Year">6th Year</div>
+                                          
+                                        
+                                  </div>
+                                      
+                                        
+                                    </div>
+                                </div>
+
+                                  <div class="field">
+                                    <label>Programme</label>
+                                        <div class="ui fluid search selection dropdown">
+                                    <input type="hidden" name="programme">
+                                    <i class="dropdown icon"></i>
+                                    <div class="default text">Programme</div>
+                                    <div class="menu">
+                                        <div class="item" data-value="B.Tech">B.Tech</div>
+                                        <div class="item" data-value="B.Des ">B.Des </div>
+                                        <div class="item" data-value="M.Tech">M.Tech</div>
+                                        <div class="item" data-value="M.Des">M.Des </div>
+                                    </div>
+                                </div>
+                               </div>
+                                 <div class="field">
+                                  <label>Upload Time Table</label>
+                                  <input placeholder="Upload Time Table" type="file" name="file">
+                                </div>
+
+                        </div>
+
+                  
+                
+               
+                    
+                </div>
+            
+             <div class="fields">
+                   
+
+                    <div class="one wide field">
+                        <label><br></label>
+                       <a href="#" onclick="document.getElementById('form7').submit();">
+                        <div class="ui primary button">Save
+                            <i class="ui save icon right floated"></i>
+                        </div>
+                             </a>
+                    </div> 
+                </div>
+        </form>  
+
+          <table class="ui fixed sortable celled table table">
+                  <thead>
+                    <tr>
+                      <th style="width: 30%;">Upload Time</th>
+                      <th style="width: 30%;">Programme</th>
+                      <th style="width: 23%;"> Timetable File</th>
+                      <th style="width:10%">Action</th>
+                      
+                    </tr>
+                  </thead>
+                  <tbody>
+                  <form action="{% url 'academic_information:delete_timetable' %}">
+                   {% csrf_token %}
+                  {% for c in timetable %}
+                    <tr>
+                      <td>{{ c.upload_date }}</td>
+                      <td>B.Tech</td>
+                        <td>{{ c.time_table }}</td>
+                      <td><button type="submit" value="{{ c.time_table }}" name="delete"><i class="trash outline icon" style="font-size:1.3vw;color:red;"></i></button></td>
+                      
+                    </tr>
+                  {% endfor %}
+                  </form>
+                    <tr>
+                     
+
+                    </tr>
+                    <tr>
+                     
+
+                    </tr>
+                  </tbody>
+                </table>
+
+    </div>
+
+
+
+
+    <div class="ui  tab segment" data-tab="exam">
+
+       <h4 class="ui dividing header">Edit Time Table</h4>
+
+         <form class="ui form" method = "post" action="{% url 'academic_information:add_exam_timetable' %}" id="form8">
+             {% csrf_token %}
+            <div class="field">
+                 <div class="three fields">
+                    <div class="field">
+                        <label>Day</label>
+                           <div class="ui fluid search selection dropdown">
+                                    <input type="hidden" name="year">
+                                    <i class="dropdown icon"></i>
+                                    <div class="default text">Year</div>
+                                    <div class="menu">
+                                        <div class="item" data-value="1st Year">1st Year</div>
+                                          <div class="item" data-value="2nd Year">2nd Year</div>
+                                          <div class="item" data-value="3rd Year">3rd Year</div>
+                                          <div class="item" data-value="4th Year">4th Year</div>
+                                          <div class="item" data-value="5th Year">5th Year</div>
+                                          <div class="item" data-value="6th Year">6th Year</div>
+                                          
+                                        
+                                  </div>
+                                      
+                                        
+                                    </div>
+                                </div>
+
+                                  <div class="field">
+                                    <label>Programme</label>
+                                        <div class="ui fluid search selection dropdown">
+                                    <input type="hidden" name="programme">
+                                    <i class="dropdown icon"></i>
+                                    <div class="default text">Programme</div>
+                                    <div class="menu">
+                                        <div class="item" data-value="B.Tech">B.Tech</div>
+                                        <div class="item" data-value="B.Des ">B.Des </div>
+                                        <div class="item" data-value="M.Tech">M.Tech</div>
+                                        <div class="item" data-value="M.Des">M.Des </div>  
+                                    </div>
+                                </div>
+                               </div>
+                                 <div class="field">
+                                  <label>Upload Time Table</label>
+                                  <input placeholder="Upload Time Table" type="file" name="file">
+                                </div>
+
+                        </div>
+
+                  
+                
+               
+                    
+                </div>
+            
+             <div class="fields">
+                   
+
+                    <div class="one wide field">
+                        <label><br></label>
+                        <a href="#" onclick="document.getElementById('form8').submit();">
+                        <div class="ui primary button">Save
+                            <i class="ui save icon right floated"></i>
+                        </div>
+                             </a>
+                    </div> 
+                </div>
+        </form>  
+
+          <table class="ui fixed sortable celled table table">
+                  <thead>
+                    <tr>
+                      <th style="width: 30%;">Upload Time</th>
+                      <th style="width: 30%;">Programme</th>
+                      <th style="width: 23%;"> Timetable File</th>
+                      <th style="width:10%">Action</th>
+                      
+                    </tr>
+                  </thead>
+                  <tbody>
+                  {% for c in exam %}
+                    <tr>
+                      <td>{{ c.upload_date }}</td>
+                      <td>B.Tech</td>
+                      <td>{{ c.exam_time_table }}</td>
+                      <td><i class="edit icon" style="font-size:1.3vw;color:blue"></i><br><i class="trash outline icon" style="font-size:1.3vw;color:red;"></i></td>
+                      
+                    </tr>
+                  {% endfor %}
+                    <tr>
+                     
+
+                    </tr>
+                    <tr>
+                     
+
+                    </tr>
+                  </tbody>
+                </table>
+
+    </div>
+
+
+
+
+
+    {% endblock %}

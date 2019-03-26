@@ -1,0 +1,36 @@
+{% load static %}
+{% block timer %}
+
+<script>
+var x = setInterval(function() {
+    var days = Math.floor(duration / ( 60 * 60 * 24));
+    var hours = Math.floor((duration % ( 60 * 60 * 24)) / (60 * 60));
+    var minutes = Math.floor((duration % ( 60 * 60)) / (60));
+    var seconds = Math.floor((duration % ( 60)));
+
+    // Output the result in an element with id="demo"
+    document.getElementById("demo").innerHTML = hours + "h "
+    + minutes + "m " + seconds + "s ";
+		duration-=1
+    // If the count down is over, write some text
+    if (duration < 0) {
+        clearInterval(x);
+        alert("Time Expired");
+        $.ajax({
+          type:'POST',
+          url:'/quiz/{{contest.pk}}/submit',
+          data:{csrfmiddlewaretoken: '{{ csrf_token }}'},
+          success: function(data){
+            alert(data.message+"\n"+data.score);
+            localStorage.setItem("finished", "1");
+            window.close();
+          },
+          error: function(data,err){
+            alert(err);
+          }
+        });
+    }
+}, 1000);
+
+</script>
+{% endblock %}

@@ -1,0 +1,155 @@
+ {% block tab1content1 %}
+<form action="{%url 'office:p_closure' %}" method ="POST">
+
+    {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+    <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+        {% csrf_token %}
+        
+        <div class="three fields">
+            <div class="six wide field">
+                <label>Project No.</label>
+                <input value="" class="ui large input"  name="project_id">
+            </div>
+
+            <div class="six wide field">
+                <label>Date</label>
+                <input value="" class="ui large input" type="date" name="date">
+            </div>
+            
+            <div class="four wide field">
+                <label>Principal Investigator</label>
+                <input value="" class="ui large input"  name="principal_investigator">
+            </div>
+        </div>
+       
+        <h4>Committed Expenses,if any</h4>
+        
+        <div class="two fields">
+            
+        <div class="six wide field">
+                <label>Please specify whether any dues outstanding</label>
+                <select class="ui search fluid dropdown" name="committed">
+                    <option value="">Select</option>
+                    <option value="fest1">Yes</option>
+                    <option value="fest2">No</option>
+                </select>
+        </div>  
+        <div class="ten wide field field">
+            <label>Remarks & Description</label>
+            <textarea rows="2" name ="remark1"></textarea>
+        </div>
+            
+        </div>
+        
+                <h4>Other direct payments under processing</h4>
+        
+        <div class="two fields">
+            
+        <div class="six wide field">
+                <label>Please specify whether any dues outstanding</label>
+                <select class="ui search fluid dropdown" name="payment">
+                    <option value="">Select</option>
+                    <option value="fest1">Yes</option>
+                    <option value="fest2">No</option>
+                </select>
+        </div>  
+        <div class="ten wide field field" >
+            <label>Remarks & Description</label>
+            <textarea rows="2" name="remark2"></textarea>
+        </div>
+            
+        </div>
+        
+                <h4>Salary/ Honorarium dues like last payment of employees etc. under processing</h4>
+        
+        <div class="two fields">
+            
+        <div class="six wide field">
+                <label>Please specify whether any dues outstanding</label>
+                <select class="ui search fluid dropdown" name="salary">
+                    <option value="">Select</option>
+                    <option value="fest1">Yes</option>
+                    <option value="fest2">No</option>
+                </select>
+        </div>  
+        <div class="ten wide field field">
+            <label>Remarks & Description</label>
+            <textarea rows="2" name="remark3"></textarea>
+        </div>
+            
+        </div>
+        
+                <h4>Advances outstanding</h4>
+        
+        <div class="two fields">
+            
+        <div class="six wide field">
+                <label>Please specify whether any dues outstanding</label>
+                <select class="ui search fluid dropdown" name="advance">
+                    <option value="">Select</option>
+                    <option value="fest1">Yes</option>
+                    <option value="fest2">No</option>
+                </select>
+        </div>  
+        <div class="ten wide field field">
+            <label>Remarks & Description</label>
+            <textarea rows="2" name="remark4"></textarea>
+        </div>
+            
+        </div>
+        
+                <h4>Others (If any)</h4>
+        
+        <div class="two fields">
+            
+        <div class="six wide field">
+                <label>Please specify whether any dues outstanding</label>
+                <select class="ui search fluid dropdown" name="other">
+                    <option value="">Select</option>
+                    <option value="fest1">Yes</option>
+                    <option value="fest2">No</option>
+                </select>
+        </div>  
+        <div class="ten wide field field">
+            <label>Remarks & Description</label>
+            <textarea rows="2" name="remark5"></textarea>
+        </div>
+            
+        </div>
+        
+                <h4>Full Overhead deducted</h4>
+        
+        <div class="two fields">
+            
+        <div class="six wide field">
+                <label>Please specify whether any dues outstanding</label>
+                <select class="ui search fluid dropdown" name="overhead">
+                    <option value="">Select</option>
+                    <option value="fest1">Yes</option>
+                    <option value="fest2">No</option>
+                </select>
+        </div>  
+        <div class="ten wide field field">
+            <label>Remarks & Description</label>
+            <textarea rows="2" name="remark6"></textarea>
+        </div>
+            
+        </div>
+        
+        <div class="field">
+            <label>Attach Application</label>
+            <input class="ui input" type="file"></input>
+        </div>
+        
+        <div class="field">
+            <button class="ui primary button right floated" type="submit">
+                Submit
+            </button>
+        </div>
+    </div>
+</form>
+
+<br>
+<br>
+<div class="ui divider"></div>
+  {% endblock %}

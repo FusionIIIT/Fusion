@@ -1,0 +1,457 @@
+{% load semanticui %}
+<script>
+    /*
+    Old is gold
+    function Check(e){
+                     
+            var userInput=$(e).val();
+            
+            if (userInput=="Casual"){
+                $(e).parent().next().css('display','block');
+                //document.getElementById("half-day").style.display='block';
+            }
+            else{
+                $(e).parent().next().css('display','none');
+                //document.getElementById("half-day").style.display = 'none';
+            }
+           
+        return false;
+    }*/
+
+    /* New */
+    function Check(e){
+                     
+            var userInput=$(e).html();
+            
+            if (userInput=="Casual"){
+                $(e).parent().parent().parent().next().css('display','block');
+                //document.getElementById("half-day").style.display='block';
+            }
+            else{
+                $(e).parent().parent().parent().next().css('display','none');
+                //document.getElementById("half-day").style.display = 'none';
+            }
+
+            if (userInput=="Station"){
+                $(e).parent().parent().parent().next().next().css('display','block');
+            }
+            else{
+                $(e).parent().parent().parent().next().next().css('display','none');
+            }
+           
+        return false;
+    }
+
+          
+    
+</script>
+
+<div class="ui container">
+    <style media="screen">
+
+        .button-holder{
+            float: right;
+        }
+
+        .leave-add-row{
+            border-bottom:1px solid gray;
+            
+        }
+        .leave-delete-row{
+            border-bottom:2px solid gray;
+            
+        }
+        .acad-add-row{
+            border-bottom:2px solid gray;
+            
+        }
+        .acad-delete-row{
+            border-bottom:2px solid gray;
+            
+        }
+        .admin-add-row{
+            border-bottom:2px solid gray;
+            
+        }
+        .admin-delete-row{
+            border-bottom:2px solid gray;
+            
+        }
+        
+    </style>
+    
+
+    <div class="ui vertical stripe team segment"
+         style="height: 70vh; padding-left: 3.5%;
+                padding-right: 3.5%; overflow-y: scroll; overflow-x: hidden;">
+
+        <div class="ui header">
+            Leave Application Form:
+        </div>
+
+        <div class="ui divider"></div>
+        <br>
+        <div class="all-container">
+            <form class="ui large form" method="post" autocomplete="off" enctype="multipart/form-data">
+                {% csrf_token %}
+
+
+                {% if request.user.extrainfo.user_type != 'student' %}
+
+                    <script type="text/javascript">
+
+                        $(function(){
+
+                            var add = function(row){
+                                $(row).find('.date.calendar').each(function() {
+                                    $(this).calendar({
+                                        type: 'date',
+                                    });
+                                });
+                                $(row).find('.dropdown').each(function(i){
+                                    $(this).dropdown('refresh');
+                                });
+                            };
+                            var refresh = function(){
+                                $(document).find('.date.calendar').each(function() {
+                                    $(this).calendar('refresh');
+                                });
+                            };
+
+                            var update = function(row) {
+                                // alert(row.html());
+
+                                add(document);
+                                refresh();
+                                add(document);
+                                refresh();
+                            };
+                            $('.leave-form-container').formset({
+                                formCssClass: "dynamic-leave-form",
+                                addText: "Add Any Other Leave Type Segment",
+                                addCssClass: "leave-add-row",
+                                deleteCssClass: "leave-delete-row",
+                                deleteText: "Remove Other Leave Type Segment",
+                                prefix: "{{ leave_form_set.prefix }}",
+                                added: update,
+                                // removed: update,
+                            });
+                            
+                            $('.acad-form-container').formset({
+                                formCssClass: "dynamic-acad-form",
+                                addText: "Add Replacement",
+                                deleteText: "Remove Replacement",
+                                addCssClass: "acad-add-row",
+                                deleteCssClass: "acad-delete-row",
+                                prefix: "{{ acad_form_set.prefix }}",
+                                added: update,
+                            });
+                            $('.admin-form-container').formset({
+                                formCssClass: "dynamic-admin-form",
+                                addText: "Add Replacement",
+                                deleteText: "Remove Replacement",
+                                addCssClass: "admin-add-row",
+                                deleteCssClass: "admin-delete-row",
+                                prefix: "{{ admin_form_set.prefix }}",
+                                added: update,
+                            });
+                        });
+                        $(document).on('click','#leave_next', function(e){
+                            e.preventDefault();
+                            // alert("Woah, this worked");
+                            $("#leave_form").fadeOut(function(){
+                                $("#replacements").fadeIn();
+                                $("#first").removeClass('active');      
+                                $("#first").addClass('completed');
+                                $("#second").addClass('active');
+                            });
+                        });
+                        $(document).on('click','#rep_next', function(e){
+                            e.preventDefault();
+                            // alert("Woah, this worked");
+                            $("#replacements").fadeOut(function(){
+                                $("#common_form").fadeIn();
+                                $("#second").removeClass('active');     
+                                $("#second").addClass('completed');
+                                $("#third").addClass('active');
+                            });
+                        });
+
+                        $(document).on('click','#common_pre', function(e){
+                            e.preventDefault();
+                            // alert("Woah, this worked");
+                            $("#common_form").fadeOut(function(){
+                                $("#replacements").fadeIn();
+                                $("#third").removeClass('active');      
+                                $("#second").removeClass('completed');
+                                $("#second").addClass('active');
+                            });
+                        });
+
+                        $(document).on('click','#rep_pre', function(e){
+                            e.preventDefault();
+                            // alert("Woah, this worked");
+                            $("#replacements").fadeOut(function(){
+                                $("#leave_form").fadeIn();
+                                $("#second").removeClass('active');     
+                                $("#first").removeClass('completed');
+                                $("#first").addClass('active');
+                            });
+                        });
+
+                        $(document).on('click', '#submit', function(){
+                            $('#submit-btn').click();
+                        });
+
+
+
+                        
+                    </script>
+
+                        {% if leave_form_set.non_form_errors %}
+                            {% for error in leave_form_set.non_form_errors %}
+                                <div class="ui red message">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+
+                        {% endif %}
+
+                    <div class="ui ordered steps">
+                      <div class="active step" id="first">
+                        <div class="content">
+                          <div class="title">Leave Type</div>
+                          
+                        </div>
+                      </div>
+                      <div class="step" id="second">
+                        <div class="content">
+                          <div class="title">Responsibility</div>
+                          
+                        </div>
+                      </div>
+                      <div class="step" id="third">
+                        <div class="content">
+                          <div class="title">Purpose</div>
+                          
+                        </div>
+                      </div>
+                    </div>
+
+                    <div id="leave_form">
+                        
+
+                        {% for form in leave_form_set %}
+                            
+                            <div id="{{ form.prefix }}-row" class="leave-form-container" style="padding-top:10px;">
+                                <div class="required field">
+                                    <label for="id_{{ form.prefix }}-leave_type">Leave Type</label>
+                                    <div class="ui selection dropdown">
+                                        <input name="{{ form.prefix }}-leave_type"  value="" type="hidden"></input>
+                                        <i class="dropdown icon"></i>
+                                        <div class="default text">Select</div>
+                                        <div class="menu">
+                                            {% if acad_form_set %}
+                                                {% for leave_id,leave_name in form.l_type_fac %}
+                                                    <div class="item" data-value="{{leave_id}}" onclick="return Check(this);">{{leave_name}}</div>
+                                                {% endfor %}
+                                            {% else %}
+                                                {% for leave_id,leave_name in form.l_type_staff %}
+                                                    <div class="item" data-value="{{leave_id}}" onclick="return Check(this);">{{leave_name}}</div>
+                                                {% endfor %}
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!--Old
+                                <div class="required field">
+                                    <label for="id_{{ form.prefix }}-leave_type">Leave Type</label>
+                                    <select name="{{ form.prefix }}-leave_type" class="leave-type-id" onchange="return Check(this);" >
+                                        {% for leave_name in form.l_type %}
+                                            <option value={{leave_name}}>{{leave_name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>-->
+
+                                <!--{% render_field form.leave_type %}-->
+                                <div class="two fields" style="display: none;align-left: 10px;" id="half-day" >
+                                    <div  >
+                                        {% render_field form.start_half %}
+                                    </div>
+                                    <div >
+                                        {% render_field form.end_half %}
+                                    </div>
+                                </div>
+
+                                <div class="fields" style="display: none;align-left: 10px;">
+                                    <div class="field">
+                                        {% render_field form.address %}
+                                    </div>
+                                </div>
+
+                                <div class="two fields" style="align-left: 10px;">
+                                    <div class="field">
+                                            {% render_field form.start_date _icon='calendar' _align='left' placeholder='Click to select date' %}
+                                    </div>
+
+                                    <div class="field">
+                                            {% render_field form.end_date _icon='calendar' _align='left' placeholder='Click to select date'%}
+                                    </div>
+                                </div>
+                               
+                                
+                                {% render_field form.document %}
+                                
+                            </div>
+                            
+                        {% endfor %}
+                        <br>
+                        <div class="button-holder">
+                            <div id="leave_next" class="ui primary animated button" tabindex="0">
+                                <div class="visible content">Next</div>
+                                <div class="hidden content">
+                                    <i class="right arrow icon"></i>
+                                </div>
+                            </div>
+                        </div>
+                    
+
+                    </div>
+                    <div id="replacements" hidden>
+
+                        {% if acad_form_set %}
+                            <div class="ui header">
+                                Academic Responsibilities:
+                            </div>
+
+                            <div id="acad_form">
+                                {% for form in acad_form_set %}
+
+                                    <div id="{{ form.prefix }}-row" class="acad-form-container" style="padding-top:10px;">
+                                        <div class="two fields" style="align-left: 10px;">
+                                            <div class="field">
+                                                {% render_field form.acad_start_date _icon='calendar' _align='left' placeholder='Click to select date'%}
+                                            </div>
+
+                                            <div class="field">
+                                                {% render_field form.acad_end_date _icon='calendar' _align='left' placeholder='Click to select date'%}
+                                            </div>
+                                        </div>
+                                        {% render_field form.acad_rep %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <hr><hr>
+                        {% endif %}
+                        <div class="ui header">
+                            Administrative Responsibilities:
+                        </div>
+                        <div id="admin_form">
+
+                            {% for form in admin_form_set %}
+                                <div id="{{ form.prefix }}-row" class="admin-form-container" style="padding-top:10px;">
+
+                                    <div class="two fields" style="align-left: 10px;">
+                                        <div class="field">
+                                            {% render_field form.admin_start_date _icon='calendar' _align='left' placeholder='Click to select date'%}
+                                        </div>
+
+                                        <div class="field">
+                                            {% render_field form.admin_end_date _icon='calendar' _align='left' placeholder='Click to select date'%}
+                                        </div>
+                                    </div>
+                                    {% render_field form.admin_rep %}
+
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="button-holder">
+                            <span id="rep_pre" class="ui primary animated button" tabindex="0">
+                                <div class="visible content">Back</div>
+                                <div class="hidden content">
+                                    <i class="white left arrow icon"></i>
+                                </div>
+                            </span>
+                            <span id="rep_next" class="ui primary animated button" tabindex="0">
+                                <div class="visible content">Next</div>
+                                <div class="hidden content">
+                                    <i class="white right arrow icon"></i>
+                                </div>
+                            </span>
+                        </div>
+
+                    </div>
+                    <div id="common_form" hidden>
+
+                        {% render_field common_form.purpose %}
+                        <!--{% render_field common_form.is_station %}-->
+                        {% render_field common_form.leave_info _no_required='True' %}
+                        <span id="common_pre" class="primary ui animated button" tabindex="0">
+                            <div class="visible content">Go Back</div>
+                            <div class="hidden content">
+                                <i class="white left arrow icon"></i>
+                            </div>
+                        </span>
+
+                        {{ leave_form_set.management_form }}
+                        {{ admin_form_set.management_form }}
+                        {{ acad_form_set.management_form }}
+
+                        <button id="submit-btn" type="submit" hidden> </button>
+                        <span id="submit" class="primary green ui animated button" tabindex="0">
+                            <div class="visible content">Submit</div>
+                            <div class="hidden content">
+                                <i class="white right arrow icon"></i>
+                            </div>
+                        </span>
+                    </div>
+
+                {% else %}
+                    <div class="two fields" style="align-left: 10px;">
+                        <div class="field">
+                            {% render_field form.start_date _icon='calendar' _align='left' placeholder='Click to select date' %}
+                        </div>
+
+                        <div class="field">
+                            {% render_field form.end_date _icon='calendar' _align='left' placeholder='Click to select date' %}
+                        </div>
+                    </div>
+                    {% render_field form.leave_type %}
+                    {% render_field form.document %}
+                    {% render_field form.address %}
+                    {% render_field form.purpose %}
+                    <button type="submit" class="ui primary button"> Submit </button>
+                {% endif %}
+
+            </form>
+        </div>
+
+    </div>
+
+    <div class="extra content">
+        <br>
+        <br>
+
+        <div class="ui five equal width blue small stackable statistics"
+             style="margin: auto;">
+            {% for bal in leave_balance %}
+	    	<!--{% if not bal.leave_type.name == "Station" %}-->
+	    	<div class="ui statistic">
+                    <div class="value">
+                        {{ bal.remaining_leaves }}
+                    </div>
+
+                    <div class="label">
+                        <i class="plane icon"></i>
+                        {{ bal.leave_type.name }}
+                    </div>
+                </div>
+		{% endif %}
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</div>

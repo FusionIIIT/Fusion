@@ -1,0 +1,234 @@
+
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Module
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}
+            The left-rail segment starts here!
+        {% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+
+                {% comment %}
+                TODO: Instead of Name write the position like "Office Of Dean Students!"
+                {% endcomment %}
+
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu starts here!{% endcomment %}
+            <div class="ui huge fluid vertical pointing menu"
+                 style="max-width: 320px;">
+
+                <a class="active item" data-tab="first">
+                    Applications
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                 <a class="item" href="http://www.sciencepub.net/nature/0403/13-0186-mahongbao-ns.pdf" target="_blank">
+                    Generate Report
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                 <a class="active item" data-tab="second">
+                    Projects
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+            </div>
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+
+        {% comment %}
+            The central-rail segment starts here!
+        {% endcomment %}
+        <div class="eight wide column">
+          
+
+
+        <h1 align="center"> Project Details </h1><br><br>
+
+            {% block tab1content1 %}
+<form>
+    {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+    <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+         
+         
+        <div class="three fields">
+            <div class="six wide field">
+                <label>Project Title</label>
+                <input value={{obj.project_title}} class="ui large input" name="project_title" readonly>
+            </div>
+
+            <div class="six wide field">
+                <label>Sponsoring Agency</label>
+                <input value={{obj.sponsored_agency}} class="ui large input" name="sponsored_agency" readonly>
+            </div>
+            
+            <div class="four wide field">
+                <label>Project Start Date</label>
+                <input value={{obj.start_date}} class="ui large input"  name="start_date" readonly>
+            </div>
+
+            <div class="four wide field">
+                <label>Fund Recieved Date</label>
+                <input value={{obj.fund_recieved_date}} class="ui large input" name="fund_recieved_date" readonly>
+            </div>
+        </div>
+        
+        <div class="three fields">
+            <div class="six wide field">
+                <label>Project Duration</label>
+                <input value={{obj.duration}} class="ui large input"  name="duration" readonly>
+            </div>
+
+            <div class="six wide field">
+                <label>Is there any agreement</label>
+                <input value={{obj.agreement}} class="ui large input"  name="agreement" readonly>
+            </div>
+            
+            <div class="four wide field">
+                <label>Total amount sanctioned</label>
+                <input value={{obj.amount_sanctioned}} class="ui large input" name="amount_sanctioned" readonly>
+            </div>
+        </div>
+        
+        <div class="two fields">
+
+            <div class="four wide field">
+                <label>project type</label>
+                <input value={{obj.project_type}} class="ui large input" name="amount_sanctioned" readonly>
+            </div>
+
+        </div>
+
+        <!-- <div class="four fields">
+            <div class="four wide field">
+                <label>Name of PI</label>
+                <input value={{obj.pi_name}} class="ui large input" name="pi_name" readonly>
+            </div>
+
+            <div class="four wide field">
+                <label>Mobile No of PI</label>
+                <input value={{obj.mobile_pi}} class="ui large input"  name="mobile_pi" readonly>
+            </div>
+            
+            <div class="four wide field">
+                <label>Name of Co-PI</label>
+                <input value={{obj.copi_name}} class="ui large input" name="copi_name" readonly>
+            </div>
+
+            <div class="four wide field">
+                <label>Mobile No of Co-PI</label>
+                <input value={{obj.mobile_copi}} class="ui large input"  name="mobile_copi" readonly>
+            </div>
+        </div> -->
+
+        <div class="field">
+            <label>Details and Description</label>
+            <textarea rows="2"  value={{obj.description}} readonly></textarea>
+        </div>
+    </div>
+</form>
+
+<br>
+<br>
+<div class="ui divider"></div>
+  {% endblock %}
+
+
+
+           
+        </div>
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            <div class="row">
+                <div class="ui row">
+                    <h3 class="ui header" style="padding-left: 16px;">
+                        Office Of Dean RSPC
+                    </h3>
+                </div>
+            </div>
+
+        <div class="ui divider"></div>
+
+            <div class="row">
+                <div class="ui row">
+                    <div id="textSegmentDiv">
+                        <div class="ui active large text loader"
+                             id="loader">
+                            Loading ...
+                        </div>
+
+                        <div id="textLoader" style="max-height: 87.5vh; overflow-y: auto; overflow-x: hidden;">
+                            {% block alerts %}
+                                {% include 'officeModule/officeOfDeanRSPC/alerts.html' %}
+                            {% endblock %}
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+    </div>
+    {% comment %}The grid ends here!{% endcomment %}
+
+
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+
+    <script>
+        $(document).ready(function(){
+            $("#textLoader").toggle();
+            $("#replacement-card").toggle();
+            setTimeout(loader, 1750);
+        });
+
+        function loader() {
+            $("#textLoader").toggle();
+            $("#replacement-card").toggle();
+            $("#loader").removeClass("active");
+            $("#loader").addClass("disabled");
+        }
+    </script>
+
+{% endblock %}
+ 

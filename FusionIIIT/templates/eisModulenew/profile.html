@@ -1,0 +1,476 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Profile
+{% endblock %}
+
+{% block css %}
+
+ <link href="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.css" rel="stylesheet" type="text/css" />
+
+{% endblock %}
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}
+            The left-rail segment starts here!
+        {% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu starts here!{% endcomment %}
+            <div class="ui huge fluid vertical pointing menu"
+                 style="max-width: 320px;">
+
+                <a class="active item" data-tab="first">
+                    Personal Details
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="second">
+                    Publications
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="third">
+                    Projects
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="fourth">
+                    Thesis Supervision
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="fifth">
+                    Event Organised
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="sixth">
+                    Visits
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                <a class="item" data-tab="seventh">
+                    Conference/Symposium
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="eigth">
+                    Others
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="nin">
+                    Administrative Responsibilities
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                 {% if request.user.extrainfo.user_type == "faculty" %}
+                 <a class="item" data-tab="ninth">
+                    Project Management Forms
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+
+                 {% if "HOD" in desig %}
+                 <a class="item" data-tab="ten">
+                    HOD_TAB
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+
+            </div>
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+
+
+        {% comment %}
+            The central-rail segment starts here!
+        {% endcomment %}
+        <div class="eight wide column">
+            {% comment %}The Details start here!{% endcomment %}
+            <div class="ui active tab segment" data-tab="first">
+                {% block personaldetails %}
+                    {% include 'eisModulenew/personaldetails.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The Personal Details end here!{% endcomment %}
+
+
+            {% comment %}The Publications starts here!{% endcomment %}
+
+            <div class="ui tab segment" data-tab="second">
+                {% block publications %}
+                    {% include 'eisModulenew/publications.html' %}
+                {% endblock %}
+            </div>
+
+            {% comment %}The Publications ends here!{% endcomment %}
+
+
+            {% comment %}The Projects starts here!{% endcomment %}
+
+            <div class="ui tab segment" data-tab="third">
+                {% block projects %}
+                    {% include 'eisModulenew/projects.html' %}
+                {% endblock %}
+            </div>
+
+            {% comment %}The Projects ends here!{% endcomment %}
+
+
+            {% comment %}The Thesis Supervision starts here!{% endcomment %}
+
+            <div class="ui tab segment" data-tab="fourth">
+                {% block thesis %}
+                    {% include 'eisModulenew/thesis.html' %}
+                {% endblock %}
+            </div>
+
+            {% comment %}The thesis ends here!{% endcomment %}
+
+            {% comment %}The events organised starts here!{% endcomment %}
+
+            <div class="ui tab segment" data-tab="fifth">
+                {% block eventorganised %}
+                    {% include 'eisModulenew/eventorganized.html' %}
+                {% endblock %}
+            </div>
+
+            {% comment %}The event organised ends here!{% endcomment %}
+
+            {% comment %}The visits starts here!{% endcomment %}
+
+            <div class="ui tab segment" data-tab="sixth">
+                {% block visits %}
+                    {% include 'eisModulenew/visits.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The visits ends here!{% endcomment %}
+
+            {% comment %}The conference starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="seventh">
+                {% block conference %}
+                    {% include 'eisModulenew/conference.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The conference ends here!{% endcomment %}
+
+            {% comment %}The others starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="eigth">
+                {% block others %}
+                    {% include 'eisModulenew/others.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The others ends here!{% endcomment %}
+
+            {% comment %}The Thesis Supervision starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="ninth">
+                <!-- <div class="ui active tab segment" data-tab="first"> -->
+                {% block form1 %}
+                    {% include 'officeModule/officeOfDeanRSPC/tab1.html' %}
+                {% endblock %}
+                <!-- </div> -->
+            </div>
+
+
+            <div class="ui tab segment" data-tab="ten">
+                <!-- <div class="ui active tab segment" data-tab="first"> -->
+                {% block form2 %}
+                    {% include 'officeModule/officeOfDeanRSPC/Hod_Applications_content.html' %}
+                {% endblock %}
+                <!-- </div> -->
+            </div>
+
+            {% comment %}The Publications ends here!{% endcomment %}
+
+        </div>
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            <div class="row">
+                {% comment %}The Modules:{% endcomment %}
+                {% block generatereport %}
+                    {% include 'eisModulenew/generatereport.html' %}
+                {% endblock %}
+            </div>
+
+            <div class="row">
+                {% comment %}The Modules:{% endcomment %}
+                {% block modules %}
+                    {% include 'dashboard/modules.html' %}
+                {% endblock %}
+            </div>
+
+        </div>
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+    </div>
+    {% comment %}The grid ends here!{% endcomment %}
+
+
+
+{% endblock %}
+
+{% block javascript %}
+    <script type="text/javascript" src="{% static 'fusion/js/editProfile.js' %}"></script>
+    <script type="text/javascript" src="{% static 'fusion/js/tablesort.js' %}"></script>
+    <script type="text/javascript" src="{% static 'fusion/js/jquery.min.js' %}"></script>
+
+    <!-- <script src="https://code.jquery.com/jquery-2.1.4.js"></script> -->
+<script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+
+{% comment %}
+    <script>
+        $(document).ready(function() {
+            $('table').tablesort();
+        });
+    </script>
+{% endcomment %}
+
+    <script>
+        function toggleContent() {
+            $('.modulesContent').toggle();
+
+            if($('.modulesContent').is(':visible')){
+                $('#toggleIcon').removeClass("chevron down");
+                $('#toggleIcon').addClass("chevron up");
+            }
+            else if(!$('.modulesContent').is(':visible')){
+                $('#toggleIcon').removeClass("chevron up");
+                $('#toggleIcon').addClass("chevron down");
+            }
+        }
+
+
+
+        $('#example1').calendar();
+        $('#example1a').calendar();
+        $('#example1b').calendar();
+        $('#example1d').calendar();
+        $('#example1e').calendar();
+        $('#example1f').calendar();
+        $('#example1g').calendar();
+         $('#example1h').calendar();
+
+        $('#example2').calendar({
+          type: 'date'
+        });
+
+        $('#example3').calendar({
+          type: 'time'
+        });
+
+        $('#rangestart').calendar({
+          type: 'date',
+          endCalendar: $('#rangeend')
+        });
+
+        $('#rangeend').calendar({
+          type: 'date',
+          startCalendar: $('#rangestart')
+        });
+
+         $('#rangestart1').calendar({
+          type: 'date',
+          endCalendar: $('#rangeend')
+        });
+
+        $('#rangeend1').calendar({
+          type: 'date',
+          startCalendar: $('#rangestart')
+        });
+         $('#rangestart2').calendar({
+          type: 'date',
+          endCalendar: $('#rangeend')
+        });
+
+        $('#rangeend2').calendar({
+          type: 'date',
+          startCalendar: $('#rangestart')
+        });
+
+         $('#rangestart3').calendar({
+          type: 'date',
+          endCalendar: $('#rangeend')
+        });
+
+        $('#rangeend3').calendar({
+          type: 'date',
+          startCalendar: $('#rangestart')
+        });
+
+          $('#rangestart4').calendar({
+          type: 'date',
+          endCalendar: $('#rangeend')
+        });
+
+        $('#rangeend4').calendar({
+          type: 'date',
+          startCalendar: $('#rangestart')
+        });
+
+          $('#rangestart5').calendar({
+          type: 'date',
+          endCalendar: $('#rangeend')
+        });
+
+        $('#rangeend5').calendar({
+          type: 'date',
+          startCalendar: $('#rangestart')
+        });
+
+         $('#rangestart6').calendar({
+          type: 'date',
+          endCalendar: $('#rangeend')
+        });
+
+        $('#rangeend6').calendar({
+          type: 'date',
+          startCalendar: $('#rangestart')
+        });
+
+        $('#example4').calendar({
+          startMode: 'year'
+        });
+
+        $('#example5').calendar();
+
+        $('#example6').calendar({
+          ampm: false,
+          type: 'time'
+        });
+
+        $('#example7').calendar({
+          type: 'month'
+        });
+
+        $('#example8').calendar({
+          type: 'year'
+        });
+
+        $('#example9').calendar();
+        $('#example10').calendar({
+          on: 'hover'
+        });
+
+        var today = new Date();
+        $('#example11').calendar({
+          minDate: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 5),
+          maxDate: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 5)
+        });
+
+        $('#example12').calendar({
+          monthFirst: false
+        });
+
+        $('#example13').calendar({
+          monthFirst: false,
+          formatter: {
+            date: function (date, settings) {
+              if (!date) return '';
+              var day = date.getDate();
+              var month = date.getMonth() + 1;
+              var year = date.getFullYear();
+              return day + '/' + month + '/' + year;
+            }
+          }
+        });
+        $('#example14').calendar({
+          inline: true
+        });
+        $('#example15').calendar();
+
+
+
+              function myFunction() {
+            var x = document.getElementById("myDIV");
+            if (x.style.display === "none") {
+                x.style.display = "block";
+            } else {
+                x.style.display = "none";
+            }
+           }
+
+               function myFunction1() {
+            var x = document.getElementById("myDIV");
+            if (x.style.display === "block") {
+                x.style.display = "none";
+            } else {
+                x.style.display = "none";
+            }
+           }
+
+
+           function myFunction2() {
+            var x = document.getElementById("myDIV1");
+            if (x.style.display === "none") {
+                x.style.display = "block";
+            } else {
+                x.style.display = "none";
+            }
+           }
+
+               function myFunction3() {
+            var x = document.getElementById("myDIV1");
+            if (x.style.display === "block") {
+                x.style.display = "none";
+            } else {
+                x.style.display = "none";
+            }
+           }
+
+              function myFunction4() {
+            var x = document.getElementById("myDIV2");
+            if (x.style.display === "none") {
+                x.style.display = "block";
+            } else {
+                x.style.display = "none";
+            }
+           }
+
+               function myFunction5() {
+            var x = document.getElementById("myDIV2");
+            if (x.style.display === "block") {
+                x.style.display = "none";
+            } else {
+                x.style.display = "none";
+            }
+           }
+    </script>
+ <!-- <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script> -->
+    <script type="text/javascript" src="{% static 'fusion/js/datepicker.js' %}"></script>
+     <!-- <script type="text/javascript" src="{% static 'fusion/js/jquery.min.js' %}"></script>
+
+    <script src="https://code.jquery.com/jquery-2.1.4.js"></script>
+<script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script> -->
+
+{% endblock %}

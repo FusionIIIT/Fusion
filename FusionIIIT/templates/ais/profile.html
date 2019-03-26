@@ -1,0 +1,673 @@
+{% load static %}
+{% block profile %}
+
+ <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="basic">
+          Basic Details
+        </a>
+        <a class=" item" data-tab="advanced">
+            Advanced Details
+        </a>
+         <a class=" item" data-tab="grades">
+           Grades
+        </a>
+         <a class=" item" data-tab="courses">
+           Courses per Semester
+        </a>
+
+
+    </div>
+
+ <div class="ui active tab segment" data-tab="basic">
+
+
+
+       <form class="ui form" method="post" id="addBasicProfile">
+            {% csrf_token %}
+            <div class="field">
+                 <div class="three fields">
+                    <div class="field">
+                        <label>Name</label>
+                        <input placeholder="Name" type="text" name="name" id="studentName">
+
+                    </div>
+
+                    <div class="field">
+                        <label>Batch</label>
+                            <div class="ui fluid search selection dropdown">
+                                    <input type="hidden" name="batch" id="studentBatch">
+                                    <i class="dropdown icon"></i>
+                                    <div class="default text">Batch</div>
+                                    <div class="menu">
+                                        <div class="item" data-value="2014">2014</div>
+                                        <div class="item" data-value="2015">2015</div>
+                                        <div class="item" data-value="2016">2016</div>
+                                        <div class="item" data-value="2017">2017</div>
+
+                                    </div>
+                                </div>
+                    </div>
+
+                 <div class="field">
+                        <label>Roll No.</label>
+                        <input placeholder="Roll No." type="text" name="roll" id="studentRollNo">
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="fields">
+                    <div class="six wide field">
+                        <div class="field">
+                            <label>Phone Number</label>
+                            <input placeholder="Phone Number" type="text" name="ph" id="phoneNo">
+                        </div>
+                    </div>
+                     <div class="six wide field">
+                        <div class="field">
+                            <label>Programme</label>
+                            <div class="ui fluid search selection dropdown">
+                                    <input type="hidden" name="programme" id="studentProgramme">
+                                    <i class="dropdown icon"></i>
+                                    <div class="default text">Programme</div>
+                                    <div class="menu">
+                                        <div class="item" data-value="B.Tech">B.Tech</div>
+                                        <div class="item" data-value="B.Des ">B.Des </div>
+                                        <div class="item" data-value="M.Tech">M.Tech</div>
+                                        <div class="item" data-value="M.Des">M.Des </div>
+                                        <div class="item" data-value="P.hD">P.hD </div>
+                                    </div>
+                                </div>
+                        </div>
+                    </div>
+
+                    <div class="four wide field">
+                        <label><br></label>
+                        <button class="ui primary button" type="submit">
+                            Save
+                            <i class="ui save icon right floated"></i>
+                        </button>
+
+                    </div>
+                </div>
+
+        </form>
+
+         <br> <br>
+
+          <h4 class="ui dividing header">Search A Student By Roll No.</h4>
+
+        <div class="ui two column grid">
+
+              <div class="row">
+                  <div class=" four wide column"></div>
+
+                <div class=" six wide column">
+                      <div class="ui loading search">
+                          <div class="ui icon input">
+                            <input class="prompt" type="text"  placeholder="Search...">
+                            <i class="search icon"></i>
+                          </div>
+                          <div class="results"></div>
+                        </div>
+
+
+
+                </div>
+
+                <div class=" four wide column">
+                  <div class="ui primary button">
+                            Search
+                            <i class="ui search icon right floated"></i>
+                        </div>
+                    </div>
+
+              </div>
+
+        </div>
+
+          <br> <br>
+
+           <table class="ui fixed single line sortable celled table">
+            <thead>
+            <tr>
+                <th class="" style="width: 25%;">Name</th>
+                <th class="" style="width: 15%;">Roll No.</th>
+                <th class="" style="width: 13%;">Batch</th>
+                <th class="" style="width: 15%;">Programme</th>
+                <th class="" style="width: 15%;">Mobile Number</th>
+                 <th class="" style="width: 10%;">Action</th>
+
+            </tr>
+            </thead>
+
+            <tbody id='basic_profile_list'>
+
+            {% for s in student %}
+            <tr id='student-{{s.id.id}}'>
+                <!--<td><input type="radio" value="{{ s.id }}" name="delete"></input></td>-->
+                <td>{{ s.name }}</td>
+                <td>{{ s.id.id }}</td>
+                <td>{{ s.batch }}</td>
+                <td>{{ s.programme }}</td>
+                <td></td>
+
+                <td><a id='remove-student-{{s.id.id}}'><button><i class="trash outline icon" style="font-size:1.3vw;color:red;"></i></button></a></td>
+            </tr>
+
+            {% endfor %}
+            <tr>
+
+            </tr>
+            </tbody>
+
+            <tfoot>
+            <tr>
+                <th colspan="7">
+                    <div class="ui right floated pagination menu">
+                        <a class="icon item">
+                            <i class="left chevron icon"></i>
+                        </a>
+                        <a class="item">1</a>
+                        <a class="item">2</a>
+                        <a class="item">3</a>
+                        <a class="item">4</a>
+                        <a class="icon item">
+                            <i class="right chevron icon"></i>
+                        </a>
+                    </div>
+                </th>
+            </tr></tfoot>
+        </table>
+
+    </div>
+
+
+    <div class="ui  tab segment" data-tab="advanced">
+
+
+
+       <form class="ui form" method="post" action="{% url 'academic_information:add_advanced_profile' %}" id="form2">
+            {% csrf_token %}
+            <div class="field">
+                 <div class="three fields">
+                    <div class="field">
+                        <label>Father's Name</label>
+                       <input placeholder="Father's Name" type="text" name="father">
+                    </div>
+
+                    <div class="field">
+                        <label>Mother's Name</label>
+                        <input placeholder="Mother's Name" type="text" name="mother">
+
+                    </div>
+
+                 <div class="field">
+                        <label>Hall No.</label>
+                           <div class="ui fluid search selection dropdown">
+                                    <input type="hidden" name="hall">
+                                    <i class="dropdown icon"></i>
+                                    <div class="default text">Hall No.</div>
+                                    <div class="menu">
+                                        <div class="item" data-value="1">Hall-1</div>
+                                        <div class="item" data-value="3">Hall-3</div>
+                                        <div class="item" data-value="4">Hall-4</div>
+
+                                    </div>
+                                </div>
+                    </div>
+
+
+                </div>
+            </div>
+
+             <div class="fields">
+                   <div class="four wide field">
+                        <label>Room No.</label>
+                        <input placeholder="Room No" type="text" name="room">
+
+                    </div>
+                     <div class="four wide field">
+                        <label>Upload  Picture</label>
+                        <input placeholder="Upload Picture" type="file" name="dp">
+
+                    </div>
+
+                 <div class="four wide field">
+                        <label>Roll No.</label>
+                        <input placeholder="Roll No" type="text" name="roll">
+
+                    </div>
+
+                    <div class=" four wide field">
+                        <label><br></label>
+                        <a href="#" onclick="document.getElementById('form2').submit();">
+                        <div class="ui primary button">
+                            Save
+                            <i class="ui save icon right floated"></i>
+                        </div>
+                        </a>
+                    </div>
+                </div>
+        </form>
+
+
+        <br> <br>
+
+
+             <table class="ui sortable collapsing celled table">
+            <thead>
+              <tr>
+              <th  style="width: 25%;">Student</th>
+              <th  style="width: 25%;">Father's Name</th>
+               <th style="width: 23%;" >Mother's Name</th>
+                <th style="width: 18%;">Hall Details</th>
+                <th style="width: 10%;"> Action</th>
+            </tr></thead>
+            <tbody>
+            <form action="{% url 'academic_information:delete_advanced_profile' %}" method="post">
+                {% csrf_token %}
+            {% for s in student %}
+              <tr>
+                  <td>{{ forloop.counter }}</td>
+                <td>
+                  <h4 class="ui image header">
+                    <img src="{% static 'fusion/img/jenny.jpg' %}" class="ui  rounded image">
+                    <div class="content">
+                      <div class="sub header">{{ s.id.id }}
+                    </div>
+                  </div>
+                </h4></td>
+
+                <td>
+                    {{ s.father_name}}
+                </td>
+
+                <td>
+                    {{ s.mother_name}}
+                </td>
+                <td>{{ s.hall_no }}</td>
+                <td><button type="submit" name="delete" value="{{ s.id }}"><i class="trash outline icon" style="font-size:1.3vw;color:red;"></i></button></td>
+
+              </tr>
+            {% endfor %}
+                </form>
+            </tbody>
+         </table>
+
+    </div>
+
+
+    <div class="ui tab segment" data-tab="grades">
+
+
+
+       <form class="ui form" method="post" action="{% url 'academic_information:add_grade' %}" id="form3">
+            {% csrf_token %}
+            <div class="field">
+                 <div class="three fields">
+                    <div class="field">
+                            <label>Course Code</label>
+                            <select placeholder="Course Code" type="text" name="course">
+                                {% for c in courses %}
+                                    <option value="{{ c.course_id }}">{{ c.course_id }}</option>
+                                {% endfor%}
+                            </select>
+                        </div>
+
+                      <div class="field">
+                            <label>Semester</label>
+                             <div class="ui fluid search selection dropdown">
+                                    <input type="hidden" name="sem">
+                                    <i class="dropdown icon"></i>
+                                    <div class="default text">Semester</div>
+                                    <div class="menu">
+                                        <div class="item" data-value="1">1st</div>
+                                        <div class="item" data-value="2">2nd</div>
+                                        <div class="item" data-value="3">3rd</div>
+                                        <div class="item" data-value="4">4th</div>
+                                        <div class="item" data-value="5">5th</div>
+                                        <div class="item" data-value="6">6th</div>
+                                        <div class="item" data-value="7">7th</div>
+                                        <div class="item" data-value="8">8th</div>
+
+                                    </div>
+                                </div>
+
+                        </div>
+
+                 <div class="field">
+                        <label>Roll No.</label>
+                        <input placeholder="Roll No." type="text" name="roll">
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="fields">
+
+                     <div class="four wide field">
+                        <div class="field">
+                            <label>Grade</label>
+                            <select  placeholder="Grade" type="text" name="grade">
+                                <option value="A+">A+</option>
+                                <option value="A">A</option>
+                                <option value="B+">B+</option>
+                                <option value="B">B</option>
+                                <option value="C+">C+</option>
+                                <option value="C">C</option>
+                                <option value="D+">D+</option>
+                                <option value="D">D</option>
+                                <option value="F">F</option>
+                            </select>
+
+                        </div>
+                    </div>
+
+                    <div class="four wide field">
+                        <label><br></label>
+                        <a href="#" onclick="document.getElementById('form3').submit();">
+                        <div class="ui primary button">
+                            Save
+                            <i class="ui save icon right floated"></i>
+                        </div>
+                        </a>
+                    </div>
+                </div>
+
+        </form>
+
+           <br> <br>
+
+          <h4 class="ui dividing header">Search A Student By Roll No.</h4>
+
+        <div class="ui two column grid">
+
+              <div class="row">
+                  <div class=" four wide column"></div>
+
+                <div class=" six wide column">
+                      <div class="ui loading search">
+                          <div class="ui icon input">
+                            <input class="prompt" type="text" placeholder="Search...">
+                            <i class="search icon"></i>
+                          </div>
+                          <div class="results"></div>
+                        </div>
+
+
+
+                </div>
+
+                <div class=" four wide column">
+                  <div class="ui primary button">
+                            Search
+                            <i class="ui search icon right floated"></i>
+                        </div>
+                    </div>
+
+              </div>
+
+        </div>
+
+        <br> <br>
+
+           <table class="ui fixed single line sortable celled table">
+            <thead>
+            <tr>
+                <th class="" style="width: 17%;">Serial No.</th>
+                <th class="" style="width: 17%;">Roll No</th>
+                <th class="" style="width: 25%;">Semester</th>
+                <th class="" style="width: 17%;">Course Id</th>
+                <th style="width: 10%;"> Grade </th>
+
+
+            </tr>
+            {% for g in grade %}
+            <form method = "post" action="{% url 'academic_information:delete_grade' %}">
+                {% csrf_token %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ g.student_id.id }}</td>
+                <td>{{ g.sem }}</td>
+                <td>{{ g.course_id }}</td>
+                <td>{{ g.grade }}</td>
+                <td></td>
+            </tr>
+            {% endfor %}
+            </thead>
+
+            <tbody>
+            <form method="post" action="{% url 'academic_information:delete_grade' %}">
+                {% csrf_token %}
+
+                 </form>
+            </tbody>
+
+            <tfoot>
+            <tr>
+                <th colspan="7">
+                    <div class="ui right floated pagination menu">
+                        <a class="icon item">
+                            <i class="left chevron icon"></i>
+                        </a>
+                        <a class="item">1</a>
+                        <a class="item">2</a>
+                        <a class="item">3</a>
+                        <a class="item">4</a>
+                        <a class="icon item">
+                            <i class="right chevron icon"></i>
+                        </a>
+                    </div>
+                </th>
+            </tr></tfoot>
+        </table>
+
+    </div>
+
+
+    <div class="ui tab segment" data-tab="courses">
+
+
+
+       <form class="ui form" method="post" action="{% url 'academic_information:add_course' %}" id="form4">
+            {% csrf_token %}
+            <div class="field">
+                 <div class="three fields">
+
+                  <div class="field">
+                        <label>Roll No.</label>
+                        <input placeholder="Roll No." type="text" name="roll">
+                    </div>
+
+                    <div class="field">
+
+                        <label>Course 1  code</label>
+                        <select placeholder="Course 1 code" type="text" name="c1">
+                             <option value="">----</option>
+                            {% for c in courses %}
+                            <option value = "{{ c.course_id }}" default="">{{ c.course_id }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                     <div class="field">
+
+                        <label>Course 2 code</label>
+                        <select placeholder="Course 2 code" type="text" name="c2">
+                             <option value="">----</option>
+                            {% for c in courses %}
+                            <option value = "{{ c.course_id }}"  default="">{{ c.course_id }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="fields">
+                    <div class="four wide field">
+                        <div class="field">
+                            <label>Course 3 code</label>
+                            <select placeholder="Course 3 code" type="text" name="c3" default="">
+                                 <option value="">----</option>
+                            {% for c in courses %}
+                            <option value = "{{ c.course_id }}" default="">{{ c.course_id }}</option>
+                            {% endfor %}
+                        </select>
+                        </div>
+                    </div>
+                     <div class="four wide field">
+                         <div class="field">
+                            <label>Course 4 code</label>
+                            <select placeholder="Course 4 code" type="text" name="c4">
+                                 <option value="">----</option>
+                            {% for c in courses %}
+                            <option value = "{{ c.course_id }}" default="">{{ c.course_id }}</option>
+                            {% endfor %}
+                        </select>
+                        </div>
+                    </div>
+
+                    <div class="four wide field">
+                         <div class="field">
+                            <label>Course 5 code</label>
+                            <select placeholder="Course 5 code" type="text" name="c5">
+                                 <option value="">----</option>
+                            {% for c in courses %}
+                            <option value = "{{ c.course_id }}" default="">{{ c.course_id }}</option>
+                            {% endfor %}
+                        </select>
+                        </div>
+                    </div>
+                     <div class="four wide field">
+                         <div class="field">
+                            <label>Course 6 code</label>
+                            <select placeholder="Course 6 code" type="text" name="c6">
+                                <option value="">----</option>
+                            {% for c in courses %}
+
+                            <option value = "{{ c.course_id }}" default="">{{ c.course_id }}</option>
+                            {% endfor %}
+                        </select>
+                        </div>
+                    </div>
+                </div>
+
+                  <div class="fields">
+
+                         <div class=" two wide field">
+                                 <label><br></label>
+                             <a href="#" onclick="document.getElementById('form4').submit();">
+                                <div class="ui primary button">
+                                    Save
+                                    <i class="ui save icon right floated"></i>
+                                </div>
+                             </a>
+                            </div>
+
+
+                  </div>
+
+        </form>
+
+    <br> <br>
+
+            <h4 class="ui dividing header">Search A Student By Roll No.</h4>
+
+                    <div class="ui two column grid">
+
+                          <div class="row">
+                              <div class=" four wide column"></div>
+
+                            <div class=" six wide column">
+                                  <div class="ui loading search">
+                                      <div class="ui icon input">
+                                        <input class="prompt" type="text" placeholder="Search...">
+                                        <i class="search icon"></i>
+                                      </div>
+                                      <div class="results"></div>
+                                    </div>
+
+
+
+                            </div>
+
+                            <div class=" four wide column">
+                              <div class="ui primary button">
+                                        Search
+                                        <i class="ui search icon right floated"></i>
+                                    </div>
+                                </div>
+
+                          </div>
+
+                    </div>
+
+
+
+
+          <br> <br>
+
+           <table class="ui fixed single line sortable celled table">
+            <thead>
+            <tr>
+                  <th class="" style="width: 20%;">Roll No.</th>
+                <th class=""  style="width: 50%;">Courses</th>
+                <th style="width: 13%;">Action </th>
+
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for s in student %}
+            <tr>
+                <td>{{ s.id }}</td>
+              <td><ul>
+                    {% for t in s.courses.all %}
+                  <li>{{ t.course_name }}</li>
+                    {% endfor %}
+                  </ul>
+                </td>
+
+                <td></td>
+            </tr>
+            {% endfor %}
+            <tr>
+
+            </tr>
+
+            <tr>
+
+            </tr>
+            </tbody>
+
+            <tfoot>
+            <tr>
+                <th colspan="7">
+                    <div class="ui right floated pagination menu">
+                        <a class="icon item">
+                            <i class="left chevron icon"></i>
+                        </a>
+                        <a class="item">1</a>
+                        <a class="item">2</a>
+                        <a class="item">3</a>
+                        <a class="item">4</a>
+                        <a class="icon item">
+                            <i class="right chevron icon"></i>
+                        </a>
+                    </div>
+                </th>
+            </tr></tfoot>
+        </table>
+
+    </div>
+
+    {% block javascript %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js" type="text/javascript"></script>
+    <script src="{% static 'academic_information/scripts/student.js' %}" type="text/javascript"></script>
+
+   {% endblock %}
+
+
+    {% endblock %}

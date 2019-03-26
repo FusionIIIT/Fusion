@@ -1,0 +1,90 @@
+{% load static %}
+{% include 'officeModule/officeOfDeanPnD/incomingFiles_content2Modal.html' %}
+<table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;">
+
+    <thead>
+    <tr>
+        <th>
+            Requisition ID
+        </th>
+
+        <th>
+            Date
+        </th>
+
+        <th class="four wide column">
+            Requester
+        </th>
+
+        <th>
+            Building
+        </th>
+
+        <th>
+            Details
+        </th>
+
+        <th>
+            Make Work Assignment
+        </th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+    {% for req in civilreq %}
+    <tr>
+        <td>
+            {{req.id}}
+        </td>
+
+        <td>
+            {{req.req_date}}
+        </td>
+
+        <td>
+
+            <h4 class="ui image header">
+                <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                <div class="content">
+                    {{req.userid.user.first_name}} {{req.userid.user.last_name}}
+                    <div class="sub header">
+                        {{req.userid.user.email}}
+                    </div>
+                </div>
+            </h4>
+        </td>
+
+        <td>
+            {{req.building}}
+        </td>
+        <td onclick="modals('{{ req.pk }}')">
+            <button class="ui button" type="button" id="test">Details</button>
+        </td>
+
+        <td>
+            <!-- <a class="ui inverted circular icon button" style="margin: auto;">
+                <i class="large attach black icon"></i>
+            </a> -->
+             <a class="item" data-tab="first">
+                     <i class="large attach black icon"></i>
+                </a>
+        </td>
+
+        <div data-tab="first">
+          
+        </div>
+
+        {% endfor%}
+
+
+
+    </tr><!-- endif -->
+    </tbody>
+</table>
+
+<br>
+<br>
+<div class="ui divider"></div>
+
+

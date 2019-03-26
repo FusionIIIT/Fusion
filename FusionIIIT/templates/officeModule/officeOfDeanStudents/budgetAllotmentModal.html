@@ -1,0 +1,88 @@
+{% load static %}
+
+{% block modal_budgetAllotment %}
+
+<script type="text/javascript">
+	function modalAllot(a) {
+		var id= '.ui.modal.budgetAllot.'+a;
+		id=id.replace(" ",".");
+		// alert(id);
+		$(id).modal('show');
+		
+	}
+
+	function modalEditBudget(a){
+		var id= '.ui.modal.budgetAllotedEdit.'+a;
+		id=id.replace(" ",".");
+		// alert(id);
+		$(id).modal('show');
+
+	}
+
+</script>
+{% for i in budget_allotment %}
+<div class="ui modal budgetAllot {{ i.pk }} ">
+	<div class="header">Budget Allotment for {{ i.pk }}</div>
+	<div class="content">
+		<form class="ui large form" action="budgetAllot" method="post" >
+			{% csrf_token %}
+
+			<div class="fields">
+         	<div class="field">
+        	<label>Club Name</label>
+        	<input type="text" name=id value="{{i.club_name}}" readonly="true">
+        	</div>
+        	<div class="field">
+        	<label>Club category</label>
+        	<input type="text" value="{{ i.category }}" readonly="true">
+        	</div>
+        	</div>
+        	<div class="field">
+        	<label>Budget Allotment</label>
+        	<input type="text"  name="budget" required="true">
+        	</div>
+        	<button  class="ui positive right floated button" type="submit" name="submit" id="approve" >Set</button>
+        	<br>
+		</form>
+	</div>
+
+</div>
+{% endfor %}
+
+{% for i in budget_alloted %}
+<div class="ui modal budgetAllotedEdit {{ i.pk }} ">
+	<div class="header">Budget Allotment for {{ i.pk }}</div>
+	<div class="content">
+		<form class="ui large form" action="budgetAllotEdit" method="post" >
+			{% csrf_token %}
+
+			<div class="fields">
+         	<div class="field">
+        	<label>Club Name</label>
+        	<input type="text" name=id value="{{i.club_name}}" readonly="true">
+        	</div>
+        	<div class="field">
+        	<label>Club category</label>
+        	<input type="text" value="{{ i.category }}" readonly="true">
+        	</div>
+        	</div>
+        	<div class="fields">
+        	<div class="field">
+        	<label>Budget Alloted</label>
+        	<input type="text"  value="{{ i.alloted_budget }}" readonly="true">
+       		</div>
+       		<div class="field">
+        	<label>New Budget Allotment</label>
+        	<input type="text"  name="budget" required="true">
+        	</div>
+
+        	</div>
+        	<button  class="ui positive right floated button" type="submit" name="submit" id="approve" >Edit</button>
+        	<br>
+		</form>
+	</div>
+
+</div>
+{% endfor %}
+
+{% endblock %}

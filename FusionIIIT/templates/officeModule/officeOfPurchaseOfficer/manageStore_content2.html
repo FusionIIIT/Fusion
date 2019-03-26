@@ -1,0 +1,51 @@
+<form method='POST'>
+    {% csrf_token %}
+    {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+    <div class="ui form" style="padding: 8px; padding-left: 56px; padding-right: 12px;">
+        <div class="ui eight wide field">
+            <label>
+                Item Name
+            </label>
+            <input class="ui large input" placeholder="Item Name" name="item_name" type="text">
+        </div>
+        <div class="field">
+            <label>Type of Item</label>
+            <br>
+
+                <div class="field">
+                    <div class="ui large radio checkbox">
+                        <input name="item_type" type="radio" value="0">
+                        <label> Consumable </label>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <div class="ui large radio checkbox">
+                        <input name="item_type" type="radio" value="1">
+                        <label> Non-consumable </label>
+                    </div>
+                </div>
+        </div>
+
+        <div class="ui eight wide field">
+            <label>
+                Quantity
+            </label>
+            <input class="ui large input" placeholder="Quantity" name="qunatity" type="number">
+        </div>
+
+        <div class="ui eight wide field">
+            <label>
+                <br>
+            </label>
+            <button class="ui right floated primary button" type="submit" name="store">Submit</button>
+        </div>
+
+    </div>
+</form>
+
+<br>
+<br>
+
+<div class="ui divider"></div>
+

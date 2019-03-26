@@ -1,0 +1,39 @@
+{% comment %}
+Used to show student list on evry ajax call, this will render the template
+{% endcomment %}
+{% if student_obj %}
+<table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%;padding-right: 2.5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
+          <thead>
+          <tr>
+              <th>
+                  Roll No.
+              </th>
+              <th>
+                  Student Name
+              </th>
+              <th>
+                  Branch
+              </th>
+              <th>
+
+              </th>
+          </tr>
+          </thead>
+          <tbody>
+            {% for stu in student_obj %}
+                    <tr>
+                      <td> {{ stu.roll_no }} </td>
+                      <td> {{ stu.name    }}  </td>
+                      <td> {{ stu.branch  }}  </td>
+                      <td>
+                        <a href="/academic-procedures/acad_person/verifyCourse/?id={{ stu.roll_no|urlencode }}" target="_blank" class="ui blue label">
+                           <b>CHECK</b>
+                         </a>
+                      </td>
+                    </tr>
+            {% endfor %}
+          </tbody>
+      </table>
+{% else %}
+<CENTER><BR><BR>  <B> NO RECORDS FOUND</B> </center>
+  {% endif %}

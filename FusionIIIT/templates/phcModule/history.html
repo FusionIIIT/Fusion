@@ -1,0 +1,340 @@
+{% load static %}
+
+{% block personaldetails %}
+    {% comment %}the prescription and hospitalhistory  starts here {% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="prescriptionhistory">
+            Prescription
+        </a>
+        <a class="item" data-tab="ambulancehistory">
+            Ambulance
+        </a>
+        <a class="item" data-tab="hospitalhistory">
+            Hospital
+        </a>
+        <a class="item" data-tab="appointmenthistory">
+            Appointments
+        </a>
+        <a class="item" data-tab="complainthistory">
+            Feedback
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="prescriptionhistory">
+        <div class="ui vertical segment" >
+            <table class="ui very basic collapsing celled large sortable table"
+                  style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;" >
+                <thead>
+                <tr>
+                    <th>
+                        Treated<br> By
+                    </th>
+
+                    <th class="two wide" >
+                        Date
+                    </th>
+                    <th>
+                          Details
+                    </th>
+                    <th>
+                          Test
+                    </th>
+
+                    <th>
+
+                      <table>
+
+                        <tr><td>Medicine</td><td>D</td><td>T</td></tr>
+
+                      </table>
+                    </th>
+
+                </tr>
+                </thead>
+
+                <tbody>
+                {% for pre in prescription %}
+                <tr>
+
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                        </h4>
+                              {{pre.doctor_id}}
+
+
+                    </td>
+
+                    <td>
+                        {{pre.date}}
+                    </td>
+
+                    <td>
+                        {{pre.details}}
+                    </td>
+                    <td>
+                        {{pre.test}}
+                    </td>
+
+                    <td>
+                      <table>
+                        {% for medicine in medicines %}
+                            {% if medicine.prescription_id.id == pre.id %}
+                                  <tr><td>{{medicine.medicine_id}}</td><td>{{medicine.days}}</td><td>{{medicine.times}}</td></tr>
+                            {% endif %}
+                        {% endfor%}
+                      </table>
+                    </td>
+                </tr>
+                {% endfor %}
+
+                </tbody>
+            </table>
+
+          </div>
+        </div>
+
+    <div class="ui tab" data-tab="ambulancehistory">
+        <div class="ui vertical segment" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+            <table class="ui very basic collapsing celled large sortable table"
+                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                <thead>
+                <tr>
+
+                    <th class="three wide">
+                        Cause
+                    </th>
+
+                    <th>
+                      Requested Date
+                    </th>
+
+                    <th>
+                        Start Date
+                    </th>
+
+                    <th>
+                      End Date
+                    </th>
+
+
+                </tr>
+                </thead>
+
+                <tbody>
+                {% for  ambulance in ambulances%}
+                <tr>
+                    <td>
+                        {{ambulance.reason}}
+                    </td>
+
+                    <td>
+                        {{ambulance.date_request}}
+                    </td>
+
+                    <td>
+                        {{ambulance.start_date}}
+                    </td>
+
+                    <td>
+                        {{ambulance.end_date}}
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="hospitalhistory">
+        <div class="ui vertical segment" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+            <table class="ui very basic collapsing celled large sortable table"
+                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                <thead>
+                <tr>
+                    <th class="four wide">
+                        Doctor
+                    </th>
+
+                    <th class="four wide">
+                        Hospital
+                    </th>
+
+                    <th>
+                        Admission Date
+                    </th>
+
+                    <th>
+                        Discharge Date
+                    </th>
+
+                    <th class="three wide">
+                      Reason
+                    </th>
+
+                </tr>
+                </thead>
+
+                <tbody>
+                {% for hospital in hospitals %}
+                <tr>
+
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                            <div class="content">
+                              {% if hospital.doctor_id == None %}
+
+                              {% else %}
+                                {{hospital.doctor_id}}
+                              {% endif %}
+                            </div>
+                        </h4>
+                    </td>
+
+                    <td>
+                        {{hospital.hospital_name}}
+                    </td>
+
+                    <td>
+                        {{hospital.admission_date}}
+                    </td>
+
+                    <td>
+                      {% if hospital.discharge_date == None %}
+                          Not yet discharged
+                      {% else %}
+                        {{hospital.discharge_date}}
+                      {% endif %}
+                    </td>
+
+                    <td>
+                        {{hospital.reason}}
+                    </td>
+
+
+                </tr>
+                  {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <div class="ui tab" data-tab="appointmenthistory">
+        <div class="ui vertical segment" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+            <table class="ui very basic collapsing celled small fluid sortable table"
+                   style="padding-left: 2.5%;padding-right: 2.5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
+                <thead>
+                <tr>
+
+                    <th class="four wide">
+                        Doctor
+                    </th>
+
+                    <th>
+                        Description
+                    </th>
+
+                    <th>
+                        Date
+                    </th>
+
+                    <th>
+                        From Time
+                    </th>
+
+                    <th class="four wide">
+                        To Time
+                    </th>
+                </tr>
+                </thead>
+
+                <tbody>
+                  {% for appointment in appointments %}
+                <tr>
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                            <div class="content">
+                              {{appointment.doctor_id}}
+                            </div>
+                        </h4>
+                    </td>
+
+                    <td>
+                      {{appointment.description}}
+                    </td>
+                    <td>
+                      {{appointment.date}}
+                    </td>
+                    <td>
+                      {{appointment.schedule.from_time}}
+                    </td>
+
+                    <td>
+                      {{appointment.schedule.to_time}}
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="ui tab" data-tab="complainthistory">
+        <div class="ui vertical segment" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+            <table class="ui very basic collapsing celled large fluid sortable table"
+                   style="padding-left: 2.5%;padding-right: 2.5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
+                <thead>
+                <tr>
+                    <th class="four wide">
+                      Feedback
+                    </th >
+
+                    <th class="six wide">
+                      Response
+                    </th>
+
+                    <th class="four wide">
+                        Date
+                    </th>
+
+                </tr>
+                </thead>
+
+                <tbody>
+                  {% for complaint in complaints %}
+                <tr>
+
+                    <td>
+                        {{complaint.complaint}}
+                    </td>
+
+                    <td>
+                       {% if complaint.feedback == None %}
+
+                        {% else %}
+                        {{complaint.feedback}}
+                      {% endif %}
+                    </td>
+
+                    <td>
+                        {{complaint.date}}
+                    </td>
+
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% comment %}the  prescription and hospital history  ends here {% endcomment %}
+{% endblock %}

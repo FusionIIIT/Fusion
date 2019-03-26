@@ -1,0 +1,86 @@
+{% load static %} {% block assessment %}
+<div class="ui pointing secondary menu">
+    <a class="item active" data-tab="assignment">
+            Assignment
+        </a>
+</div>
+<div class="ui active tab segment" data-tab="assignment" style="overflow:scroll;overflow-y:hidden">
+    <h4 class="ui dividing header">Software Engineering Course</h4>
+
+    <div class="ui top attached tabular menu">
+      {% for assi in assignment %}
+        <a class="item tabheading" data-pk="{{forloop.counter}}" id="tab{{forloop.counter}}" data-tab="{{forloop.counter}}">{{assi.assignment_name}}</a>
+      {% endfor %}
+    </div>
+    {% for assi in assignment %}
+    <div class="ui bottom attached tab tabdata segment" data-pk="{{forloop.counter}}" id="tabdata{{forloop.counter}}" data-tab="{{forloop.counter}}">
+        <table class="ui very basic collapsing celled table">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Total Marks &amp; Feedback</th>
+                    <th>Download Assignment</th>
+                    <th>Marks</th>
+                    <th>Feedback</th>
+                </tr>
+            </thead>
+            <tbody>
+              {% for student_assi in student_assignment %}
+                {% if student_assi %}
+                {% if assi.pk == student_assi.0.assignment_id.pk %}
+                {% for sa in student_assi %}
+                <tr>
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/jenny.jpg' %}" class="ui  rounded image">
+                            <div class="content">
+                                {{sa.student_id.id.user.first_name}} {{sa.student_id.id.user.last_name}}
+                                <div class="sub header">{{sa.student_id.id.id}}
+                                </div>
+                            </div>
+                        </h4>
+                    </td>
+                    <td>
+                      <div class="ui form" style="margin-bottom:10px">
+                        <div class="field">
+                          <input type="text" placeholder="Enter Marks" onkeydown="assess_student(this)" data-assign="{{sa.pk}}" id="assign{{sa.pk}}">
+                        </div>
+                      </div>
+                      <div class="ui form">
+                        <div class="field">
+                          <input type="text" placeholder="Enter Feedback"  onkeydown="assess_feedback(this)" data-feedback="{{sa.pk}}" id="feedback{{sa.pk}}">
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <a class="ui primary button" href="{{sa.upload_url}}">Download</a>
+                    </td>
+                    <td >
+                      {% if sa.score %}
+                        <span id="score{{sa.pk}}">{{sa.score}}</span>
+                      {% else %}
+                        -
+                      {% endif %}
+                    </td>
+                    <td >
+                      {% if sa.feedback %}
+                        <p id="feedback{{sa.pk}}">{{sa.feedback}}</p>
+                      {% else %}
+                        -
+                      {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endfor %}
+</div>
+<script>
+
+</script>
+
+{% endblock %}

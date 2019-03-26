@@ -1,0 +1,106 @@
+{% extends 'filetracking/filetracking.html' %}
+{% load static %}
+
+{% block filetracking_tab %}
+    {% comment %}the compounder prescription tab starts here {% endcomment %}
+    <div class="ui pointing secondary menu">
+        <h3>
+            <a class="active item" data-tab="composefile">
+            Compose New File
+            </a>
+        </h3>
+    </div>
+    {% comment %}the ambulance schedule tab starts here {% endcomment %}
+    <div class="ui active tab" data-tab="composefile">
+        <div class="ui vertical stripe team segment" style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+
+            <form class="ui large form" method="POST" enctype="multipart/form-data" id="form1">
+            {% csrf_token %}
+
+                <!--<div class="field">
+                    <label>File ID.</label>
+                    <div class="ui fluid input">
+                        <input type="number" min="1" max="9999" size="4" name="fileid" required>
+                    </div>
+                </div>
+                {% if IntegrityError %}
+                    <span>FileID already exists</span>
+                {% endif %}-->
+
+                <!--<div class="field">
+                    <label>Designation</label>
+                    <select class="ui fluid search selection dropdown" name="receiver">
+                        <option selected hidden>Select</option>
+
+                    </select>
+                </div>-->
+
+                <div class="field">
+                        <label>Title of File</label>
+                        <textarea rows="1" name="title" required></textarea>
+                </div>
+
+
+
+                <div class="field">
+                    <label>Description</label>
+                    <textarea rows="3" name="desc" required></textarea>
+                </div>
+
+                <div class="field">
+                    <label>Create as:
+                        <select required class="ui fluid search selection dropdown" name="design">
+                            <option selected hidden>Select</option>
+
+                            {% for designations in designations %}
+                            <option value="{{designations.designation.name}}">{{designations.designation.name}}</option>
+                            {% endfor %}
+
+                        </select>
+                    </label>
+                </div>
+
+                <br>
+
+                <div class = "left floated item">
+                      <label for="file">Attach Files ( PDF, JPEG, PNG, JPG )</label>
+                      <input type="file" id="file" name="myfile" accept=".pdf, .jpg, .jpeg, .png" >
+                </div>
+
+                <br>
+
+                <div>
+                    <a class="right floated item">
+
+                        <button type="submit" name="save" class="ui large right floated primary button">
+                            Create<i class="ui save icon right floated"></i>
+                        </button>
+                    </a>
+                </div>
+
+
+                <br>
+                <br>
+
+            </form>
+
+            <br>
+
+        </div>
+
+        <br>
+        <div class="extra content"></div>
+    </div>
+    {% comment %}the compounder prescription tab ends here {% endcomment %}
+{% endblock %}
+
+<script type="text/javascript">
+    function ShowHideDiv() {
+        var chkAddress = document.getElementById("chkAddress");
+        var leaveAddress = document.getElementById("leaveAddress");
+        leaveAddress.style.display = chkAddress.checked ? "block" : "none";
+    }
+</script>
+
+

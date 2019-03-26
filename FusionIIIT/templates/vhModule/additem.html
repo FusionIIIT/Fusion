@@ -1,0 +1,91 @@
+{% block additem %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="additem">
+            Add Item
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="additem" style="padding: 16px;">
+        <div class="ui vertical segment">
+            <form class="ui form">
+                <div id="item">
+                    <div class="two fields">
+                        <div class="ten wide field">
+                            <label>Bill Id</label>
+                            <div class="ui large input">
+                                <input placeholder="Bill Id">
+                            </div>
+                        </div>
+
+                        <div class="six wide field">
+                            <label>Bill</label>
+                            <div class="ui fluid input">
+                                <input type="file">
+                            </div>
+                        </div>
+                    </div>
+
+                    <h5 class="ui dividing header">Add Items</h5>
+
+                    <div class="four fields">
+                        <div class="field">
+                            <label>Item Name</label>
+                            <div class="ui input large">
+                                <input placeholder="Item Name">
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label>Quantity</label>
+                            <div class="ui input large">
+                                <input placeholder="Quantity">
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label>Amount</label>
+                            <div class="ui input large">
+                                <input placeholder="Amount">
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label>Consumable</label>
+                            <div class="ui fitted toggle checkbox">
+                                <input type="checkbox"> <label></label>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="four fields">
+                    <div class="eight wide field"></div>
+                    <div class="four wide field">
+                        <div class="ui button right floated">
+                            {% comment %}
+                                TODO: Add Javascript here!
+                            {% endcomment %}
+                            Add Another Item
+                        </div>
+                    </div>
+
+                    <div class=" two wide field">
+                        <div class="ui primary button">
+                            Submit
+                        </div>
+                    </div>
+                    <div class=" two wide field"></div>
+                </div>
+
+                <br>
+                <br>
+            </form>
+        </div>
+
+        <div class="extra content">
+
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,273 @@
+{% extends 'filetracking/filetracking.html' %}
+{% load static %}
+
+{% block filetracking_tab %}
+
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="notesheet">
+            Note Sheet
+        </a>
+
+        <a class="item" data-tab="attachments">
+            Attachments
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="notesheet">
+
+        <div class="ui two item menu">
+            <a class="item"><b>File ID :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.department.name}}/{{file.upload_date.year}}/{{file.upload_date.month}}/#{{file.id}}</b></a>
+            <a class="item"><b>Uploader :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.user}}-{{file.designation}}</b></a>
+        </div>
+
+            <form class="ui large form" method="POST" enctype="multipart/form-data" id="form1">
+
+            {% csrf_token %}
+
+                    <div class="ui fluid card">
+                        <div class="content">
+                            <center><span class="ui header"><b>{{file.subject}}</b></span></center>
+                            <div class="ui divider"></div>
+
+                            <div class="content" style=" padding-left: 18px; padding-top: 0.1px; height: auto; overflow-y: auto;">
+
+                                <div class="item">
+
+                                    <div class="description">
+                                        <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';">{{file.description}}</pre>
+                                        <div class="ui divider"></div>
+                                    </div>
+
+                                    {% for t in track %}
+                                    <div class="ui comments">
+                                        <div class="comment">
+                                             <div class="content">
+                                                 <a class="author">{{t.current_id.user}}
+                                                     <a class="metadata">
+                                                         <span class="date">{{t.forward_date}}</span>
+                                                     </a>
+                                                 </a>
+
+                                                 <div class="right floated" style="font-color: black;">
+                                                     <b>Received by:</b>&nbsp{{t.receive_design}}
+                                                 </div>
+
+                                                 <div class="text">
+                                                     <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';">
+                                                        {% if t.remarks %}
+                                                            {{t.remarks}}
+                                                        {% else %}
+                                                            <span class="meta">No Remarks</span>
+                                                        {% endif %}
+
+                                                     </pre>
+                                                 </div>
+                                             </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+
+                                    <div class="ui divider"></div>
+
+                                </div>
+
+                                <br>
+
+                                <div class="field">
+                                    <label>Remarks:<textarea rows="2" name="remarks"></textarea></label>
+                                </div>
+
+                                <br>
+
+                                <div class="field">
+                                    <label>Send as:
+                                        <select required class="ui fluid search selection dropdown" name="sender">
+                                            <option selected hidden>Select</option>
+
+                                            {% for designations in designations %}
+                                            <option value="{{designations.id}}">{{designations}}</option>
+                                            {% endfor %}
+
+                                        </select>
+                                    </label>
+                                </div>
+
+                                <br>
+
+                                <div class="field">
+                                    <label>Forward To:
+                                        <select required class="ui fluid search selection dropdown" name="receiver">
+                                            <option required selected hidden>Select</option>
+
+                                            {% for extrainfo in extrainfo %}
+                                            <option value="{{extrainfo.id}}">{{extrainfo.user}}</option>
+                                            {% endfor %}
+
+                                        </select>
+                                    </label>
+                                </div>
+
+                                <br>
+
+                                <div class="field">
+                                    <label>Receiver Designation:
+                                        <select required class="ui fluid search selection dropdown" name="receive">
+                                            <option required selected hidden>Select</option>
+
+                                            {% for holdsdesignations in holdsdesignations %}
+                                            <option value="{{holdsdesignations.id}}">{{holdsdesignations}}</option>
+                                            {% endfor %}
+
+                                        </select>
+                                    </label>
+                                </div>
+
+                                <br>
+
+                                <!--<div class="field">
+                                    <label>Forward To:
+                                        <select required class="ui fluid search selection dropdown" name="receiver">
+                                            <option selected hidden>Select</option>
+
+                                            {% for holdsdesignations in holdsdesignations %}
+                                            <option value="{{holdsdesignations.user.id}}">{{holdsdesignations}}</option>
+                                            {% endfor %}
+
+                                        </select>
+                                    </label>
+                                </div>-->
+
+                                <div class="field">
+                                    <label for="file">Attach Files: </label>
+                                    <input type="file" id="file" name="myfile" accept=".pdf, .jpg, .jpeg, .png" >
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <br>                      <!--  <a href="/media/" target="_">
+                                                <span class="header" style="color: #1B1C1D"><b>Attachments :&nbsp&nbsp</b><u></u></span>
+                                            </a>-->
+
+                        <!--    <div class="content" style="text-indent: 5em">
+
+                                                        <a class="download icon">
+                                                            <a href="/media/{{t.upload_file}}" class="header" target="_">
+                                                                <span>Attachments -</span>
+                                                                <u class="meta" style="color: #1B1C1D"></u>
+                                                            </a>
+                                                        </a>
+                                                        <br>
+                                                        <div class="ui divider"></div>
+
+
+                                            <center style="color: dimgrey">FileFlow is possible only when file is forwarded to other employee.</center
+                                                </div>
+                                            </div>
+                                        </div>
+                               </div>
+                        </div>-->
+
+                        <div class="field">
+                            <button type="submit" name="send" class="ui large right floated primary button">
+                                Send<i class="ui send icon right floated"></i>
+                            </button>
+                        </div>
+
+                <br>
+
+
+            <br>
+            <br>
+
+            </form>
+
+            <br>
+    </div>
+
+    <div class="ui tab" data-tab="attachments">
+
+        <div class="ui two item menu">
+            <a class="item"><b>File ID :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.department.name}}/{{file.upload_date.year}}/{{file.upload_date.month}}/#{{file.id}}</b></a>
+            <a class="item"><b>Uploader :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.uploader}}</b></a>
+        </div>
+
+        <div class="ui fluid card">
+                        <div class="content">
+
+                            <div class="content" style=" padding-left: 18px; padding-top: 0.1px; height: auto; overflow-y: auto;">
+
+                                <div class="item">
+                                    <div class="ui comments">
+                                        <div class="comment">
+
+                                            <div class="content">
+                                    <a class="paperclip icon">
+                                                     {% if file.upload_file %}
+                                                     <a href="/media/{{t.upload_file}}" class="header" target="_">
+                                                         <u class="meta" style="color: #1B1C1D">{{file.upload_file}}</u>
+                                                     </a>
+                                                     {% else %}
+                                                     <span class="meta">No Attachment</span>
+                                                     {% endif %}
+                                    </a>
+
+                                    <div class="right floated content">
+                                                     <a class="author">{{file.uploader.user}}
+                                                         <a class="metadata">
+                                                            <span class="date">{{file.upload_date}}</span>
+                                                         </a>
+                                                     </a>
+                                    </div>
+                                                </div>
+
+                                        </div>
+                                    </div>
+
+                                    {% for t in track %}
+                                    <div class="ui comments">
+                                        <div class="comment">
+
+                                            <div class="content">
+                                                 <a class="paperclip icon">
+                                                     {% if t.upload_file %}
+                                                     <a href="/media/{{t.upload_file}}" class="header" target="_">
+                                                         <u class="meta" style="color: #1B1C1D">{{t.upload_file}}</u>
+                                                     </a>
+                                                     {% else %}
+                                                     <span class="meta">No Attachment</span>
+                                                     {% endif %}
+                                                 </a>
+
+                                                 <div class="right floated content">
+                                                     <a class="author">{{t.current_id.user}}
+                                                         <a class="metadata">
+                                                            <span class="date">{{t.forward_date}}</span>
+                                                         </a>
+                                                     </a>
+                                                 </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+
+                                    <div class="ui divider"></div>
+
+                                </div>
+                            </div>
+                        </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+
+<script type="text/javascript">
+    function ShowHideDiv() {
+        var chkAddress = document.getElementById("chkAddress");
+        var leaveAddress = document.getElementById("leaveAddress");
+        leaveAddress.style.display = chkAddress.checked ? "block" : "none";
+    }
+</script>

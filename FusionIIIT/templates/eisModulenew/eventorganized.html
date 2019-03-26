@@ -1,0 +1,204 @@
+{% load static %}
+
+{% block eventorganised %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+
+        <a class="item" data-tab="Workshop">
+            Workshop
+        </a>
+
+       
+
+       
+    </div>
+  
+
+    
+
+
+
+    {% comment %}The Workshop segment starts here!{% endcomment %}
+
+    <div class="ui active tab segment" data-tab="Workshop">
+        <h4 class="ui dividing header">Add a Workshop /Training Program</h4>
+        <form class="ui form">
+            <div class="field">
+                 <div class="two fields">
+                    <div class="field">
+                        <label>Role </label>
+                       <!--  <input placeholder="Published" type="text"> -->
+                         <div class="ui fluid search selection dropdown">
+                                    <input type="hidden">
+                                    <i class="dropdown icon"></i>
+                                    <div class="default text">Role</div>
+                                    <div class="menu">
+                                        <div class="item" data-value="Training Program" >Convener</div>
+                                        <div class="item" data-value="Workshop" >Co-Convener</div>
+                                        <div class="item" data-value="Short-Term Program">Co-ordinator</div>
+                                        
+                                       
+                                        
+                                    </div>
+                                </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Sponsoring Agency</label>
+                        <input placeholder="Co-author" type="text">
+                    </div>
+                </div>
+            </div>
+
+            <div class="field">
+                
+                <div class="two fields">
+              
+                         
+                            <div class="field">
+                                    <label>Start Date</label>
+                                    <div class="ui calendar" id="rangestart2">
+                                          <div class="ui input left icon">
+                                            <i class="calendar icon"></i>
+                                            <input type="text" placeholder="Start">
+                                          </div>
+                                </div>
+                            </div>
+                        
+                        
+                            <div class="field">
+                                    <label>End Date</label>
+                                       <div class="ui calendar" id="rangeend2">
+                                      <div class="ui input left icon">
+                                        <i class="calendar icon"></i>
+                                        <input type="text" placeholder="End">
+                                      </div>
+                                    </div>
+                                </div>
+                       
+                       
+
+                 
+                </div>
+
+
+                <div class="fields">
+                     <div class="six wide field">
+                            <div class="field">
+                                    <label>Venue</label>
+                                    <input placeholder="" type="text">
+                                </div>
+                        </div>  
+
+                            <div class="four wide field">
+                              <label>Event Type</label>
+                                <div class="ui fluid search selection dropdown">
+                                    <input type="hidden">
+                                    <i class="dropdown icon"></i>
+                                    <div class="default text">Event Type</div>
+                                    <div class="menu">
+                                        <div class="item" data-value="Training Program" onclick="myFunction1()">Organised</div>
+                                        <div class="item" data-value="Workshop" onclick="myFunction1()">Workshop</div>
+                                        <div class="item" data-value="Short-Term Program"onclick="myFunction1()">Short-Term Program</div>
+                                         <div class="item" data-value="Training Program" onclick="myFunction1()">Training Program</div>
+                                            <div class="item" data-value="Any Other" onclick="myFunction()">Any Other</div>
+                                       
+                                        
+                                    </div>
+                                </div>
+                            </div> 
+                            <div class="four  wide field">
+                               <label><br></label>
+                             <input placeholder="please specify"  type="text" id="myDIV" style="display:none;">
+                            </div>
+                </div>
+
+                <div class="fields">
+                    <div class="fourteen  wide field">
+                        <div class="field">
+                            <label>Name</label>
+                            <input placeholder="Title" type="text">
+                        </div>
+                    </div>
+                    
+
+                    <div class="two wide field">
+                        <label><br></label>
+                        <div class="ui primary button">
+                            Save
+                            <i class="ui save icon right floated"></i>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+        <br>
+        <h4 class="ui dividing header">Report:</h4>
+
+       <table class="ui fixed single line sortable celled table">
+            <thead>
+            <tr>
+                <th class="sorted ascending">Sr.</th>
+                <th class="">Role</th>
+                <th class="">Sponsoring Agency</th>
+                <th class="">Venue</th>
+                <th class="">Start Date &&  End-Date</th>
+                <th class="">Type</th>
+                <th class="">Action</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr>
+                          </tr>
+
+            <tr>
+                        </tr>
+
+            <tr>
+                
+            </tr>
+            </tbody>
+
+            <tfoot>
+            <tr>
+                <th colspan="7">
+                    <div class="ui right floated pagination menu">
+                        <a class="icon item">
+                            <i class="left chevron icon"></i>
+                        </a>
+                        <a class="item">1</a>
+                        <a class="item">2</a>
+                        <a class="item">3</a>
+                        <a class="item">4</a>
+                        <a class="icon item">
+                            <i class="right chevron icon"></i>
+                        </a>
+                    </div>
+                </th>
+            </tr>
+            </tfoot>
+        </table>
+    </div>
+    {% comment %}The Workshop segment ends here!{% endcomment %}
+
+
+  
+
+
+  
+{% endblock %}
+
+
+<!-- code change starts -->
+
+{%  block javascript %}
+   <script type="text/javascript">
+       
+         
+   </script>
+
+{% endblock %}
+
+<!-- code change ends -->

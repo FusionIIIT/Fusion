@@ -1,0 +1,96 @@
+
+<script type="text/javascript">
+    function sub(){
+        var f = $('#meeting_form').serialize();
+        var input1= $('input[name="minutes_file"]').val();
+        var input2 = $('input[name="time"]').val();
+        var input3 =  $('input[name="date"]').val() ;
+        var input4 =$('input[name="venue"]').val() ;
+        var input5 = $('input[name="agenda"]').val() ;
+        alert(input1);
+        alert(input2);
+        alert(input3);
+        alert(input4);
+        alert(input5);
+        //$('#meeting_form')[0].reset();
+        alert(f);
+        $.ajax({
+            type : 'POST',
+            url : 'holding_meeting',
+            data : f,
+            success : function (){
+                alert("Success");
+                var table = document.getElementById("view_meeting");
+                var row = table.insertRow();
+                var cell1 = row.insertCell(1);
+                var cell2 = row.insertCell(2);
+                var cell3 = row.insertCell(3);
+                var cell4 = row.insertCell(4);
+
+                cell1.innerHTML =   input2 ;
+                cell2.innerHTML =   input3;
+                cell3.innerHTML = input4;
+                cell4.innerHTML =  input5;
+
+                
+            },
+            error : function (){
+                alert ('failed');
+                
+            }
+        });
+
+    }
+</script>
+
+
+
+
+
+<form class="ui  form"  id="meeting_form">
+        {% csrf_token %}
+
+  <!--      <div class="field">
+            <label>Title</label>
+            <input type="text" name="title" placeholder="Title" id="title" >
+
+        </div>
+  -->
+        <div class="field">
+            <label>Agenda</label>
+            <input type="text" name="agenda" placeholder="Agenda" >
+        </div>
+
+
+        <div class="fields">
+             
+            <div class="eight wide field">
+            <label>Date</label>
+            <input type="date" name="date" placeholder="date" required>
+            </div>
+            <div class="eight wide field">
+            <label>Time</label>
+            <input type="time" name="time" placeholder="time" required>
+            </div>
+        </div>
+        <div class="field">
+            <label>Venue</label>
+            <input type="text" name="venue" placeholder="venue" >
+        </div>
+
+        <div class="field">
+
+            <label>Minutes File(.docx)</label>
+            <input type="text" name="minutes_file" placeholder="Minutes File" >
+            </div>
+
+            <!--
+        <div class="field">
+                        <label>Details and Description</label>
+                        <textarea rows="2" form="meeting" name="agenda" ></textarea>
+        </div>
+        -->
+        <input type="submit" class="ui button" onclick="sub()" value="submit" >
+</form>  
+
+

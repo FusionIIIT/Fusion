@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    {% load static %}
+
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" type="text/css" href="{% static 'globals/css/semantic.min.css' %}">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css" />		<script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
+		<link  href="http://cdnjs.cloudflare.com/ajax/libs/fotorama/4.6.4/fotorama.css" rel="stylesheet">
+    <style media="screen">
+      #demo{
+        text-align: center;
+        font-size: 2.5em;
+      }
+    </style>
+    <title>{{contest.quiz_name}}</title>
+  </head>
+
+  <body oncontextmenu="return false;">
+    <div id="quizNav">
+        <div class="ui stackable massive inverted top attached menu" id="navbar">
+            <a class="item">
+                {{contest.course_id}}
+            </a>
+
+            <div class="right inverted menu">
+                <a class="item" href="{% url 'eis:profile' %}">
+                    <img class="ui avatar image" src="{% static 'globals/img/zlatan.jpg' %}">&nbsp;
+                    {{ request.user.first_name}}
+                {{ request.user.last_name}}
+                </a>
+            </div>
+        </div>
+        <div class="ui divider"></div>
+    </div>
+
+		<div>
+      <h1 class="ui massive center aligned header"> {{contest.quiz_name}}</h1>
+      <div class="ui two column grid" style="padding-top:5em;padding-bottom:15em;padding-left:5em;padding-right:5em">
+        <div class="twelve wide column" style="height:fit-content">
+          <div class="ui segment" >
+              <div class=" ui grid" style="padding:3em">
+                <!-- images -->
+                <!-- questions -->
+                {% for question in ques %}
+                <div class="centered fourteen wide column questions" data-pk={{question.question.pk}} data = {{ forloop.counter }}  id="question{{forloop.counter}}" style="display:none">
+                  <div class="image centered fourteen wide column">
+                    <center><img src="{{question.question.image}}" style="width:100%;height:auto;"></center>
+                  </div>
+                  <div class="question_image centered fourteen wide column ui segment" style="margin-top:1em;padding:2em;">
+                    <p>{{ question.question.question }}</p>
+                  <!-- </div>
+                  <div class="answer centered fourteen wide column ui segment" style="margin:1em;padding:2em"> -->
+                  <div class="ui divider">
+                  </div>
+                    <form class="ui form"  method="post">
+                      {% csrf_token %}
+                      {% if question.question.options1 %}
+                      <div class="ui radio checkbox" style="margin:2em">
+                        <input type="radio"  name="answer{{question.question.pk}}" value="1">
+                        <label>{{question.question.options1}}</label>
+                      </div>
+                      {% endif %}
+                      <br>
+                      {% if question.question.options2 %}
+                      <div class="ui radio checkbox" style="margin:2em">
+                        <input type="radio"  name="answer{{question.question.pk}}" value="2">
+                        <label>{{question.question.options2}}</label>
+                      </div>
+                      {% endif %}
+                      <br>
+                      {% if question.question.options3 %}
+                      <div class="ui radio checkbox" style="margin:2em">
+                        <input type="radio" name="answer{{question.question.pk}}" value="3">
+                        <label>{{question.question.options3}}</label>
+                      </div>
+                      {% endif %}
+                      <br>
+                      {% if question.question.options4 %}
+                      <div class="ui radio checkbox" style="margin:2em">
+                        <input type="radio" name="answer{{question.question.pk}}" value="4">
+                        <label>{{question.question.options4}}</label>
+                      </div>
+                      {% endif %}
+                      <br>
+                      {% if question.question.options5 %}
+                      <div class="ui radio checkbox" style="margin:2em">
+                        <input type="radio" name="answer{{question.question.pk}}" value="5">
+                        <label>{{question.question.options5}}</label>
+                      </div>
+                      {% endif %}
+                      <br>
+                      <div class="ui button next">
+                        Next Question
+                      </div>
+                      <input type="submit" data-pk={{question.question.pk}} class="ui button floated submit_bt"  value="Submit" />
+                    </form>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+
+            <div class="ui button" id='finish'>
+                Finish
+              </div>
+          </div>
+        </div>
+        <div class="four wide column" style="">
+          <div class="ui segment " style="">
+            <span class="ui">TIME REMAINING</span>
+            <div class="ui divider">
+            </div>
+            <p id="demo"></p>
+          </div>
+          <div class="ui segment " >
+            <span class="ui">QUESTIONS</span>
+            <div class="ui divider">
+            </div>
+            <div class="ui grid" style="margin-left:4em;margin-right:4em;margin-top:1em;padding:0.5em;">
+              {% for question in ques %}
+                <div class="two wide column qt" data={{forloop.counter}} id=qt{{forloop.counter}} data-pk={{question.question.pk}} style="margin-right:10px;margin-bottom:1em;border-radius:5px;">
+                  <center><span>{{forloop.counter}}</span></center>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="ui segment " style="min-height:20em">
+            <span class="ui">RULES &amp; REGULATIONS</span>
+            <div class="ui divider">
+              <div class="ui list" style="margin-top: 1em;">
+                <div class="item" style="color:#212121;font-size: 1.1em;font-weight: 400;">
+                          <p> Do not close this window</p>
+                          <p> Answers will only be recorded after clicking Submit</p>
+                          {% for x in rules %}
+                          <p>{{forloop.counter}}){{x}}</p>
+                          {% endfor %}
+                      </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <script src="https://code.jquery.com/jquery-3.2.1.js" integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE=" crossorigin="anonymous"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/fotorama/4.6.4/fotorama.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/semantic.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/dropdown.js' %}"></script>
+    <script type="text/javascript">
+    document.onkeydown = function(e) {
+      switch (event.keyCode) {
+          case 116 : //F5 button
+              event.returnValue = false;
+              event.keyCode = 0;
+              return false;
+          case 82 : //R button
+              if (event.ctrlKey) {
+                  e.preventDefault(e);
+                  event.keyCode = 0;
+                  return false;
+              }
+      }
+    }
+    window.onunload = function () {
+           var r = confirm( "Press a button!" )
+           if ( r == true ) {
+               alert( "You pressed OK!" )
+           }
+           else {
+               alert( "You pressed Cancel!" )
+           }
+
+       };
+
+    </script>
+
+    <script>
+      var past=1;
+      var count={{contest.number_of_question}};
+      // changing background color on hovering
+      var flag=0;
+      $('.qt').mouseover(function(){
+        if(flag!=1)
+        {
+          qt=$(this).attr('data');
+          color=$(this).css("background-color");
+          $('#qt'+qt).css({'background':'grey'});
+        }
+        else {
+          flag=0;
+        }
+      });
+
+      $('.qt').mouseout(function(){
+        if(flag!=1)
+        {
+          qt=$(this).attr('data');
+          $('#qt'+qt).css({'background':color});
+        }
+        else {
+          flag=0;
+        }
+      });
+
+      $('.next').click(function(){
+        $('#question'+id).css({'display':'none'});
+        $('#ann'+id).css({'display':'none'});
+        $('#qt'+id).css({'color':'white'});
+        id++;
+        if(id>count)
+        {
+          id=1;
+        }
+        $('#question'+id).css({'display':'block'});
+        $('#ann'+id).css({'display':'block'});
+        $('#qt'+id).css({'background':'#03b7b7'});
+      });
+
+      // displying the 1st question initially
+      id = $('.questions').attr('data');
+      $('#question'+id).css({'display':'block'});
+      $('#ann'+id).css({'display':'block'});
+      $('#qt'+id).css({'background':'#03b7b7'});
+
+      // displaying the corresponding question on click
+      $('.qt').click(function(event){
+        flag=1;
+        qt=$(this).attr('data');
+        $('#question'+id).css({'display':'none'});
+        $('#ann'+id).css({'display':'none'});
+        $('#qt'+id).css({'background':'white'});
+        id=qt;
+        $('#question'+id).css({'display':'block'});
+        $('#ann'+id).css({'display':'block'});
+        $('#qt'+id).css({'background':'#03b7b7'});
+      });
+
+      $(document).ready(function(){
+      $('.ui.accordion').accordion('refresh');
+
+      });
+      $('#signupdivert').click(function(e){
+        $('#loginblock').css({'display':'none'});
+        $('#signupblock').css({'display': 'block'});
+      });
+      $('#logindivert').click(function(e){
+        $('#loginblock').css({'display':'block'});
+        $('#signupblock').css({'display': 'none'});
+      });
+      $('.ui.sidebar')
+          .sidebar('attach events', '#navbar #sidebartrigger')
+          // .sidebar('setting', 'transition', 'overlay')
+          // .sidebar('toggle')
+      ;
+      $('.special.cards .image').dimmer({
+        on: 'hover'
+      });
+      //for timer
+      var duration= {{days}}*86400+{{hours}}*3600+{{minutes}}*60+{{seconds}};
+      // alert(duration);
+      // var duration= {{contest.d_day}}*86400+{{contest.d_hour}}*3600+{{contest.d_minute}}*60;
+    </script>
+    {% include "coursemanagement/timer.html" %}
+    {% block timerjs %}
+    {% endblock %}
+    <script type="text/javascript">
+      //ajax cheking
+      $('.submit_bt').click(function(event){
+        event.preventDefault();
+        pk=$(this).attr('data-pk');
+        var ans = $('input[name=answer'+pk+']:checked').val();
+        var csrf = $('input[name=csrfmiddlewaretoken]').val();
+        // alert("pk="+pk+"/nans"+ans);
+        $.ajax({
+          type: 'POST',
+          url:'/ocms/{{contest.pk}}/ajax',
+          data:{ 'question':pk, 'answer': ans, 'csrfmiddlewaretoken':csrf, },
+          success: function(data){
+            console.log(data);
+            $('#question'+id).css({'display':'none'});
+            $('#ann'+id).css({'display':'none'});
+            $('#qt'+id).css({'background':'white'});
+            id++;
+            if(id>{{contest.number_of_question}})
+            {
+              id=1;
+            }
+            $('#question'+id).css({'display':'block'});
+            $('#ann'+id).css({'display':'block'});
+            $('#qt'+id).css({'background':'#03b7b7'});
+          },
+          error: function(data,err){
+            alert(err);
+          },
+        });
+      });
+      $('#finish').click(function(event){
+        event.preventDefault();
+        $.ajax({
+          type:'POST',
+          url:'/ocms/{{contest.pk}}/submit',
+          data:{csrfmiddlewaretoken: '{{ csrf_token }}'},
+          success: function(data){
+            alert(data.message+"\nYour Score = "+data.score);
+            localStorage.setItem("Finished", "1");
+            window.close();
+
+          },
+          error: function(data,err){
+            alert(err);
+          }
+        });
+      });
+    </script>
+
+  </body>
+
+</html>

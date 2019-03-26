@@ -1,0 +1,97 @@
+{% load static %}
+{% block aboutspacs %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="aboutspacs">
+            About
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="aboutspacs">
+        <div class="ui vertical segment">
+            <div class="ui stackable doubling three cards">
+                <div class="ui card">
+                    <div class="content">
+                        <div class="ui large header">
+                            SPACS Convener
+                        </div>
+                    </div>
+
+                    <div class="image">
+                        <img  src="{% static 'globals/img/zlatan.jpg' %}">
+                    </div>
+
+                    <div class="content">
+                        <a class="header"><h2>{{hd.user}}</h2></a>
+                        <div class="meta">
+                            <span>{{hd.user.extrainfo.user_type}}</span>
+                        </div>
+                    </div>
+
+                    <div class="extra content">
+                        <label>
+                            <i class="left floated phone icon blue"></i>
+                            Phone
+                        </label>
+
+                        <span class="right floated">
+                            {{hd.user.extrainfo.phone_no}}
+                        </span>
+                    </div>
+
+                    <div class="extra content">
+                        <label>
+                            <i class="left floated mail icon blue"></i>
+                            E-Mail
+                        </label>
+
+                        <span class="right floated">
+                            {{hd.user.email}}
+                        </span>
+                    </div>
+
+                </div>
+
+                <div class="ui card">
+                    <div class="content">
+                        <div class="ui large header">
+                            SPACS Assistant
+                        </div>
+                    </div>
+
+                    <div class="image">
+                        <img src="{% static 'globals/img/zlatan.jpg' %}">
+                    </div>
+
+                    <div class="content">
+                        <a class="header"><h2>{{hd1.user}}</h2></a>
+                        <div class="meta">
+                            <span>{{hd1.user.extrainfo.user_type}}</span>
+                        </div>
+                    </div>
+
+                    <div class="extra content">
+                        <label>
+                            <i class="left floated phone icon blue"></i>
+                            Phone
+                        </label>
+
+                        <span class="right floated">
+                            {{hd1.user.extrainfo.phone_no}}
+                        </span>
+                    </div>
+
+                    <div class="extra content">
+                        <label>
+                            <i class="left floated mail icon blue"></i>
+                            E-Mail
+                        </label>
+
+                        <span class="right floated">
+                            {{hd1.user.email}}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

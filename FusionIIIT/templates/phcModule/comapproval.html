@@ -1,0 +1,372 @@
+{% load static %}
+
+{% block comapproval %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="viewappointments">
+            Today Appointments
+        </a>
+        <a class="item" data-tab="viewambulance">
+            Ambulance
+        </a>
+        <a class="item" data-tab="viewhospitaladmission">
+            Hospital_Admission
+        </a>
+        <a class="item" data-tab="futureappointments">
+            Future Appointments
+        </a>
+
+    </div>
+
+
+    {% comment %}the view appointments tab starts here {% endcomment %}
+    <div class="ui active tab" data-tab="viewappointments">
+        <table class="ui very basic collapsing celled large sortable table"
+               style="padding-left: 2.5%;padding-right: 2.5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
+            <thead>
+            <tr>
+                <th class="four wide">
+                    User
+                </th>
+
+                <th class="two wide">
+                    Doctor
+                </th>
+
+                <th class="four wide">
+                    Description
+                </th>
+                <th>
+                    Date
+                </th>
+                <th>
+                    From Time
+                </th>
+
+                <th >
+                    To Time
+
+                  </th>
+            </tr>
+            </thead>
+
+            <tbody>
+              {% for appointment in appointments_today%}
+            <tr>
+                <td>
+                    <h4 class="ui image header">
+                        <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                        <div class="content">
+                          {{appointment.user_id}}
+                        </div>
+                    </h4>
+                </td>
+
+                <td>
+                    {{appointment.doctor_id}}
+                </td>
+
+                <td>
+                    {{appointment.description}}
+                </td>
+                <td>
+                    {{appointment.date}}
+                </td>
+                <td>
+                    {{appointment.schedule.from_time}}
+                </td>
+
+                <td>
+                    {{appointment.schedule.to_time}}
+                </td>
+
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% comment %}the view appointments tab ends here {% endcomment %}
+
+
+    {% comment %}the view ambulance tab starts here {% endcomment %}
+    <div class="ui tab" data-tab="viewambulance">
+      <div class="ui vertical segment" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+          <table class="ui very basic collapsing celled large sortable table"
+                 style="padding-left: 2.5%;
+                                                        padding-right: 2.5%;
+                                                        padding-top: 1%;
+                                                        padding-bottom: 1.5%;
+                                                        margin: auto;">
+              <thead>
+              <tr>
+
+                  <th>
+                      User
+                  </th>
+                     <th class="three wide">
+                      Cause
+                  </th>
+
+                  <th>
+                    Requested<br>Date
+                  </th>
+
+                  <th>
+                      Start Date
+                  </th>
+
+                  <th>
+                    End Date
+                  </th>
+
+
+              </tr>
+              </thead>
+
+              <tbody>
+              {% for  ambulance in all_ambulances%}
+              <tr>
+                <td>
+                    <h4 class="ui image header">
+                        <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                        <div class="content">
+                          {{ambulance.user_id.user}}
+                        </div>
+                    </h4>
+                </td>
+                  <td>
+                      {{ambulance.reason}}
+                  </td>
+
+                  <td>
+                      {{ambulance.date_request.date}}
+                  </td>
+
+                  <td>
+                      {{ambulance.start_date}}
+                  </td>
+
+                  {% if ambulance.end_date == None %}
+                  <form method='POST'>{% csrf_token %}
+                  <input type="hidden" id="end_id" name="id" value={{ambulance.id}} />
+                  <td><p id="end_p"></p><input class="ui small right floated primary button" type="button" id="end" name="end" value="End"/></td>
+                  </form>
+                  {% else %}
+                     <td>{{ambulance.end_date}}</td>
+                  {% endif %}
+
+
+              </tr>
+              {% endfor %}
+              </tbody>
+          </table>
+          <script type="text/javascript">
+                $('#end').click(function(e)
+                                                    {
+                                                      $.ajax({
+                                                        type:'post',
+                                                        url:'/healthcenter/compounder/',
+                                                        data: {
+                                                        csrfmiddlewaretoken: '{{ csrf_token }}',
+                                                        id:$("#end_id").val(),
+                                                        end:$("#end").val()
+                                                      },
+                                                        success: function(data){
+                                                          alert("ended ambulance service");
+                                                          $('#end_p').html(data.datenow);
+                                                          document.getElementById("end").style.visibility='hidden';
+                                                      }
+                                                    });
+                                                  });
+              </script>
+      </div>
+    </div>
+    {% comment %}the view ambulance tab ends here {% endcomment %}
+
+      {% comment %}the view hospital admission tab starts here {% endcomment %}
+      <div class="ui tab" data-tab="viewhospitaladmission">
+          <div class="ui vertical segment" >
+              <table class="ui very basic collapsing celled small sortable table">
+                  <thead>
+                  <tr>
+                    <th class="four wide">
+                        Patient
+                    </th>
+
+                    <th class="four wide">
+                        Institute<br>Doctor
+                    </th>
+
+                    <th class="four wide">
+                        Hospital<br>Doctor
+                    </th>
+
+                      <th class="four wide">
+                          Hospital
+                      </th>
+
+                      <th>
+                          Admission<br> Date
+                      </th>
+
+                      <th>
+                          Discharge<br> Date
+                      </th>
+
+                      <th class="three wide">
+                          Medical<br>Reason
+                      </th>
+
+
+                  </tr>
+                  </thead>
+
+                  <tbody>
+                  {% for hospital in all_hospitals %}
+                  <tr>
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                            <div class="content">
+                                {{hospital.user_id.user}}
+                            </div>
+                        </h4>
+                    </td>
+
+                      <td>
+                          <h4 class="ui image header">
+                              <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                              <div class="content">
+                                {% if hospital.doctor_id == None %}
+
+                                {% else %}
+                                  {{hospital.doctor_id}}
+                                {% endif %}
+                              </div>
+                          </h4>
+                      </td>
+
+                      <td>
+                          {{hospital.hospital_doctor}}
+                      </td>
+
+                      <td>
+                          {{hospital.hospital_name}}
+                      </td>
+                      <td>
+                          {{hospital.admission_date}}
+                      </td>
+
+
+                        {% if hospital.discharge_date == None %}
+                        <form method='POST'>{% csrf_token %}
+                        <input type="hidden" id="disc_id" name="id" value={{hospital.id}} />
+                        <td><input type="button" id="discharge" name="discharge" class="ui small floated primary button" value="Discharge"/>
+                        <p id="disc_p"></p>
+                        </td>
+                        </form>
+                        {% else %}
+                        <td>{{hospital.discharge_date}}</td>
+
+                        {% endif %}
+                      <td>
+                          {{hospital.reason}}
+                      </td>
+
+
+                  </tr>
+                    {% endfor %}
+                  </tbody>
+              </table>
+              <script type="text/javascript">
+                    $('#discharge').click(function(e)
+                                                        {
+                                                          $.ajax({
+                                                            type:'post',
+                                                            url:'/healthcenter/compounder/',
+                                                            data: {
+                                                            csrfmiddlewaretoken: '{{ csrf_token }}',
+                                                            id:$("#disc_id").val(),
+                                                            discharge:$("#discharge").val()
+                                                          },
+                                                            success: function(data){
+                                                              alert("discharged from hospital");
+                                                              $('#disc_p').html(data.datenow);
+                                                              document.getElementById("discharge").style.visibility='hidden';
+                                                          }
+                                                        });
+                                                      });
+  </script>
+          </div>
+
+      </div>
+
+      {% comment %}the view hospital admission tab ends here {% endcomment %}
+      {% comment %}the view appointments tab starts here {% endcomment %}
+      <div class="ui tab" data-tab="futureappointments">
+          <table class="ui very basic collapsing celled large sortable table"
+                 style="padding-left: 2.5%;padding-right: 2.5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
+              <thead>
+              <tr>
+                  <th class="four wide">
+                      User
+                  </th>
+
+                  <th class="two wide">
+                      Doctor
+                  </th>
+
+                  <th class="four wide">
+                      Description
+                  </th>
+                  <th>
+                      Date
+                  </th>
+                  <th>
+                      From Time
+                  </th>
+
+                  <th >
+                      To Time
+
+                    </th>
+              </tr>
+              </thead>
+
+              <tbody>
+                {% for appointment_f in appointments_future%}
+              <tr>
+                  <td>
+                      <h4 class="ui image header">
+                          <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                          <div class="content">
+                            {{appointment_f.user_id}}
+                          </div>
+                      </h4>
+                  </td>
+
+                  <td>
+                      {{appointment_f.doctor_id}}
+                  </td>
+
+                  <td>
+                      {{appointment_f.description}}
+                  </td>
+                  <td>
+                      {{appointment_f.date}}
+                  </td>
+                  <td>
+                      {{appointment_f.schedule.from_time}}
+                  </td>
+
+                  <td>
+                      {{appointment.schedule.to_time}}
+                  </td>
+
+              </tr>
+              {% endfor %}
+              </tbody>
+          </table>
+      </div>
+      {% comment %}the view appointments tab ends here {% endcomment %}
+
+{% endblock %}

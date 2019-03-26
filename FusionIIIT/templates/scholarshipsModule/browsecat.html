@@ -1,0 +1,36 @@
+{% load static %}
+{% block browsecat %}
+{% comment %}The tab menu starts here!{% endcomment %}
+<div class="ui pointing secondary menu">
+    <a class="active item" data-tab="browsecat">
+        Submitted Applications
+    </a>
+</div>
+
+<div class="ui active tab" data-tab="browsecat">
+    <div class="ui vertical segment">
+        <table class="ui striped table">
+            <thead>
+            <tr>
+                <th>Tracking ID</th>
+                <th></th>
+                <th></th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>09876543</td>
+                <td><button class="ui blue button">Accept</button></td>
+                <td><button class="ui blue button">Reject</button></td>
+                <td><button class="ui blue button">Form</button></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="ui divider"></div>
+</div>
+
+{% comment %}The tab menu starts here!{% endcomment %}
+{% endblock %}

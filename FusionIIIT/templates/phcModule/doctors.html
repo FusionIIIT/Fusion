@@ -1,0 +1,185 @@
+{% load static %}
+
+{% block doctors %}
+    <div class="ui pointing secondary menu">
+       <a class="active item" data-tab="viewdoctor">
+            Doctors
+       </a>
+        <a class="item" data-tab="adddoctor">
+            Add Doctor
+        </a>
+        <a class="item" data-tab="removedoctor">
+            Remove Doctor
+        </a>
+    </div>
+    {% comment %}the add doctor tab starts here {% endcomment %}
+    <div class="ui active tab" data-tab="viewdoctor">
+        <div class="ui vertical segment" >
+            <table class="ui very basic collapsing celled small fluid table"
+                  style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;" >
+                <thead>
+                <tr>
+                    <th class="two wide">
+                        Doctor Name
+                    </th>
+
+                    <th class="two wide" >
+                        Specialization
+                    </th>
+
+                    <th class="wide">
+                          Phone
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                {% for doc in doctors %}
+                <tr>
+
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                        </h4>
+                              {{doc.doctor_name}}
+                    </td>
+
+                    <td>
+                        {{doc.specialization}}
+                    </td>
+
+                    <td>
+                        {{doc.doctor_phone}}
+                    </td>
+                </tr>
+                {% endfor %}
+
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+{% comment %}the view doctor tab ends here {% endcomment %}
+
+
+    {% comment %}the add doctor tab starts here {% endcomment %}
+    <div class="ui tab" data-tab="adddoctor">
+      <p id="doc_add"></p>
+        <div class="ui vertical segment">
+            <form class="ui form" method="POST" style="padding: 8px; padding-left: 24px; padding-right: 24px;">{% csrf_token %}
+              <div class="field">
+                <label>Doctor Name</label>
+                <div class="ui fluid large input">
+                    <input placeholder="Doctor Name" id="new_doctor" name="new_doctor" type="text">
+                </div>
+                </div>
+                <div class="field">
+                    <label>Specialization</label>
+                    <div class="ui fluid large input">
+                        <input placeholder="Specialization" id="specialization" name="specialization" type="text">
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Phone Number</label>
+                    <div class="ui fluid large input">
+                        <input placeholder="Phone" id="phone" name="phone" type="text">
+                    </div>
+                </div>
+                <div class="field">
+                <label><br></label>
+
+                <div >
+                  <input type="button" id="add_doctor" name="add_doctor" value="Submit"class="ui large right floated primary button" />
+                </div>
+
+               </div>
+            </form>
+            <script type="text/javascript">
+              $('#add_doctor').click(function(e)
+                                                  {
+                                                    var new_doctor = document.getElementById('new_doctor').value;
+                                                    var specialization = document.getElementById('specialization').value;
+                                                    var phone = document.getElementById('phone').value;
+                                                    if ( new_medicine==""||phone==""||specialization=="") {
+                                                        $('#doc_add').html('Enter valid details');
+                                                        return false;
+                                                    }
+
+                                                    $.ajax({
+                                                      type:'post',
+                                                      url:'/healthcenter/compounder/',
+                                                      data: {
+                                                      csrfmiddlewaretoken: '{{ csrf_token }}',
+                                                      new_doctor:$("#new_doctor").val(),
+                                                      specialization:$("#specialization").val(),
+                                                      phone:$("#phone").val(),
+                                                      add_doctor:$('#add_doctor').val()
+                                                    },
+                                                      success: function(data){
+                                                      alert("added doctor");
+                                                      document.getElementById("new_doctor").value="";
+                                                      document.getElementById("specialization").value="";
+                                                      document.getElementById("phone").value="";
+                                                    }
+                                                  });
+                                                });
+
+      </script>
+            <br>
+            <br>
+        </div>
+        <br>
+        <div class="extra segment"></div>
+    </div>
+    {% comment %}the add doctor tab ends here {% endcomment %}
+
+    {% comment %}the remove medicine tab starts here {% endcomment %}
+    <div class="ui tab" data-tab="removedoctor">
+        <div class="ui vertical segment">
+            <form class="ui form" method="POST" style="padding: 8px; padding-left: 24px; padding-right: 24px;">{% csrf_token %}
+              <div class="field">
+                <label>Doctor</label>
+                <select id="doc_active" class="ui search fluid dropdown" name="doctor_id" required="true">
+                  <option selected hidden>--SELECT--</option>
+                  {% for doctor in doctors %}
+                  <option value="{{doctor.id}}">{{doctor.doctor_name}}</option>
+                  {% endfor %}
+                </select>
+                </div>
+                <div class="field">
+                <label><br></label>
+
+                <div >
+                  <input type="button" id="remove_doctor" name="remove_doctor" value="Submit"class="ui large right floated primary button" />
+                </div>
+
+               </div>
+            </form>
+            <script type="text/javascript">
+              $('#remove_doctor').click(function(e)
+                                                  {
+
+                                                    $.ajax({
+                                                      type:'post',
+                                                      url:'/healthcenter/compounder/',
+                                                      data: {
+                                                      csrfmiddlewaretoken: '{{ csrf_token }}',
+                                                      doctor_active:$("#doc_active").val(),
+                                                      remove_doctor:$('#remove_doctor').val()
+                                                    },
+                                                      success: function(data){
+                                                      alert("removed doctor");
+                                                    }
+                                                  });
+                                                });
+
+      </script>
+            <br>
+            <br>
+        </div>
+        <br>
+        <div class="extra segment"></div>
+    </div>
+    {% comment %}the remove doctor tab ends here {% endcomment %}
+
+{% endblock %}

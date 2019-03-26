@@ -1,0 +1,17 @@
+{% block tab3 %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="tab3content1">
+            Purchase History
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="tab3content1">
+        <div class="ui vertical segment">
+            {% block tab3content1 %}
+                {% include 'officeModule/officeOfPurchaseOfficer/purchaseHistory_content1.html' %}
+            {% endblock %}
+        </div>
+    </div>
+{% endblock %}

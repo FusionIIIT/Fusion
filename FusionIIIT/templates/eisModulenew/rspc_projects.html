@@ -1,0 +1,258 @@
+{% load static %}
+
+{% block projects %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="research projects">
+            Research Projects
+        </a>
+
+        <a class="item" data-tab="Consultancy project">
+            Consultancy Projects
+        </a>
+
+        <a class="item" data-tab="patents">
+            Patents
+        </a>
+        <a class="item" data-tab="technology transfer">
+            Technology Transfers
+        </a>
+
+    </div>
+
+
+    {% comment %}The  Research Project segment starts here!{% endcomment %}
+    <div class="ui active tab segment" data-tab="research projects">
+
+        <h4 class="ui dividing header">Report:</h4>
+        <div class="ui pointing pagination menu">
+                {% for project in projects %}
+                {% if forloop.counter0|divisibleby:20 %}
+                    <span align="right>"><a class="{% if forloop.counter0 == 0 %}active {% endif %}item" data-tab="project-{{ forloop.counter0 }}">
+                        {% widthratio forloop.counter|add:20 20 1 %}
+     </a></span>
+                {% endif %}
+                {% endfor %}
+
+            </div>
+     {% for project in projects %}
+
+            {% if forloop.counter0|divisibleby:20 %}
+            <div class="ui {% if forloop.counter0 == 0 %}active {% endif %} tab segment" data-tab="project-{{ forloop.counter0 }}">
+        <table class="ui fixed sortable celled table">
+            <thead>
+            <tr>
+                <!--<th class="sorted ascending">Sr.</th>
+                <th class="">PI/CO-PI</th>
+                <th class="">Title</th>
+                <th class="">Funding Agency</th>
+                <th class="">Other Details</th>
+                <th class="">Status</th>
+                <th class="">Action</th>-->
+
+                 <th class="sorted ascending" style="width: 7%;">Sr.</th>
+                <th class="" style="width: 15%;" >PI/CO-PI</th>
+                <th class="" style="width: 20%;">Title of Paper</th>
+                <th class="" style="width: 20%;">Funding Agency</th>
+
+                <th style="width:30%">Other Details</th>
+
+            </tr>
+            </thead>
+
+            <tbody>
+            {% endif %}
+            <tr>
+                <td id="research{{ forloop.counter }}Z"><div style="display: none;">{{ project.id }}</div>{{ forloop.counter }}.</td>
+                <td id="research{{ forloop.counter }}A"><b>PI: </b>{{ project.pi }}<br><b>Co-PI: </b>{{ project.co_pi }}</td>
+                <td id="research{{ forloop.counter }}B">{{ project.title }}</td>
+                <td id="research{{ forloop.counter }}C">{{ project.funding_agency }}</td>
+                <td id="research{{ forloop.counter }}D">
+                    <b>Submission Date:</b> {{ project.date_submission }}  <br>
+                    <b>Start Date:</b> {{ project.start_date }}  <br>
+                    <b>Expected Finish Date: </b>{{ project.finish_date }}<br>
+                    <b>Financial Outlay :</b>{{ project.financial_outlay }}<br>
+                    <b>Status :</b>  {{ project.status }}
+
+                </td>
+            </tr>
+            {% if forloop.counter0|add:1|divisibleby:20 %}
+            </tbody>
+        </table>
+    </div>
+          {% endif %}
+            {% endfor %}
+     {% if not projects.all.count|divisibleby:20 %}
+     </tbody>
+        </table>
+            </div>
+ {% endif %}
+    </div>
+
+    {% comment %}The Research project segment ends here!{% endcomment %}
+
+
+
+    {% comment %}The Consultancy Project segment starts here!{% endcomment %}
+    <div class="ui tab segment" data-tab="Consultancy project">
+
+        <h4 class="ui dividing header">Report:</h4>
+        <div class="ui pointing pagination menu">
+                {% for consult in consultancy %}
+                {% if forloop.counter0|divisibleby:20 %}
+                    <span align="right>"><a class="{% if forloop.counter0 == 0 %}active {% endif %}item" data-tab="consult-{{ forloop.counter0 }}">
+                        {% widthratio forloop.counter|add:20 20 1 %}
+     </a></span>
+                {% endif %}
+                {% endfor %}
+
+            </div>
+     {% for consult in consultancy %}
+
+            {% if forloop.counter0|divisibleby:20 %}
+            <div class="ui {% if forloop.counter0 == 0 %}active {% endif %} tab segment" data-tab="consult-{{ forloop.counter0 }}">
+        <table class="ui fixed sortable celled table">
+            <thead>
+            <tr>
+                <!--<th class="sorted ascending">Sr.</th>
+                <th class="">Consultant(s)</th>
+                <th class="">Title</th>
+                <th class="">Client</th>
+                <th class="">Financial Outlay</th>
+                <th class="">Period of Consultancy</th>
+                <th class="">Action</th>-->
+
+                  <th class="sorted ascending" style="width: 7%;">Sr.</th>
+                <th class="" style="width: 15%;" >Consultant(s)</th>
+                <th class="" style="width: 20%;">Title </th>
+                <th class="" style="width: 20%;">Client</th>
+
+                <th style="width:16%">Financial Outlay</th>
+                 <th style="width:20%">Period </th>
+
+            </tr>
+            </thead>
+
+            <tbody>
+            {% endif %}
+            <tr id="r1">
+                 <td id="consultancy{{ forloop.counter }}Z"><div style="display: none;">{{ consult.id }}</div>{{ forloop.counter }}.</td>
+                 <td id="consultancy{{ forloop.counter }}A">{{ consult.consultants }}</td>
+                 <td id="consultancy{{ forloop.counter }}B">{{ consult.title }}</td>
+                 <td id="consultancy{{ forloop.counter }}C">{{ consult.client }}</td>
+                 <td id="consultancy{{ forloop.counter }}D">{{ consult.financial_outlay }}</td>
+                 <td id="consultancy{{ forloop.counter }}E">From: {{ consult.start_date }}<br/>To: {{ consult.end_date }}</td>
+            </tr>
+            {% if forloop.counter0|add:1|divisibleby:20 %}
+            </tbody>
+        </table>
+    </div>
+          {% endif %}
+            {% endfor %}
+     {% if not consultancy.all.count|divisibleby:20 %}
+     </tbody>
+        </table>
+            </div>
+ {% endif %}
+    </div>
+    {% comment %}The Consultancy Project ends here!{% endcomment %}
+
+
+    {% comment %}The Patent segment starts here!{% endcomment %}
+    <div class="ui tab segment" data-tab="patents">
+
+        <h4 class="ui dividing header">Report:</h4>
+
+        <table class="ui fixed sortable celled table">
+            <thead>
+            <tr>
+                <!--<th class="sorted ascending">Sr.</th>
+                <th class="">Patent No.</th>
+                <th class="">Title</th>
+                <th class="">Status</th>
+                <th class="">Year</th>
+                <th class="">Earning(in Rs.)</th>
+                <th class="">Action</th>-->
+
+                  <th class="sorted ascending" style="width: 7%;">Sr.</th>
+                <th class="" style="width: 15%;" >Patent No.</th>
+                <th class="" style="width: 20%;">Title </th>
+                <th class="" style="width: 20%;">Status</th>
+
+                <th style="width:20%">Year</th>
+                 <th style="width:20%">Earning in (Rs.)</th>
+
+            </tr>
+            </thead>
+
+            <tbody>{% for patent in patents %}
+            <tr>
+                 <td id="patent{{ forloop.counter }}Z"><div style="display: none;">{{ patent.id }}</div>{{ forloop.counter }}.</td>
+                 <td id="patent{{ forloop.counter }}A">{{ patent.p_no }}</td>
+                 <td id="patent{{ forloop.counter }}B">{{ patent.title }}</td>
+                 <td id="patent{{ forloop.counter }}C">{{ patent.status }}</td>
+                 <td id="patent{{ forloop.counter }}D">{{ patent.a_month }}/{{ patent.p_year }}</td>
+                 <td id="patent{{ forloop.counter }}E">{{ patent.earnings }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% comment %}The Books segment ends here!{% endcomment %}
+
+
+    {% comment %}The Technology segment starts here!{% endcomment %}
+
+    <div class="ui tab segment" data-tab="technology transfer">
+        <h4 class="ui dividing header" id="changes11">Add a Technology Transfer</h4>
+        <form class="ui form"  method="post" action="{% url 'eis:transfer_insert' %}">
+            {% csrf_token %}
+            <div style="display: none;"> <input type="text" id="techZ" name="tech_id"></div>
+            <div class="field">
+                <div class="fourteen wide field">
+                    <div class="field">
+                        <label>Details</label>
+                        <input placeholder="Details" type="text" id="techA" name="details" required>
+                    </div>
+                </div>
+
+                <div class="two wide field">
+                    <label><br></label>
+                    <button class="ui primary button" type="submit">
+                            Save<i class="ui save icon right floated"></i>
+                        </button>
+                </div>
+            </div>
+        </form>
+        <br>
+
+         <h4 class="ui dividing header">Report:</h4>
+
+        <table class="ui fixed single line sortable celled table">
+            <thead>
+            <tr>
+                <!--<th class="sorted ascending">Sr.</th>
+                <th class="" colspan="4">Details</th>
+                <th class="">Action</th>-->
+                <th class="sorted ascending">Sr.</th>
+                <th class="" colspan="4">Details</th>
+                <th class="">Action</th>
+
+
+            </tr>
+            </thead>
+
+            <tbody>
+           {% for techtransfer in techtransfers %}
+            <tr>
+                <td id="tech{{ forloop.counter }}Z"><div style="display: none;">{{ techtransfer.id }}</div>{{ forloop.counter }}.</td>
+                <td class="" colspan="4" id="tech{{ forloop.counter }}A">{{ techtransfer.details }}</td>
+                <td><a onclick="updateTECH({{ forloop.counter }})"><i id="bt" class="edit icon" style="font-size:1.3vw ; color:blue;"></i></a><br><a class="centered raised item" href="{% url 'eis:emp_techtransferDelete' techtransfer.id %}"><i id="bt" class="trash outline icon" style="font-size:1.3vw; color:red;"></i> </a> </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% comment %}The Technology segment ends here!{% endcomment %}
+{% endblock %}

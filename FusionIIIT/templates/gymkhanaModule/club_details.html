@@ -1,0 +1,473 @@
+{% load static %}
+{% block view_budget %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+
+        <a class="active item" data-tab="club">
+            Club Details
+        </a>
+        {% if "Junior Superintendent" not in Curr_desig and "Dean_s" not in Curr_desig %}
+        <a class="item" data-tab="session">
+            Club Sessions
+        </a>
+
+         <a class="item" data-tab="event">
+            Club Events
+        </a>
+        {%  endif %}
+    </div>
+
+    {% for i in Club_name %}
+        <div class="ui modal {{ i.club_name }}_" >
+            <i class="close icon"></i>
+            <div class="header">
+                Club Info
+            </div>
+            <div class="image content">
+                <div class="ui medium image">
+                  <img src="{% static 'globals/img/zlatan.jpg' %}">
+                </div>
+                <div class="description">
+                    <div class="ui header">
+                    <p><H1><u>{{ i.club_name }}&nbsp; Club</u></H1></p>
+                    </div>
+                    <p><pre>
+<b>Co-Ordinator</b>     : {{ i.co_ordinator.id.id }}
+                   {{ i.co_ordinator.id.user }}
+                   {{ i.co_ordinator.id.user.email }}
+
+<b>Co-Coordinator</b>   : {{ i.co_ordinator.id.id }}
+                   {{ i.co_ordinator.id.user }}
+                   {{ i.co_ordinator.id.user.email }}
+
+<b>Faculty Incharge</b> : {{ i.faculty_incharge.id.id }}
+                   {{ i.faculty_incharge.id.user }}
+                   {{ i.faculty_incharge.id.user.email }}
+
+<b>Description : </b>
+{{i.description}}
+
+<b>Activity Calender : </b><a target="_blank" href="{{ i.activity_calender.url }}"><i class="large attach black icon"></i>
+</a>
+<b>Club File : </b><a target="_blank" href="{{ i.club_file.url }}"><i class="large attach black icon"></i>
+</a>
+                    </pre></p>
+                </div>
+            </div>
+            <div class="actions">
+                <div class="ui black deny button">
+                    Close
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+
+    {% for i in Club_event %}
+        <div class="ui small modal {{ i.club }}_event" >
+            <i class="close icon"></i>
+            <div class="header">
+                Club Event Info
+            </div>
+            <div class="image content">
+                <div class="ui medium image">
+                  <img src="{% static 'globals/img/zlatan.jpg' %}">
+                </div>
+                <div class="description">
+                    <div class="ui header">
+                    <p>{{ i.club }}</p>
+                    </div>
+                    <p>{{ i.event_name }}</p>
+                    <p>{{ i.incharge }}</p>
+                    <p>{{ i.date }}</p>
+                    <p>{{ i.details }}</p>
+                </div>
+            </div>
+            <div class="actions">
+                <div class="ui black deny button">
+                    Close
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+
+    <!-- modal script enable -->
+    <script type="text/javascript">
+        // function display_fest() {
+        //     // body...
+        //     var d = document.getElementById('fest_budget').value;
+        //     //alert(d);
+        //     document.getElementById(d).hidden = false;
+        // }
+        function view_(a) {
+            // body...
+            //$('.ui.modal').find("input").val({'name':id});
+            var id = '.ui.modal.'+a;
+            $(id).modal('show');
+        }
+        function view_event(a) {
+            // body...
+            //$('.ui.modal').find("input").val({'name':id});
+            var id = '.ui.modal.'+a;
+            $(id).modal('show');
+        }
+
+        function display_club_session() {
+            var data1 = "_"+document.getElementById('club_session_').value+"_";
+            //alert(e);
+            document.getElementById(data1).hidden = false;
+        }
+        function display_club_events() {
+            var data1 = "_"+document.getElementById('club_events_').value+"_event";
+            //alert(e);
+            document.getElementById(data1).hidden = false;
+        }
+    </script>
+
+    <div class="ui active tab" data-tab="club">
+        <div class="ui vertical segment">
+            <table class="ui very basic collapsing celled sortable table"
+                   style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
+                <thead>
+                <tr>
+                    <th >
+                        Club
+                    </th>
+
+                    <th>
+                        Co-ordinator
+                    </th>
+
+                    <th>
+                        Co-Coordinator
+                    </th>
+
+                    <th>
+                        Activity Calender
+                    </th>
+
+                </tr>
+                </thead>
+
+                <tbody>
+                {% if "Junior Superintendent" in Curr_desig or "Dean_s" in Curr_desig %}
+                    {% for i in Club_name %}
+                        {% if i.status == "confirmed" %}
+                        <tr id="_{{ i.club_name }}">
+                            <td onclick="view_('{{ i.club_name }}_')">
+                                {{ i.club_name }}
+                            </td>
+
+                            <td>
+                                <h4 class="ui image header">
+                                    <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                                    <div class="content">
+                                        {{ i.co_ordinator }}
+                                    </div>
+                                </h4>
+                            </td>
+
+                            <td>
+                                <h4 class="ui image header">
+                                    <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                                    <div class="content">
+                                        {{ i.co_coordinator }}
+                                    </div>
+                                </h4>
+                            </td>
+
+                            <td>
+                                {% comment %}
+                                    TODO: Add the attachment here!
+                                {% endcomment %}
+                                <a class="ui inverted circular icon button" style="margin: auto;" target="_blank" href="{{ i.activity_calender.url }}">
+                                    <i class="large attach black icon"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+
+                {% if "co-ordinator" in Curr_desig or "co co-ordinator" in Curr_desig %}
+                    {% for i in Club_name %}
+                     {% if i.status == "confirmed" %}
+                        <tr id="_{{ i.club_name }}">
+                            <td onclick="view_('{{ i.club_name }}_')">
+                                {{ i.club_name }}
+                            </td>
+
+                            <td>
+                                <h4 class="ui image header">
+                                    <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                                    <div class="content">
+                                        {{ i.co_ordinator }}
+                                    </div>
+                                </h4>
+                            </td>
+
+                            <td>
+                                <h4 class="ui image header">
+                                    <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                                    <div class="content">
+                                        {{ i.co_coordinator }}
+                                    </div>
+                                </h4>
+                            </td>
+
+                            <td>
+                                {% comment %}
+                                    TODO: Add the attachment here!
+                                {% endcomment %}
+                                <a class="ui inverted circular icon button" style="margin: auto;" target="_blank" href="{{ i.activity_calender.url }}">
+                                    <i class="large attach black icon"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endif %}
+                    {% endfor %}
+                {% else %}
+                    {% for i in Club_member %}
+                        {% if request.user.username in i.member.id.user|stringformat:"s" and i.status == "confirmed" %}
+                        <tr id="_{{ i.club.club_name }}">
+                            <td onclick="view_('{{ i.club.club_name }}_')">
+                                {{ i.club.club_name }}
+                            </td>
+
+                            <td>
+                                <h4 class="ui image header">
+                                    <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                                    <div class="content">
+                                        {{ i.club.co_ordinator }}
+                                    </div>
+                                </h4>
+                            </td>
+
+                            <td>
+                                <h4 class="ui image header">
+                                    <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                                    <div class="content">
+                                        {{ i.club.co_coordinator }}
+                                    </div>
+                                </h4>
+                            </td>
+
+                            <td>
+                                {% comment %}
+                                    TODO: Add the attachment here!
+                                {% endcomment %}
+                                <a class="ui inverted circular icon button" style="margin: auto;" target="_blank" href="{{ i.club.activity_calender.url }}">
+                                    <i class="large attach black icon"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+                </tbody>
+            </table>
+
+            <br>
+            <div class="ui divider"></div>
+        </div>
+        <br>
+        <div class="extra content"></div>
+    </div>
+
+    <div class="ui tab" data-tab="session">
+        <div class="ui vertical segment">
+            <form class="ui form" style="padding-left: 32px; padding-right: 32px;">
+                <div class="field">
+                    <label>Club</label>
+                    <select class="ui search fluid dropdown" name="club" id="club_session_" onchange="display_club_session()" required>
+                        <option value="">Select</option>
+                        {% if "co-ordinator" in Curr_desig or "co co-ordinator" in Curr_desig %}
+                            {% for i in Club_name %}
+                                {% if request.user.username in i.co_ordinator|stringformat:"s" and i.status == "confirmed" %}
+                                    <option value="{{ i.club_name }}">{{ i.club_name }} </option>
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            {% for i in Club_member %}
+                                {% if request.user.username in i.member.id.user|stringformat:"s" and i.status == "confirmed" %}
+                                    <option value="{{ i.club.club_name }}">{{ i.club.club_name }} </option>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
+            </form>
+            <br>
+            <h4 class="ui dividing header" style="margin-left: 32px; margin-right: 32px;">Club Sessions</h4>
+            <table class="ui very basic collapsing celled sortable table"
+                   style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
+                <thead>
+                <tr>
+                    <th class="five wide column">
+                        Venue
+                    </th>
+
+                    <th>
+                        Date
+                    </th>
+
+                    <th>
+                        Details
+                    </th>
+
+                    <!-- <th>
+                        Budget File
+                    </th> -->
+
+                </tr>
+                </thead>
+
+                <tbody>
+                {% for i in Club_session %}
+                    <tr id="_{{ i.club }}_" hidden="true">
+                        <td>
+                            {{ i.venue }}
+                        </td>
+
+                        <td>
+                            {{ i.date }}
+                        </td>
+
+                        <td>
+                            {{ i.details }}
+                        </td>
+
+<!--                         <td>
+                            <h4 class="ui image header">
+                                <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                                <div class="content">
+                                    {{ i.co_ordinator }}
+                                </div>
+                            </h4>
+                        </td>
+ -->
+                        <!-- <td>
+                            {% comment %}
+                                TODO: Add the attachment here!
+                            {% endcomment %}
+                            <a class="ui inverted circular icon button" style="margin: auto;" target="_blank" href="{{ i.budget_file.url }}">
+                                <i class="large attach black icon"></i>
+                            </a>
+                         --></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+            <br>
+            <div class="ui divider"></div>
+        </div>
+        <br>
+        <div class="extra content"></div>
+    </div>
+
+    <div class="ui tab" data-tab="event">
+        <div class="ui vertical segment">
+            <form class="ui form" style="padding-left: 32px; padding-right: 32px;">
+                <div class="field">
+                    <label>Club</label>
+                    <select class="ui search fluid dropdown" name="club" id="club_events_" onchange="display_club_events()" required>
+                        <option value="">Select</option>
+                        {% if "co-ordinator" not in Curr_desig %}
+                            {% for i in Club_member %}
+                                {% if request.user.username in i.member.id.user|stringformat:"s" and i.status == "confirmed" %}
+                                    <option value="{{ i.club.club_name }}">{{ i.club.club_name }} </option>
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            {% for i in Club_name %}
+                                {% if request.user.username in i.co_ordinator|stringformat:"s" and i.status == "confirmed" %}
+                                    <option value="{{ i.club_name }}">{{ i.club_name }} </option>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
+            </form>
+            <br>
+            <table class="ui very basic collapsing celled sortable table"
+                   style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
+                <thead>
+                <tr>
+                    <th>
+                        Club
+                    </th>
+
+                    <th>
+                        Event Name
+                    </th>
+
+                    <th>
+                        Incharge
+                    </th>
+
+                    <th>
+                        Date
+                    </th>
+
+                    <!-- <th>
+                        Budget File
+                    </th> -->
+
+                </tr>
+                </thead>
+
+                <tbody>
+                {% for i in Club_event %}
+                    <tr id="_{{ i.club }}_event" hidden="true">
+                        <td onclick="view_event('{{ i.club }}_event')">
+                            {{ i.club }}
+                        </td>
+
+                        <td>
+                            {{ i.event_name }}
+                        </td>
+
+
+                        <td>
+                            <h4 class="ui image header">
+                                <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                                <div class="content">
+                                    {{ i.incharge }}
+                                </div>
+                            </h4>
+                        </td>
+
+                        <td>
+                            {{ i.date }}
+                        </td>
+
+<!--                         <td>
+                            <h4 class="ui image header">
+                                <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                                <div class="content">
+                                    {{ i.co_ordinator }}
+                                </div>
+                            </h4>
+                        </td>
+ -->
+                        <!-- <td>
+                            {% comment %}
+                                TODO: Add the attachment here!
+                            {% endcomment %}
+                            <a class="ui inverted circular icon button" style="margin: auto;" target="_blank" href="{{ i.budget_file.url }}">
+                                <i class="large attach black icon"></i>
+                            </a>
+                         --></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+            <br>
+            <div class="ui divider"></div>
+        </div>
+        <br>
+        <div class="extra content"></div>
+    </div>
+{% endblock %}

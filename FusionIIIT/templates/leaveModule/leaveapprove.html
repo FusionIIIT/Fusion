@@ -1,0 +1,329 @@
+{% block leaveapprove %}
+
+
+<div class="ui top attached tabular menu">
+    <a class="item active" data-tab="afirst">Process Leaves</a>
+    <a class="item" data-tab="asecond">Processed Leaves</a>
+</div>
+
+<div class="ui bottom attached tab segment active" data-tab="afirst">
+    <br>
+    <div class="ui divider"></div>
+
+
+    {% for req in leave_requests %}
+        <div class="ui modal leave-req-detail-{{ req.id }}">
+            <div class="header">
+                Detail of Leave
+            </div>
+            <div class="scrolling content">
+                <b>Durations of Leave</b>
+                <ul>
+                    {% for segment in req.leave.segments.all %}
+                        <li> From {{ segment.start_date }} To {{ segment.end_date }} </li>
+                        <ul>
+                            <li><b>Type of Leave:</b> {{ segment.leave_type.name }} </li>
+                            <li> <b>Begin with Half Day:</b> {% if segment.start_half %} Yes {% else %} No {% endif %}
+                            <li> <b>End with Half Day:</b> {% if segment.end_half %} Yes {% else %} No {% endif %} </li>
+                        </ul>
+                    {% endfor %}
+
+                </ul>
+                <br>
+                {% if req.leave.applicant.extrainfo.user_type != 'student' %}
+                    <b> Replacements </b>
+                    <ul>
+                        {% for rep in req.leave.replace_segments.all %}
+                            <li>
+                                {% if rep.replacement_type == 'academic' %}
+                                    Academic Replacement
+                                {% else %}
+                                    Administrative Replacement
+                                {% endif %}
+                                from <b> {{ rep.start_date }} </b> to <b> {{ rep.end_date }} </b>
+                            </li>
+                            <ul>
+                                <li><b> Replacer: </b> {{ rep.replacer.get_full_name }} </li>
+                            </ul>
+                        {% endfor %}
+
+                    </ul>
+                {% else %}
+                    <b> Student's Application </b>
+                {% endif %}<br>
+                <b> Leave Balance (After Deduction of Pending Leaves): </b> <br><br>
+                <table border=1 style="text-align: center; width: 100%;">
+                    <thead>
+                        <th> Leave Type </th>
+                        <th> Remaining Leaves </th>
+                    </thead>
+                    <tbody>
+                        {% for lv_bal in req.leave.get_current_leave_balance %}
+                            <!--{% if lv_bal.leave_type.name != 'Station' %}-->
+                                <tr>
+                                    <td> {{ lv_bal.leave_type.name }} </td>
+                                    <td> {{ lv_bal.remaining_leaves }} </td>
+                                </tr>
+                            <!--{% endif %}-->
+
+                        {% endfor %}
+
+                    </tbody>
+                </table>
+            </div>
+            <div class="actions">
+                <div class="ui green positive button">
+                    Ok
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+
+    {% for req in processed_requests %}
+        <div class="ui modal leave-req-detail-{{ req.id }}">
+            <div class="header">
+                Detail of Leave
+            </div>
+            <div class="scrolling content">
+                <b>Durations of Leave</b>
+                <ul>
+                    {% for segment in req.leave.segments.all %}
+                        <li> From {{ segment.start_date }} To {{ segment.end_date }} </li>
+                        <ul>
+                            <li><b>Type of Leave:</b> {{ segment.leave_type.name }} </li>
+                            <li> <b>Begin with Half Day:</b> {% if segment.start_half %} Yes {% else %} No {% endif %}
+                            <li> <b>End with Half Day:</b> {% if segment.end_half %} Yes {% else %} No {% endif %} </li>
+                        </ul>
+                    {% endfor %}
+
+                </ul>
+                <br>
+                {% if req.leave.applicant.extrainfo.user_type != 'student' %}
+                    <b> Replacements </b>
+                    <ul>
+                        {% for rep in req.leave.replace_segments.all %}
+                            <li>
+                                {% if rep.replacement_type == 'academic' %}
+                                    Academic Replacement
+                                {% else %}
+                                    Administrative Replacement
+                                {% endif %}
+                                from <b> {{ rep.start_date }} </b> to <b> {{ rep.end_date }} </b>
+                            </li>
+                            <ul>
+                                <li><b> Replacer: </b> {{ rep.replacer.get_full_name }} </li>
+                            </ul>
+                        {% endfor %}
+
+                    </ul>
+                {% else %}
+                    <b> Student's Application </b>
+                {% endif %}<br>
+                <b> Leave Balance (After Deduction of Pending Leaves): </b> <br><br>
+                <table border=1 style="text-align: center; width: 100%;">
+                    <thead>
+                        <th> Leave Type </th>
+                        <th> Remaining Leaves </th>
+                    </thead>
+                    <tbody>
+                        {% for lv_bal in req.leave.get_current_leave_balance %}
+                            <!--{% if lv_bal.leave_type.name != 'Station' %}-->
+                                <tr>
+                                    <td> {{ lv_bal.leave_type.name }} </td>
+                                    <td> {{ lv_bal.remaining_leaves }} </td>
+                                </tr>
+                            <!--{% endif %}-->
+
+                        {% endfor %}
+
+                    </tbody>
+                </table>
+            </div>
+            <div class="actions">
+                <div class="ui green positive button">
+                    Ok
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+
+    <table class="ui compact celled definition sortable table" style='text-align: center;'>
+        {% if leave_requests.count %}
+            <thead>
+            <tr>
+                <th>S. No.</th>
+                <th>Name</th>
+                {% comment %}
+                    For Details of a leave request
+                {% endcomment %}
+                <th></th>
+                {% comment %}
+                    For accepting the request
+                {% endcomment %}
+                <th></th>
+                {% comment %}
+                    For rejected the request or forwarding
+                {% endcomment %}
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for req in leave_requests %}
+                <tr class="leave-request-{{ req.id }}">
+                    <td class="collapsing">
+                        {{ forloop.counter }}
+                    </td>
+                    <td> {{ req.leave.applicant.get_full_name }} </td>
+
+                    <td> <button type="button" data="{{ req.id }}" class="medium ui button request-detail"> Details </button> </td>
+                    {% if req.leave.applicant.extrainfo.user_type == 'student' %}
+                    <td><button type="button" data="{{ req.id }}" class="medium green ui button stud-request-accept"> Accept </button></td>
+                    <td><button type="button" data="{{ req.id }}" class="medium red ui button stud-request-reject"> Reject </button></td>
+                    {% elif req.permission == 'sanc_auth' and req.leave.to_forward and not req.leave.applicant.leave_admins.is_one_level %}
+                        <td></td>
+                        <td> <button type="button" data="{{ req.id }}" class="medium ui button request-forward"> Forward </button> </td>
+                    {% elif req.permission == 'intermediary' %}
+                        <td> <button type="button" data="{{ req.id }}" class="medium ui button request-forward"> Forward </button> </td>
+                        <td> <button type="button" data="{{ req.id }}" class="medium red ui button request-reject"> Reject </button> </td>
+                    {% else %}
+                        <td><button type="button" data="{{ req.id }}" class="medium green ui button request-accept"> Accept </button></td>
+                        <td><button type="button" data="{{ req.id }}" class="medium red ui button request-reject"> Reject </button></td>
+                    {% endif %}
+
+                </tr>
+            {% endfor %}
+
+            </tbody>
+        {% else %}
+            No Data Available
+        {% endif %}
+    </table>
+
+</div>
+
+<div class="ui bottom attached tab segment" data-tab="asecond">
+
+    <br>
+    <div class="ui divider"></div>
+
+    <table class="ui compact celled definition sortable table" style='text-align: center;'>
+        {% if processed_requests.count %}
+            <thead>
+                <tr>
+                    <th>S. No.</th>
+                    <th>Name</th>
+                    {% comment %}
+                    For Details of a leave request
+                    {% endcomment %}
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in processed_requests %}
+                    <tr class="leave-request-{{ req.id }}">
+                        <td class="collapsing">
+                            {{ forloop.counter }}
+                        </td>
+                        <td> {{ req.leave.applicant.get_full_name }} </td>
+
+                        <td> <button type="button" data="{{ req.id }}" class="medium ui button request-detail"> Details </button> </td>
+                    </tr>
+                {% endfor %}
+
+            </tbody>
+        {% else %}
+            No Data Available
+        {% endif %}
+    </table>
+
+</div>
+    <script type="text/javascript">
+
+        $('.request-detail').on('click', function(e){
+            e.preventDefault();
+            var id = $(this).attr('data');
+            $('.leave-req-detail-'+id).modal('show');
+        });
+
+        $('.request-forward').on('click', function(e){
+            e.preventDefault();
+            var id = $(this).attr('data');
+            $('.request-modal .id').val(id);
+            $('.request-modal textarea').val('');
+            // console.log($('.request-modal .id').val());
+            $('.request-modal .process-type').val('forward');
+            $('.request-modal .rep').val('');
+            $('.request-modal').modal('show');
+        });
+
+        $('.request-accept').on('click', function(e){
+            e.preventDefault();
+            var id = $(this).attr('data');
+            $.ajax({
+                type: 'post',
+                url: '/leave/process-request/',
+                data: {
+                    id: id,
+                    remark: 'No Remark',
+                    status: 'accept'
+                },
+                success: function(data) {
+                    $('.leave-request-'+id).remove();
+                    $('.process-modal p').html('<center>'+data.message+'</center>');
+                    $('.process-modal').modal('show');
+                },
+                error: function(data, err) {
+                    $('.fail-modal').modal('show');
+                }
+            });
+        });
+
+
+        $('.stud-request-accept').on('click', function(e){
+            e.preventDefault();
+            var id = $(this).attr('data');
+            $.ajax({
+                type: 'post',
+                url: '/leave/process-request/',
+                data: {
+                    id: id,
+                    stud: 'something',
+                    remark: 'No Remark',
+                    status: 'accept'
+                },
+                success: function(data) {
+                    $('.leave-request-'+id).remove();
+                    $('.process-modal p').html('<center>'+data.message+'</center>');
+                    $('.process-modal').modal('show');
+                },
+                error: function(data, err) {
+                    $('.fail-modal').modal('show');
+                }
+            });
+        });
+
+        $('.request-reject').on('click', function(e){
+            e.preventDefault();
+            var id = $(this).attr('data');
+            $('.request-modal .id').val(id);
+            $('.request-modal textarea').val('');
+            $('.request-modal .rep').val('');
+            $('.request-modal .stud').val('');
+            $('.request-modal .process-type').val('reject');
+            $('.request-modal').modal('show');
+        });
+
+        $('.stud-request-reject').on('click', function(e){
+            e.preventDefault();
+            var id = $(this).attr('data');
+            $('.request-modal .id').val(id);
+            $('.request-modal textarea').val('');
+            $('.request-modal .rep').val('');
+            $('.request-modal .stud').val('something');
+            $('.request-modal .process-type').val('reject');
+            $('.request-modal').modal('show');
+        });
+
+    </script>
+
+{% endblock %}

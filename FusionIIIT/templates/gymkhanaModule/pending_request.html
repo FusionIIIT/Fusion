@@ -1,0 +1,102 @@
+{% load static %}
+{% block pendingrequest %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+       
+
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="sentrequests">
+            Sent Requests
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="sentrequests">
+        <div class="ui vertical segment">
+        <form method="post" action="" id="sentrequest">
+        {% csrf_token %}
+            <table id="mytable" class="ui very basic collapsing celled sortable table"
+                   style="padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                <thead>
+                <tr>
+                    <th>
+                    </th>
+
+                    <th class="four wide column">
+                        Student
+                    </th>
+
+                    <th>
+                        Roll No.
+                    </th>
+
+                    <th>
+                        Club
+                    </th>
+
+                    <th>
+                        Category
+                    </th>
+
+                    <th>
+                        Status
+                    </th>
+                </tr>
+                </thead>
+
+                <tbody>
+                {% for i in Club_member %}
+                    {% if request.user.username in i.member|stringformat:"s" and i.status == "open" %}
+                    <tr >
+                        <td class="collapsing">
+                            <div class="ui fitted checkbox">
+                                <input type="checkbox" id="{{ i.member.id }}" value="{{ i.member.id }},{{ i.club }}" name="check" > <label></label>
+                            </div>
+                        </td>
+                        <td onclick="view('{{ i.member.id.id }}','{{ i.club.club_name }}')">
+                            {{ i.member.id.id }}
+                        </td>
+
+                        <td>
+                            {{ i.member.id.user.username }}
+                        </td>
+
+                        <td>
+                            {{ i.club.club_name}}
+                        </td>
+
+                        <td>
+                            {{ i.club.category }}
+                        </td>
+
+                        <td>
+                            {{ i.status }}
+                        </td>
+                    </tr>
+                    {% endif %}
+                {% endfor %}
+                </tr>
+
+                </tbody>
+            </table>
+
+
+            <br>
+
+            <!-- <div class="ui primary right floated button" name="approve" onclick="approve();">Approve Selected</div> -->
+            <!-- <div class="ui red right floated button" name = "reject" onclick="approve();">Reject Selected</div> -->
+            <div class="field">
+                <button class="ui primary button right floated" type="submit" formaction="/gymkhana/cancel/">
+                    Cancel Request
+                </button>
+                <br>
+            </div>
+            <br>
+        </form>
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+    
+{% endblock %}
