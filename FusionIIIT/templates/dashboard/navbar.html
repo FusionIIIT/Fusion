@@ -37,7 +37,11 @@
                     {% comment %}
                         TODO: User details! depending on type of user say: STUDENT/FACULTY/STAFF!
                     {% endcomment %}
+		    {% if request.user.extrainfo.profile_picture %}
+		    <img class="ui avatar image" src="{{ request.user.extrainfo.profile_picture.url }}">
+		    {% else %}
                     <img class="ui avatar image" src="{% static 'globals/img/zlatan.jpg' %}">
+		    {% endif %}
                     {{request.user.first_name}} {{request.user.last_name}}
                 </a>
                 {% comment %}
