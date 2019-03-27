@@ -693,8 +693,12 @@ function check_out (id , mess_bill , room_bill) {
 
 function bill_between_date_range() {
 
-    start_date = $('input[name=start').val(),
-    end_date = $('input[name=end]').val(),
+   start_date = $('input[name=start').val();
+    end_date = $('input[name=end]').val();
+    if (new Date(start_date) > new Date(end_date)) {
+        alertModal ('Please check start date and end date!');
+        return;
+    }
 
     $.ajax({
         type: 'POST',
@@ -730,13 +734,21 @@ function bill_between_date_range() {
 
 
 function find_available_rooms ( available_rooms ) {
+   fromDate=$('input[name=start-date]').val();
+    endDate=$('input[name=end-date]').val();
+    console.log(fromDate);
+    console.log(endDate);
+    if (new Date(fromDate) > new Date(endDate)) {
+        alertModal ('Please check start date and end date!');
+        return;
+    }
     $.ajax({
         type: 'POST',
         url: '/visitorhostel/room-availability/',
         data: {
             'csrfmiddlewaretoken' : $('input[name="csrf"]').val(),
-            'start_date' : $('input[name=start-date]').val(),
-            'end_date' : $('input[name=end-date]').val(),
+            'start_date' : fromDate,
+            'end_date' : endDate,
 
         },
         success: function(data) {
