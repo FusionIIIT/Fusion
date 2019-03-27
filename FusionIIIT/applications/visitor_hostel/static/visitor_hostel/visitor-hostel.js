@@ -88,7 +88,10 @@ function request_booking (event) {
     var days_diff = Math.round(Math.abs((firstDate.getTime() - secondDate.getTime())/(oneDay)));
     console.log("here !!!");
     console.log(days_diff);
-
+    if(!(/^\w+([\.-]?\w+)#@\w+([\.-]?\w+)#(\.\w{2,3})+$/.test(email))){
+        alertModal("Oops! please enter a valid email adress");
+        return;
+    }
     if (phone.length!=10){
         alertModal("Oops! Please enter valid phone number.");
         return;
@@ -776,6 +779,7 @@ function modalAddItem(){
 
 function bookingRequestModal(id){
     $('#booking-request-'.concat(id)).modal('show');
+
 }
 
 function updateBookingModal(id){
