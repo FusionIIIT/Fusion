@@ -2,13 +2,23 @@
 {% block bookaroom %}
 
 <div class="ui modal" id="requestModal">
+  <div class="header">Place a Request</div>
+  <!-- <div class="scrolling content"> -->
+
     <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="request-booking">
-            Request Booking
+        <a class="item active" data-tab="visitors-detail">
+            Visitor's Details
+        </a> 
+        <a class="item" data-tab="request-booking">
+            Booking Details
         </a>
+         
     </div>
 
-    <div class="ui active tab" data-tab="request-booking">
+
+    <!-- request booking datatab starts here! -->
+
+    <div class="ui tab" data-tab="request-booking">
         <div class="ui vertical stripe team segment"
              style="padding-left: 3.5%;
                 padding-right: 3.5%;">
@@ -80,27 +90,27 @@
                                 </i>
                                 <div class="ui fluid popup">
                                     <pre>
-(A)
-(i) Institute Guests/ Directors/ Examiners/ External Members of
-    Institute Committees/ Invited Speakers/ CAG Audit Team/MHRD officials.
-(ii) Important guests of Chairman, BOG/ Director/ Senate/ BWC/ Statutory bodies.
-(iii) Other Institute guests not covered above will be approved by the Director.
-(B)
-(i) Institute employee &amp; their dependents
-(ii) Project employee &amp; their dependents
-(iii) Retired IIITDMJ Faculty/ Staff/ Alumni
-(iv) Relatives/ Guests of IIITDMJ Faculty &amp; Staff
-(v) Parents/ Guardian/ Spouse of IIITDMJ students
-(vi) Other than Institute employees staying for Institute work
-(vii) Any other Guest (Approved by the Director)
-(C)
-(i) Employees of other IIITs/ IITs/ Centrally funded engineering colleges/ universities/ PSUs.
-(ii) Visitors of government/ public sector organization.
-(iii) Trainees coming to the Institute under programmes organized by the Institute.
-(iv) Others (Approved by the Director).
-(D)
-Contractors, representatives of firms, vendors etc. coming for their work
-viz. meeting, presentations etc. and requesting to stay in the VH.
+                                        (A)
+                                            (i) Institute Guests/ Directors/ Examiners/ External Members of
+                                                Institute Committees/ Invited Speakers/ CAG Audit Team/MHRD officials.
+                                            (ii) Important guests of Chairman, BOG/ Director/ Senate/ BWC/ Statutory bodies.
+                                            (iii) Other Institute guests not covered above will be approved by the Director.
+                                        (B)
+                                            (i) Institute employee &amp; their dependents
+                                            (ii) Project employee &amp; their dependents
+                                            (iii) Retired IIITDMJ Faculty/ Staff/ Alumni
+                                            (iv) Relatives/ Guests of IIITDMJ Faculty &amp; Staff
+                                            (v) Parents/ Guardian/ Spouse of IIITDMJ students
+                                            (vi) Other than Institute employees staying for Institute work
+                                            (vii) Any other Guest (Approved by the Director)
+                                        (C)
+                                            (i) Employees of other IIITs/ IITs/ Centrally funded engineering colleges/ universities/ PSUs.
+                                            (ii) Visitors of government/ public sector organization.
+                                            (iii) Trainees coming to the Institute under programmes organized by the Institute.
+                                            (iv) Others (Approved by the Director).
+                                        (D)
+                                            Contractors, representatives of firms, vendors etc. coming for their work
+                                            viz. meeting, presentations etc. and requesting to stay in the VH.
                                     </pre>
                                 </div>
                             </label>
@@ -148,41 +158,126 @@ viz. meeting, presentations etc. and requesting to stay in the VH.
                         <input type="text" name="remarks-during-booking-request" required="">
                     </div>
                 </div>
-                <!-- <div class="field">
-                    <label>Files, if any</label>
-                    <div class="ui fluid input">
-                        <input type="file" name="files-during-booking-request" placeholder="Please upload PDFs only"></textarea>
-                    </div>
-                </div> -->
-                <input type="hidden" name="csrf" value="{{ csrf_token }}">
+
+                <div class="field">
+                            <label>Bill to be Settled by</label>
+                            <div class="ui fluid search selection dropdown">
+                                <input name="visitor-category" type="hidden">
+                                <i class="dropdown icon"></i>
+
+                                <div class="default text">Select</div>
+
+                                <div class="menu">
+                                    <div class="item" data-value="A">
+                                        Visitor
+                                    </div>
+                                    <div class="item" data-value="B">
+                                        Intender
+                                    </div>
+                                    <div class="item" data-value="C">
+                                        Institute / No Charges
+                                    </div>
+                                    <div class="item" data-value="D">
+                                        Project No.
+                                    </div>
+                                </div>
+                            </div>
+                </div>
+
+            </form>
+        </div>
+
+        <input type="hidden" name="csrf" value="{{ csrf_token }}">
                 <div class="field">
                     <label></label>
                     <button class="ui large primary button right floated" id="request_booking_button" 
                         onclick="request_booking(event); ll()">
-                    <script type='text/javascript'>
-                    ll = function () {
-                        document.getElementById("request_booking_button").disabled=true; 
-                        console.log("lllllllllllllllllll");    
-                        setTimeout('jj()', 5000);
-                        }
-                    
-                    jj=function(){
-                        document.getElementById("request_booking_button").disabled=false; 
-                        console.log("ooooooooooo"); 
-                    }
+                                        <script type='text/javascript'>
+                                        ll = function () {
+                                            document.getElementById("request_booking_button").disabled=true; 
+                                            console.log("lllllllllllllllllll");    
+                                            setTimeout('jj()', 5000);
+                                            }
+                                        
+                                        jj=function(){
+                                            document.getElementById("request_booking_button").disabled=false; 
+                                            console.log("ooooooooooo"); 
+                                        }
 
-                    </script>
-                        
-
-
+                                        </script>
                         Place Request
                     </button>
                 </div>
-                <br>
-                <br>
+    <div class="ui divider"></div>
+
+    </div>
+
+<!-- request booking datatab ends here! -->
+
+<!-- visitor's detail datatab starts here! -->
+
+
+    <div class="ui active tab" data-tab="visitors-detail">
+        <div class="ui vertical stripe team segment"
+             style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+
+            <form class="ui large form" id="visitor-detail-1">
+
+                <div id="checkin">
+
+                    <div class="field">
+                        <div class="two fields">
+                            <div class="field">
+                                <label>Name (required*)</label>
+                                <input name="visitor-name-1" type="text">
+                            </div>
+
+                            <div class="field">
+                                <label>Email</label>
+                                <input placeholder="Email" type="email" name="email-1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <div class="two fields">
+                            <div class="field">
+                                <label>Phone (required*)</label>
+                                <input placeholder="Phone" type="tel" name="phone-1">
+                            </div>
+
+                            <div class="field">
+                                <label>Organization</label>
+                                <input placeholder="Organization" type="text" name="organization-1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Address:</label>
+                        <div class="ui fluid input">
+                            <input class="ui textarea" name="address-1">
+                        </div>
+                    </div>
+                </div>
             </form>
+
+            <br>
             <div class="ui divider"></div>
+
         </div>
     </div>
+
+    <!-- visitors detail datatab ends here! -->
+
+
+
+    <br>
+    <br>
+
+
+<!-- </div> -->
 </div>
+
 {% endblock %}
