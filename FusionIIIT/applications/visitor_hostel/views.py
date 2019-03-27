@@ -831,6 +831,7 @@ def forwarded_booking_details(date1, date2):
 @login_required(login_url='/accounts/login/')
 def forward_booking(request):
     if request.method == 'POST':
+        user = request.user
         booking_id = request.POST.get('id')
         previous_category = request.POST.get('previous_category')
         modified_category = request.POST.get('modified_category')

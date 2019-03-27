@@ -4,6 +4,7 @@
 {% for booking in active_bookings %}
 <div class="ui modal" id="check-in-modal-{{ booking.id }}">
   <div class="header">Guest Check In</div>
+  <div class="scrolling content">
 
     <div class="ui pointing secondary menu">
 
@@ -15,7 +16,7 @@
         {% with values|length as vis_length %}
             <input type="hidden" name="length-{{ booking.id }}" value="{{ vis_length }}">
         {% endwith %}
-            {% for i in values %}
+            {% for i in values%}
 
                 <a class="item" data-tab="details-{{ i }}">
                     Visitor {{ i }} Details
@@ -24,6 +25,12 @@
         {% endif %}
     {% endfor %}
     </div>
+
+
+{% for result in booking.visitor.all %}
+
+{% if forloop.first %}
+
 
     <div class="ui tab active" data-tab="details-1">
         <div class="ui vertical stripe team segment"
@@ -38,12 +45,12 @@
                         <div class="two fields">
                             <div class="field">
                                 <label>Name (required*)</label>
-                                <input name="visitor-name-{{ booking.id }}-1" type="text">
+                                <input name="visitor-name-{{ booking.id }}-1" value="{{ result.visitor_name }}" type="text">
                             </div>
 
                             <div class="field">
                                 <label>Email</label>
-                                <input placeholder="Email" type="email" name="email-{{ booking.id }}-1">
+                                <input placeholder="Email" type="email" value="{{ result.visitor_email }}" name="email-{{ booking.id }}-1">
                             </div>
                         </div>
                     </div>
@@ -52,12 +59,12 @@
                         <div class="two fields">
                             <div class="field">
                                 <label>Phone (required*)</label>
-                                <input placeholder="Phone" type="tel" name="phone-{{ booking.id }}-1">
+                                <input placeholder="Phone" type="tel" value="{{ result.visitor_phone }}" name="phone-{{ booking.id }}-1">
                             </div>
 
                             <div class="field">
                                 <label>Organization</label>
-                                <input placeholder="Organization" type="text" name="organization-{{ booking.id }}-1">
+                                <input placeholder="Organization" type="text" value="{{ result.visitor_organization }}" name="organization-{{ booking.id }}-1">
                             </div>
                         </div>
                     </div>
@@ -83,7 +90,7 @@
                     <div class="field">
                         <label>Address:</label>
                         <div class="ui fluid input">
-                            <input class="ui textarea" name="address-{{ booking.id }}-1">
+                            <input class="ui textarea" value="{{ result.visitor_address }}" name="address-{{ booking.id }}-1">
                         </div>
                     </div>
                 </div>
@@ -94,6 +101,10 @@
 
         </div>
     </div>
+
+    {% endif %}
+
+{% endfor %}
 
 
     {% for key, values in visitors.items %}
@@ -113,11 +124,11 @@
                         <div class="two fields">
                             <div class="field">
                                 <label>Name (required*)</label>
-                                <input name="visitor-name-{{ booking.id }}-1" type="text">
+                                <input name="visitor-name-{{ booking.id }}-{{ i }}" type="text">
                             </div>
 
                             <div class="field">
-                                <label>Email</label>
+                                <label>Email@@</label>
                                 <input placeholder="Email" type="email" name="email-{{ booking.id }}-{{ i }}">
                             </div>
                         </div>

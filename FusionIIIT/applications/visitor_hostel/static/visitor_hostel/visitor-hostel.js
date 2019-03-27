@@ -88,10 +88,12 @@ function request_booking (event) {
     var days_diff = Math.round(Math.abs((firstDate.getTime() - secondDate.getTime())/(oneDay)));
     console.log("here !!!");
     console.log(days_diff);
-    if(!(/^\w+([\.-]?\w+)#@\w+([\.-]?\w+)#(\.\w{2,3})+$/.test(email))){
-        alertModal("Oops! please enter a valid email adress");
+
+    if (!(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email))){
+        alertModal("Oops! Please enter valid email address.");
         return;
     }
+
     if (phone.length!=10){
         alertModal("Oops! Please enter valid phone number.");
         return;
@@ -352,11 +354,6 @@ function confirm_booking (id) {
     category = $('input[name=category-'+id+']').val();
     rooms = $('select[name=alloted-rooms-'+id+']').val();
 
-    if (category == 0) {
-        alertModal("Please fill the category to confirm.");
-        return;
-    }
-
     if (rooms == 0) {
         alertModal("Please fill the rooms to confirm booking.");
         return;
@@ -518,14 +515,14 @@ function forward_booking (id) {
     modified_category = $('input[name=modified-category-'+id+']').val();
     rooms = $('select[name=alloted-rooms-'+id+']').val();
 
-    if (previous_category == 0) {
-        alertModal("Please fill the category to confirm.");
-        return;
-    }
+    // if (previous_category == 0) {
+    //     alertModal("Please fill the category to confirm.");
+    //     return;
+    // }
 
-    if (modified_category == 0) {
-        modified_category = previous_category;
-    }
+    // if (modified_category == 0) {
+    //     modified_category = previous_category;
+    // }
 
     if (rooms == 0) {
         alertModal("Please fill the rooms to confirm booking.");
@@ -555,7 +552,6 @@ function forward_booking (id) {
         }
     });
 };
-
 
 
 // Cancel Active Booking
@@ -628,11 +624,26 @@ function submit_visitor_details (id) {
             return;
         }
 
+        if (!(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email))){
+        alertModal("Oops! Please enter valid email address.");
+        return;
+        }
+
         if (phone == '') {
             alertModal("You didn't fill a visitor's phone number. Please fill the form again.");
             return;
         }
+        if (phone.length!=10){
+            alertModal("Oops! Please enter valid phone number.");
+            return;
+        }
+
+        if (phone.charAt(0)!='9'&&phone.charAt(0)!='8'&&phone.charAt(0)!='7'){
+            alertModal("Oops! Please enter valid phone number.");
+            return;
+        }
     }
+    console.log(name + " " + phone + " " + email + " " + address);
 
     for (var j=1; j<=temp+1; j++) {
         csrfmiddlewaretoken = $('input[name="csrf"]').val();
@@ -653,6 +664,7 @@ function submit_visitor_details (id) {
                 'address' : address
             },
             success: function(data) {
+                console.log(name + " " + phone + " " + email + " " + address);
                 alertModal("Great! Visitor's details have been recorded successfully");
             },
             error: function(data, err) {
@@ -707,14 +719,14 @@ function bill_between_date_range() {
         },
         success: function(data) {
             $('#replace-this-div-booking-bw-dates').html(data);
-            console.log("winning")
-            console.log(start_date)
+            console.log("winning");
+            console.log(start_date);
             // alert('Bookings Between range are ..');
         },
         error: function(data, err) {
             alert('Error !');
-            console.log(start_date)
-            console.log(end_date)
+            console.log(start_date);
+            console.log(end_date);
             // alertModal('Something missing! Please refill the form');
         }
     });
@@ -767,7 +779,6 @@ function modalAddItem(){
 
 function bookingRequestModal(id){
     $('#booking-request-'.concat(id)).modal('show');
-
 }
 
 function updateBookingModal(id){

@@ -96,7 +96,7 @@
                             <input value="{{ booking.visitor_category }}" name="category-{{ booking.id }}" type="text" readonly>
                         </div>
                     </div>
-                {% if user_designation != 'Intender'  %}
+                {% if user_designation == 'VhCaretaker'  %}
 
                 <div class="field">
                     <label>Modified Category *</label>
@@ -126,6 +126,18 @@
                         </div>
                     </div>
                 </div>
+                {% endif %}
+
+
+                {% if user_designation == 'VhIncharge' %}
+                <div class="field">
+                        <label>Category</label>
+
+                        <div class="ui fluid input">
+                            <input value="{{ booking.modified_visitor_category }}" name="modified-category-{{ booking.id }}" type="text" readonly>
+                        </div>
+                    </div>
+
                 {% endif %}
 
                 <!--<div class="field">-->
@@ -305,6 +317,7 @@
     <br>
 
 
+<!-- </div> -->
 </div>
 </div>
 

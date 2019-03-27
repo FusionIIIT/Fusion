@@ -1,4 +1,7 @@
 
+
+
+
 {% load static %}
 {% block booking-details %}
 
@@ -11,7 +14,7 @@
 {% if forloop.first %}
 
 <div class="ui modal" id='booking-details-{{ booking.id }}'>
-    <div class="header">Cancel Request</div>
+  <div class="header">Booking Request Action</div>
   <div class="scrolling content">
   <!-- <div class="scrolling content"> -->
 
@@ -32,7 +35,7 @@
     <div class="ui tab" data-tab="view-request-booking">
         <div class="ui vertical stripe team segment" style="padding-left: 3.5%; padding-right: 3.5%;">
 
-    <form class="ui large form">
+   <form class="ui large form">
             <!-- <div class="field">
                 <label>Name</label>
                 <input type="text" value="{{ booking.intender.username }}" readonly>
