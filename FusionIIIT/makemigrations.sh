@@ -11,7 +11,7 @@ python manage.py makemigrations complaint_system
 python manage.py makemigrations filetracking
 python manage.py makemigrations finance_accounts
 python manage.py makemigrations health_center
-python manage.py makemigrations notification_channels
+python manage.py makemigrations notifications
 python manage.py makemigrations online_cms
 python manage.py makemigrations placement_cell
 python manage.py makemigrations scholarships

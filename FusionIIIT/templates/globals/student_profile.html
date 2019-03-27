@@ -86,12 +86,12 @@
                 </a>
 
                 <a class="item" data-tab="second">
-                    Skills & Technologies
+                    Skills &nbsp; Technologies
                     <i class="right floated chevron right icon"></i>
                 </a>
 
                 <a class="item" data-tab="third">
-                    Education & Courses
+                    Education &nbsp; Courses
                     <i class="right floated chevron right icon"></i>
                 </a>
 
@@ -188,6 +188,35 @@
     <script type="text/javascript" src="{% static 'globals/js/jquery.calendario.js' %}"></script>
     <script type="text/javascript" src="{% static 'globals/js/data.js' %}"></script>
     <script type="text/javascript" src="{% static 'globals/js/modernizr.custom.63321.js' %}"></script>
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+
+
+    <script type="text/javascript">
+
+
+      //----------------------calender--------------------------------
+      function getToday(){
+        return new Date();
+      }
+
+      $('.select_date').calendar({
+        monthFirst: false,
+        type: 'date',
+        maxDate: new Date(getToday().getFullYear(), getToday().getMonth(), getToday().getDate()),
+        formatter: {
+          date: function (date, settings) {
+            if (!date) return '';
+            var day = date.getDate();
+            var month = date.getMonth() + 1;
+            var year = date.getFullYear();
+            return year + '-' + month + '-' + day;
+          }
+        }
+      });
+    </script>
+
+
 
     <script>
 
@@ -212,6 +241,7 @@
 
     </script>
     <script type="text/javascript">
+
         $(function() {
 
             var transEndEventNames = {

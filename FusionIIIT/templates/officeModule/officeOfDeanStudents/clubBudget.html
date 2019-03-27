@@ -1,7 +1,8 @@
+
 {% load static %}
 {% include 'officeModule/officeOfDeanStudents/clubBudgetModal.html' %}
 {% block subform1 %}
-{% comment %}The tab menu starts here!{% endcomment %}
+<!--The tab menu starts here!-->
 
     <div class="ui pointing secondary menu">
         <a class=" active item" data-tab="approvals_budget">
@@ -54,6 +55,9 @@
                         {% csrf_token %}
 
                 <tr>
+
+                    <!-- Fetch all the club details whose allotment status is open(not confirmed or declined)  -->
+
                     {% for i in budget_app %}
                     <td><input type="checkbox" name="check" value="{{i.id}}"></td>
                     <td > {{ i.club }}</td>

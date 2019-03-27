@@ -3,7 +3,7 @@
 <h3>Hostel Allotment</h3> 
 <div class="ui pointing secondary menu">
                                 <a class=" active item" data-tab="new_allotment">
-                                New Allotment
+                                 New Allotment
                                </a>
                                 <a class="item" data-tab="Allotment">
                                  All Allotment
@@ -46,6 +46,7 @@
 		<tr>
 			<th class= "eight wide">HAll</th>
 			<th class= "eight wide">File</th>
+			<th class = "eight wide">Delete</th>
 			
 		</tr>
 	</thead>
@@ -55,6 +56,9 @@
 		<td><a class="ui inverted circular icon button" style="margin: auto;"  href="/media/{{ items.allotment_file }}" target="blank">
                             <i class="large attach black icon"></i>
                         </a></td>
+		<td>
+			<button class="ui button" type="submit">Cancel</button>
+		</td>
 	</tr>
   {% endfor %}
 	</table>

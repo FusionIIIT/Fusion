@@ -8,7 +8,9 @@
             Bill Details
         </a>
     </div>
+
     <div class="ui active tab"  data-tab="roomstatus">
+
     {% for room in available_rooms %}
         
     {% endfor %}
@@ -34,11 +36,13 @@
                     </div>
                 </div>
             </div>
+
             <div class="field">
                 <label><font color="white">l</font></label>
             <!-- </br> -->
                 
                     <div class="ui blue button center floated" onclick="find_available_rooms( '{{ available_rooms }}' )">
+
                         Submit
                     </div>
                 
