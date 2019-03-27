@@ -5,14 +5,24 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.dateparse import parse_date
 
+
 from applications.academic_information.models import Student
 from applications.globals.models import *
+from datetime import datetime
+from django.core import serializers
 
 from .models import *
 
 
-def retrun_content(roll, name, desig):
-	students = ExtraInfo.objects.all().filter(user_type = "student")
+def coordinator_club(request):
+	for i in Club_info.objects.all():
+		co = (str(i.co_ordinator)).split(" ")
+		co_co = (str(i.co_coordinator)).split(" ")
+		if co[0] == str(request.user):
+			return(i)
+
+def retrun_content(roll, name, desig , club__ ):
+	students =ExtraInfo.objects.all().filter(user_type = "student")
 	faculty = ExtraInfo.objects.all().filter(user_type = "faculty")
 	club_name = Club_info.objects.all()
 	club_member = Club_member.objects.all()
@@ -20,23 +30,27 @@ def retrun_content(roll, name, desig):
 	club_budget = Club_budget.objects.all()
 	club_session = Session_info.objects.all()
 	club_event = Club_report.objects.all()
+	venue_type =[]
+	venue_details ={}
+	
 
-	# user = name +" - "+ roll
+	id =0
+	for i in Constants.venue:
+		for j in i:
+			if(id%2==0):
+				venue_type.append(j)
+			else:
+				lt = [k[0] for k in j]
+				venue_details[venue_type[int(id/2)]] = lt
+			id=id+1
 	b=[]
-	##    print (roll, name, desig)
 	if 'student' in desig:
 		user_name = get_object_or_404(User, username = str(roll))
 		extra = get_object_or_404(ExtraInfo, id = roll, user = user_name)
 		student = get_object_or_404(Student, id = extra)
-
-		# curr_club = list(Club_member.objects.all().filter(member = student).values_list('club'))
-
-		# b = [i for sub in curr_club for i in sub]
-		##    print (b)
 	else :
 		b = []
-	# #    print roll, name.lower()
-
+	print(desig)
 	content = {
 		'Students' : students,
 		'Club_name' : club_name,
@@ -47,7 +61,10 @@ def retrun_content(roll, name, desig):
 		'Club_session': club_session,
 		'Club_event' : club_event,
 		'Curr_club' : b,
-		'Curr_desig' : desig
+		'Curr_desig' : desig,
+		'venue_type': venue_type,
+		'venue_details':venue_details,
+		'club_details':club__
 	}
 	return content
 
@@ -62,8 +79,19 @@ def gymkhana(request):
 		name_ = get_object_or_404(Designation, id = i)
 		# #    #    print name_
 		roll_.append(str(name_.name))
+	for i in Club_info.objects.all():
+		lines =str("");
+		Types = lines.split(" ")
+		#print(Types[1])
+	club__ = coordinator_club(request)	
+	return render(request, "gymkhanaModule/gymkhana.html", retrun_content(roll, name, roll_ , club__ ))
 
-	return render(request, "gymkhanaModule/gymkhana.html", retrun_content(roll, name, roll_))
+
+
+
+
+
+
 
 @login_required
 def club_membership(request):
@@ -248,6 +276,7 @@ def club_report(request):
 
 	return redirect('/gymkhana/')
 
+
 @login_required
 def change_head(request):
 	if request.method == "POST" :
@@ -274,8 +303,8 @@ def change_head(request):
 
 		club_info = get_object_or_404(Club_info, club_name = club_name)
 
-		old_co = club_info.co_ordinator.id.user
-		old_coco = club_info.co_coordinator.id.user
+		old_co = ""
+		old_coco = ""
 		#    print "--------111"
 		#    print old_coco, old_co
 
@@ -300,15 +329,16 @@ def change_head(request):
 @login_required
 def new_session(request):
 	if request.method == "POST":
-		club = request.POST.get("club")
+		club_name = None
+		venue = request.POST.get("venue_details")
+		session_poster = request.FILES.get("session_poster")
 		date = request.POST.get("date")
-		time = request.POST.get("time")
-		venue = request.POST.get("venue")
+		start_time = request.POST.get("start_time")
+		end_time = request.POST.get("end_time")
 		desc = request.POST.get("d_d")
+		club_name = coordinator_club(request)
 
-		club_name = get_object_or_404(Club_info, club_name = club)
-
-		session = Session_info(club = club_name, venue = venue, date = date+" "+time, details = desc)
+		session = Session_info(club = club_name, venue = venue, date =date+" "+start_time , end_time = end_time ,session_poster = session_poster , details = desc)
 		session.save()
 		messages.success(request,"Successfully created the session !!!")
 
@@ -401,3 +431,18 @@ def cancel(request):
 		messages.success(request,"Successfully deleted !!!")
 
 	return redirect ('/gymkhana/')
+
+@login_required
+def date_sessions(request):
+	if(request.is_ajax()):
+		value = request.POST.get('date')
+		get_sessions = Session_info.objects.all()
+		dates = []
+		for i in get_sessions:
+			dat = i.date.strftime('%Y-%m-%d')
+			if (dat == value):
+				dates.append(i)
+		dates = serializers.serialize('json', dates)
+		print(dates)
+		# print(dates)
+		return HttpResponse(dates)

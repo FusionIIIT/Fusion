@@ -40,7 +40,12 @@
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
 
-                <a class="active item" data-tab="first">
+                 <a class="active item" data-tab="third">
+                   Book Search
+                   <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="first">
                     Issued Items
                     <i class="right floated chevron right icon"></i>
                 </a>
@@ -49,6 +54,8 @@
                     Dues
                     <i class="right floated chevron right icon"></i>
                 </a>
+
+
 
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
@@ -63,7 +70,7 @@
             The central-rail segment starts here!
         {% endcomment %}
         <div class="eight wide column">
-            <div class="ui active tab segment" data-tab="first">
+            <div class="ui tab segment" data-tab="first">
                 {% block tab1 %}
                     {% include 'libraryModule/issuedItems.html' %}
                 {% endblock %}
@@ -77,9 +84,9 @@
             </div>
 
 
-            <div class="ui tab segment" data-tab="third">
+            <div class="ui active tab segment" data-tab="third">
                 {% block tab3 %}
-                    {% include 'libraryModule/history.html' %}
+                    {% include 'libraryModule/booksearch.html' %}
                 {% endblock %}
             </div>
 
@@ -102,22 +109,6 @@
                     </div>
                 </div>
             </div>
-
-            <div class="ui divider"></div>
-
-            <div class="row">
-                <div class="ui row">
-                    <div id="textSegmentDiv">
-                        <div class="ui active large text loader"
-                             id="loader">
-                            Loading ...
-                        </div>
-
-                        <div id="textLoader" style="max-height: 87.5vh; overflow-y: auto; overflow-x: hidden;">
-                            {% block alerts %}
-                                {% include 'libraryModule/alerts.html' %}
-                            {% endblock %}
-                        </div>
 
                     </div>
                 </div>

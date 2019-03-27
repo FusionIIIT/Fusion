@@ -28,7 +28,7 @@ from .models import (Award_and_scholarship, Constants, Director_gold,
 
 @login_required(login_url='/accounts/login')
 def spacs(request):
-    # context = {}
+    # Arihant:Student either accepts or Declines the Award Notification
     if request.method == 'POST':
         if 'studentapprovesubmit' in request.POST:
             award = request.POST.get('studentapprovesubmit')
@@ -61,6 +61,9 @@ def spacs(request):
         return HttpResponseRedirect('/spacs/convener_view')
     elif hd1:
         return HttpResponseRedirect('/spacs/staff_view')
+    else:
+        return HttpResponseRedirect('/spacs/stats')# Arihant:this view is for the other members of the college
+
 
 
 @login_required(login_url='/accounts/login')
@@ -82,6 +85,7 @@ def convener_view(request):
                 notif_visible=1,
                 award_form_visible=0
             )
+            # Arihant:It updates the student Notification table on the spacs head sending the mcm invitation
             if batch == 'all':
                 if award == 'Mcm Scholarship':
                     res = Notification.objects.all().update(notification_mcm_flag=True)
@@ -92,11 +96,6 @@ def convener_view(request):
                     res = Notification.objects.filter(student_id__id__contains=batch).update(notification_mcm_flag=True)
                 else:
                     res = Notification.objects.filter(student_id__id__contains=batch).update(notification_convocation_flag=True)
-
-
-            #Notification.objects.create(
-
-            #)
 
             messages.success(request,award+' are invited successfully')
             return HttpResponseRedirect('/spacs/convener_view')
@@ -460,6 +459,7 @@ def student_view(request):
 
 
     else:
+        #start of database queries
         mcm = Mcm.objects.all()
         ch = Constants.batch
         time = Constants.time
@@ -481,13 +481,27 @@ def student_view(request):
         assis = Designation.objects.get(name='spacsassistant')
         hd = HoldsDesignation.objects.get(designation=con)
         hd1 = HoldsDesignation.objects.get(designation=assis)
-
         x = Notification.objects.get(student_id = request.user.extrainfo.id)
+        
+        # Arihant: Here we are fetching the flags from the Notification table of student
+        #end of database queries
+        
+
+        #notification flags
+        for dates in release:
+            if check_date(dates.startdate,dates.enddate):
+                print('correct date found not deleting',dates.enddate)
+            else:
+                print('enddate exceed deleting now',dates.enddate)
+                Release.objects.filter(id=dates.id).delete()
+
+        release = Release.objects.all()
         notif_mcm_flag = x.notification_mcm_flag
-        print('printing flag',notif_mcm_flag)
+        #print('printing flag',notif_mcm_flag)
         notif_convocation_flag  = x.notification_convocation_flag
         show_mcm_flag=x.invite_mcm_accept_flag
         show_convocation_flag=x.invite_covocation_accept_flag
+        #end
         return render(request, 'scholarshipsModule/scholarships_student.html',
                   {'mcm': mcm, 'time': time, 'ch': ch, 'awards': awards, 'spi': spi,
                    'student': student,'student_batch':student_batch, 'winners': winners, 'release': release,
@@ -562,6 +576,29 @@ def staff_view(request):
                    'silver': silver, 'dandm': dandm, 'winners': winners,
                    'con': con, 'assis': assis,'hd': hd, 'hd1': hd1})
 
+# Arihant: This view is created for the rest of audience excluding students, spacs convenor and spacs assistant
+def stats(request):
+    mcm = Mcm.objects.all()
+    gold = Director_gold.objects.all()
+    silver = Director_silver.objects.all()
+    dandm = Proficiency_dm.objects.all()
+    student = Student.objects.all()
+    awards = Award_and_scholarship.objects.all()
+    winners = Previous_winner.objects.all()
+    con = Designation.objects.get(name='spacsconvenor')
+    assis = Designation.objects.get(name='spacsassistant')
+    hd = HoldsDesignation.objects.get(designation=con)
+    hd1 = HoldsDesignation.objects.get(designation=assis)
+
+    return render(request, 'scholarshipsModule/stats.html',
+              {'mcm': mcm, 'student': student,
+               'awards': awards, 'gold': gold,
+               'silver': silver, 'dandm': dandm, 'winners': winners,
+               'con': con, 'assis': assis,'hd': hd, 'hd1': hd1})
+
+
+
+
 
 def convener_catalogue(request):
     if request.method == 'POST':
@@ -593,16 +630,17 @@ def convener_catalogue(request):
 def get_winners(request):
     award_name = request.GET.get('award_name')
     batch_year = int(request.GET.get('batch'))
+    programme_name = request.GET.get('programme')
     award=Award_and_scholarship.objects.get(award_name=award_name)
     print(award_name,award)
     print(batch_year)
-    winners=Previous_winner.objects.filter(year=batch_year,award_id=award)
+    winners=Previous_winner.objects.filter(year=batch_year,award_id=award,programme=programme_name)
     context={}
     context['student_name']=[]
     context['student_program'] = []
     context['roll']=[]
 
-
+# Arihant: If-Else Condition for previous winner if there is or no data in the winner table
     if winners:
         for winner in winners:
 
@@ -623,7 +661,7 @@ def get_winners(request):
 
     return HttpResponse(json.dumps(context), content_type='get_winners/json')
 
-
+# Arihant: Here we are extracting mcm_flag
 def get_mcm_flag(request):
     print('hello get_mcm_flag')
     x = Notification.objects.get(student_id = request.user.extrainfo.id)
@@ -641,6 +679,7 @@ def get_mcm_flag(request):
     return HttpResponse(json.dumps(context), content_type='get_mcm_flag/json')
     #return HttpResponseRedirect('/spacs/student_view')
 
+# Arihant: Here we are extracting convocation_flag
 def get_convocation_flag(request):
     print('hello get_convocation_flag')
     x = Notification.objects.get(student_id = request.user.extrainfo.id)
@@ -671,3 +710,10 @@ def get_content(request):
         context['result']='Failure'
 
     return HttpResponse(json.dumps(context), content_type='get_content/json')
+
+def check_date(start_date, end_date):
+    current_date = datetime.date.today()
+    if current_date >= start_date and current_date <= end_date:
+        return True
+    else:
+        return False

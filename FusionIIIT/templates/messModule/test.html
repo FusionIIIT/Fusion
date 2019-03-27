@@ -1,0 +1,131 @@
+
+{% load static %}
+{% block body %}
+{% block respondmenu %}
+
+<div class="ui pointing secondary menu">
+    <a class="active item" data-tab="respondtomenuchange">
+        Respond to Menu Change
+    </a>
+
+    <a class="item" data-tab="menupastrecords">
+        Past Records
+    </a>
+
+</div>
+
+
+<div class="ui active tab" data-tab="respondtomenuchange">
+    <div class="ui vertical segment">
+        <table class="ui very basic collapsing celled large sortable table"
+               style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+            <tbody>
+            {% for list in newmenu %}
+            {% if list.status == '1' %}
+
+            <tr id="menu-{{list.pk}}">
+                <div class="content">
+                    <b>Date of Application:</b> {{list.app_date}}
+                    <br>
+                    <b>Student:</b> Mess Convener
+                    <br>
+                    <b>Reason:</b> {{list.reason}}
+                    <br>
+                    <b>Items to be changed: </b> {{list.dish}}
+                    <br>
+                    <b>Items to be added:</b> {{list.request}}
+                    <br>
+                </div>
+                <div class="right floated content">
+                    <b>Accept or Reject :</b>
+                    <div class="ui buttons">
+                        <button class="accm ui positive button" name="submit" value="approve" data-accm="{{list.pk}}"
+                                onclick="acceptReqMess({{list.pk}})">A
+                        </button>
+
+                        <div class="or"></div>
+                        <button class="ui negative button" name="submit" value="reject"
+                                onclick="rejectReqMess({{list.pk}})">R
+                        </button>
+                    </div>
+                </div>
+                <hr>
+            </tr>
+
+            {% endif %}
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <br>
+
+        <div class="ui divider"></div>
+
+    </div>
+</div>
+
+<div class="ui tab" data-tab="menupastrecords">
+    <div class="ui vertical segment">
+
+
+
+    </div>
+</div>
+{% endblock %}
+{% endblock %}
+
+{% block javascript %}
+<script>
+         function acceptReqMess(id){
+
+         $.ajax({
+                type: 'POST',
+                url: 'response',
+                dataType: 'json',
+                data: {
+                    'csrfmiddlewaretoken' : '{{ csrf_token }}',
+                    'idm':$("button.accm").attr("data-accm"),
+                    'status':'2',
+                },
+                success: function(data) {
+                    document.getElementById('menu-'+id).style.visibility='hidden';
+                    alert("Request has been accepted");
+                },
+                error: function(data, err) {
+                    alert(err.message);
+                }
+            });
+         }
+         function rejectReqMess(id){
+             $.ajax({
+                    type: 'POST',
+                    url: 'response',
+                    dataType: 'json',
+                    data: {
+                        'csrfmiddlewaretoken' : '{{ csrf_token }}',
+                        'idm':$("button.accm").attr("data-accm"),
+                        'status':'0',
+                    },
+                    success: function(data) {
+                        document.getElementById('menu-'+id).style.visibility='hidden';
+                        if(data.status == '1')
+                        {
+                            alert("Application Rejected");
+                        }
+                            alert(data.message);
+                    },
+                    error: function(data, err) {
+                        alert(err.message);
+                    }
+                });
+         }
+
+
+
+
+</script>
+{% endblock %}
