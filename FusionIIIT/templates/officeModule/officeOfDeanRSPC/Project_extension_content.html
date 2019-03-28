@@ -40,7 +40,7 @@
     <form action="{% url 'office:extension' %}" method="POST">
         {% csrf_token %}
          {% for pr in project1 %}
-    {%comment%} if pr.HOD_response == 'Forwarded'{%endcomment%}
+    {% if pr.HOD_response == 'Forwarded' %}
     <tr>
 
         <td class="collapsing">

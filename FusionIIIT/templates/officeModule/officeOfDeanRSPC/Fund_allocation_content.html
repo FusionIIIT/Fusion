@@ -40,7 +40,7 @@
     <form action="{% url 'office:reallocation' %}" method="POST">
         {% csrf_token %}
          {% for pr in project3 %}
-    {% comment %} if pr.HOD_response == 'Forwarded' {% endcomment %}
+    {% if pr.HOD_response == 'Forwarded' %}
     <tr>
 
         <td class="collapsing">
@@ -101,7 +101,7 @@
         </td>
 
     </tr>
-    {% comment %} endif {% endcomment %}
+    {% endif %}
 
  {% endfor%}
 
