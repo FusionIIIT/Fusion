@@ -1,21 +1,53 @@
 {% load static %}
 {% block booking-request %}
 
+<!-- action -->
+
 {% for booking in pending_bookings %}
+{% for result in booking.visitor.all %}
+
+{% if forloop.first %}
+
 <div class="ui modal booking" id='booking-request-{{ booking.id }}'>
-  <div class="header">Booking Request Action</div>
+    <div class="header">View Request</div>
   <div class="scrolling content">
-    <form class="ui large form" id="behen-ka-bhai">
-        <div class="field">
+  <!-- <div class="scrolling content"> -->
+
+    <div class="ui pointing secondary menu">
+        <a class="item active" data-tab="view-visitors-detail">
+            Visitor's Details
+        </a> 
+        <a class="item" data-tab="view-request-booking">
+            Booking Details
+        </a>
+ 
+    </div>
+
+
+    <!-- request booking datatab starts here! -->
+
+
+    <div class="ui tab" data-tab="view-request-booking">
+        <div class="ui vertical stripe team segment"
+             style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+
+        <form class="ui large form" id="behen-ka-bhai">
+        <!-- <div class="field">
             <label>Name</label>
             <input type="text" value="{{ booking.intender.name }}" readonly>
-        </div>
+        </div> -->
 
         <div class="field">
             <div class="two fields">
-                <div class="field">
+                <!-- <div class="field">
                     <label>Phone </label>
                     <input  type="number" value="{{ booking.intender.phone }}" readonly>
+                </div> -->
+
+                <div class="field">
+                    <label>Username</label>
+                    <input type="text" value="{{ booking.intender.username }}" readonly>
                 </div>
 
                 <div class="field">
@@ -49,16 +81,31 @@
         </div>
 
         <div class="field">
-            <div class="three fields">
+
+            {% if user_designation == 'Intender'  %}
+            <div class="four fields">
+            {% else %}
+            <div class="five fields">
+            {% endif %}
+
+                
+                    <div class="field">
+                        <label>Category</label>
+
+                        <div class="ui fluid input">
+                            <input value="{{ booking.visitor_category }}" name="category-{{ booking.id }}" type="text" readonly>
+                        </div>
+                    </div>
+                {% if user_designation != 'Intender'  %}
 
                 <div class="field">
-                    <label>Category (required*)</label>
+                    <label>Modified Category *</label>
 
                     <div class="ui fluid search selection dropdown">
-                        <input name="category-{{ booking.id }}" type="hidden" required="">
+                        <input name="modified-category-{{ booking.id }}" type="hidden" required="">
                         <i class="dropdown icon"></i>
 
-                        <div class="default text">{{ booking.visitor_category }}</div>
+                        <div class="default text">{{ booking.modified_visitor_category }}</div>
 
                         <div class="menu">
                             <div class="item" data-value="A">
@@ -79,7 +126,10 @@
                         </div>
                     </div>
                 </div>
+                {% endif %}
 
+                <!--<div class="field">-->
+                    
                 <div class="field">
                     <label>Number Of People</label>
 
@@ -88,6 +138,17 @@
                     </div>
                 </div>
 
+                <div class="field">
+                    <label>Rooms Required</label>
+
+                    <div class="ui fluid input">
+                        <input value="{{ booking.number_of_rooms }}" name="number-of-rooms-{{ booking.id }}" type="number" readonly>
+                    </div>
+                </div>
+                        
+                    
+
+                {% if user_designation == 'VhCaretaker'  %}
                 <div class="field" id="alloted-rooms-{{ booking.id }}" >
                     <label>Rooms (required*)</label>
                     <select name="alloted-rooms-{{ booking.id }}" multiple="" class="ui fluid dropdown" required="">
@@ -100,15 +161,24 @@
                         {% endfor %}
                     </select>
                 </div>
+                {% endif %}
+
             </div>
         </div>
 
+
         <div class="field">
-            <label>Purpose Of Visit</label>
-            <div class="ui fluid input">
-                <input rows="2" value="{{ booking.purpose }}" readonly >
-            </div>
+            <label>Purpose Of Visit_booking_rqst_action_@</label>
+                <div class="ui fluid input">
+                    <input rows="2" value="{{ booking.purpose }}" readonly >
+                            
+                </div>
         </div>
+
+
+        
+            
+        
         <div class="field">
             <label>Remarks (required*)</label>
             <div class="ui fluid input">
@@ -119,25 +189,27 @@
         <input type="hidden" name="booking-id-{{ booking.id }}" value="{{ booking.id }}"">
         <input type="hidden" name="csrf" value="{{ csrf_token }}">
 
-        {% if user_designation == 'VhIncharge'  %}
+        {% if user_designation == 'VhCaretaker'  %}
         <div class="field">
             <label></label>
-            <div class="ui large red button right floated" id="reject-booking" onclick="reject_booking('{{ booking.id }}')">
-                Reject
-            </div>
-            <div class="ui large green button right floated" id="confirm-booking" onclick="confirm_booking('{{ booking.id }}')">
-                Confirm
-            </div>
             <div class="ui large green button right floated" id="farward-booking" onclick="forward_booking('{{ booking.id }}')">
                 Forward
             </div>
+            
+            <!-- <div class="ui large green button right floated" id="confirm-booking" onclick="confirm_booking('{{ booking.id }}')">
+                Confirm
+            </div> -->
+            
         </div>
         {% endif %}
-        {% if user_designation == 'VhCaretaker' and booking.status == "Forward" %}
+        {% if user_designation == 'VhIncharge' and booking.status == "Forward" %}
         <div class="field">
             <label></label>
             <div class="ui large green button right floated" id="confirm-booking" onclick="confirm_booking('{{ booking.id }}')">
                 Confirm
+            </div>
+            <div class="ui large red button right floated" id="reject-booking" onclick="reject_booking('{{ booking.id }}')">
+                Reject
             </div>
 
         </div>
@@ -151,13 +223,94 @@
                 Cancel
             </div>
         </div>
+        {% elif booking.status == 'Forward' %}
+            <div class="field">
+            <label></label>
+            <div class="ui large red button right floated" id="cancel-booking" onclick="cancel_booking('{{ booking.id }}')">
+                Cancel
+            </div>
+        </div>
+
         {% endif %}
         {% endif %}
         <br>
         <br>
     </form>
-  </div>
+
+        </div>
+    </div>
+
+<!-- request booking datatab ends here! -->
+
+<!-- visitor's detail datatab starts here! -->
+
+
+
+    <div class="ui active tab" data-tab="view-visitors-detail">
+        <div class="ui vertical stripe team segment"
+             style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+
+            <form class="ui large form" id="visitor-detail-1">
+
+                <div id="checkin">
+
+                    <div class="field">
+                        <div class="two fields">
+                            <div class="field">
+                                <label>Name</label>
+                                <input type="text" value="{{ result.visitor_name }}" readonly>
+                            </div>
+
+                            <div class="field">
+                                <label>Email</label>
+                                <input type="text" value="{{ result.visitor_email }}" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <div class="two fields">
+                            <div class="field">
+                                <label>Phone</label>
+                                <input type="text" value="{{ result.visitor_phone }}" readonly>
+                            </div>
+
+                            <div class="field">
+                                <label>Organization</label>
+                                <input type="text" value="{{ result.visitor_organization }}" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Address:</label>
+                        <div class="ui fluid input">
+                           <input type="text" value="{{ result.visitor_address }}" readonly>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <br>
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+
+
+    <!-- visitors detail datatab ends here! -->
+    <div class="ui divider"></div>
+    <br>
+    <br>
+
 </div>
 
+</div>
+
+{% endif %}
+
 {% endfor %}
+    {% endfor %}
+
 {% endblock %}

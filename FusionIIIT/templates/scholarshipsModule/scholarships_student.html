@@ -39,6 +39,7 @@
                      Browse Award Catalogue
                      <i class="right floated chevron right icon"></i>
                  </a>
+                 <!--Arihant Kumar Jain UI Card removed-->
                 <!--<a class="active item" data-tab="first">
                     Previous Award Winners
                     <i class="right floated chevron right icon"></i>
@@ -229,6 +230,17 @@
 
     </div>
     {% comment %}The grid ends here!{% endcomment %}
+
+
+    <script type="text/javascript">
+      function incomeError(){
+        alert('sadasd');
+        var income = $('#income').val();
+        if(income[0] == '-'){
+          $('#income_error').html('Invalid character');
+        }
+      }
+    </script>
 
 {% endblock %}
 

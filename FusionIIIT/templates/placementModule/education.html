@@ -1,3 +1,5 @@
+{% load staticfiles %}
+
 {% block education %}
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
@@ -14,6 +16,7 @@
 
         <div class="ui vertical segment">
             {% comment %}Form Tag starts here!{% endcomment %}
+            {% if editable %}
             <form method="post" class="ui form" role="form">
                 {% comment %}The add a new education Accordian starts here!{% endcomment %}
                 <div class="ui active accordion field">
@@ -53,7 +56,7 @@
                                 {{ form.sdate.errors }}
                                     <label for="{{ form.sdate.id_for_label }}">
                                     Start Date: (yyyy-mm-dd)</label>
-                                    <div class="ui calendar" id="rangestart">
+                                    <div class="ui calendar select_date" id="rangestart">
                                         <div class="ui input left icon">
                                             <i class="calendar icon"></i>
                                             {{ form.sdate }}
@@ -65,7 +68,7 @@
                                 {{ form.edate.errors }}
                                     <label for="{{ form.edate.id_for_label }}">
                                     End Date: (yyyy-mm-dd)</label>
-                                    <div class="ui calendar" id="rangeend">
+                                    <div class="ui calendar select_date" id="rangeend">
                                         <div class="ui input left icon">
                                             <i class="calendar icon"></i>
                                             {{ form.edate }}
@@ -107,6 +110,7 @@
                 </div>
                 {% comment %}The add a new Education Accordian ends here!{% endcomment %}
             </form>
+            {% endif %}
             {% comment %}Form Tag ends here!{% endcomment %}
 
             {% if educations %}
@@ -152,23 +156,30 @@
                     </td>
 
                     <td>
+                    {% if editable %}
                       <form method="post" class="ui form" role="form">
                         {% csrf_token %}
                         <button name="deleteedu" value="{{ education.pk }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
                             <i class="delete red icon"></i>
                         </button>
                         </form>
+                    {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
                 </tbody>
             </table>
+            {% else %}
+            <div>
+                No educational qualifications added yet.
+            </div>
             {% endif %}
         </div>
     </div>
     <div class="ui tab" data-tab="courses">
             <div class="ui vertical segment">
             {% comment %}Form Tag starts here!{% endcomment %}
+            {% if editable %}
             <form method="post" class="ui form" role="form">
                 {% comment %}The add a new Course Accordian starts here!{% endcomment %}
                 <div class="ui active accordion field">
@@ -211,7 +222,7 @@
                                   <label for="{{ form11.sdate.id_for_label }}">
                                       Start Date:(yyyy-mm-dd)
                                     </label>
-                                    <div class="ui calendar" id="rangestart1">
+                                    <div class="ui calendar select_date" id="rangestart1">
                                         <div class="ui input left icon">
                                             <i class="calendar icon"></i>
                                             {{ form11.sdate }}
@@ -224,7 +235,7 @@
                                   <label for="{{ form11.edate.id_for_label }}">
                                       End Date: (yyyy-mm-dd)
                                     </label>
-                                    <div class="ui calendar" id="rangeend1">
+                                    <div class="ui calendar select_date" id="rangeend1">
                                         <div class="ui input left icon">
                                             <i class="calendar icon"></i>
                                             {{ form11.edate }}
@@ -255,6 +266,7 @@
                 </div>
                 {% comment %}The add a new Course Accordian ends here!{% endcomment %}
             </form>
+            {% endif %}
             {% comment %}Form Tag ends here!{% endcomment %}
 
             {% if courses %}
@@ -295,17 +307,23 @@
                     </td>
 
                     <td>
+                    {% if editable %}
                       <form method="post" class="ui form" role="form">
                         {% csrf_token %}
                         <button name="deletecourse" value="{{ course.pk }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
                             <i class="delete red icon"></i>
                         </button>
                         </form>
+                    {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
                 </tbody>
             </table>
+            {% else %}
+            <div>
+                No certifications added yet.
+            </div>
             {% endif %}
         </div>
     </div>

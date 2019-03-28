@@ -351,9 +351,11 @@ def request_booking(request):
             # return HttpResponse('/visitorhostel/')
 
 
+
         return HttpResponseRedirect('/visitorhostel/')
     else:
         return HttpResponseRedirect('/visitorhostel/')
+
 
 
 @login_required(login_url='/accounts/login/')

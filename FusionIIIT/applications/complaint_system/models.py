@@ -34,6 +34,8 @@ class Caretaker(models.Model):
     staff_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
     area = models.CharField(choices=Constants.AREA, max_length=20, default='hall-3')
     rating = models.IntegerField(default=0)
+    myfeedback = models.CharField(max_length=400, default='this is my feedback')
+    # no_of_comps = models.CharField(max_length=1000)
 
     def __str__(self):
         return str(self.id) + '-' + self.area
@@ -42,7 +44,7 @@ class Caretaker(models.Model):
 class Workers(models.Model):
     caretaker_id = models.ForeignKey(Caretaker, on_delete=models.CASCADE)
     name = models.CharField(max_length=50)
-    age = models.CharField(max_length=100)
+    age = models.CharField(max_length=10)
     phone = models.BigIntegerField(blank=True)
     worker_type = models.CharField(choices=Constants.COMPLAINT_TYPE,
                                    max_length=20, default='internet')
@@ -66,6 +68,8 @@ class StudentComplain(models.Model):
     reason = models.CharField(max_length=100, blank=True, default="None")
     feedback = models.CharField(max_length=500, blank=True)
     worker_id = models.ForeignKey(Workers, blank=True, null=True)
+    upload_complaint = models.FileField(blank=True)
+
 
     def __str__(self):
         return str(self.complainer.user.username)

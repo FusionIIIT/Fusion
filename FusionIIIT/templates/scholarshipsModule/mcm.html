@@ -18,7 +18,7 @@
 <div class="ui active tab" data-tab="mcm">
     <div class="ui vertical segment">
         <form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;" enctype="multipart/form-data">
-            {% csrf_token %}  
+            {% csrf_token %}
             <div class="two fields">
                 <div class="eight wide field ">
                     <label>Father Occupation</label>
@@ -71,9 +71,11 @@
             </div>
             <div class="three fields">
                 <div class=" field">
-                    <label>Father's Annual Income</label>
+                    <span id="income_error"></span>
+                    <label>Father's Annual Incomedj asdjh</label>
                     <div class="ui large input">
-                        <input placeholder=" Income" name="father_income" type="number">
+                      sadknakd
+                        <input placeholder=" Income" name="father_income" type="number" onchange="incomeError()" id="income" >
                     </div>
                 </div>
                 <div class=" field">
@@ -82,20 +84,20 @@
                         <input placeholder="Income" name="mother_income" type="number">
                     </div>
                 </div>
-               
+
                 <div class=" field">
                     <label>Other sources Annual Income</label>
                     <div class="ui large input">
                         <input placeholder="Income" name="other_income" type="number">
                     </div>
                 </div>
-                     
+
             </div>
-            
+
 					<div class="two fields">
                             <div class="field">
                                     <a class="right floated item">
-                                   <label><br></label>               
+                                   <label><br></label>
                                    <div class="seven wide field">
                                        <label>Upload file</label>
                                        <div class="ui fluid input">
@@ -115,9 +117,6 @@
             </form>
 
             </div>
-
-        
     </div>
 
 {% endblock %}
-
