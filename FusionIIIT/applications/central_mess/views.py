@@ -95,7 +95,7 @@ def mess(request):
             item.save()
 
         for items in rebates:
-            if items.leave_type == 'casual':
+            if items.leave_type == 'casual' and (items.status == '1' or items.status == '2'):
                 count += item.duration
 
         for f in feed:
