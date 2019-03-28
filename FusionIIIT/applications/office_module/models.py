@@ -205,7 +205,7 @@ class Project_Registration(models.Model):
 class Project_Extension(models.Model):
     project_id = models.ForeignKey(Project_Registration, on_delete=models.CASCADE)
     date = models.DateField(null=True,blank=True)
-    extended_duration = models.CharField(max_length=300)
+    extended_duration = models.IntegerField(default=0)
     extension_details = models.CharField(max_length=300)
     HOD_response = models.CharField(choices=Constants.RESPONSE_TYPE1,
                                     max_length=10, default='Pending')
