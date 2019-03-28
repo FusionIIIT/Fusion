@@ -1,0 +1,9 @@
+create table leave_leavetype ( id INT NOT NULL AUTO_INCREMENT , name varchar(40) not null,
+    -> max_in_year int not null,
+    -> requires_proof  tinyint not null,
+    -> authority_forwardable tinyint not null,
+    -> for_faculty tinyint not null,
+    -> for_staff tinyint not null,
+    -> for_student tinyint not null,
+    -> requires_address tinyint not null,
+    -> primary key(id));
