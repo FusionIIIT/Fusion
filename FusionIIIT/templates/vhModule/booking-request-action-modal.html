@@ -3,13 +3,13 @@
 
 <!-- action -->
 
-{% for booking in pending_bookings %}
+{% for booking in dashboard_bookings %}
 {% for result in booking.visitor.all %}
 
 {% if forloop.first %}
 
 <div class="ui modal booking" id='booking-request-{{ booking.id }}'>
-    <div class="header">View Request</div>
+    <div class="header">Action</div>
   <div class="scrolling content">
   <!-- <div class="scrolling content"> -->
 
@@ -131,7 +131,7 @@
 
                 {% if user_designation == 'VhIncharge' %}
                 <div class="field">
-                        <label>Category</label>
+                        <label>Modified Category</label>
 
                         <div class="ui fluid input">
                             <input value="{{ booking.modified_visitor_category }}" name="modified-category-{{ booking.id }}" type="text" readonly>
@@ -180,7 +180,7 @@
 
 
         <div class="field">
-            <label>Purpose Of Visit_booking_rqst_action_@</label>
+            <label>Purpose Of Visit</label>
                 <div class="ui fluid input">
                     <input rows="2" value="{{ booking.purpose }}" readonly >
                             
@@ -227,14 +227,23 @@
         </div>
         {% endif %}
 
+
         {% if user_designation == 'Intender' %}
-        {%  if booking.status == 'Pending' or booking.status == 'Confirmed' %}
+        {%  if booking.status == 'Pending' %}
         <div class="field">
             <label></label>
             <div class="ui large red button right floated" id="cancel-booking" onclick="cancel_booking('{{ booking.id }}')">
                 Cancel
             </div>
         </div>
+        {% elif booking.status == 'Confirmed' %}
+            <div class="field">
+            <label></label>
+            <div class="ui large red button right floated" id="cancel-booking" onclick="cancel_active_booking('{{ booking.id }}', '{{ booking.booking_from }}')">
+                Cancel Active Booking
+            </div>
+        </div>
+
         {% elif booking.status == 'Forward' %}
             <div class="field">
             <label></label>
@@ -245,6 +254,25 @@
 
         {% endif %}
         {% endif %}
+
+<!--         {% if user_designation == 'Intender' %}
+        {%  if booking.status == 'Confirmed' %}
+        <div class="field">
+            <label></label>
+            <div class="ui large red button right floated" id="cancel-booking" onclick="cancel_active_booking('{{ booking.id }}', '{{ booking.booking_from }}')">
+                Cancel
+            </div>
+        </div>
+        {% elif booking.status == 'Pending' or booking.status == 'Forward' %}
+            <div class="field">
+            <label></label>
+            <div class="ui large red button right floated" id="cancel-booking" onclick="cancel_booking('{{ booking.id }}')">
+                Cancel
+            </div>
+        </div>
+
+        {% endif %}
+        {% endif %} -->
         <br>
         <br>
     </form>
@@ -316,8 +344,9 @@
     <br>
     <br>
 
-</div>
 
+<!-- </div> -->
+</div>
 </div>
 
 {% endif %}
