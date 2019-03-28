@@ -12,7 +12,6 @@ from django.forms.models import model_to_dict
 from django.db.models import Q
 from django.contrib.auth.models import User
 from .utils import render_to_pdf
-from background_task import background
 from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 from .forms import MinuteForm
@@ -27,9 +26,13 @@ from .handlers import (add_nonveg_order, add_mess_feedback, add_vacation_food_re
                        handle_special_request, add_bill_base_amount, add_mess_committee, generate_bill)
 
 today_g = datetime.today()
+month_g = today_g.month
 year_g = today_g.year
 tomorrow_g = today_g + timedelta(days=1)
-
+first_day_of_this_month = date.today().replace(day=1)
+last_day_prev_month = first_day_of_this_month - timedelta(days=1)
+month_last_g = last_day_prev_month.month
+year_last_g = last_day_prev_month.year
 
 def mess(request):
     user = request.user
@@ -719,3 +722,21 @@ def select_mess_convener(request):
         'message': 'Successfully added as mess convener ! '
     }
     return JsonResponse(data)
+
+
+def download_bill_mess(request):
+    user = request.user
+    extra_info = ExtraInfo.objects.get(user=user)
+    first_day_of_this_month = date.today().replace(day=1)
+    last_day_prev_month = first_day_of_this_month - timedelta(days=1)
+    previous_month = last_day_prev_month.strftime('%B')
+    print("\nn\\n\n\n\\n\n\n\\n\n")
+    print(month_last_g)
+    print(year_last_g)
+    bill_object = Monthly_bill.objects.filter(Q(month=previous_month)&Q(year=year_last_g))
+    # bill_object = Monthly_bill.objects.all()
+
+    context = {
+        'bill': bill_object,
+    }
+    return render_to_pdf('messModule/billpdfexport.html', context)

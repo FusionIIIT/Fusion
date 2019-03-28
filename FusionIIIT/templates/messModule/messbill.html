@@ -49,10 +49,21 @@
                         Generate
                     </button>
                 </div>
+                <br>
+
                 <div>
                     <label>Bill generation will take a while.</label>
                 </div>
             </form>
+            <div>
+                <form method="post" target="_blank" action="{% url 'mess:billdownload' %}">
+                    {% csrf_token %}
+                <button type="submit" class="ui primary fluid button">
+                    <i class="ui download icon right floated"></i>
+                </button>
+                </form>
+                <br>
+            </div>
 
         </div>
     </div>

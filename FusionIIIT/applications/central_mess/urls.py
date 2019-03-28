@@ -32,6 +32,7 @@ urlpatterns = [
     url(r'^generatemessbill', views.generate_mess_bill, name='generatemessbill'),
     url(r'^acceptleave', views.accept_vacation_leaves, name='acceptleave'),
     url(r'^selectmessconvener', views.select_mess_convener, name='selectmessconvener'),
+    url(r'^billdownload', views.download_bill_mess, name='billdownload'),
 
 
 ]
