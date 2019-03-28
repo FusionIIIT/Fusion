@@ -725,14 +725,14 @@ function bill_between_date_range() {
         },
         success: function(data) {
             $('#replace-this-div-booking-bw-dates').html(data);
-            console.log("winning")
-            console.log(start_date)
+            console.log("winning");
+            console.log(start_date);
             // alert('Bookings Between range are ..');
         },
         error: function(data, err) {
             alert('Error !');
-            console.log(start_date)
-            console.log(end_date)
+            console.log(start_date);
+            console.log(end_date);
             // alertModal('Something missing! Please refill the form');
         }
     });
@@ -794,6 +794,7 @@ function modalAddItem(){
 
 function bookingRequestModal(id){
     $('#booking-request-'.concat(id)).modal('show');
+
 }
 
 function updateBookingModal(id){
