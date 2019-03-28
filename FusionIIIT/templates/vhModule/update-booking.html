@@ -86,7 +86,8 @@
         </div>
 
         <div class="field">
-            <div class="three fields">
+
+            <div class="four fields">
                 <div class="field">
                     <label>Category</label>
 
@@ -94,6 +95,18 @@
                         <input value="{{ booking.visitor_category }}" name="category-{{ booking.id }}" type="text" readonly>
                     </div>
                 </div>
+                {% if booking.status != 'Pending' %}
+
+
+                <div class="field">
+                        <label>Modified Category</label>
+
+                        <div class="ui fluid input">
+                            <input value="{{ booking.modified_visitor_category }}" name="modified-category-{{ booking.id }}" type="text" readonly>
+                        </div>
+                    </div>
+
+                {% endif %}
 
               <!--   <div class="field">
                     <label>Category </label>

@@ -520,9 +520,9 @@ function forward_booking (id) {
     //     return;
     // }
 
-    // if (modified_category == 0) {
-    //     modified_category = previous_category;
-    // }
+    if (modified_category == 0) {
+        modified_category = previous_category;
+    }
 
     if (rooms == 0) {
         alertModal("Please fill the rooms to confirm booking.");
@@ -645,7 +645,9 @@ function submit_visitor_details (id) {
             return;
         }
     }
-    console.log(name + " " + phone + " " + email + " " + address);
+    console.log(temp);
+    // console.log(name + " " + phone + " " + email + " " + address);
+
 
     for (var j=1; j<=temp+1; j++) {
         csrfmiddlewaretoken = $('input[name="csrf"]').val();
@@ -707,18 +709,25 @@ function check_out (id , mess_bill , room_bill) {
 
 function bill_between_date_range() {
 
-   start_date = $('input[name=start').val();
+    start_date = $('input[name=start').val();
     end_date = $('input[name=end]').val();
-    if (new Date(start_date) > new Date(end_date)) {
-        alertModal ('Please check start date and end date!');
+
+    if(new Date(start_date)>new Date(end_date))
+    {
+        alertModal('Please check start date and end date.')
         return;
     }
+
+        console.log(start_date);
+            console.log(end_date);
+
 
     $.ajax({
         type: 'POST',
         url: '/visitorhostel/bill_between_date_range/',
         data: {
             'csrfmiddlewaretoken' : $('input[name="csrf"]').val(),
+
             'start_date' : start_date,
             'end_date' : end_date,
 
@@ -730,7 +739,7 @@ function bill_between_date_range() {
             // alert('Bookings Between range are ..');
         },
         error: function(data, err) {
-            alert('Error !');
+            alertModal ('Error !');
             console.log(start_date);
             console.log(end_date);
             // alertModal('Something missing! Please refill the form');
@@ -748,39 +757,36 @@ function bill_between_date_range() {
 
 
 function find_available_rooms ( available_rooms ) {
-    
-    fromDate=$('input[name=start-date]').val();
-    endDate=$('input[name=end-date]').val();
-    console.log(fromDate);
-    console.log(endDate);
-    if (new Date(fromDate) > new Date(endDate)) {
+    start_date = $('input[name=start-date').val();
+    end_date = $('input[name=end-date]').val();
+    if (new Date(start_date) > new Date(end_date)) {
         alertModal ('Please check start date and end date!');
         return;
     }
+    console.log(start_date);
+            console.log(end_date);
+
     $.ajax({
         type: 'POST',
         url: '/visitorhostel/room-availability/',
         data: {
             'csrfmiddlewaretoken' : $('input[name="csrf"]').val(),
-            'start_date' : fromDate,
-            'end_date' : endDate,
+            'start_date' : start_date,
+            'end_date' : end_date,
 
         },
         success: function(data) {
-            console.log(available_rooms.length + "   length ");
-            for (var i = 0; i < available_rooms.length; i++) {
-                console.log(available_rooms[i] + " rr rhur");
-                // $('#' + available_rooms[i]).addClass("teal");
-                
-            }
-
             $('#replace-this-div').html(data);
-            console.log(available_rooms + " ar ey");
-
+            console.log("winning");
+            console.log(start_date);
+            // alert('Bookings Between range are ..');
         },
         error: function(data, err) {
-            alertModal('Something missing! Please refill the form');
-            console.log(available_rooms);
+            alertModal ('Error !');
+            console.log(start_date);
+            console.log(end_date);
+            // alertModal('Something missing! Please refill the form');
+
         }
     });
 }
@@ -794,7 +800,6 @@ function modalAddItem(){
 
 function bookingRequestModal(id){
     $('#booking-request-'.concat(id)).modal('show');
-
 }
 
 function updateBookingModal(id){

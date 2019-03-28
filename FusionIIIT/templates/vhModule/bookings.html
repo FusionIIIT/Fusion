@@ -184,10 +184,25 @@
 
                                 <!-- if section for Action tab and Cancel starts here -->
 
+
+
                                 {% if user_designation == 'Intender' %}
+                            
+
+                                {% if booking.status == "Rejected" %}
+                                    
+                                {% else %}
+                                
+                                <td class="delete" onclick="bookingRequestModal('{{ booking.id }}')">
+                                    <button style="background-color: white;border: none; float: right; font-size: 2em; display: block;" data-tooltip="Cancel Your Request">
+                                    <i class="tiny close icon"></i></button></td>
+                                {% endif %}
+                                {% endif %}
+
+                                <!-- {% if user_designation == 'Intender' %}
 
                                     {% if booking.status == "Confirmed" %}
-                                        <td class="delete" onclick="bookingDetailsModal('{{ booking.id }}')">
+                                        <td class="delete" onclick="bookingRequestModal('{{ booking.id }}')">
                                             <button style="background-color: white;border: none; float: right; font-size: 2em; display: block;" data-tooltip="Cancel Your Request">
                                             <i class="tiny close icon"></i>
                                         </button></td>
@@ -197,7 +212,7 @@
                                         <button style="background-color: white;border: none; float: right; font-size: 2em; display: block;" data-tooltip="Cancel Your Request">
                                         <i class="tiny close icon"></i></button></td>
                                     {% endif %}
-                                {% endif %}
+                                {% endif %} -->
 
                                     {% if user_designation == 'VhCaretaker' %}
                                         <td>
