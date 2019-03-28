@@ -1757,8 +1757,12 @@ def PlacementStatistics(request):
         if form.is_valid():
             if form.cleaned_data['stuname']:
                 stuname = form.cleaned_data['stuname']
-                first_name = stuname.split(" ")[0]
-                last_name = stuname.split(" ")[1]
+                try:
+                    first_name = stuname.split(" ")[0]
+                    last_name = stuname.split(" ")[1]
+                except:
+                    first_name = stuname
+                    last_name = ''
             else:
                 stuname = ''
                 first_name = ''
@@ -1953,8 +1957,12 @@ def PlacementStatistics(request):
         if form.is_valid():
             if form.cleaned_data['stuname']:
                 stuname = form.cleaned_data['stuname']
-                first_name = stuname.split(" ")[0]
-                last_name = stuname.split(" ")[1]
+                try:
+                    first_name = stuname.split(" ")[0]
+                    last_name = stuname.split(" ")[1]
+                except:
+                    first_name = stuname
+                    last_name = ''
             else:
                 stuname = ''
                 first_name = ''
@@ -2102,8 +2110,12 @@ def PlacementStatistics(request):
             # getting all the variables send through form
             if form.cleaned_data['stuname']:
                 stuname = form.cleaned_data['stuname']
-                first_name = stuname.split(" ")[0]
-                last_name = stuname.split(" ")[1]
+                try:
+                    first_name = stuname.split(" ")[0]
+                    last_name = stuname.split(" ")[1]
+                except:
+                    first_name = stuname
+                    last_name = ''
             else:
                 stuname = ''
                 first_name = ''
