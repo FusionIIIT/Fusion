@@ -370,7 +370,7 @@ class SearchPlacementRecord(forms.Form):
                                                               'class': 'field'}),
                               label="stuname", required=False)
     year = forms.IntegerField(label="year", required=False)
-    ctc = forms.CharField(label="ctc", required=False)
+    ctc = forms.CharField(label="ctc", widget=forms.NumberInput(attrs={'min': 0}), required=False)
     roll = forms.CharField(widget=forms.NumberInput(attrs={ 'min':0,
                                                             'max_length': 10,
                                                             'class': 'form-control'}),
@@ -394,7 +394,7 @@ class SearchPbiRecord(forms.Form):
                                                             'class': 'field'}),
                               label="stuname", required=False)
     year = forms.IntegerField(label="year", required=False)
-    ctc = forms.DecimalField(label="ctc", required=False)
+    ctc = forms.DecimalField(label="ctc", widget=forms.NumberInput(attrs={'min': 0}), required=False)
     roll = forms.CharField(widget=forms.NumberInput(attrs={ 'min':0,
                                                             'max_length': 10,
                                                             'class': 'form-control'}),
@@ -425,8 +425,8 @@ class SearchHigherRecord(forms.Form):
     test_type = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
                                                             'class': 'field'}),
                                 label="test_type", required=False)
-    test_score = forms.IntegerField(label="test_score", required=False)
-    year = forms.IntegerField(label="year", required=False)
+    test_score = forms.IntegerField(label="test_score", widget=forms.NumberInput(attrs={'min': 0}), required=False)
+    year = forms.IntegerField(label="year", widget=forms.NumberInput(attrs={'min': 0}), required=False)
     uname = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
                                                             'class': 'field'}),
                             label="uname", required=False)

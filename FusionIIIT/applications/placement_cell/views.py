@@ -2389,6 +2389,31 @@ def PlacementStatistics(request):
     return render(request, 'placementModule/placementstatistics.html', context)
 
 
+@login_required
+def delete_placement_statistics(request):
+    """
+    The function is used to delete the placement statistic record.
+    @param:
+            request - trivial
+    @variables:
+            record_id = stores current StudentRecord Id.
+    """
+    print('coming delete request')
+    if 'deleterecord' in request.POST:
+        try:
+            record_id = int(request.POST['deleterecord'])
+            print('------------------------\n\n\n')
+            print(record_id)
+            print(StudentRecord.objects.get(pk = record_id))
+
+            StudentRecord.objects.get(pk = record_id).delete()
+        except Exception as e:
+            print(e)
+            print('------------problem in deleting the record of statistics-------------')
+
+    return redirect('/placement/statistics/')
+
+
 def cv(request, username):
     # Retrieve data or whatever you need
     """
