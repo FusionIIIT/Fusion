@@ -49,6 +49,18 @@ def mess(request):
     count7 = 0
     count8 = 0
 
+    # remove ths part after database has been updated
+    change_desig = Designation.objects.get(name="mess_committee")
+    if change_desig:
+        change_desig.name = "mess_committee_mess1"
+        change_desig2 = Designation.objects.get(name="mess_convener")
+        change_desig2.name = "mess_convener_mess1"
+        change_desig_obj1 = Designation(name="mess_committee_mess2", full_name="Mess Committee", type="administrative")
+        change_desig_obj2 = Designation(name="mess_convener_mess2", full_name="Mess Convener", type="administrative")
+        change_desig_obj1.add()
+        change_desig_obj2.add()
+    #end of remove part
+
     if extrainfo.user_type == 'student':
         student = Student.objects.get(id=extrainfo)
         vaca_obj = Vacation_food.objects.filter(student_id=student)
