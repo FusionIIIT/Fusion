@@ -152,8 +152,8 @@ def mess(request):
         newmenu = Menu_change_request.objects.all()
         vaca_all = Vacation_food.objects.all()
         # members_mess = HoldsDesignation.objects.filter(designation__name='mess_convener')
-        members_mess = HoldsDesignation.objects.filter(Q(designation__name='mess_convener')
-                                                       | Q(designation__name='mess_committee'))
+        members_mess = HoldsDesignation.objects.filter(Q(designation__name__contains='mess_convener')
+                                                       | Q(designation__name__contains='mess_committee'))
         print(members_mess)
         y = Menu.objects.all()
         x = Nonveg_menu.objects.all()
@@ -617,10 +617,14 @@ def remove_mess_committee(request):
     member_id = request.POST['member_id']
     data_m = member_id.split("-")
     roll_number = data_m[1]
-    if data_m[0] == 'mess_committee':
-        designation = Designation.objects.get(name='mess_committee')
+    if data_m[0] == 'mess_committee_mess1':
+        designation = Designation.objects.get(name='mess_committee_mess1')
+    elif data_m[0] == 'mess_convener_mess1':
+        designation = Designation.objects.get(name='mess_convener_mess1')
+    elif data_m[0] == 'mess_committee_mess2':
+        designation = Designation.objects.get(name='mess_committee_mess2')
     else:
-        designation = Designation.objects.get(name='mess_convener')
+        designation = Designation.objects.get(name='mess_convener_mess2')
     remove_object = HoldsDesignation.objects.get(Q(user__username=roll_number) & Q(designation=designation))
     remove_object.delete()
     data = {
@@ -659,5 +663,46 @@ def accept_vacation_leaves(request):
     data = {
         'status': 1,
         'display': 'Vacation Leaves Successfully Accepted'
+    }
+    return JsonResponse(data)
+
+
+def select_mess_convener(request):
+    member_id = request.POST['member_id_add']
+    data_m = member_id.split("-")
+    roll_number = data_m[1]
+    if data_m[0] == 'mess_committee_mess1':
+        designation = Designation.objects.get(name='mess_committee_mess1')
+        new_designation = Designation.objects.get(name='mess_convener_mess1')
+        # One mess can have only one mess convener
+        existing_check = HoldsDesignation.objects.filter(designation=new_designation)
+        if existing_check.count():
+            data = {
+                'status': 1,
+                'message': 'Mess Convener already exists for Mess 1 ! \nRemove the existing convener to add new one'
+            }
+            return JsonResponse(data)
+        else:
+            modify_object = HoldsDesignation.objects.get(Q(user__username=roll_number) & Q(designation=designation))
+            modify_object.designation = new_designation
+            modify_object.save()
+    else:
+        designation = Designation.objects.get(name='mess_committee_mess2')
+        new_designation = Designation.objects.get(name='mess_convener_mess2')
+        existing_check = HoldsDesignation.objects.filter(designation=new_designation)
+        if existing_check.count():
+            data = {
+                'status': 1,
+                'message': 'Mess Convener already exists for Mess 2 ! \n Remove the existing convener to add new one'
+            }
+            return JsonResponse(data)
+        else:
+            modify_object = HoldsDesignation.objects.get(Q(user__username=roll_number) & Q(designation=designation))
+            modify_object.designation = new_designation
+            modify_object.save()
+
+    data = {
+        'status': 1,
+        'message': 'Successfully added as mess convener ! '
     }
     return JsonResponse(data)

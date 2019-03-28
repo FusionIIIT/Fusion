@@ -35,7 +35,7 @@
             Remove from Mess Committee
         </button>
         <br>
-        <button class="ui primary fluid button">
+        <button class="ui primary fluid button" onclick="selectConvenerMessModal()">
             Select Mess Convener
         </button>
     </div>
@@ -92,7 +92,31 @@
             </div>
     </div>
 {% comment %} Modal for Removing Mess Committee ends here {% endcomment %}
+    <div class="ui modal" id="selectmessconvener" style="padding: 1.5%">
+    <div class="ui vertical segment">
+        <div class="ui form">
+            <form method="post">
+                {% csrf_token %}
+                <div class="field">
+                    <label>Select Member</label>
+                    <select class="ui search fluid dropdown" name="member" id="member_id2">
+                        {% for item in members %}
+                            {% if item.designation.name == 'mess_committee_mess1' or item.designation.name == 'mess_committee_mess2' %}
+                        <option value={{ item.designation }}-{{ item.user }} id={{ item.pk }}>
+                            {{ item.user }} - {{ item.designation }}
+                        </option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
 
+                <div class="field">
+                    <button class="ui primary fluid button" onclick="selectMessConvener()"> Select </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    </div>
 
 </div>
 {% endblock %}
@@ -110,6 +134,9 @@
 
     function removeMessMember() {
         $('#removeMember').modal('show');
+    }
+    function selectConvenerMessModal(){
+        $('#selectmessconvener').modal('show')
     }
 
     function addMess() {
@@ -172,6 +199,35 @@
                 error: function (data, err) {
                     alert(err.message);
                     ("#mess_committee_tab").load(location.href+" #mess_committee_tab>*","")
+
+                }
+            }
+        );
+    }
+    function selectMessConvener(){
+        $.ajax(
+            {
+                type: 'POST',
+                url: 'selectmessconvener/',
+                dataType: 'json',
+                data: {
+                    'csrfmiddlewaretoken': '{{ csrf_token }}',
+                    'member_id_add': $("#member_id2").val(),
+                },
+                success: function (data) {
+                    if (data.status === 1) {
+                        {#$('#mess_student').style.visibility = 'visible';#}
+                        alert(data.message);
+                        {#$('#mess').style.display = "block";#}
+                        {#$('#mess').show();#}
+                        {#$("#mess_committee_tab").load(location.href+" #mess_committee_tab>*","")#}
+                    }
+                    else if (data.status === 2) {
+                        alert(data.message);
+                    }
+                },
+                error: function (data, err) {
+                    alert(err.message);
 
                 }
             }

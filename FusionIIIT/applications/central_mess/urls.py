@@ -31,6 +31,7 @@ urlpatterns = [
     url(r'^getleave', views.get_leave_data, name='getleave'),
     url(r'^generatemessbill', views.generate_mess_bill, name='generatemessbill'),
     url(r'^acceptleave', views.accept_vacation_leaves, name='acceptleave'),
+    url(r'^selectmessconvener', views.select_mess_convener, name='selectmessconvener'),
 
 
 ]
