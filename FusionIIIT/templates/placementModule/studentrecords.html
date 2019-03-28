@@ -598,7 +598,7 @@
               </div>
 
               <div class="{% if mnpbi_post %}ui tab{% else %}ui active tab{% endif %}" data-tab="Placement">
-                {% if not placementstatus and officer_manage %}
+                {% if not placementstatus_placement and officer_manage %}
                   <div class="ui error message">
                     <i class="close icon"></i>
                     <div class="header">
@@ -671,13 +671,13 @@
                         </div>
                     </form>
 
-                    {% if placementstatus %}
+                    {% if placementstatus_placement %}
                       <br>
                       <!-- Pagination Section starts here  --->
                       {% if no_pagination %}
                         <center>
                           <div class="ui pagination menu">
-                            {% if placementstatus.has_previous %}
+                            {% if placementstatus_placement.has_previous %}
                             <a href="?page={{placementstatus.previous_page_number}}" class="item">
                               Previous
                             </a>
@@ -691,20 +691,18 @@
                             {% endif %}
 
                             {% for i in page_range %}
-                              {% if placementstatus.number == i %}
+                              {% if placementstatus_placement.number == i %}
                                 <a href="?page={{i}}" class="active item">{{ i }} </a>
                               {% else %}
                                 <a href="?page={{ i }}" class="item">{{ i }}</a>
                               {% endif %}
                             {% endfor %}
 
-
-
-                            {% if placementstatus.has_next %}
+                            {% if placementstatus_placement.has_next %}
                             <div class="disabled item">
                               ...
                             </div>
-                            <a href="?page={{placementstatus.next_page_number}}" class="item">
+                            <a href="?page={{placementstatus_placement.next_page_number}}" class="item">
                               Next
                             </a>
                             {% endif %}
@@ -715,7 +713,7 @@
                       <br>
                       <div class="ui divider"></div>
 
-                        <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;" id="student">
+                      <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;" id="student">
                             <thead>
                             <tr>
                                 <th class="four wide">Student</th>
@@ -727,7 +725,7 @@
                             </thead>
 
                             <tbody>
-                              {% for student in placementstatus %}
+                              {% for student in placementstatus_placement %}
                                 {% if student.notify_id.placement_type == 'PLACEMENT' %}
                                 <tr>
                                     <td>
@@ -767,14 +765,14 @@
                               {% endfor %}
                             </tbody>
 
-                        </table>
+                      </table>
                     {% endif %}
 
                 </div>
               </div>
 
               <div class="{% if mnpbi_post %}ui active tab{% else %}ui tab{% endif %}" data-tab="PBI">
-                  {% if not placementstatus and mnpbi_post %}
+                  {% if not placementstatus_pbi and mnpbi_post %}
                     <div class="ui error message">
                       <i class="close icon"></i>
                       <div class="header">
@@ -847,7 +845,7 @@
                           </div>
                       </form>
 
-                    {% if placementstatus %}
+                    {% if placementstatus_pbi %}
                       <br>
                       <!-- generate pdf button  --->
                       <form method="post" target="_blank" action="{% url 'placement:invitation_status' %}" class="ui form" role="form">
@@ -870,8 +868,8 @@
 
                         <center>
                           <div class="ui pagination menu">
-                            {% if placementstatus.has_previous %}
-                            <a href="?page={{placementstatus.previous_page_number}}" class="item">
+                            {% if placementstatus_pbi.has_previous %}
+                            <a href="?page={{placementstatus_pbi.previous_page_number}}" class="item">
                               Previous
                             </a>
                             {% endif %}
@@ -884,7 +882,7 @@
                             {% endif %}
 
                             {% for i in page_range %}
-                              {% if placementstatus.number == i %}
+                              {% if placementstatus_pbi.number == i %}
                                 <a href="?page={{i}}" class="active item">{{ i }} </a>
                               {% else %}
                                 <a href="?page={{ i }}" class="item">{{ i }}</a>
@@ -893,11 +891,11 @@
 
 
 
-                            {% if placementstatus.has_next %}
+                            {% if placementstatus_pbi.has_next %}
                             <div class="disabled item">
                               ...
                             </div>
-                            <a href="?page={{placementstatus.next_page_number}}" class="item">
+                            <a href="?page={{placementstatus_pbi.next_page_number}}" class="item">
                               Next
                             </a>
                             {% endif %}
@@ -920,7 +918,7 @@
                             </thead>
 
                             <tbody>
-                            {% for student in placementstatus %}
+                            {% for student in placementstatus_pbi %}
                               {% if student.notify_id.placement_type == 'PBI' %}
                               <tr>
                                 <td>
