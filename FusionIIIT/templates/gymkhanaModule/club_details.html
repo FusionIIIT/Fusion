@@ -113,17 +113,20 @@
         }
 
         function display_club_session() {
+            $('#output #jtr #jvenue').html("");
+            $('#output #jtr #jdate').html("");
+            $('#output #jtr #jtime').html("");
+            $('#output #jtr #jdetails').html("");
             var data1 = document.getElementById('club_session_').value;
             {% for i in Club_session %}
             var x =  "{{ i.club.club_name }}";
-              if(data1==x)
-                 {
-                    $('#output #jtr #jvenue').append("{{ i.venue }}<br><br>");
-                    $('#output #jtr #jdate').append("{{ i.date }}<br><br>");
-                    $('#output #jtr #jtime').append("{{ i.start_time }}-{{ i.end_time }}<br><br>");
-                    $('#output #jtr #jdetails').append("{{ i.details }}<br><br>");
-
-                  }
+            if(data1==x)
+            {
+                $('#output #jtr #jvenue').append("{{ i.venue }}<br><br>");
+                $('#output #jtr #jdate').append("{{ i.date }}<br><br>");
+                $('#output #jtr #jtime').append("{{ i.start_time }}-{{ i.end_time }}<br><br>");
+                $('#output #jtr #jdetails').append("{{ i.details }}<br><br>");
+            }
             {% endfor %}
         }
         function display_club_events() {
@@ -207,7 +210,7 @@
 
                             <td>
                                 <h4 class="ui image header">
-                                    <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                                    <!-- <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image"> -->
                                     <div class="content">
                                         {{ i.co_ordinator }}
                                     </div>
@@ -216,7 +219,7 @@
 
                             <td>
                                 <h4 class="ui image header">
-                                    <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                                    <!-- <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image"> -->
                                     <div class="content">
                                         {{ i.co_coordinator }}
                                     </div>
@@ -289,10 +292,8 @@
                     <label>Club</label>
                     <select class="ui search fluid dropdown" name="club" id="club_session_" onchange="display_club_session()" required>
                         <option value="">Select</option>
-                        
                             {% for i in Club_name %}
-                                
-                                    <option value="{{ i.club_name }}">{{ i.club_name }} </option>
+                                <option value="{{ i.club_name }}">{{ i.club_name }} </option>
                             {% endfor %}
                     </select>
                 </div>

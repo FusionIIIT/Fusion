@@ -19,5 +19,6 @@ urlpatterns = [
     url(r'^approve/$',views.approve,name='approve'),
     url(r'^reject/$',views.reject,name='reject'),
     url(r'^cancel/$',views.cancel,name='cancel'),
-    url(r'^date_sessions/$', views.date_sessions, name='date_sessions')
+    url(r'^date_sessions/$', views.date_sessions, name='date_sessions'),
+    url(r'^get_venue/$', views.getVenue, name='get_venue')
 ]

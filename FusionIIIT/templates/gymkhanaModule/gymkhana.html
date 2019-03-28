@@ -20,6 +20,7 @@
             // alert(b);
             event.preventDefault();
             var form = document.getElementById(b); // You need to use standard javascript object here
+            // console.log(form);
             var i, startTime, endTime ;
             var empty = new Array() ;
             for (i=0 ; i<form.length; i++){
@@ -41,6 +42,7 @@
                     $("#errorContent").append("<p><b>Start Time should be strictly less than end time.</b></p>");
                 $(".formErrors").modal('show') ;
                 form.reset();
+                // setTimeout(function(){ location.reload(); }, 5000);
             }
             else if (endTime <= startTime)
             {
@@ -48,9 +50,11 @@
                 $("#errorContent").html("<p><b>Start Time should be strictly less than end time.</b></p>");
                 $(".formErrors").modal('show') ;
                 form.reset();
+                // setTimeout(function(){ location.reload(); }, 5000);
             }
             else{
                 var formData = new FormData(form);
+                // console.log(formData);
                 form.reset();
                 $.ajax({
                     url: a,
@@ -66,10 +70,12 @@
                         if (response == "success") {
                             $(".succ").modal('show');
                             form.reset();
+                            // setTimeout(function(){ location.reload(); }, 5000);
                         }
                         else
                         {
-                            $(".err").modal('show');    
+                            $(".err").modal('show');
+                            // setTimeout(function(){ location.reload(); }, 5000);    
                         }
                     }
                 });
@@ -361,6 +367,10 @@
 
 {% block javascript %}
     <script>
+
+        $(document).ready(function() {
+            $("div.venueType").find("div.dropdown").find("div.text").html('');
+        });
         function showSessions(){
             var date = $("#sessions_date").val() ;
             $.ajax({
