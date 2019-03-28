@@ -18,9 +18,28 @@
     {% comment %} Committee sections starts here {% endcomment %}
     <div class="ui active tab" data-tab="mess_members">
         <div class = "ui vertical segment">
-            <p> Members in Mess Committee </p>
+        <p><strong>Mess Committee - Mess 1:</strong></p>
             {% for items in members %}
-                <p> {{ items.user }} - {{ items.designation }}</p>
+
+                {% if items.designation.name == "mess_committee_mess1" or items.designation.name == "mess_convener_mess1" %}
+                    <p> {{ items.user }}
+                    {% if items.designation.name == "mess_convener_mess1" %}
+                        (Mess Convener)
+                        {% endif %}
+                    </p>
+                {%  endif %}
+            {% endfor %}
+            <br>
+        <p><strong>Mess Committee - Mess 2:</strong></p>
+        {% for items in members %}
+
+                {% if items.designation.name == "mess_committee_mess2" or items.designation.name == "mess_convener_mess2" %}
+                    <p> {{ items.user }}
+                    {% if items.designation.name == "mess_convener_mess2" %}
+                        (Mess Convener)
+                        {% endif %}
+                    </p>
+                {%  endif %}
             {% endfor %}
         </div>
     </div>
@@ -48,7 +67,7 @@
                 <form method="POST">
                     {% csrf_token %}
                     <div class="field">
-                        <label>Roll Number:</label>
+                        <label>Roll Number*</label>
                         <input type="number" placeholder="Student Roll Number Here" id="roll_number">
                     </div>
 {#                    <div  class="field" id="mess_student">#}
@@ -73,7 +92,7 @@
                     <form method="post">
                         {% csrf_token %}
                         <div class="field">
-                            <label>Select Member</label>
+                            <label>Select Member*</label>
                             <select class="ui search fluid dropdown" name="member" id="member_id">
                                 {% for item in members %}
                                 <option value={{ item.designation }}-{{ item.user }} id={{ item.pk }}>
@@ -98,7 +117,7 @@
             <form method="post">
                 {% csrf_token %}
                 <div class="field">
-                    <label>Select Member</label>
+                    <label>Select Member*</label>
                     <select class="ui search fluid dropdown" name="member" id="member_id2">
                         {% for item in members %}
                             {% if item.designation.name == 'mess_committee_mess1' or item.designation.name == 'mess_committee_mess2' %}

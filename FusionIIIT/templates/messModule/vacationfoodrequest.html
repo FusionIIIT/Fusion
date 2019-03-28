@@ -26,19 +26,16 @@
                     <div class="ui header">
                         Apply for Food during Vacations:
                     </div>
-
-                    <br>
-
                     <div class="two fields">
                         <div class="field">
                             <label>Mess:</label>
-                            <input value={{messinfo.mess_option}} class="ui large input" readonly id="mess">
+                            <input value="{{messinfo.mess_option}}" class="ui large input" readonly id="mess">
                         </div>
                     </div>
 
                     <div class="two fields">
                         <div class="field">
-                            <label>Leave From:</label>
+                            <label>Leave From*</label>
                             <div class="ui calendar" id="rangestart">
                                 <div class="ui input left icon">
                                     <input name="start_date" type="date" placeholder="From" required="true" id="sdate">
@@ -47,7 +44,7 @@
                         </div>
 
                         <div class="field">
-                            <label>Leave To:</label>
+                            <label>Leave To*</label>
                             <div class="ui calendar" id="rangeend">
                                 <div class="ui input left icon">
                                     <input name="end_date" type="date" placeholder="To" required="true" id="edate">
@@ -57,7 +54,7 @@
                     </div>
 
                     <div class="field">
-                        <label>Purpose:</label>
+                        <label>Purpose*</label>
                         <textarea rows="2" name="purpose" id="purpose1"></textarea>
                     </div>
 
@@ -206,7 +203,7 @@
 
             $.ajax({
                 type: 'POST',
-                url: messvacationsubmit/',
+                url: 'messvacationsubmit/',
                 dataType: 'json',
                 data: {
                     'csrfmiddlewaretoken' : '{{ csrf_token }}',

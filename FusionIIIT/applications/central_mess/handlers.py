@@ -270,35 +270,23 @@ def add_leave_request(request, student):
         data = {
             'status': 3
         }
-        return JsonResponse(data)
+        return data
 
     rebates = Rebate.objects.filter(student_id=student)
+    rebate_check = rebates.filter(Q(status='1')|Q(status='2'))
 
-    for r in rebates:
-        if r.status == '1' or r.status == '2':
-            print(r.start_date)
-            print("compare")
-            print(start_date)
-            date_format = "%Y-%m-%d"
-            a = datetime.strptime(str(r.start_date), date_format)
-            b = datetime.strptime(str(start_date), date_format)
-            c = datetime.strptime(str(r.end_date), date_format)
-            d = datetime.strptime(str(end_date), date_format)
-            print((b <= a and (d >= a and d <= c)) or (b >= a and (d >= a and d <= c))
-                  or (b <= a and (d >= c)) or ((b >= a and b <= c) and (d >= c)))
-            print((b >= a and b <= c) and (d >= c))
-            if ((b <= a and (d >= a and d <= c)) or (b >= a and (d >= a and d <= c))
-                    or (b <= a and (d >= c)) or ((b >= a and b <= c) and (d >= c))):
-                flag = 0
-                break
-    #   TODO IF CASUAL LEAVE CONDITIONS ARE SATISFIED THEN AUTOMATICALLY ACCEPT THE REQUEST
-    if flag == 1:
-        rebate_object = Rebate(student_id=student, leave_type=leave_type, start_date=start_date,
-                               end_date=end_date, purpose=purpose)
-        rebate_object.save()
+    for r in rebate_check:
+        if(start_date >= r.start_date) or (end_date <= r.end_date):
+            data = {
+                'status': 3
+            }
+            return data
 
+    rebate_object = Rebate(student_id=student, leave_type=leave_type, start_date=start_date,
+                           end_date=end_date, purpose=purpose)
+    rebate_object.save()
     data = {
-        'status': flag,
+        'status': 1
     }
     return data
 

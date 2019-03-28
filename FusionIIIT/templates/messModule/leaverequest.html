@@ -24,25 +24,18 @@
                     <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
 
                         <div class="ui header">
-                            Apply for Leave:
+                            Leave Application:
                         </div>
-
-                        <br>
-
                         <div class="two fields">
                             <div class="field">
                                 <label>Mess:</label>
-                                <input value={{ messinfo.mess_option }} class="ui large input" readonly>
+                                <input value="{{ messinfo.mess_option }}" class="ui small input" readonly>
                             </div>
 
                             <div class="two fields">
                                 <div class="twelve wide field">
-                                    <label>Leave Type:</label>
+                                    <label>Leave Type*</label>
                                     <select name="leave_type" class="ui fluid dropdown" required="true" id="leave_type">
-                                        {% comment %}
-                                            TODO: A backend code to stop sending of empty values to database (SELECT
-                                            OPTION)
-                                        {% endcomment %}
                                         <option value="">Select</option>
                                         {% if count >= 15 %}
                                             <option value="" readonly>Casual Leave(not allowed)</option>
@@ -64,7 +57,7 @@
 
                         <div class="two fields">
                             <div class="field">
-                                <label>Leave From:</label>
+                                <label>Leave From*</label>
                                 <div class="ui calendar" id="rangestart">
                                     <div class="ui input left icon">
                                         <input name="start_date" type="date" placeholder="From" required="true"
@@ -74,7 +67,7 @@
                             </div>
 
                             <div class="field">
-                                <label>Leave To:</label>
+                                <label>Leave To*</label>
                                 <div class="ui calendar" id="rangeend">
                                     <div class="ui input left icon">
                                         <input name="end_date" type="date" placeholder="To" required="true"
@@ -83,21 +76,17 @@
                                 </div>
                             </div>
                         </div>
-
-
                         {% comment %}
                             TODO: Make this Optional
                         {% endcomment %}
                         <div class="field">
-                            <label>Purpose:</label>
+                            <label>Purpose*</label>
                             <textarea name="purpose" rows="2" required="true" id="purpose"></textarea>
 
                         </div>
 {#                    <div class="field">#}
 {#                        <input type="file" name="myfile">#}
 {#                    </div>#}
-
-
 
                     </div>
                 </form>
@@ -118,7 +107,7 @@
                 <div class="content">
                     <div class="description">
 
-                        <table class="ui very basic collapsing celled large sortable table"
+                        <table class="ui very basic collapsing celled table sortable centered"
                                style="padding-left: 2.5%;
                                                           padding-right: 2.5%;
                                                           padding-top: 1%;
@@ -127,7 +116,7 @@
                             <thead>
                             <tr>
                                 <th>
-                                    App_date
+                                    Date
                                 </th>
 
                                 <th>
@@ -141,11 +130,6 @@
                                 <th>
                                     To
                                 </th>
-
-                                <th>
-                                    Duration
-                                </th>
-
                                 <th>
                                     Status
                                 </th>
@@ -170,11 +154,6 @@
                                     <td>
                                         {{ item.end_date }}
                                     </td>
-
-                                    <td>
-                                        {{ item.duration }}
-                                    </td>
-
                                     <td>
                                         {% if item.status == '2' %}
                                             <i class="large green checkmark icon"></i>

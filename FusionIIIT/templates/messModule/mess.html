@@ -77,7 +77,7 @@ Central Mess
 
 
         {% comment %}The ... starts here!{% endcomment %}
-        <div class="ui tab segment" data-tab="fourth">
+        <div class="ui {% if info.user_type == 'student' %}active {% endif %}tab segment" data-tab="fourth">
             {% block views %}
             {% include 'messModule/views.html' %}
             {% endblock %}
@@ -152,7 +152,7 @@ Central Mess
         {% comment %}The ... ends here!{% endcomment %}
 
         {% comment %}The ... starts here!{% endcomment %}
-        <div class="ui tab segment" data-tab="thirteenth">
+        <div class="ui {% if info.user_type == 'staff' %}active {% endif %}tab segment" data-tab="thirteenth">
             {% block viewmenu %}
             {% include 'messModule/viewmenu.html' %}
             {% endblock %}

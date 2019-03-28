@@ -3,10 +3,19 @@
 
     {% if info.user_type == 'student' %}
         {% if d.designation.name == 'student' %}
+            <a class="active item" data-tab="fourth">
+                Menu | Bill | Payment Details
+            </a>
+
             <a class=" item" data-tab="first">
                 Feedback
-{#                <i class="right floated chevron right icon"></i>#}
             </a>
+
+            {% if messinfo.mess_option == 'mess1' %}
+                <a class="item" data-tab="sixth">
+                    Apply For Non-veg | Check History
+                </a>
+            {% endif %}
 
             <a class="item" data-tab="second">
                 Apply For Leave
@@ -16,21 +25,16 @@
                 Apply For Vacation Food
             </a>
 
-            <a class="item" data-tab="fourth">
-                Menu | Bill | Payment Details
-            </a>
-
             <a class="item" data-tab="fifth">
                 Special Food Request | Choose mess
             </a>
 
-            {% if messinfo.mess_option == 'mess1' %}
-                <a class="item" data-tab="sixth">
-                    Apply For Non-veg | Check History
-                </a>
-            {% endif %}
+
         {% endif %}
         {% if d.designation.name == 'mess_committee_mess1' or d.designation.name == 'mess_committee_mess2' %}
+            <a class="item" data-tab="eighth">
+                Change Menu
+            </a>
             <a class="item" data-tab="fifteenth">
                 Meeting information
             </a>
@@ -39,11 +43,13 @@
                 Meeting Minutes
             </a>
 
-            <a class="item" data-tab="eighth">
-                Change Menu
-            </a>
+
         {% endif %}
         {% if d.designation.name == 'mess_convener_mess1' or d.designation.name == 'mess_convener_mess2' %}
+            <a class="item" data-tab="forteenth">
+                View Feedback
+            </a>
+
             <a class="item" data-tab="eighth">
                 Change Menu
             </a>
@@ -64,9 +70,7 @@
                 Publish Minutes
             </a>
 
-            <a class="item" data-tab="forteenth">
-                View Feedback
-            </a>
+
 
             <a class="item" data-tab="sixteenth">
                 Feedback Statistics
@@ -76,7 +80,7 @@
 
 
     {% if info.user_type == 'staff' and d.designation.name == 'mess_manager' %}
-        <a class="item" data-tab="seventh">
+        <a class="active item" data-tab="seventh">
             Leave Requests
         </a>
 
