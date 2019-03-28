@@ -15,33 +15,14 @@ from xhtml2pdf import pisa
 
 from applications.eis import admin
 from applications.globals.models import ExtraInfo, HoldsDesignation
-
+from django.http.response import JsonResponse
+from applications.globals.models import (DepartmentInfo, ExtraInfo,
+                                         HoldsDesignation)
 from .forms import *
 from .models import *
+from django.core.files.storage import FileSystemStorage
 
-# Create your views here
-
-# Main profile landing view
-def profile(request):
-    user = get_object_or_404(ExtraInfo, user=request.user)
-    if user.user_type != 'faculty':
-        return redirect('/')
-
-    pf = user.id
-
-    form = ConfrenceForm()
-
-    journal = emp_research_papers.objects.filter(pf_no=pf, rtype='Journal').order_by('-year')
-    conference = emp_research_papers.objects.filter(pf_no=pf, rtype='Conference').order_by('-year')
-    books = emp_published_books.objects.filter(pf_no=pf).order_by('-pyear')
-    projects = emp_research_projects.objects.filter(pf_no=pf).order_by('-start_date')
-    consultancy = emp_consultancy_projects.objects.filter(pf_no=pf).order_by('-date_entry')
-    patents = emp_patents.objects.filter(pf_no=pf).order_by('-date_entry')
-    techtransfers = emp_techtransfer.objects.filter(pf_no=pf).order_by('-date_entry')
-    mtechs = emp_mtechphd_thesis.objects.filter(pf_no=pf, degree_type=1).order_by('-date_entry')
-    phds = emp_mtechphd_thesis.objects.filter(pf_no=pf, degree_type=2).order_by('-date_entry')
-    fvisits = emp_visits.objects.filter(pf_no=pf, v_type=2).order_by('-entry_date')
-    countries = {
+countries = {
         'AF': 'Afghanistan',
         'AX': 'Aland Islands',
         'AL': 'Albania',
@@ -289,6 +270,29 @@ def profile(request):
         'ZW': 'Zimbabwe',
         'KP': 'Korea (Democratic Peoples Republic of)',
     }
+
+# Create your views here
+
+# Main profile landing view
+def profile(request, username=None):
+    user = get_object_or_404(User, username=username) if username else request.user
+    extra_info = get_object_or_404(ExtraInfo, user=user)
+    if extra_info.user_type != 'faculty':
+        return redirect('/')
+    pf = extra_info.id
+
+    form = ConfrenceForm()
+
+    journal = emp_research_papers.objects.filter(pf_no=pf, rtype='Journal').order_by('-year')
+    conference = emp_research_papers.objects.filter(pf_no=pf, rtype='Conference').order_by('-year')
+    books = emp_published_books.objects.filter(pf_no=pf).order_by('-pyear')
+    projects = emp_research_projects.objects.filter(pf_no=pf).order_by('-start_date')
+    consultancy = emp_consultancy_projects.objects.filter(pf_no=pf).order_by('-date_entry')
+    patents = emp_patents.objects.filter(pf_no=pf).order_by('-date_entry')
+    techtransfers = emp_techtransfer.objects.filter(pf_no=pf).order_by('-date_entry')
+    mtechs = emp_mtechphd_thesis.objects.filter(pf_no=pf, degree_type=1).order_by('-date_entry')
+    phds = emp_mtechphd_thesis.objects.filter(pf_no=pf, degree_type=2).order_by('-date_entry')
+    fvisits = emp_visits.objects.filter(pf_no=pf, v_type=2).order_by('-entry_date')
     ivisits = emp_visits.objects.filter(pf_no=pf, v_type=1).order_by('-entry_date')
     for fvisit in fvisits:
         fvisit.countryfull = countries[fvisit.country]
@@ -302,18 +306,18 @@ def profile(request):
     for r in range(1995, (datetime.datetime.now().year + 1)):
         y.append(r)
 
-    pers = get_object_or_404(faculty_about, user = request.user)
+    pers = get_object_or_404(faculty_about, user = user)
     # edited 26March
-    a1 = HoldsDesignation.objects.filter(working = request.user)
+    a1 = HoldsDesignation.objects.filter(working = user)
     flag_rspc = 0
     for i in a1:
         print(i.designation)
-        if(str(i.designation)=='Dean (R&D)'):
+        if(str(i.designation)=='Dean (RSPC)'):
             flag_rspc = 1
     print(flag_rspc)
     # done edit
 
-    design = HoldsDesignation.objects.filter(working=request.user)
+    design = HoldsDesignation.objects.filter(working=user)
     print(design)
     desig=[]
     for i in design:
@@ -363,254 +367,6 @@ def rspc_profile(request):
     mtechs = emp_mtechphd_thesis.objects.filter(degree_type=1).order_by('-s_year', '-a_month')
     phds = emp_mtechphd_thesis.objects.filter(degree_type=2).order_by('-s_year', '-a_month')
     fvisits = emp_visits.objects.filter(v_type=2).order_by('-start_date')
-    countries = {
-        'AF': 'Afghanistan',
-        'AX': 'Aland Islands',
-        'AL': 'Albania',
-        'DZ': 'Algeria',
-        'AS': 'American Samoa',
-        'AD': 'Andorra',
-        'AO': 'Angola',
-        'AI': 'Anguilla',
-        'AQ': 'Antarctica',
-        'AG': 'Antigua And Barbuda',
-        'AR': 'Argentina',
-        'AM': 'Armenia',
-        'AW': 'Aruba',
-        'AU': 'Australia',
-        'AT': 'Austria',
-        'AZ': 'Azerbaijan',
-        'BS': 'Bahamas',
-        'BH': 'Bahrain',
-        'BD': 'Bangladesh',
-        'BB': 'Barbados',
-        'BY': 'Belarus',
-        'BE': 'Belgium',
-        'BZ': 'Belize',
-        'BJ': 'Benin',
-        'BM': 'Bermuda',
-        'BT': 'Bhutan',
-        'BO': 'Bolivia',
-        'BA': 'Bosnia And Herzegovina',
-        'BW': 'Botswana',
-        'BV': 'Bouvet Island',
-        'BR': 'Brazil',
-        'IO': 'British Indian Ocean Territory',
-        'BN': 'Brunei Darussalam',
-        'BG': 'Bulgaria',
-        'BF': 'Burkina Faso',
-        'BI': 'Burundi',
-        'KH': 'Cambodia',
-        'CM': 'Cameroon',
-        'CA': 'Canada',
-        'CV': 'Cape Verde',
-        'KY': 'Cayman Islands',
-        'CF': 'Central African Republic',
-        'TD': 'Chad',
-        'CL': 'Chile',
-        'CN': 'China',
-        'CX': 'Christmas Island',
-        'CC': 'Cocos (Keeling) Islands',
-        'CO': 'Colombia',
-        'KM': 'Comoros',
-        'CG': 'Congo',
-        'CD': 'Congo, Democratic Republic',
-        'CK': 'Cook Islands',
-        'CR': 'Costa Rica',
-        'CI': 'Cote D\'Ivoire',
-        'HR': 'Croatia',
-        'CU': 'Cuba',
-        'CY': 'Cyprus',
-        'CZ': 'Czech Republic',
-        'DK': 'Denmark',
-        'DJ': 'Djibouti',
-        'DM': 'Dominica',
-        'DO': 'Dominican Republic',
-        'EC': 'Ecuador',
-        'EG': 'Egypt',
-        'SV': 'El Salvador',
-        'GQ': 'Equatorial Guinea',
-        'ER': 'Eritrea',
-        'EE': 'Estonia',
-        'ET': 'Ethiopia',
-        'FK': 'Falkland Islands (Malvinas)',
-        'FO': 'Faroe Islands',
-        'FJ': 'Fiji',
-        'FI': 'Finland',
-        'FR': 'France',
-        'GF': 'French Guiana',
-        'PF': 'French Polynesia',
-        'TF': 'French Southern Territories',
-        'GA': 'Gabon',
-        'GM': 'Gambia',
-        'GE': 'Georgia',
-        'DE': 'Germany',
-        'GH': 'Ghana',
-        'GI': 'Gibraltar',
-        'GR': 'Greece',
-        'GL': 'Greenland',
-        'GD': 'Grenada',
-        'GP': 'Guadeloupe',
-        'GU': 'Guam',
-        'GT': 'Guatemala',
-        'GG': 'Guernsey',
-        'GN': 'Guinea',
-        'GW': 'Guinea-Bissau',
-        'GY': 'Guyana',
-        'HT': 'Haiti',
-        'HM': 'Heard Island & Mcdonald Islands',
-        'VA': 'Holy See (Vatican City State)',
-        'HN': 'Honduras',
-        'HK': 'Hong Kong',
-        'HU': 'Hungary',
-        'IS': 'Iceland',
-        'IN': 'India',
-        'ID': 'Indonesia',
-        'IR': 'Iran, Islamic Republic Of',
-        'IQ': 'Iraq',
-        'IE': 'Ireland',
-        'IM': 'Isle Of Man',
-        'IL': 'Israel',
-        'IT': 'Italy',
-        'JM': 'Jamaica',
-        'JP': 'Japan',
-        'JE': 'Jersey',
-        'JO': 'Jordan',
-        'KZ': 'Kazakhstan',
-        'KE': 'Kenya',
-        'KI': 'Kiribati',
-        'KR': 'Korea',
-        'KP': 'Korea (Democratic Peoples Republic of)',
-        'KW': 'Kuwait',
-        'KG': 'Kyrgyzstan',
-        'LA': 'Lao People\'s Democratic Republic',
-        'LV': 'Latvia',
-        'LB': 'Lebanon',
-        'LS': 'Lesotho',
-        'LR': 'Liberia',
-        'LY': 'Libyan Arab Jamahiriya',
-        'LI': 'Liechtenstein',
-        'LT': 'Lithuania',
-        'LU': 'Luxembourg',
-        'MO': 'Macao',
-        'MK': 'Macedonia',
-        'MG': 'Madagascar',
-        'MW': 'Malawi',
-        'MY': 'Malaysia',
-        'MV': 'Maldives',
-        'ML': 'Mali',
-        'MT': 'Malta',
-        'MH': 'Marshall Islands',
-        'MQ': 'Martinique',
-        'MR': 'Mauritania',
-        'MU': 'Mauritius',
-        'YT': 'Mayotte',
-        'MX': 'Mexico',
-        'FM': 'Micronesia, Federated States Of',
-        'MD': 'Moldova',
-        'MC': 'Monaco',
-        'MN': 'Mongolia',
-        'ME': 'Montenegro',
-        'MS': 'Montserrat',
-        'MA': 'Morocco',
-        'MZ': 'Mozambique',
-        'MM': 'Myanmar',
-        'NA': 'Namibia',
-        'NR': 'Nauru',
-        'NP': 'Nepal',
-        'NL': 'Netherlands',
-        'AN': 'Netherlands Antilles',
-        'NC': 'New Caledonia',
-        'NZ': 'New Zealand',
-        'NI': 'Nicaragua',
-        'NE': 'Niger',
-        'NG': 'Nigeria',
-        'NU': 'Niue',
-        'NF': 'Norfolk Island',
-        'MP': 'Northern Mariana Islands',
-        'NO': 'Norway',
-        'OM': 'Oman',
-        'PK': 'Pakistan',
-        'PW': 'Palau',
-        'PS': 'Palestinian Territory, Occupied',
-        'PA': 'Panama',
-        'PG': 'Papua New Guinea',
-        'PY': 'Paraguay',
-        'PE': 'Peru',
-        'PH': 'Philippines',
-        'PN': 'Pitcairn',
-        'PL': 'Poland',
-        'PT': 'Portugal',
-        'PR': 'Puerto Rico',
-        'QA': 'Qatar',
-        'RE': 'Reunion',
-        'RO': 'Romania',
-        'RU': 'Russian Federation',
-        'RW': 'Rwanda',
-        'BL': 'Saint Barthelemy',
-        'SH': 'Saint Helena',
-        'KN': 'Saint Kitts And Nevis',
-        'LC': 'Saint Lucia',
-        'MF': 'Saint Martin',
-        'PM': 'Saint Pierre And Miquelon',
-        'VC': 'Saint Vincent And Grenadines',
-        'WS': 'Samoa',
-        'SM': 'San Marino',
-        'ST': 'Sao Tome And Principe',
-        'SA': 'Saudi Arabia',
-        'SN': 'Senegal',
-        'RS': 'Serbia',
-        'SC': 'Seychelles',
-        'SL': 'Sierra Leone',
-        'SG': 'Singapore',
-        'SK': 'Slovakia',
-        'SI': 'Slovenia',
-        'SB': 'Solomon Islands',
-        'SO': 'Somalia',
-        'ZA': 'South Africa',
-        'GS': 'South Georgia And Sandwich Isl.',
-        'ES': 'Spain',
-        'LK': 'Sri Lanka',
-        'SD': 'Sudan',
-        'SR': 'Suriname',
-        'SJ': 'Svalbard And Jan Mayen',
-        'SZ': 'Swaziland',
-        'SE': 'Sweden',
-        'CH': 'Switzerland',
-        'SY': 'Syrian Arab Republic',
-        'TW': 'Taiwan',
-        'TJ': 'Tajikistan',
-        'TZ': 'Tanzania',
-        'TH': 'Thailand',
-        'TL': 'Timor-Leste',
-        'TG': 'Togo',
-        'TK': 'Tokelau',
-        'TO': 'Tonga',
-        'TT': 'Trinidad And Tobago',
-        'TN': 'Tunisia',
-        'TR': 'Turkey',
-        'TM': 'Turkmenistan',
-        'TC': 'Turks And Caicos Islands',
-        'TV': 'Tuvalu',
-        'UG': 'Uganda',
-        'UA': 'Ukraine',
-        'AE': 'United Arab Emirates',
-        'GB': 'United Kingdom',
-        'US': 'United States',
-        'UM': 'United States Outlying Islands',
-        'UY': 'Uruguay',
-        'UZ': 'Uzbekistan',
-        'VU': 'Vanuatu',
-        'VE': 'Venezuela',
-        'VN': 'Viet Nam',
-        'VG': 'Virgin Islands, British',
-        'VI': 'Virgin Islands, U.S.',
-        'WF': 'Wallis And Futuna',
-        'EH': 'Western Sahara',
-        'YE': 'Yemen',
-        'ZM': 'Zambia',
-        'ZW': 'Zimbabwe'
-    }
     ivisits = emp_visits.objects.filter(v_type=1).order_by('-start_date')
     for fvisit in fvisits:
         fvisit.countryfull = countries[fvisit.country]
@@ -658,17 +414,28 @@ def rspc_profile(request):
 
 # View for editing persnal Information
 def persinfo(request):
-    try:
-        faculty = get_object_or_404(faculty_about, user = request.user)
-    except:
-        faculty = faculty_about()
-        faculty.user=request.user
-    faculty.contact = request.POST.get('saveContact')
-    faculty.about = request.POST.get('saveAbout')
-    faculty.interest = request.POST.get('saveInt')
-    faculty.education = request.POST.get('saveEdu')
-    faculty.save()
-    return redirect('eis:profile')
+    print("incoming")
+    if request.method == 'POST':
+        try:
+            print(request.user)
+            faculty = get_object_or_404(faculty_about, user = request.user)
+       
+            contact = request.POST['contact']
+            contact = contact[6:]
+            faculty.contact = contact
+            print(contact)
+            faculty.about = request.POST['about']
+            faculty.interest = request.POST['interest']
+            faculty.education = request.POST['education']
+
+            faculty.linkedin = request.POST['linkedin']
+            faculty.github = request.POST['github']
+
+            faculty.save()
+            return JsonResponse({'x' : 'Your data is updated '})
+        except:
+            return JsonResponse({'x' : 'You are not authorized to update '})
+    
 
 
 
@@ -834,130 +601,192 @@ def ivisit_insert(request):
     eis.save()
     return redirect('eis:profile')
 
-def journal_insert(request):
-    user = get_object_or_404(ExtraInfo, user=request.user)
-    pf = user.id
 
-    if (request.POST.get('pub_id')==None or request.POST.get('pub_id')==""):
-        eis = emp_research_papers()
-    else:
-        eis = get_object_or_404(emp_research_papers, id=request.POST.get('pub_id'))
-    eis.pf_no = pf
+#Function to save journal of employee 
+def journal_insert(request):
+    print("intered")
+    user = get_object_or_404(ExtraInfo, user=request.user)
+    eis = emp_research_papers.objects.create(pf_no = user.id)
     eis.rtype = 'Journal'
     eis.authors = request.POST.get('authors')
     eis.title_paper = request.POST.get('title')
-    eis.name_journal = request.POST.get('name')
-    eis.volume_no = request.POST.get('volume')
-    eis.page_no = request.POST.get('page')
-    eis.is_sci = request.POST.get('sci')
-    eis.year = request.POST.get('year')
-    eis.a_month = request.POST.get('month')
+    myfile = request.FILES['journal']
+    fs = FileSystemStorage()
+    filename = fs.save(myfile.name, myfile)
+    uploaded_file_url = fs.url(filename)
+    print(uploaded_file_url)
+    eis.paper=uploaded_file_url
+
+    eis.co_authors = request.POST.get('co_author')
+    eis.name = request.POST.get('name')
     eis.doc_id = request.POST.get('doc_id')
     eis.doc_description = request.POST.get('doc_description')
     eis.status = request.POST.get('status')
     eis.reference_number = request.POST.get('ref')
-
+    eis.is_sci = request.POST.get('sci')
+    volume_no = request.POST.get('volume')
+    page_no = request.POST.get('page')
+    year = request.POST.get('year')
+    if volume_no != '':
+        eis.volume_no=volume_no
+    if page_no != '':
+        eis.page_no=page_no
+    if year != '':
+        eis.year = year
     if(request.POST.get('doi') != None and request.POST.get('doi') != '' and request.POST.get('doi') != 'None'):
-        try:
-            eis.doi = datetime.datetime.strptime(request.POST.get('doi'), "%B %d, %Y")
-        except:
-            try:
-                eis.doi = datetime.datetime.strptime(request.POST.get('doi'), "%b. %d, %Y")
-            except:
-                eis.doi = request.POST.get('doi')
+
+        eis.doi = datetime.datetime.strptime(request.POST.get('doi'), "%B %d, %Y %I:%M %p")
+        print(eis.doi)
     if (request.POST.get('doa') != None and request.POST.get('doa') != '' and request.POST.get('doa') != 'None'):
-        try:
-            eis.date_acceptance = datetime.datetime.strptime(request.POST.get('doa'), "%B %d, %Y")
-        except:
-            eis.date_acceptance = datetime.datetime.strptime(request.POST.get('doa'), "%b. %d, %Y")
+        eis.date_acceptance = datetime.datetime.strptime(request.POST.get('doa'), "%B %d, %Y %I:%M %p")
     if (request.POST.get('dop') != None and request.POST.get('dop') != '' and request.POST.get('dop') != 'None'):
-        try:
-            eis.date_publication = datetime.datetime.strptime(request.POST.get('dop'), "%B %d, %Y")
-        except:
-            eis.date_publication = datetime.datetime.strptime(request.POST.get('dop'), "%b. %d, %Y")
+        eis.date_publication = datetime.datetime.strptime(request.POST.get('dop'), "%B %d, %Y %I:%M %p")
     if (request.POST.get('dos') != None and request.POST.get('dos') != '' and request.POST.get('dos') != 'None'):
-        try:
-            eis.date_submission = datetime.datetime.strptime(request.POST.get('dos'), "%B %d, %Y")
-        except:
-            eis.date_submission = datetime.datetime.strptime(request.POST.get('dos'), "%b. %d, %Y")
-
+        eis.date_submission = datetime.datetime.strptime(request.POST.get('dos'), "%B %d, %Y %I:%M %p")
     eis.save()
-    return redirect('eis:profile')
+    return redirect('globals:profile')
 
-def confrence_insert(request):
-    user = get_object_or_404(ExtraInfo, user=request.user)
-    pf = user.id
 
-    if (request.POST.get('con_id')==None or request.POST.get('con_id')==""):
-        eis = emp_research_papers()
-    else:
-        eis = get_object_or_404(emp_research_papers, id=request.POST.get('con_id'))
-    eis.pf_no = pf
-    eis.rtype = 'Conference'
+def editjournal(request):
+    eis = emp_research_papers.objects.get(pk=request.POST.get('journalpk'))
     eis.authors = request.POST.get('authors')
     eis.title_paper = request.POST.get('title')
-    eis.name_journal = request.POST.get('name')
-    eis.venue = request.POST.get('venue')
-    eis.volume_no = request.POST.get('volume')
-    eis.page_no = request.POST.get('page')
-    eis.is_sci = request.POST.get('sci')
-    eis.issn_no = request.POST.get('isbn')
-    eis.year = request.POST.get('year')
-    eis.a_month = request.POST.get('month')
+    try:
+        myfile = request.FILES['journal']
+        fs = FileSystemStorage()
+        filename = fs.save(myfile.name, myfile)
+        uploaded_file_url = fs.url(filename)
+        print(uploaded_file_url)
+        eis.paper=uploaded_file_url
+    except:
+        print("nothing,.........")
+    eis.co_authors = request.POST.get('co_author')
+    eis.name = request.POST.get('name')
     eis.doc_id = request.POST.get('doc_id')
     eis.doc_description = request.POST.get('doc_description')
     eis.status = request.POST.get('status')
-    eis.reference_number = request.POST.get('reference_number')
+    eis.reference_number = request.POST.get('ref')
+    eis.is_sci = request.POST.get('sci')
+    volume_no = request.POST.get('volume')
+    page_no = request.POST.get('page')
+    year = request.POST.get('year')
+    if volume_no != '':
+        eis.volume_no=volume_no
+    if page_no != '':
+        eis.page_no=page_no
+    if year != '':
+        eis.year = year
+    print(request.POST.get('doi'))
+    if(request.POST.get('doi') != None and request.POST.get('doi') != '' and request.POST.get('doi') != 'None'):
+        x = request.POST.get('doi')
+        if x[-4:] == 'a.m.':
+            x = x[:-4]
+            x = x+"AM"
+        else:
+            x = x[:-4]
+            x = x+"PM"
+       
+        try: 
+            eis.doi = datetime.datetime.strptime(x, "%B %d, %Y, %I:%M %p")
+        except:
+            eis.doi = datetime.datetime.strptime(x, "%B %d, %Y, %I %p")
 
-    if (request.POST.get('doi') != None and request.POST.get('doi') != '' and request.POST.get('doi') != 'None'):
-        try:
-            eis.doi = datetime.datetime.strptime(request.POST.get('doi'), "%B %d, %Y")
-        except:
-            eis.doi = datetime.datetime.strptime(request.POST.get('doi'), "%b. %d, %Y")
     if (request.POST.get('doa') != None and request.POST.get('doa') != '' and request.POST.get('doa') != 'None'):
+        x = request.POST.get('doa')
+        if x[-4:] == 'a.m.':
+            x = x[:-4]
+            x = x+"AM"
+        else:
+            x = x[:-4]
+            x = x+"PM"
         try:
-            eis.start_date = datetime.datetime.strptime(request.POST.get('doa'), "%B %d, %Y")
+            eis.date_acceptance = datetime.datetime.strptime(x, "%B %d, %Y, %I:%M %p")
         except:
-            eis.start_date = datetime.datetime.strptime(request.POST.get('doa'), "%b. %d, %Y")
+            eis.date_acceptance = datetime.datetime.strptime(x, "%B %d, %Y, %I %p")
+
     if (request.POST.get('dop') != None and request.POST.get('dop') != '' and request.POST.get('dop') != 'None'):
+        x = request.POST.get('dop')
+        if x[-4:] == 'a.m.':
+            x = x[:-4]
+            x = x+"AM"
+        else:
+            x = x[:-4]
+            x = x+"PM"
         try:
-            eis.end_date = datetime.datetime.strptime(request.POST.get('dop'), "%B %d, %Y")
+            eis.date_publication = datetime.datetime.strptime(x, "%B %d, %Y, %I:%M %p")
         except:
-            eis.end_date = datetime.datetime.strptime(request.POST.get('dop'), "%b. %d, %Y")
+            eis.date_publication = datetime.datetime.strptime(x, "%B %d, %Y, %I %p")
+
     if (request.POST.get('dos') != None and request.POST.get('dos') != '' and request.POST.get('dos') != 'None'):
+        x = request.POST.get('dos')
+        if x[-4:] == 'a.m.':
+            x = x[:-4]
+            x = x+"AM"
+        else:
+            x = x[:-4]
+            x = x+"PM"
         try:
-            eis.date_submission = datetime.datetime.strptime(request.POST.get('dos'), "%B %d, %Y")
+            eis.date_submission = datetime.datetime.strptime(x, "%B %d, %Y, %I:%M %p")
         except:
-            eis.date_submission = datetime.datetime.strptime(request.POST.get('dos'), "%b. %d, %Y")
+            eis.date_submission = datetime.datetime.strptime(x, "%B %d, %Y, %I %p")
     eis.save()
-    return redirect('eis:profile')
+    page = int(request.POST.get('index'))//10
+    page = page+1
+    url = "http://127.0.0.1:8000/profile/?page="+str(page)
+    print(url)
+    return redirect(url)
+
+
+
+def conference_insert(request):
+    user = get_object_or_404(ExtraInfo, user=request.user)
+    pf = user.id
+    eis = emp_research_papers()
+    eis.pf_no = pf
+    eis.rtype = 'Conference'
+    eis.authors = request.POST.get('authors3')
+    eis.co_authors = request.POST.get('co_author3')
+    eis.title_paper = request.POST.get('title3')
+    myfile = request.FILES['journal3']
+    fs = FileSystemStorage()
+    filename = fs.save(myfile.name, myfile)
+    uploaded_file_url = fs.url(filename)
+    eis.paper=uploaded_file_url
+    eis.name = request.POST.get('name3')
+    eis.venue = request.POST.get('venue3')
+    if request.POST.get('page_no3') != '':
+        eis.page_no = request.POST.get('page_no3')
+    if request.POST.get('isbn_no3') != '':
+        eis.isbn_no = request.POST.get('isbn_no3')
+    if request.POST.get('year3') != '':
+        eis.year = request.POST.get('year3')
+    eis.status = request.POST.get('status3')
+    if (request.POST.get('doa3') != None and request.POST.get('doa3') != '' and request.POST.get('doa3') != 'None'):
+        eis.date_acceptance = datetime.datetime.strptime(request.POST.get('doa3'), "%B %d, %Y %I:%M %p")
+    if (request.POST.get('dop3') != None and request.POST.get('dop3') != '' and request.POST.get('dop3') != 'None'):
+        eis.date_publication = datetime.datetime.strptime(request.POST.get('dop3'), "%B %d, %Y %I:%M %p")
+    if (request.POST.get('dos3') != None and request.POST.get('dos3') != '' and request.POST.get('dos3') != 'None'):
+        eis.date_submission = datetime.datetime.strptime(request.POST.get('dos3'), "%B %d, %Y %I:%M %p")
+    eis.save()
+    return redirect('globals:profile')
 
 def book_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
     pf = user.id
-
-    if (request.POST.get('book_id')==None or request.POST.get('book_id')==""):
-        eis = emp_published_books()
-    else:
-        eis = get_object_or_404(emp_published_books, id=request.POST.get('book_id'))
+    eis = emp_published_books()
     eis.pf_no = pf
-    eis.p_type = request.POST.get('type')
+    eis.p_type = request.POST.get('p_type')
     eis.title = request.POST.get('title')
     eis.publisher = request.POST.get('publisher')
     eis.pyear = request.POST.get('year')
-    eis.co_authors = request.POST.get('co_authors')
-    eis.a_month = request.POST.get('month')
+    eis.authors = request.POST.get('author')
     eis.save()
-    return redirect('eis:profile')
+    return redirect('globals:profile')
 
 def consym_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
     pf = user.id
-
-    if (request.POST.get('conf_id')==None or request.POST.get('conf_id')==""):
-        eis = emp_confrence_organised()
-    else:
-        eis = get_object_or_404(emp_confrence_organised, id=request.POST.get('conf_id'))
+    eis = emp_confrence_organised()
     eis.pf_no = pf
     eis.name = request.POST.get('name')
     eis.venue = request.POST.get('venue')
@@ -2772,3 +2601,4 @@ def rspc_generate_report(request):
                'last_name': request.user.last_name,
                }
     return render_to_pdf('eisModulenew/rspc_generatereportshow.html', context)
+>>>>>>> upstream/master

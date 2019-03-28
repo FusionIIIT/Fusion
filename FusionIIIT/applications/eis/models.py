@@ -51,10 +51,10 @@ class emp_session_chair(models.Model):
 
 class emp_research_projects(models.Model):
     pf_no = models.IntegerField()
-    ptype = models.CharField(max_length=10, default="Research")
-    pi = models.CharField(max_length=100, default=" ")
-    co_pi = models.CharField(max_length=150, default=" ")
-    title = models.TextField(max_length=500, default=" ")
+    ptype = models.CharField(max_length=100, default="Research")
+    pi = models.CharField(max_length=1000, default=" ")
+    co_pi = models.CharField(max_length=1500, default=" ")
+    title = models.TextField(max_length=5000, default=" ")
     funding_agency = models.CharField(max_length=250, default=" ", null=True)
     financial_outlay = models.CharField(max_length=150, default=" ", null=True)
     STATUS_TYPE_CHOICES = (
@@ -79,24 +79,26 @@ class emp_research_papers(models.Model):
         ('Journal', 'Journal'),
         ('Conference', 'Conference'),
     )
-    rtype = models.CharField(max_length=50, choices = R_TYPE_CHOICES, default='Conference')
-    authors = models.CharField(max_length=250, null=True, blank=True)
-    title_paper = models.CharField(max_length=250, null=True, blank=True)
-    name_journal = models.CharField(max_length=250, null=True, blank=True)
-    venue = models.CharField(max_length=250, null=True, blank=True)
-    volume_no = models.CharField(max_length=20, null=True, blank=True)
-    page_no = models.CharField(max_length=20, null=True, blank=True)
+    rtype = models.CharField(max_length=500, choices = R_TYPE_CHOICES, default='Conference')
+    authors = models.CharField(max_length=2500, null=True, blank=True)
+    co_authors = models.CharField(max_length=2500, null=True, blank=True)
+    title_paper = models.CharField(max_length=2500, null=True, blank=True)
+    name = models.CharField(max_length=2500, null=True, blank=True)
+    paper = models.CharField(max_length=1000, blank=True,null=True)
+    venue = models.CharField(max_length=2500, null=True, blank=True)
+    volume_no = models.IntegerField( null=True , blank=True)
+    page_no = models.IntegerField(null=True, blank=True)
     IS_SCI_TYPE_CHOICES = (
-        ('Yes', 'Yes'),
-        ('No', 'No'),
+        ('SCI', 'SCI'),
+        ('SCIE', 'SCIE'),
     )
     is_sci = models.CharField(max_length=3, choices=IS_SCI_TYPE_CHOICES, null=True, blank=True)
-    issn_no = models.CharField(max_length=250, null=True, blank=True)
-    doi = models.CharField(max_length=40, null=True, blank=True)
+    isbn_no = models.CharField(max_length=250, null=True, blank=True)
+    doi = models.DateTimeField(max_length=400, null=True, blank=True)
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
     date_acceptance = models.DateField(null=True, blank=True)
-    date_publication = models.DateField(null=True, blank=True)
+    date_publication = models.DateTimeField(null=True, blank=True)
     YEAR_CHOICES = []
     for r in range(1995, (datetime.datetime.now().year + 1)):
         YEAR_CHOICES.append((r, r))
@@ -106,7 +108,7 @@ class emp_research_papers(models.Model):
         MONTH_CHOICES.append((r, r))
     a_month = models.IntegerField(('Month'), choices=MONTH_CHOICES, null=True, blank=True, default=1)
     doc_id = models.CharField(max_length=50, null=True, blank=True)
-    doc_description = models.CharField(max_length=100, null=True, blank=True)
+    doc_description = models.CharField(max_length=1000, null=True, blank=True)
     date_entry = models.DateField(null=True, blank=True, default=datetime.datetime.now)
     STATUS_TYPE_CHOICES = (
         ('Published', 'Published'),
@@ -114,7 +116,7 @@ class emp_research_papers(models.Model):
         ('Communicated', 'Communicated'),
     )
     status = models.CharField(max_length=15, choices=STATUS_TYPE_CHOICES, null=True, blank=True)
-    date_submission = models.DateField(null=True, blank=True)
+    date_submission = models.DateTimeField(null=True, blank=True)
     reference_number = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self):
@@ -131,17 +133,13 @@ class emp_published_books(models.Model):
         ('Technical Report', 'Technical Report'),
     )
     p_type = models.CharField(max_length=16, choices=PTYPE_TYPE_CHOICES)
-    title = models.CharField(max_length=250, default=" ")
-    publisher = models.CharField(max_length=250, default=" ")
+    title = models.CharField(max_length=2500, default=" ")
+    publisher = models.CharField(max_length=2500, default=" ")
     YEAR_CHOICES = []
     for r in range(1995, (datetime.datetime.now().year + 1)):
         YEAR_CHOICES.append((r, r))
     pyear = models.IntegerField(('year'), choices=YEAR_CHOICES, null=True, blank=True)
-    MONTH_CHOICES = []
-    for r in range(1, 13):
-        MONTH_CHOICES.append((r, r))
-    a_month = models.IntegerField(('Month'), choices=MONTH_CHOICES, null=True, blank=True, default=1)
-    co_authors = models.CharField(max_length=250, default=" ")
+    authors = models.CharField(max_length=250, default=" ")
     date_entry = models.DateField(null=True, blank=True, default=datetime.datetime.now)
 
     def __str__(self):
@@ -151,7 +149,7 @@ class emp_published_books(models.Model):
 class emp_patents(models.Model):
     pf_no = models.IntegerField()
     p_no = models.CharField(max_length=150)
-    title = models.CharField(max_length=150)
+    title = models.CharField(max_length=1500)
     earnings = models.IntegerField(default=0)
     STATUS_TYPE_CHOICES = (
         ('Filed', 'Filed'),
@@ -180,8 +178,8 @@ class emp_mtechphd_thesis(models.Model):
     title = models.CharField(max_length=250)
     supervisors = models.CharField(max_length=250)
     co_supervisors = models.CharField(max_length=250, null=True, blank=True)
-    rollno = models.CharField(max_length=20)
-    s_name = models.CharField(max_length=50)
+    rollno = models.CharField(max_length=200)
+    s_name = models.CharField(max_length=5000)
     YEAR_CHOICES = []
     for r in range(1995, (datetime.datetime.now().year + 1)):
         YEAR_CHOICES.append((r, r))
@@ -202,12 +200,12 @@ class emp_keynote_address(models.Model):
         ('Keynote', 'Keynote'),
         ('Plenary Address', 'Plenary Address'),
     )
-    type = models.CharField(max_length=14, choices=KEYNOTE_TYPE_CHOICES, default='Keynote')
-    title = models.CharField(max_length=100)
-    name = models.CharField(max_length=100)
-    venue = models.CharField(max_length=100)
-    page_no = models.CharField(max_length=10)
-    isbn_no = models.CharField(max_length=20)
+    type = models.CharField(max_length=140, choices=KEYNOTE_TYPE_CHOICES, default='Keynote')
+    title = models.CharField(max_length=1000)
+    name = models.CharField(max_length=1000)
+    venue = models.CharField(max_length=1000)
+    page_no = models.CharField(max_length=100)
+    isbn_no = models.CharField(max_length=200)
     YEAR_CHOICES = []
     for r in range(1995, (datetime.datetime.now().year + 1)):
         YEAR_CHOICES.append((r, r))
@@ -231,8 +229,8 @@ class emp_expert_lectures(models.Model):
         ('Invited Talk', 'Invited Talk'),
     )
     l_type = models.CharField(max_length=14, choices=LECTURE_TYPE_CHOICES, default='Expert Lecture', null=False)
-    title = models.CharField(max_length=100)
-    place = models.CharField(max_length=100)
+    title = models.CharField(max_length=1000)
+    place = models.CharField(max_length=1000)
     l_date = models.DateField(null=True, blank=True)
     YEAR_CHOICES = []
     for r in range(1995, (datetime.datetime.now().year + 1)):
@@ -257,8 +255,8 @@ class emp_event_organized(models.Model):
         ('Workshop', 'Workshop'),
         ('Any Other', 'Any Other'),
     )
-    type = models.CharField(max_length=18, choices=TYPE_CHOICES)
-    name = models.CharField(max_length=100)
+    type = models.CharField(max_length=180, choices=TYPE_CHOICES)
+    name = models.CharField(max_length=1000)
     sponsoring_agency = models.CharField(max_length=150)
     venue = models.CharField(max_length=100)
     ROLE_TYPE_CHOICES = (
@@ -278,12 +276,12 @@ class emp_event_organized(models.Model):
 class emp_consultancy_projects(models.Model):
     pf_no = models.IntegerField()
     consultants = models.CharField(max_length=150)
-    title = models.CharField(max_length=100)
-    client = models.CharField(max_length=100)
+    title = models.CharField(max_length=1000)
+    client = models.CharField(max_length=1000)
     financial_outlay = models.IntegerField()
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
-    duration = models.CharField(max_length=50, null=True, blank=True)
+    duration = models.CharField(max_length=500, null=True, blank=True)
     date_entry = models.DateField(null=True, blank=True, default=datetime.datetime.now)
 
     def __str__(self):
@@ -292,8 +290,8 @@ class emp_consultancy_projects(models.Model):
 
 class emp_confrence_organised(models.Model):
     pf_no = models.IntegerField()
-    name = models.CharField(max_length=50)
-    venue = models.CharField(max_length=50)
+    name = models.CharField(max_length=500)
+    venue = models.CharField(max_length=500)
     YEAR_CHOICES = []
     for r in range(1995, (datetime.datetime.now().year + 1)):
         YEAR_CHOICES.append((r, r))
@@ -312,8 +310,8 @@ class emp_confrence_organised(models.Model):
         ('Conference Chair', 'Conference Chair'),
         ('Any Other', 'Any Other'),
     )
-    role1 = models.CharField(max_length=20, choices=ROLE1_TYPE_CHOICES, null=True, blank=True, default="Any Other")
-    role2 = models.CharField(max_length=20, null=True, blank=True)
+    role1 = models.CharField(max_length=200, choices=ROLE1_TYPE_CHOICES, null=True, blank=True, default="Any Other")
+    role2 = models.CharField(max_length=200, null=True, blank=True)
 
     def __str__(self):
         return 'PF No.: {}  Name: {}'.format(self.pf_no, self.name)
@@ -327,7 +325,7 @@ class emp_achievement(models.Model):
         ('Prize', 'Prize'),
         ('Other', 'Other'),
     )
-    a_type = models.CharField(max_length=18, choices=A_TYPE_CHOICES, default="Other")
+    a_type = models.CharField(max_length=180, choices=A_TYPE_CHOICES, default="Other")
     details = models.TextField(max_length=1550, default=" ")
     DAY_CHOICES = []
     for r in range(1, 32):
@@ -355,7 +353,9 @@ class faculty_about(models.Model):
     doj = models.DateField(default=datetime.datetime.now)
     education = models.TextField(max_length=500)
     interest = models.TextField(max_length=500)
-    contact = models.CharField(max_length=20,null=True, blank=True)
+    contact = models.CharField(max_length=10,null=True, blank=True)
+    github = models.CharField(max_length=100,null=True, blank=True)
+    linkedin = models.CharField(max_length=100,null=True, blank=True)
 
     def __str__(self):
         return str(self.user)

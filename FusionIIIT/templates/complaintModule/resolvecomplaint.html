@@ -3,12 +3,21 @@
 
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="resolvecomplaint">
-            Resolve Complaints
+        <!-- <a class="active item" data-tab="resolvedcomplaint">
+            Resolved Complaints
+        </a> -->
+        <a class="active item" data-tab="pendingcomplaints">
+            Pending Complaints
         </a>
+        <a class="item" data-tab="onholdcomplaints">
+            On Hold Complaints
+        </a>
+        
     </div>
 
-    <div class="ui active tab" data-tab="resolvecomplaint">
+
+
+    <div class="ui active tab" data-tab="pendingcomplaints">
         <div class="ui vertical segment">
             <table class="ui very basic collapsing celled sortable table"
                    style="padding-left: 2.5%;
@@ -16,13 +25,14 @@
                                                           padding-top: 1%;
                                                           padding-bottom: 1.5%;
                                                           margin: auto;">
-                <thead>
+             
+             <thead>
                 <tr>
                     <th>
                         Student
                     </th>
 
-                    <th class="one wide column">
+                    <th class="three wide column">
                         Date
                     </th>
 
@@ -35,27 +45,26 @@
                     </th>
 
                     <th>
-                        Specific Location
+                        Specific </br> Location
                     </th>
 
-                    <th class="three wide column">
+                    <th class="two wide column">
                         Details
                     </th>
 
-                    <th class="four wide column">
+                   <!-- <th class="four wide column">
                         Status
-                    </th>
+                    </th>-->
                     <th class="two large column">
-                        Worker Name
+                        Worker </br> Name
                     </th>
-                    <th class="two large column">
-                        Feedback
-                    </th>
+                    
+                    
+                   
                 </tr>
                 </thead>
-
                 {% for a in history %}
-                    {% if a.status == 2 %}
+                    {% if a.status == 0 %}
                 <tbody>
                 <tr>
                     <td>
@@ -81,39 +90,31 @@
                         {{ a.specific_location }}
                     </td>
                     <td>
-                        <a href="./detail2/{{ a.id }}/"> Click here!</a>
+                        <a href="./detail2/{{ a.id }}/"> <button class="ui inverted basic button" data-tooltip="Click here to view details" ><i class="large green info icon"></i></button></a>
                     </td>
-                    <td>
+                   <!-- <td>
                           <i class="large green checkmark icon"></i>
-                    </td>
+                    </td>-->
                     <td>
                         <b>{{ a.worker_id }}</b>
                     </td>
                     <td>
-                        {{ a.feedback }}
-                        {% if a.feedback != '' %}
-                            <td>
-                            <div class="field">
+                        <div class="field">
                                 <center>
-                                    <a href="./deletecomplaint/{{ a.id }}">
-                                    <button class="ui green icon button" data-tooltip="Click here to delete complaint" >
-                                        <i class="send icon"></i>
+                                    <a href="./{{ a.id }}">
+                                    <button class="ui inverted basic button" data-tooltip="Click here to Assign Worker To This Complaint" >
+                                        <i class="large green plus icon"></i>
                                     </button>
                                     </a>
+                                   
                                 </center>
                             </div>
-                            </td>
-                        {% else %}
-                            <td>
-                                <button class="ui disabled button">Delete</button>
-                            </td>
-                        {% endif %}
                     </td>
-                </tr>
+</tr>
 
 
                 </tbody>
-                    {% endif %}
+                   {% endif %}
                 {% endfor %}
             </table>
 
@@ -121,16 +122,155 @@
             <div class="ui divider"></div>
 
 
-
-            <div class="extra content">
+    
+    <div class="extra content">
                 <div class="" style="text-align: center;">
-                    <i class="large green checkmark icon"></i> : Completed &ensp;&ensp;&ensp;&ensp;&ensp;
+                    <i class="large orange warning icon"></i> : These Complaints Are YET TO BE ASSIGNED To A Worker ! &ensp;&ensp;&ensp;&ensp;&ensp;
 
                 </div>
             </div>
-
-
+            </div>
         </div>
-    </div>
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+<div class="ui tab" data-tab="onholdcomplaints">
+        <div class="ui vertical segment">
+            <table class="ui very basic collapsing celled sortable table"
+                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+             
+             <thead>
+                <tr>
+                    <th>
+                        Student
+                    </th>
+
+                    <th class="three wide column">
+                        Date
+                    </th>
+
+                    <th>
+                        Type
+                    </th>
+
+                    <th>
+                        Location
+                    </th>
+
+                    <th>
+                        Specific </br> Location
+                    </th>
+
+                    <th class="two wide column">
+                        Details
+                    </th>
+
+                   <!-- <th class="four wide column">
+                        Status
+                    </th>-->
+                    <th class="two large column">
+                        Worker </br> Name
+                    </th>
+                    
+                    
+                   
+                </tr>
+                </thead>
+                {% for a in history %}
+                    {% if a.status == 1 %}
+                <tbody>
+                <tr>
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                            <div class="content">
+                                 {{ a.complainer.user }}
+                                <div class="sub header">
+                                </div>
+                            </div>
+                        </h4>
+                    </td>
+                    <td>
+                        {{ a.complaint_date }}
+                    </td>
+                    <td>
+                        {{ a.complaint_type }}
+                    </td>
+                    <td>
+                        {{ a.location }}
+                    </td>
+                    <td>
+                        {{ a.specific_location }}
+                    </td>
+                    <td>
+                        <a href="./detail2/{{ a.id }}/"> 
+                            <button class="ui inverted basic button" data-tooltip="Click here to view details" ><i class="large green info icon"></i></button></a>
+                    </td>
+                   <!-- <td>
+                          <i class="large green checkmark icon"></i>
+                    </td>-->
+                    <td>
+                        <b>{{ a.worker_id }}</b>
+                    </td>
+                    <td>
+                        <div class="field">
+                                <center>
+                                    <a href="./pending/{{ a.id }}">
+                                    <button class="ui inverted basic button" data-tooltip="Click here to change the status of the complaint">
+                                       <i class="extra large green edit icon"></i>
+                                    </button>
+                                    </a>
+                                </center>
+                            </div>
+                    </td>
+</tr>
+
+
+                </tbody>
+                   {% endif %}
+                {% endfor %}
+            </table>
+
+            <br>
+            <div class="ui divider"></div>
+
+
+    
+    <div class="extra content">
+                <div class="" style="text-align: center;">
+                    <i class="large orange add user icon"></i> : These Complaints have been ASSIGNED to Workers! Please Change their status as soon as they are Resolved ! &ensp;&ensp;&ensp;&ensp;&ensp;
+
+                </div>
+            </div>
+            </div>
+        </div>
+
+
+
+
+
+
+
+    
+
+
+
+
 
 {% endblock %}

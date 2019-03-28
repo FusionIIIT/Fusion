@@ -35,34 +35,38 @@
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
 
-                <a class="active item" data-tab="first">
+                 <a class="item" data-tab="one">
+                     Browse Award Catalogue
+                     <i class="right floated chevron right icon"></i>
+                 </a>
+                <!--<a class="active item" data-tab="first">
                     Previous Award Winners
                     <i class="right floated chevron right icon"></i>
                 </a>
 
-                
 
-                
 
-               
+
+
+
                 <a class="item" data-tab="two">
                     Spacs Members Details
                     <i class="right floated chevron right icon"></i>
-                </a>
-                <a class="item" data-tab="three">
+                </a>-->
+                <a class="item" data-tab="two">
                     Apply for Awards
                     <i class="right floated chevron right icon"></i>
                 </a>
-                
-                <a class="item" data-tab="four">
+
+                <!--<a class="item" data-tab="four">
                         View Application Status
                         <i class="right floated chevron right icon"></i>
                 </a>
                 <a class="item" data-tab="five">
                     Browse Award Catalogue
                     <i class="right floated chevron right icon"></i>
-                </a>
-                
+                </a>-->
+
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
 
@@ -78,20 +82,20 @@
         {% endcomment %}
         <div class="eight wide column">
             {% comment %}The Details start here!{% endcomment %}
-            <div class="ui active tab segment" data-tab="first">
+            <!--<div class="ui tab segment" data-tab="first">
                 {% block winners %}
                     {% include 'scholarshipsModule/winners.html' with winners=winners %}
                 {% endblock %}
             </div>
             {% comment %}The Personal Details end here!{% endcomment %}
 
-        
+
             {% comment %}The Publications starts here!{% endcomment %}
-            
+
             {% comment %}The Publications notionalprize ends here!{% endcomment %}
 
-            
-                    
+
+
                 {% comment %}The Publications about spacs  starts here!{% endcomment %}
                     <div class="ui tab segment" data-tab="two">
                             {% block aboutspacs %}
@@ -99,27 +103,28 @@
                             {% endblock %}
                     </div>
                     {% comment %}The Publications about spacs  ends here!{% endcomment %}
-                    
-                    {% comment %}The Publications awards  starts here!{% endcomment %}
-                        <div class="ui tab segment" data-tab="three">
+
+                    {% comment %}The Publications awards  starts here!{% endcomment %}-->
+                    <div class="ui active tab segment" data-tab="one">
+                       {% block browsecatalogue %}
+                                 {% include 'scholarshipsModule/browsecatalogue.html' with winners=winners mcm=mcm gold=gold silver=silver dandm=dandm awards=awards %}
+                      {% endblock %}
+                     </div>
+                        <div class="ui tab segment" data-tab="two">
                                 {% block awards %}
                                     {% include 'scholarshipsModule/applyNew.html' with mcm=mcm gold=gold silver=silver dandm=dandm source=source mother_occ=mother_occ awards=awards %}
                                 {% endblock %}
                         </div>
                             {% comment %}The Publications about awards ends here!{% endcomment %}
 
-                   
-                       <div class="ui tab segment" data-tab="four">
+
+                      <!-- <div class="ui tab segment" data-tab="four">
                              {% block viewmcm %}
                                          {% include 'scholarshipsModule/viewstatus.html' with winners=winners mcm=mcm gold=gold silver=silver dandm=dandm %}
                             {% endblock %}
-                       </div>
-                       <div class="ui tab segment" data-tab="five">
-                        {% block browsecatalogue %}
-                                    {% include 'scholarshipsModule/browsecatalogue.html' with winners=winners mcm=mcm gold=gold silver=silver dandm=dandm awards=awards %}
-                       {% endblock %}
-                  </div>
-                      
+                       </div>-->
+
+
                 {% comment %}The Publications about view mcm details ends here!{% endcomment %}
         </div>
         {% comment %}The central-rail segment ends here!{% endcomment %}
@@ -127,7 +132,7 @@
         {% comment %}The right-rail segment starts here!{% endcomment %}
         <div class="three wide column">
                 <div class="row">
-                    
+
                     {% if messages %}
                     <div class="field">
                     <div class="ui positive message">
@@ -140,9 +145,83 @@
                     </div>
                     </div>
                     {% endif %}
-    
+
                 </div>
-            </div>
+
+
+                {% if release %}
+
+                    <div class="ui cards">
+
+                    {% for m in release %}
+                    {% if m.award == 'Mcm Scholarship' and notif_mcm_flag == True  %}
+                    <div class="ui fluid card">
+                        <div class="content">
+                            <div class="header">
+                                {{ m.award }} Invitation
+                            </div>
+                            <div class="meta">
+                                 Last Date: {{ m.enddate }}
+                            </div>
+
+                            <div class="ui divider"></div>
+
+                            <div class="description">
+                                <p>{{ m.remarks }} </p>
+                                <p>Do you want to accept the invitation?</p>
+                            </div>
+                        </div>
+                        <div class="extra content">
+                            <div class="ui two buttons">
+                              <form method="post" action="{% url 'spacs:spacs' %}" class="ui form" role="form">
+                                {% csrf_token %}
+                                <button name="studentapprovesubmit" value="{{ m.award }}" class="ui basic green button" type="submit">Apply</button>
+                              </form>
+                              <form method="post" action="{% url 'spacs:spacs' %}" class="ui form" role="form">
+                                {% csrf_token %}
+                                <button name="studentdeclinesubmit" value="{{ m.award }}" class="ui basic red button" type="submit">Ignore</button>
+                              </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% elif m.award == 'Convocation Medals' and notif_convocation_flag == True  %}
+                    <div class="ui fluid card">
+                        <div class="content">
+                            <div class="header">
+                                {{ m.award }} Invitation
+                            </div>
+                            <div class="meta">
+                                 Last Date: {{ m.enddate }}
+                            </div>
+
+                            <div class="ui divider"></div>
+
+                            <div class="description">
+                                <p>{{ m.remarks }} </p>
+                                <p>Do you want to accept the invitation?</p>
+                            </div>
+                        </div>
+                        <div class="extra content">
+                            <div class="ui two buttons">
+                              <form method="post" action="{% url 'spacs:spacs' %}" class="ui form" role="form">
+                                {% csrf_token %}
+                                <button name="studentapprovesubmit" value="{{ m.award }}" class="ui basic green button" type="submit">Apply</button>
+                              </form>
+                              <form method="post" action="{% url 'spacs:spacs' %}" class="ui form" role="form">
+                                {% csrf_token %}
+                                <button name="studentdeclinesubmit" value="{{ m.award }}" class="ui basic red button" type="submit">Ignore</button>
+                              </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                    </div>
+
+
+                {% endif %}
+                </div>
+
         {% comment %}The right-rail segment ends here!{% endcomment %}
 
         {% comment %}The right-margin segment!{% endcomment %}

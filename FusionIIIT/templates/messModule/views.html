@@ -188,6 +188,17 @@
 
             <br>
             <div class="ui divider"></div>
+            <div class="extra content">
+                <!-- TODO add code to direct to a function which renders the template as a pdf file -->
+                <form method="post" target="_blank" action="{% url 'mess:MenuPDF' %}">
+                    {% csrf_token %}
+                <button type="submit" class="ui primary button right floated">
+                    <!-- Download -->
+                    <i class="ui download icon right floated"></i>
+                </button>
+                </form>
+                <br>
+            </div>
 
         </div>
     </div>
@@ -276,4 +287,27 @@
     </div>
 
 {% endblock %}
+{% endblock %}
+
+{% block javascript %}
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+
+ <script>
+  function download(){
+            $.ajax({
+                type: 'POST',
+                url: 'menudownload/',
+                dataType: 'json',
+
+                success: function(data) {
+
+                },
+                error: function(data, err) {
+
+                }
+            });
+        return false;
+    }
+
+</script>
 {% endblock %}

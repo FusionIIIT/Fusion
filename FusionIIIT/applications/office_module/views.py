@@ -60,8 +60,8 @@ def officeOfDeanPnD(request):
     print(desig)
 
     if 'createassign' in request.POST:
-        id = request.POST.get('req_id')
-        obj = Requisitions.objects.get(id=id)
+        id=request.POST.get('req_id')
+        obj = Requisitions.objects.get(id=int(id))
         obj.assign_title = request.POST.get('title')
         obj.assign_description = request.POST.get('description')
         obj.estimate = request.FILES['estimate']

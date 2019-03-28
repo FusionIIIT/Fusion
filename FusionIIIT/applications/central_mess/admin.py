@@ -54,6 +54,7 @@ class Monthly_billAdmin(admin.ModelAdmin):
     fieldsets = [
         ('student_id', {'fields': ['student_id']}),
         ('month', {'fields': ['month']}),
+        ('year', {'fields': ['year']}),
         ('amount', {'fields': ['amount']}),
         ('nonveg_total_bill', {'fields': ['nonveg_total_bill']}),
         ('rebate_count', {'fields': ['rebate_count']}),
@@ -61,7 +62,7 @@ class Monthly_billAdmin(admin.ModelAdmin):
         ('total_bill', {'fields': ['total_bill']}),
 
         ]
-    list_display = ('student_id', 'month', 'amount',
+    list_display = ('student_id', 'month', 'year', 'amount',
                     'nonveg_total_bill', 'rebate_count', 'rebate_amount', 'total_bill')
 
 
@@ -71,9 +72,10 @@ class PaymentsAdmin(admin.ModelAdmin):
     fieldsets = [
         ('student_id', {'fields': ['student_id']}),
         ('sem', {'fields': ['sem']}),
+        ('year', {'fields': ['year']}),
         ('amount_paid', {'fields': ['amount_paid']}),
         ]
-    list_display = ('student_id', 'sem', 'amount_paid')
+    list_display = ('student_id', 'sem', 'year', 'amount_paid')
 
 
 class RebateAdmin(admin.ModelAdmin):

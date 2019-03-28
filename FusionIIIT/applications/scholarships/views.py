@@ -21,7 +21,7 @@ from applications.globals.models import (Designation, ExtraInfo,
 
 from .models import (Award_and_scholarship, Constants, Director_gold,
                      Director_silver, Mcm, Notional_prize, Previous_winner,
-                     Proficiency_dm, Release)
+                     Proficiency_dm, Release, Notification)
 
 # Create your views here.
 
@@ -29,6 +29,28 @@ from .models import (Award_and_scholarship, Constants, Director_gold,
 @login_required(login_url='/accounts/login')
 def spacs(request):
     # context = {}
+    if request.method == 'POST':
+        if 'studentapprovesubmit' in request.POST:
+            award = request.POST.get('studentapprovesubmit')
+            x = Notification.objects.get(student_id = request.user.extrainfo.id)
+            if award=='Mcm Scholarship':
+                x.notification_mcm_flag=False
+                x.invite_mcm_accept_flag=True
+                print('mcm accepted')
+            else:
+                x.notification_convocation_flag=False
+                x.invite_covocation_accept_flag=True
+            x.save()
+        if 'studentdeclinesubmit' in request.POST:
+            award = request.POST.get('studentdeclinesubmit')
+            x = Notification.objects.get(student_id = request.user.extrainfo.id)
+            if award=='Mcm Scholarship':
+                x.notification_mcm_flag=False
+                x.invite_mcm_accept_flag=False
+            else:
+                x.notification_convocation_flag=False
+                x.invite_covocation_accept_flag=False
+            x.save()
     convener = Designation.objects.get(name='spacsconvenor')
     assistant = Designation.objects.get(name='spacsassistant')
     hd = HoldsDesignation.objects.filter(user=request.user,designation=convener)
@@ -39,6 +61,9 @@ def spacs(request):
         return HttpResponseRedirect('/spacs/convener_view')
     elif hd1:
         return HttpResponseRedirect('/spacs/staff_view')
+    else:
+        return HttpResponseRedirect('/spacs/stats')
+
 
 
 @login_required(login_url='/accounts/login')
@@ -49,13 +74,33 @@ def convener_view(request):
             from_date = request.POST.get('From')
             to_date = request.POST.get('To')
             remarks = request.POST.get('remarks')
+            batch = request.POST.get('batch')
 
             Release.objects.create(
                 startdate=from_date,
                 enddate=to_date,
                 award=award,
-                remarks=remarks
+                remarks=remarks,
+                batch=batch,
+                notif_visible=1,
+                award_form_visible=0
             )
+            if batch == 'all':
+                if award == 'Mcm Scholarship':
+                    res = Notification.objects.all().update(notification_mcm_flag=True)
+                else:
+                    res = Notification.objects.all().update(notification_convocation_flag=True)
+            else:
+                if award == 'Mcm Scholarship':
+                    res = Notification.objects.filter(student_id__id__contains=batch).update(notification_mcm_flag=True)
+                else:
+                    res = Notification.objects.filter(student_id__id__contains=batch).update(notification_convocation_flag=True)
+
+
+            #Notification.objects.create(
+
+            #)
+
             messages.success(request,award+' are invited successfully')
             return HttpResponseRedirect('/spacs/convener_view')
 
@@ -162,6 +207,7 @@ def convener_view(request):
         source = Constants.father_occ_choice
         time = Constants.time
         release = Release.objects.all()
+        notification = Notification.objects.all()
         winners = Previous_winner.objects.all()
         spi = Spi.objects.all()
         student = Student.objects.all()
@@ -423,9 +469,13 @@ def student_view(request):
         mother_occ = Constants.MOTHER_OCC_CHOICES
         source = Constants.father_occ_choice
         release = Release.objects.all()
+        mcm_release = Release.objects.filter(award='Mcm Scholarship')
+        convocation_release = Release.objects.filter(award='Convocation Medals')
+        release_count = release.count()
         winners = Previous_winner.objects.all()
         spi = Spi.objects.all()
         student = Student.objects.all()
+        student_batch = str(request.user.extrainfo.student)[0:4]
         awards = Award_and_scholarship.objects.all()
         gold = Director_gold.objects.all()
         silver = Director_silver.objects.all()
@@ -434,9 +484,17 @@ def student_view(request):
         assis = Designation.objects.get(name='spacsassistant')
         hd = HoldsDesignation.objects.get(designation=con)
         hd1 = HoldsDesignation.objects.get(designation=assis)
+
+        x = Notification.objects.get(student_id = request.user.extrainfo.id)
+        notif_mcm_flag = x.notification_mcm_flag
+        print('printing flag',notif_mcm_flag)
+        notif_convocation_flag  = x.notification_convocation_flag
+        show_mcm_flag=x.invite_mcm_accept_flag
+        show_convocation_flag=x.invite_covocation_accept_flag
         return render(request, 'scholarshipsModule/scholarships_student.html',
                   {'mcm': mcm, 'time': time, 'ch': ch, 'awards': awards, 'spi': spi,
-                   'student': student, 'winners': winners, 'release': release,
+                   'student': student,'student_batch':student_batch, 'winners': winners, 'release': release,
+                   'notif_mcm_flag':notif_mcm_flag,'notif_convocation_flag':notif_convocation_flag,'show_mcm_flag':show_mcm_flag,'show_convocation_flag':show_convocation_flag,'release_count': release_count,
                    'gold': gold, 'silver': silver, 'dandm': dandm, 'source': source,
                   'mother_occ': mother_occ, 'con': con, 'assis': assis,'hd': hd, 'hd1': hd1})
 
@@ -508,6 +566,29 @@ def staff_view(request):
                    'con': con, 'assis': assis,'hd': hd, 'hd1': hd1})
 
 
+def stats(request):
+    mcm = Mcm.objects.all()
+    gold = Director_gold.objects.all()
+    silver = Director_silver.objects.all()
+    dandm = Proficiency_dm.objects.all()
+    student = Student.objects.all()
+    awards = Award_and_scholarship.objects.all()
+    winners = Previous_winner.objects.all()
+    con = Designation.objects.get(name='spacsconvenor')
+    assis = Designation.objects.get(name='spacsassistant')
+    hd = HoldsDesignation.objects.get(designation=con)
+    hd1 = HoldsDesignation.objects.get(designation=assis)
+
+    return render(request, 'scholarshipsModule/stats.html',
+              {'mcm': mcm, 'student': student,
+               'awards': awards, 'gold': gold,
+               'silver': silver, 'dandm': dandm, 'winners': winners,
+               'con': con, 'assis': assis,'hd': hd, 'hd1': hd1})
+
+
+
+
+
 def convener_catalogue(request):
     if request.method == 'POST':
         award_name=request.POST.get('award_name')
@@ -568,6 +649,39 @@ def get_winners(request):
 
     return HttpResponse(json.dumps(context), content_type='get_winners/json')
 
+
+def get_mcm_flag(request):
+    print('hello get_mcm_flag')
+    x = Notification.objects.get(student_id = request.user.extrainfo.id)
+    x.invite_mcm_accept_flag=True
+    x.notification_mcm_flag=False
+    x.save()
+    context={}
+    context['show_mcm_flag']=True
+    if x:
+        context['result']='Success'
+    else:
+        context['result']='Failure'
+    print('printing accept flag',x.invite_mcm_accept_flag)
+    print('printing notification flag',x.notification_mcm_flag)
+    return HttpResponse(json.dumps(context), content_type='get_mcm_flag/json')
+    #return HttpResponseRedirect('/spacs/student_view')
+
+def get_convocation_flag(request):
+    print('hello get_convocation_flag')
+    x = Notification.objects.get(student_id = request.user.extrainfo.id)
+    x.invite_covocation_accept_flag=True
+    x.notification_convocation_flag=False
+    x.save()
+    context={}
+    context['show_convocation_flag']=True
+    if x:
+        context['result']='Success'
+    else:
+        context['result']='Failure'
+    print('printing accept flag',x.invite_covocation_accept_flag)
+    print('printing notification flag',x.notification_convocation_flag)
+    return HttpResponse(json.dumps(context), content_type='get_convocation_flag/json')
 
 def get_content(request):
     print('data is coming through')
