@@ -1,5 +1,28 @@
 {% block menucard %}
 {% for d in desig %}
+    {% if info.user_type == 'faculty' and d.designation.name == 'mess_warden' %}
+
+        <a class="item active" data-tab="thirteenth">
+            View Menu
+        </a>
+
+        <a class="item" data-tab="fifteenth">
+            Meeting information
+        </a>
+
+        <a class="item" data-tab="tenth">
+            Meeting Minutes
+        </a>
+
+        <a class="item" data-tab="sixteenth">
+            Feedback Statistics
+        </a>
+
+        <a class="item" data-tab="forteenth">
+            View Feedback
+        </a>
+
+    {% endif %}
 
     {% if info.user_type == 'student' %}
         {% if d.designation.name == 'student' %}
@@ -109,28 +132,6 @@
         </a>
     {% endif %}
 
-    {% if info.user_type == 'faculty' and d.designation.name == 'mess_warden' %}
 
-        <a class="item active" data-tab="thirteenth">
-            View Menu
-        </a>
-
-        <a class="item" data-tab="fifteenth">
-            Meeting information
-        </a>
-
-        <a class="item" data-tab="tenth">
-            Meeting Minutes
-        </a>
-
-        <a class="item" data-tab="sixteenth">
-            Feedback Statistics
-        </a>
-
-        <a class="item" data-tab="forteenth">
-            View Feedback
-        </a>
-
-    {% endif %}
 {% endfor %}
 {% endblock %}

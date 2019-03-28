@@ -57,12 +57,14 @@ def mess(request):
     if change_desig:
         change_design = Designation.objects.get(name="mess_committee")
         change_design.name = "mess_committee_mess1"
+        change_design.save()
         change_desig2 = Designation.objects.get(name="mess_convener")
         change_desig2.name = "mess_convener_mess1"
+        change_desig2.save()
         change_desig_obj1 = Designation(name="mess_committee_mess2", full_name="Mess Committee", type="administrative")
         change_desig_obj2 = Designation(name="mess_convener_mess2", full_name="Mess Convener", type="administrative")
-        change_desig_obj1.add()
-        change_desig_obj2.add()
+        change_desig_obj1.save()
+        change_desig_obj2.save()
     #end of remove part
 
     if extrainfo.user_type == 'student':
@@ -235,7 +237,7 @@ def mess(request):
                  'count4': count4, 'form': form, 'count5': count5,
                  'count6': count6, 'count7': count7, 'count8': count8, 'desig': desig
             }
-        return render(request, 'messModule/mess.html',
+        return render(request, 'messModule/mess.html', context
                      )
 
 

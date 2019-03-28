@@ -45,7 +45,7 @@
             <form method="post" onclick="generatemessbill()">
                 {% csrf_token %}
                 <div>
-                    <button class="ui primary button right floated" type="submit" name="submit">
+                    <button class="ui primary fluid button" type="submit" name="submit">
                         Generate
                     </button>
                 </div>
@@ -55,12 +55,18 @@
                     <label>Bill generation will take a while.</label>
                 </div>
             </form>
+            <hr>
             <div>
+                <header> <strong>Download Bill:</strong></header>
+
                 <form method="post" target="_blank" action="{% url 'mess:billdownload' %}">
                     {% csrf_token %}
                 <button type="submit" class="ui primary fluid button">
-                    <i class="ui download icon right floated"></i>
+                    Download Bill
                 </button>
+                    <br>
+                    <p>Do Not close the tab that will open !</p>
+                    <br>
                 </form>
                 <br>
             </div>
@@ -69,7 +75,7 @@
     </div>
     <div class="ui modal" style="padding: 2.5%" id="donotbill">
     <div>
-        <STRONG> BILLS ARE BEING GENERATED</STRONG>
+        <STRONG> BILLS ARE BEING GENERATED </STRONG>
     </div>
 
     </div>
@@ -90,7 +96,7 @@
                 },
                 success: function (data) {
                     if (data.status) {
-                        alert("Data Inserted Successfully");
+                        alert(data.message);
                         $("#messmonthlybill").load(location.href + " #messmonthlybill>*", "")
                     }
                 },

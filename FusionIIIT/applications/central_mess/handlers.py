@@ -406,8 +406,15 @@ def add_bill_base_amount(request):
     """
     # month_now = today.strftime('%B')
     cost = request.POST.get("amount")
+    if cost < 0:
+        data = {
+            'status' : '2',
+            'message': "Negative Values not allowed"
+        }
+        return data
     data = {
         'status': 1,
+        'message': "Successfully updated"
     }
     amount_object = MessBillBase(bill_amount=cost)
     amount_object.save()
