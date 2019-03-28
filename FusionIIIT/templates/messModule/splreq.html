@@ -9,16 +9,16 @@
 </div>
 <div class="ui active tab" data-tab="splreq">
     <div class="ui vertical strip segment"
-         style="padding-left: 3.5%;
-                padding-right: 3.5%;">
+         style="padding-left: 1.0%;
+                padding-right: 1.0%;">
 
             <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
               <thead>
                 <tr>
                   <th>Date</th>
                   <th>Student Id</th>
-                  <th>Start Date</th>
-                  <th>End Date</th>
+                  <th>Request Dates</th>
+{#                  <th>End Date</th>#}
                   <th>Food</th>
                   <th>purpose</th>
                   <th>accept/reject</th>
@@ -33,9 +33,9 @@
                     <td>
                         {{var.student_id.id}}
                     </td>
-                    <td>{{var.start_date}}</td>
-                    <td>{{var.end_date}}</td>
-                    <td>{{var.item1}}, {{var.item2}</td>
+                    <td class="two wide">{{var.start_date}}-{{var.end_date}}</td>
+{#                    <td>{{var.end_date}}</td>#}
+                    <td>{{var.item1}}, {{var.item2}}</td>
                     <td>{{var.request}}</td>
                     <td>
                             <div class="ui buttons">
