@@ -15,12 +15,11 @@
             <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
               <thead>
                 <tr>
-                  <th>App Date</th>
+                  <th>Date</th>
                   <th>Student Id</th>
                   <th>Start Date</th>
                   <th>End Date</th>
-                  <th>Food1</th>
-                  <!-- <th>Food2</th> -->
+                  <th>Food</th>
                   <th>purpose</th>
                   <th>accept/reject</th>
                 </tr>
@@ -28,18 +27,15 @@
               <tbody>
                   {% for var in sprequest %}
                 <tr id="accpt-{{var.pk}}">
-                    <th class="four wide">
+                    <th class="three wide">
                         {{var.app_date}}
                     </th>
                     <td>
-                        <h4 class="ui image header">
-                            <div class="content">{{var.student_id.id}}</div>
-                        </h4>
+                        {{var.student_id.id}}
                     </td>
                     <td>{{var.start_date}}</td>
                     <td>{{var.end_date}}</td>
-                    <td>{{var.item1}}</td>
-                    <!-- <td>{{var.item2}}</td> -->
+                    <td>{{var.item1}}, {{var.item2}</td>
                     <td>{{var.request}}</td>
                     <td>
                             <div class="ui buttons">

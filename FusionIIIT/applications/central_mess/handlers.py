@@ -1,5 +1,7 @@
 from django.core.exceptions import ObjectDoesNotExist
 from datetime import date, datetime
+from datetime import timedelta
+from threading import Thread
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
@@ -8,11 +10,19 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 from django.views.generic import View
 from django.db.models import Q
+from django.contrib.auth.models import User
 from .forms import MinuteForm
+from applications.academic_information.models import Student
+from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
                      Mess_minutes, Mess_reg, Messinfo, Monthly_bill,
                      Nonveg_data, Nonveg_menu, Payments, Rebate,
                      Special_request, Vacation_food, MessBillBase)
+
+
+today_g = datetime.today()
+year_g = today_g.year
+tomorrow_g = today_g + timedelta(days=1)
 
 
 def add_nonveg_order(request, student):
@@ -33,7 +43,7 @@ def add_nonveg_order(request, student):
     try:
         dish_request = Nonveg_menu.objects.get(dish=request.POST.get("dish"))
         order_interval = request.POST.get("interval")
-        order_date = datetime.now().date()
+        order_date = tomorrow_g
         nonveg_object = Nonveg_data(student_id=student, order_date=order_date,
                                     order_interval=order_interval, dish=dish_request)
         nonveg_object.save()
@@ -250,6 +260,7 @@ def add_leave_request(request, student):
     """
     flag = 1
     today = str(datetime.now().date())
+    # leave_doc = request.FILES['myfile']
     leave_type = request.POST.get('leave_type')
     start_date = request.POST.get('start_date')
     end_date = request.POST.get('end_date')
@@ -259,35 +270,23 @@ def add_leave_request(request, student):
         data = {
             'status': 3
         }
-        return JsonResponse(data)
+        return data
 
     rebates = Rebate.objects.filter(student_id=student)
+    rebate_check = rebates.filter(Q(status='1')|Q(status='2'))
 
-    for r in rebates:
-        if r.status == '1' or r.status == '2':
-            print(r.start_date)
-            print("compare")
-            print(start_date)
-            date_format = "%Y-%m-%d"
-            a = datetime.strptime(str(r.start_date), date_format)
-            b = datetime.strptime(str(start_date), date_format)
-            c = datetime.strptime(str(r.end_date), date_format)
-            d = datetime.strptime(str(end_date), date_format)
-            print((b <= a and (d >= a and d <= c)) or (b >= a and (d >= a and d <= c))
-                  or (b <= a and (d >= c)) or ((b >= a and b <= c) and (d >= c)))
-            print((b >= a and b <= c) and (d >= c))
-            if ((b <= a and (d >= a and d <= c)) or (b >= a and (d >= a and d <= c))
-                    or (b <= a and (d >= c)) or ((b >= a and b <= c) and (d >= c))):
-                flag = 0
-                break
-    #   TODO IF CASUAL LEAVE CONDITIONS ARE SATISFIED THEN AUTOMATICALLY ACCEPT THE REQUEST
-    if flag == 1:
-        rebate_object = Rebate(student_id=student, leave_type=leave_type, start_date=start_date,
-                               end_date=end_date, purpose=purpose)
-        rebate_object.save()
+    for r in rebate_check:
+        if(start_date >= r.start_date) or (end_date <= r.end_date):
+            data = {
+                'status': 3
+            }
+            return data
 
+    rebate_object = Rebate(student_id=student, leave_type=leave_type, start_date=start_date,
+                           end_date=end_date, purpose=purpose)
+    rebate_object.save()
     data = {
-        'status': flag,
+        'status': 1
     }
     return data
 
@@ -405,22 +404,93 @@ def add_bill_base_amount(request):
     :param request:
     :return:
     """
-    # today = datetime.today()
-    # year_now = today.year
     # month_now = today.strftime('%B')
     cost = request.POST.get("amount")
     data = {
         'status': 1,
     }
-    # monthly_bill = Monthly_bill.objects.filter(Q(month=month_now) & Q(year=year_now))
-    amount = MessBillBase.objects.first()
-    amount.bill_amount = cost
-    amount.save()
-    # for temp in monthly_bill:
-    #     print(temp)
-    #     print(temp.year)
-    #     temp.amount = cost
-    #     temp.save()
-    # print(temp)
+    amount_object = MessBillBase(bill_amount=cost)
+    amount_object.save()
+
     return data
+
+
+def add_mess_committee(request, roll_number):
+    mess = Messinfo.objects.get(student_id__id=roll_number)
+    if mess.mess_option == 'mess1':
+        designation = Designation.objects.get(name='mess_committee_mess1')
+    else:
+        designation = Designation.objects.get(name='mess_committee_mess2')
+    # designation = Designation.objects.get(name='mess_committee')
+    add_obj = HoldsDesignation.objects.filter(Q(user__username=roll_number) & Q(designation=designation))
+    if add_obj:
+        data = {
+            'status': 2,
+            'message': roll_number + " is already a part of mess committee"
+        }
+        return data
+    else:
+        add_user = User.objects.get(username=roll_number)
+        designation_object = HoldsDesignation(user=add_user, working=add_user, designation=designation)
+        designation_object.save()
+        data = {
+            'status': 1,
+            'message': roll_number + " is added to Mess Committee"
+        }
+        return data
+
+
+def generate_bill():
+    student_all = Student.objects.all()
+    month_t = datetime.now().month - 1
+    first_day_of_this_month = date.today().replace(day=1)
+    last_day_prev_month = first_day_of_this_month - timedelta(days=1)
+    previous_month = last_day_prev_month.strftime('%B')
+    # previous_month = month_t.strftime("%B")
+    print(previous_month)
+    amount_c = MessBillBase.objects.latest('timestamp')
+    for student in student_all:
+        nonveg_total_bill=0
+        rebate_count = 0
+        total = 0
+        nonveg_data = Nonveg_data.objects.filter(student_id=student)
+        rebates = Rebate.objects.filter(student_id=student)
+        for order in nonveg_data:
+            if order.order_date.strftime("%B") == previous_month:
+                nonveg_total_bill = nonveg_total_bill + order.dish.price
+        for r in rebates:
+            if r.status == '2':
+                if r.start_date.strftime("%B") == previous_month:
+                    rebate_count = rebate_count + abs((r.end_date - r.start_date).days) + 1
+        rebate_amount = rebate_count*amount_c.bill_amount/30
+        total = amount_c.bill_amount + nonveg_total_bill + rebate_amount
+        bill_object = Monthly_bill(student_id=student,
+                                   month=previous_month,
+                                   amount=amount_c.bill_amount,
+                                   rebate_count=rebate_count,
+                                   rebate_amount=rebate_amount,
+                                   nonveg_total_bill=nonveg_total_bill,
+                                   total_bill=total)
+        if Monthly_bill.objects.filter(student_id=student,
+                                       month=previous_month,
+                                       year = year_g,
+                                       total_bill=total):
+            print("exists")
+        elif Monthly_bill.objects.filter(student_id=student,
+                                       month=previous_month,
+                                       year = year_g):
+            Monthly_bill.objects.filter(student_id=student,
+                                        month=previous_month,
+                                        year=year_g).update(student_id=student,
+                                                            month=previous_month,
+                                                            amount=amount_c.bill_amount,
+                                                            rebate_count=rebate_count,
+                                                            rebate_amount=rebate_amount,
+                                                            nonveg_total_bill=nonveg_total_bill,
+                                                            total_bill=total)
+            # bill_object.update()
+            print(student)
+        else:
+            bill_object.save()
+            print(student)
 

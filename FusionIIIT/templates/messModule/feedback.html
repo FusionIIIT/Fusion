@@ -9,7 +9,7 @@
         </a>
 
         <a class="item" data-tab="viewfeedback">
-            Status
+            Previous Feedback
         </a>
     </div>
 
@@ -31,13 +31,13 @@
                     <div class="two fields">
                         <div class="field">
                             <label>Mess:</label>
-                            <input value={{messinfo.mess_option}} class="ui large input" readonly>
+                            <input value="{{messinfo.mess_option}}" class="ui large input" readonly>
                         </div>
 
                         <div class="two fields">
                             <div class="twelve wide field">
-                                <label>Type:</label>
-                                <select class="ui search fluid dropdown" name="feedback_type" id="feedback_type">
+                                <label>Type*</label>
+                                <select class="ui dropdown" name="feedback_type" id="feedback_type">
                                     <option value="Cleanliness">Cleanliness</option>
                                     <option value="Food">Food</option>
                                     <option value="Maintainence">Maintainence</option>
@@ -49,7 +49,7 @@
                     </div>
 
                     <div class="field">
-                        <label>Description:</label>
+                        <label>Description*</label>
                         <textarea rows="2" id="description" name="description" required="true"></textarea>
                     </div>
                     
@@ -116,10 +116,7 @@
                 success: function(data) {
                     if(data.status){
                         alert("Data Inserted Successfully");
-                        $("#feedback").load(location.href+" #feedback>*","")
-                         $('#ls_table').prepend("<tr><td>"+ $("#leave_type").val()+ "</td><td>"+
-                             $("#start_date").val() + "</td><td>" + $("end_date").val()+
-                             "</td><td>"+ $("#purpose").val()+ "</td></tr>")
+                        $("#feedback").load(location.href+" #feedback>*","");
 
                         document.getElementById('feedback_type').value="";
                         document.getElementById('description').value="";
@@ -128,7 +125,7 @@
                 },
                 error: function(data, err) {
                     alert(err.message);
-                    $("#feedback").load(location.href+" #feedback>*","")
+                    $("#feedback").load(location.href+" #feedback>*","");
                 }
             });
         return false;
