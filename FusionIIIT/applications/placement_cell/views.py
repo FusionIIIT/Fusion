@@ -632,6 +632,98 @@ def InvitationStatus(request):
             else:
                 no_pagination = 0
 
+
+    if 'pdf_gen_invitation_status' in request.POST:
+        print('coming--generate--pdf')
+
+        placementstatus = None
+        if 'pdf_gen_invitation_status_placement' in request.POST:
+            stuname = request.session['mn_stuname']
+            ctc = request.session['mn_ctc']
+            cname = request.session['mn_cname']
+            rollno = request.session['mn_rollno']
+
+            placementstatus = PlacementStatus.objects.filter(Q(notify_id__in=NotifyStudent.objects.filter
+                                                           (Q(placement_type="PLACEMENT",
+                                                              company_name__icontains=cname,
+                                                              ctc__gte=ctc)),
+                                                           unique_id__in=Student.objects.filter
+                                                           ((Q(id__in=ExtraInfo.objects.filter
+                                                               (Q(user__in=User.objects.filter
+                                                                  (Q(first_name__icontains=stuname)),
+                                                                  id__icontains=rollno))
+                                                               )))))
+
+        if 'pdf_gen_invitation_status_pbi' in request.POST:
+            stuname = request.session['mn_pbi_stuname']
+            ctc = request.session['mn_pbi_ctc']
+            cname = request.session['mn_pbi_cname']
+            rollno = request.session['mn_pbi_rollno']
+
+            placementstatus = PlacementStatus.objects.filter(
+                Q(notify_id__in=NotifyStudent.objects.filter(
+                Q(placement_type="PBI",
+                company_name__icontains=cname,
+                ctc__gte=ctc)),
+                unique_id__in=Student.objects.filter(
+                (Q(id__in=ExtraInfo.objects.filter(
+                Q(user__in=User.objects.filter(
+                Q(first_name__icontains=stuname)),
+                id__icontains=rollno))))))).order_by('id')
+
+        context = {
+            'placementstatus' : placementstatus
+        }
+
+        print('rendering the pdf--student record')
+        return render_to_pdf('placementModule/pdf_invitation_status.html', context)
+
+    if 'excel_gen_invitation_status' in request.POST:
+        print('coming--generate--excel')
+
+        placementstatus = None
+        if 'excel_gen_invitation_status_placement' in request.POST:
+            stuname = request.session['mn_stuname']
+            ctc = request.session['mn_ctc']
+            cname = request.session['mn_cname']
+            rollno = request.session['mn_rollno']
+
+            placementstatus = PlacementStatus.objects.filter(Q(notify_id__in=NotifyStudent.objects.filter
+                                                           (Q(placement_type="PLACEMENT",
+                                                              company_name__icontains=cname,
+                                                              ctc__gte=ctc)),
+                                                           unique_id__in=Student.objects.filter
+                                                           ((Q(id__in=ExtraInfo.objects.filter
+                                                               (Q(user__in=User.objects.filter
+                                                                  (Q(first_name__icontains=stuname)),
+                                                                  id__icontains=rollno))
+                                                               )))))
+
+        if 'excel_gen_invitation_status_pbi' in request.POST:
+            stuname = request.session['mn_pbi_stuname']
+            ctc = request.session['mn_pbi_ctc']
+            cname = request.session['mn_pbi_cname']
+            rollno = request.session['mn_pbi_rollno']
+
+            placementstatus = PlacementStatus.objects.filter(
+                Q(notify_id__in=NotifyStudent.objects.filter(
+                Q(placement_type="PBI",
+                company_name__icontains=cname,
+                ctc__gte=ctc)),
+                unique_id__in=Student.objects.filter(
+                (Q(id__in=ExtraInfo.objects.filter(
+                Q(user__in=User.objects.filter(
+                Q(first_name__icontains=stuname)),
+                id__icontains=rollno))))))).order_by('id')
+
+        context = {
+            'placementstatus' : placementstatus
+        }
+
+        print('rendering the excel--student record')
+
+        return export_to_xls_invitation_status(students)
+
     form1 = SearchStudentRecord(initial={})
     form9 = ManagePbiRecord(initial={})
     form11 = ManagePlacementRecord(initial={})
@@ -885,7 +977,7 @@ def StudentRecords(request):
 
         print('rendering the excel--student record')
 
-        return export_to_xls(students)
+        return export_to_xls_std_records(students)
 
 
     # invitecheck=0;
@@ -2233,7 +2325,7 @@ def render_to_pdf(template_src, context_dict):
     return HttpResponse('We had some errors<pre>%s</pre>' % escape(html))
 
 
-def export_to_xls(qs):
+def export_to_xls_std_records(qs):
     response = HttpResponse(content_type='application/ms-excel')
     response['Content-Disposition'] = 'attachment; filename="report.xls"'
 
@@ -2271,6 +2363,44 @@ def export_to_xls(qs):
             row.append('Yes')
         else:
             row.append('No')
+
+        for col_num in range(len(row)):
+            ws.write(row_num, col_num, row[col_num], font_style)
+
+    wb.save(response)
+    return response
+
+
+def export_to_xls_invitation_status(qs):
+    response = HttpResponse(content_type='application/ms-excel')
+    response['Content-Disposition'] = 'attachment; filename="report.xls"'
+
+    wb = xlwt.Workbook(encoding='utf-8')
+    ws = wb.add_sheet('Report')
+
+    # Sheet header, first row
+    row_num = 0
+
+    font_style = xlwt.XFStyle()
+    font_style.font.bold = True
+
+    columns = ['Roll No.', 'Name', 'Company', 'CTC', 'Invitation Status']
+
+    for col_num in range(len(columns)):
+        ws.write(row_num, col_num, columns[col_num], font_style)
+
+    # Sheet body, remaining rows
+    font_style = xlwt.XFStyle()
+
+    for student in qs:
+        row_num += 1
+
+        row = []
+        row.append(student.unique_id.id.id)
+        row.append(student.unique_id.id.user.first_name+' '+student.unique_id.id.user.last_name)
+        row.append(student.notify_id.company_name)
+        row.append(student.notify_id.ctc)
+        row.append(student.invitation)
 
         for col_num in range(len(row)):
             ws.write(row_num, col_num, row[col_num], font_style)

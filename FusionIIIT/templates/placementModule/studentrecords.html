@@ -849,6 +849,22 @@
 
                     {% if placementstatus %}
                       <br>
+                      <!-- generate pdf button  --->
+                      <form method="post" target="_blank" action="{% url 'placement:invitation_status' %}" class="ui form" role="form">
+                        {% csrf_token %}
+                        <input type="hidden" name="pdf_gen_invitation_status_placement" value="pdf_gen_invitation_status_placement">
+                        <button name="pdf_gen_invitation_status" value="pdf_gen_invitation_status" class="ui medium positive button right floated" type="submit">
+                        PDF
+                      </button></form>
+
+                      <!-- generate ms-excel button  --->
+                      <form method="post" target="_blank" action="{% url 'placement:invitation_status' %}" class="ui form" role="form">
+                        {% csrf_token %}
+                        <input type="hidden" name="excel_gen_invitation_status_placement" value="excel_gen_invitation_status_placement">
+                        <button name="excel_gen_invitation_status" value="excel_gen_invitation_status" class="ui medium positive button right floated" type="submit">
+                        Excel Sheet
+                      </button></form>
+
                       <!-- Pagination Section starts here  --->
                     {% if no_pagination %}
 
