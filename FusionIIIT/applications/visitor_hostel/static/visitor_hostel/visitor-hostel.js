@@ -89,12 +89,10 @@ function request_booking (event) {
     console.log("here !!!");
     console.log(days_diff);
 
-
     if (!(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email))){
         alertModal("Oops! Please enter valid email address.");
         return;
     }
-
 
     if (phone.length!=10){
         alertModal("Oops! Please enter valid phone number.");
@@ -517,7 +515,6 @@ function forward_booking (id) {
     modified_category = $('input[name=modified-category-'+id+']').val();
     rooms = $('select[name=alloted-rooms-'+id+']').val();
 
-
     // if (previous_category == 0) {
     //     alertModal("Please fill the category to confirm.");
     //     return;
@@ -526,7 +523,6 @@ function forward_booking (id) {
     // if (modified_category == 0) {
     //     modified_category = previous_category;
     // }
-
 
     if (rooms == 0) {
         alertModal("Please fill the rooms to confirm booking.");
@@ -556,7 +552,6 @@ function forward_booking (id) {
         }
     });
 };
-
 
 
 // Cancel Active Booking
@@ -712,7 +707,6 @@ function check_out (id , mess_bill , room_bill) {
 
 function bill_between_date_range() {
 
-
    start_date = $('input[name=start').val();
     end_date = $('input[name=end]').val();
     if (new Date(start_date) > new Date(end_date)) {
@@ -754,7 +748,8 @@ function bill_between_date_range() {
 
 
 function find_available_rooms ( available_rooms ) {
-   fromDate=$('input[name=start-date]').val();
+    
+    fromDate=$('input[name=start-date]').val();
     endDate=$('input[name=end-date]').val();
     console.log(fromDate);
     console.log(endDate);
@@ -762,13 +757,11 @@ function find_available_rooms ( available_rooms ) {
         alertModal ('Please check start date and end date!');
         return;
     }
-
     $.ajax({
         type: 'POST',
-        url: '/visitorhostel/bill_between_date_range/',
+        url: '/visitorhostel/room-availability/',
         data: {
             'csrfmiddlewaretoken' : $('input[name="csrf"]').val(),
-
             'start_date' : fromDate,
             'end_date' : endDate,
 
@@ -788,7 +781,6 @@ function find_available_rooms ( available_rooms ) {
         error: function(data, err) {
             alertModal('Something missing! Please refill the form');
             console.log(available_rooms);
-
         }
     });
 }
@@ -802,12 +794,6 @@ function modalAddItem(){
 
 function bookingRequestModal(id){
     $('#booking-request-'.concat(id)).modal('show');
-
-}
-
-function updateBookingModal(id){
-    console.log("EEEEEEEEEEE");
-    $('#update-booking-'.concat(id)).modal('show');
 }
 
 function updateBookingModal(id){
