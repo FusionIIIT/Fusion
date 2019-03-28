@@ -25,6 +25,8 @@ def leave_module_notif(sender, recipient, type):
         verb = "Your offline leave has been updated "
     if type=='replacement_request':
         verb = "You have a replacement request "
+    if type=='replacement_cancel':
+        verb = "Your replacement has been cancelled"
 
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
