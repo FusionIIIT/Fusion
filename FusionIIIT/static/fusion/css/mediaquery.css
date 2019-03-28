@@ -1,0 +1,64 @@
+@media only screen and (width: 1280px){
+    #body {
+        min-width: 100%;
+        max-width: 100%;
+
+        min-height: 100%;
+        max-height: 100%;
+
+        overflow-y: hidden;
+
+        transform: scale(0.67);
+        transform-origin: 0 0;
+    }
+}
+
+@media only screen and (width: 1360px){
+    #body {
+        min-width: 100%;
+        max-width: 100%;
+
+        min-height: 100%;
+        max-height: 100%;
+
+        transform: scale(0.67);
+        transform-origin: 0 0;
+    }
+}
+
+@media only screen and (width: 1366px){
+    #body {
+        min-width: 150%;
+
+        min-height: 105.5%;
+
+        transform: scale(0.67);
+        transform-origin: 0 0;
+    }
+}
+
+@media only screen and (width: 1440px){
+    #body {
+        min-width: 100%;
+        max-width: 100%;
+
+        min-height: 100%;
+        max-height: 149%;
+
+        transform: scale(0.75);
+        transform-origin: 0 0;
+    }
+}
+
+@media only screen and (width: 1600px){
+    #body {
+        min-width: 100%;
+        max-width: 100%;
+
+        min-height: 100%;
+        max-height: 149%;
+
+        transform: scale(0.80);
+        transform-origin: 0 0;
+    }
+}
