@@ -50,9 +50,10 @@ def mess(request):
     count8 = 0
 
     # remove ths part after database has been updated
-    change_desig = Designation.objects.get(name="mess_committee")
+    change_desig = Designation.objects.filter(name="mess_committee").count()
     if change_desig:
-        change_desig.name = "mess_committee_mess1"
+        change_design = Designation.objects.get(name="mess_committee")
+        change_design.name = "mess_committee_mess1"
         change_desig2 = Designation.objects.get(name="mess_convener")
         change_desig2.name = "mess_convener_mess1"
         change_desig_obj1 = Designation(name="mess_committee_mess2", full_name="Mess Committee", type="administrative")
