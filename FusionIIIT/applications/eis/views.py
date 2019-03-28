@@ -2601,4 +2601,3 @@ def rspc_generate_report(request):
                'last_name': request.user.last_name,
                }
     return render_to_pdf('eisModulenew/rspc_generatereportshow.html', context)
->>>>>>> upstream/master
