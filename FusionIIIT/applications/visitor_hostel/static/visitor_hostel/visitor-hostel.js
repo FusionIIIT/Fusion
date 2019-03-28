@@ -518,6 +518,7 @@ function forward_booking (id) {
     rooms = $('select[name=alloted-rooms-'+id+']').val();
 
 
+
     // if (previous_category == 0) {
     //     alertModal("Please fill the category to confirm.");
     //     return;
@@ -526,6 +527,7 @@ function forward_booking (id) {
     // if (modified_category == 0) {
     //     modified_category = previous_category;
     // }
+
 
 
     if (rooms == 0) {
@@ -556,7 +558,6 @@ function forward_booking (id) {
         }
     });
 };
-
 
 
 // Cancel Active Booking
@@ -731,14 +732,14 @@ function bill_between_date_range() {
         },
         success: function(data) {
             $('#replace-this-div-booking-bw-dates').html(data);
-            console.log("winning")
-            console.log(start_date)
+            console.log("winning");
+            console.log(start_date);
             // alert('Bookings Between range are ..');
         },
         error: function(data, err) {
             alert('Error !');
-            console.log(start_date)
-            console.log(end_date)
+            console.log(start_date);
+            console.log(end_date);
             // alertModal('Something missing! Please refill the form');
         }
     });
@@ -802,7 +803,6 @@ function modalAddItem(){
 
 function bookingRequestModal(id){
     $('#booking-request-'.concat(id)).modal('show');
-
 }
 
 function updateBookingModal(id){
