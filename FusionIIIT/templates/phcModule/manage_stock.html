@@ -56,7 +56,7 @@
                     <label><br></label>
 
                     <div >
-                      <input type="button" id="add_stock" name="add_stock" value="Submit"class="ui large right floated primary button" />
+                      <input type="button" id="add_stock" name="add_stock"  onClick="window.location.reload();" value="Submit"class="ui large right floated primary button" />
                     </div>
 
                    </div>
@@ -68,6 +68,17 @@
                                                     var qty = document.getElementById('quantity_a').value;
                                                     var supplier = document.getElementById('supplier').value;
                                                     var expiry_date = document.getElementById('expiry_date').value;
+													
+													var today = new Date(new Date().setHours(0, 0, 0, 0));
+
+													var N_expired_med1 = new Date(expiry_date);
+                                                   
+                                                    if ( +N_expired_med1 < +today ) {
+                                                        $('#medicine_add').html('You cannot enter expiry date before today!.');
+                                                        return false;
+                                                    }
+													
+													
                                                     if ( medicine==""||supplier==""||expiry_date==""||qty==""||qty<=0) {
                                                         $('#medicine_add').html('Enter valid details');
                                                         return false;
@@ -141,7 +152,7 @@
                 <label><br></label>
 
                 <div >
-                  <input type="button" id="add_medicine" name="add_medicine" value="Submit"class="ui large right floated primary button" />
+                  <input type="button" id="add_medicine" name="add_medicine" onClick="window.location.reload();" value="Submit"class="ui large right floated primary button" />
                 </div>
 
                </div>
@@ -154,6 +165,17 @@
                                                     var new_quantity = document.getElementById('new_quantity').value;
                                                     var new_supplier = document.getElementById('new_supplier').value;
                                                     var new_expiry_date = document.getElementById('new_expiry_date').value;
+													
+													var today = new Date(new Date().setHours(0, 0, 0, 0));
+
+													var N_expired_med= new Date(new_expiry_date);
+                                                   
+                                                    if ( +N_expired_med < +today ) {
+                                                        $('#med_add').html('You cannot enter expiry date before today!.');
+                                                        return false;
+                                                    }
+													
+
                                                     if ( new_medicine==""||new_expiry_date==""||new_supplier==""||new_quantity==""||new_quantity<=0||threshold==""||threshold<0) {
                                                         $('#med_add').html('Enter valid details');
                                                         return false;
@@ -173,6 +195,18 @@
                                                     },
                                                       success: function(data){
                                                       alert("added new medicine");
+
+                                           {% comment %}   $('#live_stock').find('tbody').html('');
+                                                      var tr;
+                                                      tr = '<tr>'
+                                                      tr += "<td>" + data.medicine + "</td>";
+                                                      tr += "<td>" + data.new_supplier + "</td>"
+                                                      tr += "<td>" + data.new_expiry_date  + "</td>"
+                                                      tr += "<td>" + data.quantity + "<td>"
+                                                      tr += '</tr>'
+                                                      $('#live_stock tbody').append(tr);    {% endcomment %}
+
+
                                                       document.getElementById("new_medicine").value="";
                                                       document.getElementById("threshold").value="";
                                                       document.getElementById("new_quantity").value="";
@@ -195,12 +229,20 @@
     {% comment %}the view stock tab starts here {% endcomment %}
     <div class="ui tab" data-tab="viewlivestock">
         <div class="ui vertical segment" >
-            <table class="ui very basic collapsing celled large fluid sortable table"
+            <table class="ui very basic collapsing celled large fluid sortable table" id="live_stock"
                    style="padding-left: 2.5%;padding-right: 2.5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
                 <thead>
                 <tr>
                     <th class="two wide">
                         Medicine
+                    </th>
+
+                     <th class="two wide" >
+                        Supplier
+                    </th>
+
+                    <th class="two wide" >
+                        Expiry Date
                     </th>
 
                     <th class="two wide" >
@@ -211,11 +253,19 @@
                 </thead>
 
                 <tbody>
-                {% for view in stocks %}
+                {% for view in live_meds %}
                 <tr>
 
                     <td>
-                       {{view.medicine_name}}
+                       {{view.medicine_id}}
+                    </td>
+
+                    <td>
+                       {{view.supplier}}
+                    </td>
+
+                    <td>
+                       {{view.expiry_date}}
                     </td>
 
                     <td>
@@ -228,6 +278,7 @@
         </div>
     </div>
     {% comment %}the view stock tab ends here {% endcomment %}
+
     {% comment %}the view stock tab starts here {% endcomment %}
     <div class="ui tab" data-tab="viewexpiredstock">
         <div class="ui vertical segment" >
@@ -242,12 +293,15 @@
                     <th class="two wide" >
                         Quantity
                     </th>
+
                     <th class="two wide" >
                         Expiry Date
                     </th>
+
                     <th class="two wide" >
                         Supplier
                     </th>
+
                     <th class="two wide" >
                         Return
                     </th>
@@ -266,12 +320,15 @@
                     <td>
                         {{view.quantity}}
                     </td>
+
                     <td>
                         {{view.expiry_date}}
                     </td>
+
                     <td>
                         {{view.supplier}}
                     </td>
+
                     {% if view.returned == False %}
                     <td>
                         <input type="hidden" id="return_id" name="id" value={{view.id}} />
