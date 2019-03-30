@@ -7,17 +7,21 @@
         <div class="content">
             <div class="ui header">
                 About Me
+
+                {% if request.user == user %}
+
                 <input type="button"
                        id="editButton"
                        class="ui red mini button right floated" onclick="editFirst()"
                        value = "Edit">
                 </input>
+                {% endif %}
             </div>
 
             <div class="ui divider"></div>
 
             <span id="aboutSpan">
-                I am interested in investigating and developing intelligent methods and tools in the area of software engineering, computer vision, information extraction, and other domains. Currently, some of the work I am engaged in include Identifying patterns in requirements, design and coding using NLP as well as through model transformation approaches. Some other work include the study the dataset characteristics and suitability of a given dataset to provide an acceptable solution of a Machine Learning problem.
+                {{detail.about}}
             </span>
 
             <div class="textarea">
@@ -47,7 +51,7 @@
 
                             <td>
                                 <span id="dojSpan">
-                                    January 10, 2012
+                                    {{detail.doj}}
                                 </span>
                             </td>
                         </tr>
@@ -71,7 +75,7 @@
 
                             <td>
                                 <span id="educationSpan">
-                                    PhD, IIT Kanpur
+                                    {{detail.education}}
                                 </span>
 
                                 <div class="textarea">
@@ -90,7 +94,7 @@
 
                             <td>
                                 <span id="interestSpan">
-                                    Software Engineering, Machine Learning, Data Science, and NLP.
+                                    {{detail.interest}}
                                 </span>
 
                                 <div class="textarea">
@@ -127,7 +131,7 @@
                                 <a>
                                     <i class="phone icon" id="contactIcon"></i>
                                         <span id="contactSpan">
-                                            +91 - 7612632139
+                                            +91 - {{detail.contact}}
                                         </span>
                                 </a>
 
@@ -143,13 +147,16 @@
                                 </td>
 
                                 <td>
-                                    <a href="" target="_blank">
+                                    <a>
                                         <i class="mail icon" id="mailIcon"></i>
-
-                                        <span id="mailSpan">
-                                            {{ userEmail }}
-                                        </span>
+                                            <span id="mailSpan">
+                                                {{ user.email }}
+                                            </span>
                                     </a>
+
+                                    <div class="ui fluid input">
+                                        <input type="text" id="mailInput" hidden>
+                                    </div>
 
                                 </td>
                             </tr>
@@ -160,10 +167,17 @@
                                 </td>
 
                                 <td>
-                                    <a href="https://www.linkedin.com/" target="_blank">
-                                        <i class="blue linkedin icon"></i>
-                                        {{ userFirstName }} {{ userLastName }}
+                                    <a href=" {{ detail.linkedin }} " target="_blank">
+                                        <i class="blue linkedin icon" id="linkedinIcon"></i>
+                                            <span id="linkedinSpan">
+                                                {{ detail.linkedin }}
+                                            </span>
                                     </a>
+
+                                    <div class="ui fluid input">
+                                        <input type="text" id="linkedinInput" hidden>
+                                    </div>
+
                                 </td>
                             </tr>
 
@@ -173,10 +187,16 @@
                                 </td>
 
                                 <td>
-                                    <a href="https://www.github.com/" target="_blank">
-                                        <i class="teal github icon"></i>
-                                        {{ userFirstName }} {{ userLastName }}
+                                    <a href=" {{ detail.github }} " target="_blank">
+                                        <i class="teal github icon" id="githubIcon"></i>
+                                            <span id="githubSpan">
+                                                {{ detail.github }}
+                                            </span>
                                     </a>
+
+                                    <div class="ui fluid input">
+                                        <input type="text" id="githubInput" hidden>
+                                    </div>
                                 </td>
                             </tr>
 
