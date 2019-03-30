@@ -199,6 +199,7 @@ def convener_view(request):
 
     else:
         mcm = Mcm.objects.all()
+        #mcm = Mcm.objects.all().order_by('annual_income').rever
         ch = Constants.batch
         source = Constants.father_occ_choice
         time = Constants.time
@@ -482,10 +483,10 @@ def student_view(request):
         hd = HoldsDesignation.objects.get(designation=con)
         hd1 = HoldsDesignation.objects.get(designation=assis)
         x = Notification.objects.get(student_id = request.user.extrainfo.id)
-        
+
         # Arihant: Here we are fetching the flags from the Notification table of student
         #end of database queries
-        
+
 
         #notification flags
         for dates in release:
@@ -558,6 +559,7 @@ def staff_view(request):
             messages.success(request,'Rejected successfully')
             return HttpResponseRedirect('/spacs/staff_view')
     else:
+        #mcm = Mcm.objects.all().order_by('student__cpi')
         mcm = Mcm.objects.all()
         gold = Director_gold.objects.all()
         silver = Director_silver.objects.all()
@@ -661,6 +663,22 @@ def get_winners(request):
 
     return HttpResponse(json.dumps(context), content_type='get_winners/json')
 
+def show_mcm(request):
+    student = Student.objects.all()
+    sort_value = request.GET.get('sort_value')
+    if sort_value == "çpi":
+        mcm = Mcm.objects.all().order_by('student__cpi')
+    elif sort_value == "income":
+        mcm = Mcm.objects.all().order_by('annual_income')
+    else :
+        mcm = Mcm.objects.all()
+
+    context=list(mcm)
+
+
+    return HttpResponse(json.dumps(context), content_type='show_mcm/json')
+
+
 # Arihant: Here we are extracting mcm_flag
 def get_mcm_flag(request):
     print('hello get_mcm_flag')
@@ -713,7 +731,10 @@ def get_content(request):
 
 def check_date(start_date, end_date):
     current_date = datetime.date.today()
-    if current_date >= start_date and current_date <= end_date:
-        return True
+    if start_date<=end_date:
+        if current_date >= start_date and current_date <= end_date:
+            return True
+        else:
+            return False
     else:
         return False
