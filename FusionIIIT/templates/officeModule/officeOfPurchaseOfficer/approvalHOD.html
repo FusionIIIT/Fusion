@@ -1,0 +1,17 @@
+
+    <form method='POST'>
+    {% csrf_token %}
+    <button class="ui primary button" type="submit" name="new_orders">
+          new orders
+    </button>
+    <button class="ui primary button" type="submit" name="approved_orders">
+           approved orders
+    </button>
+    <button class="ui primary button" type = "submit" name ="rejected orders">
+        Rejected Orders
+    </button>
+    </form>
+  <!---  <div class="collapsing">
+          {% comment %}  <a href="{% url 'office:new_orders' %}" class="ui red right floated button">Delete</a> {% endcomment%}
+    </div>
+--->

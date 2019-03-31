@@ -14,7 +14,8 @@ urlpatterns = [
     url(r'^after_purchase/', views.after_purchase, name='after_purchase'),
     url(r'^officeOfRegistrar/$', views.officeOfRegistrar, name='officeOfRegistrar'),
     url(r'^officeOfDeanRSPC/$', views.officeOfDeanRSPC, name='officeOfDeanRSPC'),
-
+    url(r'^newordershod/',views.newordershod,name='newordershod'),
+    url(r'^newordersregistrar/',views.newordersregistrar,name='newordersregistrar'),
     url(r'^officeOfDeanRSPC/submit/$',views.project_register,name='p_register'),
     url(r'^officeOfDeanRSPC/extention/$',views.project_extension,name='p_extension'),
     url(r'^officeOfDeanRSPC/close/$',views.project_closure,name='p_closure'),
@@ -36,6 +37,10 @@ urlpatterns = [
     url(r'^officeOfHOD/submit/$',views.teaching_form,name='teaching_form'),
     url(r'^officeOfHOD/work/$',views.hod_work,name='hod_work'),
     url(r'^genericModule/', views.genericModule, name='genericModule'),
+
+
+
+
     url(r'^deleteitem/(?P<id>[0-9]+)',views.delete_item, name='delete_item'),
     url(r'^deletevendor/(?P<id>[0-9]+)',views.delete_vendor, name='delete_vendor'),
     url(r'^editvendor/(?P<id>[0-9]+)',views.edit_vendor, name='edit_vendor'),
