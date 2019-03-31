@@ -781,7 +781,7 @@ def profile(request, username=None):
 #user is student
     current = HoldsDesignation.objects.filter(Q(working=user, designation__name="student"))
     if current:
-      context = contextstudentmanage(current,profile,request,user)
+      context = contextstudentmanage(current,profile,request,user,editable)
       return render(request, "globals/student_profile.html", context)
     else:
       return redirect("/")
@@ -790,7 +790,7 @@ def profile(request, username=None):
 
 
 #Funtion to generate context for student profile
-def contextstudentmanage(current,profile,request,user):
+def contextstudentmanage(current,profile,request,user,editable):
   student = get_object_or_404(Student, Q(id=profile.id))
   if editable and request.method == 'POST':
       if 'studentapprovesubmit' in request.POST:
@@ -958,35 +958,33 @@ def contextstudentmanage(current,profile,request,user):
           hid = request.POST['deletepat']
           hs = Patent.objects.get(Q(pk=hid))
           hs.delete()
-      form = AddEducation(initial={})
-      form1 = AddProfile(initial={})
-      form10 = AddSkill(initial={})
-      form11 = AddCourse(initial={})
-      form12 = AddAchievement(initial={})
-      form5 = AddPublication(initial={})
-      form6 = AddProject(initial={})
-      form7 = AddPatent(initial={})
-      form8 = AddExperience(initial={})
-      form14 = AddProfile()
-      skills = Has.objects.filter(Q(unique_id=student))
-      education = Education.objects.filter(Q(unique_id=student))
-      course = Course.objects.filter(Q(unique_id=student))
-      experience = Experience.objects.filter(Q(unique_id=student))
-      project = Project.objects.filter(Q(unique_id=student))
-      achievement = Achievement.objects.filter(Q(unique_id=student))
-      publication = Publication.objects.filter(Q(unique_id=student))
-      patent = Patent.objects.filter(Q(unique_id=student))
-      context = {'user': user, 'profile': profile, 'skills': skills,
-                 'educations': education, 'courses': course, 'experiences': experience,
-                 'projects': project, 'achievements': achievement, 'publications': publication,
-                 'patent': patent, 'form': form, 'form1': form1, 'form14': form14,
-                 'form5': form5, 'form6': form6, 'form7': form7, 'form8': form8,
-                 'form10':form10, 'form11':form11, 'form12':form12, 'current':current,
-                 'editable': editable
-                 }
-      return render(request, "globals/student_profile.html", context)
-  else:
-    return redirect("/")
+  form = AddEducation(initial={})
+  form1 = AddProfile(initial={})
+  form10 = AddSkill(initial={})
+  form11 = AddCourse(initial={})
+  form12 = AddAchievement(initial={})
+  form5 = AddPublication(initial={})
+  form6 = AddProject(initial={})
+  form7 = AddPatent(initial={})
+  form8 = AddExperience(initial={})
+  form14 = AddProfile()
+  skills = Has.objects.filter(Q(unique_id=student))
+  education = Education.objects.filter(Q(unique_id=student))
+  course = Course.objects.filter(Q(unique_id=student))
+  experience = Experience.objects.filter(Q(unique_id=student))
+  project = Project.objects.filter(Q(unique_id=student))
+  achievement = Achievement.objects.filter(Q(unique_id=student))
+  publication = Publication.objects.filter(Q(unique_id=student))
+  patent = Patent.objects.filter(Q(unique_id=student))
+  context = {'user': user, 'profile': profile, 'skills': skills,
+             'educations': education, 'courses': course, 'experiences': experience,
+             'projects': project, 'achievements': achievement, 'publications': publication,
+             'patent': patent, 'form': form, 'form1': form1, 'form14': form14,
+             'form5': form5, 'form6': form6, 'form7': form7, 'form8': form8,
+             'form10':form10, 'form11':form11, 'form12':form12, 'current':current,
+             'editable': editable
+             }
+  return context
 
 @login_required(login_url=LOGIN_URL)
 def logout_view(request):
