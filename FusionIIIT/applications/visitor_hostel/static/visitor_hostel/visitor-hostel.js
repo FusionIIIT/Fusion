@@ -55,6 +55,8 @@ function request_booking (event) {
     remarks_during_booking_request = $('input[name="remarks-during-booking-request"]').val();
     bill_settlement = $('input[name="bill_settlement"]').val();
 
+    console.log(bill_settlement);
+
 
 // visitor details
     name = $('input[name=visitor-name-1]').val();
@@ -193,6 +195,7 @@ function request_booking (event) {
                'booking_from_time' : booking_from_time,
                'booking_to_time' : booking_to_time,
                'remarks_during_booking_request': remarks_during_booking_request,
+               'bill_settlement' : bill_settlement,
                'name' : name,
                 'phone' : phone,
                 'email' : email,

@@ -168,12 +168,19 @@
                 </div> -->
             </div>
         </div>
-
+        <div class="two fields">
         <div class="field">
             <label>Purpose Of Visit</label>
             <div class="ui fluid input">
                 <input rows="2" value="{{ booking.purpose }}" name="purpose-of-visit-{{ booking.id }}" readonly>
             </div>
+        </div>
+        <div class="field">
+            <label>Bill to be settled by:</label>
+            <div class="ui fluid input">
+                <input rows="2" value="{{ booking.bill_to_be_settled_by }}" name="purpose-of-visit-{{ booking.id }}" readonly>
+            </div>
+        </div>
         </div>
         <!-- <div class="field">
             <label>Remarks (required*)</label>

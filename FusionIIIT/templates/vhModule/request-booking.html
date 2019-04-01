@@ -61,7 +61,7 @@
 
                     <div class="field">
                         <label>Arrival Time *</label>
-                        <input type="time" placeholder="00:00" name="request-booking-from-time" class="time-selector">
+                        <input type="text" placeholder="00:00" name="request-booking-from-time" class="time-selector">
                     </div>
                 </div>
 
@@ -78,7 +78,7 @@
 
                     <div class="field">
                         <label>Departure Time *</label>
-                        <input type="time" placeholder="00:00" name="request-booking-to-time" class="time-selector">
+                        <input type="text" placeholder="00:00" name="request-booking-to-time" class="time-selector">
                     </div>
                 </div>
 
@@ -180,16 +180,16 @@
                                 <div class="default text">Select</div>
 
                                 <div class="menu">
-                                    <div class="item" data-value="A">
+                                    <div class="item" data-value="Visitor">
                                         Visitor
                                     </div>
-                                    <div class="item" data-value="B">
+                                    <div class="item" data-value="Intender">
                                         Intender
                                     </div>
-                                    <div class="item" data-value="C">
+                                    <div class="item" data-value="Institute / No Charges">
                                         Institute / No Charges
                                     </div>
-                                    <div class="item" data-value="D">
+                                    <div class="item" data-value="Project No.">
                                         Project No.
                                     </div>
                                 </div>
@@ -245,6 +245,13 @@
                                 <input name="visitor-name-1" type="text">
                             </div>
 
+                            <div class="field">
+                                <label>Email *</label>
+                                <input placeholder="Email" type="email" name="email-1">
+                            </div>
+
+
+
                             
                         </div>
                     </div>
@@ -255,20 +262,25 @@
                                 <label>Phone *</label>
                                 <input name="phone-1" type="text">
                             </div>
-
                             <div class="field">
-                                <label>Email *</label>
-                                <input placeholder="Email" type="email" name="email-1">
+                                <label>Organization</label>
+                                <input placeholder="Organization" type="text" name="organization-1">
                             </div>
+
+                            
                         </div>
                     </div>
 
                     <div class="field">
                         <div class="two fields">
+
                             <div class="field">
-                                <label>Organization</label>
-                                <input placeholder="Organization" type="text" name="organization-1">
+                                <label>Address:</label>
+                                <div class="ui fluid input">
+                                    <input class="ui textarea" name="address-1">
+                                </div>
                             </div>
+                            
 
                             <div class="field">
                                 <label>Nationaliy</label>
@@ -525,12 +537,7 @@
                         </div>
                     </div>
 
-                    <div class="field">
-                        <label>Address:</label>
-                        <div class="ui fluid input">
-                            <input class="ui textarea" name="address-1">
-                        </div>
-                    </div>
+                    
                 </div>
 
 
