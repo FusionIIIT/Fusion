@@ -12,7 +12,6 @@ from django.forms.models import model_to_dict
 from django.db.models import Q
 from django.contrib.auth.models import User
 from .utils import render_to_pdf
-from background_task import background
 from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 from .forms import MinuteForm
@@ -27,9 +26,13 @@ from .handlers import (add_nonveg_order, add_mess_feedback, add_vacation_food_re
                        handle_special_request, add_bill_base_amount, add_mess_committee, generate_bill)
 
 today_g = datetime.today()
+month_g = today_g.month
 year_g = today_g.year
 tomorrow_g = today_g + timedelta(days=1)
-
+first_day_of_this_month = date.today().replace(day=1)
+last_day_prev_month = first_day_of_this_month - timedelta(days=1)
+month_last_g = last_day_prev_month.month
+year_last_g = last_day_prev_month.year
 
 def mess(request):
     user = request.user
@@ -54,12 +57,14 @@ def mess(request):
     if change_desig:
         change_design = Designation.objects.get(name="mess_committee")
         change_design.name = "mess_committee_mess1"
+        change_design.save()
         change_desig2 = Designation.objects.get(name="mess_convener")
         change_desig2.name = "mess_convener_mess1"
+        change_desig2.save()
         change_desig_obj1 = Designation(name="mess_committee_mess2", full_name="Mess Committee", type="administrative")
         change_desig_obj2 = Designation(name="mess_convener_mess2", full_name="Mess Convener", type="administrative")
-        change_desig_obj1.add()
-        change_desig_obj2.add()
+        change_desig_obj1.save()
+        change_desig_obj2.save()
     #end of remove part
 
     if extrainfo.user_type == 'student':
@@ -90,7 +95,7 @@ def mess(request):
             item.save()
 
         for items in rebates:
-            if items.leave_type == 'casual':
+            if items.leave_type == 'casual' and (items.status == '1' or items.status == '2'):
                 count += item.duration
 
         for f in feed:
@@ -158,9 +163,10 @@ def mess(request):
 
     elif extrainfo.user_type == 'staff':
         current_bill = MessBillBase.objects.latest('timestamp')
-        nonveg_orders = Nonveg_data.objects.filter(order_date=today_g)\
+        nonveg_orders_today = Nonveg_data.objects.filter(order_date=today_g)\
             .values('dish__dish','order_interval').annotate(total=Count('dish'))
-        print(nonveg_orders)
+        nonveg_orders_tomorrow = Nonveg_data.objects.filter(order_date=tomorrow_g)\
+            .values('dish__dish','order_interval').annotate(total=Count('dish'))
         # make info with diff name and then pass context
         newmenu = Menu_change_request.objects.all()
         vaca_all = Vacation_food.objects.all()
@@ -174,8 +180,10 @@ def mess(request):
 
         context = {
                    'bill_base': current_bill,
-                   'today': today_g,
-                   'nonveg_orders': nonveg_orders,
+                   'today': today_g.date(),
+                   'tomorrow': tomorrow_g.date(),
+                   'nonveg_orders_t':nonveg_orders_tomorrow,
+                   'nonveg_orders': nonveg_orders_today,
                    'members': members_mess,
                    'menu': y,
                    'newmenu': newmenu,
@@ -232,8 +240,7 @@ def mess(request):
                  'count4': count4, 'form': form, 'count5': count5,
                  'count6': count6, 'count7': count7, 'count8': count8, 'desig': desig
             }
-        return render(request, 'messModule/mess.html',
-                     )
+        return render(request, 'messModule/mess.html', context)
 
 
 @login_required
@@ -343,10 +350,8 @@ def menu_change_response(request):
     user = request.user
     holds_designations = HoldsDesignation.objects.filter(user=user)
     designation = holds_designations
-    for d in designation:
-        if d.designation.name == 'mess_manager':
-           data = handle_menu_change_response(request)
-        return JsonResponse(data)
+    data = handle_menu_change_response(request)
+    return JsonResponse(data)
 
 
 @login_required
@@ -428,7 +433,7 @@ def start_mess_registration(request):
     for d in designation:
         if d.designation.name == 'mess_manager':
             data = add_mess_registration_time(request)
-            return HttpResponseRedirect("/mess")
+            return JsonResponse(data)
 
 
 @transaction.atomic
@@ -460,9 +465,9 @@ def minutes(request):
         form = MinuteForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
-            return HttpResponse('success')
+            return HttpResponseRedirect('/mess')
         else:
-            return HttpResponse("not uploaded")
+            return HttpResponseRedirect('/mess')
 
 
 @csrf_exempt
@@ -719,3 +724,21 @@ def select_mess_convener(request):
         'message': 'Successfully added as mess convener ! '
     }
     return JsonResponse(data)
+
+
+def download_bill_mess(request):
+    user = request.user
+    extra_info = ExtraInfo.objects.get(user=user)
+    first_day_of_this_month = date.today().replace(day=1)
+    last_day_prev_month = first_day_of_this_month - timedelta(days=1)
+    previous_month = last_day_prev_month.strftime('%B')
+    print("\nn\\n\n\n\\n\n\n\\n\n")
+    print(month_last_g)
+    print(year_last_g)
+    bill_object = Monthly_bill.objects.filter(Q(month=previous_month)&Q(year=year_last_g))
+    # bill_object = Monthly_bill.objects.all()
+
+    context = {
+        'bill': bill_object,
+    }
+    return render_to_pdf('messModule/billpdfexport.html', context)

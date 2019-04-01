@@ -168,19 +168,19 @@ def handle_menu_change_response(request):
         obj.dish = application.request
         obj.save()
         data = {
-            'status': '2'
+            'status': '2',
         }
 
     elif stat == '0':
         application.status = 0
         data = {
-            'status': '1'
+            'status': '1',
         }
 
     else:
         application.status = 1
         data = {
-            'status': '0'
+            'status': '0',
         }
 
     application.save()
@@ -233,15 +233,24 @@ def add_mess_registration_time(request):
            @variables:
            :return data: Status of the application
     """
-    sem = request.POST.get('sem')
-    start_reg = request.POST.get('start_date')
-    end_reg = request.POST.get('end_date')
-    mess_reg_obj = Mess_reg(sem=sem, start_reg=start_reg, end_reg=end_reg)
-    mess_reg_obj.save()
-    data = {
-        'status': 1
-    }
-    return data
+    sem = request.POST['sem']
+    start_reg = request.POST['start_date']
+    end_reg = request.POST['end_date']
+    date_today = str(today_g.date())
+    if start_reg > end_reg or start_reg < date_today:
+        data = {
+            'status': 2,
+            'message': "Please Check the Dates",
+        }
+        return data
+    else:
+        mess_reg_obj = Mess_reg(sem=sem, start_reg=start_reg, end_reg=end_reg)
+        mess_reg_obj.save()
+        data = {
+            'status': 1,
+            'message': "Registration Started Successfully"
+        }
+        return data
 
 
 def add_leave_request(request, student):
@@ -266,6 +275,7 @@ def add_leave_request(request, student):
     end_date = request.POST.get('end_date')
     purpose = request.POST.get('purpose')
     #  TODO VALIDATE DATE
+
     if (start_date < today) or (end_date < start_date):
         data = {
             'status': 3
@@ -273,10 +283,17 @@ def add_leave_request(request, student):
         return data
 
     rebates = Rebate.objects.filter(student_id=student)
-    rebate_check = rebates.filter(Q(status='1')|Q(status='2'))
+    rebate_check = rebates.filter(Q(status='1') | Q(status='2'))
 
     for r in rebate_check:
-        if(start_date >= r.start_date) or (end_date <= r.end_date):
+        date_format = "%Y-%m-%d"
+        a = datetime.strptime(str(r.start_date), date_format)
+        b = datetime.strptime(str(start_date), date_format)
+        c = datetime.strptime(str(r.end_date), date_format)
+        d = datetime.strptime(str(end_date), date_format)
+        if ((b <= a and (d >= a and d <= c)) or (b >= a and (d >= a and d <= c))
+                or (b <= a and (d >= c)) or ((b >= a and b <= c) and (d >= c))):
+            flag = 0
             data = {
                 'status': 3
             }
@@ -362,11 +379,11 @@ def add_special_food_request(request, student):
     #   TODO ADD DATE VALIDATION
     if (date_today > to) or (to < fr):
         data = {
-            'status': 3
+            'status': 3,
             # case when the to date has passed
         }
-        messages.error(request, "Invalid dates")
-        return JsonResponse(data)
+        # messages.error(request, "Invalid dates")
+        return data
     spfood_obj = Special_request(student_id=student, start_date=fr, end_date=to,
                                  item1=food1, item2=food2, request=purpose)
     if Special_request.objects.filter(student_id=student, start_date=fr, end_date=to,
@@ -406,8 +423,15 @@ def add_bill_base_amount(request):
     """
     # month_now = today.strftime('%B')
     cost = request.POST.get("amount")
+    # if cost < 0:
+    #     data = {
+    #         'status' : '2',
+    #         'message': "Negative Values not allowed"
+    #     }
+    #     return data
     data = {
         'status': 1,
+        'message': "Successfully updated"
     }
     amount_object = MessBillBase(bill_amount=cost)
     amount_object.save()
