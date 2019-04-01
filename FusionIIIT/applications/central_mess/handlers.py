@@ -370,11 +370,11 @@ def add_special_food_request(request, student):
     #   TODO ADD DATE VALIDATION
     if (date_today > to) or (to < fr):
         data = {
-            'status': 3
+            'status': 3,
             # case when the to date has passed
         }
-        messages.error(request, "Invalid dates")
-        return JsonResponse(data)
+        # messages.error(request, "Invalid dates")
+        return data
     spfood_obj = Special_request(student_id=student, start_date=fr, end_date=to,
                                  item1=food1, item2=food2, request=purpose)
     if Special_request.objects.filter(student_id=student, start_date=fr, end_date=to,
