@@ -95,6 +95,7 @@ class BookingDetail(models.Model):
     image = models.FileField(null=True, blank=True, upload_to='VhImage/')
     rooms = models.ManyToManyField(RoomDetail)
     number_of_rooms =  models.IntegerField(default=1,null=True,blank=True)
+    number_of_rooms_alloted =  models.IntegerField(default=1,null=True,blank=True)
     booking_date = models.DateField(auto_now_add=False, auto_now=False, default=timezone.now)
     bill_to_be_settled_by = models.CharField(max_length=15, choices=BILL_TO_BE_SETTLED_BY ,default ="Intender")
     

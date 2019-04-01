@@ -12,6 +12,7 @@ from applications.globals.models import *
 from applications.visitor_hostel.forms import *
 from applications.visitor_hostel.models import *
 import numpy as np
+from django.db.models import Count
 
 from .forms import InventoryForm
 
@@ -69,10 +70,31 @@ def visitorhostel(request):
         cancel_booking_request = BookingDetail.objects.filter(status="CancelRequested", booking_to__gte=datetime.datetime.today()).order_by('booking_from')
         dashboard_bookings = BookingDetail.objects.filter(Q(status = "Pending") | Q(status="Forward") | Q(status = "Confirmed"), booking_to__gte=datetime.datetime.today()).order_by('booking_from')
         visitors = {}
+        rooms_per_booking = {}
+
+        # x = BookingDetail.objects.all().annotate(rooms_count=Count('rooms'))
+
         c_bookings = BookingDetail.objects.filter(Q(status="Forward"),  booking_to__gte=datetime.datetime.today()).order_by('booking_from')
         for booking in active_bookings:
             temp = range(2, booking.person_count + 1)
             visitors[booking.id] = temp
+
+        # for room_no in booking.rooms.all():
+        #     rooms_count = rooms_count + 1
+
+        print("rooms are here !! ")
+        print(booking.number_of_rooms_alloted)
+        print("and here !! ")
+
+        for room_no in booking.rooms.all():
+            temp2 = range(2, booking.number_of_rooms_alloted + 1)
+            rooms_per_booking[booking.id] = temp2
+
+
+        print("rooms are here !! ")
+        print(rooms_per_booking[booking.id])
+        print("and here !! ")
+
 
         complete_bookings = BookingDetail.objects.filter(Q(status="Canceled") | Q(status="Complete"), booking_to__lt=datetime.datetime.today()).select_related().order_by('booking_from')
         canceled_bookings = BookingDetail.objects.filter(status="Canceled").select_related().order_by('booking_from')
@@ -186,15 +208,15 @@ def visitorhostel(request):
     for b in dashboard_bookings:
         count=1
         b_visitor_list = b.visitor.all()
-        print("it is  %s  ### %s", b.booking_from, b_visitor_list)
+        # print("it is  %s  ### %s", b.booking_from, b_visitor_list)
         for v in b_visitor_list:
-            print("v is %s and count is %s !!!!!!!!!!!!!!!!!!!!!!!!", v, count)
+            # print("v is %s and count is %s !!!!!!!!!!!!!!!!!!!!!!!!", v, count)
             if count == 1:
                 visitor_list.append(v)
                 count = count+1
-    print("Visitor list is as ")
+    # print("Visitor list is as ")
 
-    print(visitor_list)
+    # print(visitor_list)
 
     return render(request, "vhModule/visitorhostel.html",
                   {'all_bookings': all_bookings,
@@ -217,6 +239,7 @@ def visitorhostel(request):
                    'intenders': intenders,
                    'user': user,
                    'visitors': visitors,
+                   # 'rooms' : rooms,
                    'previous_visitors': previous_visitors,
                    'completed_booking_bills': completed_booking_bills,
                    'current_balance': current_balance,
@@ -852,9 +875,12 @@ def forward_booking(request):
         booking = BookingDetail.objects.get(id=booking_id)
         bd = BookingDetail.objects.get(id=booking_id)
         bd.modified_visitor_category = modified_category
+        count_rooms = 0
         for room in rooms:
+            count_rooms += 1
             room_object = RoomDetail.objects.get(room_number=room)
             bd.rooms.add(room_object)
+        bd.number_of_rooms_alloted = count_rooms
         bd.save()
         dashboard_bookings = BookingDetail.objects.filter(Q(status = "Pending") | Q(status="Forward") | Q(status = "Confirmed") | Q(status = 'Rejected'), booking_to__gte=datetime.datetime.today(), intender=user).order_by('booking_from')
 
