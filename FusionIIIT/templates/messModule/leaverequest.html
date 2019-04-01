@@ -59,7 +59,7 @@
                             <div class="field">
                                 <label>Leave From*</label>
                                 <div class="ui calendar" id="rangestart">
-                                    <div class="ui input left icon">
+                                    <div>
                                         <input name="start_date" type="date" placeholder="From" required="true"
                                                id="start_date">
                                     </div>
@@ -273,8 +273,12 @@
                             document.getElementById('purpose').value = "";
 
                         }
-                        if (data.status == 3) {
-                            alert("Please check the dates");
+                        else if (data.status == 3) {
+                            alert(data.message);
+                            $("#leave").load(location.href + " #leave>*", "");
+                        }
+                        else if (data.status == 4) {
+                            alert(data.message);
                             $("#leave").load(location.href + " #leave>*", "");
                         }
                         else {

@@ -278,24 +278,36 @@ def add_leave_request(request, student):
 
     if (start_date < today) or (end_date < start_date):
         data = {
-            'status': 3
+            'status': 3,
+            'message': "Please check the dates"
         }
         return data
+
+    date_format = "%Y-%m-%d"
+    b = datetime.strptime(str(start_date), date_format)
+    d = datetime.strptime(str(end_date), date_format)
+    number_of_days = ( d - b ).days
+
+    if leave_type == "casual":
+        if (number_of_days > 5) or (number_of_days < 3):
+            data = {
+                'status': 4,
+                'message': "Cannot apply casual leave for more than 5 days or less than 3 days"
+            }
+            return data
 
     rebates = Rebate.objects.filter(student_id=student)
     rebate_check = rebates.filter(Q(status='1') | Q(status='2'))
 
     for r in rebate_check:
-        date_format = "%Y-%m-%d"
         a = datetime.strptime(str(r.start_date), date_format)
-        b = datetime.strptime(str(start_date), date_format)
         c = datetime.strptime(str(r.end_date), date_format)
-        d = datetime.strptime(str(end_date), date_format)
         if ((b <= a and (d >= a and d <= c)) or (b >= a and (d >= a and d <= c))
                 or (b <= a and (d >= c)) or ((b >= a and b <= c) and (d >= c))):
             flag = 0
             data = {
-                'status': 3
+                'status': 3,
+                'message': "Already applied for these dates",
             }
             return data
 
