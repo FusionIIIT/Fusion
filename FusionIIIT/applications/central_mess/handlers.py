@@ -233,15 +233,24 @@ def add_mess_registration_time(request):
            @variables:
            :return data: Status of the application
     """
-    sem = request.POST.get('sem')
-    start_reg = request.POST.get('start_date')
-    end_reg = request.POST.get('end_date')
-    mess_reg_obj = Mess_reg(sem=sem, start_reg=start_reg, end_reg=end_reg)
-    mess_reg_obj.save()
-    data = {
-        'status': 1
-    }
-    return data
+    sem = request.POST['sem']
+    start_reg = request.POST['start_date']
+    end_reg = request.POST['end_date']
+    date_today = str(today_g.date())
+    if start_reg > end_reg or start_reg < date_today:
+        data = {
+            'status': 2,
+            'message': "Please Check the Dates",
+        }
+        return data
+    else:
+        mess_reg_obj = Mess_reg(sem=sem, start_reg=start_reg, end_reg=end_reg)
+        mess_reg_obj.save()
+        data = {
+            'status': 1,
+            'message': "Registration Started Successfully"
+        }
+        return data
 
 
 def add_leave_request(request, student):
@@ -370,11 +379,11 @@ def add_special_food_request(request, student):
     #   TODO ADD DATE VALIDATION
     if (date_today > to) or (to < fr):
         data = {
-            'status': 3
+            'status': 3,
             # case when the to date has passed
         }
-        messages.error(request, "Invalid dates")
-        return JsonResponse(data)
+        # messages.error(request, "Invalid dates")
+        return data
     spfood_obj = Special_request(student_id=student, start_date=fr, end_date=to,
                                  item1=food1, item2=food2, request=purpose)
     if Special_request.objects.filter(student_id=student, start_date=fr, end_date=to,

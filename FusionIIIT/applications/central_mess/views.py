@@ -163,9 +163,10 @@ def mess(request):
 
     elif extrainfo.user_type == 'staff':
         current_bill = MessBillBase.objects.latest('timestamp')
-        nonveg_orders = Nonveg_data.objects.filter(order_date=today_g)\
+        nonveg_orders_today = Nonveg_data.objects.filter(order_date=today_g)\
             .values('dish__dish','order_interval').annotate(total=Count('dish'))
-        print(nonveg_orders)
+        nonveg_orders_tomorrow = Nonveg_data.objects.filter(order_date=tomorrow_g)\
+            .values('dish__dish','order_interval').annotate(total=Count('dish'))
         # make info with diff name and then pass context
         newmenu = Menu_change_request.objects.all()
         vaca_all = Vacation_food.objects.all()
@@ -179,8 +180,10 @@ def mess(request):
 
         context = {
                    'bill_base': current_bill,
-                   'today': today_g,
-                   'nonveg_orders': nonveg_orders,
+                   'today': today_g.date(),
+                   'tomorrow': tomorrow_g.date(),
+                   'nonveg_orders_t':nonveg_orders_tomorrow,
+                   'nonveg_orders': nonveg_orders_today,
                    'members': members_mess,
                    'menu': y,
                    'newmenu': newmenu,
@@ -237,8 +240,7 @@ def mess(request):
                  'count4': count4, 'form': form, 'count5': count5,
                  'count6': count6, 'count7': count7, 'count8': count8, 'desig': desig
             }
-        return render(request, 'messModule/mess.html', context
-                     )
+        return render(request, 'messModule/mess.html', context)
 
 
 @login_required
@@ -431,7 +433,7 @@ def start_mess_registration(request):
     for d in designation:
         if d.designation.name == 'mess_manager':
             data = add_mess_registration_time(request)
-            return HttpResponseRedirect("/mess")
+            return JsonResponse(data)
 
 
 @transaction.atomic
