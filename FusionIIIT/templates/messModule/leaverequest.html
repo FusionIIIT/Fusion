@@ -199,6 +199,21 @@
     <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
 
     <script>
+    function required_check_leave(){
+            if ($("#purpose").val().length == 0) {
+                check = 0;
+                if (!($("#leave_type").val())){
+                    check = 3;
+                }
+                return check;
+            }
+            else {
+                if (!($("#leave_type").val())){
+                    check = 4;
+                }
+                check = 1;
+            }
+        }
         function lsrequest() {
 
             event.preventDefault();
@@ -222,46 +237,56 @@
                 }
             };
             $('.ui.calendar').calendar(calendarOpts);
-
-
-            $.ajax({
-                type: 'POST',
-                url: 'leave/',
-                dataType: 'json',
-                data: {
-                    'csrfmiddlewaretoken': '{{ csrf_token }}',
-                    'leave_type': $("#leave_type").val(),
-                    'start_date': $("#start_date").val(),
-                    'end_date': $("#end_date").val(),
-                    'purpose': $("#purpose").val()
-                },
-                success: function (data) {
-                    if (data.status == 1) {
-                        alert("Data Inserted Successfully");
-                        $("#leave").load(location.href + " #leave>*", "")
-                        /*$('#ls_table').prepend("<tr><td>"+ $("#leave_type").val()+ "</td><td>"+ 
+            check = required_check_leave();
+            if(check == 0){
+                alert("Please add purpose");
+            }
+            else if (check == 3){
+                alert("Please select leave type and add purpose");
+            }
+            else if (check == 4){
+                alert("Please select leave type");
+            }
+            else {
+                $.ajax({
+                    type: 'POST',
+                    url: 'leave/',
+                    dataType: 'json',
+                    data: {
+                        'csrfmiddlewaretoken': '{{ csrf_token }}',
+                        'leave_type': $("#leave_type").val(),
+                        'start_date': $("#start_date").val(),
+                        'end_date': $("#end_date").val(),
+                        'purpose': $("#purpose").val()
+                    },
+                    success: function (data) {
+                        if (data.status == 1) {
+                            alert("Data Inserted Successfully");
+                            $("#leave").load(location.href + " #leave>*", "");
+                            /*$('#ls_table').prepend("<tr><td>"+ $("#leave_type").val()+ "</td><td>"+
                             $("#start_date").val() + "</td><td>" + $("end_date").val()+
                             "</td><td>"+ $("#purpose").val()+ "</td></tr>")*/
 
-                        document.getElementById('leave_type').value = "";
-                        document.getElementById('start_date').value = "";
-                        document.getElementById('end_date').value = "";
-                        document.getElementById('purpose').value = "";
+                            document.getElementById('leave_type').value = "";
+                            document.getElementById('start_date').value = "";
+                            document.getElementById('end_date').value = "";
+                            document.getElementById('purpose').value = "";
 
+                        }
+                        if (data.status == 3) {
+                            alert("Please check the dates");
+                            $("#leave").load(location.href + " #leave>*", "");
+                        }
+                        else {
+                            alert("Already applied for leaves in the respective dates");
+                            $("#leave").load(location.href + " #leave>*", "");
+                        }
+                    },
+                    error: function (data, err) {
+                        alert(err.message);
                     }
-                    if (data.status == 3) {
-                        alert("Please check the dates");
-                        $("#leave").load(location.href + " #leave>*", "")
-                    }
-                    else {
-                        alert("Already applied for leaves in the respective dates");
-                        $("#leave").load(location.href + " #leave>*", "")
-                    }
-                },
-                error: function (data, err) {
-                    alert(err.message);
-                }
-            });
+                });
+            }
             return false;
         }
 
