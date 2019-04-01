@@ -69,6 +69,7 @@ def visitorhostel(request):
         cancel_booking_request = BookingDetail.objects.filter(status="CancelRequested", booking_to__gte=datetime.datetime.today()).order_by('booking_from')
         dashboard_bookings = BookingDetail.objects.filter(Q(status = "Pending") | Q(status="Forward") | Q(status = "Confirmed"), booking_to__gte=datetime.datetime.today()).order_by('booking_from')
         visitors = {}
+        c_bookings = BookingDetail.objects.filter(Q(status="Forward"),  booking_to__gte=datetime.datetime.today()).order_by('booking_from')
         for booking in active_bookings:
             temp = range(2, booking.person_count + 1)
             visitors[booking.id] = temp
@@ -81,11 +82,13 @@ def visitorhostel(request):
             booking_from = booking.booking_from
             booking_to = booking.booking_to
             temp1 = booking_details(booking_from, booking_to)
-            # temp2 = forwarded_booking_details(booking_from, booking_to)
             available_rooms[booking.id] = temp1
-            # forwarded_rooms[booking.id] = temp2
-
-
+            
+        for booking in c_bookings:
+            booking_from = booking.booking_from
+            booking_to = booking.booking_to
+            temp2 = forwarded_booking_details(booking_from, booking_to)
+            forwarded_rooms[booking.id] = temp2
     # inventory data
     inventory = Inventory.objects.all()
     inventory_bill = InventoryBill.objects.all()
@@ -204,7 +207,7 @@ def visitorhostel(request):
                    'bills': bills,
                    # 'all_rooms_status' : all_rooms_status,
                    'available_rooms': available_rooms,
-                   # 'forwarded_rooms': forwarded_rooms,
+                   'forwarded_rooms': forwarded_rooms,
                    # 'booked_rooms' : booked_rooms,
                    # 'under_maintainence_rooms' : under_maintainence_rooms,
                    # 'occupied_rooms' : occupied_rooms,
@@ -398,8 +401,16 @@ def update_booking(request):
         #                                                     booking_to=booking_to,
         #                                                     number_of_rooms=number_of_rooms)
         booking = BookingDetail.objects.get(id=booking_id)
-
-        return HttpResponseRedirect('/visitorhostel/')
+        c_bookings = BookingDetail.objects.filter(Q(status="Forward"),  booking_to__gte=datetime.datetime.today()).order_by('booking_from')
+        for booking in c_bookings:
+            booking_from = booking.booking_from
+            booking_to = booking.booking_to
+            temp2 = forwarded_booking_details(booking_from, booking_to)
+            forwarded_rooms[booking.id] = temp2
+        return render(request, "visitorhostel/",
+                  {
+                   'forwarded_rooms': forwarded_rooms})
+        
     else:
         return HttpResponseRedirect('/visitorhostel/')
 

@@ -47,9 +47,14 @@ function request_booking (event) {
     csrfmiddlewaretoken = $('input[name="csrf"]').val();
     booking_from = $('input[name="request-booking-from"]').val();
     booking_to = $('input[name="request-booking-to"]').val();
+    booking_from_time = $('input[name="request-booking-from-time"]').val();
+    booking_to_time = $('input[name="request-booking-to-time"]').val();
     number_of_people =  parseInt($('input[name="number-of-people"]').val());
     number_of_rooms =  parseInt($('input[name="number-of-rooms"]').val());
     purpose_of_visit = $('input[name="purpose-of-visit"]').val();
+    remarks_during_booking_request = $('input[name="remarks-during-booking-request"]').val();
+    bill_settlement = $('input[name="bill_settlement"]').val();
+
 
 // visitor details
     name = $('input[name=visitor-name-1]').val();
@@ -57,8 +62,8 @@ function request_booking (event) {
     email = $('input[name=email-1]').val();
     address = $('input[name=address-1]').val();
     organization = $('input[name=organization-1]').val()
-    // nationality = $('input[name=country]').val()
-    console.log(organization);
+    nationality = $('input[name=country]').val()
+
 
     if (name == '') {
             alertModal("You didn't fill a visitor name! Please refill the form.");
@@ -88,6 +93,7 @@ function request_booking (event) {
     var days_diff = Math.round(Math.abs((firstDate.getTime() - secondDate.getTime())/(oneDay)));
     console.log("here !!!");
     console.log(days_diff);
+    console.log(phone + " " + email);
 
     if (!(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email))){
         alertModal("Oops! Please enter valid email address.");
@@ -101,6 +107,16 @@ function request_booking (event) {
 
     if (phone.charAt(0)!='9'&&phone.charAt(0)!='8'&&phone.charAt(0)!='7'){
         alertModal("Oops! Please enter valid phone number.");
+        return;
+    }
+
+    if (booking_from_time = '') {
+        alertModal ('Oops! Please enter the expected arrival time of the visitor');
+        return;
+    }
+
+    if (booking_to_time = '') {
+        alertModal ('Oops! Please enter the expected departure time of the visitor');
         return;
     }
 
@@ -154,9 +170,11 @@ function request_booking (event) {
         return;
     } 
 
-    // if ( !nationality ) {
-    //     nationality = ' ';
-    // } 
+    if ( !nationality ) {
+         nationality = ' ';
+    }
+    console.log(nationality) 
+
 
 
     $.ajax({
@@ -172,11 +190,14 @@ function request_booking (event) {
                'purpose-of-visit' : purpose_of_visit,
                'number-of-rooms' : number_of_rooms,
                'category' : category,
+               'booking_from_time' : booking_from_time,
+               'booking_to_time' : booking_to_time,
+               'remarks_during_booking_request': remarks_during_booking_request,
                'name' : name,
                 'phone' : phone,
                 'email' : email,
                 'address' : address,
-                // 'nationality' : nationality,
+                'nationality' : nationality,
                 'organization' : organization,
          },
         success: function(data) {
@@ -790,6 +811,21 @@ function find_available_rooms ( available_rooms ) {
         }
     });
 }
+
+
+
+function next_action(event){
+    event.preventDefault();
+    console.log("next!!");
+
+    
+    $("#booking-detail-data-tab").addClass("active");
+    $("#booking-detail-action-tab").addClass("active");
+    $("#visitor-detail-data-tab").removeClass("active");
+        $("#visitor-detail-action-tab").removeClass("active");
+}
+
+
 
 
 // Various Modals

@@ -4,6 +4,7 @@
 <!-- action -->
 
 {% for booking in dashboard_bookings %}
+
 {% for result in booking.visitor.all %}
 
 {% if forloop.first %}
@@ -157,8 +158,24 @@
                         <input value="{{ booking.number_of_rooms }}" name="number-of-rooms-{{ booking.id }}" type="number" readonly>
                     </div>
                 </div>
-                        
-                    
+                {% if user_designation == 'VhIncharge'  %}
+                <div class="field">
+                    <label>Rooms Alloted</label>
+                    <div name="alloted-rooms-{{ booking.id }}" multiple="" class="ui fluid dropdown" required="">
+                        {% for key, values in forwarded_rooms.items %}
+                            {% if key == booking.id %}
+                                {% for room in values %}
+                                    <option value='{{ room }}'>{{ room }}</option>
+                                {% endfor %}
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <!--<div class="ui fluid input">
+
+                        <input value="{{ booking.rooms }}" name="rooms-{{ booking.id }}" type="number" readonly>
+                    </div>-->
+                </div>        
+                {% endif %}    
 
                 {% if user_designation == 'VhCaretaker'  %}
                 <div class="field" id="alloted-rooms-{{ booking.id }}" >
@@ -330,6 +347,15 @@
                         </div>
                     </div>
                 </div>
+
+        <div class="field">
+            <label></label>
+            <div class="ui large green button right floated" id="next" onclick="confirm_booking('{{ booking.id }}')">
+                Next
+            </div>
+
+        </div>
+
             </form>
 
             <br>
