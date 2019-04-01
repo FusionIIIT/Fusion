@@ -257,6 +257,15 @@
 <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
 
 <script>
+    function required_check_spfood(){
+            if (($("#food1").val().length == 0)||($("#food2").val().length == 0) || ($("textarea.purpose").val().length == 0)) {
+                check = 0;
+                return check;
+            }
+            else {
+                check = 1;
+            }
+        }
     function sprequests() {
 
             var calendarOpts = {
@@ -280,50 +289,57 @@
         }
     };
     $('.ui.calendar').calendar(calendarOpts);
+    check = required_check_spfood();
+    if (check == 0){
+        alert("Please Fill All The Required Fields");
+    }
+    else {
+        $.ajax({
+            type: 'POST',
+            url: 'placerequest/',
+            dataType: 'json',
+            data: {
+                'csrfmiddlewaretoken': '{{ csrf_token }}',
+                'food1': $("#food1").val(),
+                'food2': $("#food2").val(),
+                'start_date': $("#s_date").val(),
+                'end_date': $("#e_date").val(),
+                'purpose': $("textarea.purpose").val()
+            },
+            success: function (data) {
+                if (data.status == 1) {
+                    alert("Data Inserted Successfully");
+                    $("#spfood").load(location.href + " #spfood>*", "");
 
-
-    $.ajax({
-                type: 'POST',
-                url: 'placerequest/',
-                dataType: 'json',
-                data: {
-                    'csrfmiddlewaretoken' : '{{ csrf_token }}',
-                    'food1':$("#food1").val(),
-                    'food2':$("#food2").val(),
-                    'start_date':$("#s_date").val(),
-                    'end_date': $("#e_date").val(),
-                    'purpose': $("textarea.purpose").val()
-                },                
-                success: function(data) {
-                    if(data.status == 1){
-                        alert("Data Inserted Successfully");
-                        $("#spfood").load(location.href+" #spfood>*","");
-                        
-                        /*$('#ls_table').prepend("<tr><td>"+ $("#leave_type").val()+ "</td><td>"+ 
+                    /*$('#ls_table').prepend("<tr><td>"+ $("#leave_type").val()+ "</td><td>"+
                             $("#start_date").val() + "</td><td>" + $("end_date").val()+
                             "</td><td>"+ $("#purpose").val()+ "</td></tr>")*/
 
-                        document.getElementById('food1').value="";
-                        document.getElementById('food2').value="";
-                        document.getElementById('s_date').value="";
-                        document.getElementById('e_date').value="";
-                        document.getElementById('purpose').value="";
-                        
-                    }
-                    if(data.status == 2){
-                        alert("Special Food request has already been made");
-                        $("#spfood").load(location.href+" #spfood>*","");
-                    }
-                    if(data.status == 3){
-                    alert("Please check the date. The date may have passed or might not be a valid date");
-                    $("#spfood").load(location.href+" #spfood>*","");
-                    return false;
-                    }
-                },
-                error: function(data, err) {
-                    alert(err.message);
+                    document.getElementById('food1').value = "";
+                    document.getElementById('food2').value = "";
+                    document.getElementById('s_date').value = "";
+                    document.getElementById('e_date').value = "";
+                    document.getElementById('purpose').value = "";
+
                 }
-            });
+                else if (data.status == 2) {
+                    alert("Special Food request has already been made");
+                    $("#spfood").load(location.href + " #spfood>*", "");
+                }
+                else if (data.status == 3) {
+                    alert("Please check the date. The date may have passed or might not be a valid date");
+                    $("#spfood").load(location.href + " #spfood>*", "");
+                    return false;
+                }
+                else {
+                    alert("Please check the data or try again");
+                }
+            },
+            error: function (data, err) {
+                alert(err.message);
+            }
+        });
+    }
             return false;
 }
 

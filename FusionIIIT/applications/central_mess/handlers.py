@@ -95,6 +95,7 @@ def add_vacation_food_request(request, student):
         :return:
             data: status = 1 or 2
     """
+
     start_date = request.POST.get('start_date')
     end_date = request.POST.get('end_date')
     purpose = request.POST.get('purpose')
@@ -105,6 +106,25 @@ def add_vacation_food_request(request, student):
             'status': 2
         }
         return data
+
+    vacation_check = Vacation_food.objects.filter(student_id =student)
+
+    date_format = "%Y-%m-%d"
+    b = datetime.strptime(str(start_date), date_format)
+    d = datetime.strptime(str(end_date), date_format)
+
+    for r in vacation_check:
+        a = datetime.strptime(str(r.start_date), date_format)
+        c = datetime.strptime(str(r.end_date), date_format)
+        if ((b <= a and (d >= a and d <= c)) or (b >= a and (d >= a and d <= c))
+                or (b <= a and (d >= c)) or ((b >= a and b <= c) and (d >= c))):
+            flag = 0
+            data = {
+                'status': 3,
+                'message': "Already applied for these dates",
+            }
+            return data
+
     vacation_object = Vacation_food(student_id=student, start_date=start_date,
                                     end_date=end_date, purpose=purpose)
     vacation_object.save()
@@ -387,7 +407,9 @@ def add_special_food_request(request, student):
     # date_format = "%Y-%m-%d"
     date_today = datetime.now().date()
     date_today = str(date_today)
-    print(date_today)
+    date_format = "%Y-%m-%d"
+    b = datetime.strptime(str(fr), date_format)
+    d = datetime.strptime(str(to), date_format)
     #   TODO ADD DATE VALIDATION
     if (date_today > to) or (to < fr):
         data = {
@@ -398,18 +420,26 @@ def add_special_food_request(request, student):
         return data
     spfood_obj = Special_request(student_id=student, start_date=fr, end_date=to,
                                  item1=food1, item2=food2, request=purpose)
-    if Special_request.objects.filter(student_id=student, start_date=fr, end_date=to,
-                                      item1=food1, item2=food2, request=purpose).exists():
-        data = {
-            'status': 2,
-        }
-        return data
-    else:
-        spfood_obj.save()
-        data = {
-            'status': 1,
-        }
-        return data
+    requests_food = Special_request.objects.filter(student_id=student)
+    s_check = requests_food.filter(Q(status='1') | Q(status='2'))
+
+    for r in s_check:
+        a = datetime.strptime(str(r.start_date), date_format)
+        c = datetime.strptime(str(r.end_date), date_format)
+        if ((b <= a and (d >= a and d <= c)) or (b >= a and (d >= a and d <= c))
+                or (b <= a and (d >= c)) or ((b >= a and b <= c) and (d >= c))):
+            flag = 0
+            data = {
+                'status': 2,
+                'message': "Already applied for these dates",
+            }
+            return data
+    spfood_obj.save()
+    data = {
+        'status': 1,
+    }
+    return data
+
 
 
 def handle_special_request(request):
