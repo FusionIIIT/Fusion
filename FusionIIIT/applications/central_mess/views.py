@@ -88,6 +88,7 @@ def mess(request):
         y = Menu.objects.filter(mess_option=mess_optn.mess_option)
         x = Nonveg_menu.objects.all()
 
+
         for item in rebates:
             d1 = item.start_date
             d2 = item.end_date

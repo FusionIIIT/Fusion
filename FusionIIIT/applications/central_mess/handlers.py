@@ -23,6 +23,10 @@ from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
 today_g = datetime.today()
 year_g = today_g.year
 tomorrow_g = today_g + timedelta(days=1)
+first_day_of_this_month = date.today().replace(day=1)
+last_day_prev_month = first_day_of_this_month - timedelta(days=1)
+previous_month = last_day_prev_month.strftime('%B')
+previous_month_year = last_day_prev_month.year
 
 
 def add_nonveg_order(request, student):
@@ -306,7 +310,7 @@ def add_leave_request(request, student):
     date_format = "%Y-%m-%d"
     b = datetime.strptime(str(start_date), date_format)
     d = datetime.strptime(str(end_date), date_format)
-    number_of_days = ( d - b ).days
+    number_of_days = ( d - b ).days + 1
 
     if leave_type == "casual":
         if (number_of_days > 5) or (number_of_days < 3):
@@ -374,6 +378,10 @@ def handle_rebate_response(request):
     """
     id = request.POST.get('id_rebate')
     leaves = Rebate.objects.get(pk=id)
+    date_format = "%Y-%m-%d"
+    b = datetime.strptime(str(leaves.start_date), date_format)
+    d = datetime.strptime(str(leaves.end_date), date_format)
+    rebate_count = (d - b).days
     leaves.status = request.POST["status"]
     leaves.save()
     data = {
@@ -509,11 +517,8 @@ def add_mess_committee(request, roll_number):
 def generate_bill():
     student_all = Student.objects.all()
     month_t = datetime.now().month - 1
-    first_day_of_this_month = date.today().replace(day=1)
-    last_day_prev_month = first_day_of_this_month - timedelta(days=1)
-    previous_month = last_day_prev_month.strftime('%B')
+
     # previous_month = month_t.strftime("%B")
-    print(previous_month)
     amount_c = MessBillBase.objects.latest('timestamp')
     for student in student_all:
         nonveg_total_bill=0
@@ -532,6 +537,7 @@ def generate_bill():
         total = amount_c.bill_amount + nonveg_total_bill + rebate_amount
         bill_object = Monthly_bill(student_id=student,
                                    month=previous_month,
+                                   year = previous_month_year,
                                    amount=amount_c.bill_amount,
                                    rebate_count=rebate_count,
                                    rebate_amount=rebate_amount,
@@ -539,15 +545,15 @@ def generate_bill():
                                    total_bill=total)
         if Monthly_bill.objects.filter(student_id=student,
                                        month=previous_month,
-                                       year = year_g,
+                                       year = previous_month_year,
                                        total_bill=total):
             print("exists")
         elif Monthly_bill.objects.filter(student_id=student,
                                        month=previous_month,
-                                       year = year_g):
+                                       year = previous_month_year):
             Monthly_bill.objects.filter(student_id=student,
                                         month=previous_month,
-                                        year=year_g).update(student_id=student,
+                                        year=previous_month_year).update(student_id=student,
                                                             month=previous_month,
                                                             amount=amount_c.bill_amount,
                                                             rebate_count=rebate_count,
@@ -555,8 +561,34 @@ def generate_bill():
                                                             nonveg_total_bill=nonveg_total_bill,
                                                             total_bill=total)
             # bill_object.update()
-            print(student)
         else:
             bill_object.save()
-            print(student)
 
+#
+# def updatebill(student, rebate_count):
+#     base = MessBillBase.objects.latest('timestamp')
+#     amount_c = base.bill_amount
+#     rebate_amount = amount_c * rebate_count / 30
+#     if Monthly_bill.objects.filter(Q(student_id=student) and Q(year = previous_month_year) and Q(month = previous_month)):
+#         bill_update = Monthly_bill.objects.filter(Q(student_id=student) and Q(year = previous_month_year) and Q(month=previous_month))
+#         # nonveg_t = bill_update.nonveg_total_bill
+#         total = bill_update.total_bill + rebate_amount
+#         rebate_count2 = bill_update.rebate_count + rebate_count
+#         rebate_amount2 = bill_update.rebate_amount + rebate_amount
+#         bill_update.rebate_amount = rebate_amount2
+#         bill_update.rebate_count = rebate_count2
+#         bill_update.total_bill = total
+#         bill_update.save()
+#     # if bill does not exist
+#     else:
+#         bill_object = Monthly_bill(student_id=student,
+#                               month=today_g.month,
+#                                year = previous_month_year,
+#                               amount=amount_c.bill_amount,
+#                               rebate_count=rebate_count,
+#                               rebate_amount=rebate_amount,
+#                               nonveg_total_bill=0,
+#                               total_bill= amount_c + rebate_amount)
+#         bill_object.save()
+#     data = 1
+#     return data
