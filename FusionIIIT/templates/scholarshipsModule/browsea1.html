@@ -18,43 +18,20 @@
             </div>
 
 
-            <form class="ui form" id="cpi_sort">
 
-                <div class="ui grid row">
-                    <div class="one wide column"></div>
-
-                    <div class="six wide column">
-                        <label>Filter By</label>
-                        <select class="ui fluid search large dropdown" id="sort_value" required>
-                            <option value="">Select</option>
-                            <option value="cpi"> CPI </option>
-                            <option value="income">Annual Income</option>
-                        </select>
-                    </div>
-
-                    <div class="eight wide column">
-                      <button name="Submit" type="submit" class="ui primary large right floated button">
-                          Sort
-                      </button>
-                    </div>
-
-                </div>
-
-
-            </form>
 
             <div class="content">
                 <div class="description">
                     <form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;">
                     {% csrf_token %}
-                <table class="ui sortable striped table" id="mcm_show">
+                <table class="ui sortable table" id="mcm_show">
 
                   <thead>
                     <tr>
-                        <th onclick="sortTable(0)">Student ID</th>
+                        <th onclick="sortTable(0)">Roll</th>
                         <th onclick="sortTable(1)">Category</th>
-                        <th onclick="sortTable(2)">Annual Income</th>
-                        <th onclick="sortTable(1)">CPI</th>
+                        <th onclick="sortTable(2)">Income</th>
+                        <th onclick="sortTable(3)">CPI</th>
                         <th>File</th>
                         <th>Verify</th>
                         <th>Reject</th>
@@ -72,7 +49,7 @@
                                 <form method='POST'>
                                     {% csrf_token %}
                                     <input type="hidden" name="id" value="{{winner.id}}"/>
-                                    <a href="/media/{{winner.income_certificate}}" download><button type='button' class="ui blue button" name="Form">Files</button>
+                                    <a href="/media/{{winner.income_certificate}}" download><button type='button' class="mini ui blue button" name="Form">Files</button>
                                     </a>
                                 </form>
                         </td>
@@ -80,14 +57,14 @@
                             <form method='POST'>
                                 {% csrf_token %}
                                 <input type="hidden" name="id" value="{{winner.id}}"/>
-                            <button class="ui blue button" name="Verify_mcm" value="{{winner.id}}">Verify</button>
+                            <button class="mini ui blue button" name="Verify_mcm" value="{{winner.id}}">Verify</button>
                                 </form>
                         </td>
                         <td>
                             <form method='POST'>
                                 {%csrf_token %}
                                 <input type="hidden" name="id" value="{{winner.id}}"/>
-                            <button class="ui blue button" name="Reject_mcm" value="{{winner.id}}">Reject</button>
+                            <button class="mini ui blue button" name="Reject_mcm" value="{{winner.id}}">Reject</button>
                             </form>
                         </td>
 
@@ -128,15 +105,15 @@
                     <div class="ui vertical segment">
                             <form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;">
                                     {% csrf_token %}
-                        <table class="ui striped table">
+                        <table class="ui sortable striped table"id="dandm_show" style="word-wrap:break-word; table-layout:fixed;">
 
                             <thead>
                             <tr>
-                                <th>Student ID</th>
-                                <th>Award</th>
-                                <th>Title</th>
-                                <th>CPI</th>
-                                <th>Number of Students</th>
+                                <th onclick="sortTable1(0)">Roll</th>
+                                <th onclick="sortTable1(1)">Award</th>
+                                <th onclick="sortTable1(2)">Title</th>
+                                <th onclick="sortTable1(3)">CPI</th>
+                                <th onclick="sortTable1(4)">Students</th>
                                 <th>File</th>
                                 <th>Verify</th>
                                 <th>Reject</th>
@@ -146,52 +123,31 @@
                                     {% for winner in dandm %}
                                     {% if winner.status == 'INCOMPLETE' %}
                             <tr>
-                                <td>
-                                    <div class="content">
-                                            {{winner.student_id}}
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="content">
-                                            {{winner.award_id}}
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="content">
-                                            {{winner.title_name}}
-                                    </div>
-                                </td>
-
-                                <td>
-                                    <div class="content">
-                                            {{winner.student.cpi}}
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="content">
-                                            {{winner.no_of_students}}
-                                    </div>
-                                </td>
+                                <td>{{winner.student_id}}</td>
+                                <td>{{winner.award_id}}</td>
+                                <td>{{winner.title_name}}</td>
+                                <td>{{winner.student.cpi}}</td>
+                                <td>{{winner.no_of_students}}</td>
                                 <td>
                                 <form method='POST'>
                                         {% csrf_token %}
                                         <input type="hidden" name="id" value="{{winner.id}}"/>
-                                        <a href="/media/{{winner.relevant_document}}" download><button type='button' class="ui blue button" name="Form">Files</button>
+                                        <a href="/media/{{winner.relevant_document}}" download><button type='button' class="mini ui blue button" name="Form">Files</button>
                                         </a>
                                     </form>
                                 </td>
                                 <td>
                                     <form method='POST'>
                                         {% csrf_token %}
-                                        <input type="hidden" name="id" value="{{winner.student}}"/>
-                                    <button class="ui blue button" name="Verify_dm" value="{{winner.id}}">Verify</button>
+                                        <input type="hidden" name="id" value="{{winner.id}}"/>
+                                    <button class="mini ui blue button" name="Verify_dm" value="{{winner.id}}">Verify</button>
                                         </form>
                                 </td>
                                 <td>
                                     <form method='POST'>
                                         {%csrf_token %}
-                                        <input type="hidden" name="id" value="{{winner.student}}"/>
-                                    <button class="ui blue button" name="Reject_dm" value="{{winner.id}}">Reject</button>
+                                        <input type="hidden" name="id" value="{{winner.id}}"/>
+                                    <button class="mini ui blue button" name="Reject_dm" value="{{winner.id}}">Reject</button>
                                     </form>
                                 </td>
 
@@ -214,13 +170,13 @@
                 <div class="ui vertical segment">
                         <form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;">
                                 {% csrf_token %}
-                    <table class="ui striped table">
+                    <table class="ui sortable striped table"id="silver_show" style="word-wrap:break-word; table-layout:fixed;">
 
                         <thead>
                         <tr>
-                            <th>Student ID</th>
-                            <th>Award</th>
-                            <th>CPI</th>
+                            <th onclick="sortTable2(0)">Roll</th>
+                            <th onclick="sortTable2(1)">Award</th>
+                            <th onclick="sortTable2(2)">CPI</th>
                             <th>File</th>
                             <th>Verify</th>
                             <th>Reject</th>
@@ -230,40 +186,28 @@
                                 {% for winner in silver %}
                                 {% if winner.status == 'INCOMPLETE' %}
                         <tr>
-                            <td>
-                                <div class="content">
-                                        {{winner.student_id}}
-                                </div>
-                            </td>
-                              <td>
-                                <div class="content">
-                                        {{winner.award_id}}
-                                </div>
-                            </td>
-                            <td>
-                                <div class="content">
-                                        {{winner.student.cpi}}
-                                </div>
-                            </td>
+                            <td>{{winner.student_id}}</td>
+                            <td>{{winner.award_id}}</td>
+                            <td>{{winner.student.cpi}}</td>
                             <td>
                                     <form method='POST'>
                                             {% csrf_token %}
                                             <input type="hidden" name="id" value="{{winner.id}}"/>
-                                            <a href="/media/{{winner.relevant_document}}" download><button type='button' class="ui blue button" name="Form">Files</button>
+                                            <a href="/media/{{winner.relevant_document}}" download><button type='button' class="mini ui blue button" name="Form">Files</button>
                                             </a>
                                         </form>
                             <td>
                                 <form method='POST'>
                                     {% csrf_token %}
                                     <input type="hidden" name="id" value="{{winner.id}}"/>
-                                <button class="ui blue button" name="Verify_silver" value="{{winner.id}}">Verify</button>
+                                <button class="mini ui blue button" name="Verify_silver" value="{{winner.id}}">Verify</button>
                                     </form>
                             </td>
                             <td>
                                 <form method='POST'>
                                     {%csrf_token %}
                                     <input type="hidden" name="id" value="{{winner.id}}"/>
-                                <button class="ui blue button" name="Reject_silver"  value="{{winner.id}}">Reject</button>
+                                <button class="mini ui blue button" name="Reject_silver"  value="{{winner.id}}">Reject</button>
                                 </form>
                             </td>
 
@@ -287,12 +231,12 @@
                 <div class="ui vertical segment">
                         <form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;">
                                 {% csrf_token %}
-                    <table class="ui striped table">
+                    <table class="ui sortable striped table"id="gold_show">
 
                         <thead>
                         <tr>
-                            <th>Student ID</th>
-                            <th>CPI</th>
+                            <th onclick="sortTable3(0)">Roll</th>
+                            <th onclick="sortTable3(1)">CPI</th>
                             <th>File</th>
                             <th>Verify</th>
                             <th>Reject</th>
@@ -302,22 +246,13 @@
                                 {% for winner in gold %}
                                 {% if winner.status == 'INCOMPLETE' %}
                         <tr>
-                            <td>
-                                <div class="content">
-                                        {{winner.student_id}}
-                                </div>
-                            </td>
-
-                            <td>
-                                <div class="content">
-                                        {{winner.student.cpi}}
-                                </div>
-                            </td>
+                            <td>{{winner.student_id}}</td>
+                            <td>{{winner.student.cpi}}</td>
                             <td>
                             <form method='POST'>
                                     {% csrf_token %}
                                     <input type="hidden" name="id" value="{{winner.id}}"/>
-                                    <a href="/media/{{winner.relevant_document}}" download><button type='button' class="ui blue button" name="Form">Files</button>
+                                    <a href="/media/{{winner.relevant_document}}" download><button type='button' class="mini ui blue button" name="Form">Files</button>
                                     </a>
                                 </form>
                             </td>
@@ -325,14 +260,14 @@
                                 <form method='POST'>
                                     {% csrf_token %}
                                     <input type="hidden" name="id" value="{{winner.id}}"/>
-                                <button class="ui blue button" name="Verify_gold" value="{{winner.id}}">Verify</button>
+                                <button class="mini ui blue button" name="Verify_gold" value="{{winner.id}}">Verify</button>
                                     </form>
                             </td>
                             <td>
                                 <form method='POST'>
                                     {%csrf_token %}
                                     <input type="hidden" name="id" value="{{winner.id}}"/>
-                                <button class="ui blue button" name="Reject_gold" value="{{winner.id}}">Reject</button>
+                                <button class="mini ui blue button" name="Reject_gold" value="{{winner.id}}">Reject</button>
                                 </form>
                             </td>
 
@@ -351,73 +286,8 @@
         </div>
     </div>
 </div>
-<script>
-  //Arihant:Showing Previous Winners
-    $(document).on('submit','#cpi_sort',function (event) {
-            event.preventDefault();
-            $('#mcm_show tbody').find("tr:gt(0)").remove();
-            var element = $('#mcm_show tbody tr').first();
-            $.ajax({
-                url: '/spacs/show_mcm/',
-                type: 'GET',
-                data: {
-                    sort_value: $('#sort_value').val(),
-                },
-                success: function (response) {
-                    if(response.result==='Success'){
 
-                        for(var i=0;i<response.student_roll.length;i++){
-                            var status = response.status[i];
-                            var student_roll=response.student_roll[i];
-                            var student_category=response.student_category[i];
-                            var annual_income=response.annual_income[i];
-                            var cpi = response.cpi[i];
-
-                            if(status == "INCOMPLETE"){
-                            txt="<tr>";
-                            txt += '<td>' + student_roll + '</td>' +
-                            '<td>' + student_category + '</td>' +
-                            '<td>' + annual_income + '</td>' +
-                            '<td>' + cpi + '</td>';
-
-                            txt +='</tr>';
-
-                            element.after(txt);
-                          }
-                          else{
-                            txt="<tr>";
-                            txt += '<td>' + student_roll + '</td>' +
-                            '<td>' + student_category + '</td>' +
-                            '<td>' + annual_income + '</td>' +
-                            '<td>' + cpi + '</td>' +
-                            '<td>' + "AlREADY VERIFED " + '</td>';
-                            txt +='</tr>';
-
-                            element.after(txt);
-                          }
-                        }
-
-                        console.log(response.result)
-                    }
-                    else{
-                            txt="<tr>";
-                            txt += '<td>' + "" + '</td>' +
-                            '<td>' + "No Data Found!!"  + '</td>' +
-                            '<td>' + "" + '</td>';
-                            txt +='</tr>';
-                            element.after(txt);
-                        console.log(response.result);
-                    }
-
-                }
-            });
-        });
-
-
-
-</script>
 <script>function sortTable(n) {
-            console.log("sdfghj")
             var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount=0;
             table = document.getElementById("mcm_show");
             switching = true;
@@ -430,7 +300,7 @@
                 x=rows[i].getElementByTagName("td")[n];
                 y=rows[i+1].getElementByTagName("td")[n];
                 if(dir=="asc"){
-                  if(n==2 || n==3){
+                  if(n==0 || n==2 || n==3){
                     if (Number(x.innerHTML) > Number(y.innerHTML)) {
                         shouldSwitch = true;
                         break;
@@ -443,7 +313,7 @@
                     }
                 }
                 } else if(dir == "desc"){
-                  if(n==2 || n==3){
+                  if(n==0 || n==2 || n==3){
                     if(Number(x.innerHTML) > Number(y.innerHTML)){
                       shouldSwitch=true;
                       break;
@@ -469,6 +339,164 @@
               }
             }
 </script>
+<script>function sortTable1(n) {
+            var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount=0;
+            table = document.getElementById("dandm_show");
+            switching = true;
+            dir="asc";
+            while(switching){
+              switching=false;
+              rows=table.tbody.rows;
+              for(i=1;i<(row.length - 1);i++){
+                shouldSwitch=false;
+                x=rows[i].getElementByTagName("td")[n];
+                y=rows[i+1].getElementByTagName("td")[n];
+                if(dir=="asc"){
+                  if(n==0 || n==3 ||n==4){
+                    if (Number(x.innerHTML) > Number(y.innerHTML)) {
+                        shouldSwitch = true;
+                        break;
+                      }
+                  }
+                else{
+                  if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                      shouldSwitch = true;
+                      break;
+                    }
+                }
+                } else if(dir == "desc"){
+                  if(n==0 || n==3 || n==4){
+                    if(Number(x.innerHTML) > Number(y.innerHTML)){
+                      shouldSwitch=true;
+                      break;
+                    }
+                  }
+                  else{
+                    if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                        shouldSwitch = true;
+                        break;
+                      }
+                  }
+                }
+                if (shouldSwitch){
+                  rows[i].parentNode.insertBefore(rows[i+1], rows[i]);
+                  switching = true;
+                  switchcount++;
+                } else{
+                  if (switchcount==0 && dir == "asc"){
+                    dir = "desc";
+                    switching = true;
+                  }
+                }
+              }
+            }
+</script>
+
+<script>function sortTable2(n) {
+            var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount=0;
+            table = document.getElementById("silver_show");
+            switching = true;
+            dir="asc";
+            while(switching){
+              switching=false;
+              rows=table.tbody.rows;
+              for(i=1;i<(row.length - 1);i++){
+                shouldSwitch=false;
+                x=rows[i].getElementByTagName("td")[n];
+                y=rows[i+1].getElementByTagName("td")[n];
+                if(dir=="asc"){
+                  if(n==0 || n==2){
+                    if (Number(x.innerHTML) > Number(y.innerHTML)) {
+                        shouldSwitch = true;
+                        break;
+                      }
+                  }
+                else{
+                  if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                      shouldSwitch = true;
+                      break;
+                    }
+                }
+                } else if(dir == "desc"){
+                  if(n==0 || n==2){
+                    if(Number(x.innerHTML) > Number(y.innerHTML)){
+                      shouldSwitch=true;
+                      break;
+                    }
+                  }
+                  else{
+                    if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                        shouldSwitch = true;
+                        break;
+                      }
+                  }
+                }
+                if (shouldSwitch){
+                  rows[i].parentNode.insertBefore(rows[i+1], rows[i]);
+                  switching = true;
+                  switchcount++;
+                } else{
+                  if (switchcount==0 && dir == "asc"){
+                    dir = "desc";
+                    switching = true;
+                  }
+                }
+              }
+            }
+</script>
+<script>function sortTable3(n) {
+            var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount=0;
+            table = document.getElementById("gold_show");
+            switching = true;
+            dir="asc";
+            while(switching){
+              switching=false;
+              rows=table.tbody.rows;
+              for(i=1;i<(row.length - 1);i++){
+                shouldSwitch=false;
+                x=rows[i].getElementByTagName("td")[n];
+                y=rows[i+1].getElementByTagName("td")[n];
+                if(dir=="asc"){
+                  if(n==0 || n==1){
+                    if (Number(x.innerHTML) > Number(y.innerHTML)) {
+                        shouldSwitch = true;
+                        break;
+                      }
+                  }
+                else{
+                  if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                      shouldSwitch = true;
+                      break;
+                    }
+                }
+                } else if(dir == "desc"){
+                  if(n==0 || n==1){
+                    if(Number(x.innerHTML) > Number(y.innerHTML)){
+                      shouldSwitch=true;
+                      break;
+                    }
+                  }
+                  else{
+                    if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                        shouldSwitch = true;
+                        break;
+                      }
+                  }
+                }
+                if (shouldSwitch){
+                  rows[i].parentNode.insertBefore(rows[i+1], rows[i]);
+                  switching = true;
+                  switchcount++;
+                } else{
+                  if (switchcount==0 && dir == "asc"){
+                    dir = "desc";
+                    switching = true;
+                  }
+                }
+              }
+            }
+</script>
+
 
 
 <script>
