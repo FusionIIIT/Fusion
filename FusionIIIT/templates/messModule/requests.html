@@ -31,7 +31,7 @@
                     Request for change of Central Mess:
                 </div>
                 {{current_date}}
-
+                <br>
 
                 {% if current_date < mess_reg.end_reg %}
                 <div class="two fields">
@@ -140,7 +140,7 @@
                 </div>
 
                 <div class="field">
-                    <button class="ui primary button right floated" onclick="sprequests()">
+                    <button class="ui primary button right floated" onclick="return sprequests()">
                         Submit
                     </button>
                 </div>
@@ -297,7 +297,7 @@
                 success: function(data) {
                     if(data.status == 1){
                         alert("Data Inserted Successfully");
-                        $("#spfood").load(location.href+" #spfood>*","")
+                        $("#spfood").load(location.href+" #spfood>*","");
                         
                         /*$('#ls_table').prepend("<tr><td>"+ $("#leave_type").val()+ "</td><td>"+ 
                             $("#start_date").val() + "</td><td>" + $("end_date").val()+
@@ -312,11 +312,11 @@
                     }
                     if(data.status == 2){
                         alert("Special Food request has already been made");
-                        $("#spfood").load(location.href+" #spfood>*","")
+                        $("#spfood").load(location.href+" #spfood>*","");
                     }
                     if(data.status == 3){
                     alert("Please check the date. The date may have passed or might not be a valid date");
-                    $("#spfood").load(location.href+" #spfood>*","")
+                    $("#spfood").load(location.href+" #spfood>*","");
                     return false;
                     }
                 },

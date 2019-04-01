@@ -433,7 +433,7 @@ def start_mess_registration(request):
     for d in designation:
         if d.designation.name == 'mess_manager':
             data = add_mess_registration_time(request)
-            return HttpResponseRedirect("/mess")
+            return JsonResponse(data)
 
 
 @transaction.atomic
