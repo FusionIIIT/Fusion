@@ -348,10 +348,8 @@ def menu_change_response(request):
     user = request.user
     holds_designations = HoldsDesignation.objects.filter(user=user)
     designation = holds_designations
-    for d in designation:
-        if d.designation.name == 'mess_manager':
-           data = handle_menu_change_response(request)
-        return JsonResponse(data)
+    data = handle_menu_change_response(request)
+    return JsonResponse(data)
 
 
 @login_required
@@ -465,9 +463,9 @@ def minutes(request):
         form = MinuteForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
-            return HttpResponse('success')
+            return HttpResponseRedirect('/mess')
         else:
-            return HttpResponse("not uploaded")
+            return HttpResponseRedirect('/mess')
 
 
 @csrf_exempt

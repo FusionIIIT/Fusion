@@ -168,19 +168,19 @@ def handle_menu_change_response(request):
         obj.dish = application.request
         obj.save()
         data = {
-            'status': '2'
+            'status': '2',
         }
 
     elif stat == '0':
         application.status = 0
         data = {
-            'status': '1'
+            'status': '1',
         }
 
     else:
         application.status = 1
         data = {
-            'status': '0'
+            'status': '0',
         }
 
     application.save()
@@ -414,12 +414,12 @@ def add_bill_base_amount(request):
     """
     # month_now = today.strftime('%B')
     cost = request.POST.get("amount")
-    if cost < 0:
-        data = {
-            'status' : '2',
-            'message': "Negative Values not allowed"
-        }
-        return data
+    # if cost < 0:
+    #     data = {
+    #         'status' : '2',
+    #         'message': "Negative Values not allowed"
+    #     }
+    #     return data
     data = {
         'status': 1,
         'message': "Successfully updated"
