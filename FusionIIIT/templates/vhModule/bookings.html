@@ -120,13 +120,13 @@
                                         </button></td>
                                     <td>
                                     {% if booking.status == "Forward" %}
-                                            <div class="ui large green button center floated" onclick="bookingRequestModal('{{ booking.id }}')">
+                                            <div class="ui medium green button center floated" onclick="bookingRequestModal('{{ booking.id }}')">
                                                 Confirm
                                             </div>
                                             
                                     {% elif booking.status == "Confirmed" %}
                                     
-                                            <div class="ui large button center floated">
+                                            <div class="ui medium button center floated">
                                                 Confirmed
                                             </div>
                                     {% endif %}
@@ -222,18 +222,18 @@
                                     {% if user_designation == 'VhCaretaker' %}
                                         <td>
                                         {% if booking.status == "Forward" %}
-                                                <div class="ui large button center floated">
+                                                <div class="ui medium button center floated">
                                                     Forwaded
                                                 </div>
 
                                         {% elif booking.status == "Confirmed" %}
-                                                <div class="ui large button center floated">
+                                                <div class="ui medium button center floated">
                                                     Confirmed
                                                 </div>
                                                 
                                         {% else %}
                                         
-                                                <div class="ui large green button center floated"  onclick="bookingRequestModal('{{ booking.id }}')">
+                                                <div class="ui medium green button center floated"  onclick="bookingRequestModal('{{ booking.id }}')">
                                                     Forward
                                                 </div>
                                         {% endif %}
@@ -478,7 +478,7 @@
                         {% for booking in complete_bookings %}
 
                         <tr>
-                            <td onclick=bookingDetailsModal('{{ booking.id }}')>
+                            <td onclick="bookingDetailsModal('{{ booking.id }}')">
                                 <h4 class="ui image header">
                                     <div class="content">
                                         {{ booking.intender.first_name }}&nbsp{{booking.intender.last_name}}
@@ -488,9 +488,9 @@
                                     </div>
                                 </h4>
                             </td>
-                            <td onclick=bookingDetailsModal('{{ booking.id }}')>{{ booking.booking_from }}</td>
-                            <td onclick=bookingDetailsModal('{{ booking.id }}')>{{ booking.booking_to }}</td>
-                            <td onclick=bookingDetailsModal('{{ booking.id }}')>{{ booking.visitor_category }}</td>
+                            <td onclick="bookingDetailsModal('{{ booking.id }}')">{{ booking.booking_from }}</td>
+                            <td onclick="bookingDetailsModal('{{ booking.id }}')">{{ booking.booking_to }}</td>
+                            <td onclick="bookingDetailsModal('{{ booking.id }}')">{{ booking.visitor_category }}</td>
                             <td>
                                 {% if booking.status == "Pending" %}
                                     <button class="tiny ui inverted basic button" data-tooltip="Pending"><i class="yellow exclamation icon"></i></button>

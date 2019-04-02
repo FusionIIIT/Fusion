@@ -135,7 +135,7 @@
 
                     {% if user_designation == 'VhCaretaker'  %}
                 <div class="field" id="alloted-rooms-{{ booking.id }}" >
-                    <label>Rooms (required*)</label>
+                    <label>Rooms *</label>
                     <select name="alloted-rooms-{{ booking.id }}" multiple="" class="ui fluid dropdown" required="">
                         {% for key, values in available_rooms.items %}
                             {% if key == booking.id %}
@@ -151,7 +151,7 @@
             </div>
 
             <div class="field">
-            <label>Purpose Of Visit_booking_dataail_@</label>
+            <label>Purpose Of Visit ####</label>
                 <div class="ui fluid input">
                     <input rows="2" value="{{ booking.purpose }}" readonly >
                             

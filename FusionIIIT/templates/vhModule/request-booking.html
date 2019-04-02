@@ -6,11 +6,12 @@
   <!-- <div class="scrolling content"> -->
 
     <div class="ui pointing secondary menu">
-        <a class="item active" data-tab="visitors-detail">
-            Visitor's Details
-        </a> 
-        <a class="item" data-tab="request-booking">
+         
+        <a class="item active" data-tab="request-booking">
             Booking Details
+        </a>
+        <a class="item" data-tab="visitors-detail">
+            Visitor's Details
         </a>
          
     </div>
@@ -18,7 +19,7 @@
 
     <!-- request booking datatab starts here! -->
 
-    <div class="ui tab" data-tab="request-booking">
+    <div class="ui active tab" data-tab="request-booking">
         <div class="ui vertical stripe team segment"
              style="padding-left: 3.5%;
                 padding-right: 3.5%;">
@@ -48,7 +49,7 @@
                 {% if user_designation == 'Intender' %}
                 <input type="hidden" name="intender" value="{{ user.id }}">
                 {% endif %}
-                <div class="two fields">
+                <div class="four fields">
                     <div class="field">
                         <label>Arrival Date *</label>
                         <div class="ui calendar" id="rangestart1">
@@ -63,9 +64,7 @@
                         <label>Arrival Time *</label>
                         <input type="text" placeholder="00:00" name="request-booking-from-time" class="time-selector">
                     </div>
-                </div>
 
-                <div class="two fields">
                     <div class="field">
                         <label>Departure Date *</label>
                         <div class="ui calendar" id="rangeend1">
@@ -81,6 +80,7 @@
                         <input type="text" placeholder="00:00" name="request-booking-to-time" class="time-selector">
                     </div>
                 </div>
+
 
                 <div class="field">
                     <div class="three fields">
@@ -199,7 +199,7 @@
             </form>
         </div>
 
-        <input type="hidden" name="csrf" value="{{ csrf_token }}">
+<!--         <input type="hidden" name="csrf" value="{{ csrf_token }}">
                 <div class="field">
                     <label></label>
                     <button class="ui large primary button right floated" id="request_booking_button" 
@@ -219,7 +219,7 @@
                                         </script>
                         Place Request
                     </button>
-                </div>
+                </div> -->
     <div class="ui divider"></div>
 
     </div>
@@ -229,7 +229,7 @@
 <!-- visitor's detail datatab starts here! -->
 
 
-    <div class="ui active tab" data-tab="visitors-detail">
+    <div class="ui tab" data-tab="visitors-detail">
         <div class="ui vertical stripe team segment"
              style="padding-left: 3.5%;
                 padding-right: 3.5%;">
@@ -540,18 +540,41 @@
                     
                 </div>
 
-
+<!-- 
         <div class="field">
             <label></label>
             <div class="ui large teal button right floated" id="next-button" onclick="next_action(event)">
                 Next
             </div>
 
-        </div>
+        </div> -->
             </form>
 
             <br>
             <div class="ui divider"></div>
+
+                    <input type="hidden" name="csrf" value="{{ csrf_token }}">
+                <div class="field">
+                    <label></label>
+                    <button class="ui large primary button right floated" id="request_booking_button" 
+                        onclick="request_booking(event); ll()">
+                                        <script type='text/javascript'>
+                                        ll = function () {
+                                            document.getElementById("request_booking_button").disabled=true; 
+                                            console.log("lllllllllllllllllll");    
+                                            setTimeout('jj()', 5000);
+                                            }
+                                        
+                                        jj=function(){
+                                            document.getElementById("request_booking_button").disabled=false; 
+                                            console.log("ooooooooooo"); 
+                                        }
+
+                                        </script>
+                        Place Request
+                    </button>
+                </div>
+                <div class="ui divider"></div>
 
         </div>
     </div>

@@ -158,25 +158,22 @@
                         <input value="{{ booking.number_of_rooms }}" name="number-of-rooms-{{ booking.id }}" type="number" readonly>
                     </div>
                 </div>
+
+
                 {% if user_designation == 'VhIncharge'  %}
-                <div class="field">
+                <div class="field" id="alloted-rooms-{{ booking.id }}" >
                     <label>Rooms Alloted</label>
-                    <div name="alloted-rooms-{{ booking.id }}" multiple="" class="ui fluid dropdown" required="">
-                        {% for key, values in forwarded_rooms.items %}
-                            {% if key == booking.id %}
-                                {% for room in values %}
-                                    <option value='{{ room }}'>{{ room }}</option>
-                                {% endfor %}
-                            {% endif %}
+                    <div class="ui fluid input">
+                        
+                        {% for i in booking.rooms.all %}
+                            <!-- <input rows="2" value="{{ i.room_number }}" name="purpose-of-visit-{{ booking.id }}" readonly> -->
+                                    {{ i.room_number }}, &nbsp
+
                         {% endfor %}
                     </div>
-                    <!--<div class="ui fluid input">
+                </div>       
+                {% endif %}  
 
-                        <input value="{{ booking.rooms }}" name="rooms-{{ booking.id }}" type="number" readonly>
-                    </div>-->
-                </div>        
-                {% endif %}
-                
 
                 {% if user_designation == 'VhCaretaker'  %}
                 <div class="field" id="alloted-rooms-{{ booking.id }}" >
@@ -357,13 +354,13 @@
                     </div>
                 </div>
 
-        <div class="field">
+<!--         <div class="field">
             <label></label>
             <div class="ui large green button right floated" id="next" onclick="confirm_booking('{{ booking.id }}')">
                 Next
             </div>
 
-        </div>
+        </div> -->
 
             </form>
 

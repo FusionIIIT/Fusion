@@ -4,22 +4,37 @@
 {% for booking in active_bookings %}
 <div class="ui modal" id="check-in-modal-{{ booking.id }}">
   <div class="header">Guest Check In</div>
+  <!-- <div class="ui divider"></div> -->
+  <br>
+        <div class="field" id="alloted-rooms-{{ booking.id }}" >
+                    <label><b> &nbsp &nbsp &nbsp Rooms Alloted</b></label>
+                    <br>
+                    <div class="ui fluid input">
+                        
+                        {% for i in booking.rooms.all %}
+                            <input rows="2" value="{{ i.room_number }}" name="purpose-of-visit-{{ booking.id }}" readonly> &nbsp &nbsp
+                                    <!-- {{ i.room_number }} &nbsp -->
+
+                        {% endfor %}
+                    </div>
+            </div>
+  <!-- <div class="ui divider"></div> -->
   <div class="scrolling content">
 
     <div class="ui pointing secondary menu">
 
                 <a class="item active" data-tab="details-1">
-                    Room 1 Details
+                    Visitor 1 Details
                 </a>
-    {% for key, values in rooms.items %}
+    {% for key, values in visitors.items %}
         {% if key == booking.id %}
-        {% with values|length as r_length %}
-            <input type="hidden" name="length-{{ booking.id }}" value="{{ r_length }}">
+        {% with values|length as vis_length %}
+            <input type="hidden" name="length-{{ booking.id }}" value="{{ vis_length }}">
         {% endwith %}
-            {% for i in values %}
+            {% for i in values%}
 
                 <a class="item" data-tab="details-{{ i }}">
-                    Room {{ i }} Details
+                    Visitor {{ i }} Details
                 </a>
             {% endfor %}
         {% endif %}
@@ -27,23 +42,22 @@
     </div>
 
 
-{% for result in booking.rooms.all %}
+{% for result in booking.visitor.all %}
 
 {% if forloop.first %}
 
 
     <div class="ui tab active" data-tab="details-1">
-        <div class="ui vertical stripe team segment" style="padding-left: 3.5%; padding-right: 3.5%;">
-            <b>Room Number : {{ result.room_number }}</b>
-            <div class="ui divider"></div>
+        <div class="ui vertical stripe team segment"
+             style="padding-left: 3.5%;
+                padding-right: 3.5%;">
 
             <form class="ui large form" id="visitor-detail-{{ booking.id }}-1">
-                Visitor 1 Details
 
                 <div id="checkin">
 
                     <div class="field">
-                        <div class="five fields">
+                        <div class="two fields">
                             <div class="field">
                                 <label>Name (required*)</label>
                                 <input name="visitor-name-{{ booking.id }}-1" value="{{ result.visitor_name }}" type="text">
@@ -53,25 +67,10 @@
                                 <label>Email</label>
                                 <input placeholder="Email" type="email" value="{{ result.visitor_email }}" name="email-{{ booking.id }}-1">
                             </div>
-                            <div class="field">
-                                <label>Phone (required*)</label>
-                                <input placeholder="Phone" type="tel" value="{{ result.visitor_phone }}" name="phone-{{ booking.id }}-1">
-                            </div>
-                             <div class="field">
-                                <label>Organization</label>
-                                <input placeholder="Organization" type="text" value="{{ result.visitor_organization }}" name="organization-{{ booking.id }}-1">
-                            </div>
-                            <div class="field">
-                                <label>Address:</label>
-                                <div class="ui fluid input">
-                                    <input class="ui textarea" value="{{ result.visitor_address }}" name="address-{{ booking.id }}-1">
-                                </div>
-                            </div> 
-
                         </div>
                     </div>
 
-                   <!--  <div class="field">
+                    <div class="field">
                         <div class="two fields">
                             <div class="field">
                                 <label>Phone (required*)</label>
@@ -83,7 +82,7 @@
                                 <input placeholder="Organization" type="text" value="{{ result.visitor_organization }}" name="organization-{{ booking.id }}-1">
                             </div>
                         </div>
-                    </div> -->
+                    </div>
 
 <!--                     <div class="two fields">
                         <div class="field">
@@ -103,93 +102,17 @@
 
                     </div> -->
 
-                   <!--  <div class="field">
+                    <div class="field">
                         <label>Address:</label>
                         <div class="ui fluid input">
                             <input class="ui textarea" value="{{ result.visitor_address }}" name="address-{{ booking.id }}-1">
                         </div>
-                    </div> -->
-                </div>
-                <div class="ui divider"></div>
-
-                Visitor 2 Details
-
-                <div id="checkin">
-                    <div class="field">
-                        <div class="five fields">
-                            <div class="field">
-                                <label>Name (required*)</label>
-                                <input name="visitor-name-{{ booking.id }}-1" value="{{ result.visitor_name }}" type="text">
-                            </div>
-
-                            <div class="field">
-                                <label>Email</label>
-                                <input placeholder="Email" type="email" value="{{ result.visitor_email }}" name="email-{{ booking.id }}-1">
-                            </div>
-                            <div class="field">
-                                <label>Phone (required*)</label>
-                                <input placeholder="Phone" type="tel" value="{{ result.visitor_phone }}" name="phone-{{ booking.id }}-1">
-                            </div>
-                             <div class="field">
-                                <label>Organization</label>
-                                <input placeholder="Organization" type="text" value="{{ result.visitor_organization }}" name="organization-{{ booking.id }}-1">
-                            </div>
-                            <div class="field">
-                                <label>Address:</label>
-                                <div class="ui fluid input">
-                                    <input class="ui textarea" value="{{ result.visitor_address }}" name="address-{{ booking.id }}-1">
-                                </div>
-                            </div> 
-
-                        </div>
                     </div>
                 </div>
-                <div class="ui divider"></div>
-
-                <b>Visitor 3 Details</b>
-                <br>
-
-                <div id="checkin">
-                    <div class="field">
-                        <div class="five fields">
-                            <div class="field">
-                                <label>Name (required*)</label>
-                                <input name="visitor-name-{{ booking.id }}-1" value="{{ result.visitor_name }}" type="text">
-                            </div>
-
-                            <div class="field">
-                                <label>Email</label>
-                                <input placeholder="Email" type="email" value="{{ result.visitor_email }}" name="email-{{ booking.id }}-1">
-                            </div>
-                            <div class="field">
-                                <label>Phone (required*)</label>
-                                <input placeholder="Phone" type="tel" value="{{ result.visitor_phone }}" name="phone-{{ booking.id }}-1">
-                            </div>
-                             <div class="field">
-                                <label>Organization</label>
-                                <input placeholder="Organization" type="text" value="{{ result.visitor_organization }}" name="organization-{{ booking.id }}-1">
-                            </div>
-                            <div class="field">
-                                <label>Address:</label>
-                                <div class="ui fluid input">
-                                    <input class="ui textarea" value="{{ result.visitor_address }}" name="address-{{ booking.id }}-1">
-                                </div>
-                            </div> 
-
-                        </div>
-                    </div>
-                </div>
-
             </form>
 
             <br>
             <div class="ui divider"></div>
-            <div class="field">
-                <label><br></label>
-                <div class="ui large right floated primary button" id="checkin-submit" onclick="submit_visitor_details('{{ booking.id }}')">
-                    Submit
-                </div>
-            </div>
 
         </div>
     </div>
@@ -199,40 +122,66 @@
 {% endfor %}
 
 
-    {% for key, values in rooms.items %}
+    {% for key, values in visitors.items %}
         {% if key == booking.id %}
             {% for i in values %}
 
     <div class="ui tab" data-tab="details-{{ i }}">
-        <div class="ui vertical stripe team segment" style="padding-left: 3.5%; padding-right: 3.5%;">
+        <div class="ui vertical stripe team segment"
+             style="padding-left: 3.5%;
+                padding-right: 3.5%;">
 
             <form class="ui large form" id="visitor-detail-{{ booking.id }}-{{ i }}">
 
                 <div id="checkin">
 
                     <div class="field">
-                        <div class="four fields">
+                        <div class="two fields">
                             <div class="field">
-                                <label>Name (required*)</label>
+                                <label>Name *</label>
                                 <input name="visitor-name-{{ booking.id }}-{{ i }}" type="text">
                             </div>
 
                             <div class="field">
-                                <label>Email@@</label>
+                                <label>Email *</label>
                                 <input placeholder="Email" type="email" name="email-{{ booking.id }}-{{ i }}">
-                            </div>
-                            <div class="field">
-                                <label>Phone (required*)</label>
-                                <input placeholder="Phone" type="tel" name="phone-{{ booking.id }}-{{ i }}">
-                            </div>
-                            <div class="field">
-                                <label>Address:</label>
-                                <div class="ui fluid input">
-                                    <input class="ui textarea" name="address-{{ booking.id }}-{{ i }}">
-                                </div>
                             </div>
                         </div>
                     </div>
+
+                    <div class="field">
+                        <div class="two fields">
+                            <div class="field">
+                                <label>Phone *</label>
+                                <input placeholder="Phone" type="tel" name="phone-{{ booking.id }}-{{ i }}">
+                            </div>
+                        </div>
+                    </div>
+
+<!--                     <div class="two fields">
+                        <div class="field">
+                            <label>Arrival Date</label>
+                            <div class="ui calendar" id="rangestart2">
+                                <div class="ui input left icon">
+                                    <i class="calendar icon"></i>
+                                    <input type="text" placeholder="Arrival Date" name="arrival-{{ booking.id }}-{{ i }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label>Arrival Time:</label>
+                            <input placeholder="time" type="time" name="time-{{ booking.id }}-{{ i }}">
+                        </div>
+                    </div> -->
+
+                    <div class="field">
+                        <label>Address:</label>
+                        <div class="ui fluid input">
+                            <input class="ui textarea" name="address-{{ booking.id }}-{{ i }}">
+                        </div>
+                    </div>
+
 
                 </div>
             </form>
@@ -240,27 +189,20 @@
             <br>
             <div class="ui divider"></div>
         </div>
-            <div class="field">
-                <label><br></label>
-                <div class="ui large right floated primary button" id="checkin-submit" onclick="submit_visitor_details('{{ booking.id }}')">
-                    Submit
-                </div>
-            </div>
     </div>
                 {% endfor %}
         {% endif %}
     {% endfor %}
-<!-- 
+
     <div class="field">
         <label><br></label>
         <div class="ui large right floated primary button" id="checkin-submit" onclick="submit_visitor_details('{{ booking.id }}')">
             Submit
         </div>
-    </div> -->
+    </div>
 
     <div class="ui divider"></div>
-    <br>
-    <br>
+
 
 </div>
 </div>

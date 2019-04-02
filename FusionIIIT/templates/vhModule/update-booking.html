@@ -167,6 +167,22 @@
                     </select>
                 </div> -->
             </div>
+
+
+            {% if booking.status == 'Confirmed' or booking.status == 'Forward' %}
+                <div class="field" id="alloted-rooms-{{ booking.id }}" >
+                    <label>Rooms Alloted</label>
+                    <div class="ui fluid input">
+                        
+                        {% for i in booking.rooms.all %}
+                            <input rows="2" value="{{ i.room_number }}" name="purpose-of-visit-{{ booking.id }}" readonly>
+                                    <!-- {{ i.room_number }} &nbsp -->
+
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
         </div>
         <div class="two fields">
         <div class="field">

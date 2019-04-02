@@ -474,6 +474,7 @@ def confirm_booking(request):
         bd = BookingDetail.objects.get(id=booking_id)
         bd.status = 'Confirmed'
         bd.category = category
+        bd.confirmed_date = datetime.now()
         for room in rooms:
             room_object = RoomDetail.objects.get(room_number=room)
             bd.rooms.add(room_object)
@@ -894,6 +895,8 @@ def forward_booking(request):
         booking = BookingDetail.objects.get(id=booking_id)
         bd = BookingDetail.objects.get(id=booking_id)
         bd.modified_visitor_category = modified_category
+        bd.forwarded_date = datetime.now()
+        bd.caretaker = user
 
         count_rooms = 0
         for room in rooms:
