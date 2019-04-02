@@ -14,6 +14,7 @@
 
         <div class="ui vertical segment">
             {% comment %}Form Tag starts here!{% endcomment %}
+            {% if editable %}
             <form method="post" class="ui form" role="form">
                 {% comment %}The add a new internship Accordian starts here!{% endcomment %}
                 <div class="ui active accordion field">
@@ -54,7 +55,7 @@
                               {{ form8.sdate.errors }}
                                 <label for="{{ form8.sdate.id_for_label }}">
                                   Start Date (yyyy-mm-dd):</label>
-                                <div class="ui calendar" id="rangestart2">
+                                <div class="ui calendar select_date" id="rangestart2">
                                     <div class="ui input left icon">
                                         <i class="calendar icon"></i>
                                         {{ form8.sdate }}
@@ -66,7 +67,7 @@
                               {{ form8.edate.errors }}
                                 <label for="{{ form8.edate.id_for_label }}">
                                   End Date (yyyy-mm-dd):</label>
-                                <div class="ui calendar" id="rangeend2">
+                                <div class="ui calendar select_date" id="rangeend2">
                                     <div class="ui input left icon">
                                         <i class="calendar icon"></i>
                                         {{ form8.edate }}
@@ -121,6 +122,7 @@
         </div>
         {% comment %}The add a new internship Accordian ends here!{% endcomment %}
         </form>
+        {% endif %}
         {% comment %}Form Tag ends here!{% endcomment %}
 
         {% if experiences %}
@@ -171,17 +173,23 @@
                 </td>
 
                 <td>
+                    {% if editable %}
                   <form method="post" class="ui form" role="form">
                     {% csrf_token %}
                     <button name="deleteexp" value="{{ experience.pk }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
                         <i class="delete red icon"></i>
                     </button>
                     </form>
+                    {% endif %}
                 </td>
             </tr>
             {% endfor %}
             </tbody>
         </table>
+        {% else %}
+        <div>
+            No work experience added yet.
+        </div>
         {% endif %}
 
     </div>
@@ -189,6 +197,7 @@
     <div class="ui tab" data-tab="projects">
         <div class="ui vertical segment">
             {% comment %}Form Tag starts here!{% endcomment %}
+            {% if editable %}
             <form method="post" class="ui form" role="form">
                 {% comment %}The add a new skill Accordian starts here!{% endcomment %}
                 <div class="ui active accordion field">
@@ -237,7 +246,7 @@
                                 <div class="field">
                                   {{ form6.sdate.errors }}
                                     <label>Start Date (yyyy-mm-dd):</label>
-                                    <div class="ui calendar" id="rangestart3">
+                                    <div class="ui calendar select_date" id="rangestart3">
                                         <div class="ui input left icon">
                                             <i class="calendar icon"></i>
                                             {{ form6.sdate }}
@@ -248,7 +257,7 @@
                                 <div class="field">
                                   {{ form6.edate.errors }}
                                     <label>End Date (yyyy-mm-dd):</label>
-                                    <div class="ui calendar" id="rangeend3">
+                                    <div class="ui calendar select_date" id="rangeend3">
                                         <div class="ui input left icon">
                                             <i class="calendar icon"></i>
                                             {{ form6.edate }}
@@ -280,6 +289,7 @@
                 </div>
                 {% comment %}The add a new project Accordian ends here!{% endcomment %}
             </form>
+            {% endif %}
             {% comment %}Form Tag ends here!{% endcomment %}
 
             {% if projects %}
@@ -325,18 +335,24 @@
                     </td>
 
                     <td>
+                        {% if editable %}
                       <form method="post" class="ui form" role="form">
                         {% csrf_token %}
                         <button name="deletepro" value="{{ project.pk }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
                             <i class="delete red icon"></i>
                         </button>
                         </form>
+                        {% endif %}
                     </td>
 
                 </tr>
                 {% endfor %}
                 </tbody>
             </table>
+            {% else %}
+            <div>
+                No projects added yet.
+            </div>
             {% endif %}
         </div>
     </div>
