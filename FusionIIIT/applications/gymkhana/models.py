@@ -1,6 +1,6 @@
 # import
-from datetime import datetime, timedelta
-
+import datetime
+from django.utils import timezone
 from django import template
 from django.contrib.auth.models import User
 from django.db import models
@@ -30,13 +30,24 @@ class Constants:
 		('Gusto','Gusto'),
 		('Tarang','Tarang')
 		)
+	venue =(
+		('Classroom',(
+			('CR101','CR101'),
+			('CR102','CR102'),
+		)),
+		('Lecturehall',(
+			('L101','L101'),
+			('L102','L102'),
+		)),
+
+		)
 
 class Club_info(models.Model):
 	club_name = models.CharField(max_length=50,null=False,primary_key=True)
 	category = models.CharField(max_length=50, null=False, choices = Constants.categoryCh)
 	co_ordinator = models.ForeignKey(Student, null=False, related_name='co_of')
 	co_coordinator = models.ForeignKey(Student, null=False, related_name='coco_of')
-	faculty_incharge = models.ForeignKey(Faculty, null=False, related_name='faculty_incharge_of')	
+	faculty_incharge = models.ForeignKey(Faculty, null=False, related_name='faculty_incharge_of')
 	club_file = models.FileField(upload_to='uploads/',null=True)
 	activity_calender = models.FileField(upload_to='uploads/',null=True, default= " ")
 	description = models.TextField(max_length=256, null=True)
@@ -58,7 +69,7 @@ class Club_member(models.Model):
 	description = models.TextField(max_length=256, null=True)
 	status = models.CharField(max_length=50, choices = Constants.status, default = 'open')
 	remarks = models.CharField(max_length=256, null=True)
-	
+
 	def __str__(self):
 		return str(self.member.id)
 
@@ -99,8 +110,10 @@ class Club_budget(models.Model):
 class Session_info(models.Model):
 	id = models.AutoField(max_length=20,primary_key=True)
 	club = models.ForeignKey(Club_info, max_length=50,null=True)
-	venue = models.CharField(max_length=50,null=False)
-	date = models.DateTimeField(default=datetime.now()+ timedelta(days=1),max_length=50, blank = True)
+	venue = models.CharField(max_length=50,null=False,choices=Constants.venue)
+	date = models.DateTimeField(default=None ,auto_now=False,null = False)
+	end_time = models.TimeField(default=None ,auto_now=False ,null = True)
+	session_poster = models.FileField(upload_to='uploads/',blank = True)
 	details = models.TextField(max_length=256, null=True)
 
 	def __str__(self):
@@ -114,7 +127,7 @@ class Club_report(models.Model):
 	club = models.ForeignKey(Club_info,max_length=50,null=False)
 	incharge = models.ForeignKey(ExtraInfo,max_length=256,null=False)
 	event_name = models.CharField(max_length=50,null=False)
-	date = models.DateTimeField(max_length=50,default=datetime.now()+ timedelta(days=1), blank = True)
+	date = models.DateTimeField(max_length=50,default=timezone.now, blank = True)
 	event_details = models.FileField(upload_to='uploads/',null=False)
 	description = models.TextField(max_length=256, null=True)
 
@@ -144,10 +157,10 @@ class Other_report(models.Model):
 	id = models.AutoField(max_length=20,primary_key=True)
 	incharge = models.ForeignKey(ExtraInfo,max_length=256,null=False)
 	event_name = models.CharField(max_length=50,null=False)
-	date = models.DateTimeField(max_length=50,default=datetime.now()+ timedelta(days=1), blank = True)
+	date = models.DateTimeField(max_length=50,default=timezone.now, blank = True)
 	event_details = models.FileField(upload_to='uploads/',null=False)
 	description = models.TextField(max_length=256, null=True)
-	
+
 	def __str__(self):
 		return str(self.id)
 
@@ -160,7 +173,7 @@ class Change_office(models.Model):
 	co_ordinator = models.ForeignKey(User, null=False, related_name='co_of')
 	co_coordinator = models.ForeignKey(User, null=False, related_name='coco_of')
 	status = models.CharField(max_length=50, choices=Constants.status, default='open')
-	date_request = models.DateTimeField(max_length=50,default=datetime.now()+ timedelta(days=1), blank = True)
+	date_request = models.DateTimeField(max_length=50,default=timezone.now, blank = True)
 	date_approve = models.DateTimeField(max_length=50, blank = True)
 	remarks = models.CharField(max_length=256, null=True)
 

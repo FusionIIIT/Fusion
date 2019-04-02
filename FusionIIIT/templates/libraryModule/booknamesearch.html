@@ -1,0 +1,25 @@
+{% load static %}
+<div class="ui active accordion field">
+    <form class="ui form" method="POST" action="{% url 'library:libraryModule' %}">
+      {% csrf_token %}
+      <div class="field">
+        <label>Book Name</label>
+        <input type="text" name="bookname" placeholder="Book Name">
+      </div>
+      <input type="hidden" value="bookname" name="nametype" />
+      <button class="ui primary button" type="submit">Search</button>
+    </form>
+    {% if bookresults %}
+      {% if bookresults != 'N' %}
+      {% for a in bookresults %}
+        {{ a }}
+        <br>
+        {% endfor %}
+
+    {% elif bookresults == 'N' %}
+       <br>
+       <center><h4>No Results Found!</h4></center>
+    
+    {% endif %}
+    {% endif %}
+</div>

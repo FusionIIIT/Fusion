@@ -30,17 +30,17 @@
                 <div class="ui header">
                     Request for change of Central Mess:
                 </div>
-
+                {{current_date}}
                 <br>
 
-                {{current_date}}
-
-
-                {% if current_date < mess_reg.end_reg %}
+                {% if current_date <= mess_reg.end_reg %}
                 <div class="two fields">
                     <div class="field">
+                        <strong> Currently registered in {{ messinfo.mess_option }}</strong>
+                        <br>
                         <input type="date" id="date" name="date" value="{{mess_reg.end_reg}}" hidden>
-                        <label>Choose Mess:</label>
+                        <br>
+                        <label>Choose Mess*</label>
                         <select class="ui search fluid dropdown" name="mess_type" id="mess_type">
                             <option value="mess2">Veg Mess</option>
                             <option value="mess1">Nonveg Mess</option>
@@ -52,10 +52,6 @@
                 {% comment %}
                 TODO: Make this Optional!
                 {% endcomment %}
-                <div class="field">
-                    <label>Reason:</label>
-                    <textarea rows="2" name="reason"></textarea>
-                </div>
 
                 <div class="field">
                     <button class="ui primary button right floated" type="submit" name="submit">
@@ -89,23 +85,21 @@
                     Apply for Special Food:
                 </div>
 
-                <br>
-
 
                 <div class="field">
                     <label>Mess:</label>
-                    <input value={{messinfo.mess_option}} class="ui large input" readonly>
+                    <input value="{{messinfo.mess_option}}" class="ui large input" readonly>
                 </div>
 
 
                 <div class="two fields">
                     <div class="field">
-                        <label>Food Item(a):</label>
+                        <label>Food Item(a)*</label>
                         <input placeholder="Food Item" name="food1" class="ui large input" required="true" id="food1">
                     </div>
 
                     <div class="field">
-                        <label>Food Item(b):</label>
+                        <label>Food Item(b)*</label>
                         <input placeholder="Food Item" name="food2" class="ui large input" id="food2">
                     </div>
                 </div>
@@ -120,7 +114,7 @@
                     </ul>
                     {% endif %}
                     <div class="field">
-                        <label>From:</label>
+                        <label>From*</label>
                         <div class="ui calendar" id="rangestart1">
                             <div class="ui input left icon">
                                 <input type="date" name="start_date" placeholder="From" required="true"
@@ -130,7 +124,7 @@
                     </div>
 
                     <div class="field">
-                        <label>To:</label>
+                        <label>To*</label>
                         <div class="ui calendar" id="rangeend1">
                             <div class="ui input left icon">
                                 <input type="date" name="end_date" placeholder="To" required="true" id="e_date">
@@ -140,12 +134,12 @@
                 </div>
 
                 <div class="field">
-                    <label>Purpose:</label>
+                    <label>Purpose*</label>
                     <textarea rows="2" class="purpose" name="purpose" required="true"></textarea>
                 </div>
 
                 <div class="field">
-                    <button class="ui primary button right floated" onclick="sprequests()">
+                    <button class="ui primary button right floated" onclick="return sprequests()">
                         Submit
                     </button>
                 </div>
@@ -172,7 +166,7 @@
         <div class="content">
             <div class="description">
 
-                <table class="ui very basic collapsing celled large sortable table"
+                <table class="ui very basic collapsing celled table sortable centered"
                        style="padding-left: 2.5%;
                                                               padding-right: 2.5%;
                                                               padding-top: 1%;
@@ -196,7 +190,6 @@
                         <th>
                             To
                         </th>
-
 
                         <th>
                             Status
@@ -263,6 +256,15 @@
 <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
 
 <script>
+    function required_check_spfood(){
+            if (($("#food1").val().length == 0)||($("#food2").val().length == 0) || ($("textarea.purpose").val().length == 0)) {
+                check = 0;
+                return check;
+            }
+            else {
+                check = 1;
+            }
+        }
     function sprequests() {
 
             var calendarOpts = {
@@ -286,50 +288,57 @@
         }
     };
     $('.ui.calendar').calendar(calendarOpts);
+    check = required_check_spfood();
+    if (check == 0){
+        alert("Please Fill All The Required Fields");
+    }
+    else {
+        $.ajax({
+            type: 'POST',
+            url: 'placerequest/',
+            dataType: 'json',
+            data: {
+                'csrfmiddlewaretoken': '{{ csrf_token }}',
+                'food1': $("#food1").val(),
+                'food2': $("#food2").val(),
+                'start_date': $("#s_date").val(),
+                'end_date': $("#e_date").val(),
+                'purpose': $("textarea.purpose").val()
+            },
+            success: function (data) {
+                if (data.status == 1) {
+                    alert("Data Inserted Successfully");
+                    $("#spfood").load(location.href + " #spfood>*", "");
 
-
-    $.ajax({
-                type: 'POST',
-                url: 'placerequest/',
-                dataType: 'json',
-                data: {
-                    'csrfmiddlewaretoken' : '{{ csrf_token }}',
-                    'food1':$("#food1").val(),
-                    'food2':$("#food2").val(),
-                    'start_date':$("#s_date").val(),
-                    'end_date': $("#e_date").val(),
-                    'purpose': $("textarea.purpose").val()
-                },                
-                success: function(data) {
-                    if(data.status == 1){
-                        alert("Data Inserted Successfully");
-                        $("#spfood").load(location.href+" #spfood>*","")
-                        
-                        /*$('#ls_table').prepend("<tr><td>"+ $("#leave_type").val()+ "</td><td>"+ 
+                    /*$('#ls_table').prepend("<tr><td>"+ $("#leave_type").val()+ "</td><td>"+
                             $("#start_date").val() + "</td><td>" + $("end_date").val()+
                             "</td><td>"+ $("#purpose").val()+ "</td></tr>")*/
 
-                        document.getElementById('food1').value="";
-                        document.getElementById('food2').value="";
-                        document.getElementById('s_date').value="";
-                        document.getElementById('e_date').value="";
-                        document.getElementById('purpose').value="";
-                        
-                    }
-                    if(data.status == 2){
-                        alert("Special Food request has already been made");
-                        $("#spfood").load(location.href+" #spfood>*","")
-                    }
-                    if(data.status == 3){
-                    alert("Please check the date. The date may have passed or might not be a valid date");
-                    $("#spfood").load(location.href+" #spfood>*","")
-                    return false;
-                    }
-                },
-                error: function(data, err) {
-                    alert(err.message);
+                    document.getElementById('food1').value = "";
+                    document.getElementById('food2').value = "";
+                    document.getElementById('s_date').value = "";
+                    document.getElementById('e_date').value = "";
+                    document.getElementById('purpose').value = "";
+
                 }
-            });
+                else if (data.status == 2) {
+                    alert("Special Food request has already been made");
+                    $("#spfood").load(location.href + " #spfood>*", "");
+                }
+                else if (data.status == 3) {
+                    alert("Please check the date. The date may have passed or might not be a valid date");
+                    $("#spfood").load(location.href + " #spfood>*", "");
+                    return false;
+                }
+                else {
+                    alert("Please check the data or try again");
+                }
+            },
+            error: function (data, err) {
+                alert(err.message);
+            }
+        });
+    }
             return false;
 }
 

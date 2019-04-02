@@ -3,13 +3,13 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-fusion.db
+
 # C extensions
 *.so
 
 
 # db file
-*.db
+fusion.db
 
 
 # Distribution / packaging
@@ -29,6 +29,9 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+
+# Swap files
+*.swp
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -110,3 +113,16 @@ FusionIIIT/dbinsertscripts
 FusionIIIT/Include
 FusionIIIT/Scripts
 FusionIIIT/tcl
+
+#folders
+<<<<<<< HEAD
+Include
+Scripts
+tcl
+
+=======
+
+Include
+Scripts
+tcl
+>>>>>>> central_mess_main2

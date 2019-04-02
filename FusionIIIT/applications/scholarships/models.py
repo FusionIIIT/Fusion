@@ -110,8 +110,7 @@ class Mcm(models.Model):
     college_name = models.CharField(max_length=30, null=True)
     income_certificate = models.FileField(null=True, blank=True)
     forms = models.FileField(null=True, blank=True)
-    status = models.CharField(
-        max_length=10, choices=Constants.STATUS_CHOICES, default='INCOMPLETE')
+    status = models.CharField(max_length=10, choices=Constants.STATUS_CHOICES, default='INCOMPLETE')
     student = models.ForeignKey(Student,
                                 on_delete=models.CASCADE, related_name='mcm_info')
     annual_income = models.IntegerField(default=0)
@@ -136,9 +135,10 @@ class Notional_prize(models.Model):
     class Meta:
         db_table = 'Notional_prize'
 
-
+#Addition: a column programme added
 class Previous_winner(models.Model):
     student = models.ForeignKey(Student)
+    programme = models.CharField(max_length=10,default='B.Tech')
     year = models.IntegerField(default=datetime.datetime.now().year)
     award_id = models.ForeignKey(Award_and_scholarship)
 
@@ -146,7 +146,7 @@ class Previous_winner(models.Model):
         db_table = 'Previous_winner'
 
 
-
+#To Do:to reduce the last unused column
 class Release(models.Model):
     startdate = models.DateField(default=datetime.date.today)
     enddate = models.DateField()
@@ -159,9 +159,9 @@ class Release(models.Model):
     class Meta:
         db_table = 'Release'
 
-#Abhi new class added for keeping track of notifications and applied application by students
+#Abhilash: new class added for keeping track of notifications and applied application by students
 class Notification(models.Model):
-    student_id = models.ForeignKey(ExtraInfo, on_delete = models.CASCADE)
+    student_id = models.ForeignKey(Student, on_delete = models.CASCADE)
     notification_mcm_flag = models.BooleanField(default=False)
     notification_convocation_flag = models.BooleanField(default=False)
     invite_mcm_accept_flag = models.BooleanField(default=False)
@@ -190,8 +190,7 @@ class Director_silver(models.Model):
     correspondence_address = models.TextField(max_length=150, null=True)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     award_id = models.ForeignKey(Award_and_scholarship, on_delete=models.CASCADE)
-    status = models.CharField(max_length=10, choices=Constants.STATUS_CHOICES,
-                              default='INCOMPLETE')
+    status = models.CharField(max_length=10, choices=Constants.STATUS_CHOICES,default='INCOMPLETE')
     relevant_document = models.FileField(null=True, blank=True)
     date = models.DateField(default=datetime.date.today)
     financial_assistance = models.TextField(max_length=1000 ,null=True)
@@ -215,8 +214,7 @@ class Proficiency_dm(models.Model):
     title_name = models.CharField(max_length=30, null=True)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     award_id = models.ForeignKey(Award_and_scholarship, on_delete=models.CASCADE)
-    status = models.CharField(max_length=10, choices=Constants.STATUS_CHOICES,
-                              default='INOMPLETE')
+    status = models.CharField(max_length=10, choices=Constants.STATUS_CHOICES,default='INCOMPLETE')
     nearest_policestation = models.TextField(max_length=30, default='station')
     nearest_railwaystation = models.TextField(max_length=30, default='station')
     correspondence_address = models.TextField(max_length=150, null=True)
@@ -252,8 +250,7 @@ class Proficiency_dm(models.Model):
 
 class Director_gold(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    status = models.CharField(max_length=10,
-                              choices=Constants.STATUS_CHOICES, default='INCOMPLETE')
+    status = models.CharField(max_length=10,choices=Constants.STATUS_CHOICES, default='INCOMPLETE')
     correspondence_address = models.TextField(max_length=40, default='adress')
     nearest_policestation = models.TextField(max_length=30, default='station')
     nearest_railwaystation = models.TextField(max_length=30, default='station')
