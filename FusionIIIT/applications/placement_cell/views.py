@@ -214,6 +214,7 @@ def Placement(request):
                     Q(pk=request.POST['studentdeclinesubmit'])).update(
                     invitation='REJECTED',
                     timestamp=timezone.now())
+
             if 'educationsubmit' in request.POST:
                 form = AddEducation(request.POST)
                 if form.is_valid():
@@ -2661,10 +2662,18 @@ def export_to_xls_invitation_status(qs):
 
 
 def check_invitation_date(placementstatus):
-    for ps in placementstatus:
-        print(ps.no_of_days)
-        print(ps.timestamp)
-        print(datetime.datetime.now()-datetime.timedelta(days=ps.no_of_days))
+
+    try:
+        for ps in placementstatus:
+            if ps.invitation=='PENDING':
+                dt = ps.timestamp+datetime.timedelta(days=ps.no_of_days)
+                if dt<datetime.datetime.now():
+                    print('---------- time limit is finished---------------- \n\n\n\n\n')
+                    ps.invitation = 'IGNORE'
+                    ps.save()
+    except Exception as e:
+        print('---------------------Error Occurred ---------------')
+        print(e)
 
     return
 
