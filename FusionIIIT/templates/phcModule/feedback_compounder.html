@@ -59,6 +59,13 @@
                   <script type="text/javascript">
                         $('#feed_com').click(function(e)
                                                             {
+
+                                                               if(document.getElementById("feed").value == '')
+                                                                {
+                                                                    alert("Please write something in the response!")
+                                                                    document.getElementById("feed").focus();
+                                                                }
+
                                                               $.ajax({
                                                                 type:'post',
                                                                 url:'/healthcenter/compounder/',
