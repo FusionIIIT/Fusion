@@ -8,6 +8,263 @@
  *
  */
 
+
+$(document).ready(function(){
+  console.log("TTTTTTTT");
+});
+
+
+
+ function sub()
+        {
+        var specific_location= $('input[name="specific_location"]').val();
+        var Location = $('input[name="Location"]').val();
+        var complaint_type =  $('input[name="complaint_type"]').val() ;
+        var details =$('input[name="details"]').val() ;
+        var myfile = $('input[name="myfile"]').val();
+        if(specific_location=="" || location=="" || details=="" || complaint_type=="")
+        {
+            alert("Please fill all the details!");
+            return;
+        }
+        else
+        {
+         
+       
+            $.ajax({
+                type : 'POST',
+                url : '.',
+                data : {
+                    'specific_location' : specific_location,
+                    'Location' : Location,
+                    'complaint_type' : complaint_type,
+                    'details' : details,
+                    'myfile' : myfile,
+
+                },
+                success : function (data){
+
+                    alert("Complaint successfully lodged");
+                    setTimeout(function() {
+                window.location.replace('http://localhost:8000/complaint/user');
+            }, 1500);
+
+                    
+                },
+                error : function (data,err){
+                    alert('Complaint not lodged ... please try again ');
+
+                }
+            });
+       }
+    };
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+
+
+
+
+
+function addwork(event) {
+   
+
+   var complaint_type = $('input[name="complaint_type"]').val();
+   var name = $('input[name="name"]').val();
+   var str_phone_no = $('input[name="phone_no"]').val();
+   var age = $('input[name="age"]').val();
+   var intage = parseInt(age);
+
+    if (complaint_type == "" || name == "" || str_phone_no == "" || age == "")
+    {
+      alert('Please fill all the details');
+      return;
+    }
+
+    else if (str_phone_no.length != 10){
+        alert('Oops! The Phone Number Should Be Of 10 Digits');
+        return;
+    }
+/*
+    if (str_phone_no.charAt(0) !=7 || str_phone_no.charAt(0) !=8 || str_phone_no.charAt(0) !=9) {
+        alert('Phone Number should begin with 9,8 or 7');
+        return;
+    }*/
+
+   else if (intage < 20 || intage > 50) {
+        alert("Oops! Age of the worker should be between 20 and 50.");
+        return;
+    }
+
+   else
+   {
+
+    $.ajax({
+        type: 'POST',
+        url: '.',
+        data: {
+            'complaint_type' : complaint_type,
+            'name' : name,
+           // 'csrfmiddlewaretoken': csrfmiddlewaretoken,
+            'phone_no' : str_phone_no,
+            'age' : age,
+            
+        },
+        success: function(data) {
+            alert(" Congratulations! The Worker has been added successfully\n Please wait for confirmation");
+            setTimeout(function() {
+                window.location.replace('http://localhost:8000/complaint');
+            }, 1500);
+        },
+        error: function(data, err) {
+            alert('Something went wrong! Please refill the form');
+            console.log(err);
+        }
+    });
+  }
+};
+
+
+
+
+
+function feedsubmit()
+{
+
+   var feedback = $('input[name="feedback"]').val();
+   var rating = 0;
+   rating = document.getElementById("thedropdown");
+  
+   if (feedback == "")
+   {
+    alert("Please fill all the details");
+    
+   }
+ 
+    else
+   {
+ alert(" Feedback succesfully submitted");
+ 
+    return;
+  }
+
+}
+
+function assignworkersubmit()
+{
+
+   var assign_worker = $('input[name="assign_worker"]').val();
+  
+   if (assign_worker == "")
+   {
+    alert("Please fill all the details");
+   
+   }
+   else
+   {
+    alert("Worker successfully assigned");
+   }
+   /*else
+   {
+
+    $.ajax({
+        type: 'POST',
+        url: '.',
+        data: {
+          'assign_worker':assign_worker,
+            
+            
+        },
+        success: function(data) {
+            alert(" Worker assigned succesfully");
+           
+        },
+        error: function(data, err) {
+            alert('Something went wrong! Please refill the form');
+            console.log(err);
+        }
+    });
+  }*/
+}
+
+
+function redirectsubmit()
+{
+
+   var assign_caretaker = $('input[name="assign_caretaker"]').val();
+  
+   if (assign_caretaker == "")
+   {
+    alert("Please fill all the details");
+   
+   }
+  /* else
+   {
+    alert("Feedback successfully submitted");
+   }*/
+    else
+   {
+
+    $.ajax({
+        type: 'POST',
+        url: '.',
+        data: {
+          'assign_caretaker':assign_caretaker,
+            
+            
+        },
+        success: function(data) {
+            alert(" Ccomplaint succesfully redirected");
+           
+        },
+        error: function(data, err) {
+            alert('Something went wrong! Please refill the form');
+            console.log(err);
+        }
+    });
+  }
+}
+
+
+function resolvependingsubmit()
+{
+  
+   var yesorno = $('input[name="yesorno"]').val();
+  
+   if (yesorno == "")
+   {
+    alert("Please fill all the details");
+event.preventDefault();
+    }
+    else
+   {
+            alert("Thank You for resolving the complaint");
+            return;
+}
+}
+
+
+
+
+
+
+
+
+
 ;(function ($, window, document, undefined) {
 
 "use strict";

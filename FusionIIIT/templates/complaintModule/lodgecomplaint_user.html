@@ -10,8 +10,8 @@
 
     <div class="ui active tab" data-tab="complaint">
         <div class="ui vertical segment">
-            <form class="ui form" style="padding-left: 24px; padding-right: 24px;" method="POST"
-                  action="./check_complaint/">
+            <form class="ui form" style="padding-left: 24px; padding-right: 24px;" method="POST" enctype="multipart/form-data" 
+                  action="">
                 {% csrf_token %}
                 <div class="ui header">
                     Add a new Complaint:
@@ -22,9 +22,9 @@
                 <div class="fields">
 
                     <div class="eight wide field">
-                        <label>Complaint Type</label>
-                        <div class="ui fluid search selection dropdown">
-                            <input name="complaint_type" type="hidden">
+                        <label>Complaint Type<sup><i class="small red asterisk icon"></i></sup></label>
+                        <div class="ui selection dropdown">
+                            <input name="complaint_type" type="hidden" name="complaint_type" required="True">
                             <i class="dropdown icon"></i>
 
                             <div class="default text">Select Complaint Type</div>
@@ -59,9 +59,9 @@
                     </div>
 
                     <div class="eight wide field">
-                        <label>Location</label>
-                        <div class="ui fluid search selection dropdown">
-                            <input name="Location" type="hidden">
+                        <label>Location<sup><i class="small red asterisk icon"></i></sup></label>
+                        <div class="ui selection dropdown">
+                            <input name="Location" type="hidden" required>
                             <i class="dropdown icon"></i>
 
                             <div class="default text">Select Location</div>
@@ -105,22 +105,27 @@
                 </div>
 
                 <div class="field">
-                    <label>Specific Location</label>
+                    <label>Specific Location<sup><i class="small red asterisk icon"></i></sup></label>
                     <div class="ui large input">
-                        <input placeholder="Specific Location" name="specific_location" required>
+                        <input placeholder="Room Number, Floor , Block etc." name="specific_location" required>
                     </div>
                 </div>
 
                 <div class="field">
-                    <label>Complaint Details</label>
-                    <textarea rows="2" name="details" required></textarea>
+                    <label>Complaint Details<sup><i class="small red asterisk icon"></i></sup></label>
+                    <input placeholder="What is your Complaint?" name="details" required></textarea>
                 </div>
+
+                <div class = "field">
+                      <label for="file">Attach Files ( PDF, JPEG, PNG, JPG )</label>
+                      <input type="file" id="file" name="myfile" accept=".pdf, .jpg, .jpeg, .png" >
+                </div> 
                     Complaint Will be Register with your User ID : {{ comp_id }}
-                <input type="text" name="comp_id" style="visibility: hidden;" value="{{ comp_id }}" >
+                <input type="text"  name="comp_id" style="visibility: hidden;" value="{{ comp_id }}" >
 
                 <br>
 
-                <button class="ui large primary button right floated" onclick= "myfunction()">
+                <button class="ui large primary button right floated" onclick= "sub()">
                     Submit
                 </button>
 
@@ -134,24 +139,12 @@
         </div>
     </div>
 
-    <script>
-    function myfunction() {
-        alert("Complaint Successfully Launched");
-    }
-            </script>
-{#                {% endif %}#}
-
-{#       {%  if messages %}#}
-{#                 <ul class = "messages">#}
-{#                    {%  for message in messages %}#}
-{#                    <li{% if message.tags %} class = "{{ message.tags }}"{%  endif %}>{{ message }}</li>#}
-{#                    {%  endfor %}#}
-{#                 </ul>#}
-{#       {%  endif %}#}
+   
 {% endblock %}
 
 {% block javascript %}
     <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
     <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
     <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+    <script type="text/javascript" src="{% static 'complaint_system/js/rating.js' %}"></script>
 {% endblock %}

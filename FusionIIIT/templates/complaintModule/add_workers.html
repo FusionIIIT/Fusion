@@ -7,14 +7,14 @@
             ADD
         </a>
         <a class="item" data-tab="remove">
-            REMOVE
+            WORKERS
         </a>
     </div>
 
     <div class="ui active tab" data-tab="add">
         <div class="ui vertical segment">
-            <form class="ui form" style="padding-left: 24px; padding-right: 24px;" method="post"
-                  action=".">
+            <form class="ui form" style="padding-left: 24px; padding-right: 24px;" method="POST" enctype="multipart/form-data" 
+                  action="">
                 {% csrf_token %}
                 <div class="ui header">
                     Add a new worker:
@@ -25,9 +25,9 @@
                 <div class="fields">
 
                     <div class="eight wide field">
-                        <label>Workers Type</label>
-                        <div class="ui fluid search selection dropdown">
-                            <input name="complaint_type" type="hidden">
+                        <label>Workers Type<sup><i class="small red asterisk icon"></i></sup></label>
+                        <div class="ui selection dropdown">
+                            <input name="complaint_type" type="hidden" required="True">
                             <i class="dropdown icon"></i>
 
                             <div class="default text">Select Worker Type</div>
@@ -61,30 +61,38 @@
                         </div>
                     </div>
 
-
-                </div>
+            </div>
+                
 
                 <div class="field">
-                    <label>Name </label>
+                    <label>Name<sup><i class="small red asterisk icon"></i></sup> </label>
                     <div class="ui large input">
-                        <input placeholder="NAME" name="name">
+                        <input placeholder="NAME" name="name" required="True">
                     </div>
                 </div>
 
                 <div class="field">
-                    <label>Phone NO </label>
-                    <textarea rows="1" name="phone_no" PLACEHOLDER="PHONE NO"></textarea>
+                    <label>Phone Number <sup><i class="small red asterisk icon"></i></sup></label>
+                    <input type="number" rows="1" name="phone_no" PLACEHOLDER="PHONE NUMBER" required="True"></input>
                 </div>
                 <div class="field">
-                    <label>AGE  </label>
-                    <textarea rows="1" name="age" ></textarea>
+                    <label>AGE <sup><i class="small red asterisk icon"></i></sup> </label>
+                    <input type="number" rows="1" name="age" required="True"></input>
                 </div>
+
 
                 <br>
 
-                <button class="ui large primary button right floated">
+               <!-- <button class="ui large primary button right floated" onclick="myfunction1(event)">
                     Submit
-                </button>
+                </button>-->
+                <div class="ui buttons right floated">
+ 
+                  <button class="large ui blue toggle right floated button" value="save" onclick="addwork()">Save</button>
+                  <div class="or"></div>
+                  <button class="large ui toggle right floated button" value="cancel">Cancel</button>
+                  
+                </div>
 
                 <br>
                 <br>
@@ -97,90 +105,63 @@
     </div>
 
 
+
+
+
+
+
+
     <div class="ui tab" data-tab="remove">
         <div class="ui vertical segment">
                 <div class="ui header">
-                    Remove Workers :
+                    Click on the particular worker to remove
+                <br><br>
                 </div>
                     These Worker present under Caretaker :   <b>{{ request.user.first_name}}
                                                              {{ request.user.last_name}}</b>
-                <br>
-                <table class="ui very basic collapsing celled sortable table"
-                   style="padding-left: 2.5%;
-                                                          padding-right: 2.5%;
-                                                          padding-top: 1%;
-                                                          padding-bottom: 1.5%;
-                                                          margin: auto;">
-                <thead>
-                <tr>
-                    <th>
-                        ID
-                    </th>
-                    <th>
-                        Name
-                    </th>
-                    <th>
-                        Worker Type
-                    </th>
-                    <th>
-                        Complaint Assign
-                    </th>
+                <br><br><br>
+                
+            <div class="ui items">
+            {% for a in complaint_assign_no %}
+                <div class="item">
+                <a class="ui tiny image">
+                <img src="{% static 'complaint_system/img/stevie.jpg'%}">
+                </a>
+                <div class="content">
+                <a class="header" href="./worker_id_know_more/{{a.id}}">{{ a.name }}</a>
+                <div class="meta">
+                    <span><b>{{a.worker_type}}</b></span>
+                </div>
+                <div class="description">
+                <!--<p>Name: {{a.name}} is a {{a.worker_type}} and works in <a href="/caretaker/list_caretakers_area/">{{care_id.area}}</a> </br> <a href=""><b>Remove</b></a></p>-->
 
+                <div>ID: {{a.id}}</div>
+                <div>Age: {{a.age}}</div>
+                <div>Phone Number: {{a.phone}}</div>
+                
+                </div>
+                </div>
+                </div><br><br>
+            {%endfor%}
+      
 
-                </tr>
-                </thead>
-
-
-
-                <tbody>
-
-                {% for a in complaint_assign_no %}
-                    <tr>
-                    <td>
-                        <h4 class="ui image header">
-                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
-                            <div class="content">
-                                {{ a.id }}
-                                <div class="sub header">
-
-                                </div>
-                            </div>
-                        </h4>
-                    </td>
-
-                    <td>
-                        {{ a.name }}
-                    </td>
-
-                    <td>
-                        {{ a.worker_type }}
-                    <td>
-                        {{ a.total_complaint }}
-                    </td>
-
-                    <td>
-                        {% if a.total_complaint == 0 %}
-                            <a href="./removew/{{ a.id }}"><button class="ui basic button">Delete</button></a>
-                        {% else %}
-                            <button class="ui disabled button">Delete</button>
-                        {% endif %}
-                    </td>
-                {% endfor %}
-                </tr>
-
-
-
-
-                </tbody>
-
-
-
-            </table>
 
 
 
             <div class="ui divider"></div>
         </div>
     </div>
+</div>
 
+
+
+
+  
 {% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+    <script type="text/javascript" src="{% static 'complaint_system/js/rating.js' %}"></script>
+    {%endblock%}
