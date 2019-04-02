@@ -136,6 +136,8 @@ INSTALLED_APPS = [
     'applications.feeds.apps.FeedsConfig',
     'pagedown',
     'markdown_deux',
+    'background_task',
+
 ]
 
 MIDDLEWARE = [

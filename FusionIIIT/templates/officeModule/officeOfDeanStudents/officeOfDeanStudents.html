@@ -1,4 +1,3 @@
-
 {% extends 'globals/base.html' %}
 {% load static %}
 
@@ -13,156 +12,161 @@
         {% include 'dashboard/navbar.html' %}
     {% endblock %}
 
-    <!--The grid starts here!-->
+    {% comment %}The grid starts here!{% endcomment %}
     <div class="ui stackable doubling grid">
 
-        <!--The left-margin segment!-->
+        {% comment %}The left-margin segment!{% endcomment %}
         <div class="column"></div>
 
-        <!--
+        {% comment %}
             The left-rail segment starts here!
-        -->
+        {% endcomment %}
         <div class="three wide column">
 
-            <!--The Tab-Menu starts here!-->
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
 
-            <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
-                {% if "Dean_s" in all_designation %}
+                {% comment %}
+                TODO: Instead of Name write the position like "Office Of Dean Students!"
+                {% endcomment %}
+
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu starts here!{% endcomment %}
+
+            <div class="ui huge fluid vertical pointing menu"
+                 style="max-width: 320px;">
+                 {% if "Dean_s" in all_designation %}
                     <a class="active item" data-tab="zero">
-                         Budgets
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-                    <a class="item" data-tab="first">
+                     Budgets
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                 {% endif %}
 
-                        Meetings
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-                     <!--<a class="item" data-tab="third">-->
+                 {% if "Dean_s" in all_designation %}
+                <a class="item" data-tab="first">
 
-                        <!--VH Allotment-->
-                        <!--<i class="right floated chevron right icon"></i>-->
-                    <!--</a>-->
-                    <a class="item" data-tab="second">
-                        Budget Approvals
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-                    <a class="item" data-tab="fifth">
-                        New Club Approvals
-                        <i class="right floated chevron right icon"></i>
-                    </a>
+                    Meetings
+                    <i class="right floated chevron right icon"></i>
+                </a>
                 {% endif %}
-            </div>
-            <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+                {% if "Dean_s" in all_designation %}
+                <a class="item" data-tab="second">
+                    Budget Approvals
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+
+                {% if "Dean_s" in all_designation %}
+                 <a class="item" data-tab="fifth">
+                    New Club Approvals
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+
+
                 {% if "Junior Superintendent" in all_designation %}
-                    <a class="item" data-tab="sixth">
+                     <a class="item" data-tab="sixth">
                         Meeting minutes
                         <i class="right floated chevron right icon"></i>
                     </a>
-                    <a class="item" data-tab="seventh">
-                        Hostel Room Allotment
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-                    <a class="item" data-tab="eleventh">
-                        Club Session
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-                    <a class="item" data-tab="tenth">
-                        Budget allotment
-                        <i class="right floated chevron right icon"></i>
-                    </a>
+                {% endif %}
+                {% if "Junior Superintendent" in all_designation %}
+                 <a class="item" data-tab="seventh">
+                    Hostel Room Allotment
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+
+                {% if "Junior Superintendent" in all_designation %}
+                 <a class="item" data-tab="tenth">
+                    Budget allotment
+                    <i class="right floated chevron right icon"></i>
+                </a>
                 {% endif %}
             </div>
-            <!--The Tab-Menu ends here!-->
-    </div>
-        <!--
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+        </div>
+        {% comment %}
             The left-rail segment ends here!
-        -->
+        {% endcomment %}
 
 
-        <!--
+        {% comment %}
             The central-rail segment starts here!
-        -->
+        {% endcomment %}
 
         <div class="eight wide column">
-            <!--The Details start here!-->
+            {% comment %}The Details start here!{% endcomment %}
 
-            <!--The Holding meetings start here!-->
+            {% comment %}The Holding meetings start here!{% endcomment %}
             <div class="ui tab segment" data-tab="zero">
                 {% block form0 %}
                     {% include 'officeModule/officeOfDeanStudents/budgets.html' %}
                      {{ all_designations }}
                 {% endblock %}
             </div>
-            <!--The Holding meetings end here!-->
+            {% comment %}The Holding meetings end here!{% endcomment %}
 
-            <!--The Holding meetings start here!-->
+            {% comment %}The Holding meetings start here!{% endcomment %}
             <div class="ui tab segment" data-tab="first">
                 {% block form1 %}
                     {% include 'officeModule/officeOfDeanStudents/holdingMeetings.html' %}
                 {% endblock %}
             </div>
-            <!--The Holding meetings end here!-->
+            {% comment %}The Holding meetings end here!{% endcomment %}
 
 
-            <!--The budget approvals starts here!-->
+            {% comment %}The budget approvals starts here!{% endcomment %}
             <div class="ui tab segment" data-tab="second">
                 {% block form2 %}
                     {% include 'officeModule/officeOfDeanStudents/budgetApproval.html' %}
                 {% endblock %}
             </div>
-            <!--The budget approvals ends here!-->
+            {% comment %}The budget approvals ends here!{% endcomment %}
 
-             <div class="ui tab segment" data-tab="third">
-                {% block form3 %}
-                    {% include 'officeModule/officeOfDeanStudents/VHRoomAllotment.html' %}
-                {% endblock %}
-            </div>
-
-            <!--The New Club Approvals starts here!-->
+            {% comment %}The New Club Approvals starts here!{% endcomment %}
             <div class="ui tab segment" data-tab="fifth">
                 {% block form5 %}
                     {% include 'officeModule/officeOfDeanStudents/newClubApprovals.html' %}
                 {% endblock %}
             </div>
-            <!--The New CLub Approvals ends here!-->
+            {% comment %}The New CLub Approvals ends here!{% endcomment %}
 
-            <!--The Meeting minutes starts here!-->
+            {% comment %}The Meeting minutes starts here!{% endcomment %}
             <div class="ui tab segment" data-tab="sixth">
                 {% block form6 %}
                     {% include 'officeModule/officeOfDeanStudents/meetingMinutes.html' %}
                 {% endblock %}
 
             </div>
-            <!--The Meeting minutes ends here!-->
+            {% comment %}The Meeting minutes ends here!{% endcomment %}
 
-            <!--The Hostel Room Allotment starts here!-->
+            {% comment %}The Hostel Room Allotment starts here!{% endcomment %}
             <div class="ui tab segment" data-tab="seventh">
                 {% block form7 %}
                     {% include 'officeModule/officeOfDeanStudents/hostelRoomAllotment.html' %}
                 {% endblock %}
             </div>
-            <!--The Hostel Room Allotment ends here!-->
+            {% comment %}The Hostel Room Allotment ends here!{% endcomment %}
 
-            <!--Club budget allotment starts  here!-->
+            {% comment %}Club budget allotment starts  here!{% endcomment %}
             <div class="ui tab segment" data-tab="tenth">
                 {% block form10 %}
                     {% include 'officeModule/officeOfDeanStudents/budgetAllotment.html' %}
                 {% endblock %}
             </div>
-            <!--Club budget allotment ends here!-->
-
-             <!--Club session room allotment starts  here!-->
-            <div class="ui tab segment" data-tab="eleventh">
-                {% block form11 %}
-                    {% include 'officeModule/officeOfDeanStudents/sessionRoomAllotment.html' %}
-                {% endblock %}
-            </div>
-            <!--Club session room allotment ends here!-->
+            {% comment %}Club budget allotment ends here!{% endcomment %}
 
         </div>
-        <!--The central-rail segment ends here!-->
+        {% comment %}The central-rail segment ends here!{% endcomment %}
 
-        <!--The right-rail segment starts here!-->
+        {% comment %}The right-rail segment starts here!{% endcomment %}
         <div class="three wide column">
             <div class="row">
                 <div class="ui row">
@@ -192,13 +196,13 @@
                 </div>
             </div>
         </div>
-        <!--The right-rail segment ends here!-->
+        {% comment %}The right-rail segment ends here!{% endcomment %}
 
-        <!--The right-margin segment!-->
+        {% comment %}The right-margin segment!{% endcomment %}
         <div class="column"></div>
 
     </div>
-    <!--The grid ends here!-->
+    {% comment %}The grid ends here!{% endcomment %}
 
 
 
@@ -225,4 +229,3 @@
     <script type="text/javascript" src="{% static 'globals/js/modal.js' %}"></script>
     <script type="text/javascript" src="{% static 'visitor_hostel/visitor-hostel.js' %}"></script>
 {% endblock %}
-

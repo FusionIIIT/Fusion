@@ -32,26 +32,18 @@
     </tr>
     </thead>
 
-
     <tbody>
         {% for details in budgets%}
-         <tr onclick="modalsshow('{{ details.pk }}')">
-
-        {% if details.category == 'Sports' %}
+            {% if details.category == 'Sports' %}
+    <tr onclick="modals('{{ details.pk }}')">
 
         <td>{{  details.club_name }}</td>
         <td>{{  details.alloted_budget }}</td>
         <td>{{  details.spent_budget }}</td>
-        <td>{{  details.avail_budget }}</td>
-        <td> <button class="ui compact icon button" onclick="modalsshow('{{ details.pk }}')">
-                            <i class="expand icon"></i>
-                                </button></td>
+        <td>{{  details.avail_budget}}</td>
+        {%  endif %}
         </tr>
-        {% else %}
-
-        {% endif %}
-
-    {% endfor %}
+        {% endfor %}
 
     </tbody>
 </table>
