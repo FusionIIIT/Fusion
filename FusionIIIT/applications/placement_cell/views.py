@@ -12,6 +12,7 @@ from wsgiref.util import FileWrapper
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.contrib import messages
 from django.core.cache import cache
 from django.core.files.storage import FileSystemStorage
 from django.core.paginator import Paginator
@@ -140,7 +141,7 @@ from .models import (Achievement, ChairmanVisit, Course, Education, Experience,
             skillcheck - checking for skill to be shown in cv
 '''
 
-# Ajax for the company name dropdown
+# Ajax for the company name dropdown for CompanyName when filling AddSchedule
 def CompanyNameDropdown(request):
     if request.method == 'POST':
         current_value = request.POST.get('current_value')
@@ -200,6 +201,7 @@ def Placement(request):
             Q(unique_id=student,
             notify_id__in=placementschedule)).order_by('-timestamp')
 
+        check_invitation_date(placementstatus)
         # Student view for showing accepted or declined schedule
         if request.method == 'POST':
             if 'studentapprovesubmit' in request.POST:
@@ -383,10 +385,13 @@ def Placement(request):
 
     # delete the schedule
     if 'deletesch' in request.POST:
+        print('coming--deletesch---\n\n')
         delete_sch_key = request.POST['delete_sch_key']
         try:
             PlacementSchedule.objects.get(pk = delete_sch_key).delete()
+            messages.success(request, 'Schedule Deleted Successfully')
         except Exception as e:
+            messages.error(request, 'Problem Occurred for Schedule Delete!!!')
             print('---- \n\n record not found')
 
     # saving all the schedule details
@@ -432,6 +437,8 @@ def Placement(request):
 
             notify.save()
             schedule.save()
+            messages.success(request, "Schedule Added Successfull!!")
+
 
     schedules = PlacementSchedule.objects.all()
 
@@ -472,11 +479,15 @@ def deleteInvitationStatus(request):
 
         try:
             PlacementStatus.objects.get(pk=delete_invit_status_key).delete()
+            messages.success(request, 'Invitation Deleted Successfully')
         except Exception as e:
+
             print('---- \n\n record not found')
 
     if 'pbi_tab_active' in request.POST:
-       mnpbi_tab = 1
+        mnpbi_tab = 1
+    else:
+        mnplacement_tab = 1
 
     form1 = SearchStudentRecord(initial={})
     form9 = ManagePbiRecord(initial={})
@@ -762,6 +773,98 @@ def InvitationStatus(request):
             else:
                 no_pagination = 0
 
+
+    if 'pdf_gen_invitation_status' in request.POST:
+        print('coming--generate--pdf')
+
+        placementstatus = None
+        if 'pdf_gen_invitation_status_placement' in request.POST:
+            stuname = request.session['mn_stuname']
+            ctc = request.session['mn_ctc']
+            cname = request.session['mn_cname']
+            rollno = request.session['mn_rollno']
+
+            placementstatus = PlacementStatus.objects.filter(Q(notify_id__in=NotifyStudent.objects.filter
+                                                           (Q(placement_type="PLACEMENT",
+                                                              company_name__icontains=cname,
+                                                              ctc__gte=ctc)),
+                                                           unique_id__in=Student.objects.filter
+                                                           ((Q(id__in=ExtraInfo.objects.filter
+                                                               (Q(user__in=User.objects.filter
+                                                                  (Q(first_name__icontains=stuname)),
+                                                                  id__icontains=rollno))
+                                                               )))))
+
+        if 'pdf_gen_invitation_status_pbi' in request.POST:
+            stuname = request.session['mn_pbi_stuname']
+            ctc = request.session['mn_pbi_ctc']
+            cname = request.session['mn_pbi_cname']
+            rollno = request.session['mn_pbi_rollno']
+
+            placementstatus = PlacementStatus.objects.filter(
+                Q(notify_id__in=NotifyStudent.objects.filter(
+                Q(placement_type="PBI",
+                company_name__icontains=cname,
+                ctc__gte=ctc)),
+                unique_id__in=Student.objects.filter(
+                (Q(id__in=ExtraInfo.objects.filter(
+                Q(user__in=User.objects.filter(
+                Q(first_name__icontains=stuname)),
+                id__icontains=rollno))))))).order_by('id')
+
+        context = {
+            'placementstatus' : placementstatus
+        }
+
+        print('rendering the pdf--student record')
+        return render_to_pdf('placementModule/pdf_invitation_status.html', context)
+
+    if 'excel_gen_invitation_status' in request.POST:
+        print('coming--generate--excel')
+
+        placementstatus = None
+        if 'excel_gen_invitation_status_placement' in request.POST:
+            stuname = request.session['mn_stuname']
+            ctc = request.session['mn_ctc']
+            cname = request.session['mn_cname']
+            rollno = request.session['mn_rollno']
+
+            placementstatus = PlacementStatus.objects.filter(Q(notify_id__in=NotifyStudent.objects.filter
+                                                           (Q(placement_type="PLACEMENT",
+                                                              company_name__icontains=cname,
+                                                              ctc__gte=ctc)),
+                                                           unique_id__in=Student.objects.filter
+                                                           ((Q(id__in=ExtraInfo.objects.filter
+                                                               (Q(user__in=User.objects.filter
+                                                                  (Q(first_name__icontains=stuname)),
+                                                                  id__icontains=rollno))
+                                                               )))))
+
+        if 'excel_gen_invitation_status_pbi' in request.POST:
+            stuname = request.session['mn_pbi_stuname']
+            ctc = request.session['mn_pbi_ctc']
+            cname = request.session['mn_pbi_cname']
+            rollno = request.session['mn_pbi_rollno']
+
+            placementstatus = PlacementStatus.objects.filter(
+                Q(notify_id__in=NotifyStudent.objects.filter(
+                Q(placement_type="PBI",
+                company_name__icontains=cname,
+                ctc__gte=ctc)),
+                unique_id__in=Student.objects.filter(
+                (Q(id__in=ExtraInfo.objects.filter(
+                Q(user__in=User.objects.filter(
+                Q(first_name__icontains=stuname)),
+                id__icontains=rollno))))))).order_by('id')
+
+        context = {
+            'placementstatus' : placementstatus
+        }
+
+        print('rendering the excel--student record')
+
+        return export_to_xls_invitation_status(placementstatus)
+
     form1 = SearchStudentRecord(initial={})
     form9 = ManagePbiRecord(initial={})
     form11 = ManagePlacementRecord(initial={})
@@ -1029,7 +1132,7 @@ def StudentRecords(request):
 
         print('rendering the excel--student record')
 
-        return export_to_xls(students)
+        return export_to_xls_std_records(students)
 
 
     # for sending the invite to students for particular schedule
@@ -1067,6 +1170,13 @@ def StudentRecords(request):
                 else:
                     cpi = 0
 
+                if form13.cleaned_data['no_of_days']:
+                    no_of_days = form13.cleaned_data['no_of_days']
+                else:
+                    no_of_days = 10
+
+                print('\n\n\n  coming ', no_of_days)
+
                 comp = form13.cleaned_data['company']
 
                 notify = NotifyStudent.objects.get(company_name=comp.company_name,
@@ -1087,8 +1197,11 @@ def StudentRecords(request):
                     notify_id=notify).values_list('unique_id', flat=True))
 
                 PlacementStatus.objects.bulk_create( [PlacementStatus(notify_id=notify,
-                            unique_id=student,)for student in students] )
+                            unique_id=student, no_of_days=no_of_days) for student in students] )
                 students = ''
+                messages.success(request, 'Notification Sent')
+            else:
+                messages.error(request, 'Problem Occurred!! Please Try Again!!')
 
     print(students)
     context = {
@@ -2307,6 +2420,31 @@ def PlacementStatistics(request):
     return render(request, 'placementModule/placementstatistics.html', context)
 
 
+@login_required
+def delete_placement_statistics(request):
+    """
+    The function is used to delete the placement statistic record.
+    @param:
+            request - trivial
+    @variables:
+            record_id = stores current StudentRecord Id.
+    """
+    print('coming delete request')
+    if 'deleterecord' in request.POST:
+        try:
+            record_id = int(request.POST['deleterecord'])
+            print('------------------------\n\n\n')
+            print(record_id)
+            print(StudentRecord.objects.get(pk = record_id))
+
+            StudentRecord.objects.get(pk = record_id).delete()
+        except Exception as e:
+            print(e)
+            print('------------problem in deleting the record of statistics-------------')
+
+    return redirect('/placement/statistics/')
+
+
 def cv(request, username):
     # Retrieve data or whatever you need
     """
@@ -2434,7 +2572,7 @@ def render_to_pdf(template_src, context_dict):
     return HttpResponse('We had some errors<pre>%s</pre>' % escape(html))
 
 
-def export_to_xls(qs):
+def export_to_xls_std_records(qs):
     """
     The function is used to generate the file in the xls format.
     Embeds the data into the file.
@@ -2482,6 +2620,88 @@ def export_to_xls(qs):
 
     wb.save(response)
     return response
+
+
+def export_to_xls_invitation_status(qs):
+    response = HttpResponse(content_type='application/ms-excel')
+    response['Content-Disposition'] = 'attachment; filename="report.xls"'
+
+    wb = xlwt.Workbook(encoding='utf-8')
+    ws = wb.add_sheet('Report')
+
+    # Sheet header, first row
+    row_num = 0
+
+    font_style = xlwt.XFStyle()
+    font_style.font.bold = True
+
+    columns = ['Roll No.', 'Name', 'Company', 'CTC', 'Invitation Status']
+
+    for col_num in range(len(columns)):
+        ws.write(row_num, col_num, columns[col_num], font_style)
+
+    # Sheet body, remaining rows
+    font_style = xlwt.XFStyle()
+
+    for student in qs:
+        row_num += 1
+
+        row = []
+        row.append(student.unique_id.id.id)
+        row.append(student.unique_id.id.user.first_name+' '+student.unique_id.id.user.last_name)
+        row.append(student.notify_id.company_name)
+        row.append(student.notify_id.ctc)
+        row.append(student.invitation)
+
+        for col_num in range(len(row)):
+            ws.write(row_num, col_num, row[col_num], font_style)
+
+    wb.save(response)
+    return response
+
+
+def check_invitation_date(placementstatus):
+    for ps in placementstatus:
+        print(ps.no_of_days)
+        print(ps.timestamp)
+        print(datetime.datetime.now()-datetime.timedelta(days=ps.no_of_days))
+
+    return
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # @login_required

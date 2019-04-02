@@ -303,6 +303,10 @@ class SendInvite(forms.Form):
     dep_phd = forms.MultipleChoiceField(choices = Constants.PHD_DEP, required=False, label="department",
                                     widget=forms.CheckboxSelectMultiple)
     cpi = forms.DecimalField(label="cpi", required=False)
+    no_of_days = forms.CharField(required=True, widget=forms.NumberInput(attrs={ 'min':0,
+                                                            'max':30,
+                                                            'max_length': 10,
+                                                            'class': 'form-control'}))
 
 
 
