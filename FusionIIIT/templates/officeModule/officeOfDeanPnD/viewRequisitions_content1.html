@@ -64,13 +64,6 @@
     <thead>
     <tr>
         <th>
-        Sr.No.
-        </th>
-        <th>
-            Requisition ID
-        </th>
-
-        <th>
             Date
         </th>
 
@@ -96,13 +89,6 @@
 
     {% for object in req%}
     <tr>
-
-        <td>
-            {{forloop.counter}}
-        </td>
-        <td>
-            {{object.id}}
-        </td>
         <td>
             {{object.req_date}}
         </td>
