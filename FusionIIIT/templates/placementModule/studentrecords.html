@@ -575,10 +575,20 @@
                   </div>
 
               </div>
-              <div class="field" >
-                  <button name="sendinvite" value="sendinvite" class="ui large primary button right floated" type="submit">
-                      Send
-                  </button>
+              <div class="four fields">
+                <div class="field">
+                  {{ form13.no_of_days.errors }}
+                    <label>Valid For (Days)</label>
+                  {{ form13.no_of_days }}
+                </div>
+                <div class="field"></div>
+                <div class="field"></div>
+                <div class="field" >
+                    <div><br></div>
+                    <button name="sendinvite" value="sendinvite" class="ui large primary button right floated" type="submit">
+                        Send
+                    </button>
+                </div>
               </div>
               <br><div class="row"></div><br>
               </form>

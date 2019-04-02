@@ -12,6 +12,7 @@ from wsgiref.util import FileWrapper
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.contrib import messages
 from django.core.cache import cache
 from django.core.files.storage import FileSystemStorage
 from django.core.paginator import Paginator
@@ -140,7 +141,7 @@ from .models import (Achievement, ChairmanVisit, Course, Education, Experience,
             skillcheck - checking for skill to be shown in cv
 '''
 
-# Ajax for the company name dropdown
+# Ajax for the company name dropdown for CompanyName when filling AddSchedule
 def CompanyNameDropdown(request):
     if request.method == 'POST':
         current_value = request.POST.get('current_value')
@@ -200,6 +201,7 @@ def Placement(request):
             Q(unique_id=student,
             notify_id__in=placementschedule)).order_by('-timestamp')
 
+        check_invitation_date(placementstatus)
         # Student view for showing accepted or declined schedule
         if request.method == 'POST':
             if 'studentapprovesubmit' in request.POST:
@@ -383,10 +385,13 @@ def Placement(request):
 
     # delete the schedule
     if 'deletesch' in request.POST:
+        print('coming--deletesch---\n\n')
         delete_sch_key = request.POST['delete_sch_key']
         try:
             PlacementSchedule.objects.get(pk = delete_sch_key).delete()
+            messages.success(request, 'Schedule Deleted Successfully')
         except Exception as e:
+            messages.error(request, 'Problem Occurred for Schedule Delete!!!')
             print('---- \n\n record not found')
 
     # saving all the schedule details
@@ -432,6 +437,8 @@ def Placement(request):
 
             notify.save()
             schedule.save()
+            messages.success(request, "Schedule Added Successfull!!")
+
 
     schedules = PlacementSchedule.objects.all()
 
@@ -472,11 +479,15 @@ def deleteInvitationStatus(request):
 
         try:
             PlacementStatus.objects.get(pk=delete_invit_status_key).delete()
+            messages.success(request, 'Invitation Deleted Successfully')
         except Exception as e:
+
             print('---- \n\n record not found')
 
     if 'pbi_tab_active' in request.POST:
-       mnpbi_tab = 1
+        mnpbi_tab = 1
+    else:
+        mnplacement_tab = 1
 
     form1 = SearchStudentRecord(initial={})
     form9 = ManagePbiRecord(initial={})
@@ -845,7 +856,7 @@ def InvitationStatus(request):
 
         print('rendering the excel--student record')
 
-        return export_to_xls_invitation_status(students)
+        return export_to_xls_invitation_status(placementstatus)
 
     form1 = SearchStudentRecord(initial={})
     form9 = ManagePbiRecord(initial={})
@@ -1142,6 +1153,13 @@ def StudentRecords(request):
                 else:
                     cpi = 0
 
+                if form13.cleaned_data['no_of_days']:
+                    no_of_days = form13.cleaned_data['no_of_days']
+                else:
+                    no_of_days = 10
+
+                print('\n\n\n  coming ', no_of_days)
+
                 comp = form13.cleaned_data['company']
 
                 notify = NotifyStudent.objects.get(company_name=comp.company_name,
@@ -1162,8 +1180,11 @@ def StudentRecords(request):
                     notify_id=notify).values_list('unique_id', flat=True))
 
                 PlacementStatus.objects.bulk_create( [PlacementStatus(notify_id=notify,
-                            unique_id=student,)for student in students] )
+                            unique_id=student, no_of_days=no_of_days) for student in students] )
                 students = ''
+                messages.success(request, 'Notification Sent')
+            else:
+                messages.error(request, 'Problem Occurred!! Please Try Again!!')
 
     context = {
         'form1': form1,
@@ -2627,6 +2648,50 @@ def export_to_xls_invitation_status(qs):
 
     wb.save(response)
     return response
+
+
+def check_invitation_date(placementstatus):
+    for ps in placementstatus:
+        print(ps.no_of_days)
+        print(ps.timestamp)
+        print(datetime.datetime.now()-datetime.timedelta(days=ps.no_of_days))
+
+    return
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # @login_required
