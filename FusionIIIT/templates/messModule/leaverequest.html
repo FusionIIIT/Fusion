@@ -36,12 +36,6 @@
                                 <div class="twelve wide field">
                                     <label>Leave Type*</label>
                                     <select name="leave_type" class="ui fluid dropdown" required="true" id="leave_type">
-                                        <option value="">Select</option>
-                                        {% if count >= 15 %}
-                                            <option value="" readonly>Casual Leave(not allowed)</option>
-                                        {% else %}
-                                            <option value="casual">Casual Leave(took {{ count }} leaves)</option>
-                                        {% endif %}
                                         <option value="vacation">Vacation Leave</option>
                                     </select>
                                 </div>
