@@ -139,8 +139,8 @@
             </div>
 
             {% if not students and student_record_check == 1 %}
-              <div class="ui error message">
-                <i class="close icon"></i>
+              <div id="pbi_invitation_error_message" class="ui error message">
+                <i onclick="pbiInvitationStatusErrorMessage();" class="close icon"></i>
                 <div class="header">
                   There is no such record of this type.
                 </div>
@@ -1027,5 +1027,4 @@
   }
 
 </script>
-
 {% endblock %}
