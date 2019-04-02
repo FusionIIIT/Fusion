@@ -194,8 +194,9 @@
             <input type="text" id="journalpk" name="journalpk" hidden>
             <input type="text" id="index" name="index" hidden>
         </form>
-        {% endif %}
         <br>
+        
+        {% endif %}
 
         <h4 class="ui dividing header">Report:</h4>
         <div class="pagination">
@@ -224,7 +225,9 @@
                     <th class="" style="width: 150px">Authors</th>
                     <th class="" style="width: 80px">Details</th>
                     <th class="" style="width: 80px">Download</th>
-                    <th class="" style="width: 150px">Action</th>
+                    {% if request.user == user %}
+                    <th class="" style="width: 160px">Action</th>
+                    {% endif %}
                 </tr>
                 </thead>
 
@@ -249,10 +252,11 @@
                                     '{{publication.date_publication}}', '{{publication.status}}', 
                                     '{{publication.is_sci}}','{{publication.doi}}')" value = "View"> </td>
                             <td><a href="{{ publication.paper }}" target="_blank"><i class=" large download icon"></i></a></td>
+                            {% if request.user == user %}
                             <td>
-                                <input type="button"
+                                <button type="button"
                                    id="editButton"
-                                   class="ui red mini button left floated" onclick="editpaper(
+                                   class="ui button left floated" onclick="editpaper(
                                     '{{ forloop.counter|add:sr }}','{{publication.pk}}',
                                     '{{publication.name}}','{{publication.authors}}',
                                     '{{publication.co_authors}}', '{{publication.title_paper}}', '{{publication.year}}',
@@ -260,15 +264,18 @@
                                     '{{publication.reference_number}}','{{publication.date_submission}}', 
                                     '{{publication.date_publication}}', '{{publication.status}}', 
                                     '{{publication.is_sci}}','{{publication.doi}}')"
-                                   value = "Edit">
-                                </input>
+                                   >
+                                   <i class="ui black edit icon"></i>
+                                </button>
                             
-                                <input type="button"
+                                <a href="{% url 'eis:emp_research_papersDelete' publication.pk forloop.counter|add:sr 1%}"
                                    id="editButton"
-                                   class="ui blue mini button right floated" onclick=""
+                                   class="ui blue button right floated" onclick=""
                                    value = "Delete">
-                                </input>
+                                   <i class="ui red delete icon"></i>
+                                </a>
                             </td>
+                            {% endif %}
                         </tr>
                         
                     {% endfor %}
@@ -306,7 +313,7 @@
     <div class="{% if mark3 == 1 %}ui active tab segment{% else %}ui tab segment{% endif %}" data-tab="conference">
         {% if request.user == user %}
         <h4 class="ui dividing header">Add a Journal</h4>
-        <form class="ui form" method="POST" action="{% url 'eis:conference_insert' %}" enctype="multipart/form-data">
+        <form name="conferenceform" id="conferenceform" class="ui form" method="POST" action="{% url 'eis:conference_insert' %}" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="field">
                 <div class="two fields">
@@ -454,10 +461,16 @@
                 </div>
 
             </div>
-            <button class="ui right floated primary button" >
-                Save 
+            <button class="ui right floated primary button" id="saveconference" name="saveconference"  style="display: block;">
+                Save
                 <i class="ui save icon right floated"></i>
             </button>
+            <button class="ui right floated primary button" id="editconference" name="editconference" style="display: none;">
+                Update
+                <i class="ui edit icon right floated"></i>
+            </button>
+            <input type="text" id="conferencepk" name="conferencepk" hidden>
+            <input type="text" id="index3" name="index3" hidden>
         </form>
         {% endif %}
         <br>
@@ -490,7 +503,7 @@
                 <th class="" style="width: 150px">Authors</th>
                 <th class="" style="width: 80px">Details</th>
                 <th class="" style="width: 80px">Download</th>
-                <th class="" style="width: 150px">Action</th>
+                <th class="" style="width: 160px">Action</th>
             </tr>
             </thead>
 
@@ -500,7 +513,7 @@
                 {% for conference in conferences %}
 
                     <tr>
-                        <td>{{ forloop.counter|add:sr }}</td>
+                        <td>{{ forloop.counter|add:sr3 }}</td>
                         <td>{{ conference.title_paper }}</td>
                         <td>{{ conference.authors }}</td>
                         <td> <input type="button" id="view"
@@ -513,17 +526,24 @@
                                 '{{conference.isbn_no}}')" value = "View"> </td>
                         <td><a href="{{ conference.paper }}" target="_blank"><i class=" large download icon"></i></a></td>
                         <td>
-                            <input type="button"
+                            <button
                                id="editButton"
-                               class="ui red mini button left floated" onclick=""
-                               value = "Edit">
-                            </input>
+                               class="ui button left floated" onclick="editconference( 
+                                '{{conference.pk}}','{{ forloop.counter|add:sr3 }}',
+                                '{{conference.name}}','{{conference.authors}}',
+                                '{{conference.co_authors}}', '{{conference.title_paper}}', '{{conference.year}}',
+                                '{{conference.venue}}', '{{conference.date_submission}}',
+                                '{{conference.date_acceptance}}','{{conference.date_publication}}', 
+                                '{{conference.page_no}}', '{{conference.status}}', 
+                                '{{conference.isbn_no}}')"
+                               ><i class="ui black edit icon"></i>
+                            </button>
                         
-                            <input type="button"
-                               id="editButton"
-                               class="ui blue mini button right floated" onclick=""
-                               value = "Delete">
-                            </input>
+                            <a href="{% url 'eis:emp_research_papersDelete' conference.pk forloop.counter|add:sr3 2 %}" 
+                               id="deleteButton"
+                               class="ui blue button right floated" onclick=""
+                               ><i class="ui red delete icon"></i>
+                            </button>
                         </td>
                     </tr>
                     

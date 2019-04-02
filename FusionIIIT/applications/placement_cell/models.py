@@ -25,6 +25,7 @@ class Constants:
         ('ACCEPTED', 'Accepted'),
         ('REJECTED', 'Rejected'),
         ('PENDING', 'Pending'),
+        ('IGNORE', 'IGNORE'),
     )
 
     PLACEMENT_TYPE = (
@@ -247,6 +248,7 @@ class PlacementStatus(models.Model):
     placed = models.CharField(max_length=20, choices=Constants.PLACED_TYPE,
                               default='NOT PLACED')
     timestamp = models.DateTimeField(auto_now=True)
+    no_of_days = models.IntegerField(default=10, null=True, blank=True)
 
     class Meta:
         unique_together = (('notify_id', 'unique_id'),)
