@@ -791,6 +791,7 @@ def StudentRecords(request):
     '''
         function for searching the records of student
     '''
+    print('starts', request.GET.get('page'))
     user = request.user
     strecord_tab = 1
     no_pagination = 0
@@ -815,7 +816,6 @@ def StudentRecords(request):
             print('search form for student record valid')
             if form1.cleaned_data['name']:
                 name = form1.cleaned_data['name']
-
             else:
                 name = ''
             if form1.cleaned_data['rollno']:
@@ -901,22 +901,32 @@ def StudentRecords(request):
         # when the request came from pagintion with some page no.
         if request.GET.get('page') != None:
             try:
-                students = Student.objects.filter(Q(id__in=ExtraInfo.objects.filter(Q(user__in=User.objects.filter(Q(first_name__icontains=request.session['name'])),
-                            department__in=DepartmentInfo.objects.filter(Q(name__icontains=request.session['department'])),
-                            id__icontains=request.session['rollno'])),
-                            programme=request.session['programme'],
-                            cpi__gte=decimal.Decimal(request.session['cpi']))).filter(Q(pk__in=StudentPlacement.objects.filter(Q(debar=request.session['debar'],
-                            placed_type=request.session['placed_type'])).values('unique_id_id'))).order_by('id')
+                students = Student.objects.filter(
+                    Q(id__in=ExtraInfo.objects.filter(
+                        Q(user__in=User.objects.filter(
+                            Q(first_name__icontains=request.session['name'])
+                        ),
+                        department__in=DepartmentInfo.objects.filter(
+                            Q(name__in=request.session['department'])
+                        ),
+                        id__icontains=request.session['rollno']
+                        )
+                    ),
+                    programme=request.session['programme'],
+                    cpi__gte=decimal.Decimal(request.session['cpi']))).filter(Q(pk__in=StudentPlacement.objects.filter(Q(debar=request.session['debar'],
+                    placed_type=request.session['placed_type'])).values('unique_id_id'))).order_by('id')
             except:
                 students = ''
 
             if students != '':
                 total_query = students.count()
-                print(total_query)
+                print(students)
+                print('total_query=', total_query)
             else:
                 total_query = 0
 
             if total_query > 30:
+                no_pagination = 1
                 paginator = Paginator(students, 30)
                 page = request.GET.get('page', 1)
                 students = paginator.page(page)
@@ -1073,6 +1083,7 @@ def StudentRecords(request):
                             unique_id=student,)for student in students] )
                 students = ''
 
+    print(students)
     context = {
         'form1': form1,
         'form9': form9,
@@ -1706,7 +1717,6 @@ def PlacementStatistics(request):
     records = PlacementRecord.objects.values('name', 'year', 'ctc', 'placement_type').annotate(Count('name'), Count('year'), Count('placement_type'), Count('ctc'))
 
     invitecheck=0;
-    print('before record')
     for r in records:
         r['name__count'] = 0
         r['year__count'] = 0
@@ -1715,36 +1725,31 @@ def PlacementStatistics(request):
     tece = dict()
     tme = dict()
     tadd = dict()
-    print(records)
-    print(years)
-    print('after record')
-    # for y in years:
-    #     tcse[y['year']] = 0
-    #     tece[y['year']] = 0
-    #     tme[y['year']] = 0
-    #     for r in records:
-    #         if r['year'] == y['year']:
-    #             if r['placement_type'] != "HIGHER STUDIES":
-    #                 for z in studentrecord:
-    #                     if z.record_id.name == r['name'] and z.record_id.year == r['year'] and z.unique_id.id.department.name == "CSE":
-    #                         tcse[y['year']] = tcse[y['year']]+1
-    #                         r['name__count'] = r['name__count']+1
-    #                     if z.record_id.name == r['name'] and z.record_id.year == r['year'] and z.unique_id.id.department.name == "ECE":
-    #                         tece[y['year']] = tece[y['year']]+1
-    #                         r['year__count'] = r['year__count']+1
-    #                     if z.record_id.name == r['name'] and z.record_id.year == r['year'] and z.unique_id.id.department.name == "ME":
-    #                         tme[y['year']] = tme[y['year']]+1
-    #                         r['placement_type__count'] = r['placement_type__count']+1
-    #     tadd[y['year']] = tcse[y['year']]+tece[y['year']]+tme[y['year']]
-    #     y['year__count'] = [tadd[y['year']], tcse[y['year']], tece[y['year']], tme[y['year']]]
-    print('after years')
+    for y in years:
+        tcse[y['year']] = 0
+        tece[y['year']] = 0
+        tme[y['year']] = 0
+        for r in records:
+            if r['year'] == y['year']:
+                if r['placement_type'] != "HIGHER STUDIES":
+                    for z in studentrecord:
+                        if z.record_id.name == r['name'] and z.record_id.year == r['year'] and z.unique_id.id.department.name == "CSE":
+                            tcse[y['year']] = tcse[y['year']]+1
+                            r['name__count'] = r['name__count']+1
+                        if z.record_id.name == r['name'] and z.record_id.year == r['year'] and z.unique_id.id.department.name == "ECE":
+                            tece[y['year']] = tece[y['year']]+1
+                            r['year__count'] = r['year__count']+1
+                        if z.record_id.name == r['name'] and z.record_id.year == r['year'] and z.unique_id.id.department.name == "ME":
+                            tme[y['year']] = tme[y['year']]+1
+                            r['placement_type__count'] = r['placement_type__count']+1
+        tadd[y['year']] = tcse[y['year']]+tece[y['year']]+tme[y['year']]
+        y['year__count'] = [tadd[y['year']], tcse[y['year']], tece[y['year']], tme[y['year']]]
 
     form2 = SearchPlacementRecord(initial={})
     form3 = SearchPbiRecord(initial={})
     form4 = SearchHigherRecord(initial={})
     current1 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement chairman"))
     current2 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement officer"))
-
     current = HoldsDesignation.objects.filter(Q(working=user, designation__name="student"))
 
     if len(current) == 0:
@@ -2269,10 +2274,8 @@ def PlacementStatistics(request):
         else:
             higherrecord = ''
 
-
-
     context = {
-        'form2'             :            form2,
+        'form2': form2,
         'form3'             :            form3,
         'form4'             :            form4,
         'current'           :          current,

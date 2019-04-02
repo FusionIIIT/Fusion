@@ -224,7 +224,7 @@
                                     </div>
                                     {% if current == None %}
                                     <div class="field">
-                                        <button name="studentplacementaddsubmit" value="studentplacementaddsubmit" class="ui fluid large primary button" type="submit">
+                                        <button name="studentplacementaddsubmit" value="studentplacementaddsubmit" onclick="studentPlacementAdd();" id="studentplacementaddsubmit" class="ui fluid large primary button" type="submit">
                                             Add
                                         </button>
                                     </div>
@@ -244,7 +244,6 @@
                         <br>
                     <!-- Pagination Section starts here  --->
                     {% if pagination_placement %}
-
                         <center>
                           <div class="ui pagination menu">
                             {% if placementrecord.has_previous %}
@@ -757,10 +756,6 @@
                     {% endif %}
 
                     </div>
-
-
-
-
                 </div>
             </div>
         </div>
@@ -768,4 +763,12 @@
 
     </div>
 
+  {% endblock %}
+
+  {% block javascript %}
+  <script type="text/javascript">
+      function studentPlacementAdd(){
+        alert('asdasda');
+      }
+  </script>
   {% endblock %}
