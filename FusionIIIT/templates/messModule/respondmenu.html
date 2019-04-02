@@ -15,7 +15,7 @@
 </div>
 
 
-<div class="ui active tab" data-tab="respondtomenuchange">
+<div class="ui active tab" data-tab="respondtomenuchange" id="respondtomenuchange">
     <div class="ui vertical segment">
         <table class="ui very basic collapsing celled large sortable table"
                style="padding-left: 2.5%;
@@ -26,8 +26,7 @@
             <tbody>
             {% for list in newmenu %}
             {% if list.status == '1' %}
-            <div id="menu-{{list.pk}}" style="display: block;">
-            <tr>
+            <tr id="menu-{{list.pk}}">
                 <div class="content">
                     <strong>Date of Application:</strong> {{list.app_date}}
                     <br>
@@ -44,18 +43,17 @@
                     <strong>Accept or Reject :</strong>
                     <div class="ui buttons">
                         <button class="accm ui positive button" name="submit" value="approve" data-accm="{{list.pk}}"
-                                onclick="return acceptReqMess({{list.pk}})">A
+                                onclick="return acceptReqMess()">A
                         </button>
 
                         <div class="or"></div>
                         <button class="ui negative button" name="submit" value="reject"
-                                onclick="return rejectReqMess({{list.pk}})">R
+                                onclick="return rejectReqMess()">R
                         </button>
                     </div>
                 </div>
                 <hr>
             </tr>
-            </div>
 
             {% endif %}
             {% endfor %}
@@ -119,9 +117,10 @@
 {% endblock %}
 
 {% block javascript %}
-<script>
 
-         function acceptReqMess(id){
+    <script>
+
+         function acceptReqMess(){
 
          $.ajax({
                 type: 'POST',
@@ -133,16 +132,16 @@
                     'status':'2',
                 },
                 success: function(data) {
-                    document.getElementById("menu-"+id).style.display='none';
                     alert("Request has been accepted");
+                    ("#respondtomenuchange").load(location.href + " #respondtomenuchange>*", "");
                 },
                 error: function(data, err) {
                     alert(err.message);
+
                 }
             });
          }
-         function rejectReqMess(id){
-             document.getElementById("menu-"+id).style.visibility='hidden';
+         function rejectReqMess(){
              $.ajax({
                     type: 'POST',
                     url: 'response',
@@ -157,10 +156,12 @@
                         if(data.status == '1')
                             {
                                 alert("Application Rejected");
+                                ("#respondtomenuchange").load(location.href + " #respondtomenuchange>*", "");
                             }
                         },
                     error: function(data, err) {
                         alert(err.message);
+
                     }
                 });
          }
