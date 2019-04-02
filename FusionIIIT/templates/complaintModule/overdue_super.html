@@ -13,10 +13,10 @@
 
     </div>
     <div class="ui active tab" data-tab="overduecomplaint">
-        <div class="ui vertical segment">
+        <div class="ui vertical segment" style="height: 700px;overflow-y: auto";>
             
           <!--  <div class="ui divider"></div>-->
-            <br><br>
+            Location of all these complaint is : <b>{{ area }}</b>
              <table class="ui very basic collapsing celled sortable table"
                    style="padding-left: 2.5%;
                                                           padding-right: 2.5%;
@@ -25,33 +25,33 @@
                                                           margin: auto;">
                 <thead>
                 <tr>
-                    <th>
-                        Name
-                    </th>
+                    <td>
+                        <b>Name</b>
+                    </td>
 
-                    <th class="one wide column">
+                    <td class="one wide column">
                         Register <br> Date
-                    </th>
+                    </td>
 
-                    <th>
-                        Finish <br> Date
-                    </th>
-                   <th>
-                        Specific <br> Location
-                    </th>
+                    <td>
+                        <b>Deadline</b>
+                    </td>
+                   <td>
+                       <b> Specific <br> Location </b>
+                    </td>
 
-                    <th class="three wide column">
-                        Details
-                    </th>
-                    <th class="four wide column">
-                        Delay
-                    </th>
-                    <th class="two wide column">
+                    <td class="three wide column">
+                       <b> Details </b>
+                    </td>
+                    <td class="four wide column">
+                        <b>Delay</b>
+                    </td>
+                    <!-- <th class="two wide column">
                         status
-                    </th>
-                    <th class="four large column">
-                        Worker <br> Name
-                    </th>
+                    </th> -->
+                    <td class="four large column">
+                       <b> Worker <br> Name </b>
+                    </td>
                 </tr>
                 </thead>
 
@@ -93,26 +93,22 @@
                         {{ a.delay.days }} days
                     </td>
 
-                    <td>
+                    <!-- <td>
                         {% if a.status == 0 %}
                              <i class="large orange warning icon"></i>
-                            <!-- <input type="text" name="status{{ a.id }}" style="visibility: hidden; width: 1em;  height: 1em;" value="0" >
-                             <input type="text" name="complaint_id" style="visibility: hidden; width: 1em;  height: 1em;" value="{{ a.id }}" >-->
+                            
                         {% elif a.status == 1 %}
                              <i class="large orange add user icon"></i>
-                            <!-- <input type="text" name="status{{ a.id }}" style="visibility: hidden; width: 1em;  height: 1em;" value="1" >
-                             <input type="text" name="complaint_id" style="visibility: hidden; width: 1em;  height: 1em;" value="{{ a.id }}" >-->
+                           
                         {% elif a.status == 2 %}
                              <i class="large green checkmark icon"></i>
-                            <!-- <input type="text" name="status{{ a.id }}" style="visibility: hidden; width: 1em;  height: 1em;" value="2" >
-                             <input type="text" name="complaint_id" style="visibility: hidden; width: 1em;  height: 1em;" value="{{ a.id }}" >-->
+                            
                         {% elif a.status == 3 %}
                              <i class="large red x icon"></i>
-                            <!-- <input type="text" name="status{{ a.id }}" style="visibility: hidden; width: 1em;  height: 1em;" value="3" >
-                             <input type="text" name="complaint_id" style="visibility: hidden; width: 1em;  height: 1em;" value="{{ a.id }}" >-->
+                           
                         {% endif %}
 
-                    </td>
+                    </td> -->
                     <td>
                         {% if a.worker_id == NULL %}
                             NOT ASSIGN
