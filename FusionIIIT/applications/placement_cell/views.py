@@ -389,7 +389,9 @@ def Placement(request):
         print('coming--deletesch---\n\n')
         delete_sch_key = request.POST['delete_sch_key']
         try:
-            PlacementSchedule.objects.get(pk = delete_sch_key).delete()
+            placement_schedule = PlacementSchedule.objects.get(pk = delete_sch_key)
+            NotifyStudent.objects.get(pk=placement_schedule.notify_id.id).delete()
+            placement_schedule.delete()
             messages.success(request, 'Schedule Deleted Successfully')
         except Exception as e:
             messages.error(request, 'Problem Occurred for Schedule Delete!!!')
@@ -2461,8 +2463,10 @@ def delete_placement_statistics(request):
             print('------------------------\n\n\n')
             print(record_id)
             print(StudentRecord.objects.get(pk = record_id))
-
-            StudentRecord.objects.get(pk = record_id).delete()
+            student_record =  StudentRecord.objects.get(pk=record_id)
+            print('-asdasdasda', PlacementRecord.objects.get(pk=student_record.record_id.id))
+            PlacementRecord.objects.get(id=student_record.record_id.id).delete()
+            student_record.delete()
             messages.success(request, 'Placement Statistics deleted Successfully!!')
 
         except Exception as e:
