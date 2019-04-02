@@ -26,8 +26,8 @@
             <tbody>
             {% for list in newmenu %}
             {% if list.status == '1' %}
-
-            <tr id="menu-{{list.pk}}">
+            <div id="menu-{{list.pk}}" style="display: block;">
+            <tr>
                 <div class="content">
                     <strong>Date of Application:</strong> {{list.app_date}}
                     <br>
@@ -55,6 +55,7 @@
                 </div>
                 <hr>
             </tr>
+            </div>
 
             {% endif %}
             {% endfor %}
@@ -132,7 +133,7 @@
                     'status':'2',
                 },
                 success: function(data) {
-                    document.getElementById('menu-'+id).style.visibility='hidden';
+                    document.getElementById('menu-'+id).style.display='none';
                     alert("Request has been accepted");
                 },
                 error: function(data, err) {
