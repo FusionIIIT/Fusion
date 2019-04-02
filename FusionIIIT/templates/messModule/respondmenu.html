@@ -133,7 +133,7 @@
                     'status':'2',
                 },
                 success: function(data) {
-                    document.getElementById('menu-'+id).style.display='none';
+                    document.getElementById("menu-"+id).style.display='none';
                     alert("Request has been accepted");
                 },
                 error: function(data, err) {
@@ -142,7 +142,7 @@
             });
          }
          function rejectReqMess(id){
-             document.getElementById('menu-'+id).style.visibility='hidden';
+             document.getElementById("menu-"+id).style.visibility='hidden';
              $.ajax({
                     type: 'POST',
                     url: 'response',
