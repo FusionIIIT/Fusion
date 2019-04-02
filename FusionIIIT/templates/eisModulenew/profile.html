@@ -305,8 +305,7 @@
             document.getElementById("savejournal").style.display='none';
             document.getElementById("editjournal").style.display='block';
             document.getElementById("journalform").action="{% url 'eis:editjournal' %}";
-            document.getElementById("x").class="title active";
-            document.getElementById("x").action="content fields active";
+            
         }
 
         function viewconference(c_name,c_author,c_co_author,c_tittle,c_year,c_venue,c_dos,c_doa,c_dop,c_page,c_status,c_isbn)
@@ -325,6 +324,29 @@
             $("#conf_status").text(c_status);
             $("#conf_isbn").text(c_isbn);
             $("#conferencemodal").modal('show');
+        }
+
+
+        function editconference(pk,index,c_name,c_author,c_co_author,c_tittle,c_year,c_venue,c_dos,c_doa,c_dop,c_page,c_status,c_isbn)
+        {
+            console.log("dvd")
+            $("#index3").val(index);
+            $("#conferencepk").val(pk);
+            $("#name3").val(c_name);
+            $("#authors3").val(c_author);
+            $("#co_author3").val(c_co_author);
+            $("#title3").val(c_tittle);
+            $("#year3").val(c_year);
+            $("#venue3").val(c_venue);
+            $("#dos3").val(c_dos);
+            $("#doa3").val(c_doa);
+            $("#dop3").val(c_dop);
+            $("#page_no3").val(c_page);
+            $("#status3").val(c_status);
+            $("#isbn_no3").val(c_isbn);
+            document.getElementById("saveconference").style.display='none';
+            document.getElementById("editconference").style.display='block';
+            document.getElementById("conferenceform").action="{% url 'eis:editconference' %}";
         }
 
 
