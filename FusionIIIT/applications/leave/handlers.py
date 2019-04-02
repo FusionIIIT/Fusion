@@ -557,13 +557,22 @@ def process_student_application(request):
 def delete_leave_application(request):
     leave_id = request.POST.get('id')
     leave = request.user.all_leaves.filter(id=leave_id).first()
-    print(leave_id)
-    if leave and leave.applicant == request.user and leave.yet_not_started:
+    print(leave.status)
+    if leave and leave.applicant == request.user and leave.status != 'rejected':
+        rep_requests = ReplacementSegment.objects.filter(leave = leave)
+        for i in rep_requests:
+            if i.status == 'accepted':
+                #notification to replacement user that  user has cancelled the leave
+                print("It is working! Yeah")
+                leave_module_notif(request.user, i.replacer, 'replacement_cancel', str(i.start_date))
+
         restore_leave_balance(leave)
         leave.delete()
-        response = JsonResponse({'status': 'success', 'message': 'Successfully Deleted'})
+        #notification to user that he has cancelled the leave
+        
+        response = JsonResponse({'status': 'success', 'message': 'Successfully Cancelled'})
     else:
-        response = JsonResponse({'status': 'failed', 'message': 'Deletion Failed'}, status=400)
+        response = JsonResponse({'status': 'failed', 'message': 'Cancellation Failed'}, status=400)
 
     return response
 
