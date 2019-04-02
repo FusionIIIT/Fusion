@@ -2662,13 +2662,20 @@ def export_to_xls_invitation_status(qs):
 
 
 def check_invitation_date(placementstatus):
-
+    """
+    The function is used to run before render of student placement view for ensuring that
+    last date for RESPONSE is not passed
+    @param:
+            placementstatus - queryset containing placement status of particular student
+    @variables:
+            ps - individual PlacementStatus object
+    """
     try:
         for ps in placementstatus:
             if ps.invitation=='PENDING':
                 dt = ps.timestamp+datetime.timedelta(days=ps.no_of_days)
                 if dt<datetime.datetime.now():
-                    print('---------- time limit is finished---------------- \n\n\n\n\n')
+                    #print('---------- time limit is finished---------------- \n\n\n\n\n')
                     ps.invitation = 'IGNORE'
                     ps.save()
     except Exception as e:
