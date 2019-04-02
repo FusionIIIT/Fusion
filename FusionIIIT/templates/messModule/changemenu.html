@@ -12,11 +12,6 @@
             {% comment %}The add a new skill Accordian starts here!{% endcomment %}
             <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
 
-                <div class="ui header">
-                    Menu Card: Change Menu
-                </div>
-                <br>
-
                 <div class="ui stackable grid doubling">
                     <div class="ui row">
                         <div class="ui sixteen wide column">
@@ -27,18 +22,21 @@
                                     <div class="ui row">
                                         <div>
                                             <label>
-                                                Meal Time
+                                                Dish - Meal Time *
                                             </label>
                                             <br>
 
-                                            <select class="ui search fluid dropdown" name="dish" id="dish">
+{#                                            <select class="ui fluid search selection dropdown" name="dish" id="dish">#}
+                                            <select class="ui dropdown" name="dish" id="dish">
                                                 {% for item in menu %}
-                                                <option value="{{item.dish}}">{{item.dish}}-{{item.meal_time}} id="{{item.pk}}"></option>
+                                                <option value="{{item.dish}}" id="{{item.pk}}">
+                                                    {{item.dish}}-{{item.meal_time}}
+                                                </option>
                                                 {% endfor %}
                                             </select>
                                             <br>
                                             <label>
-                                                Change To
+                                                Change To *
                                             </label>
                                             <br>
                                             <div class="ui input">
@@ -47,7 +45,7 @@
                                             <br>
                                             <br>
                                             <label>
-                                                Reason
+                                                Reason *
                                             </label>
                                             <br>
                                             <div class="ui input">
@@ -72,34 +70,9 @@
             </div>
         </div>
     </div>
-<!--{% block javascript %}-->
-<!--<script>-->
+{% block javascript %}
+<script>
 
-        <!--function change_menu(){-->
-            <!--$.ajax({-->
-                <!--type: 'POST',-->
-                <!--url: 'messmenusubmit/',-->
-                <!--dataType: 'json',-->
-                <!--data: {-->
-                    <!--'csrfmiddlewaretoken' : '{{ csrf_token }}',-->
-                    <!--'dish': $("#dish").val(),-->
-                    <!--'new_dish': $("#newdish").val(),-->
-                    <!--'reason': $("#reason").val()-->
-                <!--},-->
-                <!--success: function(data) {-->
-                    <!--if(data.status){-->
-                        <!--alert("Data Inserted Successfully");-->
-                        <!--$("#menu_change_div").load(location.href+" #menu_change_div>*","")-->
-                    <!--}-->
-                <!--},-->
-                <!--error: function(data, err) {-->
-                    <!--alert(err.message);-->
-                    <!--$("#menu_change_div").load(location.href+" #menu_change_div>*","")-->
-                <!--}-->
-            <!--});-->
-        <!--return false;-->
-    <!--}-->
-
-<!--</script>-->
-<!--{% endblock %}-->
+</script>
+{% endblock %}
 {% endblock %}

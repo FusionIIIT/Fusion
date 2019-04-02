@@ -7,9 +7,9 @@
     <a class="active item" data-tab="respondtovacafoodrequests">
         Respond to Vacation Food Requests
     </a>
-    <a class="item" data-tab="pastvacafoodrequests">
-        Past Requests
-    </a>
+{#    <a class="item" data-tab="pastvacafoodrequests">#}
+{#        Past Requests#}
+{#    </a>#}
 </div>
 
 <div class="ui active tab" data-tab="respondtovacafoodrequests">
@@ -19,7 +19,7 @@
             {% if item.status == '1' %}
             <div>
                 <div class="content">
-                    <b>Date of Application:</b> {{item.app_date}}
+                    <b>Application Date:</b> {{item.app_date}}
                     <br>
                     <b>Student:</b> {{item.student_id.id}}
                     <br>
@@ -54,10 +54,10 @@
         <div class="ui divider"></div>
 
 </div>
-<div class="ui tab" data-tab="pastvacafoodrequests">
-    <div class="ui vertical segment">
-
-    </div>
-</div>
+{#<div class="ui tab" data-tab="pastvacafoodrequests">#}
+{#    <div class="ui vertical segment">#}
+{##}
+{#    </div>#}
+{#</div>#}
 {% endblock %}
 {% endblock %}

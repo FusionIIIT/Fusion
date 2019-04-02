@@ -7,15 +7,24 @@
         Respond to Leave Requests
     </a>
 
-    <a class="item" data-tab="leavepastrecords" onclick="getLeave()">
-        Past Records
-    </a>
+{#    <a class="item" data-tab="leavepastrecords">#}
+{#        Past Records#}
+{#    </a>#}
 
 </div>
 
 
 <div class="ui active tab" data-tab="respondtoleaverequests">
     <div class="ui vertical segment">
+    <div>
+        <button class="ui primary fluid button" onclick="getLeave()">
+            Get Leave Data
+        </button>
+        <br>
+        <button class="ui primary fluid button" onclick="dateVacation()">
+            Accept Vacation leaves
+        </button>
+    </div>
         <table class="ui very basic collapsing celled large sortable table"
                style="padding-left: 2.5%;
                                                           padding-right: 2.5%;
@@ -64,9 +73,6 @@
                         <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
                         <div class="content">
                             {{item.student_id.id}}
-                            <!-- <div class="sub header">
-                                2015121
-                            </div> -->
                         </div>
                     </h4>
                 </td>
@@ -124,77 +130,132 @@
 <!-- end leave request-->
 
 <!--leav request past records-->
-<div class ="ui tab" data-tab="leavepastrecords" id="pastmessleave">
-    <div class="ui vertical segment">
-        <!--<div class="ui pointing tertiary menu>">-->
-            <!--<a class="active item" id="acceptedleave" data-tab="acceptedleave" onclick="getAcceptedLeave()">Accepted Requests</a>-->
+{#<div class ="ui tab" data-tab="leavepastrecords" id="pastmessleave">#}
+{#    <div class="ui vertical segment">#}
+{#        <!--<div class="ui pointing tertiary menu>">-->#}
+{#            <!--<a class="active item" id="acceptedleave" data-tab="acceptedleave" onclick="getAcceptedLeave()">Accepted Requests</a>-->#}
+{##}
+{#            <!--<a class="item" id="rejectedleave" data-tab="rejectedleave">Rejected Requests</a>-->#}
+{#        <!--</div>-->#}
+{#        <table id="leaverecords" class="ui very basic collapsing celled large sortable table"#}
+{#               style="padding-left: 2.5%;#}
+{#                                                          padding-right: 2.5%;#}
+{#                                                          padding-top: 1%;#}
+{#                                                          padding-bottom: 1.5%;#}
+{#                                                          margin: auto;">#}
+{#            <thead>#}
+{#            <tr>#}
+{#                <th class="four wide">#}
+{#                    Student#}
+{#                </th>#}
+{##}
+{#                <th class="four wide">#}
+{#                    Type#}
+{#                </th>#}
+{##}
+{#                <th class="two wide">#}
+{#                    From#}
+{#                </th>#}
+{##}
+{#                <th class="two wide">#}
+{#                    To#}
+{#                </th>#}
+{#                <th class="one wide">#}
+{#                    Status#}
+{#                </th>#}
+{#            </tr>#}
+{#            </thead>#}
+{##}
+{#            <tbody>#}
+{#            {% for item in leave %}#}
+{#                {% if item.status == '2' %}#}
+{#                <tr>#}
+{#                <th class="four wide">#}
+{#                    {{item.student_id.id}}#}
+{#                </th>#}
+{##}
+{#                <th class="four wide">#}
+{#                    {{item.leave_type}}#}
+{#                </th>#}
+{##}
+{#                <th class="two wide">#}
+{#                    {{item.start_date}}#}
+{#                </th>#}
+{##}
+{#                <th class="two wide">#}
+{#                    {{item.end_date}}#}
+{#                </th>#}
+{#                <th class="one wide">#}
+{#                    Accepted#}
+{#                </th>#}
+{#            </tr>#}
+{#                {% endif %}#}
+{#            {% endfor %}#}
+{#            </tbody>#}
+{##}
+{#        </table>#}
+{##}
+{#        <br>#}
+{##}
+{#        <div class="ui divider"></div>#}
+{##}
+{#    </div>#}
+{#</div>#}
+    <div class="ui modal" id="leavedata" style="padding: 2.5%;">
+        <div class="ui vertical segment">
+            <header>Statistics for Today</header>
+            <br>
+            <div id="leave_today">
 
-            <!--<a class="item" id="rejectedleave" data-tab="rejectedleave">Rejected Requests</a>-->
-        <!--</div>-->
-        <table id="leaverecords" class="ui very basic collapsing celled large sortable table"
-               style="padding-left: 2.5%;
-                                                          padding-right: 2.5%;
-                                                          padding-top: 1%;
-                                                          padding-bottom: 1.5%;
-                                                          margin: auto;">
-            <thead>
-            <tr>
-                <th class="four wide">
-                    Student
-                </th>
+            </div>
+            <br><br>
+            <header>Statistics for Tomorrow</header>
+            <br>
+            <div id="leave_tomorrow">
 
-                <th class="four wide">
-                    Type
-                </th>
-
-                <th class="two wide">
-                    From
-                </th>
-
-                <th class="two wide">
-                    To
-                </th>
-                <th class="one wide">
-                    Status
-                </th>
-            </tr>
-            </thead>
-
-            <tbody>
-            {% for item in leave %}
-                {% if item.status == '2' %}
-                <tr>
-                <th class="four wide">
-                    {{item.student_id.id}}
-                </th>
-
-                <th class="four wide">
-                    {{item.leave_type}}
-                </th>
-
-                <th class="two wide">
-                    {{item.start_date}}
-                </th>
-
-                <th class="two wide">
-                    {{item.end_date}}
-                </th>
-                <th class="one wide">
-                    Accepted
-                </th>
-            </tr>
-                {% endif %}
-            {% endfor %}
-            </tbody>
-
-        </table>
-
-        <br>
-
-        <div class="ui divider"></div>
-
+            </div>
+        </div>
     </div>
-</div>
+
+    <div class="ui small modal" id="dateVacationModal" style="padding: 1.5%;">
+        <div class="ui vertical segment">
+            <header><strong>Accept Vacation Leave between dates:</strong></header>
+            <br>
+            <form method="get">
+{#                {% csrf_token %}#}
+            <div class="ui grid">
+                <div class="eight wide column">
+                    <label>Leave From:</label>
+                    <br>
+                    <br>
+                    <div class="ui calendar">
+                        <div class="ui input left icon">
+                            <input name="start_date" type="date" placeholder="From" required="true"
+                                   id="startDate">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="eight wide column">
+                    <label>Leave To:</label>
+                    <br>
+                    <br>
+                    <div class="ui calendar">
+                        <div class="ui input left icon">
+                            <input name="start_date" type="date" placeholder="From" required="true"
+                                   id="endDate">
+                        </div>
+                    </div>
+                </div>
+            </div>
+                <div>
+                    <button class="ui primary right floated button" onclick="acceptLeaveDates()" type="submit">
+                        Accept
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 {% endblock %}
 {% endblock %}
 
@@ -252,7 +313,46 @@ function acceptReq(id){
 
          }
         function getLeave(){
+            $('#leavedata').modal('show');
+            $.ajax({
+                type: 'GET',
+                url: 'getleave',
+                dataType: 'json',
+                data:{
+                },
+                success: function(data) {
 
+                        $('#leave_today').html("Number of students taking leave on " + data.today +
+                            " is " +data.counttoday);
+                        $('#leave_tomorrow').html("Number of students taking leave on " + data.tomorrow +
+                            " is " +data.counttomorrow);
+
+                },
+                error: function(data, err) {
+                    alert(err.message);
+                }
+            });
+        }
+        function dateVacation(){
+            $('#dateVacationModal').modal('show');
+        }
+        function acceptLeaveDates(){
+            $.ajax({
+                type: 'GET',
+                url: 'acceptleave',
+                dataType: 'json',
+                data:{
+                    'start_date': $("#startDate").val(),
+                    'end_date': $("#endDate").val(),
+                },
+                success: function(data) {
+                    $('#dateVacationModal').modal('hide');
+                    {#alert(data.display);#}
+                },
+                error: function(data, err) {
+                    {#alert(err.message);#}
+                }
+            });
         }
 
 </script>

@@ -44,12 +44,12 @@
                     <strong>Accept or Reject :</strong>
                     <div class="ui buttons">
                         <button class="accm ui positive button" name="submit" value="approve" data-accm="{{list.pk}}"
-                                onclick="acceptReqMess({{list.pk}})">A
+                                onclick="return acceptReqMess({{list.pk}})">A
                         </button>
 
                         <div class="or"></div>
                         <button class="ui negative button" name="submit" value="reject"
-                                onclick="rejectReqMess({{list.pk}})">R
+                                onclick="return rejectReqMess({{list.pk}})">R
                         </button>
                     </div>
                 </div>
@@ -119,24 +119,7 @@
 
 {% block javascript %}
 <script>
-        <!--function getMenu(){-->
-            <!--console.log("responding");-->
-            <!--$.ajax({-->
-                <!--type: 'POST',-->
-                <!--url: 'menurequest/',-->
-                <!--dataType: 'json',-->
-                <!--data: {-->
-                    <!--'csrfmiddlewaretoken' : '{{ csrf_token }}',-->
-                    <!--'status' : 1-->
-                <!--},-->
-                <!--success: function(data) {-->
-                    <!--$("#rec").html("<strong>"+data.newmenu+"</strong>");-->
-                <!--},-->
-                <!--error: function(data, err) {-->
-                    <!--alert(err.message);-->
-                <!--}-->
-            <!--});-->
-        <!--}-->
+
          function acceptReqMess(id){
 
          $.ajax({
@@ -158,6 +141,7 @@
             });
          }
          function rejectReqMess(id){
+             document.getElementById('menu-'+id).style.visibility='hidden';
              $.ajax({
                     type: 'POST',
                     url: 'response',
@@ -168,21 +152,17 @@
                         'status':'0',
                     },
                     success: function(data) {
-                        document.getElementById('menu-'+id).style.visibility='hidden';
+
                         if(data.status == '1')
-                        {
-                            alert("Application Rejected");
-                        }
-                            alert(data.message);
-                    },
+                            {
+                                alert("Application Rejected");
+                            }
+                        },
                     error: function(data, err) {
                         alert(err.message);
                     }
                 });
          }
-
-
-
 
 </script>
 {% endblock %}
