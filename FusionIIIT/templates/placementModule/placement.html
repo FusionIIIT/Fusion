@@ -206,6 +206,11 @@
                                           <p>Invitation was <b>{{ ps.invitation}}.</b></p>
                                         </div>
                                       {% endif %}
+                                      {% if ps.invitation == 'IGNORE' %}
+                                      <div class="ui secondary grey inverted segment">
+                                        <p>Invitation was <b>{{ ps.invitation}}.</b></p>
+                                      </div>
+                                      {% endif %}
                                     </div>
                                   </span>
                                   <br>
