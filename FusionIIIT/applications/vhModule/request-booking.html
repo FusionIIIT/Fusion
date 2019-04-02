@@ -1,0 +1,167 @@
+{% load static %}
+{% block bookaroom %}
+
+<div class="ui modal" id="requestModal">
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="request-booking">
+            Request Booking
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="request-booking">
+        <div class="ui vertical stripe team segment"
+             style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+
+            <form class="ui large form" id="request-booking-form">
+
+                {% if user_designation == 'VhIncharge' or user_designation == 'VhCaretaker' %}
+                <div class="field">
+                    <label>Intender ID:</label>
+                    <div class="ui fluid search selection dropdown">
+                        <input name="intender" type="hidden">
+                        <i class="dropdown icon"></i>
+
+                        <div class="default text">Select</div>
+
+                        <div class="menu">
+                            {% for intender in intenders%}
+                            <div class="item" data-value="{{ intender.id }}">
+                                {{ intender }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if user_designation == 'Intender' %}
+                <input type="hidden" name="intender" value="{{ user.id }}">
+                {% endif %}
+                <div class="two fields">
+                    <div class="field">
+                        <label>From:</label>
+                        <div class="ui calendar" id="rangestart1">
+                            <div class="ui input left icon">
+                                <i class="calendar icon"></i>
+                                <input type="text" placeholder="From" name="request-booking-from" class="date-selector">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>To:</label>
+                        <div class="ui calendar" id="rangeend1">
+                            <div class="ui input left icon">
+                                <i class="calendar icon"></i>
+                                <input type="text" placeholder="To" name="request-booking-to" class="date-selector">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <div class="three fields">
+                        <div class="field">
+                            <label>Number Of People </label>
+                            <div class="ui fluid input">
+                                <input name="number-of-people" type="number" placeholder="1">
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label>Number Of Rooms </label>
+                            <div class="ui fluid input">
+                                <input name="number-of-rooms" type="number" placeholder="1">
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label>Category
+                                <i class="info circle icon" style="float: right; font-size: 1.2em;" data-position="bottom left">
+                                </i>
+                                <div class="ui fluid popup">
+                                    <pre>
+(A)
+(i) Institute Guests/ Directors/ Examiners/ External Members of
+    Institute Committees/ Invited Speakers/ CAG Audit Team/MHRD officials.
+(ii) Important guests of Chairman, BOG/ Director/ Senate/ BWC/ Statutory bodies.
+(iii) Other Institute guests not covered above will be approved by the Director.
+(B)
+(i) Institute employee &amp; their dependents
+(ii) Project employee &amp; their dependents
+(iii) Retired IIITDMJ Faculty/ Staff/ Alumni
+(iv) Relatives/ Guests of IIITDMJ Faculty &amp; Staff
+(v) Parents/ Guardian/ Spouse of IIITDMJ students
+(vi) Other than Institute employees staying for Institute work
+(vii) Any other Guest (Approved by the Director)
+(C)
+(i) Employees of other IIITs/ IITs/ Centrally funded engineering colleges/ universities/ PSUs.
+(ii) Visitors of government/ public sector organization.
+(iii) Trainees coming to the Institute under programmes organized by the Institute.
+(iv) Others (Approved by the Director).
+(D)
+Contractors, representatives of firms, vendors etc. coming for their work
+viz. meeting, presentations etc. and requesting to stay in the VH.
+                                    </pre>
+                                </div>
+                            </label>
+                            <div class="ui fluid search selection dropdown">
+                                <input name="visitor-category" type="hidden">
+                                <i class="dropdown icon"></i>
+
+                                <div class="default text">Select</div>
+
+                                <div class="menu">
+                                    <div class="item" data-value="A">
+                                        A
+                                    </div>
+                                    <div class="item" data-value="B">
+                                        B
+                                    </div>
+                                    <div class="item" data-value="C">
+                                        C
+                                    </div>
+                                    <div class="item" data-value="D">
+                                        D
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+
+                <div class="field">
+                    <label>Purpose Of Visit</label>
+                    <div class="ui fluid input">
+                        <input type="text" name="purpose-of-visit" required="">
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Remarks</label>
+                    <div class="ui fluid input">
+                        <input type="text" name="remarks-during-booking-request" required="">
+                    </div>
+                </div>
+                <!-- <div class="field">
+                    <label>Files, if any</label>
+                    <div class="ui fluid input">
+                        <input type="file" name="files-during-booking-request" placeholder="Please upload PDFs only"></textarea>
+                    </div>
+                </div> -->
+                <input type="hidden" name="csrf" value="{{ csrf_token }}">
+                <div class="field">
+                    <label></label>
+                    <button class="ui large primary button right floated"
+                        onclick="request_booking(event)">
+                        Place Request
+                    </button>
+                </div>
+                <br>
+                <br>
+            </form>
+            <div class="ui divider"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}

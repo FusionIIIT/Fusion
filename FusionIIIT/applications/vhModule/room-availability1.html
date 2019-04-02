@@ -1,0 +1,41 @@
+{% block roomstatus %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="roomstatus">
+            Room Availability
+        </a>
+    </div>
+
+    <form class="ui form" id="find-room-status">
+        <div class="two fields">
+            <div class="field">
+                <label>From:</label>
+                <div class="ui calendar" id="rangestart3">
+                    <div class="ui input left icon">
+                        <i class="calendar icon"></i>
+                        <input type="text" placeholder="From" name="start-date" class="date-selector">
+                    </div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>To:</label>
+                <div class="ui calendar" id="rangeend3">
+                    <div class="ui input left icon">
+                        <i class="calendar icon"></i>
+                        <input type="text" placeholder="To" name="end-date" class="date-selector">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="ui large primary button right floated" onclick="find_available_rooms()">
+                        Submit
+        </div>
+    </form>
+    <br>
+    <br>
+    <div class="ui divider"></div>
+    <div id="replace-this-div">
+</div>
+{% endblock %}
+

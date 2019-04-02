@@ -1,0 +1,284 @@
+{% load static %}
+{% block bookings %}
+
+
+<i class="plus square icon" style="float: right; font-size: 2em;" onclick="requestModal()"></i>
+
+<div class="ui pointing secondary menu">
+    <a class="active item" data-tab="booking-requests">
+        Booking Requests
+    </a>
+
+    {% if user_designation == 'VhIncharge' %}
+    <a class="item" data-tab="cancellation-requests">
+        Cancellation Requests
+    </a>
+    {% endif %}
+
+    <a class="item" data-tab="active-bookings">
+        Active Bookings
+    </a>
+
+    <a class="item" data-tab="rejected-bookings">
+        Rejected Bookings
+    </a>
+
+    <a class="item" data-tab="completed-bookings">
+        Completed Bookings
+    </a>
+</div>
+
+<div class="ui active tab" data-tab="booking-requests">
+    <div class="ui vertical segment">
+        <div class="content">
+            <div class="description">
+                <table class="ui very basic collapsing celled sortable table">
+                    <thead>
+                        <tr>
+                            <th class="three wide column">Intender</th>
+                            <th class="three wide column">Booking From</th>
+                            <th class="three wide column">Booking To</th>
+                            <th class="three wide column">Category</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for booking in pending_bookings %}
+                        {% if user_designation == "VhCaretaker" %}
+                        {% if booking.status == "Forward" %}
+                        <tr onclick=bookingRequestModal('{{ booking.id }}')>
+                            <td>
+                                <h4 class="ui image header">
+                                    <div class="content">
+                                        {{ booking.intender }}
+                                        <div class="sub header">
+                                        {{ booking.intender.email }}
+                                        </div>
+                                    </div>
+                                </h4>
+                            </td>
+                            <td>{{ booking.booking_from }}</td>
+                            <td>{{ booking.booking_to }}</td>
+                            <td>{{ booking.visitor_category }}</td>
+                        </tr>
+                        {% endif %}
+                        {% else %}
+                            <tr onclick=bookingRequestModal('{{ booking.id }}')>
+                            <td>
+                                <h4 class="ui image header">
+                                    <div class="content">
+                                        {{ booking.intender }}
+                                        <div class="sub header">
+                                        {{ booking.intender.email }}
+                                        </div>
+                                    </div>
+                                </h4>
+                            </td>
+                            <td>{{ booking.booking_from }}</td>
+                            <td>{{ booking.booking_to }}</td>
+                            <td>{{ booking.visitor_category }}</td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="ui divider"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if user_designation == "VhIncharge" %}
+<div class="ui tab" data-tab="cancellation-requests">
+    <div class="ui vertical segment">
+        <div class="content">
+            <div class="description">
+                <table class="ui very basic collapsing celled sortable table">
+                    <thead>
+                        <tr>
+                            <th class="three wide column">Intender</th>
+                            <th class="three wide column">Booking From</th>
+                            <th class="three wide column">Booking To</th>
+                            <th class="three wide column">Category</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for booking in cancel_booking_request %}
+                        <tr onclick=cancellationRequestModal('{{ booking.id }}')>
+                            <td>
+                                <h4 class="ui image header">
+                                    <div class="content">
+                                        {{ booking.intender }}
+                                        <div class="sub header">
+                                        {{ booking.intender.email }}
+                                        </div>
+                                    </div>
+                                </h4>
+                            </td>
+                            <td>{{ booking.booking_from }}</td>
+                            <td>{{ booking.booking_to }}</td>
+                            <td>{{ booking.visitor_category }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="ui divider"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="ui tab" data-tab="active-bookings">
+    <div class="ui vertical segment">
+        <div class="content">
+            <div class="description">
+                <table class="ui very basic collapsing celled sortable table">
+                    <thead>
+                        <tr>
+                            <th class="three wide column">Intender</th>
+                            <th class="three wide column">Booking From</th>
+                            <th class="three wide column">Booking To</th>
+                            <th class="three wide column">Category</th>
+                            {% if not user_designation == 'Intender' %}
+                            <th class="threewide column">Action</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for booking in active_bookings %}
+
+                        <tr>
+                            <td onclick=bookingDetailsModal('{{ booking.id }}')>
+                                <h4 class="ui image header">
+                                    <div class="content">
+                                        {{ booking.intender }}
+                                        <div class="sub header">
+                                        {{ booking.intender.email }}
+                                        </div>
+                                    </div>
+                                </h4>
+                            </td>
+                            <td onclick=bookingDetailsModal('{{ booking.id }}')>{{ booking.booking_from }}</td>
+                            <td onclick=bookingDetailsModal('{{ booking.id }}')>{{ booking.booking_to }}</td>
+                            <td onclick=bookingDetailsModal('{{ booking.id }}')>{{ booking.visitor_category }}</td>
+                            {% if not user_designation == 'Intender' %}
+                            <td>
+                                {% if booking.status == 'CheckedIn' %}
+                                <div class="ui large red button center floated"  onclick="checkOutModal('{{ booking.id }}')">
+                                    Check Out
+                                </div>
+                                {% else  %}
+                                <div class="ui large green button center floated"  onclick="checkInModal('{{ booking.id }}', '{{ booking.booking_from }}')">
+                                    Check In
+                                </div>
+                                {% endif %}
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="ui divider"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="ui tab" data-tab="completed-bookings">
+    <div class="ui vertical segment">
+        <div class="content">
+            <div class="description">
+                <table class="ui very basic collapsing celled sortable table">
+                    <thead>
+                        <tr>
+                            <th class="three wide column">Intender</th>
+                            <th class="three wide column">Booking From</th>
+                            <th class="three wide column">Booking To</th>
+                            <th class="three wide column">Category</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for booking in complete_bookings %}
+
+                        <tr>
+                            <td onclick=bookingDetailsModal('{{ booking.id }}')>
+                                <h4 class="ui image header">
+                                    <div class="content">
+                                        {{ booking.intender }}
+                                        <div class="sub header">
+                                        {{ booking.intender.email }}
+                                        </div>
+                                    </div>
+                                </h4>
+                            </td>
+                            <td onclick=bookingDetailsModal('{{ booking.id }}')>{{ booking.booking_from }}</td>
+                            <td onclick=bookingDetailsModal('{{ booking.id }}')>{{ booking.booking_to }}</td>
+                            <td onclick=bookingDetailsModal('{{ booking.id }}')>{{ booking.visitor_category }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="ui divider"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="ui tab" data-tab="rejected-bookings">
+    <div class="ui vertical segment">
+        <div class="content">
+            <div class="description">
+                <table class="ui very basic collapsing celled sortable table">
+                    <thead>
+                        <tr>
+                            <th class="three wide column">Intender</th>
+                            <th class="three wide column">Booking From</th>
+                            <th class="three wide column">Booking To</th>
+                            <th class="three wide column">Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for booking in rejected_bookings %}
+                        <tr>
+                            <td>
+                                <h4 class="ui image header">
+                                    <div class="content">
+                                        {{ booking.intender }}
+                                        <div class="sub header">
+                                        {{ booking.intender.email }}
+                                        </div>
+                                    </div>
+                                </h4>
+                            </td>
+                            <td>{{ booking.booking_from }}</td>
+                            <td>{{ booking.booking_to }}</td>
+                            <td>{{ booking.status }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="ui divider"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% include 'vhModule/check-in-modal.html' %}
+
+{% include 'vhModule/booking-request-action-modal.html' %}
+
+{% include 'vhModule/cancellation-request-action-modal.html' %}
+
+{% include 'vhModule/booking-details.html' %}
+
+{% include 'vhModule/check-out-modal.html' %}
+
+{% include 'vhModule/request-booking.html' %}
+
+{% endblock %}
