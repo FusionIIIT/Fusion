@@ -339,7 +339,7 @@ def add_leave_request(request, student):
                            end_date=end_date, purpose=purpose)
     rebate_object.save()
     data = {
-        'status': 1
+        'status': 1,
     }
     return data
 

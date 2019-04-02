@@ -36,12 +36,6 @@
                                 <div class="twelve wide field">
                                     <label>Leave Type*</label>
                                     <select name="leave_type" class="ui fluid dropdown" required="true" id="leave_type">
-                                        <option value="">Select</option>
-                                        {% if count >= 15 %}
-                                            <option value="" readonly>Casual Leave(not allowed)</option>
-                                        {% else %}
-                                            <option value="casual">Casual Leave(took {{ count }} leaves)</option>
-                                        {% endif %}
                                         <option value="vacation">Vacation Leave</option>
                                     </select>
                                 </div>
@@ -263,9 +257,19 @@
                         if (data.status == 1) {
                             alert("Data Inserted Successfully");
                             $("#leave").load(location.href + " #leave>*", "");
-                            /*$('#ls_table').prepend("<tr><td>"+ $("#leave_type").val()+ "</td><td>"+
-                            $("#start_date").val() + "</td><td>" + $("end_date").val()+
-                            "</td><td>"+ $("#purpose").val()+ "</td></tr>")*/
+                            var monthNames = ["January", "February", "March", "April", "May", "June",
+                                              "July", "August", "September", "October", "November", "December"];
+                            var start_date = new Date($("#start_date").val());
+                            var end_date = new Date($("#end_date").val());
+                            var today_date = new Date();
+                            var s_date = monthNames[start_date.getMonth()] + " " + start_date.getDate() + ", " + start_date.getFullYear();
+                            var t_date = monthNames[today_date.getMonth()] + " " + today_date.getDate() + ", " + today_date.getFullYear();
+                            var e_date = monthNames[end_date.getMonth()] + " " + end_date.getDate() + ", " + end_date.getFullYear();
+
+                            $('#ls_table').prepend("<tr><td>" + t_date + "</td><td>" +
+                                $("#leave_type").val() + "</td><td>" + s_date+ "</td><td>"+
+                            e_date + "</td><td><i class='large orange warning icon'></i>" +
+                            "</td></tr>");
 
                             document.getElementById('leave_type').value = "";
                             document.getElementById('start_date').value = "";

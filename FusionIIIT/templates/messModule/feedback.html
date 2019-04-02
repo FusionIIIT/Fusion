@@ -1,6 +1,6 @@
-{% extends 'globals/base.html'%}
+{#{% extends 'globals/base.html'%}#}
 {% load static %}
-{% block body %}
+{#{% block body %}#}
 {% block feedback %}
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
@@ -72,7 +72,7 @@
 
     <div class="ui tab" data-tab="viewfeedback">
         {% for app in feedback %}
-        <div class="ui very relaxed fluid selection list" style="padding-left: 24px; padding-top: 16px; padding-bottom: 16px; max-height: 70vh; overflow-y: auto;">
+        <div id="feedback_history" class="ui very relaxed fluid selection list" style="padding-left: 24px; padding-top: 16px; padding-bottom: 16px; max-height: 70vh; overflow-y: auto;">
             
             <div class="item">
                 <img class="ui mini circular image" src="{% static 'globals/img/zlatan.jpg' %}">
@@ -97,7 +97,7 @@
     </div>
 
 {% endblock %}
-{% endblock %}
+{#{% endblock %}#}
 
 {% block javascript %}
 <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
@@ -134,6 +134,9 @@
 
                             document.getElementById('feedback_type').value = "";
                             document.getElementById('description').value = "";
+                            $("#feedback_history").prepend("<tr><td>" + data.date + "</td><td>" +
+                                $("#venue").val() + "</td><td>" + $("#agenda").val() + "</td><td>" +
+                                data.time, +"</td></tr>");
 
                         }
                     },
