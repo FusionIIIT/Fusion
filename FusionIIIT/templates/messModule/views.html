@@ -209,7 +209,6 @@
             <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
                 <thead>
                 <tr>
-                    <th>Student</th>
                     <th>Month</th>
                     <th>Monthly bill</th>
                     <th>Rebate Count</th>
@@ -220,15 +219,7 @@
                 <tbody>
                 {% for stu in monthly_bill %}
                 <tr>
-                    <td>
-                        <h4 class="ui image header">
-                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
-                            <div class="content">
-                                {{stu.student_id}}
-                            </div>
-                        </h4>
-                    </td>
-                    <td>{{stu.month}}</td>
+                    <td>{{stu.month}} - {{ stu.year }}</td>
                     <td>{{stu.amount}}</td>
                     <td>{{stu.rebate_count}}</td>
                     <td>{{stu.rebate_amount}}</td>

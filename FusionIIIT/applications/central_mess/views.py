@@ -27,12 +27,15 @@ from .handlers import (add_nonveg_order, add_mess_feedback, add_vacation_food_re
 
 today_g = datetime.today()
 month_g = today_g.month
+month_g_l = today_g.strftime('%B')
 year_g = today_g.year
 tomorrow_g = today_g + timedelta(days=1)
 first_day_of_this_month = date.today().replace(day=1)
 last_day_prev_month = first_day_of_this_month - timedelta(days=1)
 month_last_g = last_day_prev_month.month
 year_last_g = last_day_prev_month.year
+previous_month = last_day_prev_month.strftime('%B')
+previous_month_year = last_day_prev_month.year
 
 def mess(request):
     user = request.user
@@ -126,6 +129,57 @@ def mess(request):
 
             elif f.feedback_type == 'Others' and mess_opt.mess_option == 'mess2':
                 count8 += 1
+
+        bill = Monthly_bill.objects.filter(Q(student_id=student) & Q(month=month_g_l) & Q(year=year_g))
+        print(bill)
+        amount_c = MessBillBase.objects.latest('timestamp')
+        rebate_count = 0
+        nonveg_total_bill = 0
+        for z in data:
+            if z.order_date.month == month_g:
+                print(z.order_date)
+                nonveg_total_bill = nonveg_total_bill + z.dish.price
+
+            else:
+                bill.nonveg_total_bill = 0
+
+        for r in rebates:
+            if r.status == '2':
+                print(r.start_date.month == month_g)
+                if r.start_date.month == month_g:
+                    rebate_count = rebate_count + abs((r.end_date - r.start_date).days) + 1
+
+                else:
+                    rebate_count = 0
+        rebate_amount = rebate_count * amount_c.bill_amount / 30
+        total_bill = amount_c.bill_amount - rebate_amount + nonveg_total_bill
+        if bill:
+            # bill.nonveg_total_bill = nonveg_total_bill
+            # bill.amount = amount_c.bill_amount
+            # bill.rebate_count = rebate_count
+            # bill.rebate_amount = rebate_amount
+            # bill.total_bill = total_bill
+            bill.update(student_id = student,
+                        month = month_g_l,
+                        year = year_g,
+                        amount = amount_c.bill_amount,
+                        rebate_count = rebate_count,
+                        rebate_amount = rebate_amount,
+                        nonveg_total_bill=nonveg_total_bill,
+                        total_bill = total_bill)
+
+            # bill.save()
+        else:
+            bill_object = Monthly_bill(student_id=student,
+                                       amount=amount_c.bill_amount,
+                                       rebate_count=rebate_count,
+                                       rebate_amount=rebate_amount,
+                                       nonveg_total_bill=nonveg_total_bill,
+                                       total_bill=total_bill,
+                                       month=month_g_l,
+                                       year=year_g)
+            bill_object.save()
+
 
         context = {
                    'menu': y,
@@ -403,13 +457,13 @@ def regsubmit(request):
 
             if mess_reg.end_reg.strftime("%B") in month_1:
                 while i<=5:
-                    monthly_bill_obj = Monthly_bill(student_id=student, month=month_1[i])
+                    monthly_bill_obj = Monthly_bill(student_id=student, month=month_1[i], year=year_last_g)
                     monthly_bill_obj.save()
                     i = i+1
 
             else:
                 while j<=5:
-                    monthly_bill_obj = Monthly_bill(student_id=student, month=month_2[j])
+                    monthly_bill_obj = Monthly_bill(student_id=student, month=month_2[j], year=year_last_g)
                     monthly_bill_obj.save()
                     j = j+1
 
@@ -481,7 +535,8 @@ def invitation(request):
     """
     # todo add ajax to this page as well
     data = add_mess_meeting_invitation(request)
-    return HttpResponseRedirect("/mess")
+    # return HttpResponseRedirect("/mess")
+    return JsonResponse(data)
 
 
 @login_required
