@@ -194,8 +194,9 @@
             <input type="text" id="journalpk" name="journalpk" hidden>
             <input type="text" id="index" name="index" hidden>
         </form>
-        {% endif %}
         <br>
+        
+        {% endif %}
 
         <h4 class="ui dividing header">Report:</h4>
         <div class="pagination">
@@ -224,7 +225,9 @@
                     <th class="" style="width: 150px">Authors</th>
                     <th class="" style="width: 80px">Details</th>
                     <th class="" style="width: 80px">Download</th>
+                    {% if request.user == user %}
                     <th class="" style="width: 160px">Action</th>
+                    {% endif %}
                 </tr>
                 </thead>
 
@@ -249,6 +252,7 @@
                                     '{{publication.date_publication}}', '{{publication.status}}', 
                                     '{{publication.is_sci}}','{{publication.doi}}')" value = "View"> </td>
                             <td><a href="{{ publication.paper }}" target="_blank"><i class=" large download icon"></i></a></td>
+                            {% if request.user == user %}
                             <td>
                                 <button type="button"
                                    id="editButton"
@@ -271,6 +275,7 @@
                                    <i class="ui red delete icon"></i>
                                 </a>
                             </td>
+                            {% endif %}
                         </tr>
                         
                     {% endfor %}
