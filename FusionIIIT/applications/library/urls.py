@@ -6,6 +6,6 @@ app_name = 'library'
 
 urlpatterns = [
 
-    url(r'^library/', views.libraryModule, name='libraryModule'),
+    url(r'^library/$', views.libraryModule, name='libraryModule'),
 
 ]

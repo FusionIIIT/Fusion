@@ -17,15 +17,31 @@
                 <div class="ui red circular label">{% live_notify_badge badge_class='badge' %}</div>
             </a>
             <div class="item">
-                <a class="icon mail" href = '/feedback'></i>
-                <i class="comment icon"></i>Feedback
+                <a class="icon mail" href = '/feedback'>
+                <i class="comment icon"></i>Feedback</a>
+            </div>
+            <div class="item">
+                <form method="GET" action="{% url 'globals:search' %}">
+                    <div class="ui search">
+                        <div class="ui action input">
+                          <input type="text" name="q" placeholder="Search...">
+                          <button type="submit" class="ui button"><i class="search icon"></i></button>
+                        </div>
+                        <div class="results"></div>
+                    </div>
+                    
+                </form>
             </div>
             <div class="right inverted menu">
                 <a class="item" href="{% url 'globals:profile' %}">
                     {% comment %}
                         TODO: User details! depending on type of user say: STUDENT/FACULTY/STAFF!
                     {% endcomment %}
+		    {% if request.user.extrainfo.profile_picture %}
+		    <img class="ui avatar image" src="{{ request.user.extrainfo.profile_picture.url }}">
+		    {% else %}
                     <img class="ui avatar image" src="{% static 'globals/img/zlatan.jpg' %}">
+		    {% endif %}
                     {{request.user.first_name}} {{request.user.last_name}}
                 </a>
                 {% comment %}

@@ -82,7 +82,7 @@
                         {% endblock %}
                     </div>
                 </div>
-                
+
             </div>
             <div class="ui bottom attached tab segment" data-tab="second">
                 Work in Progress, coming soon!
@@ -115,9 +115,24 @@
 
 {% block javascript %}
     <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
-    {% comment %}
     <script>
-        $(document).ready(function(){
+        //----------------------calender--------------------------------
+        $('#rangestart').calendar({
+            monthFirst: false,
+            type: 'date',
+            minDate: new Date(getToday().getFullYear(), getToday().getMonth(), getToday().getDate()),
+            formatter: {
+              date: function (date, settings) {
+                if (!date) return '';
+                var day = date.getDate();
+                var month = date.getMonth() + 1;
+                var year = date.getFullYear();
+                return year + '-' + month + '-' + day;
+              }
+            }
+        });
+
+        /*$(document).ready(function(){
             $("#textLoader").toggle();
             $("#replacement-card").toggle();
             setTimeout(loader, 1750);
@@ -128,8 +143,7 @@
             $("#replacement-card").toggle();
             $("#loader").removeClass("active");
             $("#loader").addClass("disabled");
-        }
+        }*/
     </script>
-    {% endcomment %}
 
 {% endblock %}
