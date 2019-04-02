@@ -161,7 +161,7 @@ class Release(models.Model):
 
 #Abhilash: new class added for keeping track of notifications and applied application by students
 class Notification(models.Model):
-    student_id = models.ForeignKey(ExtraInfo, on_delete = models.CASCADE)
+    student_id = models.ForeignKey(Student, on_delete = models.CASCADE)
     notification_mcm_flag = models.BooleanField(default=False)
     notification_convocation_flag = models.BooleanField(default=False)
     invite_mcm_accept_flag = models.BooleanField(default=False)
