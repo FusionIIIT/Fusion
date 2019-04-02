@@ -128,7 +128,7 @@
               {{data.registrar_approve_tag}}
           </td>
           <td>
-             <button  class="approveme" m_id="{{data.id}}" >approve</button>
+             <button  class="approveme2" m_id="{{data.id}}" >approve</button>
           </td>
          </tr>
          {% endfor %}
@@ -272,6 +272,29 @@ $.ajax({
 });
 window.location.reload();
   });
+
+
+  $(".approveme2").click(function(event){
+   objid = $(this).attr("m_id");
+
+   //console.log($('#approveme').val())
+  //objid = $(this).val();
+  //console.log(String(objid))
+  console.log(objid)
+  alert("File with id " + objid + " has been approved by you")
+  $.ajax({
+      type: 'post',
+      url: '/office/newordersregistrar2/',
+      data: {id: objid},
+      success: function(data) {
+           console.log("success")
+      },
+      error: function(data, err) {
+          console.log("fail")
+      }
+  });
+  window.location.reload();
+    });
 });
 
   </script>

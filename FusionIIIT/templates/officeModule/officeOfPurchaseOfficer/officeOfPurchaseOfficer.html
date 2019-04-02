@@ -42,7 +42,7 @@
 
 
                 {%  if utype == 1 %}
-                <a class="active item" data-tab="first">
+                <a class="item" data-tab="first">
                  Manage Store
                     <i class="right floated chevron right icon"></i>
                 </a>
@@ -54,7 +54,7 @@
                  {% endif %}
 
                  {%  if utype2 == 1 %}
-                 <a class="  item" data-tab="sixth">
+                 <a class=" active item" data-tab="sixth">
                      Orders
                      <i class="right floated chevron right icon"></i>
                  </a>{% endif %}
@@ -96,7 +96,7 @@
 
         <div class="eight wide column">
             {% comment %}The Details start here!{% endcomment %}
-            <div class="ui active tab segment" data-tab="first">
+            <div class="ui tab segment" data-tab="first">
                 {% block tab1 %}
                     {% include 'officeModule/officeOfPurchaseOfficer/manageStore.html' %}
                 {% endblock %}
@@ -141,7 +141,7 @@
 
 
             {% comment %}The hod approval template{% endcomment %}
-            <div class="ui tab segment" data-tab="sixth">
+            <div class="ui active tab segment" data-tab="sixth">
                 {% block tab6 %}
                   {%  if utype2 == 1 %}
                     {% include 'officeModule/officeOfPurchaseOfficer/approvalHOD.html' %}

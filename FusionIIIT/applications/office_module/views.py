@@ -606,6 +606,27 @@ def newordersregistrar(request):
         try:
             obj = apply_for_purchase.objects.get(id = objid)
             obj.registrar_approve_tag = 1
+            obj.director_approve_tag = 1
+            obj.save()
+            print("work done")
+            str = "order with id "+ objid +" has been approved by you"
+            messages.info(request,str)
+            return HttpResponse('work is being done')
+        except apply_for_purchase.DoesNotExist:
+            print("model not exists")
+    return HttpResponse("you are the best ")
+
+def newordersregistrar2(request):
+    print("hello2")
+    #this one creates and stores the data in django forms
+    print("new ord caled")
+    if request.method=='POST':
+        objid = request.POST.get('id')
+        print(objid)
+        #find the instance with this objid and set its hod_approve_bit to 1
+        try:
+            obj = apply_for_purchase.objects.get(id = objid)
+            obj.registrar_approve_tag = 1
             obj.save()
             print("work done")
             str = "order with id "+ objid +" has been approved by you"
@@ -616,9 +637,25 @@ def newordersregistrar(request):
     return HttpResponse("you are the best ")
 
 
-
-
-
+def newordersdirector(request):
+    print("hello2")
+    #this one creates and stores the data in django forms
+    print("new ord caled")
+    if request.method=='POST':
+        objid = request.POST.get('id')
+        print(objid)
+        #find the instance with this objid and set its hod_approve_bit to 1
+        try:
+            obj = apply_for_purchase.objects.get(id = objid)
+            obj.director_approve_tag = 1
+            obj.save()
+            print("work done")
+            str = "order with id "+ objid +" has been approved by you"
+            messages.info(request,str)
+            return HttpResponse('work is being done')
+        except apply_for_purchase.DoesNotExist:
+            print("model not exists")
+    return HttpResponse("you are the best ")
 
 
 
@@ -749,9 +786,12 @@ def officeOfPurchaseOfficer(request):
     user = usertype[2]
     if(user == "student"):
         return HttpResponse('You are not authorised to view this page')
-    user_type=usertype[2]+usertype[3]
-    #desig_id = Designation.objects.all().filter(name='Faculty')
-    #print(desig_id)
+    if(len(usertype)>3):
+        user_type=usertype[2]+usertype[3]
+    elif(len(usertype)>=2):
+        user_type = usertype[2]
+
+
     print ("yaha se")
     print(user_type)
     #use user_type to check the designation of actor
@@ -762,16 +802,16 @@ def officeOfPurchaseOfficer(request):
     utype3=0#this is for indent forms
     utype4=0#this is for purchase history
 
-    hard_code_user=str(current_user)
-    if(user_type=="DeputyRegistrar" or user_type=="Registrar"):
+    per_user=str(current_user)
+    if(user_type=="DeputyRegistrar" or user_type=="Registrar" or user_type=="PurchaseOfficer"):
         utype=1
     #elif(user_type=="HOD(ME)" or user_type=="HOD(ECE)" or user_type=="CSE HOD" or user_type=="HOD"):
     #bug was that pkhanna was being recognized as associate professor not HOD
-    if(hard_code_user=="pkhanna" or user_type=="DeputyRegistrar" or user_type=="Registrar" or user_type=="HOD" or user_type=="PurchaseOfficer"):
+    if(per_user=="pkhanna" or user_type=="DeputyRegistrar" or user_type=="Registrar" or user_type=="HOD" or user_type=="PurchaseOfficer" or user_type =="Director" or user_type=="director"):
         utype2=1
         print("hard code working hai yahan tak for HOD designation")
 
-    if(user_type == "AssociateProfessor" or user_type=="HOD"):#give more such equivalent designations
+    if(user_type == "AssociateProfessor" or user_type=="HOD" or user_type=="Director" or user_type=="director"):#give more such equivalent designations
         utype3=1
         print("recognized actor assoc prof")
 
@@ -791,7 +831,6 @@ def officeOfPurchaseOfficer(request):
                 vendor_item=vendor_item,
                 vendor_address=vendor_address,
             )
-            #return HttpResponse("successflly added vendor")
             messages.info(request, 'vendor added successfully')
             return render(request, "officeModule/officeOfPurchaseOfficer/officeOfPurchaseOfficer.html",{})
 
@@ -800,21 +839,26 @@ def officeOfPurchaseOfficer(request):
             #note when not in hard code, pkhanna to be replaced  by str(current_user)
             #render appropritate templates as per the actor like approvalHOD2 or approvalRegistrar2 etc
             #this is working through user_type not utype
-            if(user_type=="HOD" or hard_code_user=="pkhanna"):
+            if(user_type=="HOD" or per_user=="pkhanna"):
                 print("new orders mein aa gaya")
                 alldata = apply_for_purchase.objects.filter(HOD_approve_tag=0)
-                #for data in alldata:
-                    #print(data.id)
                 context={'alldata':alldata}
                 print(context)
                 return render(request, "officeModule/officeOfPurchaseOfficer/approvalHOD2.html",context=context)
 
-            elif(user_type=="DeputyRegistrar" or user_type=="Registrar" or hard_code_user=="swapnali"):
+            elif(user_type=="DeputyRegistrar" or user_type=="Registrar" or per_user=="swapnali"):
                 print("template in processs")
                 alldata = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=0,expected_cost__lte = 50000)
                 alldata2 = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=0,expected_cost__gte = 50001)
                 context = {'alldata':alldata,'alldata2':alldata2}
                 return render(request, "officeModule/officeOfPurchaseOfficer/approvalRegistrar.html",context=context)
+
+            elif(user_type=="director" or user_type=="Director"):
+                print("template in processs")
+                alldata = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=1,expected_cost__gte = 50001,director_approve_tag=0)
+                print(alldata)
+                context = {'alldata':alldata}
+                return render(request, "officeModule/officeOfPurchaseOfficer/approvaldirector.html",context=context)
 
 
 

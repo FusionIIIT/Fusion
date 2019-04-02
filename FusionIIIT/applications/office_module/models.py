@@ -342,7 +342,7 @@ class apply_for_purchase(models.Model):
     purchase_date = models.DateField(default='2018-06-01')
 
     registrar_approve_tag = models.IntegerField(choices=APPROVE_TAG, default=0)
-
+    director_approve_tag = models.IntegerField(choices=APPROVE_TAG,default=0)
     HOD_approve_tag = models.IntegerField(choices=APPROVE_TAG, default=0)
     accounts_approve_tag = models.IntegerField(choices=APPROVE_TAG, default=0)
     gem_tag =  models.IntegerField(choices=APPROVE_TAG, default=0)
