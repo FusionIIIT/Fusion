@@ -695,7 +695,6 @@ def profile(request, username=None):
     If it's a student, displays the profile.
     If the department is 'department: Academics:, redirects to /aims/
     Otherwise, redirects to root
-
     Args:
         username: Username of the user. If None,
             displays the profile of currently logged-in user
@@ -1163,7 +1162,6 @@ def search(request):
     helpful message instead.
     Algorithm: Includes the first 15 users whose first/last name starts with the query words.
                Thus, searching 'Atu Gu' will return 'Atul Gupta' as one result.
-
                Note: All the words in the query must be matched.
                While, searching 'Atul Kumar', the word 'Kumar' won't match either 'Atul' or 'Gupta'
                and thus it won't be included in the search results.

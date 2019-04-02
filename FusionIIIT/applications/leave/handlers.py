@@ -558,7 +558,7 @@ def delete_leave_application(request):
     leave_id = request.POST.get('id')
     leave = request.user.all_leaves.filter(id=leave_id).first()
     print(leave.status)
-    if leave and leave.applicant == request.user and leave.status != 'accepted':
+    if leave and leave.applicant == request.user and leave.status != 'accepted' and leave.status != 'rejected':
         rep_requests = ReplacementSegment.objects.filter(leave = leave)
         for i in rep_requests:
             if i.status == 'accepted':
