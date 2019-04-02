@@ -48,9 +48,15 @@ def visitorhostel(request):
         # print(dashboard_bookings.booking_from)
 
         visitors = {}
+        rooms = {}
         for booking in active_bookings:
             temp = range(2, booking.person_count + 1)
             visitors[booking.id] = temp
+
+        for booking in active_bookings:
+            for room_no in booking.rooms.all():
+                temp2 = range(1, booking.number_of_rooms_alloted)
+                rooms[booking.id] = temp2
 
         complete_bookings = BookingDetail.objects.filter(booking_to__lt=datetime.datetime.today(), intender=user).select_related().order_by('booking_from')
         canceled_bookings = BookingDetail.objects.filter(status="Canceled", intender=user).select_related().order_by('booking_from')
@@ -81,15 +87,16 @@ def visitorhostel(request):
         # for room_no in booking.rooms.all():
         #     rooms_count = rooms_count + 1
 
-
-        for room_no in booking.rooms.all():
-            temp2 = range(1, booking.number_of_rooms_alloted)
-            rooms[booking.id] = temp2
+        for booking in active_bookings:
+            for room_no in booking.rooms.all():
+                temp2 = range(2, booking.number_of_rooms_alloted + 1)
+                rooms[booking.id] = temp2
+                print(booking.rooms.all())
 
 
         print("rooms are here !! ")
-        print(visitors[booking.id])
-        print(rooms[booking.id])
+        print(visitors)
+        print(rooms)
         print("and here !! ")
 
         complete_bookings = BookingDetail.objects.filter(Q(status="Canceled") | Q(status="Complete"), booking_to__lt=datetime.datetime.today()).select_related().order_by('booking_from')
@@ -231,6 +238,8 @@ def visitorhostel(request):
                    'user': user,
                    'visitors': visitors,
                    'rooms' : rooms,
+                   # 'num_rooms' : list(range(1, booking.number_of_rooms_alloted+1)),
+                   # 'num_rooms' :list(range(1, booking.number_of_rooms_alloted+1)),
                    'previous_visitors': previous_visitors,
                    'completed_booking_bills': completed_booking_bills,
                    'current_balance': current_balance,

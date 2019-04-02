@@ -89,6 +89,8 @@ class BookingDetail(models.Model):
     confirmed_date = models.DateField(null=True, blank=True)
     check_in = models.DateField(null=True, blank=True)
     check_out = models.DateField(null=True, blank=True)
+    check_in_time = models.TimeField(null=True, blank=True)
+    check_out_time = models.TimeField(null=True, blank=True)
     status = models.CharField(max_length=15, choices=BOOKING_STATUS ,default ="Pending")
     remark = models.CharField(max_length=40, blank=True, null=True)
     visitor = models.ManyToManyField(VisitorDetail)
