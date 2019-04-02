@@ -525,10 +525,13 @@ def InvitationStatus(request):
     is_disabled = 0
     paginator = ''
     page_range = ''
+    placement_get_request = False
+    pbi_get_request = False
 
     # invitation status for placement
     if 'studentplacementsearchsubmit' in request.POST:
         mnplacement_post = 1
+        mnpbi_post = 0
         form = ManagePlacementRecord(request.POST)
 
         if form.is_valid():
@@ -594,7 +597,10 @@ def InvitationStatus(request):
                 no_pagination = 0
     else:
         # when the request from pagination with some page number
-        if request.GET.get('page') != None:
+        if request.GET.get('placement_page') != None:
+            mnplacement_post = 1
+            mnpbi_post = 0
+            no_pagination = 1
             try:
                 placementstatus_placement = PlacementStatus.objects.filter(Q(notify_id__in=NotifyStudent.objects.filter
                                                        (Q(placement_type="PLACEMENT",
@@ -616,7 +622,7 @@ def InvitationStatus(request):
 
             if total_query > 30:
                 paginator = Paginator(placementstatus_placement, 30)
-                page = request.GET.get('page', 1)
+                page = request.GET.get('placement_page', 1)
                 placementstatus_placement = paginator.page(page)
                 page = int(page)
                 total_page = int(page + 3)
@@ -643,6 +649,7 @@ def InvitationStatus(request):
     if 'studentpbisearchsubmit' in request.POST:
         mnpbi_tab = 1
         mnpbi_post = 1
+        mnplacement_post = 0
         form = ManagePbiRecord(request.POST)
         if form.is_valid():
             print(form.cleaned_data['company'])
@@ -707,7 +714,7 @@ def InvitationStatus(request):
             else:
                 no_pagination = 0
     else:
-        if request.GET.get('page') != None:
+        if request.GET.get('pbi_page') != None:
             mnpbi_tab = 1
             mnpbi_post = 1
             no_pagination = 1
@@ -732,7 +739,7 @@ def InvitationStatus(request):
                 total_query = 0
             if total_query > 30:
                 paginator = Paginator(placementstatus_pbi, 30)
-                page = request.GET.get('page', 1)
+                page = request.GET.get('pbi_page', 1)
                 placementstatus_pbi = paginator.page(page)
                 page = int(page)
                 total_page = int(page + 3)

@@ -139,8 +139,8 @@
             </div>
 
             {% if not students and student_record_check == 1 %}
-              <div id="pbi_invitation_error_message" class="ui error message">
-                <i onclick="pbiInvitationStatusErrorMessage();" class="close icon"></i>
+              <div class="ui error message">
+                <i class="close icon"></i>
                 <div class="header">
                   There is no such record of this type.
                 </div>
@@ -587,7 +587,7 @@
             <div class="{% if invitation_status_tab %}ui active tab{% else %}ui tab{% endif %}" data-tab="invitation_status">
               <div class="ui vertical segment">
                 <div class="ui two item menu">
-                    <a class="{% if mnplacement_post or mnplacement_tab %}active item{% else %}item{% endif %}" data-tab="Placement">
+                    <a class="{% if mnpbi_post %}item{% else %}active item{% endif %}" data-tab="Placement">
                       Placement
                     </a>
 
@@ -599,8 +599,8 @@
 
               <div class="{% if mnpbi_post %}ui tab{% else %}ui active tab{% endif %}" data-tab="Placement">
                 {% if not placementstatus_placement and officer_manage %}
-                  <div class="ui error message">
-                    <i class="close icon"></i>
+                  <div id="placement_invitation_error_message" class="ui error message">
+                    <i onclick="placementInvitationStatusErrorMessage();" class="close icon"></i>
                     <div class="header">
                       There is no such record of this type.
                     </div>
@@ -678,13 +678,13 @@
                         <center>
                           <div class="ui pagination menu">
                             {% if placementstatus_placement.has_previous %}
-                            <a href="?page={{placementstatus.previous_page_number}}" class="item">
+                            <a href="?placement_page={{placementstatus.previous_page_number}}" class="item">
                               Previous
                             </a>
                             {% endif %}
 
                             {% if is_disabled %}
-                              <a href="?page=1" class="item">1</a>
+                              <a href="?placement_page=1" class="item">1</a>
                               <div class="disabled item">
                                 ...
                               </div>
@@ -692,9 +692,9 @@
 
                             {% for i in page_range %}
                               {% if placementstatus_placement.number == i %}
-                                <a href="?page={{i}}" class="active item">{{ i }} </a>
+                                <a href="?placement_page={{i}}" class="active item">{{ i }} </a>
                               {% else %}
-                                <a href="?page={{ i }}" class="item">{{ i }}</a>
+                                <a href="?placement_page={{ i }}" class="item">{{ i }}</a>
                               {% endif %}
                             {% endfor %}
 
@@ -702,7 +702,7 @@
                             <div class="disabled item">
                               ...
                             </div>
-                            <a href="?page={{placementstatus_placement.next_page_number}}" class="item">
+                            <a href="?placement_page={{placementstatus_placement.next_page_number}}" class="item">
                               Next
                             </a>
                             {% endif %}
@@ -773,8 +773,8 @@
 
               <div class="{% if mnpbi_post %}ui active tab{% else %}ui tab{% endif %}" data-tab="PBI">
                   {% if not placementstatus_pbi and mnpbi_post %}
-                    <div class="ui error message">
-                      <i class="close icon"></i>
+                    <div id="pbi_invitation_error_message" class="ui error message">
+                      <i onclick="pbiInvitationStatusErrorMessage();" class="close icon"></i>
                       <div class="header">
                         There is no such record of this type.
                       </div>
@@ -853,13 +853,13 @@
                         <center>
                           <div class="ui pagination menu">
                             {% if placementstatus_pbi.has_previous %}
-                            <a href="?page={{placementstatus_pbi.previous_page_number}}" class="item">
+                            <a href="?pbi_page={{placementstatus_pbi.previous_page_number}}" class="item">
                               Previous
                             </a>
                             {% endif %}
 
                             {% if is_disabled %}
-                              <a href="?page=1" class="item">1</a>
+                              <a href="?pbi_page=1" class="item">1</a>
                               <div class="disabled item">
                                 ...
                               </div>
@@ -867,9 +867,9 @@
 
                             {% for i in page_range %}
                               {% if placementstatus_pbi.number == i %}
-                                <a href="?page={{i}}" class="active item">{{ i }} </a>
+                                <a href="?pbi_page={{i}}" class="active item">{{ i }} </a>
                               {% else %}
-                                <a href="?page={{ i }}" class="item">{{ i }}</a>
+                                <a href="?pbi_page={{ i }}" class="item">{{ i }}</a>
                               {% endif %}
                             {% endfor %}
 
@@ -879,7 +879,7 @@
                             <div class="disabled item">
                               ...
                             </div>
-                            <a href="?page={{placementstatus_pbi.next_page_number}}" class="item">
+                            <a href="?pbi_page={{placementstatus_pbi.next_page_number}}" class="item">
                               Next
                             </a>
                             {% endif %}
@@ -975,6 +975,17 @@
 {% endblock %}
 
 {% block javascript %}
+
+<script type="text/javascript">
+  function pbiInvitationStatusErrorMessage(){
+    $('#pbi_invitation_error_message').css('display', 'none');
+  }
+
+  function placementInvitationStatusErrorMessage(){
+    $('#placement_invitation_error_message').css('display', 'none');
+  }
+
+</script>
 
 <script>
   var fade_out = function() {
