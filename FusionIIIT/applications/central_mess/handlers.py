@@ -355,14 +355,25 @@ def add_mess_meeting_invitation(request):
        @variables:
            invitation_obj: Object of Mess_meeting with current values of date, venue, agenda, meeting time
     """
-    date = request.POST.get('date')
-    venue = request.POST.get('venue')
-    agenda = request.POST.get('agenda')
-    time = request.POST.get('time')
+    date = request.POST['date']
+    venue = request.POST['venue']
+    agenda = request.POST['agenda']
+    time = request.POST['time']
+    date_today = str(today_g.date())
+    if date <= date_today:
+        data = {
+            'status': 2,
+            'message': "Cannot place invitation for a date that already passed"
+        }
+        return data
+
     invitation_obj = Mess_meeting(meet_date=date, agenda=agenda, venue=venue, meeting_time=time)
     invitation_obj.save()
     data = {
             'status': 1,
+            'message': "Meeting Details recorded",
+            'date': date,
+            'time': time,
     }
     return data
 
@@ -534,7 +545,7 @@ def generate_bill():
                 if r.start_date.strftime("%B") == previous_month:
                     rebate_count = rebate_count + abs((r.end_date - r.start_date).days) + 1
         rebate_amount = rebate_count*amount_c.bill_amount/30
-        total = amount_c.bill_amount + nonveg_total_bill + rebate_amount
+        total = amount_c.bill_amount + nonveg_total_bill - rebate_amount
         bill_object = Monthly_bill(student_id=student,
                                    month=previous_month,
                                    year = previous_month_year,

@@ -33,10 +33,13 @@
                 {{current_date}}
                 <br>
 
-                {% if current_date < mess_reg.end_reg %}
+                {% if current_date <= mess_reg.end_reg %}
                 <div class="two fields">
                     <div class="field">
+                        <strong> Currently registered in {{ messinfo.mess_option }}</strong>
+                        <br>
                         <input type="date" id="date" name="date" value="{{mess_reg.end_reg}}" hidden>
+                        <br>
                         <label>Choose Mess*</label>
                         <select class="ui search fluid dropdown" name="mess_type" id="mess_type">
                             <option value="mess2">Veg Mess</option>
@@ -49,10 +52,6 @@
                 {% comment %}
                 TODO: Make this Optional!
                 {% endcomment %}
-                <div class="field">
-                    <label>Reason:</label>
-                    <textarea rows="2" name="reason"></textarea>
-                </div>
 
                 <div class="field">
                     <button class="ui primary button right floated" type="submit" name="submit">
