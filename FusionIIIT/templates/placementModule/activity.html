@@ -167,35 +167,40 @@
                         <div class="content">
                             <div class="ui divider"></div>
                             {% for ps in placementstatus %}
-                            {% if ps.invitation != 'PENDING' and ps.invitation != 'Pending' %}
-                            {% if ps.placed != 'Placed' and ps.placed != 'PLACED' %}
-                            <span>
-                              <div class="ui segments">
-                                <div class="ui horizontal segments">
-                                  <div class="ui segment">
-                                    {{ ps.notify_id.placement_type }}
-                                    {{ ps.notify_id.timestamp }}
+                              {% if ps.invitation != 'PENDING' and ps.invitation != 'Pending' %}
+                                {% if ps.placed != 'Placed' and ps.placed != 'PLACED' %}
+                                <span>
+                                  <div class="ui segments">
+                                    <div class="ui horizontal segments">
+                                      <div class="ui segment">
+                                        {{ ps.notify_id.placement_type }}
+                                        {{ ps.notify_id.timestamp }}
 
-                                </div>
+                                    </div>
+                                    </div>
+                                      <div class="ui secondary segment">
+                                        <p>{{ ps.notify_id.company_name }} ,<b> CTC: {{ ps.notify_id.ctc }}</b></p>
+                                        <p>{{ ps.notify_id.description }} </p>
+                                      </div>
+                                      {% if ps.invitation == 'ACCEPTED' or ps.invitation == 'Accepted' %}
+                                      <div class="ui secondary green inverted segment">
+                                        <p>Invitation was <b>{{ ps.invitation}}.</b></p>
+                                      </div>
+                                      {% endif %}
+                                      {% if ps.invitation == 'REJECTED' or ps.invitation == 'Rejected' %}
+                                      <div class="ui secondary red inverted segment">
+                                        <p>Invitation was <b>{{ ps.invitation}}.</b></p>
+                                      </div>
+                                      {% endif %}
+                                      {% if ps.invitation == 'IGNORE' %}
+                                      <div class="ui secondary grey inverted segment">
+                                        <p>Invitation was <b>{{ ps.invitation}}.</b></p>
+                                      </div>
+                                      {% endif %}
                                   </div>
-                                  <div class="ui secondary segment">
-                                    <p>{{ ps.notify_id.company_name }} ,<b> CTC: {{ ps.notify_id.ctc }}</b></p>
-                                    <p>{{ ps.notify_id.description }} </p>
-                                  </div>
-                                  {% if ps.invitation == 'ACCEPTED' or ps.invitation == 'Accepted' %}
-                                  <div class="ui secondary green inverted segment">
-                                    <p>Invitation was <b>{{ ps.invitation}}.</b></p>
-                                  </div>
-                                  {% endif %}
-                                  {% if ps.invitation == 'REJECTED' or ps.invitation == 'Rejected' %}
-                                  <div class="ui secondary red inverted segment">
-                                    <p>Invitation was <b>{{ ps.invitation}}.</b></p>
-                                  </div>
-                                  {% endif %}
-                              </div>
-                            </span><br>
-                            {% endif %}
-                            {% endif %}
+                                </span><br>
+                                {% endif %}
+                              {% endif %}
                             {% endfor %}
                         </div>
 

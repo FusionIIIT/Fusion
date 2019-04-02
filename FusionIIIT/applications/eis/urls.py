@@ -6,6 +6,7 @@ from . import views
 urlpatterns = [
     # url used to add data
     url(r'uploadcsv/$', views.upload_file),
+    url(r'^profile/(?P<username>\w+)/$', views.profile, name='profile'),
     url(r'^profile/$', views.profile, name='profile'),
 
     url(r'^rspc_profile/$', views.rspc_profile, name='rspc_profile'),
@@ -35,7 +36,8 @@ urlpatterns = [
     url(r'^fvisit/$', views.fvisit_insert, name='fvisit_insert'),
     url(r'^ivisit/$', views.ivisit_insert, name='ivisit_insert'),
     url(r'^journal/$', views.journal_insert, name='journal_insert'),
-    url(r'^confrence/$', views.confrence_insert, name='confrence_insert'),
+    url(r'^journal/edit$', views.editjournal, name='editjournal'),
+    url(r'^conference/$', views.conference_insert, name='conference_insert'),
     url(r'^book/$', views.book_insert, name='book_insert'),
     url(r'^consym/$', views.consym_insert, name='consym_insert'),
     url(r'^event/$', views.event_insert, name='event_insert'),

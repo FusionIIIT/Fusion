@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Monthly Bill</title>
+</head>
+<body>
+    <div class="ui vertical segment">
+            <table class="ui definition padded table" style="margin: auto;">
+                <thead>
+                <tr>
+                    <th>Roll Number</th>
+                    <th>Month</th>
+                    <th>Year</th>
+                    <th>Rebate Count</th>
+                    <th>Rebate Amount</th>
+                    <th>Non-veg Amount</th>
+                    <th>Base Amount</th>
+                    <th>Total</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for item in bill %}
+                <tr>
+                    <td>{{ item.student_id }}</td>
+                    <td>{{ item.month }}</td>
+                    <td>{{ item.year }}</td>
+                    <td>{{ item.rebate_count }}</td>
+                    <td>{{ item.rebate_amount }}</td>
+                    <td>{{ item.nonveg_total_bill }}</td>
+                    <td>{{ item.amount }}</td>
+                    <td>{{ item.total_bill }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+    </div>
+</body>
+</html>
