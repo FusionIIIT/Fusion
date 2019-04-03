@@ -289,7 +289,7 @@
                                   <th class="two wide">Year</th>
                                   <th class="six wide">Company</th>
                                   <th class="two wide">CTC(LPA)</th>
-                                  {% if current == None %}
+                                  {% if delete_operation == 1 %}
                                     <th class="two wide">Delete</th>
                                   {% endif %}
                               </tr>
@@ -322,7 +322,7 @@
                                       {{ student.record_id.ctc }}
                                   </td>
 
-                                  {% if current == None %}
+                                  {% if delete_operation == 1 %}
                                   <td>
                                     <form method="post" action="{% url 'placement:delete_placement_statistics' %}" class="ui form" role="form">
                                       {% csrf_token %}
@@ -483,7 +483,7 @@
                                       <th class="two wide">Year</th>
                                       <th class="six wide">Company</th>
                                       <th class="two wide">CTC(LPA)</th>
-                                      {% if current == None %}
+                                      {% if delete_operation == 1 %}
                                         <th class="two wide">Delete</th>
                                       {% endif %}
                                   </tr>
@@ -516,7 +516,7 @@
                                           &#8377; {{ student.record_id.ctc }}
                                       </td>
 
-                                      {% if current == None %}
+                                      {% if delete_operation == 1 %}
                                       <td>
                                         <form method="post" action="{% url 'placement:delete_placement_statistics' %}" class="ui form" role="form">
                                           {% csrf_token %}
@@ -692,7 +692,7 @@
                                       <th class="two wide">Exam</th>
                                       <th class="six wide">University</th>
                                       <th class="two wide">Score</th>
-                                      {% if current == None %}
+                                      {% if delete_operation == 1 %}
                                         <th class="two wide">Delete</th>
                                       {% endif %}
                                   </tr>
@@ -727,7 +727,7 @@
                                           {{ student.record_id.test_score }}
                                       </td>
 
-                                      {% if current == None %}
+                                      {% if delete_operation == 1 %}
                                       <td>
                                         <form method="post" action="{% url 'placement:delete_placement_statistics' %}" class="ui form" role="form">
                                           {% csrf_token %}

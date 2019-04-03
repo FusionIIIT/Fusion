@@ -1842,6 +1842,7 @@ def PlacementStatistics(request):
     '''
     user = request.user
     statistics_tab = 1
+    delete_operation = 0
 
     pagination_placement = 0
     pagination_pbi = 0
@@ -1893,6 +1894,11 @@ def PlacementStatistics(request):
     current1 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement chairman"))
     current2 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement officer"))
     current = HoldsDesignation.objects.filter(Q(working=user, designation__name="student"))
+
+    if len(current1)!=0 or len(current2)!=0:
+        delete_operation = 1
+
+    print('\n\n\n\n-----------------', delete_operation)
 
     if len(current) == 0:
         current = None
@@ -2430,6 +2436,7 @@ def PlacementStatistics(request):
         'higherrecord'      :     higherrecord,
         'years'             :            years,
         'records'           :          records,
+        'delete_operation'  :       delete_operation,
         'page_range': page_range,
         'paginator': paginator,
         'pagination_placement': pagination_placement,
