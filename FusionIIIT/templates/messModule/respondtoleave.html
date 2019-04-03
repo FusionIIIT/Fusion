@@ -263,8 +263,8 @@
 <script>
 
 function acceptReq(id){
+ document.getElementById('accr-'+id).style.display="none";
 
-   document.getElementById('accr-'+id).style.visibility="hidden";
          $.ajax({
                 type: 'POST',
                 url: 'rebateresponse',
@@ -289,7 +289,7 @@ function acceptReq(id){
          }
          function rejectReq(id){
 
-          document.getElementById('accr-'+id).style.visibility="hidden";
+          document.getElementById('accr-'+id).style.display="none";
          $.ajax({
                 type: 'POST',
                 url: 'rebateresponse',
