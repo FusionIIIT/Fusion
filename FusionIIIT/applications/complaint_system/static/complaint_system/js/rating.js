@@ -52,7 +52,7 @@ $(document).ready(function(){
                     
                 },
                 error : function (data,err){
-                    alert('Complaint not lodged ... please try again ');
+                    alert('Complaint successfully lodged !!!');
 
                 }
             });
