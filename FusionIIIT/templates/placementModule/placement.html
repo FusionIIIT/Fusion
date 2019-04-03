@@ -160,19 +160,44 @@
           </div>
 
           <div class="{% if form5.errors %}ui tab{% else %}ui active tab{% endif %}" data-tab="placementschedule">
-            <div class="ui grid">
-              <div class="thirteen wide column">
-                <label>Company Name:</label>
-                <div class="ui fluid large input">
-                    <input type="text" id="sch_searchbar_text" placeholder="Search">
-                </div>
-              </div>
+            {% for c3 in current2 %}
+              {% if c3.designation.name == 'placement officer' %}
+                <div class="ui grid">
+                  <div class="thirteen wide column">
+                    <label>Company Name:</label>
+                    <div class="ui fluid large input">
+                        <input type="text" id="sch_searchbar_text" placeholder="Search">
+                    </div>
+                  </div>
 
-              <div class="three wide column">
-                <label><br></label>
-                <button class="ui large primary button" id="sch_searchbar_btn" type="submit"> Submit </button>
-              </div>
-            </div>
+                  <div class="three wide column">
+                    <label><br></label>
+                    <button class="ui large primary button" id="sch_searchbar_btn" type="submit"> Submit </button>
+                  </div>
+                </div>
+              {% endif %}
+            {% endfor %}
+
+
+            {% for c in current1 %}
+              {% if c.designation.name == 'placement chairman' %}
+                <div class="ui grid">
+                  <div class="thirteen wide column">
+                    <label>Company Name:</label>
+                    <div class="ui fluid large input">
+                        <input type="text" id="sch_searchbar_text" placeholder="Search">
+                    </div>
+                  </div>
+
+                  <div class="three wide column">
+                    <label><br></label>
+                    <button class="ui large primary button" id="sch_searchbar_btn" type="submit"> Submit </button>
+                  </div>
+                </div>
+              {% endif %}
+            {% endfor %}
+
+
             <div class="ui vertical segment">
                 {% for c in current %}
                   {% if c.designation.name == 'student' %}
