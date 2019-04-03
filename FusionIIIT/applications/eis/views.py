@@ -448,17 +448,36 @@ def achievementDelete(request, pk):
 def emp_confrence_organisedDelete(request, pk):
     instance = emp_confrence_organised.objects.get(pk=pk)
     instance.delete()
-    return redirect('eis:profile')
+    return redirect('globals:profile')
+
+def emp_consymDelete(request, pk, sr, mark):
+    instance = emp_confrence_organised.objects.get(pk=pk)
+    page = int(sr)//10
+    page = page+1
+    url = ""
+    if mark== '13':
+        url = '/profile/?page13='+str(page)
+    
+    print(url)
+    instance.delete()
+    return redirect(url)
 
 def emp_consultancy_projectsDelete(request, pk):
     instance = emp_consultancy_projects.objects.get(pk=pk)
     instance.delete()
     return redirect('eis:profile')
 
-def emp_event_organizedDelete(request, pk):
+def emp_event_organizedDelete(request, pk, sr, mark):
     instance = emp_event_organized.objects.get(pk=pk)
+    page = int(sr)//10
+    page = page+1
+    url = ""
+    if mark== '12':
+        url = '/profile/?page12='+str(page)
+    
+    print(url)
     instance.delete()
-    return redirect('eis:profile')
+    return redirect(url)
 
 def emp_expert_lecturesDelete(request, pk):
     instance = emp_expert_lectures.objects.get(pk=pk)
@@ -513,10 +532,18 @@ def emp_techtransferDelete(request, pk):
     instance.delete()
     return redirect('eis:profile')
 
-def emp_visitsDelete(request, pk):
+def emp_visitsDelete(request, pk, sr, mark):
     instance = emp_visits.objects.get(pk=pk)
+    page = int(sr)//10
+    page = page+1
+    url = ""
+    if mark== '10':
+        url = '/profile/?page10='+str(page)
+    if mark== '11':
+        url = '/profile/?page11='+str(page)
+    print(url)
     instance.delete()
-    return redirect('eis:profile')
+    return redirect(url)
 
 
 # Views for inserting fields in EIS
@@ -573,16 +600,16 @@ def fvisit_insert(request):
     eis.place = request.POST.get('place')
     eis.purpose = request.POST.get('purpose')
     try:
-        eis.start_date = datetime.datetime.strptime(request.POST.get('start'), "%B %d, %Y")
+        eis.start_date = datetime.datetime.strptime(request.POST.get('start_date'), "%B %d, %Y")
     except:
-        eis.start_date = datetime.datetime.strptime(request.POST.get('start'), "%b. %d, %Y")
+        eis.start_date = datetime.datetime.strptime(request.POST.get('start_date'), "%b. %d, %Y")
     try:
-        eis.end_date = datetime.datetime.strptime(request.POST.get('end'), "%B %d, %Y")
+        eis.end_date = datetime.datetime.strptime(request.POST.get('end_date'), "%B %d, %Y")
     except:
-        eis.end_date = datetime.datetime.strptime(request.POST.get('end'), "%b. %d, %Y")
+        eis.end_date = datetime.datetime.strptime(request.POST.get('end_date'), "%b. %d, %Y")
 
     eis.save()
-    return redirect('eis:profile')
+    return redirect('/profile/?page10=1')
 
 def ivisit_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
@@ -594,20 +621,21 @@ def ivisit_insert(request):
         eis = get_object_or_404(emp_visits, id=request.POST.get('ivisit_id'))
     eis.pf_no = pf
     eis.v_type = 1
-    eis.country = request.POST.get('country')
-    eis.place = request.POST.get('place')
-    eis.purpose = request.POST.get('purpose')
+    eis.country = request.POST.get('country2')
+    eis.place = request.POST.get('place2')
+    eis.purpose = request.POST.get('purpose2')
+    print(".............",request.POST.get('start_date2'))
     try:
-        eis.start_date = datetime.datetime.strptime(request.POST.get('start'), "%B %d, %Y")
+        eis.start_date = datetime.datetime.strptime(request.POST.get('start_date2'), "%B %d, %Y")
     except:
-        eis.start_date = datetime.datetime.strptime(request.POST.get('start'), "%b. %d, %Y")
+        eis.start_date = datetime.datetime.strptime(request.POST.get('start_date2'), "%b. %d, %Y")
     try:
-        eis.end_date = datetime.datetime.strptime(request.POST.get('end'), "%B %d, %Y")
+        eis.end_date = datetime.datetime.strptime(request.POST.get('end_date2'), "%B %d, %Y")
     except:
-        eis.end_date = datetime.datetime.strptime(request.POST.get('end'), "%b. %d, %Y")
+        eis.end_date = datetime.datetime.strptime(request.POST.get('end_date2'), "%b. %d, %Y")
 
     eis.save()
-    return redirect('eis:profile')
+    return redirect('/profile/?page11=1')
 
 
 #Function to save journal of employee 
@@ -757,6 +785,50 @@ def editjournal(request):
     page = int(request.POST.get('index'))//10
     page = page+1
     url = "http://127.0.0.1:8000/profile/?page="+str(page)
+    print(url)
+    return redirect(url)
+
+def editforeignvisit(request):
+    print("its coming here")
+    eis = emp_visits.objects.get(pk=request.POST.get('foreignvisitpk'))
+    eis.country = request.POST.get('country')
+    eis.place = request.POST.get('place')
+    eis.purpose = request.POST.get('purpose')
+    try:
+        eis.start_date = datetime.datetime.strptime(request.POST.get('start_date'), "%B %d, %Y")
+    except:
+        eis.start_date = datetime.datetime.strptime(request.POST.get('start_date'), "%b. %d, %Y")
+    try:
+        eis.end_date = datetime.datetime.strptime(request.POST.get('end_date'), "%B %d, %Y")
+    except:
+        eis.end_date = datetime.datetime.strptime(request.POST.get('end_date'), "%b. %d, %Y")
+    #eis.end_date = request.POST.get('end_date')
+    eis.save()
+    page = int(request.POST.get('index10'))//10
+    page = page+1
+    url = "/profile/?page10="+str(page)
+    print(url)
+    return redirect(url)
+
+def editindianvisit(request):
+    print("its coming here")
+    eis = emp_visits.objects.get(pk=request.POST.get('indianvisitpk'))
+    eis.country = request.POST.get('country2')
+    eis.place = request.POST.get('place2')
+    eis.purpose = request.POST.get('purpose2')
+    try:
+        eis.start_date = datetime.datetime.strptime(request.POST.get('start_date2'), "%B %d, %Y")
+    except:
+        eis.start_date = datetime.datetime.strptime(request.POST.get('start_date2'), "%b. %d, %Y")
+    try:
+        eis.end_date = datetime.datetime.strptime(request.POST.get('end_date2'), "%B %d, %Y")
+    except:
+        eis.end_date = datetime.datetime.strptime(request.POST.get('end_date2'), "%b. %d, %Y")
+    #eis.end_date = request.POST.get('end_date')
+    eis.save()
+    page = int(request.POST.get('index11'))//10
+    page = page+1
+    url = "/profile/?page11="+str(page)
     print(url)
     return redirect(url)
 
@@ -912,31 +984,64 @@ def consym_insert(request):
     pf = user.id
     eis = emp_confrence_organised()
     eis.pf_no = pf
-    eis.name = request.POST.get('name')
-    eis.venue = request.POST.get('venue')
-    eis.role1 = request.POST.get('role')
+    eis.name = request.POST.get('conference_name')
+    eis.venue = request.POST.get('conference_venue')
+    eis.role1 = request.POST.get('conference_role')
     if(eis.role1 == 'Any Other'):
-        eis.role2 = request.POST.get('other')
+        eis.role2 = request.POST.get('conference_organised')
     if(eis.role1 == 'Organised'):
-        if(request.POST.get('role2') == 'Any Other'):
-            eis.role2 = request.POST.get('other')
+        if(request.POST.get('conference_organised') == 'Any Other'):
+            eis.role2 = request.POST.get('myDIV1')
         else:
-            eis.role2 = request.POST.get('role2')
+            eis.role2 = request.POST.get('conference_organised')
     if (eis.role1 == "" or eis.role1==None):
         eis.role1 = "Any Other"
         eis.role2 = "Any Other"
     try:
-        eis.start_date = datetime.datetime.strptime(request.POST.get('start'), "%B %d, %Y")
+        eis.start_date = datetime.datetime.strptime(request.POST.get('conference_start_date'), "%B %d, %Y")
     except:
-        eis.start_date = datetime.datetime.strptime(request.POST.get('start'), "%b. %d, %Y")
+        eis.start_date = datetime.datetime.strptime(request.POST.get('conference_start_date'), "%b. %d, %Y")
     try:
-        eis.end_date = datetime.datetime.strptime(request.POST.get('end'), "%B %d, %Y")
+        eis.end_date = datetime.datetime.strptime(request.POST.get('conference_end_date'), "%B %d, %Y")
     except:
-        eis.end_date = datetime.datetime.strptime(request.POST.get('end'), "%b. %d, %Y")
+        eis.end_date = datetime.datetime.strptime(request.POST.get('conference_end_date'), "%b. %d, %Y")
     eis.save()
-    return redirect('eis:profile')
+    return redirect('/profile/?page13=1')
+
+def editconsym(request):
+    print("+++++++++++++++++"+request.POST.get('conferencepk2'))
+    eis = emp_confrence_organised.objects.get(pk=request.POST.get('conferencepk2'))
+    eis.name = request.POST.get('conference_name')
+    eis.venue = request.POST.get('conference_venue')
+    eis.role1 = request.POST.get('conference_role')
+    if(eis.role1 == 'Any Other'):
+        eis.role2 = request.POST.get('conference_organised')
+    if(eis.role1 == 'Organised'):
+        if(request.POST.get('conference_organised') == 'Any Other'):
+            eis.role2 = request.POST.get('myDIV1')
+        else:
+            eis.role2 = request.POST.get('conference_organised')
+    if (eis.role1 == "" or eis.role1==None):
+        eis.role1 = "Any Other"
+        eis.role2 = "Any Other"
+    try:
+        eis.start_date = datetime.datetime.strptime(request.POST.get('conference_start_date'), "%B %d, %Y")
+    except:
+        eis.start_date = datetime.datetime.strptime(request.POST.get('conference_start_date'), "%b. %d, %Y")
+    try:
+        eis.end_date = datetime.datetime.strptime(request.POST.get('conference_end_date'), "%B %d, %Y")
+    except:
+        eis.end_date = datetime.datetime.strptime(request.POST.get('conference_end_date'), "%b. %d, %Y")
+    eis.save()
+    page = int(request.POST.get('index13'))//10
+    page = page+1
+    url = "/profile/?page13="+str(page)
+    print(url)
+
+    return redirect('/profile/?page13=1')
 
 def event_insert(request):
+    print(request)
     user = get_object_or_404(ExtraInfo, user=request.user)
     pf = user.id
 
@@ -945,24 +1050,49 @@ def event_insert(request):
     else:
         eis = get_object_or_404(emp_event_organized, id=request.POST.get('event_id'))
     eis.pf_no = pf
-    eis.type = request.POST.get('type')
+    eis.type = request.POST.get('event_type')
     if(eis.type == 'Any Other'):
-        if(request.POST.get('other')!= None or request.POST.get('other') != ""):
-            eis.type = request.POST.get('other')
+        if(request.POST.get('myDIV')!= None or request.POST.get('myDIV') != ""):
+            eis.type = request.POST.get('myDIV')
     eis.sponsoring_agency = request.POST.get('sponsoring_agency')
-    eis.name = request.POST.get('name')
-    eis.venue = request.POST.get('venue')
-    eis.role = request.POST.get('role')
+    eis.name = request.POST.get('event_name')
+    eis.venue = request.POST.get('event_venue')
+    eis.role = request.POST.get('event_role')
     try:
-        eis.start_date = datetime.datetime.strptime(request.POST.get('start'), "%B %d, %Y")
+        eis.start_date = datetime.datetime.strptime(request.POST.get('event_start_date'), "%B %d, %Y")
     except:
-        eis.start_date = datetime.datetime.strptime(request.POST.get('start'), "%b. %d, %Y")
+        eis.start_date = datetime.datetime.strptime(request.POST.get('event_start_date'), "%b. %d, %Y")
     try:
-        eis.end_date = datetime.datetime.strptime(request.POST.get('end'), "%B %d, %Y")
+        eis.end_date = datetime.datetime.strptime(request.POST.get('event_end_date'), "%B %d, %Y")
     except:
-        eis.end_date = datetime.datetime.strptime(request.POST.get('end'), "%b. %d, %Y")
+        eis.end_date = datetime.datetime.strptime(request.POST.get('event_end_date'), "%b. %d, %Y")
     eis.save()
-    return redirect('eis:profile')
+    return redirect('/profile/?page12=1')
+
+def editevent(request):
+    eis = emp_event_organized.objects.get(pk=request.POST.get('eventpk'))
+    
+    eis.type = request.POST.get('event_type')
+    if(eis.type == 'Any Other'):
+        if(request.POST.get('myDIV')!= None or request.POST.get('myDIV') != ""):
+            eis.type = request.POST.get('myDIV')
+    eis.sponsoring_agency = request.POST.get('sponsoring_agency')
+    eis.name = request.POST.get('event_name')
+    eis.venue = request.POST.get('event_venue')
+    eis.role = request.POST.get('event_role')
+    try:
+        eis.start_date = datetime.datetime.strptime(request.POST.get('event_start_date'), "%B %d, %Y")
+    except:
+        eis.start_date = datetime.datetime.strptime(request.POST.get('event_start_date'), "%b. %d, %Y")
+    try:
+        eis.end_date = datetime.datetime.strptime(request.POST.get('event_end_date'), "%B %d, %Y")
+    except:
+        eis.end_date = datetime.datetime.strptime(request.POST.get('event_end_date'), "%b. %d, %Y")
+    eis.save()
+    page = int(request.POST.get('index12'))//10
+    page = page+1
+    url = "/profile/?page12="+str(page)
+    return redirect(url)
 
 def award_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
