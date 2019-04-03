@@ -36,16 +36,11 @@ month_last_g = last_day_prev_month.month
 year_last_g = last_day_prev_month.year
 previous_month = last_day_prev_month.strftime('%B')
 previous_month_year = last_day_prev_month.year
-tab_mess = 'menu'
-
 
 def mess(request):
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
     current_date = date.today()
-    global tab_mess
-    print("\n\n\n\n\\n\n\n\n")
-    print(tab_mess)
     holds_designations = HoldsDesignation.objects.filter(user=user)
     desig = holds_designations
     print(desig)
@@ -198,7 +193,6 @@ def mess(request):
                     'minutes': minutes,
                     'sprequest': sprequest,
                     'splrequest': splrequest,
-                    'tab_mess': tab_mess,
                     'count1': count1,
                     'count2': count2,
                     'count3': count3,
@@ -228,7 +222,6 @@ def mess(request):
                    'count': count,
                    'rebates': rebates,
                    'splrequest': splrequest,
-                   'tab_mess' : tab_mess,
                    'form': form,
                    'desig': desig
             }
@@ -335,8 +328,6 @@ def place_order(request):
     """
     user = request.user
     extra_info = ExtraInfo.objects.get(user=user)
-    global tab_mess
-    tab_mess = 'nonveg_apply'
     if extra_info.user_type == 'student':
         student = Student.objects.get(id=extra_info)
         student_mess = Messinfo.objects.get(student_id=student)
@@ -386,8 +377,7 @@ def mess_vacation_submit(request):
     user = request.user
     extra_info = ExtraInfo.objects.get(user=user)
     student = Student.objects.get(id=extra_info)
-    global tab_mess
-    tab_mess = 'vacation_apply'
+
     if extra_info.user_type == 'student':
         data = add_vacation_food_request(request, student)
         return JsonResponse(data)
@@ -406,8 +396,7 @@ def submit_mess_menu(request):
     user = request.user
     holds_designations = HoldsDesignation.objects.filter(user=user)
     designation = holds_designations
-    global tab_mess
-    tab_mess = 'menu_change'
+
     # globallyChange()
     context = {}
     # A user may hold multiple designations
@@ -429,8 +418,7 @@ def menu_change_response(request):
     """
     user = request.user
     holds_designations = HoldsDesignation.objects.filter(user=user)
-    global tab_mess
-    tab_mess = 'menu_request'
+
     designation = holds_designations
     data = handle_menu_change_response(request)
     return JsonResponse(data)
@@ -451,8 +439,7 @@ def response_vacation_food(request, ap_id):
     # extra_info = ExtraInfo.objects.get(user=user)
     holds_designations = HoldsDesignation.objects.filter(user=user)
     designation = holds_designations
-    global tab_mess
-    tab_mess = 'vacation_request'
+
     for d in designation:
         if d.designation.name == 'mess_manager':
             data = handle_vacation_food_request(request, ap_id)
@@ -583,8 +570,7 @@ def rebate_response(request):
     }
     user = request.user
     designation = HoldsDesignation.objects.filter(user=user)
-    global tab_mess
-    tab_mess = 'rebate_request'
+
     for d in designation:
         if d.designation.name == 'mess_manager':
             data = handle_rebate_response(request)
@@ -620,8 +606,7 @@ def special_request_response(request):
        This function is to respond to special request for food submitted by students
        data: message regarding the request
     """
-    global tab_mess
-    tab_mess = 'sp_request'
+
     data = handle_special_request(request)
     return JsonResponse(data)
 
@@ -715,8 +700,7 @@ def menu_change_request(request):
 
 def submit_mess_committee(request):
     roll_number = request.POST['rollnumber']
-    global tab_mess
-    tab_mess = 'mess_committee'
+
     data = add_mess_committee(request, roll_number)
     return JsonResponse(data)
 
@@ -725,8 +709,7 @@ def remove_mess_committee(request):
     member_id = request.POST['member_id']
     data_m = member_id.split("-")
     roll_number = data_m[1]
-    global tab_mess
-    tab_mess = 'mess_committee'
+
     if data_m[0] == 'mess_committee_mess1':
         designation = Designation.objects.get(name='mess_committee_mess1')
     elif data_m[0] == 'mess_convener_mess1':
@@ -765,8 +748,7 @@ def accept_vacation_leaves(request):
                                        &Q(end_date__lte=end_date_leave)
                                        &Q(leave_type="vacation")
                                        &Q(status='1'))
-    global tab_mess
-    tab_mess = 'vacation_request'
+
     if leave_data:
         for item in leave_data:
             item.status = '2'
@@ -783,8 +765,7 @@ def select_mess_convener(request):
     member_id = request.POST['member_id_add']
     data_m = member_id.split("-")
     roll_number = data_m[1]
-    global tab_mess
-    tab_mess = 'mess_committee'
+
     if data_m[0] == 'mess_committee_mess1':
         designation = Designation.objects.get(name='mess_committee_mess1')
         new_designation = Designation.objects.get(name='mess_convener_mess1')
