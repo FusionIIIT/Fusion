@@ -303,6 +303,10 @@ class SendInvite(forms.Form):
     dep_phd = forms.MultipleChoiceField(choices = Constants.PHD_DEP, required=False, label="department",
                                     widget=forms.CheckboxSelectMultiple)
     cpi = forms.DecimalField(label="cpi", required=False)
+    no_of_days = forms.CharField(required=True, widget=forms.NumberInput(attrs={ 'min':0,
+                                                            'max':30,
+                                                            'max_length': 10,
+                                                            'class': 'form-control'}))
 
 
 
@@ -367,16 +371,19 @@ class SearchPlacementRecord(forms.Form):
             cname - name of company
     """
     stuname = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
-                                                              'class': 'field'}),
+                                                              'class': 'field',
+                                                              'id': 'add_placement_stuname'}),
                               label="stuname", required=False)
-    year = forms.IntegerField(label="year", required=False)
-    ctc = forms.DecimalField(label="ctc", required=False)
+    year = forms.IntegerField(label="year", required=False, widget=forms.TextInput(attrs={'id': 'add_placement_year'}))
+    ctc = forms.CharField(label="ctc", required=False, widget=forms.TextInput(attrs={'id': 'add_placement_ctc'}))
     roll = forms.CharField(widget=forms.NumberInput(attrs={ 'min':0,
                                                             'max_length': 10,
-                                                            'class': 'form-control'}),
+                                                            'class': 'form-control',
+                                                            'id': 'add_placement_roll'}),
                             label="roll", required=False)
     cname = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
-                                                              'class': 'field'}),
+                                                              'class': 'field',
+                                                              'id': 'add_placement_cname'}),
                             label="cname", required=False)
 
 
@@ -391,16 +398,19 @@ class SearchPbiRecord(forms.Form):
             cname - name of company
     """
     stuname = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
-                                                            'class': 'field'}),
+                                                            'class': 'field',
+                                                            'id': 'add_pbi_stuname'}),
                               label="stuname", required=False)
-    year = forms.IntegerField(label="year", required=False)
-    ctc = forms.DecimalField(label="ctc", required=False)
+    year = forms.IntegerField(label="year", required=False, widget=forms.TextInput(attrs={'id': 'add_pbi_year'}))
+    ctc = forms.DecimalField(label="ctc", required=False, widget=forms.TextInput(attrs={'id': 'add_pbi_ctc'}))
     roll = forms.CharField(widget=forms.NumberInput(attrs={ 'min':0,
                                                             'max_length': 10,
-                                                            'class': 'form-control'}),
+                                                            'class': 'form-control',
+                                                            'id': 'add_pbi_roll'}),
                             label="roll", required=False)
     cname = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
-                                                            'class': 'field'}),
+                                                            'class': 'field',
+                                                            'id': 'add_pbi_cname'}),
                             label="cname", required=False)
 
 
@@ -416,19 +426,23 @@ class SearchHigherRecord(forms.Form):
             uname - name of the university
     """
     roll = forms.CharField(widget=forms.TextInput(attrs={'max_length': 10,
-                                                          'class': 'form-control'}),
+                                                          'class': 'form-control',
+                                                          'id': 'add_higher_roll'}),
                            label="roll", required=False)
     stuname = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
-                                                            'class': 'field'}),
+                                                            'class': 'field',
+                                                            'id': 'add_higher_stuname'}),
                               label="stuname", required=False,
                               help_text="Only for searching records")
     test_type = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
-                                                            'class': 'field'}),
+                                                            'class': 'field',
+                                                            'id': 'add_higher_test_type'}),
                                 label="test_type", required=False)
-    test_score = forms.IntegerField(label="test_score", required=False)
-    year = forms.IntegerField(label="year", required=False)
+    test_score = forms.IntegerField(label="test_score", required=False, widget=forms.TextInput(attrs={'id': 'add_higher_test_score'}))
+    year = forms.IntegerField(label="year", required=False, widget=forms.TextInput(attrs={'id': 'add_higher_year'}))
     uname = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
-                                                            'class': 'field'}),
+                                                            'class': 'field',
+                                                            'id': 'add_higher_uname'}),
                             label="uname", required=False)
 
 

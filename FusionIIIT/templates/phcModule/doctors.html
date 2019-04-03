@@ -12,22 +12,22 @@
             Remove Doctor
         </a>
     </div>
-    {% comment %}the add doctor tab starts here {% endcomment %}
+    {% comment %}the view doctor tab starts here {% endcomment %}
     <div class="ui active tab" data-tab="viewdoctor">
         <div class="ui vertical segment" >
             <table class="ui very basic collapsing celled small fluid table"
                   style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;" >
                 <thead>
                 <tr>
-                    <th class="two wide">
+                    <th >
                         Doctor Name
                     </th>
 
-                    <th class="two wide" >
+                    <th >
                         Specialization
                     </th>
 
-                    <th class="wide">
+                    <th >
                           Phone
                     </th>
                   </tr>
@@ -82,14 +82,14 @@
                 <div class="field">
                     <label>Phone Number</label>
                     <div class="ui fluid large input">
-                        <input placeholder="Phone" id="phone" name="phone" type="text">
+                        <input placeholder="Phone" id="phone" name="phone" type="number">
                     </div>
                 </div>
                 <div class="field">
                 <label><br></label>
 
                 <div >
-                  <input type="button" id="add_doctor" name="add_doctor" value="Submit"class="ui large right floated primary button" />
+                  <input type="button" id="add_doctor" name="add_doctor" onClick="window.location.reload();" value="Submit"class="ui large right floated primary button" />
                 </div>
 
                </div>
@@ -150,7 +150,7 @@
                 <label><br></label>
 
                 <div >
-                  <input type="button" id="remove_doctor" name="remove_doctor" value="Submit"class="ui large right floated primary button" />
+                  <input type="button" id="remove_doctor" name="remove_doctor" onClick="window.location.reload();" value="Submit"class="ui large right floated primary button" />
                 </div>
 
                </div>

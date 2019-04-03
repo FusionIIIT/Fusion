@@ -20,10 +20,10 @@
                       <thead>
 
                         <tr>
-                          <th>Schedule</th>
+                          <td style="font-weight:bold;color:black;"> Schedule </td>
                           {% for d in doctors %}
                           {{count.doctor_count}}
-                          <th>{{d.doctor_name}}</th>
+                          <td style="font-weight:bold;color:black;" > {{d.doctor_name}} </td>
                           {% endfor %}
                         <tr>
 
@@ -100,7 +100,7 @@
 
                 <div class="field">
                     <label> </label>  <br><label></label>
-                      <input type="button" id="edit" name="edit" value="Submit"class="ui large right floated primary button" />
+                      <input type="button" id="edit" name="edit" onClick="window.location.reload();" value="Submit"class="ui large right floated primary button" />
 
                 </div>
                 </div>

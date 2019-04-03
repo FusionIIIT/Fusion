@@ -14,8 +14,6 @@
 			<img src="{{ user.extrainfo.profile_picture.url }}">
 		{% elif user.extrainfo.user_type == "student" or user.extrainfo.user_type == "staff" %}
 			<img src="{% static 'globals/img/zlatan.jpg' %}">
-		{% elif request.user.extrainfo.profile_picture %}
-			<img src="{{ request.user.extrainfo.profile_picture.url }}">
 		{% else %}
 			<img src="{% static 'globals/img/zlatan.jpg' %}">
 		{% endif %}
