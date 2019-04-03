@@ -71,6 +71,7 @@ def mess(request):
         splrequest = Special_request.objects.filter(student_id=student).order_by('-app_date')
         mess_optn = Messinfo.objects.get(student_id=student)
         # newmenu = Menu_change_request.objects.all()
+        # meeting = Mess_meeting.objects.all()
         # minutes = Mess_minutes.objects.all()
         # feed = Feedback.objects.all()
         # sprequest = Special_request.objects.filter(status='1')

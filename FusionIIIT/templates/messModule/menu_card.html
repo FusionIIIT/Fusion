@@ -27,7 +27,7 @@
     {% if info.user_type == 'student' %}
         {% if d.designation.name == 'student' %}
 
-            <a class=" {% if tab_mess == 'menu' %}active {% endif %} item"  data-tab="fourth">
+            <a class="active item"  data-tab="fourth">
             Menu | Bill | Payment Details
             </a>
 
@@ -36,7 +36,7 @@
             </a>
 
             {% if messinfo.mess_option == 'mess1' %}
-                <a class=" {% if tab_mess == 'nonveg_apply' %}active {% endif %} item" data-tab="sixth">
+                <a class="item" data-tab="sixth">
                     Apply For Non-veg | Check History
                 </a>
             {% endif %}
@@ -45,7 +45,7 @@
                 Apply For Leave
             </a>
 
-            <a class=" {% if tab_mess == 'vacation_apply' %}active {% endif %}item" data-tab="third">
+            <a class="item" data-tab="third">
                 Apply For Vacation Food
             </a>
 
@@ -56,7 +56,7 @@
 
         {% endif %}
         {% if d.designation.name == 'mess_committee_mess1' or d.designation.name == 'mess_committee_mess2' %}
-            <a class="{% if tab_mess == 'menu_change' %}active {% endif %}item" data-tab="eighth">
+            <a class="item" data-tab="eighth">
                 Change Menu
             </a>
             <a class="item" data-tab="fifteenth">
@@ -81,11 +81,11 @@
                 View Feedback
             </a>
 
-            <a class="{% if tab_mess == 'menu_change' %} active item {% else %} item {% endif %}" data-tab="eighth">
+            <a class="item" data-tab="eighth">
                 Change Menu
             </a>
 
-            <a class="{% if tab_mess == 'menu_request' %}active {% endif %}item" data-tab="nineteenth">
+            <a class="item" data-tab="nineteenth">
                 Menu Requests
             </a>
 
@@ -93,7 +93,7 @@
                 Meeting Invitation
             </a>
 
-            <a class="{% if tab_mess == 'sp_request' %}active {% endif %}item" data-tab="eleventh">
+            <a class="item" data-tab="eleventh">
                 View Special Food Request
             </a>
 
@@ -108,11 +108,11 @@
 
 
     {% if info.user_type == 'staff' and d.designation.name == 'mess_manager' %}
-        <a class="{% if tab_mess == 'rebate_request' %}active {% endif %}item" data-tab="seventh">
+        <a class="item" data-tab="seventh">
             Leave Requests
         </a>
 
-        <a class="{% if tab_mess == 'vacation_request' %}active {% endif %}item" data-tab="twenty">
+        <a class="item" data-tab="twenty">
             Vacation Food Requests
         </a>
 
@@ -132,7 +132,7 @@
             Monthly Bill
         </a>
 
-        <a class="{% if tab_mess == 'mess_committee' %}active {% endif %}item" data-tab="twentyone">
+        <a class="item" data-tab="twentyone">
             Mess Committee
         </a>
     {% endif %}
