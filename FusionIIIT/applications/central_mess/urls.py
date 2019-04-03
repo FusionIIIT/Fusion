@@ -23,11 +23,16 @@ urlpatterns = [
     url(r'^invitation', views.invitation, name='invitation'),
     url(r'^minutes', views.minutes, name='minutes'),
     url(r'^placerequest', views.place_request, name='placerequest'),
+    url(r'^addmesscommittee', views.submit_mess_committee, name='addmesscommittee'),
+    url(r'^removemesscommittee', views.remove_mess_committee, name='removemesscommittee'),
     url(r'^rebateresponse', views.rebate_response, name='rebateresponse'),
     url(r'^specialrequestresponse', views.special_request_response, name='specialrequestresponse'),
-    url(r'^updatcost', views.update_cost, name='updatcost'),
+    url(r'^updatecost', views.update_cost, name='updatecost'),
+    url(r'^getleave', views.get_leave_data, name='getleave'),
     url(r'^generatemessbill', views.generate_mess_bill, name='generatemessbill'),
-
+    url(r'^acceptleave', views.accept_vacation_leaves, name='acceptleave'),
+    url(r'^selectmessconvener', views.select_mess_convener, name='selectmessconvener'),
+    url(r'^billdownload', views.download_bill_mess, name='billdownload'),
 
 
 ]

@@ -1,4 +1,5 @@
-<<<<<<< HEAD
+
+<!--HTML file for user to view the history of the Resolved complaints that were took care by him-->
 {% load static %}
 {% block complainthistory %}
 
@@ -8,9 +9,7 @@
         <a class="active item" data-tab="complainthistory">
             Resolved Complaints
         </a>
-        <!-- <a class="item" data-tab="overduecomplaint">
-            OverDue Complaint
-        </a> -->
+        
 
     </div>
 
@@ -18,10 +17,10 @@
 
 
     <div class="ui active  tab" data-tab="complainthistory">
-        <div class="ui vertical segment">
+        <div class="ui vertical segment" style="height: 700px;overflow-y: auto";>
             
             
-        <br><br>
+        
        
             {% csrf_token %}
             <table class="ui very basic collapsing celled sortable table"
@@ -33,38 +32,38 @@
                 <thead>
                 <tr>
                   
-                    <th>
-                        Student
-                    </th>
+                    <td>
+                        <b>Student</b>
+                    </td>
 
-                    <th class="one wide column">
-                        Date&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;
-                    </th>
+                    <td class="one wide column">
+                       <b> Date&ensp;&ensp;&ensp;&ensp;&ensp;&ensp; </b>
+                    </td>
 
-                    <th>
-                         Complaint <br>
-                        Type
-                    </th>
+                    <td>
+                         <b>Complaint <br>
+                        Type</b>
+                    </td>
 
-                    <th>
-                        Location
-                    </th>
+                    <td>
+                        <b>Location</b>
+                    </td>
 
-                    <th>
+                   <!--  <th>
                         Specific <br> Location
-                    </th>
+                    </th> -->
 
-                    <th class="three wide column">
-                        Details
-                    </th>
+                    <td class="three wide column">
+                        <b>Details</b>
+                    </td>
 
                     
-                    <th class="four large column">
-                        Worker <br> Name
-                    </th>
-                    <th class="four large column">
-                        Feedback
-                    </th>
+                    <td class="four large column">
+                        <b>Worker <br> Name</b>
+                    </td>
+                    <td class="four large column">
+                        <b>Feedback</b>
+                    </td>
                 </tr>
                 </thead>
 
@@ -78,7 +77,7 @@
                         <h4 class="ui image header">
                             <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
                             <div class="content">
-                                <a href="./{{ a.id }}/"> {{ a.complainer.user }}</a>
+                                {{ a.complainer.user }}
                                 <div class="sub header">
 
                                 </div>
@@ -95,16 +94,15 @@
                     </td>
 
                     <td>
-                        {{ a.location }}
-                    </td>
-
-                    <td>
+                        {{ a.location }} <br>
+                   
                         {{ a.specific_location }}
                     </td>
-
+                    
                     <td>
                         <a href="./detail2/{{ a.id }}/"> <button class="ui inverted basic button" data-tooltip="Click here to view details" ><i class="large green info icon"></i></button></a>
                     </td>
+                   
 
                   
                     <td>
@@ -117,9 +115,16 @@
                             
                         {% endif %}
                     </td>
+                    {% if a.feedback != "" %}
                     <td>
-                        <a href="./feedback/{{ a.id }}/"> <button class="ui inverted basic button" data-tooltip="Click here to view feedback" ><i class="large green comments icon"></i></button></a>
+                        <a href="./feedback/{{ a.id }}/"> <button class="ui inverted basic button" data-tooltip="View feedback" ><i class="large green comments icon"></i></button></a>
                     </td>
+                     {% else %}
+                    <td>
+                        <b>---</b>
+                    </td>
+                    {% endif %}
+
 
                 </tr>
                 
@@ -152,159 +157,4 @@
 
     
 
-=======
-{% load static %}
-{% block complainthistory %}
-
-    {% comment %}The tab menu starts here!{% endcomment %}
-    <div class="ui pointing secondary menu">
-
-        <a class="active item" data-tab="complainthistory">
-            Resolved Complaints
-        </a>
-        <!-- <a class="item" data-tab="overduecomplaint">
-            OverDue Complaint
-        </a> -->
-
-    </div>
-
-
-
-
-    <div class="ui active  tab" data-tab="complainthistory">
-        <div class="ui vertical segment">
-            
-            
-        <br><br>
-       
-            {% csrf_token %}
-            <table class="ui very basic collapsing celled sortable table"
-                   style="padding-left: 2.5%;
-                                                          padding-right: 2.5%;
-                                                          padding-top: 1%;
-                                                          padding-bottom: 1.5%;
-                                                          margin: auto;">
-                <thead>
-                <tr>
-                  
-                    <th>
-                        Student
-                    </th>
-
-                    <th class="one wide column">
-                        Date&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;
-                    </th>
-
-                    <th>
-                         Complaint <br>
-                        Type
-                    </th>
-
-                    <th>
-                        Location
-                    </th>
-
-                    <th>
-                        Specific <br> Location
-                    </th>
-
-                    <th class="three wide column">
-                        Details
-                    </th>
-
-                    
-                    <th class="four large column">
-                        Worker <br> Name
-                    </th>
-                    <th class="four large column">
-                        Feedback
-                    </th>
-                </tr>
-                </thead>
-
-                {% for a in history %}
-                    {% if a.status == 2 %}
-                <tbody>
-                
-                  <tr>
-                
-                    <td>
-                        <h4 class="ui image header">
-                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
-                            <div class="content">
-                                <a href="./{{ a.id }}/"> {{ a.complainer.user }}</a>
-                                <div class="sub header">
-
-                                </div>
-                            </div>
-                        </h4>
-                    </td>
-
-                    <td>
-                        {{ a.complaint_date }}
-                    </td>
-
-                    <td>
-                        {{ a.complaint_type }}
-                    </td>
-
-                    <td>
-                        {{ a.location }}
-                    </td>
-
-                    <td>
-                        {{ a.specific_location }}
-                    </td>
-
-                    <td>
-                        <a href="./detail2/{{ a.id }}/"> <button class="ui inverted basic button" data-tooltip="Click here to view details" ><i class="large green info icon"></i></button></a>
-                    </td>
-
-                  
-                    <td>
-                        {% if a.worker_id == NULL %}
-                            NOT ASSIGN
-                            <td></td>
-                        {% else %}
-                            <b>{{ a.worker_id.name }}</b>
-                          
-                            
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="./feedback/{{ a.id }}/"> <button class="ui inverted basic button" data-tooltip="Click here to view feedback" ><i class="large green comments icon"></i></button></a>
-                    </td>
-
-                </tr>
-                
-
-                </tbody>
-                    {%endif%}
-                {% endfor %}
-            </table>
-
-                <input type="text" name="total_complaint" style="visibility: hidden; width: 1em;  height: 1em;" >
-            <br>
-            <div class="ui divider"></div>
-
-
-    
-    <div class="extra content">
-                <div class="" style="text-align: center;">
-                    <i class="large green checkmark icon"></i> : These Complaints have been  RESOLVED! &ensp;&ensp;&ensp;&ensp;&ensp;
-
-                </div>
-            </div>
-        </div>
-    </div>
-  
-
-
-
-
-
-
-    
-
->>>>>>> upstream/master
 {% endblock %}

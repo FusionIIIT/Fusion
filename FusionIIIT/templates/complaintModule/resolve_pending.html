@@ -69,8 +69,12 @@
         {% endcomment %}
         <div class="eight wide column">
             {% comment %}The ... start here!{% endcomment %}
+
             <div class="ui active tab segment" data-tab="first">
                 <div class="ui pointing secondary menu">
+                    <a>
+                        <a href="javascript:history.go(-1)"><i class="extra large green chevron circle left icon"></i></a>
+                    </a>
         <a class="active item" data-tab="resolvependingcomplaint">
             Change Status 
         </a>
@@ -140,7 +144,7 @@
             </div>
             </div>
 
-            <button class="ui large primary button right floated" onclick="myfunction()">
+            <button class="ui large primary button right floated" onclick="resolvependingsubmit()">
                     Submit
                 </button>
             </br></br>
@@ -178,6 +182,14 @@
 
     {% comment %}The grid ends here!{% endcomment %}
 
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+    <script type="text/javascript" src="{% static 'complaint_system/js/rating.js' %}"></script>
+    
 {% endblock %}
 
 

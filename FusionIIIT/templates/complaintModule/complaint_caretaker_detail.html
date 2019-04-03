@@ -1,3 +1,4 @@
+<!--THis page if for the caretaker to view the specific details a particular complaint-->
 {% extends 'globals/base.html' %}
 {% load static %}
 
@@ -72,6 +73,9 @@
             <div class="ui active tab segment" data-tab="first">
 
                 <div class="ui pointing secondary menu ">
+                    <a>
+                        <a href="javascript:history.go(-1)"><i class="extra large green chevron circle left icon"></i></a>
+                    </a>
                     <a class="active item" data-tab="feedback">
                         Detail
                     </a>
@@ -100,7 +104,21 @@
                                 <h3><label><b>Complaint Details :</b></label></h3>
                                     <div><i>Complaint ID :</i> {{ comp_id }}<br> 
                                         <i>Complaint Details : </i>  <font color="red"> {{detail2.details }}</font> </div>
+                            </div><br>
+                            {% if num == 1 %}
+                            <div class="eight wide field">
+                                <h3><label><b>View Image :</b></label>
+                                    <a href="/media/{{detail2.upload_complaint}}" class="header" target="_"><i class="extra large image outline icon"></i></a>
+                                </h3>
                             </div>
+                            {% else%}
+                            <div class="eight wide field">
+                                <h3><label><b>View Image : No Image available</b></label>
+                                
+                                </h3>
+                            </div>
+                            {% endif %}
+
 
                         </div>
 

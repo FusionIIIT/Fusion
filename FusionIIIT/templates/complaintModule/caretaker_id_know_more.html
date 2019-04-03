@@ -1,3 +1,5 @@
+<!--HTML file for supervisor to view all the complaints under a particular caretaker for that particular area-->
+
 {% extends 'globals/base.html' %}
 {% load static %}
 
@@ -67,6 +69,9 @@
             <div class="ui active tab segment" data-tab="first">
 
                 <div class="ui pointing secondary menu ">
+                    <a>
+                        <a href="javascript:history.go(-1)"><i class="extra large green chevron circle left icon"></i></a>
+                    </a>
                     <a class="active item" data-tab="thisworker">
                         This Caretaker
                     </a>
@@ -80,17 +85,17 @@
                                         <i class="large undo icon" ></i>
                                     </button>
                             </div> -->
-                            <div class="extra content">
-                <div class="" style="text-align: center;">
+                           <!--  <div class="extra content"> -->
+                <!-- <div class="" style="text-align: center;">
                     <i class="large orange warning icon"></i> : Pending &ensp;&ensp;&ensp;&ensp;&ensp;
                     <i class="large orange add user icon"></i> : Worker Assigned &ensp;&ensp;&ensp;&ensp;&ensp;
                     <i class="large green checkmark icon"></i> : Completed &ensp;&ensp;&ensp;&ensp;&ensp;
                     <i class="large red x icon"></i> : Declined &ensp;&ensp;&ensp;&ensp;&ensp;
 
-                </div>
-            </div>
+                </div> -->
+            <!-- </div>
             <br>
-            <br>
+            <br> -->
                     <div class="ui vertical segment">
                         <p><b>{{this_caretaker.staff_id.user.first_name}} {{this_caretaker.staff_id.user.last_name}}</b> works for <b><i>{{this_caretaker.area}}</i></b> under the Supervisor <i><b>{{request.user.first_name}} {{request.user.last_name}}</b></i></p><br>
                       
@@ -125,13 +130,10 @@
                             <div><b>Finish Date:</b> {{i.complaint_finish}}</div>
                             <div><b>Status:</b> 
                                 {% if i.status == 0 %}
-                             <i class="large orange warning icon"></i>
-                                {% elif a.status == 1 %}
-                             <i class="large orange add user icon"></i>
-                                {% elif a.status == 2 %}
-                             <i class="large green checkmark icon"></i>
-                                {% elif a.status == 3 %}
-                             <i class="large red x icon"></i>
+                                    <i class="large orange warning icon"></i>
+                                {% elif i.status == 1 %}
+                                    <i class="large orange add user icon"></i>
+                                
                                 {%endif%}
                             </div>
                             </div>

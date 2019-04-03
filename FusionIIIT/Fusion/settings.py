@@ -136,6 +136,7 @@ INSTALLED_APPS = [
     'applications.feeds.apps.FeedsConfig',
     'pagedown',
     'markdown_deux',
+
 ]
 
 MIDDLEWARE = [
