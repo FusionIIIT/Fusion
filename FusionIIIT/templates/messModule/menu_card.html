@@ -2,7 +2,7 @@
 {% for d in desig %}
     {% if info.user_type == 'faculty' and d.designation.name == 'mess_warden' %}
 
-        <a class="item active" data-tab="thirteenth">
+        <a class="active item" data-tab="thirteenth">
             View Menu
         </a>
 
@@ -26,8 +26,9 @@
 
     {% if info.user_type == 'student' %}
         {% if d.designation.name == 'student' %}
-            <a class="active item" data-tab="fourth">
-                Menu | Bill | Payment Details
+
+            <a class="active item"  data-tab="fourth">
+            Menu | Bill | Payment Details
             </a>
 
             <a class=" item" data-tab="first">

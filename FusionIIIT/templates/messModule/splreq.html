@@ -62,7 +62,7 @@
 <script>
 function acceptSplReq(id){
 
-        document.getElementById('accpt-'+id).style.visibility='hidden';
+      document.getElementById('accpt-'+id).style.display="none";
 
          $.ajax({
                 type: 'POST',
@@ -70,7 +70,7 @@ function acceptSplReq(id){
                 dataType: 'json',
                 data: {
                     'csrfmiddlewaretoken' : '{{ csrf_token }}',
-                    'id':$("button.btn-req").attr("data-var"),
+                    'id':id,
                     'status':'2',
 
                 },
@@ -85,8 +85,8 @@ function acceptSplReq(id){
          }
 
          function rejectSplReq(id){
+document.getElementById('accpt-'+id).style.display="none";
 
-                 document.getElementById('accpt-'+id).style.visibility='hidden';
 
          $.ajax({
                 type: 'POST',
@@ -94,7 +94,7 @@ function acceptSplReq(id){
                 dataType: 'json',
                 data: {
                     'csrfmiddlewaretoken' : '{{ csrf_token }}',
-                    'id':$("button.btn-rj").attr("data-va"),
+                    'id':id,
                     'status':'0',
 
                 },

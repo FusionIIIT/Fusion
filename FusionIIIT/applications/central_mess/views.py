@@ -55,21 +55,6 @@ def mess(request):
     count7 = 0
     count8 = 0
 
-    # remove ths part after database has been updated
-    change_desig = Designation.objects.filter(name="mess_committee").count()
-    if change_desig:
-        change_design = Designation.objects.get(name="mess_committee")
-        change_design.name = "mess_committee_mess1"
-        change_design.save()
-        change_desig2 = Designation.objects.get(name="mess_convener")
-        change_desig2.name = "mess_convener_mess1"
-        change_desig2.save()
-        change_desig_obj1 = Designation(name="mess_committee_mess2", full_name="Mess Committee", type="administrative")
-        change_desig_obj2 = Designation(name="mess_convener_mess2", full_name="Mess Convener", type="administrative")
-        change_desig_obj1.save()
-        change_desig_obj2.save()
-    #end of remove part
-
     if extrainfo.user_type == 'student':
         student = Student.objects.get(id=extrainfo)
         vaca_obj = Vacation_food.objects.filter(student_id=student)
@@ -78,16 +63,16 @@ def mess(request):
         monthly_bill = Monthly_bill.objects.filter(student_id=student)
         payments = Payments.objects.filter(student_id=student)
         rebates = Rebate.objects.filter(student_id=student)
-        meeting = Mess_meeting.objects.all()
-        minutes = Mess_minutes.objects.all()
-        sprequest = Special_request.objects.filter(status='1')
         splrequest = Special_request.objects.filter(student_id=student).order_by('-app_date')
-        feed = Feedback.objects.all()
-        messinfo = Messinfo.objects.get(student_id=student)
-        newmenu = Menu_change_request.objects.all()
+        mess_optn = Messinfo.objects.get(student_id=student)
+        # newmenu = Menu_change_request.objects.all()
+        # meeting = Mess_meeting.objects.all()
+        # minutes = Mess_minutes.objects.all()
+        # feed = Feedback.objects.all()
+        # sprequest = Special_request.objects.filter(status='1')
         count = 0
         #variable y stores the menu items
-        mess_optn = Messinfo.objects.get(student_id=student)
+
         y = Menu.objects.filter(mess_option=mess_optn.mess_option)
         x = Nonveg_menu.objects.all()
 
@@ -98,37 +83,9 @@ def mess(request):
             item.duration = abs((d2 - d1).days)+1
             item.save()
 
-        for items in rebates:
-            if items.leave_type == 'casual' and (items.status == '1' or items.status == '2'):
-                count += item.duration
-
-        for f in feed:
-            mess_opt = Messinfo.objects.get(student_id=f.student_id)
-            if f.feedback_type == 'Maintenance' and mess_opt.mess_option == 'mess1':
-                count1 += 1
-
-            elif f.feedback_type == 'Food' and mess_opt.mess_option == 'mess1':
-                count2 += 1
-
-            elif f.feedback_type == 'Cleanliness' and mess_opt.mess_option == 'mess1':
-                count3 += 1
-
-            elif f.feedback_type == 'Others' and mess_opt.mess_option == 'mess1':
-                count4 += 1
-
-        for f in feed:
-            mess_opt = Messinfo.objects.get(student_id=f.student_id)
-            if f.feedback_type == 'Maintenance' and mess_opt.mess_option == 'mess2':
-                count5 += 1
-
-            elif f.feedback_type == 'Food' and mess_opt.mess_option == 'mess2':
-                count6 += 1
-
-            elif f.feedback_type == 'Cleanliness' and mess_opt.mess_option == 'mess2':
-                count7 += 1
-
-            elif f.feedback_type == 'Others' and mess_opt.mess_option == 'mess2':
-                count8 += 1
+        # for items in rebates:
+        #     if items.leave_type == 'casual' and (items.status == '1' or items.status == '2'):
+        #         count += item.duration
 
         bill = Monthly_bill.objects.filter(Q(student_id=student) & Q(month=month_g_l) & Q(year=year_g))
         print(bill)
@@ -180,36 +137,91 @@ def mess(request):
                                        year=year_g)
             bill_object.save()
 
+        for d in desig:
+            if d.designation.name == 'mess_committee_mess1' or d.designation.name == 'mess_convener_mess1':
+                newmenu = Menu_change_request.objects.all()
+                meeting = Mess_meeting.objects.all()
+                minutes = Mess_minutes.objects.all()
+                feed = Feedback.objects.all()
+                sprequest = Special_request.objects.filter(status='1')
+                for f in feed:
+                    mess_opt = Messinfo.objects.get(student_id=f.student_id)
+                    if f.feedback_type == 'Maintenance' and mess_opt.mess_option == 'mess1':
+                        count1 += 1
+
+                    elif f.feedback_type == 'Food' and mess_opt.mess_option == 'mess1':
+                        count2 += 1
+
+                    elif f.feedback_type == 'Cleanliness' and mess_opt.mess_option == 'mess1':
+                        count3 += 1
+
+                    elif f.feedback_type == 'Others' and mess_opt.mess_option == 'mess1':
+                        count4 += 1
+
+                for f in feed:
+                    mess_opt = Messinfo.objects.get(student_id=f.student_id)
+                    if f.feedback_type == 'Maintenance' and mess_opt.mess_option == 'mess2':
+                        count5 += 1
+
+                    elif f.feedback_type == 'Food' and mess_opt.mess_option == 'mess2':
+                        count6 += 1
+
+                    elif f.feedback_type == 'Cleanliness' and mess_opt.mess_option == 'mess2':
+                        count7 += 1
+
+                    elif f.feedback_type == 'Others' and mess_opt.mess_option == 'mess2':
+                        count8 += 1
+
+                context = {
+                    'menu': y,
+                    'messinfo': mess_optn,
+                    'newmenu': newmenu,
+                    'monthly_bill': monthly_bill,
+                    'payments': payments,
+                    'nonveg': x,
+                    'vaca': vaca_obj,
+                    'info': extrainfo,
+                    'feedback': feedback_obj,
+                    'feed': feed,
+                    'student': student,
+                    'data': data,
+                    'mess_reg': mess_reg,
+                    'current_date': current_date,
+                    'count': count,
+                    'rebates': rebates,
+                    'meeting': meeting,
+                    'minutes': minutes,
+                    'sprequest': sprequest,
+                    'splrequest': splrequest,
+                    'count1': count1,
+                    'count2': count2,
+                    'count3': count3,
+                    'count4': count4,
+                    'count5': count5,
+                    'count6': count6,
+                    'count7': count7,
+                    'count8': count8,
+                    'form': form,
+                    'desig': desig
+                }
+                return render(request, "messModule/mess.html", context)
 
         context = {
                    'menu': y,
-                   'messinfo': messinfo,
-                   'newmenu': newmenu,
+                   'messinfo': mess_optn,
                    'monthly_bill': monthly_bill,
                    'payments': payments,
                    'nonveg': x,
                    'vaca': vaca_obj,
                    'info': extrainfo,
                    'feedback': feedback_obj,
-                   'feed': feed,
                    'student': student,
                    'data': data,
                    'mess_reg': mess_reg,
                    'current_date': current_date,
                    'count': count,
                    'rebates': rebates,
-                   'meeting': meeting,
-                   'minutes': minutes,
-                   'sprequest': sprequest,
                    'splrequest': splrequest,
-                   'count1': count1,
-                   'count2': count2,
-                   'count3': count3,
-                   'count4': count4,
-                   'count5': count5,
-                   'count6': count6,
-                   'count7': count7,
-                   'count8': count8,
                    'form': form,
                    'desig': desig
             }
@@ -316,7 +328,6 @@ def place_order(request):
     """
     user = request.user
     extra_info = ExtraInfo.objects.get(user=user)
-
     if extra_info.user_type == 'student':
         student = Student.objects.get(id=extra_info)
         student_mess = Messinfo.objects.get(student_id=student)
@@ -366,6 +377,7 @@ def mess_vacation_submit(request):
     user = request.user
     extra_info = ExtraInfo.objects.get(user=user)
     student = Student.objects.get(id=extra_info)
+
     if extra_info.user_type == 'student':
         data = add_vacation_food_request(request, student)
         return JsonResponse(data)
@@ -384,6 +396,8 @@ def submit_mess_menu(request):
     user = request.user
     holds_designations = HoldsDesignation.objects.filter(user=user)
     designation = holds_designations
+
+    # globallyChange()
     context = {}
     # A user may hold multiple designations
 
@@ -404,6 +418,7 @@ def menu_change_response(request):
     """
     user = request.user
     holds_designations = HoldsDesignation.objects.filter(user=user)
+
     designation = holds_designations
     data = handle_menu_change_response(request)
     return JsonResponse(data)
@@ -555,6 +570,7 @@ def rebate_response(request):
     }
     user = request.user
     designation = HoldsDesignation.objects.filter(user=user)
+
     for d in designation:
         if d.designation.name == 'mess_manager':
             data = handle_rebate_response(request)
@@ -590,6 +606,7 @@ def special_request_response(request):
        This function is to respond to special request for food submitted by students
        data: message regarding the request
     """
+
     data = handle_special_request(request)
     return JsonResponse(data)
 
@@ -683,6 +700,7 @@ def menu_change_request(request):
 
 def submit_mess_committee(request):
     roll_number = request.POST['rollnumber']
+
     data = add_mess_committee(request, roll_number)
     return JsonResponse(data)
 
@@ -691,6 +709,7 @@ def remove_mess_committee(request):
     member_id = request.POST['member_id']
     data_m = member_id.split("-")
     roll_number = data_m[1]
+
     if data_m[0] == 'mess_committee_mess1':
         designation = Designation.objects.get(name='mess_committee_mess1')
     elif data_m[0] == 'mess_convener_mess1':
@@ -729,6 +748,7 @@ def accept_vacation_leaves(request):
                                        &Q(end_date__lte=end_date_leave)
                                        &Q(leave_type="vacation")
                                        &Q(status='1'))
+
     if leave_data:
         for item in leave_data:
             item.status = '2'
@@ -745,6 +765,7 @@ def select_mess_convener(request):
     member_id = request.POST['member_id_add']
     data_m = member_id.split("-")
     roll_number = data_m[1]
+
     if data_m[0] == 'mess_committee_mess1':
         designation = Designation.objects.get(name='mess_committee_mess1')
         new_designation = Designation.objects.get(name='mess_convener_mess1')
