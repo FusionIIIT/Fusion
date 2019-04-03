@@ -70,6 +70,9 @@
             <div class="ui active tab segment" data-tab="first">
 
                 <div class="ui pointing secondary menu ">
+                    <a>
+                        <a href="javascript:history.go(-1)"><i class="extra large green chevron circle left icon"></i></a>
+                    </a>
                     <a class="active item" data-tab="thisworker">
                         This Worker
                     </a>
@@ -95,7 +98,7 @@
                         <div><p>The Worker has some pending complaints.</p>
                             <p>Click on the complaint to make sure you reassign them before Removing the worker.</p></div>
                         <div class="ui list">
-                        {%for i in complaints_list%}
+                        {%for i in complaints_list_onhold%}
                             <div class="item">
                             <a class="ui tiny image">
                             <img src="{% static 'complaint_system/img/boy.jpg'%}">
