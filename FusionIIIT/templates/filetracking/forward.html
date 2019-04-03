@@ -1,4 +1,4 @@
-{% extends 'filetracking/filetracking.html' %}
+ {% extends 'filetracking/filetracking.html' %}
 {% load static %}
 
 {% block filetracking_tab %}
@@ -11,6 +11,8 @@
         <a class="item" data-tab="attachments">
             Attachments
         </a>
+
+
     </div>
 
     <div class="ui active tab" data-tab="notesheet">
@@ -94,7 +96,7 @@
 
                                 <br>
 
-                                <div class="field">
+                               <!--  <div class="field">
                                     <label>Forward To:
                                         <select required class="ui fluid search selection dropdown" name="receiver">
                                             <option required selected hidden>Select</option>
@@ -106,10 +108,10 @@
                                         </select>
                                     </label>
                                 </div>
-
+ -->
                                 <br>
 
-                                <div class="field">
+                                <!-- <div class="field">
                                     <label>Receiver Designation:
                                         <select required class="ui fluid search selection dropdown" name="receive">
                                             <option required selected hidden>Select</option>
@@ -120,9 +122,35 @@
 
                                         </select>
                                     </label>
-                                </div>
+                                </div> -->
 
+
+                        <div class="field">
+                            <label>Forward To:
+
+                                    <input type ="search" id="input_search" list = "input_list" name = "receiver">
+                                    <datalist  id="input_list">
+
+                                    </datalist>
+                               
+                            </label>
+                        </div>
+
+                            <div class="field">
+                            <label>Receiver Designation:
+                                <input type ="search" id="input_search1" list = "input_list1" name = "recieve">
+                                    <datalist  id="input_list1">
+
+                                    </datalist>
+
+
+                               
+                            </label>
+                        </div>
                                 <br>
+
+
+
 
                                 <!--<div class="field">
                                     <label>Forward To:
@@ -169,17 +197,16 @@
                                </div>
                         </div>-->
 
-                        <div class="field">
-                            <button type="submit" name="send" class="ui large right floated primary button">
-                                Send<i class="ui send icon right floated"></i>
-                            </button>
-                        </div>
+
 
                 <br>
 
 
             <br>
             <br>
+             <button type="submit" name="send" class="ui large right floated primary button" style = "float: right;">
+                                Send<i class="ui send icon right floated"></i>
+                            </button>
 
             </form>
 
@@ -232,8 +259,8 @@
                                             <div class="content">
                                                  <a class="paperclip icon">
                                                      {% if t.upload_file %}
-                                                     <a href="/media/{{t.upload_file}}" class="header" target="_">
-                                                         <u class="meta" style="color: #1B1C1D">{{t.upload_file}}</u>
+                                                     <a href="/media/{{file.upload_file}}" class="header" target="_">
+                                                         <u class="meta" style="color: #1B1C1D">{{file.upload_file}}</u>
                                                      </a>
                                                      {% else %}
                                                      <span class="meta">No Attachment</span>
@@ -261,13 +288,87 @@
         </div>
     </div>
 
+
+    <script type="text/javascript">
+        $('#input_search1').keyup(function(){
+
+            console.log('asdasd');
+            value = $('#input_search1').val();
+
+              $.ajax({
+                type: 'POST',
+                url: '/filetracking/ajax/',
+                data: {
+                    'value': value,
+                    'csrfmiddlewaretoken': '{{csrf_token}}'
+                },
+                dataType: 'json',
+                success: function(response){
+                    console.log('coming-----------------------');
+
+                    console.log(response.holds[0]);
+
+                    all_designations = JSON.parse(response.holds);
+                    console.log(all_designations[0].fields.name);
+                    app = []
+                    $('#input_list1').html('');
+                    for(var i=0;i<all_designations.length;i++){
+                       $('#input_list1').append('<option value="'+all_designations[i].fields.name+'">'+all_designations[i].fields.name+'</option>');
+                    }
+                },
+                error: function(rs, e){
+                    console.log('error-------');
+                },
+            });
+            console.log("dsfagdfdshadf");
+        });
+    </script>
+
+
+    <script type="text/javascript">
+        $('#input_search').keyup(function(){
+
+            console.log('asdasd');
+            value = $('#input_search').val();
+
+              $.ajax({
+                type: 'POST',
+                url: '/filetracking/ajax_dropdown/',
+                data: {
+                    'value': value,
+                    'csrfmiddlewaretoken': '{{csrf_token}}'
+                },
+                dataType: 'json',
+                success: function(response){
+                    console.log('coming-----------------------');
+
+
+
+                    all_users = JSON.parse(response.users);
+                    console.log(all_users[0].fields.username);
+                    app = []
+                    $('#input_list').html('');
+                    for(var i=0;i<all_users.length;i++){
+                       $('#input_list').append('<option value="'+all_users[i].fields.username+'">'+all_users[i].fields.username+'</option>');
+                    }
+                },
+                error: function(rs, e){
+                    console.log('error-------');
+                },
+            });
+            console.log("dsfagdfdshadf");
+        });
+    </script>
+
+
 {% endblock %}
 
 
-<script type="text/javascript">
+<!-- <script type="text/javascript">
     function ShowHideDiv() {
         var chkAddress = document.getElementById("chkAddress");
         var leaveAddress = document.getElementById("leaveAddress");
         leaveAddress.style.display = chkAddress.checked ? "block" : "none";
     }
 </script>
+ -->
