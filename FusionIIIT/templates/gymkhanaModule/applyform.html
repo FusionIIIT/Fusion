@@ -10,8 +10,44 @@
             New Club Form
         </a>
     </div>
-
+    <!-- <script src = "https://code.jquery.com/jquery-1.10.2.js"></script> -->
+    <!-- <script src = "https://code.jquery.com/ui/1.10.4/jquery-ui.js"></script> -->
     <script type="text/javascript">
+
+        $(document).ready(function(){
+            console.log("Ajax call for autocomplete");
+            $.ajax({
+                url: "/gymkhana/faculty_data/",
+                type: "post",
+                data: {},
+                success: function(response){
+                    // console.log(response);
+                    response = JSON.parse(response);
+                    // console.log(response);
+                    var items = [];
+                    var i ;
+                    for (i=0 ; i<response.length ; i++){
+                        items.push(response[i].fields.about_me);
+                    }
+                    console.log(items) ;
+                    $( "#coOrdinator" ).autocomplete({
+                        source: items
+                    })
+                }
+            });
+
+            $.ajax({
+                url: "/gymkhana/students_data/",
+                type: "post",
+                data: {},
+                success: function(response){
+                    // console.log(response);
+                    response = JSON.parse(response);
+                    console.log(response);
+                }
+            });
+        });
+
         function ValidateExtension() {
             var allowedFiles = [".doc", ".docx", ".pdf"];
             var fileUpload = document.getElementById("fileUpload");
@@ -37,29 +73,39 @@
                     <div class="two fields">
                         <div class="field">
                             <label>Name</label>
-                            <input name="user_name" value="{{ request.user.extrainfo }}" placeholder="Name" class="ui large input" required />
+                            <input type="text" name="user_name" readonly="" class="ui large input" value="{{ request.user.extrainfo }}" required>
                         </div>
 
                         <div class="field">
                             <label>Email</label>
-                            <input name="email" placeholder="Email" class="ui large input" type="email" value="{{ request.user.email }}" required />
+                            <input name="email" placeholder="Email" readonly="" class="ui large input" type="email" value="{{ request.user.email }}" required />
                         </div>
                     </div>
                     <div class="ui eight field">
                         <label>Club</label>
-                        <select class="ui search fluid dropdown" name="club" required />
+                        <div class="ui selection dropdown">
+                            <input type="hidden" name="club">
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Select</div>
+                            <div class="menu">
+                                {% for i in Club_name %}
+                                    <div class="item" data-value="{{i.club_name}}">{{i.club_name}}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <!-- <select class="ui search fluid dropdown" name="club" required />
                             <option value="">Select</option>
                             {% for i in Club_name %}
                                 {% if i.club_name not in Curr_club %}
                                 <option value="{{ i.club_name }}">{{ i.club_name }}</option>
                                 {% endif %}
                             {% endfor %}
-                        </select>
+                        </select> -->
                     </div>
 
                     <div class="field">
                         <label>Achievements</label>
-                        <textarea rows="2" name="pda" required /></textarea>
+                        <textarea rows="2" name="achievements" required /></textarea>
                     </div>
 
                     <div class="field">
@@ -88,18 +134,22 @@
                     <div class="three fields">
                         <div class="eight wide field">
                             <label>Club</label>
-                            <input placeholder="Club" class="ui large input" name="club_name" required>
+                            <input type="text" placeholder="Club" class="ui large input" name="club_name" required>
                         </div>
 
                         <div class="eight wide field">
                             <label>Category</label>
-                            <select class="ui search fluid dropdown" name="category" required>
-                                <option value="">Select</option>
-                                <option value="Technical">Technical</option>
-                                <option value="Cultural">Cultural</option>
-                                <option value="Sports">Sports</option>
-                                <option value="Others">Others</option>
-                            </select>
+                            <div class="ui selection dropdown">
+                                <input type="hidden" name="category">
+                                <i class="dropdown icon"></i>
+                                <div class="default text">Select</div>
+                                <div class="menu">
+                                        <div class="item" data-value="Technical">Technical</div>
+                                        <div class="item" data-value="Cultural">Cultural</div>
+                                        <div class="item" data-value="Sports">Sports</div>
+                                        <div class="item" data-value="others">Others</div>
+                                </div>
+                            </div>
                         </div>
 
                     </div>
@@ -107,10 +157,11 @@
                     <div class="two fields">
                         <div class="eight wide field">
                             <label>Co-ordinator</label>
-                            <select class="ui search fluid dropdown" id="co" name="co" required>
+                            <input type="text" id="coOrdinator" placeholder="Club" class="ui large input" name="coordinator" required>
+                            <!-- <select class="ui search fluid dropdown" id="co" name="co" required>
                                 <option value="">Select</option>
 
-                            </select>
+                            </select> -->
                         </div>
 
                         <div class="eight wide field">

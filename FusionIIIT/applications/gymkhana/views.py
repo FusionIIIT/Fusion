@@ -23,6 +23,25 @@ def coordinator_club(request):
 		if co[0] == str(request.user):
 			return(i)
 
+def facultyData(request):
+	try:
+		# students =ExtraInfo.objects.all().filter(user_type = "student")
+		faculty = ExtraInfo.objects.all().filter(user_type = "faculty")
+		faculty = serializers.serialize('json', faculty)
+		return HttpResponse(faculty)
+	except Exception as e:
+		return HttpResponse("error")
+
+def studentsData(request):
+	try:
+		students =ExtraInfo.objects.all().filter(user_type = "student")
+		# faculty = ExtraInfo.objects.all().filter(user_type = "faculty")
+		students = serializers.serialize('json', students)
+		return HttpResponse(students)
+	except Exception as e:
+		return HttpResponse("error")
+
+
 def retrun_content(roll, name, desig , club__ ):
 	students =ExtraInfo.objects.all().filter(user_type = "student")
 	faculty = ExtraInfo.objects.all().filter(user_type = "faculty")
@@ -63,6 +82,9 @@ def retrun_content(roll, name, desig , club__ ):
 		'Curr_desig' : desig,
 		'club_details':club__
 	}
+	for fac in faculty:
+		print(type(fac))
+	# print(faculty)
 	return content
 
 @login_required
@@ -116,28 +138,41 @@ def gymkhana(request):
 @login_required
 def club_membership(request):
 	if request.method == 'POST':
-		#getting form data
-		user = request.POST.get("user_name")
-		club = request.POST.get("club")
-		pda = request.POST.get("pda")
+		res = "success"
+		message = "The form has been dispatched for further process"
+		try:
+			#getting form data
+			user = request.POST.get("user_name")
+			club = request.POST.get("club")
+			pda = request.POST.get("achievements")
 
-		#getting queryset class objects
-		#user_name = User.objects.get(username = user[-7:])
-		USER = user.split(' - ')
-		user_name = get_object_or_404(User, username = USER[1])
-		extra = get_object_or_404(ExtraInfo, id = USER[0], user = user_name)
-		student = get_object_or_404(Student, id = extra)
-		#extra = ExtraInfo.objects.get(id = user[:-10], user = user_name)
-		#student = Student.objects.get(id = extra)
+			#getting queryset class objects
+			#user_name = User.objects.get(username = user[-7:])
+			USER = user.split(' - ')
+			user_name = get_object_or_404(User, username = USER[1])
+			extra = get_object_or_404(ExtraInfo, id = USER[0], user = user_name)
+			student = get_object_or_404(Student, id = extra)
+			#extra = ExtraInfo.objects.get(id = user[:-10], user = user_name)
+			#student = Student.objects.get(id = extra)
 
-		club_name = get_object_or_404(Club_info, club_name = club)
+			club_name = get_object_or_404(Club_info, club_name = club)
 
-		#saving data to the database
-		club_member = Club_member(member = student, club = club_name, description = pda)
-		club_member.save()
-		messages.success(request,"Successfully sent the application !!!")
+			#saving data to the database
+			club_member = Club_member(member = student, club = club_name, description = pda)
+			club_member.save()
+		except Exception as e:
+			res = "error"
+			message = "Some error occurred"
 
-	return redirect('/gymkhana/')
+		content = {
+			'status':res,
+			'message':message
+		}
+		content = json.dumps(content)
+		return HttpResponse(content)
+		# messages.success(request,"Successfully sent the application !!!")
+
+	# return redirect('/gymkhana/')
 
 @login_required
 def core_team(request):
@@ -359,10 +394,19 @@ def new_session(request):
 		desc = request.POST.get("d_d")
 		club_name = coordinator_club(request)
 		res = conflict_algorithm(date, start_time, end_time, venue)
+		message = ""
 		if(res == "success"):
 			session = Session_info(club = club_name, venue = venue, date =date, start_time=start_time , end_time = end_time ,session_poster = session_poster , details = desc)
 			session.save()
-		return HttpResponse(res)
+			message += "Your form has been dispatched for further process"
+		else:
+			message += "The selected time slot for the given date and venue conflicts with already booked session" 
+		content = {
+			'status':res,
+			'message':message
+		}
+		content = json.dumps(content)
+		return HttpResponse(content)
 		
 
 @login_required

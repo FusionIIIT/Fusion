@@ -20,5 +20,7 @@ urlpatterns = [
     url(r'^reject/$',views.reject,name='reject'),
     url(r'^cancel/$',views.cancel,name='cancel'),
     url(r'^date_sessions/$', views.date_sessions, name='date_sessions'),
-    url(r'^get_venue/$', views.getVenue, name='get_venue')
+    url(r'^get_venue/$', views.getVenue, name='get_venue'),
+    url(r'^faculty_data/$', views.facultyData, name='faculty_data'),
+    url(r'^students_data/$', views.studentsData, name='students_data')
 ]
