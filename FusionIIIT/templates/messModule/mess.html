@@ -77,7 +77,7 @@ Central Mess
 
 
         {% comment %}The ... starts here!{% endcomment %}
-        <div class="ui {% if info.user_type == 'student' %}active {% endif %}tab segment" data-tab="fourth">
+        <div class="ui {% if tab_mess == 'menu' %}active {% endif %}tab segment" data-tab="fourth">
             {% block views %}
             {% include 'messModule/views.html' %}
             {% endblock %}
@@ -95,7 +95,7 @@ Central Mess
 
 
         {% comment %}The ... starts here!{% endcomment %}
-        <div class="ui tab segment" data-tab="sixth">
+        <div class="ui {% if tab_mess == 'nonveg_apply' %}active {% endif %}tab segment" data-tab="sixth">
             {% block nonvegfood %}
             {% include 'messModule/nonvegfood.html' %}
             {% endblock %}
@@ -103,7 +103,7 @@ Central Mess
         {% comment %}The ... ends here!{% endcomment %}
 
         {% comment %}The ... starts here!{% endcomment %}
-        <div class="ui tab segment" data-tab="seventh">
+        <div class="ui {% if tab_mess == 'rebate_request' %}active {% endif %}tab segment" data-tab="seventh">
             {% block respondtoleave %}
             {% include 'messModule/respondtoleave.html' %}
             {% endblock %}
@@ -111,7 +111,7 @@ Central Mess
         {% comment %}The ... ends here!{% endcomment %}
 
         {% comment %}The ... starts here!{% endcomment %}
-        <div class="ui tab segment" data-tab="eighth">
+        <div class="ui {% if tab_mess == 'menu_change' %}active {% endif %} tab segment" data-tab="eighth">
             {% block changemenu %}
             {% include 'messModule/changemenu.html' %}
             {% endblock %}
@@ -136,7 +136,7 @@ Central Mess
         {% comment %}The ... ends here!{% endcomment %}
 
         {% comment %}The ... starts here!{% endcomment %}
-        <div class="ui tab segment" data-tab="eleventh">
+        <div class="ui {% if tab_mess == 'sp_request' %}active {% endif %}tab segment" data-tab="eleventh">
             {% block splreq %}
             {% include 'messModule/splreq.html' %}
             {% endblock %}
@@ -195,19 +195,19 @@ Central Mess
             {% endblock %}
         </div>
         {% comment %}The ... ends here!{% endcomment %}
-        <div class="ui tab segment" data-tab="nineteenth">
+        <div class="ui {% if tab_mess == 'menu_request' %}active {% endif %}tab segment" data-tab="nineteenth">
             {% block respondmenu %}
             {% include 'messModule/respondmenu.html' %}
             {% endblock %}
         </div>
 
-         <div class="ui tab segment" data-tab="twenty">
+         <div class="ui {% if tab_mess == 'vacation_request' %}active {% endif %}tab segment" data-tab="twenty">
             {% block respondvacationfood %}
             {% include 'messModule/respondvacationfood.html' %}
             {% endblock %}
         </div>
 
-        <div class="ui tab segment" data-tab="twentyone">
+        <div class="ui {% if tab_mess == 'mess_committee' %}active {% endif %}tab segment" data-tab="twentyone">
             {% block messcommittee %}
             {% include 'messModule/mess_committee.html' %}
             {% endblock %}
