@@ -23,7 +23,7 @@ from applications.placement_cell.forms import (AddAchievement, AddCourse,
 from applications.placement_cell.models import (Achievement, Course, Education,
                                                 Experience, Has, Patent,
                                                 Project, Publication, Skill)
-from applications.eis.models import faculty_about,emp_research_papers, emp_published_books
+from applications.eis.models import *
 from applications.academic_procedures.models import Thesis
 
 
@@ -271,10 +271,10 @@ def contextfacultymanage(request,user,profile):
   conferences = paginator3.page(page3)
   sr3 = (conferences.number-1)*10
 
-  #paginator for thesis
-  faculty = Faculty.objects.get(id = profile)
-  thesis = Thesis.objects.filter(supervisor_id = faculty)
-  paginator4 = Paginator(thesis, 10)
+
+  #pagination for research project
+  research_projects = emp_research_projects.objects.filter(pf_no=profile.id).order_by("-date_entry") 
+  paginator4 = Paginator(research_projects, 10)
   page4 = request.GET.get('page4')
   mark4=0;
   if page4 != None:
@@ -283,9 +283,68 @@ def contextfacultymanage(request,user,profile):
     mark4=0
   if page4 == None:
     page4=1
-  thesis = paginator4.page(page4)
-  sr4 = (thesis.number-1)*10
+  research_projects = paginator4.page(page4)
+  sr4 = (research_projects.number-1)*10
 
+  #pagination for Consultancy Project
+  consultancy_projects = emp_consultancy_projects.objects.filter(pf_no=profile.id).order_by("-date_entry") 
+  paginator5 = Paginator(consultancy_projects, 10)
+  page5 = request.GET.get('page5')
+  mark5=0;
+  if page5 != None:
+    mark5=1
+  else:
+    mark5=0
+  if page5 == None:
+    page5=1
+  consultancy_projects = paginator5.page(page5)
+  sr5 = (consultancy_projects.number-1)*10
+
+  #pagination for patents
+  patents = emp_patents.objects.filter(pf_no=profile.id).order_by("-date_entry") 
+  paginator6 = Paginator(patents, 10)
+  page6 = request.GET.get('page6')
+  mark6=0;
+  if page6 != None:
+    mark6=1
+  else:
+    mark6=0
+  if page6 == None:
+    page6=1
+  patents = paginator6.page(page5)
+  sr6 = (patents.number-1)*10
+
+  #pagination for technology transfer
+  techtransfer = emp_techtransfer.objects.filter(pf_no=profile.id).order_by("-date_entry") 
+  paginator7 = Paginator(techtransfer, 10)
+  page7 = request.GET.get('page7')
+  mark7=0;
+  if page7 != None:
+    mark7=1
+  else:
+    mark7=0
+  if page7 == None:
+    page7=1
+  techtransfer = paginator7.page(page7)
+  sr7 = (techtransfer.number-1)*10
+
+  #pagination for  thesis
+  thesis = emp_mtechphd_thesis.objects.filter(pf_no=profile.id, degree_type=1).order_by('-date_entry') 
+  paginator8 = Paginator(thesis, 10)
+  page8 = request.GET.get('page8')
+  mark8=0;
+  if page8 != None:
+    mark8=1
+  else:
+    mark8=0
+  if page8 == None:
+    page8=1
+  thesis = paginator8.page(page8)
+  sr8 = (thesis.number-1)*10
+  y=[]
+  for r in range(1995, (datetime.datetime.now().year + 1)):
+        y.append(r)
+  
 
   context = {'about':detail.about,
     'user' : user,
@@ -302,5 +361,22 @@ def contextfacultymanage(request,user,profile):
     'thesis' : thesis,
     'mark4' : mark4,
     'sr4' : sr4,
+    'research_projects' : research_projects,
+    'mark4' : mark4,
+    'sr4' : sr4,
+    'thesis' : thesis,
+    'consultancy_projects' : consultancy_projects,
+    'mark5' : mark5,
+    'sr5' : sr5,
+    'patents' : patents,
+    'sr6' : sr6,
+    'mark6' : mark6,
+    'techtransfers' : techtransfer,
+    'sr7' : sr7,
+    'mark7' : mark7,
+    'thesis' : thesis,
+    'mark8' : mark8,
+    'sr8' : sr8,
+    'year_range' : y,
     }
   return context

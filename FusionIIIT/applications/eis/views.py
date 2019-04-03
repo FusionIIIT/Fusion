@@ -311,14 +311,13 @@ def profile(request, username=None):
     a1 = HoldsDesignation.objects.filter(working = user)
     flag_rspc = 0
     for i in a1:
-        print(i.designation)
         if(str(i.designation)=='Dean (RSPC)'):
             flag_rspc = 1
-    print(flag_rspc)
+    
     # done edit
 
     design = HoldsDesignation.objects.filter(working=user)
-    print(design)
+    
     desig=[]
     for i in design:
         desig.append(str(i.designation))
@@ -382,7 +381,7 @@ def rspc_profile(request):
 
     pers = get_object_or_404(faculty_about, user = request.user)
     design = HoldsDesignation.objects.filter(working=request.user)
-    print(design)
+    
     desig=[]
     for i in design:
         desig.append(str(i.designation))
@@ -414,7 +413,6 @@ def rspc_profile(request):
 
 # View for editing persnal Information
 def persinfo(request):
-    print("incoming")
     if request.method == 'POST':
         try:
             print(request.user)
@@ -450,10 +448,13 @@ def emp_confrence_organisedDelete(request, pk):
     instance.delete()
     return redirect('eis:profile')
 
-def emp_consultancy_projectsDelete(request, pk):
+def emp_consultancy_projectsDelete(request, pk,sr,mark):
     instance = emp_consultancy_projects.objects.get(pk=pk)
+    page = int(sr)//10
+    page = page+1
+    url = '/profile/?page5='+str(page)
     instance.delete()
-    return redirect('eis:profile')
+    return redirect(url)
 
 def emp_event_organizedDelete(request, pk):
     instance = emp_event_organized.objects.get(pk=pk)
@@ -470,15 +471,21 @@ def emp_keynote_addressDelete(request, pk):
     instance.delete()
     return redirect('eis:profile')
 
-def emp_mtechphd_thesisDelete(request, pk):
+def emp_mtechphd_thesisDelete(request, pk, sr):
     instance = emp_mtechphd_thesis.objects.get(pk=pk)
+    page = int(sr)//10
+    page = page+1
+    url = '/profile/?page8='+str(page)
     instance.delete()
-    return redirect('eis:profile')
+    return redirect(url)
 
-def emp_patentsDelete(request, pk):
+def emp_patentsDelete(request, pk,sr,mark):
     instance = emp_patents.objects.get(pk=pk)
+    page = int(sr)//10
+    page = page+1
+    url = '/profile/?page6='+str(page)
     instance.delete()
-    return redirect('eis:profile')
+    return redirect(url)
 
 def emp_published_booksDelete(request, pk):
     instance = emp_published_books.objects.get(pk=pk)
@@ -498,20 +505,26 @@ def emp_research_papersDelete(request, pk, sr,mark):
     instance.delete()
     return redirect(url)
 
-def emp_research_projectsDelete(request, pk):
+def emp_research_projectsDelete(request, pk,sr,mark):
     instance = emp_research_projects.objects.get(pk=pk)
+    page = int(sr)//10
+    page = page+1
+    url = '/profile/?page4='+str(page)
     instance.delete()
-    return redirect('eis:profile')
+    return redirect(url)
 
 def emp_session_chairDelete(request, pk):
     instance = emp_session_chair.objects.get(pk=pk)
     instance.delete()
     return redirect('eis:profile')
 
-def emp_techtransferDelete(request, pk):
+def emp_techtransferDelete(request, pk,sr,mark):
     instance = emp_techtransfer.objects.get(pk=pk)
+    page = int(sr)//10
+    page = page+1
+    url = '/profile/?page7='+str(page)
     instance.delete()
-    return redirect('eis:profile')
+    return redirect(url)
 
 def emp_visitsDelete(request, pk):
     instance = emp_visits.objects.get(pk=pk)
@@ -537,7 +550,7 @@ def pg_insert(request):
     eis.s_name = request.POST.get('name')
 
     eis.save()
-    return redirect('eis:profile')
+    return redirect('/profile/?page8=1')
 
 def phd_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
@@ -795,6 +808,7 @@ def conference_insert(request):
     if (request.POST.get('dos3') != None and request.POST.get('dos3') != '' and request.POST.get('dos3') != 'None'):
         eis.date_submission = datetime.datetime.strptime(request.POST.get('dos3'), "%B %d, %Y %I:%M %p")
     eis.save()
+    print("////////////////////")
     return redirect('globals:profile')
 
 def editconference(request):
@@ -828,7 +842,7 @@ def editconference(request):
         if x[-4:] == 'p.m.':
             x = x[:-4]
             x = x+"PM"
-        print(x)
+        
        
         try: 
             try:
@@ -1084,7 +1098,7 @@ def project_insert(request):
         except:
             eis.date_submission = datetime.datetime.strptime(request.POST.get('sub'), "%b. %d, %Y")
     eis.save()
-    return redirect('eis:profile')
+    return redirect('/profile/?page4=1')
 
 def consult_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
@@ -1110,7 +1124,7 @@ def consult_insert(request):
         except:
             eis.end_date = datetime.datetime.strptime(request.POST.get('end'), "%b. %d, %Y")
     eis.save()
-    return redirect('eis:profile')
+    return redirect('/profile/?page5=1')
 
 def patent_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
@@ -1128,7 +1142,7 @@ def patent_insert(request):
     eis.status = request.POST.get('status')
     eis.a_month = request.POST.get('month')
     eis.save()
-    return redirect('eis:profile')
+    return redirect('/profile/?page6=1')
 
 def transfer_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
@@ -1141,7 +1155,7 @@ def transfer_insert(request):
     eis.pf_no = pf
     eis.details = request.POST.get('details')
     eis.save()
-    return redirect('eis:profile')
+    return redirect('/profile/?page7=1')
 
 def achievements(request):
     if request.method == 'POST':
@@ -2250,7 +2264,6 @@ def generate_report(request):
 
     pers = get_object_or_404(faculty_about, user = request.user)
     design = HoldsDesignation.objects.filter(working=request.user)
-    print(design)
     desig=[]
     for i in design:
         desig.append(str(i.designation))
@@ -2680,7 +2693,7 @@ def rspc_generate_report(request):
 
     pers = get_object_or_404(faculty_about, user = request.user)
     design = HoldsDesignation.objects.filter(working=request.user)
-    print(design)
+    
     desig=[]
     for i in design:
         desig.append(str(i.designation))

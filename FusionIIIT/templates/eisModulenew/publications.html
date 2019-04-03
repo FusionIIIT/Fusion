@@ -312,7 +312,7 @@
 
     <div class="{% if mark3 == 1 %}ui active tab segment{% else %}ui tab segment{% endif %}" data-tab="conference">
         {% if request.user == user %}
-        <h4 class="ui dividing header">Add a Journal</h4>
+        <h4 class="ui dividing header">Add a conference</h4>
         <form name="conferenceform" id="conferenceform" class="ui form" method="POST" action="{% url 'eis:conference_insert' %}" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="field">
