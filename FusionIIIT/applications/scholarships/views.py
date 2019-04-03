@@ -13,8 +13,9 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
 # Create your views here.
+from django.db.models import Q
 from django.shortcuts import render
-
+from django.contrib.auth.models import User
 from applications.academic_information.models import Spi, Student
 from applications.globals.models import (Designation, ExtraInfo,
                                          HoldsDesignation)
@@ -23,6 +24,7 @@ from .models import (Award_and_scholarship, Constants, Director_gold,
                      Director_silver, Mcm, Notional_prize, Previous_winner,
                      Proficiency_dm, Release, Notification)
 
+from notification.views import scholarship_portal_notif
 # Create your views here.
 
 
@@ -89,25 +91,29 @@ def convener_view(request):
             )
             # Arihant:It updates the student Notification table on the spacs head sending the mcm invitation
             if batch == 'all':
+                #Notification starts
+                convenor = request.user
+                receipent1 = Student.objects.filter(programme = programme)
+                for student in receipent1:
+                    scholarship_portal_notif(convenor,student.id.user, 'award-' + award)
+                #Notification ends
                 if award == 'Mcm Scholarship':
-                    res = Notification.objects.all().update(notification_mcm_flag=True)
+                    res = Notification.objects.filter(student_id__programme=programme).update(notification_mcm_flag=True)
                 else:
-                    res = Notification.objects.all().update(notification_convocation_flag=True)
+                    res = Notification.objects.filter(student_id__programme=programme).update(notification_convocation_flag=True)
             else:
+                #Notification starts
+                convenor = request.user
+                receipent1 = Student.objects.filter(programme = programme,id__id__startswith=batch)
+                for student in receipent1:
+                    scholarship_portal_notif(convenor,student.id.user, 'award-' + award)
+                #Notification ends
                 if award == 'Mcm Scholarship':
                     res = Notification.objects.filter(student_id__programme=programme,student_id__id__id__startswith=batch).update(notification_mcm_flag=True)
                 else:
                     res = Notification.objects.filter(student_id__programme=programme,student_id__id__id__startswith=batch).update(notification_convocation_flag=True)
-                """if programme == 'B.Tech' or programme == 'B.Des':
-                    if award == 'Mcm Scholarship':
-                        res = Notification.objects.filter(student_id__id__contains=batch).update(notification_mcm_flag=True)
-                    else:
-                        res = Notification.objects.filter(student_id__id__contains=batch).update(notification_convocation_flag=True)
-                elif programme == 'M.Tech' or programme == 'M.Des':
-                    if award == 'Mcm Scholarship':
-                        res = Notification.objects.filter(student_id__id__contains=batch).update(notification_mcm_flag=True)
-                    else:
-                        res = Notification.objects.filter(student_id__id__contains=batch).update(notification_convocation_flag=True)"""
+
+
 
             messages.success(request,award+' are invited successfully')
             return HttpResponseRedirect('/spacs/convener_view')
@@ -139,6 +145,9 @@ def convener_view(request):
                 year=year,
                 award_id=award
             )
+            convenor = request.user
+            receipent = student_id
+            scholarship_portal_notif(convenor,receipent.id.user,'Accept_mcm')
             messages.success(request,'Application is accepted')
             return HttpResponseRedirect('/spacs/convener_view')
 
@@ -146,6 +155,9 @@ def convener_view(request):
             pk = request.POST.get('id')
             student_id = Mcm.objects.get(id=pk).student
             Mcm.objects.filter(id=pk).update(status='Reject')
+            convenor = request.user
+            receipent = student_id
+            scholarship_portal_notif(convenor,receipent.id.user,'Reject_mcm')
             messages.success(request,'Application is rejected')
             return HttpResponseRedirect('/spacs/convener_view')
 
@@ -160,12 +172,18 @@ def convener_view(request):
                 year=year,
                 award_id=award
             )
+            convenor = request.user
+            receipent = student_id
+            scholarship_portal_notif(convenor,receipent.id.user,'Accept_gold')
             messages.success(request,'Application is accepted')
             return HttpResponseRedirect('/spacs/convener_view')
         elif 'Reject_gold' in request.POST:
             pk = request.POST.get('id')
             student_id = Director_gold.objects.get(id=pk).student
             Director_gold.objects.filter(id=pk).update(status='Reject')
+            convenor = request.user
+            receipent = student_id
+            scholarship_portal_notif(convenor,receipent.id.user,'Reject_gold')
             messages.success(request,'Application is rejected')
             return HttpResponseRedirect('/spacs/convener_view')
 
@@ -180,12 +198,18 @@ def convener_view(request):
                 year=year,
                 award_id=award
             )
+            convenor = request.user
+            receipent = student_id
+            scholarship_portal_notif(convenor,receipent.id.user,'Accept_silver')
             messages.success(request,'Application is accepted')
             return HttpResponseRedirect('/spacs/convener_view')
         elif 'Reject_silver' in request.POST:
             pk = request.POST.get('id')
             student_id = Director_silver.objects.get(id=pk).student
             Director_silver.objects.filter(id=pk).update(status='Reject')
+            convenor = request.user
+            receipent = student_id
+            scholarship_portal_notif(convenor,receipent.id.user,'Reject_silver')
             messages.success(request,'Application is rejected')
             return HttpResponseRedirect('/spacs/convener_view')
         elif 'Accept_dm' in request.POST:
@@ -199,12 +223,18 @@ def convener_view(request):
                 year=year,
                 award_id=award
             )
+            convenor = request.user
+            receipent = student_id
+            scholarship_portal_notif(convenor,receipent.id.user,'Accept_dm')
             messages.success(request,'Application is accepted')
             return HttpResponseRedirect('/spacs/convener_view')
         elif 'Reject_dm' in request.POST:
             pk = request.POST.get('id')
             Proficiency_dm.objects.filter(id=pk).update(status='Reject')
             student_id = Proficiency_dm.objects.get(id=pk).student
+            convenor = request.user
+            receipent = student_id
+            scholarship_portal_notif(convenor,receipent.id.user,'Reject_dm')
             messages.success(request,'Application is rejected')
             return HttpResponseRedirect('/spacs/convener_view')
 
@@ -694,7 +724,36 @@ def get_winners(request):
 
     return HttpResponse(json.dumps(context), content_type='get_winners/json')
 
+def get_win(request):
+    acad_year = int(request.GET.get('acad_year'))
+    print(acad_year)
+    award = Award_and_scholarship.objects.filter(award_name='Mcm')
+    winners=Previous_winner.objects.filter(year=acad_year).filter(~Q(award_id=award))
+    context={}
+    context['student_name']=[]
+    context['student_program'] = []
+    context['roll']=[]
 
+# Arihant: If-Else Condition for previous winner if there is or no data in the winner table
+    if winners:
+        for winner in winners:
+
+            extra_info = ExtraInfo.objects.get(id=winner.student_id)
+            s_id = Student.objects.get(id=extra_info)
+            s_name = extra_info.user.first_name
+            s_roll = winner.student_id
+            s_program=s_id.programme
+            print(s_roll,type(s_roll))
+            context['student_name'].append(s_name)
+            context['roll'].append(s_roll)
+            context['student_program'].append(s_program)
+
+        context['result']='Success'
+
+    else:
+        context['result']='Failure'
+
+    return HttpResponse(json.dumps(context), content_type='get_win/json')
 
 
 # Arihant: Here we are extracting mcm_flag
