@@ -328,6 +328,7 @@ def contextfacultymanage(request,user,profile):
   techtransfer = paginator7.page(page7)
   sr7 = (techtransfer.number-1)*10
 
+
   #pagination for  thesis
   thesis = emp_mtechphd_thesis.objects.filter(pf_no=profile.id, degree_type=1).order_by('-date_entry') 
   paginator8 = Paginator(thesis, 10)
@@ -345,6 +346,62 @@ def contextfacultymanage(request,user,profile):
   for r in range(1995, (datetime.datetime.now().year + 1)):
         y.append(r)
   
+
+  #paginator for foreign visit
+  foreign_visits = emp_visits.objects.filter(pf_no=profile.id,v_type=2).order_by("-start_date")
+  paginator10 = Paginator(foreign_visits, 10)
+  page10 = request.GET.get('page10')
+  mark10=0;
+  if page10 != None:
+    mark10=1
+  else:
+    mark10=0
+  if page10 == None:
+    page10=1
+  foreign_visits = paginator10.page(page10)
+  sr10 = (foreign_visits.number-1)*10
+
+  #paginator for indian visit
+  indian_visits = emp_visits.objects.filter(pf_no=profile.id,v_type=1).order_by("-start_date")
+  paginator11 = Paginator(indian_visits, 10)
+  page11 = request.GET.get('page11')
+  mark11=0;
+  if page11 != None:
+    mark11=1
+  else:
+    mark11=0
+  if page11 == None:
+    page11=1
+  indian_visits = paginator11.page(page11)
+  sr11 = (indian_visits.number-1)*10
+
+  #paginator for event organized
+  events = emp_event_organized.objects.filter(pf_no=profile.id).order_by("-date_entry")
+  paginator12 = Paginator(events, 10)
+  page12 = request.GET.get('page12')
+  mark12=0;
+  if page12 != None:
+    mark12=1
+  else:
+    mark12=0
+  if page12 == None:
+    page12=1
+  events = paginator12.page(page12)
+  sr12 = (events.number-1)*10
+
+  #paginator for conference
+  confs = emp_confrence_organised.objects.filter(pf_no=profile.id).order_by("-date_entry")
+  paginator13 = Paginator(confs, 10)
+  page13 = request.GET.get('page13')
+  mark13=0;
+  if page13 != None:
+    mark13=1
+  else:
+    mark13=0
+  if page13 == None:
+    page13=1
+  confs = paginator13.page(page13)
+  sr13 = (confs.number-1)*10
 
   context = {'about':detail.about,
     'user' : user,
@@ -378,5 +435,17 @@ def contextfacultymanage(request,user,profile):
     'mark8' : mark8,
     'sr8' : sr8,
     'year_range' : y,
+    'foreign_visits' : foreign_visits,
+    'mark10' : mark10,
+    'sr10' : sr10,
+    'indian_visits' : indian_visits,
+    'mark11' : mark11,
+    'sr11' : sr11,
+    'events' : events,
+    'mark12' : mark12,
+    'sr12' : sr12,
+    'confs' : confs,
+    'mark13' : mark13,
+    'sr13' : sr13,
     }
   return context

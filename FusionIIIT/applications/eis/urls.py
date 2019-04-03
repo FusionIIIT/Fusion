@@ -15,7 +15,9 @@ urlpatterns = [
     url(r'^achv/(?P<pk>[0-9]+)/$', views.achievementDelete, name='achievement_delete'),
     url(r'^emp_confrence_organisedDelete/(?P<pk>[0-9]+)/$', views.emp_confrence_organisedDelete, name='emp_confrence_organisedDelete'),
     url(r'^emp_consultancy_projectsDelete/(?P<pk>[0-9]+)/(?P<sr>[0-9]+)/(?P<mark>[0-9]+)/$', views.emp_consultancy_projectsDelete, name='emp_consultancy_projectsDelete'),
-    url(r'^emp_event_organizedDelete/(?P<pk>[0-9]+)/$', views.emp_event_organizedDelete, name='emp_event_organizedDelete'),
+    
+    #url(r'^emp_confrence_organisedDelete/(?P<sr>[0-9]+)/$', views.emp_confrence_organisedDelete, name='emp_confrence_organisedDelete'),
+    url(r'^emp_event_organizedDelete/(?P<pk>[0-9]+)/(?P<sr>[0-9]+)/(?P<mark>[0-9]+)/$', views.emp_event_organizedDelete, name='emp_event_organizedDelete'),
     url(r'^emp_expert_lecturesDelete/(?P<pk>[0-9]+)/$', views.emp_expert_lecturesDelete, name='emp_expert_lecturesDelete'),
     url(r'^emp_keynote_addressDelete/(?P<pk>[0-9]+)/$', views.emp_keynote_addressDelete, name='emp_keynote_addressDelete'),
     url(r'^emp_mtechphd_thesisDelete/(?P<pk>[0-9]+)/(?P<sr>[0-9]+)/$', views.emp_mtechphd_thesisDelete, name='emp_mtechphd_thesisDelete'),
@@ -24,12 +26,19 @@ urlpatterns = [
     url(r'^emp_research_papersDelete/(?P<pk>[0-9]+)/(?P<sr>[0-9]+)/(?P<mark>[0-9]+)/$', views.emp_research_papersDelete, name='emp_research_papersDelete'),
     url(r'^emp_research_projectsDelete/(?P<pk>[0-9]+)/(?P<sr>[0-9]+)/(?P<mark>[0-9]+)/$', views.emp_research_projectsDelete, name='emp_research_projectsDelete'),
     url(r'^emp_session_chairDelete/(?P<pk>[0-9]+)/$', views.emp_session_chairDelete, name='emp_session_chairDelete'),
+
     url(r'^emp_techtransferDelete/(?P<pk>[0-9]+)/(?P<sr>[0-9]+)/(?P<mark>[0-9]+)/$', views.emp_techtransferDelete, name='emp_techtransferDelete'),
-    url(r'^emp_visitsDelete/(?P<pk>[0-9]+)/$', views.emp_visitsDelete, name='emp_visitsDelete'),
+    url(r'^emp_visitsDelete/(?P<pk>[0-9]+)/(?P<sr>[0-9]+)/(?P<mark>[0-9]+)/$', views.emp_visitsDelete, name='emp_visitsDelete'),
+    url(r'^emp_consymDelete/(?P<pk>[0-9]+)/(?P<sr>[0-9]+)/(?P<mark>[0-9]+)/$', views.emp_consymDelete, name='emp_consymDelete'),
+
 
     # edit personal information
     url(r'^persinfo/$', views.persinfo, name='persinfo'),
     url(r'^journal/edit$', views.editjournal, name='editjournal'),
+    url(r'^foreignvisit/edit$', views.editforeignvisit, name='editforeignvisit'),
+    url(r'^indianvisit/edit$', views.editindianvisit, name='editindianvisit'),
+    url(r'^consym/edit$', views.editconsym, name='editconsym'),
+    url(r'^event/edit$', views.editevent, name='editevent'),
     url(r'^conference/edit$', views.editconference, name='editconference'),
 
     # insert
