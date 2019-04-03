@@ -88,13 +88,11 @@ def mess(request):
         #         count += item.duration
 
         bill = Monthly_bill.objects.filter(Q(student_id=student) & Q(month=month_g_l) & Q(year=year_g))
-        print(bill)
         amount_c = MessBillBase.objects.latest('timestamp')
         rebate_count = 0
         nonveg_total_bill = 0
         for z in data:
             if z.order_date.month == month_g:
-                print(z.order_date)
                 nonveg_total_bill = nonveg_total_bill + z.dish.price
 
             else:
@@ -142,34 +140,100 @@ def mess(request):
                 newmenu = Menu_change_request.objects.all()
                 meeting = Mess_meeting.objects.all()
                 minutes = Mess_minutes.objects.all()
-                feed = Feedback.objects.all()
+                feed = Feedback.objects.filter(mess='mess1')
+                feed2 = Feedback.objects.filter(mess='mess1')
                 sprequest = Special_request.objects.filter(status='1')
+                # count1 = feed.filter(Q(feedback_type='Maintenance') & Q(mess='mess1')).count()
                 for f in feed:
-                    mess_opt = Messinfo.objects.get(student_id=f.student_id)
-                    if f.feedback_type == 'Maintenance' and mess_opt.mess_option == 'mess1':
+                    if f.feedback_type == 'Maintenance' and mess_optn.mess_option == 'mess1':
                         count1 += 1
 
-                    elif f.feedback_type == 'Food' and mess_opt.mess_option == 'mess1':
+                    elif f.feedback_type == 'Food' and mess_optn.mess_option == 'mess1':
                         count2 += 1
 
-                    elif f.feedback_type == 'Cleanliness' and mess_opt.mess_option == 'mess1':
+                    elif f.feedback_type == 'Cleanliness' and mess_optn.mess_option == 'mess1':
                         count3 += 1
 
-                    elif f.feedback_type == 'Others' and mess_opt.mess_option == 'mess1':
+                    elif f.feedback_type == 'Others' and mess_optn.mess_option == 'mess1':
                         count4 += 1
-
-                for f in feed:
-                    mess_opt = Messinfo.objects.get(student_id=f.student_id)
-                    if f.feedback_type == 'Maintenance' and mess_opt.mess_option == 'mess2':
+                for f in feed2:
+                    if f.feedback_type == 'Maintenance' and mess_optn.mess_option == 'mess2':
                         count5 += 1
 
-                    elif f.feedback_type == 'Food' and mess_opt.mess_option == 'mess2':
+                    elif f.feedback_type == 'Food' and mess_optn.mess_option == 'mess2':
                         count6 += 1
 
-                    elif f.feedback_type == 'Cleanliness' and mess_opt.mess_option == 'mess2':
+                    elif f.feedback_type == 'Cleanliness' and mess_optn.mess_option == 'mess2':
                         count7 += 1
 
-                    elif f.feedback_type == 'Others' and mess_opt.mess_option == 'mess2':
+                    elif f.feedback_type == 'Others' and mess_optn.mess_option == 'mess2':
+                        count8 += 1
+
+                context = {
+                    'menu': y,
+                    'messinfo': mess_optn,
+                    'newmenu': newmenu,
+                    'monthly_bill': monthly_bill,
+                    'payments': payments,
+                    'nonveg': x,
+                    'vaca': vaca_obj,
+                    'info': extrainfo,
+                    'feedback': feedback_obj,
+                    'feed': feed,
+                    'student': student,
+                    'data': data,
+                    'mess_reg': mess_reg,
+                    'current_date': current_date,
+                    'count': count,
+                    'rebates': rebates,
+                    'meeting': meeting,
+                    'minutes': minutes,
+                    'sprequest': sprequest,
+                    'splrequest': splrequest,
+                    'count1': count1,
+                    'count2': count2,
+                    'count3': count3,
+                    'count4': count4,
+                    'count5': count5,
+                    'count6': count6,
+                    'count7': count7,
+                    'count8': count8,
+                    'form': form,
+                    'desig': desig
+                }
+                return render(request, "messModule/mess.html", context)
+
+            if d.designation.name == 'mess_committee_mess2' or d.designation.name == 'mess_convener_mess2':
+                newmenu = Menu_change_request.objects.all()
+                meeting = Mess_meeting.objects.all()
+                minutes = Mess_minutes.objects.all()
+                feed = Feedback.objects.filter(mess='mess2')
+                feed2 = Feedback.objects.filter(mess='mess2')
+                sprequest = Special_request.objects.filter(status='1')
+                # count5 = feed.filter(Q(feedback_type='Maintenance') & Q(mess='mess2')).count()
+                for f in feed2:
+                    if f.feedback_type == 'Maintenance' and mess_optn.mess_option == 'mess1':
+                        count1 += 1
+
+                    elif f.feedback_type == 'Food' and mess_optn.mess_option == 'mess1':
+                        count2 += 1
+
+                    elif f.feedback_type == 'Cleanliness' and mess_optn.mess_option == 'mess1':
+                        count3 += 1
+
+                    elif f.feedback_type == 'Others' and mess_optn.mess_option == 'mess1':
+                        count4 += 1
+                for f in feed:
+                    if f.feedback_type == 'Maintenance' and mess_optn.mess_option == 'mess2':
+                        count5 += 1
+
+                    elif f.feedback_type == 'Food' and mess_optn.mess_option == 'mess2':
+                        count6 += 1
+
+                    elif f.feedback_type == 'Cleanliness' and mess_optn.mess_option == 'mess2':
+                        count7 += 1
+
+                    elif f.feedback_type == 'Others' and mess_optn.mess_option == 'mess2':
                         count8 += 1
 
                 context = {
@@ -307,7 +371,7 @@ def mess(request):
                  'count4': count4, 'form': form, 'count5': count5,
                  'count6': count6, 'count7': count7, 'count8': count8, 'desig': desig
             }
-        return render(request, 'messModule/mess.html', context)
+            return render(request, 'messModule/mess.html', context)
 
 
 @login_required
