@@ -26,104 +26,107 @@
 
     {% comment %}The  Research Project segment starts here!{% endcomment %}
    
-        <h4 class="ui dividing header">Add a Research Project</h4>
-        <form class="ui form">
-            <div class="field">
-                <div class="two fields">
-                    <div class="field">
-                        <label>Project Incharge(PI)</label>
-                        <input placeholder="Published" type="text">
-                    </div>
+        <!--<h4 class="ui dividing header">Add a Research Project</h4>-->
+        <!--<form class="ui form">-->
+            <!--<div class="field">-->
+                <!--<div class="two fields">-->
+                    <!--<div class="field">-->
+                        <!--<label>Project Incharge(PI)</label>-->
+                        <!--<input placeholder="Published" type="text">-->
+                    <!--</div>-->
 
-                    <div class="field">
-                        <label>Co-Project Incharge(CO-PI)</label>
-                        <input placeholder="Co-author" type="text">
-                    </div>
-                </div>
-            </div>
+                    <!--<div class="field">-->
+                        <!--<label>Co-Project Incharge(CO-PI)</label>-->
+                        <!--<input placeholder="Co-author" type="text">-->
+                    <!--</div>-->
+                <!--</div>-->
+            <!--</div>-->
 
-            <div class="field">
-                <label>Funding Agency</label>
-                <div class="fields">
-                    <div class="twelve wide field">
-                        <input placeholder="Publisher" type="text">
-                    </div>
+            <!--<div class="field">-->
+                <!--<label>Funding Agency</label>-->
+                <!--<div class="fields">-->
+                    <!--<div class="twelve wide field">-->
+                        <!--<input placeholder="Publisher" type="text">-->
+                    <!--</div>-->
 
-                    <div class="four wide field">
-                        <div class="ui fluid search selection dropdown">
-                            <input type="hidden">
-                            <i class="dropdown icon"></i>
-                            <div class="default text">Status</div>
-                            <div class="menu">
-                                <div class="item" data-value="Ongoing">Ongoing</div>
-                                <div class="item" data-value="Completed">Completed</div>
+                    <!--<div class="four wide field">-->
+                        <!--<div class="ui fluid search selection dropdown">-->
+                            <!--<input type="hidden">-->
+                            <!--<i class="dropdown icon"></i>-->
+                            <!--<div class="default text">Status</div>-->
+                            <!--<div class="menu">-->
+                                <!--<div class="item" data-value="Ongoing">Ongoing</div>-->
+                                <!--<div class="item" data-value="Completed">Completed</div>-->
 
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="fields">
-                    <div class="four wide field">
-                        <div class="field">
-                            <label>Submission Of Project</label>
-                            <input placeholder="" type="text">
-                        </div>
-                    </div>
-                    <div class="four wide field">
-                        <div class="field">
-                            <label>Start Date</label>
-                            <input placeholder="" type="text"> 
-                                 <div class="ui calendar" id="rangestart">
-                                      <div class="ui input left icon">
-                                        <i class="calendar icon"></i>
-                                        <input type="text" placeholder="Start">
-                                      </div>
-                                </div>
-                        </div>
-                    </div>
-                    <div class="four wide field">
-                        <div class="field">
-                            <label>Expected Finish Date</label>
-                            <input placeholder="" type="text"> 
-                                 <div class="ui calendar" id="rangeend">
-                                      <div class="ui input left icon">
-                                        <i class="calendar icon"></i>
-                                        <input type="text" placeholder="End">
-                                      </div>
-                                </div>
-                                
-                        </div>
-                    </div>
-                    <div class="four wide field">
-                        <div class="field">
-                            <label>Financial Outlay</label>
-                            <input placeholder="" type="text">
-                        </div>
-                    </div>
+                            <!--</div>-->
+                        <!--</div>-->
+                    <!--</div>-->
+                <!--</div>-->
+                <!--<div class="fields">-->
+                    <!--<div class="four wide field">-->
+                        <!--<div class="field">-->
+                            <!--<label>Submission Of Project</label>-->
+                            <!--<input placeholder="" type="text">-->
+                        <!--</div>-->
+                    <!--</div>-->
+                    <!--<div class="four wide field">-->
+                        <!--<div class="field">-->
+                            <!--<label>Start Date</label>-->
+                            <!--&lt;!&ndash; <input placeholder="" type="text"> &ndash;&gt;-->
+                             <!--&lt;!&ndash; Code change starts &ndash;&gt;-->
+                                 <!--<div class="ui calendar" id="rangestart">-->
+                                      <!--<div class="ui input left icon">-->
+                                        <!--<i class="calendar icon"></i>-->
+                                        <!--<input type="text" placeholder="Start">-->
+                                      <!--</div>-->
+                                <!--</div>-->
+                                <!--&lt;!&ndash; code change ends &ndash;&gt;-->
+                        <!--</div>-->
+                    <!--</div>-->
+                    <!--<div class="four wide field">-->
+                        <!--<div class="field">-->
+                            <!--<label>Expected Finish Date</label>-->
+                            <!--&lt;!&ndash; <input placeholder="" type="text"> &ndash;&gt;-->
+                               <!--&lt;!&ndash; Code change starts &ndash;&gt;-->
+                                 <!--<div class="ui calendar" id="rangeend">-->
+                                      <!--<div class="ui input left icon">-->
+                                        <!--<i class="calendar icon"></i>-->
+                                        <!--<input type="text" placeholder="End">-->
+                                      <!--</div>-->
+                                <!--</div>-->
+                                <!--&lt;!&ndash; code change ends &ndash;&gt;-->
+                        <!--</div>-->
+                    <!--</div>-->
+                    <!--<div class="four wide field">-->
+                        <!--<div class="field">-->
+                            <!--<label>Financial Outlay</label>-->
+                            <!--<input placeholder="" type="text">-->
+                        <!--</div>-->
+                    <!--</div>-->
 
-                </div>
-
-
-                <div class="fields">
-                    <div class="fourteen wide field">
-                        <div class="field">
-                            <label>Title of Project</label>
-                            <input placeholder="Title" type="text">
-                        </div>
-                    </div>
-
-                    <div class="two wide field">
-                        <label><br></label>
-                        <div class="ui primary button">
-                            Save
-                            <i class="ui save icon right floated"></i>
-                        </div>
-                    </div>
-                </div>
+                <!--</div>-->
 
 
-            </div>
-        </form>
+                <!--<div class="fields">-->
+                    <!--<div class="fourteen wide field">-->
+                        <!--<div class="field">-->
+                            <!--<label>Title of Project</label>-->
+                            <!--<input placeholder="Title" type="text">-->
+                        <!--</div>-->
+                    <!--</div>-->
+
+                    <!--<div class="two wide field">-->
+                        <!--<label><br></label>-->
+                        <!--<div class="ui primary button">-->
+                            <!--Save-->
+                            <!--<i class="ui save icon right floated"></i>-->
+                        <!--</div>-->
+                    <!--</div>-->
+                <!--</div>-->
+
+
+            <!--</div>-->
+        <!--</form>-->
          <div class="ui active tab segment" data-tab="research projects">
         <br>
         <h4 class="ui dividing header">Project Report:</h4>
