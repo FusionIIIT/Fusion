@@ -503,7 +503,9 @@
                 <th class="" style="width: 150px">Authors</th>
                 <th class="" style="width: 80px">Details</th>
                 <th class="" style="width: 80px">Download</th>
+                {% if request.user == user %}
                 <th class="" style="width: 160px">Action</th>
+                {% endif %}
             </tr>
             </thead>
 
@@ -525,6 +527,7 @@
                                 '{{conference.page_no}}', '{{conference.status}}', 
                                 '{{conference.isbn_no}}')" value = "View"> </td>
                         <td><a href="{{ conference.paper }}" target="_blank"><i class=" large download icon"></i></a></td>
+                        {% if request.user == user %}
                         <td>
                             <button
                                id="editButton"
@@ -545,6 +548,7 @@
                                ><i class="ui red delete icon"></i>
                             </button>
                         </td>
+                        {% endif %}
                     </tr>
                     
                 {% endfor %}
