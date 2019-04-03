@@ -1,11 +1,30 @@
 {% load static %}
+{% load staticfiles %}
 
 {% block profile %}
+
+    <div hidden id="editModal" class="ui modal" ">
+        <div class="header">
+            Edit Profile
+        </div>
+        <div  class="content" >
+            <p>Are you sure you want to edit your profile</p>
+        </div>
+        <div class="actions">
+            <div class="ui negative button">
+                No
+            </div>
+            <div id ="confirmEdit" class="ui positive right labeled icon button">
+                Yes
+                <i class="checkmark icon"></i>
+            </div>
+        </div>
+    </div>
     <!--About Me card starts here!-->
     <div class="ui fluid card">
         <div class="content">
             <div class="ui header">
-              <form method="POST" action="/dashboard/" enctype="multipart/form-data" class="ui form" role="form">
+              <form method="POST" action="/profile/" enctype="multipart/form-data" class="ui form" role="form">
                 About Me
 
                   {{ form14.non_field_errors }}
@@ -21,19 +40,30 @@
 
               -->
                 </form>
-                  <form method="POST" action="/dashboard/" class="ui form" role="form">
+
+
+
+        <form method="POST" action="/profile/" class="ui form" role="form">
                     {% csrf_token %}
-                  <input type="submit" value="Save Profile Details" class="ui red mini button right floated" name="profilesubmit">
+                  <input type="button" value="Edit" class="ui red mini button right floated" id="editButton" onclick='javascript:showModal()'>
+                <!--$('.ui.modal')
+                  .modal() onclick='javascript:editStudent()
+                ; -->
+                  <input type="submit" value="Save" class="ui red mini button right floated" name="profilesubmit" id="saveButton" style="display: none">
             </div>
+
+
 
             <div class="ui divider"></div>
 
             <div class="ui large fluid input">
+                <span id="aboutSpan">{{ profile.about_me }}</span>
                 <input name=about
+                          id="aboutTextarea"
                           rows=5
                           type="text"
                           style="width: 100%;"
-                          value="{{ profile.about_me }}"/>
+                          value="{{ profile.about_me }}" hidden/>
             </div>
         </div>
 
@@ -52,16 +82,24 @@
                     <tbody>
                         <tr>
                             <td>
-                                Age
+                                Date Of Birth
                             </td>
 
                             <td>
                               <div class="ui fluid input">
-                                <input name=age
-                                          rows=5
-                                          type="text"
-                                          style="width: 100%;"
-                                          value="{{ profile.dob }}"/>
+                                <span id="ageSpan">{{ profile.dob }}</span>
+                                <div class="ui calendar select_date" id="rangestart">
+                                  <div class="ui input left icon"><i class="calendar icon"></i>
+                                  <input name="age"
+                                            id="ageInput"
+                                            rows=5
+                                            type="text"
+                                            disabled
+                                            class="datepicker"
+                                            style="width: 100%;"
+                                            value="{{ profile.date_of_birth }}" />
+                                          </div>
+                                    </div>
                               </div>
                             </td>
                         </tr>
@@ -97,11 +135,13 @@
 
                             <td>
                               <div class="ui fluid input">
+                                  <span id="addrSpan">{{ profile.address }}</span>
                                 <input name=address
+                                          id="addrInput"
                                           rows=5
                                           type="text"
                                           style="width: 100%;"
-                                          value="{{ profile.address }}"/>
+                                          value="{{ profile.address }}" hidden/>
                               </div>
                             </td>
                         </tr>
@@ -112,6 +152,7 @@
         </div>
     </div>
     <!--End of details card!-->
+
 
     <!--The contact details card starts here!-->
     <div class="ui fluid card">
@@ -131,7 +172,8 @@
 
                                 <div class="ui large fluid input">
                                     <a><i class="phone icon" id="contactIcon"></i>
-                                    <input name=contact type="text" value="{{ profile.phone_no }}">
+                                    <span id="contactSpan">{{ profile.phone_no }}</span>
+                                    <input name=contact type="text" value="{{ profile.phone_no }}" id="contactInput" hidden>
                                     </a>
                                 </div>
                             </td>
@@ -152,12 +194,13 @@
 
                             </td>
                         </tr>
-
-                        </form>
                     </tbody>
                 </table>
             </span>
         </div>
-    </div><!--The contact details card ends here!-->
+    </div>
+    <!--The contact details card ends here!-->
+
+  </form>
 
 {% endblock %}

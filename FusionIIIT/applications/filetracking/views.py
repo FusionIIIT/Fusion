@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.core import serializers
 from django.contrib.auth.models import User
-from timeit import default_timer as timer
+from timeit import default_timer as time
 
 
 @login_required(login_url = "/accounts/login/")

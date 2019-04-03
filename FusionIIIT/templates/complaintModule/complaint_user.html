@@ -1,3 +1,4 @@
+<!--HTML file for main page of the complainer/user-->
 {% extends 'globals/base.html' %}
 {% load static %}
 
@@ -76,7 +77,7 @@
             {% comment %}The ... starts here!{% endcomment %}
             <div class="ui tab segment" data-tab="second">
                 {% block complainthistory %}
-                    {%  include 'complaintModule/complainthistory_user.html' %}
+                    {%  include 'complaintModule/complainthistory_user_final.html' %}
                 {%  endblock %}
             </div>
             {% comment %}The ... ends here!{% endcomment %}

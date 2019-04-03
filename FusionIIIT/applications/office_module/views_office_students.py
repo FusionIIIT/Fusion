@@ -1,11 +1,15 @@
-from django.shortcuts import render , get_object_or_404
-from django.http import HttpResponse , HttpResponseRedirect
-from applications.academic_information.models import Meeting
-from .models import Constants,hostel_allotment,Budget
-from applications.gymkhana.models import Club_budget,Club_info
-from applications.globals.models import *
 import json
+
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import get_object_or_404, render
+
+from applications.academic_information.models import Meeting
+from applications.globals.models import *
+from applications.gymkhana.models import Club_budget, Club_info
+
+from .models import Budget, Constants, hostel_allotment
+
 
 @login_required
 def officeOfDeanStudents(request):

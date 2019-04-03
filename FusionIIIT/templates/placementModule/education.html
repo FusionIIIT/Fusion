@@ -1,3 +1,5 @@
+{% load staticfiles %}
+
 {% block education %}
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
@@ -53,7 +55,7 @@
                                 {{ form.sdate.errors }}
                                     <label for="{{ form.sdate.id_for_label }}">
                                     Start Date: (yyyy-mm-dd)</label>
-                                    <div class="ui calendar" id="rangestart">
+                                    <div class="ui calendar select_date" id="rangestart">
                                         <div class="ui input left icon">
                                             <i class="calendar icon"></i>
                                             {{ form.sdate }}
@@ -65,7 +67,7 @@
                                 {{ form.edate.errors }}
                                     <label for="{{ form.edate.id_for_label }}">
                                     End Date: (yyyy-mm-dd)</label>
-                                    <div class="ui calendar" id="rangeend">
+                                    <div class="ui calendar select_date" id="rangeend">
                                         <div class="ui input left icon">
                                             <i class="calendar icon"></i>
                                             {{ form.edate }}
@@ -211,7 +213,7 @@
                                   <label for="{{ form11.sdate.id_for_label }}">
                                       Start Date:(yyyy-mm-dd)
                                     </label>
-                                    <div class="ui calendar" id="rangestart1">
+                                    <div class="ui calendar select_date" id="rangestart1">
                                         <div class="ui input left icon">
                                             <i class="calendar icon"></i>
                                             {{ form11.sdate }}
@@ -224,7 +226,7 @@
                                   <label for="{{ form11.edate.id_for_label }}">
                                       End Date: (yyyy-mm-dd)
                                     </label>
-                                    <div class="ui calendar" id="rangeend1">
+                                    <div class="ui calendar select_date" id="rangeend1">
                                         <div class="ui input left icon">
                                             <i class="calendar icon"></i>
                                             {{ form11.edate }}

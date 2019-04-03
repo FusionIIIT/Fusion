@@ -8,25 +8,49 @@
 
 import datetime
 import json
-from django.contrib.auth.decorators import login_required
+
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
 # Create your views here.
 from django.shortcuts import render
 
 from applications.academic_information.models import Spi, Student
-from applications.globals.models import Designation, HoldsDesignation, ExtraInfo
+from applications.globals.models import (Designation, ExtraInfo,
+                                         HoldsDesignation)
 
 from .models import (Award_and_scholarship, Constants, Director_gold,
                      Director_silver, Mcm, Notional_prize, Previous_winner,
-                     Proficiency_dm, Release)
+                     Proficiency_dm, Release, Notification)
 
 # Create your views here.
 
 
 @login_required(login_url='/accounts/login')
 def spacs(request):
-    # context = {}
+    # Arihant:Student either accepts or Declines the Award Notification
+    if request.method == 'POST':
+        if 'studentapprovesubmit' in request.POST:
+            award = request.POST.get('studentapprovesubmit')
+            x = Notification.objects.get(student_id = request.user.extrainfo.id)
+            if award=='Mcm Scholarship':
+                x.notification_mcm_flag=False
+                x.invite_mcm_accept_flag=True
+                print('mcm accepted')
+            else:
+                x.notification_convocation_flag=False
+                x.invite_covocation_accept_flag=True
+            x.save()
+        if 'studentdeclinesubmit' in request.POST:
+            award = request.POST.get('studentdeclinesubmit')
+            x = Notification.objects.get(student_id = request.user.extrainfo.id)
+            if award=='Mcm Scholarship':
+                x.notification_mcm_flag=False
+                x.invite_mcm_accept_flag=False
+            else:
+                x.notification_convocation_flag=False
+                x.invite_covocation_accept_flag=False
+            x.save()
     convener = Designation.objects.get(name='spacsconvenor')
     assistant = Designation.objects.get(name='spacsassistant')
     hd = HoldsDesignation.objects.filter(user=request.user,designation=convener)
@@ -37,6 +61,9 @@ def spacs(request):
         return HttpResponseRedirect('/spacs/convener_view')
     elif hd1:
         return HttpResponseRedirect('/spacs/staff_view')
+    else:
+        return HttpResponseRedirect('/spacs/stats')# Arihant:this view is for the other members of the college
+
 
 
 @login_required(login_url='/accounts/login')
@@ -44,16 +71,44 @@ def convener_view(request):
     if request.method == 'POST':
         if 'Submit' in request.POST:
             award = request.POST.get('type')
+            programme = request.POST.get('programme')
+            batch = request.POST.get('batch')
             from_date = request.POST.get('From')
             to_date = request.POST.get('To')
             remarks = request.POST.get('remarks')
+
 
             Release.objects.create(
                 startdate=from_date,
                 enddate=to_date,
                 award=award,
-                remarks=remarks
+                remarks=remarks,
+                batch=batch,
+                notif_visible=1,
+                award_form_visible=0
             )
+            # Arihant:It updates the student Notification table on the spacs head sending the mcm invitation
+            if batch == 'all':
+                if award == 'Mcm Scholarship':
+                    res = Notification.objects.all().update(notification_mcm_flag=True)
+                else:
+                    res = Notification.objects.all().update(notification_convocation_flag=True)
+            else:
+                if award == 'Mcm Scholarship':
+                    res = Notification.objects.filter(student_id__programme=programme,student_id__id__id__startswith=batch).update(notification_mcm_flag=True)
+                else:
+                    res = Notification.objects.filter(student_id__programme=programme,student_id__id__id__startswith=batch).update(notification_convocation_flag=True)
+                """if programme == 'B.Tech' or programme == 'B.Des':
+                    if award == 'Mcm Scholarship':
+                        res = Notification.objects.filter(student_id__id__contains=batch).update(notification_mcm_flag=True)
+                    else:
+                        res = Notification.objects.filter(student_id__id__contains=batch).update(notification_convocation_flag=True)
+                elif programme == 'M.Tech' or programme == 'M.Des':
+                    if award == 'Mcm Scholarship':
+                        res = Notification.objects.filter(student_id__id__contains=batch).update(notification_mcm_flag=True)
+                    else:
+                        res = Notification.objects.filter(student_id__id__contains=batch).update(notification_convocation_flag=True)"""
+
             messages.success(request,award+' are invited successfully')
             return HttpResponseRedirect('/spacs/convener_view')
 
@@ -146,7 +201,7 @@ def convener_view(request):
             )
             messages.success(request,'Application is accepted')
             return HttpResponseRedirect('/spacs/convener_view')
-        elif 'Rejec_dm' in request.POST:
+        elif 'Reject_dm' in request.POST:
             pk = request.POST.get('id')
             Proficiency_dm.objects.filter(id=pk).update(status='Reject')
             student_id = Proficiency_dm.objects.get(id=pk).student
@@ -156,10 +211,12 @@ def convener_view(request):
 
     else:
         mcm = Mcm.objects.all()
+        #mcm = Mcm.objects.all().order_by('annual_income').rever
         ch = Constants.batch
         source = Constants.father_occ_choice
         time = Constants.time
         release = Release.objects.all()
+        notification = Notification.objects.all()
         winners = Previous_winner.objects.all()
         spi = Spi.objects.all()
         student = Student.objects.all()
@@ -176,7 +233,6 @@ def convener_view(request):
                    'gold': gold, 'silver': silver, 'dandm': dandm, 'con': con, 'assis': assis,
                     'hd': hd, 'hd1': hd1
                    }
-
         return render(request, 'scholarshipsModule/scholarships_convener.html',context)
 
 
@@ -184,6 +240,9 @@ def convener_view(request):
 def student_view(request):
     if request.method == 'POST':
         if 'Submit_mcm' in request.POST:
+            x = Notification.objects.get(student_id = request.user.extrainfo.id)
+            x.invite_mcm_accept_flag=False
+            x.save()
             father_occ = request.POST.get('father_occ')
             mother_occ = request.POST.get('mother_occ')
             brother_name = request.POST.get('brother_name')
@@ -247,6 +306,9 @@ def student_view(request):
             return HttpResponseRedirect('/spacs/student_view')
 
         elif 'Submit_gold' in request.POST:
+            x = Notification.objects.get(student_id = request.user.extrainfo.id)
+            x.invite_covocation_accept_flag=False
+            x.save()
             relevant_document = request.FILES.get('myfile')
             student_id = request.user.extrainfo.student
             a = Award_and_scholarship.objects.get(award_name="Director Gold Medal").id
@@ -300,6 +362,9 @@ def student_view(request):
             return HttpResponseRedirect('/spacs/student_view')
 
         elif 'Submit_silver' in request.POST:
+            x = Notification.objects.get(student_id = request.user.extrainfo.id)
+            x.invite_covocation_accept_flag=False
+            x.save()
             relevant_document = request.FILES.get('myfile')
             award = request.POST.get('award')
             a = Award_and_scholarship.objects.get(award_name=award).id
@@ -333,6 +398,9 @@ def student_view(request):
 
 
         elif 'Submit_dandm' in request.POST:
+            x = Notification.objects.get(student_id = request.user.extrainfo.id)
+            x.invite_covocation_accept_flag=False
+            x.save()
             title_name = request.POST.get('title')
             no_of_students = request.POST.get('students')
             relevant_document = request.FILES.get('myfile')
@@ -415,15 +483,20 @@ def student_view(request):
 
 
     else:
+        #start of database queries
         mcm = Mcm.objects.all()
         ch = Constants.batch
         time = Constants.time
         mother_occ = Constants.MOTHER_OCC_CHOICES
         source = Constants.father_occ_choice
         release = Release.objects.all()
+        mcm_release = Release.objects.filter(award='Mcm Scholarship')
+        convocation_release = Release.objects.filter(award='Convocation Medals')
+        release_count = release.count()
         winners = Previous_winner.objects.all()
         spi = Spi.objects.all()
         student = Student.objects.all()
+        student_batch = str(request.user.extrainfo.student)[0:4]
         awards = Award_and_scholarship.objects.all()
         gold = Director_gold.objects.all()
         silver = Director_silver.objects.all()
@@ -432,9 +505,39 @@ def student_view(request):
         assis = Designation.objects.get(name='spacsassistant')
         hd = HoldsDesignation.objects.get(designation=con)
         hd1 = HoldsDesignation.objects.get(designation=assis)
+        x = Notification.objects.get(student_id = request.user.extrainfo.id)
+
+        # Arihant: Here we are fetching the flags from the Notification table of student
+        #end of database queries
+
+
+        #notification flags
+        for dates in release:
+            if check_date(dates.startdate,dates.enddate):
+                print('correct date found not deleting',dates.enddate)
+            else:
+                print('enddate exceed deleting now',dates.enddate)
+                if dates.award == "Mcm":
+                    x = Notification.objects.get(student_id = request.user.extrainfo.id)
+                    x.invite_mcm_accept_flag=False
+                    x.save()
+                else:
+                    x = Notification.objects.get(student_id = request.user.extrainfo.id)
+                    x.invite_covocation_accept_flag=False
+                    x.save()
+                Release.objects.filter(id=dates.id).delete()
+
+        release = Release.objects.all()
+        notif_mcm_flag = x.notification_mcm_flag
+        #print('printing flag',notif_mcm_flag)
+        notif_convocation_flag  = x.notification_convocation_flag
+        show_mcm_flag=x.invite_mcm_accept_flag
+        show_convocation_flag=x.invite_covocation_accept_flag
+        #end
         return render(request, 'scholarshipsModule/scholarships_student.html',
                   {'mcm': mcm, 'time': time, 'ch': ch, 'awards': awards, 'spi': spi,
-                   'student': student, 'winners': winners, 'release': release,
+                   'student': student,'student_batch':student_batch, 'winners': winners, 'release': release,
+                   'notif_mcm_flag':notif_mcm_flag,'notif_convocation_flag':notif_convocation_flag,'show_mcm_flag':show_mcm_flag,'show_convocation_flag':show_convocation_flag,'release_count': release_count,
                    'gold': gold, 'silver': silver, 'dandm': dandm, 'source': source,
                   'mother_occ': mother_occ, 'con': con, 'assis': assis,'hd': hd, 'hd1': hd1})
 
@@ -481,12 +584,13 @@ def staff_view(request):
             Proficiency_dm.objects.filter(id=pk).update(status='COMPLETE')
             messages.success(request,'Verified successfully')
             return HttpResponseRedirect('/spacs/staff_view')
-        elif 'Rejec_dm' in request.POST:
+        elif 'Reject_dm' in request.POST:
             pk = request.POST.get('id')
             Proficiency_dm.objects.filter(id=pk).update(status='Reject')
             messages.success(request,'Rejected successfully')
             return HttpResponseRedirect('/spacs/staff_view')
     else:
+        #mcm = Mcm.objects.all().order_by('student__cpi')
         mcm = Mcm.objects.all()
         gold = Director_gold.objects.all()
         silver = Director_silver.objects.all()
@@ -504,6 +608,29 @@ def staff_view(request):
                    'awards': awards, 'gold': gold,
                    'silver': silver, 'dandm': dandm, 'winners': winners,
                    'con': con, 'assis': assis,'hd': hd, 'hd1': hd1})
+
+# Arihant: This view is created for the rest of audience excluding students, spacs convenor and spacs assistant
+def stats(request):
+    mcm = Mcm.objects.all()
+    gold = Director_gold.objects.all()
+    silver = Director_silver.objects.all()
+    dandm = Proficiency_dm.objects.all()
+    student = Student.objects.all()
+    awards = Award_and_scholarship.objects.all()
+    winners = Previous_winner.objects.all()
+    con = Designation.objects.get(name='spacsconvenor')
+    assis = Designation.objects.get(name='spacsassistant')
+    hd = HoldsDesignation.objects.get(designation=con)
+    hd1 = HoldsDesignation.objects.get(designation=assis)
+
+    return render(request, 'scholarshipsModule/stats.html',
+              {'mcm': mcm, 'student': student,
+               'awards': awards, 'gold': gold,
+               'silver': silver, 'dandm': dandm, 'winners': winners,
+               'con': con, 'assis': assis,'hd': hd, 'hd1': hd1})
+
+
+
 
 
 def convener_catalogue(request):
@@ -536,16 +663,17 @@ def convener_catalogue(request):
 def get_winners(request):
     award_name = request.GET.get('award_name')
     batch_year = int(request.GET.get('batch'))
-    award=Award_and_scholarship.objects.get(award_name=award_name)
+    programme_name = request.GET.get('programme')
+    award = Award_and_scholarship.objects.get(award_name=award_name)
     print(award_name,award)
     print(batch_year)
-    winners=Previous_winner.objects.filter(year=batch_year,award_id=award)
+    winners=Previous_winner.objects.filter(year=batch_year,award_id=award,programme=programme_name)
     context={}
     context['student_name']=[]
     context['student_program'] = []
     context['roll']=[]
 
-
+# Arihant: If-Else Condition for previous winner if there is or no data in the winner table
     if winners:
         for winner in winners:
 
@@ -567,6 +695,43 @@ def get_winners(request):
     return HttpResponse(json.dumps(context), content_type='get_winners/json')
 
 
+
+
+# Arihant: Here we are extracting mcm_flag
+def get_mcm_flag(request):
+    print('hello get_mcm_flag')
+    x = Notification.objects.get(student_id = request.user.extrainfo.id)
+    x.invite_mcm_accept_flag=True
+    x.notification_mcm_flag=False
+    x.save()
+    context={}
+    context['show_mcm_flag']=True
+    if x:
+        context['result']='Success'
+    else:
+        context['result']='Failure'
+    print('printing accept flag',x.invite_mcm_accept_flag)
+    print('printing notification flag',x.notification_mcm_flag)
+    return HttpResponse(json.dumps(context), content_type='get_mcm_flag/json')
+    #return HttpResponseRedirect('/spacs/student_view')
+
+# Arihant: Here we are extracting convocation_flag
+def get_convocation_flag(request):
+    print('hello get_convocation_flag')
+    x = Notification.objects.get(student_id = request.user.extrainfo.id)
+    x.invite_covocation_accept_flag=True
+    x.notification_convocation_flag=False
+    x.save()
+    context={}
+    context['show_convocation_flag']=True
+    if x:
+        context['result']='Success'
+    else:
+        context['result']='Failure'
+    print('printing accept flag',x.invite_covocation_accept_flag)
+    print('printing notification flag',x.notification_convocation_flag)
+    return HttpResponse(json.dumps(context), content_type='get_convocation_flag/json')
+
 def get_content(request):
     print('data is coming through')
     award_name=request.GET.get('award_name')
@@ -581,3 +746,13 @@ def get_content(request):
         context['result']='Failure'
 
     return HttpResponse(json.dumps(context), content_type='get_content/json')
+
+def check_date(start_date, end_date):
+    current_date = datetime.date.today()
+    if start_date<end_date:
+        if current_date <= end_date:
+            return True
+        else:
+            return False
+    else:
+        return False

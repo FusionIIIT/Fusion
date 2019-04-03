@@ -1,0 +1,47 @@
+{% block booking_bw_dates %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+
+   <!--  <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="booking_bw_dates">
+            Bills Between Dates
+        </a>
+    </div> -->
+
+    <form class="ui form" id="find-room-status">
+        <div class="three fields">
+
+            <div class="field">
+                <label>From:</label>
+                <div class="ui calendar" id="rangestart3">
+                    <div class="ui input left icon">
+                        <i class="calendar icon"></i>
+                        <input type="text" placeholder="From" name="start" class="date-selector">
+                    </div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>To:</label>
+                <div class="ui calendar" id="rangeend3">
+                    <div class="ui input left icon">
+                        <i class="calendar icon"></i>
+                        <input type="text" placeholder="To" name="end" class="date-selector">
+                    </div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label><font color="white">l</font></label>
+        
+                <div class="ui blue button center floated" onclick="bill_between_date_range()">
+                        Submit
+                </div>
+            </div>
+        </div>
+    </form>
+
+
+    <div class="ui divider"></div>
+    <div id="replace-this-div-booking-bw-dates">
+</div>
+{% endblock %}

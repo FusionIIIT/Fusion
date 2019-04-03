@@ -1,0 +1,133 @@
+{% load static %}
+{% block messbill %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="ui active item" data-tab="bills">
+            Update Cost
+        </a>
+
+        <a class="item" data-tab="generatebill">
+            Generate Bill
+        </a>
+
+    </div>
+
+
+    <div class="ui active tab" data-tab="bills" id="messmonthlybill">
+        <div class="ui vertical segment">
+            <form method="post">
+                {% csrf_token %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                    <div class="two fields">
+                        <header>Current Amount <br><br> {{ bill_base.bill_amount }}</header>
+                        <div class="field">
+                            <label>Enter bill amount for the current month*</label>
+                            <input name="amount" id="amount" type="number"
+                                   placeholder={{ bill_base.bill_amount }}>
+                        </div>
+                        <div class="field">
+                        <button class="ui primary button right floated" type="submit" name="submit"
+                                onclick="updatecost()">Update
+                        </button>
+                    </div>
+                    </div>
+
+                </div>
+                <br>
+            </form>
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="generatebill" id="generatebill">
+        <div class="ui vertical segment">
+{#            <form method="post" action="{% url 'mess:generatemessbill' %}">#}
+            <form method="post" onclick="generatemessbill()">
+                {% csrf_token %}
+                <div>
+                    <button class="ui primary fluid button" type="submit" name="submit">
+                        Generate
+                    </button>
+                </div>
+                <br>
+
+                <div>
+                    <label>Bill generation will take a while.</label>
+                </div>
+            </form>
+            <hr>
+            <div>
+                <header> <strong>Download Bill:</strong></header>
+
+                <form method="post" target="_blank" action="{% url 'mess:billdownload' %}">
+                    {% csrf_token %}
+                <button type="submit" class="ui primary fluid button">
+                    Download Bill
+                </button>
+                    <br>
+                    <p>Do Not close the tab that will open !</p>
+                    <br>
+                </form>
+                <br>
+            </div>
+
+        </div>
+    </div>
+    <div class="ui modal" style="padding: 2.5%" id="donotbill">
+    <div>
+        <STRONG> BILLS ARE BEING GENERATED </STRONG>
+    </div>
+
+    </div>
+
+{% endblock %}
+{% block javascript %}
+    <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+
+    <script>
+        function updatecost() {
+            $.ajax({
+                type: 'POST',
+                url: 'updatecost/',
+                dataType: 'json',
+                data: {
+                    'csrfmiddlewaretoken': '{{ csrf_token }}',
+                    'amount': $("#amount").val()
+                },
+                success: function (data) {
+                    if (data.status) {
+                        alert(data.message);
+                        $("#messmonthlybill").load(location.href + " #messmonthlybill>*", "")
+                    }
+                },
+                error: function (data, err) {
+                    alert(err.message);
+                }
+            });
+            return false;
+        }
+
+        function generatemessbill() {
+            $.ajax({
+                type: 'POST',
+                url: 'generatemessbill/',
+                dataType: 'json',
+                data: {
+                    'csrfmiddlewaretoken': '{{ csrf_token }}',
+                },
+                success: function (data) {
+                    if (data.status) {
+                        $('#donotbill').modal('show');
+                    }
+                },
+                error: function (data, err) {
+                    alert(err.message);
+                    $("#generatebill").load(location.href + " #generatebill>*", "")
+                }
+            });
+            return false;
+        }
+
+
+    </script>
+{% endblock %}

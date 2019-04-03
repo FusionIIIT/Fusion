@@ -10,13 +10,28 @@
          style="max-width: 320px;">
 
         <div class="image">
-            <img src="{% static 'globals/img/zlatan.jpg' %}">
+		{% if user.extrainfo.profile_picture %}
+			<img src="{{ user.extrainfo.profile_picture.url }}">
+		{% elif user.extrainfo.user_type == "student" or user.extrainfo.user_type == "staff" %}
+			<img src="{% static 'globals/img/zlatan.jpg' %}">
+		{% else %}
+			<img src="{% static 'globals/img/zlatan.jpg' %}">
+		{% endif %}
         </div>
 
         <div class="content">
             {% comment %}
                 TODO: Add a If-Else here!
             {% endcomment %}
+            {% if user %}
+            <div class="ui large header" href="">
+                {{ user.first_name}}
+                {{ user.last_name}}
+                <span class="right floated meta">
+                    {{ user.extrainfo.department.name}}
+                </span>
+            </div>
+            {% else %}
             <div class="ui large header" href="">
                 {{ request.user.first_name}}
                 {{ request.user.last_name}}
@@ -24,9 +39,10 @@
                     {{ request.user.extrainfo.department.name}}
                 </span>
             </div>
+            {% endif %}
 
             <div class="meta">
-                <span>
+                <span> {% comment %}Should this be inside if else?{% endcomment %}
                     {{ Curr_desig }}
                 </span>
             </div>

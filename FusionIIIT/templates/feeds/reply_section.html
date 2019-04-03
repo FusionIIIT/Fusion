@@ -1,0 +1,6 @@
+{% for reply in comment.reply_set.all|dictsortreversed:"replied_at" %}
+	{{reply.content}}
+	<p>-{{reply.user}}</p>
+	<p>{{reply.replied_at}}</p>
+	<br>
+{% endfor %}

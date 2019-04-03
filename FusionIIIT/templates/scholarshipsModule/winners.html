@@ -15,8 +15,20 @@
             <div class="ui grid row">
                 <div class="one wide column"></div>
 
-                <div class="seven wide column">
-                    <label>Batch</label>
+                <div class="four wide column">
+                    <label>Programme</label>
+                    <select class="ui fluid search large dropdown" id="programme_name" required>
+                        <option value="">Select</option>
+                        <option value="B.Tech"> B.Tech </option>
+                        <option value="B.Des"> B.Des </option>
+                        <option value="M.Tech"> M.Tech </option>
+                        <option value="M.Des"> M.Des </option>
+                        <option value="PhD"> PhD </option>
+                    </select>
+                </div>
+
+                <div class="four wide column">
+                    <label>Academic Year</label>
                     <select class="ui fluid search large dropdown" id="batch_year" required>
                         <option value="">Select</option>
                         <option value="2013"> 2013 </option>
@@ -30,9 +42,9 @@
                     </select>
                 </div>
 
-                <div class="seven wide column">
+                <div class="six wide column">
                     <label> Awards </label>
-                    <select class="ui fluid search large dropdown" id="award_name" required>
+                    <select class="ui fluid search large dropdown" id="award_name1" required>
                         <option value="">Select</option>
                         {% for i in awards %}
                         <option value="{{i.award_name}}">{{i.award_name}}</option>
@@ -95,7 +107,7 @@
                 </tbody>
             </table>
 
-           
+
 
             <br>
 
@@ -116,16 +128,19 @@
     <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
 
     <script>
+      //Arihant:Showing Previous Winners
         $(document).on('submit','#winners_form',function (event) {
                 event.preventDefault();
                 $('#winners_table tbody').find("tr:gt(0)").remove();
                 var element = $('#winners_table tbody tr').first();
+                console.log($('award_name').val());
                 $.ajax({
                     url: '/spacs/get_winners/',
                     type: 'GET',
                     data: {
+                        programme: $('#programme_name').val(),
                         batch: $('#batch_year').val(),
-                        award_name: $('#award_name').val()
+                        award_name: $('#award_name1').val()
                     },
                     success: function (response) {
                         if(response.result==='Success'){
@@ -145,6 +160,12 @@
                             console.log(response.result)
                         }
                         else{
+                                txt="<tr>";
+                                txt += '<td>' + "" + '</td>' +
+                                '<td>' + "No Data Found!!"  + '</td>' +
+                                '<td>' + "" + '</td>';
+                                txt +='</tr>';
+                                element.after(txt);
                             console.log(response.result);
                         }
 
@@ -157,7 +178,3 @@
     </script>
 
 {% endblock javascript %}
-
-
-
-

@@ -9,11 +9,11 @@
         </a>
 
         <a class="item" data-tab="viewfeedback">
-            Status
+            Previous Feedback
         </a>
     </div>
 
-    <div class="ui active tab" data-tab="feedback">
+    <div class="ui active tab" data-tab="feedback" id="feedback">
         <div class="ui vertical segment">
 
             {% comment %}Form Tag starts here!{% endcomment %}
@@ -31,37 +31,31 @@
                     <div class="two fields">
                         <div class="field">
                             <label>Mess:</label>
-                            <input value={{messinfo.mess_option}} class="ui large input" readonly>
+                            <input value="{{messinfo.mess_option}}" class="ui large input" readonly>
                         </div>
 
                         <div class="two fields">
                             <div class="twelve wide field">
-                                <label>Type:</label>
-                                <select class="ui search fluid dropdown" name="feedback_type" id="feedback_type">
+                                <label>Type*</label>
+                                <select class="ui dropdown" name="feedback_type" id="feedback_type">
                                     <option value="Cleanliness">Cleanliness</option>
                                     <option value="Food">Food</option>
-                                    <option value="Maintainence">Maintainence</option>
+                                    <option value="Maintenance">Maintenance</option>
                                     <option value="Others">Others</option>
                                 </select>
                             </div>
 
-                            <!-- <div class="field">
-                                <label><br></label>
-                                <button class="ui primary fluid button" type="submit">
-                                    Submit
-                                </button>
-                            </div> -->
                         </div>
                     </div>
 
                     <div class="field">
-                        <label>Description:</label>
+                        <label>Description*</label>
                         <textarea rows="2" id="description" name="description" required="true"></textarea>
                     </div>
                     
                     <div class="field">
                         <label><br></label>
-                            <button class="ui primary fluid button" onclick="return feedback()">
+                            <button class="ui primary fluid button" type="submit" onclick="return feedback()">
                             Submit
                             </button>
                     </div>
@@ -109,33 +103,46 @@
 <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
 
  <script>
+        function required_check_feedback(){
+            if ($("#description").val().length == 0) {
+                check = 0;
+                return check;
+            }
+            else {
+                check = 1;
+            }
+        }
         function feedback(){
-            $.ajax({
-                type: 'POST',
-                url: 'submit/',
-                dataType: 'json',
-                data: {
-                    'csrfmiddlewaretoken' : '{{ csrf_token }}',
-                    'feedback_type':$("#feedback_type").val(),
-                    'description':$("#description").val(),
-                },                
-                success: function(data) {
-                    if(data.status){
-                        alert("Data Inserted Successfully");
-                        
-                        // $('#ls_table').prepend("<tr><td>"+ $("#leave_type").val()+ "</td><td>"+ 
-                        //     $("#start_date").val() + "</td><td>" + $("end_date").val()+
-                        //     "</td><td>"+ $("#purpose").val()+ "</td></tr>")
+            check = required_check_feedback();
+            if(check == 0){
+                alert("Please add description");
+            }
+            else {
+                $.ajax({
+                    type: 'POST',
+                    url: 'submitmessfeedback/',
+                    dataType: 'json',
+                    data: {
+                        'csrfmiddlewaretoken': '{{ csrf_token }}',
+                        'feedback_type': $("#feedback_type").val(),
+                        'description': $("#description").val()
+                    },
+                    success: function (data) {
+                        if (data.status) {
+                            alert("Data Inserted Successfully");
+                            $("#feedback").load(location.href + " #feedback>*", "");
 
-                        document.getElementById('feedback_type').value="";
-                        document.getElementById('description').value="";
-                        
+                            document.getElementById('feedback_type').value = "";
+                            document.getElementById('description').value = "";
+
+                        }
+                    },
+                    error: function (data, err) {
+                        alert(err.message);
+                        $("#feedback").load(location.href + " #feedback>*", "");
                     }
-                },
-                error: function(data, err) {
-                    alert(err.message);
-                }
-            });
+                });
+            }
         return false;
     }
     

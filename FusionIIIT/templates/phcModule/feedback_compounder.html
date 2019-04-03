@@ -45,7 +45,7 @@
 
                     {% if complaint.feedback == None %}
                     <form method='POST'>{% csrf_token %}
-                    <td>  <textarea class="ui textarea" rows="2" id="feed" name="feedback" required="true"></textarea><br>
+                    <td>  <textarea class="ui textarea" rows="2" id='feed' name="feedback" required></textarea><br>
                       <p id="update_feed"></p>
                     <input type="hidden" id="com_id" name="com_id" value={{complaint.id}} />
                     <input type="button" id="feed_com" name="feed_com" class="ui small right floated primary button" value="Submit"/>
@@ -57,8 +57,20 @@
                   {% endfor %}
                   <script src="{% static 'globals/js/jquery.min.js' %}"></script>
                   <script type="text/javascript">
+
+                        function trimfield(str)
+                                       {
+                                         return str.replace(/^\s+|\s+$/g,'');
+                                       }
                         $('#feed_com').click(function(e)
-                                                            {
+                                                         {
+                                                            if(trimfield(document.getElementById("feed").value) == '')
+                                                              {
+                                                                  alert("*Please fill in your response!")
+                                                                  document.getElementById("feed").focus();
+                                                               }
+
+                                                            else{
                                                               $.ajax({
                                                                 type:'post',
                                                                 url:'/healthcenter/compounder/',
@@ -75,7 +87,11 @@
                                                                   document.getElementById("feed_com").style.visibility='hidden';
                                                               }
                                                             });
+                                                                 }
+
                                                           });
+
+
       </script>
                   </tr>
               </tbody>

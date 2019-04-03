@@ -37,4 +37,3 @@ class Tracking(models.Model):
 
     class Meta:
         db_table = 'Tracking'
-

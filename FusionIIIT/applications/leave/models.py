@@ -51,12 +51,12 @@ class LeaveType(models.Model):
 
 class LeavesCount(models.Model):
     user = models.ForeignKey(User, related_name='leave_balance', on_delete=models.CASCADE)
-    year = models.IntegerField(default=2015)
+    year = models.IntegerField(default=2019)
     leave_type = models.ForeignKey(LeaveType, on_delete=models.CASCADE)
     remaining_leaves = models.FloatField(default=2.0)
 
     def save(self, *args, **kwargs):
-        if self.year < 2015 or self.remaining_leaves < 0:
+        if self.year < 2018 or self.remaining_leaves < 0:
             raise ValueError('Year must be greater than 2018 and remaining leaves more than 0')
         super(LeavesCount, self).save(*args, **kwargs)
 
@@ -190,3 +190,45 @@ class ClosedHoliday(models.Model):
 
 class VacationHoliday(models.Model):
     date = models.DateField()
+
+class LeaveOffline(models.Model):
+    applicant = models.ForeignKey(User, related_name='all_leaves_offline',
+                                  on_delete=models.CASCADE)
+    leave_user_select = models.ForeignKey(User, null=True)
+    purpose = models.CharField(max_length=500, default='', blank=True)
+    timestamp = models.DateTimeField(auto_now=True, null=True)
+    application_date = models.DateField()
+    #is_station = models.BooleanField(default=False)
+
+    def get_current_leave_balance(self):
+        curr_year = timezone.now().year
+        balances = self.applicant.leave_balance.filter(year=curr_year)
+        return balances
+
+    def generate_requests(self):
+        pass
+
+    def __str__(self):
+        return '{} applied, status: {}'.format(self.applicant.username,
+                                               'succeed')
+
+
+# TODO: Add more fields
+class ReplacementSegmentOffline(models.Model):
+    leave = models.ForeignKey(LeaveOffline, related_name='replace_segments_offline', on_delete=models.CASCADE)
+    replacer = models.ForeignKey(User, related_name='rep_requests_offline', on_delete=models.CASCADE)
+    replacement_type = models.CharField(max_length=20, default='academic',
+                                        choices=Constants.REPLACEMENT_TYPES)
+    start_date = models.DateField()
+    end_date = models.DateField()
+
+
+class LeaveSegmentOffline(models.Model):
+    leave = models.ForeignKey(LeaveOffline, related_name='segments_offline', on_delete=models.CASCADE)
+    leave_type = models.ForeignKey(LeaveType, on_delete=models.SET_NULL, null=True, default=None)
+    document = models.FileField(upload_to='leave/leave_documents/', null=True)
+    start_date = models.DateField()
+    start_half = models.BooleanField(default=False)
+    end_date = models.DateField()
+    end_half = models.BooleanField(default=False)
+    address = models.CharField(max_length=500, default='', blank=True, null=True)

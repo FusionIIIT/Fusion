@@ -7,22 +7,29 @@
         </a>
     </div>
 
+
     {% comment %}the doctor appointment tab starts here {% endcomment %}
     <div class="ui active tab" data-tab="viewschedule">
         <div class="ui vertical segment">
             <div class="field">
+
+                <div class="field">
+
+                            <input type='button' id='Book Appointment' name='Book Appointment' onClick="window.location.reload();" value="Book Appointment" class="ui primary right floated button" >
+                    </div>
+
 
               <table  border=1 class="ui very basic celled small fluid table"
                      style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;">
                   <thead>
 
                     <tr>
-                      <th>Schedule</th>
+                      <td style="font-weight:bold;color:black;">Schedule</td>
                       {% for d in doctors %}
                       {{count.doctor_count}}
-                      <th>{{d.doctor_name}}</th>
+                      <td style="font-weight:bold;color:black;">{{d.doctor_name}}</td>
                       {% endfor %}
-                    <tr>
+                    </tr>
                       {% for p,day in days %}
                       {{count.empty_fine}}
                       <tr>
@@ -44,11 +51,16 @@
                         {% endif %}
                       {% endfor %}
                       </tr>
-
-                      {% endfor %}                  </thead>
+                    {% endfor %}
+                  </thead>
               </table>
+
         </div>
       </div>
     </div>
     {% comment %}the view schedule tab ends here {% endcomment %}
 {% endblock %}
+
+
+
+

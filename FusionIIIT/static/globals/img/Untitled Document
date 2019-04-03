@@ -1,0 +1,57 @@
+
+                <div class="ui tab" data-tab="uiTeam">
+                    <div class="ui stackable doubling three centered cards">
+                        {% for key, value in uiTeam.items %}
+                            <div class="ui card">
+                                <div class="teamImage image">
+                                    <img src="{% static 'globals/img/'|add:value.devImage %}">
+                                </div>
+                                <div class="content">
+                                    <a class="header">{{ value.devName }}</a>
+                                    <div class="meta">
+                                        <span>{{ value.devTitle }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+
+
+                <div class="ui tab" data-tab="eisTeam">
+                    <div class="ui stackable doubling three centered cards">
+                        {% for key, value in eisTeam.items %}
+                            <div class="ui card">
+                                <div class="teamImage image">
+                                    <img src="{% static 'globals/img/'|add:value.devImage %}">
+                                </div>
+                                <div class="content">
+                                    <a class="header">{{ value.devName }}</a>
+                                    <div class="meta">
+                                        <span>{{ value.devTitle }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+
+                <div class="ui tab" data-tab="leaveTeam">
+                    <div class="ui stackable doubling three centered cards">
+                        {% for key, value in leaveTeam.items %}
+                            <div class="ui card">
+                                <div class="teamImage image">
+                                    <img src="{% static 'globals/img/'|add:value.devImage %}">
+                                </div>
+                                <div class="content">
+                                    <a class="header">{{ value.devName }}</a>
+                                    <div class="meta">
+                                        <span>{{ value.devTitle }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
