@@ -14,7 +14,7 @@ from PIL import Image
 from applications.academic_information.models import Student
 from applications.globals.forms import IssueForm, WebFeedbackForm
 from applications.globals.models import (ExtraInfo, Feedback, HoldsDesignation,
-                                         Issue, IssueImage)
+                                         Issue, IssueImage, Faculty)
 from applications.placement_cell.forms import (AddAchievement, AddCourse,
                                                AddEducation, AddExperience,
                                                AddPatent, AddProfile,
@@ -24,6 +24,7 @@ from applications.placement_cell.models import (Achievement, Course, Education,
                                                 Experience, Has, Patent,
                                                 Project, Publication, Skill)
 from applications.eis.models import faculty_about,emp_research_papers, emp_published_books
+from applications.academic_procedures.models import Thesis
 
 
 def contextstudentmanage(current,profile,request,user,editable):
@@ -270,6 +271,21 @@ def contextfacultymanage(request,user,profile):
   conferences = paginator3.page(page3)
   sr3 = (conferences.number-1)*10
 
+  #paginator for thesis
+  faculty = Faculty.objects.get(id = profile)
+  thesis = Thesis.objects.filter(supervisor_id = faculty)
+  paginator4 = Paginator(thesis, 10)
+  page4 = request.GET.get('page4')
+  mark4=0;
+  if page4 != None:
+    mark4=1
+  else:
+    mark4=0
+  if page4 == None:
+    page4=1
+  thesis = paginator4.page(page4)
+  sr4 = (thesis.number-1)*10
+
 
   context = {'about':detail.about,
     'user' : user,
@@ -283,5 +299,8 @@ def contextfacultymanage(request,user,profile):
     'conferences' : conferences,
     'mark3' : mark3,
     'sr3' : sr3, 
+    'thesis' : thesis,
+    'mark4' : mark4,
+    'sr4' : sr4,
     }
   return context

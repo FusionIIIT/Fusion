@@ -41,7 +41,7 @@
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
 
-                <a class=" {% if mark != 1 and mark2 != 1 and mark3 != 1 %}active item {% else %}item{% endif %}" data-tab="first">
+                <a class=" {% if mark != 1 and mark2 != 1 and mark3 != 1 and mark4 != 1 %}active item {% else %}item{% endif %}" data-tab="first">
                     Personal Details
                     <i class="right floated chevron right icon"></i>
                 </a>
@@ -56,7 +56,7 @@
                     <i class="right floated chevron right icon"></i>
                 </a>
 
-                <a class="item" data-tab="fourth">
+                <a class="{% if mark4 == 1 %}active item {% else %}item{% endif %}" data-tab="fourth">
                     Thesis Supervision
                     <i class="right floated chevron right icon"></i>
                 </a>
@@ -80,18 +80,18 @@
                     <i class="right floated chevron right icon"></i>
                 </a>
 
-                <a class="item" data-tab="nin">
+                <!-- <a class="item" data-tab="ninth">
                     Administrative Responsibilities
                     <i class="right floated chevron right icon"></i>
-                </a>
-                 {% if request.user.extrainfo.user_type == "faculty" %}
-                 <a class="item" data-tab="ninth">
-                    Project Management Forms
-                    <i class="right floated chevron right icon"></i>
-                </a>
+                </a> -->
+                 {% if request.user.extrainfo.user_type == "faculty" and request.user == user %}
+                     <a class="item" data-tab="ninth">
+                        Project Management Forms
+                        <i class="right floated chevron right icon"></i>
+                    </a>
                 {% endif %}
 
-                 {% if "HOD" in desig %}
+                 {% if "HOD" in desig and request.user == user %}
                  <a class="item" data-tab="ten">
                     HOD_TAB
                     <i class="right floated chevron right icon"></i>
@@ -113,7 +113,7 @@
         {% endcomment %}
         <div class="eight wide column">
             {% comment %}The Details start here!{% endcomment %}
-            <div class="{% if mark != 1 and mark2 != 1 and mark3 != 1 %}ui active tab segment{% else %}ui tab segment{% endif %}" data-tab="first">
+            <div class="{% if mark != 1 and mark2 != 1 and mark3 != 1 and mark4 != 1 %}ui active tab segment{% else %}ui tab segment{% endif %}" data-tab="first">
                 {% block personaldetails %}
                     {% include 'eisModulenew/personaldetails.html' %}
                 {% endblock %}
@@ -123,7 +123,7 @@
 
             {% comment %}The Publications starts here!{% endcomment %}
 
-            <div class="{% if mark == 1 or mark2 == 1 or mark3 == 1 %}ui active tab segment{% else %}ui tab segment{% endif %}" data-tab="second">
+            <div class="{% if mark == 1 or mark2 == 1 or mark3 == 1  %}ui active tab segment{% else %}ui tab segment{% endif %}" data-tab="second">
                 {% block publications %}
                     {% include 'eisModulenew/publications.html' %}
                 {% endblock %}
@@ -135,9 +135,10 @@
             {% comment %}The Projects starts here!{% endcomment %}
 
             <div class="ui tab segment" data-tab="third">
-                {% block projects %}
+                <h1>Work in Progress</h1>
+               <!--  {% block projects %}
                     {% include 'eisModulenew/projects.html' %}
-                {% endblock %}
+                {% endblock %} -->
             </div>
 
             {% comment %}The Projects ends here!{% endcomment %}
@@ -145,7 +146,7 @@
 
             {% comment %}The Thesis Supervision starts here!{% endcomment %}
 
-            <div class="ui tab segment" data-tab="fourth">
+            <div class="{% if mark4 == 1  %}ui active tab segment{% else %}ui tab segment{% endif %}" data-tab="fourth">
                 {% block thesis %}
                     {% include 'eisModulenew/thesis.html' %}
                 {% endblock %}
@@ -190,11 +191,9 @@
 
             {% comment %}The Thesis Supervision starts here!{% endcomment %}
             <div class="ui tab segment" data-tab="ninth">
-                <!-- <div class="ui active tab segment" data-tab="first"> -->
                 {% block form1 %}
                     {% include 'officeModule/officeOfDeanRSPC/tab1.html' %}
                 {% endblock %}
-                <!-- </div> -->
             </div>
 
 
