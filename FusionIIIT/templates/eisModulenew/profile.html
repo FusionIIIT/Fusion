@@ -289,10 +289,36 @@
           type: 'time'
         });
 
+<<<<<<< HEAD
         $('#rangestart').calendar({
           type: 'date',
           endCalendar: $('#rangeend')
         });
+=======
+        function editpaper(index,id,name,author2,co_author2,tittle2,year2,volume_no2,page_no2,ref2,dos2,dop2,status2,choose2,doi2)
+        {
+
+            $("#name").val(name);
+            $("#authors").val(author2);
+            $("#co_author").val(co_author2);
+            $("#title").val(tittle2);
+            $("#year").val(year2);
+            $("#volume").val(volume_no2);
+            $("#page").val(page_no2);
+            $("#ref").val(ref2);
+            $("#dos").val(dos2);
+            $("#dop").val(dop2);
+            $("#status").val(status2);
+            $("#sci").val(choose2);
+            $("#doi").val(doi2);
+            $("#journalpk").val(id);
+            $("#index").val(index);
+            document.getElementById("savejournal").style.display='none';
+            document.getElementById("editjournal").style.display='block';
+            document.getElementById("journalform").action="{% url 'eis:editjournal' %}";
+            
+        }
+>>>>>>> upstream/master
 
         $('#rangeend').calendar({
           type: 'date',
@@ -304,6 +330,7 @@
           endCalendar: $('#rangeend')
         });
 
+<<<<<<< HEAD
         $('#rangeend1').calendar({
           type: 'date',
           startCalendar: $('#rangestart')
@@ -312,6 +339,31 @@
           type: 'date',
           endCalendar: $('#rangeend')
         });
+=======
+        function editconference(pk,index,c_name,c_author,c_co_author,c_tittle,c_year,c_venue,c_dos,c_doa,c_dop,c_page,c_status,c_isbn)
+        {
+            console.log("dvd")
+            $("#index3").val(index);
+            $("#conferencepk").val(pk);
+            $("#name3").val(c_name);
+            $("#authors3").val(c_author);
+            $("#co_author3").val(c_co_author);
+            $("#title3").val(c_tittle);
+            $("#year3").val(c_year);
+            $("#venue3").val(c_venue);
+            $("#dos3").val(c_dos);
+            $("#doa3").val(c_doa);
+            $("#dop3").val(c_dop);
+            $("#page_no3").val(c_page);
+            $("#status3").val(c_status);
+            $("#isbn_no3").val(c_isbn);
+            document.getElementById("saveconference").style.display='none';
+            document.getElementById("editconference").style.display='block';
+            document.getElementById("conferenceform").action="{% url 'eis:editconference' %}";
+        }
+
+
+>>>>>>> upstream/master
 
         $('#rangeend2').calendar({
           type: 'date',

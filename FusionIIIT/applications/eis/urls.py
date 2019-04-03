@@ -21,7 +21,7 @@ urlpatterns = [
     url(r'^emp_mtechphd_thesisDelete/(?P<pk>[0-9]+)/$', views.emp_mtechphd_thesisDelete, name='emp_mtechphd_thesisDelete'),
     url(r'^emp_patentsDelete/(?P<pk>[0-9]+)/$', views.emp_patentsDelete, name='emp_patentsDelete'),
     url(r'^emp_published_booksDelete/(?P<pk>[0-9]+)/$', views.emp_published_booksDelete, name='emp_published_booksDelete'),
-    url(r'^emp_research_papersDelete/(?P<pk>[0-9]+)/$', views.emp_research_papersDelete, name='emp_research_papersDelete'),
+    url(r'^emp_research_papersDelete/(?P<pk>[0-9]+)/(?P<sr>[0-9]+)/(?P<mark>[0-9]+)/$', views.emp_research_papersDelete, name='emp_research_papersDelete'),
     url(r'^emp_research_projectsDelete/(?P<pk>[0-9]+)/$', views.emp_research_projectsDelete, name='emp_research_projectsDelete'),
     url(r'^emp_session_chairDelete/(?P<pk>[0-9]+)/$', views.emp_session_chairDelete, name='emp_session_chairDelete'),
     url(r'^emp_techtransferDelete/(?P<pk>[0-9]+)/$', views.emp_techtransferDelete, name='emp_techtransferDelete'),
@@ -29,6 +29,8 @@ urlpatterns = [
 
     # edit personal information
     url(r'^persinfo/$', views.persinfo, name='persinfo'),
+    url(r'^journal/edit$', views.editjournal, name='editjournal'),
+    url(r'^conference/edit$', views.editconference, name='editconference'),
 
     # insert
     url(r'^pg/$', views.pg_insert, name='pg_insert'),
@@ -36,7 +38,11 @@ urlpatterns = [
     url(r'^fvisit/$', views.fvisit_insert, name='fvisit_insert'),
     url(r'^ivisit/$', views.ivisit_insert, name='ivisit_insert'),
     url(r'^journal/$', views.journal_insert, name='journal_insert'),
+<<<<<<< HEAD
     url(r'^confrence/$', views.confrence_insert, name='confrence_insert'),
+=======
+    url(r'^conference/$', views.conference_insert, name='conference_insert'),
+>>>>>>> upstream/master
     url(r'^book/$', views.book_insert, name='book_insert'),
     url(r'^consym/$', views.consym_insert, name='consym_insert'),
     url(r'^event/$', views.event_insert, name='event_insert'),

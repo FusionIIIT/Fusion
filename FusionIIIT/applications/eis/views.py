@@ -472,10 +472,18 @@ def emp_published_booksDelete(request, pk):
     instance.delete()
     return redirect('eis:profile')
 
-def emp_research_papersDelete(request, pk):
+def emp_research_papersDelete(request, pk, sr,mark):
     instance = emp_research_papers.objects.get(pk=pk)
+    page = int(sr)//10
+    page = page+1
+    url = ""
+    if mark== '1':
+        url = 'http://127.0.0.1:8000/profile/?page='+str(page)
+    if mark== '2':
+        url = 'http://127.0.0.1:8000/profile/?page3='+str(page)
+    print(url)
     instance.delete()
-    return redirect('eis:profile')
+    return redirect(url)
 
 def emp_research_projectsDelete(request, pk):
     instance = emp_research_projects.objects.get(pk=pk)
@@ -600,12 +608,27 @@ def journal_insert(request):
     eis.rtype = 'Journal'
     eis.authors = request.POST.get('authors')
     eis.title_paper = request.POST.get('title')
+<<<<<<< HEAD
     eis.name_journal = request.POST.get('name')
     eis.volume_no = request.POST.get('volume')
     eis.page_no = request.POST.get('page')
     eis.is_sci = request.POST.get('sci')
     eis.year = request.POST.get('year')
     eis.a_month = request.POST.get('month')
+=======
+    try:
+        myfile = request.FILES['journal']
+        fs = FileSystemStorage()
+        filename = fs.save(myfile.name, myfile)
+        uploaded_file_url = fs.url(filename)
+        print(uploaded_file_url)
+        eis.paper=uploaded_file_url
+    except:
+        eis.paper = None
+
+    eis.co_authors = request.POST.get('co_author')
+    eis.name = request.POST.get('name')
+>>>>>>> upstream/master
     eis.doc_id = request.POST.get('doc_id')
     eis.doc_description = request.POST.get('doc_description')
     eis.status = request.POST.get('status')
@@ -636,7 +659,11 @@ def journal_insert(request):
             eis.date_submission = datetime.datetime.strptime(request.POST.get('dos'), "%b. %d, %Y")
 
     eis.save()
+<<<<<<< HEAD
     return redirect('eis:profile')
+=======
+    return redirect('http://127.0.0.1:8000/profile/?page=1')
+>>>>>>> upstream/master
 
 def confrence_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
@@ -661,7 +688,39 @@ def confrence_insert(request):
     eis.doc_id = request.POST.get('doc_id')
     eis.doc_description = request.POST.get('doc_description')
     eis.status = request.POST.get('status')
+<<<<<<< HEAD
     eis.reference_number = request.POST.get('reference_number')
+=======
+    eis.reference_number = request.POST.get('ref')
+    eis.is_sci = request.POST.get('sci')
+    volume_no = request.POST.get('volume')
+    page_no = request.POST.get('page')
+    year = request.POST.get('year')
+    if volume_no != '' and volume_no != None:
+        eis.volume_no=volume_no
+    if page_no != '' and page_no != None :
+        eis.page_no=page_no
+    if year != '' and year != None :
+        eis.year = year
+    if(request.POST.get('doi') != None and request.POST.get('doi') != '' and request.POST.get('doi') != 'None'):
+        x = request.POST.get('doi')
+        if x[-4:] == 'a.m.':
+            x = x[:-4]
+            x = x+"AM"
+        if x[-4:] == 'p.m.':
+            x = x[:-4]
+            x = x+"PM"
+        print(x)
+       
+        try: 
+            try:
+                eis.doi = datetime.datetime.strptime(x, "%B %d, %Y %I:%M %p")
+            except:
+                eis.doi = datetime.datetime.strptime(x, "%B %d, %Y, %I:%M %p")
+
+        except:
+            eis.doi = datetime.datetime.strptime(x, "%B %d, %Y, %I %p")
+>>>>>>> upstream/master
 
     if (request.POST.get('doi') != None and request.POST.get('doi') != '' and request.POST.get('doi') != 'None'):
         try:
@@ -669,22 +728,164 @@ def confrence_insert(request):
         except:
             eis.doi = datetime.datetime.strptime(request.POST.get('doi'), "%b. %d, %Y")
     if (request.POST.get('doa') != None and request.POST.get('doa') != '' and request.POST.get('doa') != 'None'):
+<<<<<<< HEAD
         try:
             eis.start_date = datetime.datetime.strptime(request.POST.get('doa'), "%B %d, %Y")
+=======
+        x = request.POST.get('doa')
+        if x[-4:] == 'a.m.':
+            x = x[:-4]
+            x = x+"AM"
+        if x[-4:] == 'p.m.':
+            x = x[:-4]
+            x = x+"PM"
+        try:
+            try:
+                eis.date_acceptance = datetime.datetime.strptime(x, "%B %d, %Y %I:%M %p")
+            except:
+                eis.date_acceptance = datetime.datetime.strptime(x, "%B %d, %Y, %I:%M %p")
+>>>>>>> upstream/master
         except:
             eis.start_date = datetime.datetime.strptime(request.POST.get('doa'), "%b. %d, %Y")
     if (request.POST.get('dop') != None and request.POST.get('dop') != '' and request.POST.get('dop') != 'None'):
+<<<<<<< HEAD
         try:
             eis.end_date = datetime.datetime.strptime(request.POST.get('dop'), "%B %d, %Y")
+=======
+        x = request.POST.get('dop')
+        if x[-4:] == 'a.m.':
+            x = x[:-4]
+            x = x+"AM"
+        if x[-4:] == 'p.m.':
+            x = x[:-4]
+            x = x+"PM"
+        try:
+            try:
+                eis.date_publication = datetime.datetime.strptime(x, "%B %d, %Y %I:%M %p")
+            except:
+                eis.date_publication = datetime.datetime.strptime(x, "%B %d, %Y, %I:%M %p")
+>>>>>>> upstream/master
         except:
             eis.end_date = datetime.datetime.strptime(request.POST.get('dop'), "%b. %d, %Y")
     if (request.POST.get('dos') != None and request.POST.get('dos') != '' and request.POST.get('dos') != 'None'):
+<<<<<<< HEAD
         try:
             eis.date_submission = datetime.datetime.strptime(request.POST.get('dos'), "%B %d, %Y")
+=======
+        x = request.POST.get('dos')
+        if x[-4:] == 'a.m.':
+            x = x[:-4]
+            x = x+"AM"
+        if x[-4:] == 'p.m.':
+            x = x[:-4]
+            x = x+"PM"
+        try:
+            try:
+                eis.date_submission = datetime.datetime.strptime(x, "%B %d, %Y %I:%M %p")
+            except:
+                eis.date_submission = datetime.datetime.strptime(x, "%B %d, %Y, %I:%M %p")
+>>>>>>> upstream/master
         except:
             eis.date_submission = datetime.datetime.strptime(request.POST.get('dos'), "%b. %d, %Y")
     eis.save()
     return redirect('eis:profile')
+
+def editconference(request):
+    eis = emp_research_papers.objects.get(pk=request.POST.get('conferencepk'))
+    eis.authors = request.POST.get('authors3')
+    eis.co_authors = request.POST.get('co_author3')
+    eis.title_paper = request.POST.get('title3')
+    try:
+        myfile = request.FILES['journal3']
+        fs = FileSystemStorage()
+        filename = fs.save(myfile.name, myfile)
+        uploaded_file_url = fs.url(filename)
+        eis.paper=uploaded_file_url
+    except:
+        print("nothing")
+
+    eis.name = request.POST.get('name3')
+    eis.venue = request.POST.get('venue3')
+    if request.POST.get('page_no3') != '' and request.POST.get('page_no3') != None:
+        eis.page_no = int(request.POST.get('page_no3'))
+    if request.POST.get('isbn_no3') != '' and request.POST.get('isbn_no3') != None:
+        eis.isbn_no = int(request.POST.get('isbn_no3'))
+    if request.POST.get('year3') != '' and request.POST.get('year3') != None:
+        eis.year = int(request.POST.get('year3'))
+    eis.status = request.POST.get('status3')
+    if(request.POST.get('doi3') != None and request.POST.get('doi3') != '' and request.POST.get('doi3') != 'None'):
+        x = request.POST.get('doi3')
+        if x[-4:] == 'a.m.':
+            x = x[:-4]
+            x = x+"AM"
+        if x[-4:] == 'p.m.':
+            x = x[:-4]
+            x = x+"PM"
+        print(x)
+       
+        try: 
+            try:
+                eis.doi = datetime.datetime.strptime(x, "%B %d, %Y %I:%M %p")
+            except:
+                eis.doi = datetime.datetime.strptime(x, "%B %d, %Y, %I:%M %p")
+
+        except:
+            eis.doi = datetime.datetime.strptime(x, "%B %d, %Y")
+
+    if (request.POST.get('doa3') != None and request.POST.get('doa3') != '' and request.POST.get('doa3') != 'None'):
+        x = request.POST.get('doa3')
+        if x[-4:] == 'a.m.':
+            x = x[:-4]
+            x = x+"AM"
+        if x[-4:] == 'p.m.':
+            x = x[:-4]
+            x = x+"PM"
+        try:
+            try:
+                eis.date_acceptance = datetime.datetime.strptime(x, "%B %d, %Y %I:%M %p")
+            except:
+                eis.date_acceptance = datetime.datetime.strptime(x, "%B %d, %Y, %I:%M %p")
+        except:
+            eis.date_acceptance = datetime.datetime.strptime(x, "%B %d, %Y")
+
+    if (request.POST.get('dop3') != None and request.POST.get('dop3') != '' and request.POST.get('dop3') != 'None'):
+        x = request.POST.get('dop3')
+        if x[-4:] == 'a.m.':
+            x = x[:-4]
+            x = x+"AM"
+        if x[-4:] == 'p.m.':
+            x = x[:-4]
+            x = x+"PM"
+        try:
+            try:
+                eis.date_publication = datetime.datetime.strptime(x, "%B %d, %Y %I:%M %p")
+            except:
+                eis.date_publication = datetime.datetime.strptime(x, "%B %d, %Y, %I:%M %p")
+        except:
+            eis.date_publication = datetime.datetime.strptime(x, "%B %d, %Y")
+
+    if (request.POST.get('dos3') != None and request.POST.get('dos3') != '' and request.POST.get('dos3') != 'None'):
+        x = request.POST.get('dos3')
+        if x[-4:] == 'a.m.':
+            x = x[:-4]
+            x = x+"AM"
+        if x[-4:] == 'p.m.':
+            x = x[:-4]
+            x = x+"PM"
+        try:
+            try:
+                eis.date_submission = datetime.datetime.strptime(x, "%B %d, %Y %I:%M %p")
+            except:
+                eis.date_submission = datetime.datetime.strptime(x, "%B %d, %Y, %I:%M %p")
+        except:
+            eis.date_submission = datetime.datetime.strptime(x, "%B %d, %Y")
+    eis.save()
+    page = int(request.POST.get('index3'))//10
+    page = page+1
+    url = "http://127.0.0.1:8000/profile/?page3="+str(page)
+    print(url)
+    return redirect(url)
+
 
 def book_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)

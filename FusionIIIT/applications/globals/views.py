@@ -24,6 +24,7 @@ from applications.placement_cell.models import (Achievement, Course, Education,
                                                 Project, Publication, Skill)
 from Fusion.settings import LOGIN_URL
 from notifications.models import Notification
+from .contextgenerator import *
 
 def index(request):
     context = {}
@@ -700,11 +701,19 @@ def profile(request, username=None):
     editable = request.user == user
     profile = get_object_or_404(ExtraInfo, Q(user=user))
     if(str(user.extrainfo.user_type)=='faculty'):
+<<<<<<< HEAD
         return HttpResponseRedirect('/eis/profile/' + (username if username else ''))
+=======
+      context = contextfacultymanage(request,user,profile)
+      return render(request,"eisModulenew/profile.html",context)
+    
+#user is academic
+>>>>>>> upstream/master
     if(str(user.extrainfo.department)=='department: Academics'):
         return HttpResponseRedirect('/aims')
     current = HoldsDesignation.objects.filter(Q(working=user, designation__name="student"))
     if current:
+<<<<<<< HEAD
         student = get_object_or_404(Student, Q(id=profile.id))
         if editable and request.method == 'POST':
             if 'studentapprovesubmit' in request.POST:
@@ -903,6 +912,15 @@ def profile(request, username=None):
         return render(request, "globals/student_profile.html", context)
     else:
         return redirect("/")
+=======
+      context = contextstudentmanage(current,profile,request,user,editable)
+      return render(request, "globals/student_profile.html", context)
+    else:
+      return redirect("/")
+   
+
+
+>>>>>>> upstream/master
 
 @login_required(login_url=LOGIN_URL)
 def logout_view(request):

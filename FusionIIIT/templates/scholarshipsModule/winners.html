@@ -44,7 +44,7 @@
 
                 <div class="six wide column">
                     <label> Awards </label>
-                    <select class="ui fluid search large dropdown" id="award_name" required>
+                    <select class="ui fluid search large dropdown" id="award_name1" required>
                         <option value="">Select</option>
                         {% for i in awards %}
                         <option value="{{i.award_name}}">{{i.award_name}}</option>
@@ -133,13 +133,14 @@
                 event.preventDefault();
                 $('#winners_table tbody').find("tr:gt(0)").remove();
                 var element = $('#winners_table tbody tr').first();
+                console.log($('award_name').val());
                 $.ajax({
                     url: '/spacs/get_winners/',
                     type: 'GET',
                     data: {
                         programme: $('#programme_name').val(),
                         batch: $('#batch_year').val(),
-                        award_name: $('#award_name').val()
+                        award_name: $('#award_name1').val()
                     },
                     success: function (response) {
                         if(response.result==='Success'){

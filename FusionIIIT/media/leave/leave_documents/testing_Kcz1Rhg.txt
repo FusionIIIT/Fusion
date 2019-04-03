@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 praveen
 performance :
 
@@ -6,4 +7,14 @@ leave application ->leave type-> station           ->
                                  casual            ->
                                  restricted        ->
                                  earned            ->
+=======
+praveen
+performance :
+
+leave application ->leave type-> station           -> 
+                                 special casual    ->
+                                 casual            ->
+                                 restricted        ->
+                                 earned            ->
+>>>>>>> upstream/master
                                  commuted          ->

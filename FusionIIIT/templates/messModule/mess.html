@@ -34,7 +34,11 @@ Central Mess
         {% comment %}The Tab-Menu starts here!{% endcomment %}
         <div class="ui huge fluid vertical pointing menu"
              style="max-width: 320px;">
+            {% block menucard %}
+                {% include 'messModule/menu_card.html' %}
+            {% endblock %}
 
+<<<<<<< HEAD
             {% for d in desig %}
 <<<<<<< HEAD
                 {% if info.user_type == 'student' and d.designation.name == 'student' %}
@@ -178,6 +182,8 @@ Central Mess
 
             {% endif %}
             {% endfor %}
+=======
+>>>>>>> upstream/master
         </div>
         {% comment %}The Tab-Menu ends here!{% endcomment %}
 
@@ -271,7 +277,7 @@ Central Mess
 
 
         {% comment %}The ... starts here!{% endcomment %}
-        <div class="ui tab segment" data-tab="fourth">
+        <div class="ui {% if info.user_type == 'student' %}active {% endif %}tab segment" data-tab="fourth">
             {% block views %}
             {% include 'messModule/views.html' %}
             {% endblock %}
@@ -350,7 +356,11 @@ Central Mess
             <div class="ui active tab segment" data-tab="thirteenth">
 =======
         {% comment %}The ... starts here!{% endcomment %}
+<<<<<<< HEAD
         <div class="ui tab segment" data-tab="thirteenth">
+>>>>>>> upstream/master
+=======
+        <div class="ui {% if info.user_type == 'staff' %}active {% endif %}tab segment" data-tab="thirteenth">
 >>>>>>> upstream/master
             {% block viewmenu %}
             {% include 'messModule/viewmenu.html' %}
@@ -406,6 +416,18 @@ Central Mess
             {% endblock %}
         </div>
 
+        <div class="ui tab segment" data-tab="twentyone">
+            {% block messcommittee %}
+            {% include 'messModule/mess_committee.html' %}
+            {% endblock %}
+        </div>
+
+        <div class="ui tab segment" data-tab="twentytwo">
+            {% block nonvegorders %}
+            {% include 'messModule/nonvegorder.html' %}
+            {% endblock %}
+        </div>
+
 
 
     </div>
@@ -440,9 +462,10 @@ Central Mess
 
 
 <script>
-        $(document).ready(function(
-            var tab = $('[data-tab'='first']).tabs('getSelected');
-            tab.panel('refresh');
+        $(document).ready(function() {
+                var tab = $([data-tab = 'first']).tabs('getSelected');
+                tab.panel('refresh');
+            }
             )
         var ctx = document.getElementById("myChart").getContext('2d');
         var myChart = new Chart(ctx, {

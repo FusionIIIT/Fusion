@@ -14,7 +14,6 @@
 
         <div class="ui vertical segment">
             {% comment %}Form Tag starts here!{% endcomment %}
-            {% if editable %}
             <form method="post" class="ui form" role="form">
                 {% comment %}The add a new Publication Accordian starts here!{% endcomment %}
                 <div class="ui active accordion field">
@@ -84,7 +83,6 @@
         </div>
         {% comment %}The add a new Publication Accordian ends here!{% endcomment %}
         </form>
-        {% endif %}
         {% comment %}Form Tag ends here!{% endcomment %}
 
         {% if publications %}
@@ -120,23 +118,17 @@
                 </td>
 
                 <td>
-                    {% if editable %}
                   <form method="post" class="ui form" role="form">
                     {% csrf_token %}
                     <button name="deletepub" value="{{ publication.pk }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
                         <i class="delete red icon"></i>
                     </button>
                     </form>
-                    {% endif %}
                 </td>
             </tr>
             {% endfor %}
             </tbody>
         </table>
-            {% else %}
-            <div>
-                No publications added yet.
-            </div>
         {% endif %}
 
     </div>
@@ -144,7 +136,6 @@
     <div class="ui tab" data-tab="patents">
         <div class="ui vertical segment">
             {% comment %}Form Tag starts here!{% endcomment %}
-            {% if editable %}
             <form method="post" class="ui form" role="form">
                 {% comment %}The add a new Publication Accordian starts here!{% endcomment %}
                 <div class="ui active accordion field">
@@ -214,7 +205,6 @@
         </div>
         {% comment %}The add a new Publication Accordian ends here!{% endcomment %}
         </form>
-        {% endif %}
             {% comment %}Form Tag ends here!{% endcomment %}
 
 
@@ -251,23 +241,17 @@
                     </td>
 
                     <td>
-                        {% if editable %}
                       <form method="post" class="ui form" role="form">
                         {% csrf_token %}
                         <button name="deletepat" value="{{ paten.pk }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
                             <i class="delete red icon"></i>
                         </button>
                         </form>
-                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
                 </tbody>
             </table>
-            {% else %}
-            <div>
-                No patents added yet.
-            </div>
             {% endif %}
         </div>
     </div>

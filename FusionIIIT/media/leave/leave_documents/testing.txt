@@ -1,4 +1,10 @@
+<<<<<<< HEAD
 praveen
 performance :
 
+=======
+praveen
+performance :
+
+>>>>>>> upstream/master
 leave application ->leave type-> station-> working properly

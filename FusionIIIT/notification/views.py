@@ -3,7 +3,7 @@ from notifications.signals import notify
 
 # Create your views here.
 
-def leave_module_notif(sender, recipient, type):
+def leave_module_notif(sender, recipient, type, date=None):
     url = 'leave:leave'
     module = 'Leave Module'
     sender=sender
@@ -11,22 +11,22 @@ def leave_module_notif(sender, recipient, type):
     verb=''
     if type=='leave_applied':
         verb="Your leave has been successfully submitted."
-    if type=='request_accepted':
+    elif type=='request_accepted':
         verb = "Your responsibility has been accepted "
-    if type=='request_declined':
+    elif type=='request_declined':
         verb = "Your responsibility has been declined "
-    if type=='leave_accepted':
+    elif type=='leave_accepted':
         verb = "You leave request has been accepted "
-    if type == 'leave_forwarded':
+    elif type == 'leave_forwarded':
         verb = "You leave request has been forwarded "
-    if type=='leave_rejected':
+    elif type=='leave_rejected':
         verb = "You leave request has been rejected "
-    if type=='offline_leave':
+    elif type=='offline_leave':
         verb = "Your offline leave has been updated "
-    if type=='replacement_request':
+    elif type=='replacement_request':
         verb = "You have a replacement request "
-    if type=='replacement_cancel':
-        verb = "Your replacement has been cancelled"
+    elif type=='replacement_cancel':
+        verb = "Your replacement has been cancelled for "+date
 
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)

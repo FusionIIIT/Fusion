@@ -14,19 +14,19 @@
             {% comment %}Form Tag starts here!{% endcomment %}
 
             {% if current_date < mess_reg.end_reg %}
-            Registration ongoing till {{mess_reg.end_reg}}
-
+                <br>
+                <strong>Registration ongoing till {{mess_reg.end_reg}}</strong>
+                <br>
             {% else %}
-            <form method="post" action="{% url 'mess:startmessregistration' %}">
+{#            <form method="post" action="{% url 'mess:startmessregistration' %}">#}
+            <form method="post">
                 {% csrf_token %}
                 <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
-
-
                     <br>
                     <div class="two fields">
                         <div class="field">
                             <label>Choose Sem:</label>
-                            <select class="ui search fluid dropdown" name="sem">
+                            <select class="ui search fluid dropdown" name="sem" id="reg_sem">
                                     <option value="1">1</option>
                                     <option value="2">2</option>
                             </select>
@@ -35,16 +35,16 @@
                     
                     <div class="field">
                         <label>Start date:</label>
-                        <input type="date" name="start_date">
+                        <input type="date" name="start_date" id="reg_start_date">
                     </div>
 
                     <div class="field">
                         <label>End date:</label>
-                        <input type="date" name="end_date">
+                        <input type="date" name="end_date" id="reg_end_date">
                     </div>
 
                     <div class="field">
-                        <button class="ui primary button right floated" type="submit" name="submit">
+                        <button class="ui primary button right floated" type="submit" name="submit" onclick="return start_registration()">
                             Submit
                         </button>
                     </div>
@@ -63,4 +63,51 @@
 
 
 {% endblock %}
+{% block javacript %}
+    <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
 
+ <script>
+        function required_check_registration(){
+            if (!confirm("Do you want to start registration for the semester :")) {
+                check = 0;
+                return check;
+            }
+            else {
+                check = 1;
+                return check;
+            }
+        }
+        function start_registration(){
+            check = required_check_registration();
+            if(check == 0){
+                alert("Operation cancelled");
+            }
+            else {
+                $.ajax({
+                    type: 'POST',
+                    url: 'startmessregistration/',
+                    dataType: 'json',
+                    data: {
+                        'csrfmiddlewaretoken': '{{ csrf_token }}',
+                        'start_date': $("#reg_start_date").val(),
+                        'end_date': $("#reg_end_date").val(),
+                        'sem':$("#reg_sem").val()
+                    },
+                    success: function (data) {
+                        if (data.status) {
+                            alert(data.message);
+                            $("#messchange").load(location.href + " #messchange>*", "");
+
+                        }
+                    },
+                    error: function (data, err) {
+                        alert(err.message);
+                        $("#messchange").load(location.href + " #messchange>*", "");
+                    }
+                });
+            }
+        return false;
+    }
+
+</script>
+{% endblock %}

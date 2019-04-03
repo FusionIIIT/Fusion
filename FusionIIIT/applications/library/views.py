@@ -29,7 +29,8 @@ from django.utils.functional import cached_property
 
 def libraryModule(request):
         issue_details={}
-        due_details={}
+        due_details1={}
+        due_details2={}
         textb=""
         due=0
         j=0
@@ -113,14 +114,13 @@ def libraryModule(request):
             due = td.text
         for div in soup2.find_all("div",{'id':'print16'}):
             if div.find_all("tr",{'class':['GridItem','GridAltItem']}):
-
                 for tr in div.find_all("tr",{'class':['GridItem','GridAltItem']}):
                     temp = {str(j):{"assn": tr.contents[1].text,
                                     "due_date": tr.contents[2].text,
                                     "tdod": tr.contents[3].text,
                                     "tod": tr.contents[4].text}}
                     j=j+1
-                    due_details.update(temp)
+                    due_details1.update(temp)
             else:
                 print("No Records Found")
 
@@ -134,7 +134,7 @@ def libraryModule(request):
                                     "tod": tr.contents[5].text,
                                     "cause": tr.contents[6].text}}
                     j=j+1
-                    due_details.update(temp)
+                    due_details2.update(temp)
 
             else :
                     print("No Records Found")
@@ -183,16 +183,20 @@ def libraryModule(request):
             #textb=soupb2.get_text()
             text = html_text.extract_text(str(soupb2))
             text=text.split("Central Library",1)[1]
-            start = "Search Results"
-            end = "Total Records"
-            textb = (text.split(start))[1].split(end)[0]
-            textb=textb.replace("Copies Information Reserve Add Keyword(s) Add To Cart Content Author Info Book Info","\n")
-            textb=textb.split("\n")
+            if text=='\nNo Result Found.\nNew Search':
+                textb = "N"
+            else:
+                start = "Search Results"
+                end = "Total Records"
+                textb = (text.split(start))[1].split(end)[0]
+                textb=textb.replace("Copies Information Reserve Add Keyword(s) Add To Cart Content Author Info Book Info","\n")
+                textb=textb.split("\n")
 
 
 
 
 
-        context={"data1": issue_details, "due": due, "data2": due_details,"bookresults":textb}
+
+        context={"data1": issue_details, "due": due, "data2": due_details1,"data3":due_details2,"bookresults":textb}
         print(request.user)
         return render(request, "libraryModule/libraryModule.html", context)
