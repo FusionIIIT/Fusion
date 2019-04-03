@@ -585,6 +585,7 @@ def newordershod(request):
         try:
             obj = apply_for_purchase.objects.get(id = objid)
             obj.HOD_approve_tag = 1
+            obj.director_approve_tag = 0
             obj.save()
             print("work done")
             str = "order with id "+ objid +" has been approved by you"
@@ -606,7 +607,6 @@ def newordersregistrar(request):
         try:
             obj = apply_for_purchase.objects.get(id = objid)
             obj.registrar_approve_tag = 1
-            obj.director_approve_tag = 1
             obj.save()
             print("work done")
             str = "order with id "+ objid +" has been approved by you"
@@ -617,9 +617,6 @@ def newordersregistrar(request):
     return HttpResponse("you are the best ")
 
 def newordersregistrar2(request):
-    print("hello2")
-    #this one creates and stores the data in django forms
-    print("new ord caled")
     if request.method=='POST':
         objid = request.POST.get('id')
         print(objid)
@@ -627,6 +624,7 @@ def newordersregistrar2(request):
         try:
             obj = apply_for_purchase.objects.get(id = objid)
             obj.registrar_approve_tag = 1
+            obj.director_approve_tag = 0
             obj.save()
             print("work done")
             str = "order with id "+ objid +" has been approved by you"
@@ -656,6 +654,19 @@ def newordersdirector(request):
         except apply_for_purchase.DoesNotExist:
             print("model not exists")
     return HttpResponse("you are the best ")
+
+
+def newordersPO(request):
+
+
+
+
+
+
+def newordersPOonGem(request):
+
+
+    
 
 
 
@@ -840,24 +851,27 @@ def officeOfPurchaseOfficer(request):
             #render appropritate templates as per the actor like approvalHOD2 or approvalRegistrar2 etc
             #this is working through user_type not utype
             if(user_type=="HOD" or per_user=="pkhanna"):
-                print("new orders mein aa gaya")
                 alldata = apply_for_purchase.objects.filter(HOD_approve_tag=0)
                 context={'alldata':alldata}
                 print(context)
                 return render(request, "officeModule/officeOfPurchaseOfficer/approvalHOD2.html",context=context)
 
             elif(user_type=="DeputyRegistrar" or user_type=="Registrar" or per_user=="swapnali"):
-                print("template in processs")
                 alldata = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=0,expected_cost__lte = 50000)
                 alldata2 = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=0,expected_cost__gte = 50001)
                 context = {'alldata':alldata,'alldata2':alldata2}
                 return render(request, "officeModule/officeOfPurchaseOfficer/approvalRegistrar.html",context=context)
 
             elif(user_type=="director" or user_type=="Director"):
-                print("template in processs")
                 alldata = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=1,expected_cost__gte = 50001,director_approve_tag=0)
                 print(alldata)
                 context = {'alldata':alldata}
+                return render(request, "officeModule/officeOfPurchaseOfficer/approvaldirector.html",context=context)
+
+            elif(user_type=="purchaseofficer" or user_type=="PurchaseOfficer"):
+                alldata = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=1,expected_cost__gte = 50001,director_approve_tag=1)
+                alldata2 = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=1,expected_cost__lte = 50000)
+                context = {'alldata':alldata,'alldata2':alldata2}
                 return render(request, "officeModule/officeOfPurchaseOfficer/approvaldirector.html",context=context)
 
 
