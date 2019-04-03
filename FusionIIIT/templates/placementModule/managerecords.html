@@ -215,7 +215,7 @@
                                         <div class="field">
                                           {{ form2.ctc.errors }}
                                             <label for="{{ form3.ctc.id_for_label }}">
-                                                min CTC (LPA)
+                                                CTC (LPA) (minimum for Search)
                                             </label>
 
                                             <div class="ui large input">
@@ -298,9 +298,7 @@
                             <th class="two wide">Year</th>
                             <th class="six wide">Company</th>
                             <th class="two wide">CTC(LPA)</th>
-                            {% if profile.designation.name != 'student' %}
                             <th class="two wide">Delete</th>
-                            {% endif %}
                         </tr>
                         </thead>
 
@@ -333,9 +331,9 @@
 
                             {% if current == None %}
                             <td>
-                              <form method="post" class="ui form" role="form">
+                              <form method="post" action="{% url 'placement:delete_placement_statistics' %}" class="ui form" role="form">
                                 {% csrf_token %}
-                                <button name="deleterecord" value="{{ student.pk }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
+                                <button name="deleterecordmanaged" value="{{ student.id }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
                                     <i class="delete red icon"></i>
                                 </button>
                                 </form>
@@ -419,7 +417,7 @@
                                               <div class="field">
                                                 {{ form3.ctc.errors }}
                                                   <label for="{{ form3.ctc.id_for_label }}">
-                                                      min CTC (LPA)
+                                                      CTC (LPA) (minimum for Search)
                                                   </label>
 
                                                   <div class="ui large input">
@@ -502,9 +500,7 @@
                                     <th class="two wide">Year</th>
                                     <th class="six wide">Company</th>
                                     <th class="two wide">CTC(LPA)</th>
-                                    {% if profile.designation.name != 'student' %}
                                     <th class="two wide">Delete</th>
-                                    {% endif %}
                                 </tr>
                                 </thead>
 
@@ -537,9 +533,9 @@
 
                                                 {% if current == None %}
                                                 <td>
-                                                  <form method="post" class="ui form" role="form">
+                                                  <form method="post" action="{% url 'placement:delete_placement_statistics' %}" class="ui form" role="form">
                                                     {% csrf_token %}
-                                                    <button name="deleterecord" value="{{ student.pk }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
+                                                    <button name="deleterecordmanaged" value="{{ student.id }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
                                                         <i class="delete red icon"></i>
                                                     </button>
                                                     </form>
@@ -625,7 +621,7 @@
                                     <div class="field">
                                       {{ form4.test_score.errors }}
                                         <label for="{{ form4.test_score.id_for_label }}">
-                                            Minimum Test Score
+                                            Test Score (Minimum for Search)
                                         </label>
 
                                         <div class="ui large input">
@@ -720,9 +716,7 @@
                                 <th class="two wide">Exam</th>
                                 <th class="six wide">University</th>
                                 <th class="two wide">Score</th>
-                                {% if profile.designation.name != 'student' %}
                                 <th class="two wide">Delete</th>
-                                {% endif %}
                             </tr>
                             </thead>
 
@@ -757,9 +751,9 @@
 
                                 {% if current == None %}
                                 <td>
-                                  <form method="post" class="ui form" role="form">
+                                  <form method="post" action="{% url 'placement:delete_placement_statistics' %}" class="ui form" role="form">
                                     {% csrf_token %}
-                                    <button name="deleterecord" value="{{ student.pk }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
+                                    <button name="deleterecordmanaged" value="{{ student.id }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
                                         <i class="delete red icon"></i>
                                     </button>
                                     </form>
@@ -794,7 +788,7 @@
         var cname = $('#add_placement_cname').val();
         var ctc = $('#add_placement_year').val();
 
-        if (stuname == '' || year == '' || roll == '' || cname == '' || ctc == '') {
+        if (year == '' || roll == '' || cname == '' || ctc == '') {
           $('#placement_required_message_error').css('display', 'block');
           event.preventDefault();
         }
@@ -808,7 +802,7 @@
         var ctc = $('#add_pbi_ctc').val();
         console.log(stuname, year, roll, cname, ctc);
 
-        if (stuname == '' || year == '' || roll == '' || cname == '' || ctc == '') {
+        if (year == '' || roll == '' || cname == '' || ctc == '') {
           $('#pbi_required_message_error').css('display', 'block');
           event.preventDefault();
         }
@@ -823,7 +817,7 @@
         var test_type = $('#add_higher_test_type').val();
         var uname = $('#add_higher_uname').val()
 
-        if (stuname == '' || year == '' || roll == '' || test_score == '' || test_type == '' || uname == '') {
+        if (year == '' || roll == '' || test_score == '' || test_type == '' || uname == '') {
           $('#higher_required_message_error').css('display', 'block');
           event.preventDefault();
         }
@@ -831,15 +825,15 @@
 
 
       function closePlacementErrorMessage(){
-       $('#placement_required_message_error').css('display', 'none'); 
+       $('#placement_required_message_error').css('display', 'none');
       }
 
       function closePbiErrorMessage(){
-       $('#pbi_required_message_error').css('display', 'none'); 
+       $('#pbi_required_message_error').css('display', 'none');
       }
 
       function closeHigherErrorMessage(){
-       $('#higher_required_message_error').css('display', 'none'); 
+       $('#higher_required_message_error').css('display', 'none');
       }
   </script>
   {% endblock %}
