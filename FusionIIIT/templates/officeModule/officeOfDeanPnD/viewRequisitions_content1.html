@@ -1,8 +1,8 @@
 {% load static %}
-
+{% include 'officeModule/officeOfDeanPnD/requisitionModal.html' %}
 {% block tab3content1 %}
+{% comment %}
 <form>
-    {% comment %}The add a new skill Accordian starts here!{% endcomment %}
     <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
         <div class="three fields">
             <div class="field">
@@ -26,7 +26,6 @@
             </div>
 
             <div class="field">
-                {% comment %}The Dropdown field starts here!{% endcomment %}
                 <label>Department</label>
 
                 <div class="ui fluid search selection dropdown">
@@ -45,7 +44,6 @@
                         </div>
                     </div>
                 </div>
-                {% comment %}The Dropdown field ends here!{% endcomment %}
             </div>
         </div>
 
@@ -56,10 +54,11 @@
         </div>
     </div>
 </form>
-
 <br>
 <br>
 <div class="ui divider"></div>
+{% endcomment %}
+
 <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;">
     <thead>
     <tr>
@@ -72,11 +71,11 @@
         </th>
 
         <th>
-            Building
+            Title
         </th>
 
         <th>
-            Title
+            Building
         </th>
 
         <th>
@@ -111,11 +110,7 @@
             {{object.building}}
         </td>
         <td>
-            {% if object.assign_title == None  %}
-            Not made
-             {% else %}
-            made
-            {% endif %}
+            <button class="ui button" type="button" onclick="openRequisition({{object.id}})">Open</button>
         </td>
 </tr>
     {% endfor %}

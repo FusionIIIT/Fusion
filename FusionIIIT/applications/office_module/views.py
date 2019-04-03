@@ -44,7 +44,7 @@ def officeOfDeanPnD(request):
     holds=HoldsDesignation.objects.filter(user=user)
     civilreq=Requisitions.objects.filter(department='civil',assign_title=None)
     electricalreq = Requisitions.objects.filter(department='electrical')
-    req=Requisitions.objects.all()
+    req=Requisitions.objects.filter(assign_title__isnull=True)
     deslist=['Civil_JE','Civil_AE','EE','DeanPnD','Electrical_JE','Electrical_AE']
     deslist1=['Civil_JE','Civil_AE']
     design=HoldsDesignation.objects.filter(working=user)
@@ -68,11 +68,11 @@ def officeOfDeanPnD(request):
                 if str(hold.designation.name) == "Civil_JE":
                     receive=HoldsDesignation.objects.get(designation__name="Civil_AE")
                     sent=HoldsDesignation.objects.get(designation__name="Civil_JE")
-                    fdate = datetime.now().date()
+                    fdate = datetime.datetime.now().date()
 
                 elif str(hold.designation.name)=="Electrical_JE":
                     receive=ExtraInfo.objects.get(designation__name="Electrical_AE")
-                    fdate = datetime.now().date()
+                    fdate = datetime.datetime.now().date()
         moveobj=Filemovement(rid=obj,sentby=sent,receivedby=receive)
         moveobj.save()
 
@@ -107,7 +107,16 @@ def officeOfDeanPnD(request):
             files=Filemovement.objects.filter(receivedby=des,actionby_receiver='')
     allfiles=Filemovement.objects.all()
 
-    context = {'civilreq':civilreq,'electricalreq':electricalreq,'files':files,'req':req,'sentfiles':sentfiles,'allfiles':allfiles,'requisitions':requisitions,'desig':desig}
+    context = {
+            'civilreq':civilreq,
+            'electricalreq':electricalreq,
+            'files':files,
+            'req':req,
+            'sentfiles':sentfiles,
+            'allfiles':allfiles,
+            'requisitions':requisitions,
+            'desig':desig,
+    }
     return render(request, "officeModule/officeOfDeanPnD/officeOfDeanPnD.html", context)
 
 
@@ -116,7 +125,7 @@ def submitRequest(request):
 
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
-    fdate = datetime.now().date()
+    fdate = datetime.datetime.now().date()
     dept=request.POST.get('department')
     building = request.POST.get('building')
     title = request.POST.get('title')
