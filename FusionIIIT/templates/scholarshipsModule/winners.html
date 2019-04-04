@@ -178,6 +178,9 @@
                   <th class="three wide">
                       Programme
                   </th>
+                  <th class="three wide">
+                      Award Name
+                  </th>
 
               </tr>
               </thead>
@@ -292,10 +295,12 @@
                                 var student_name=response.student_name[i];
                                 var roll=response.roll[i];
                                 var student_program=response.student_program[i];
+                                var x=response.award_n[i];
                                 txt="<tr>";
                                 txt += '<td>' + roll + '</td>' +
                                 '<td>' + student_name + '</td>' +
-                                '<td>' + student_program + '</td>';
+                                '<td>' + student_program + '</td>' +
+                                '<td>' + x + '</td>';
                                 txt +='</tr>';
                                 element.after(txt);
                             }

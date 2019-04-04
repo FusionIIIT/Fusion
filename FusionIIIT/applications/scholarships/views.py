@@ -779,6 +779,7 @@ def get_win(request):
     context['student_name']=[]
     context['student_program'] = []
     context['roll']=[]
+    context['award_n']=[]
 
 # Arihant: If-Else Condition for previous winner if there is or no data in the winner table
     if winners:
@@ -789,10 +790,12 @@ def get_win(request):
             s_name = extra_info.user.first_name
             s_roll = winner.student_id
             s_program=s_id.programme
+            s_award=winner.award_id.award_name
             print(s_roll,type(s_roll))
             context['student_name'].append(s_name)
             context['roll'].append(s_roll)
             context['student_program'].append(s_program)
+            context['award_n'].append(s_award)
 
         context['result']='Success'
 
