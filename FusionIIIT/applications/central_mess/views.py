@@ -138,7 +138,8 @@ def mess(request):
 
         for d in desig:
             if d.designation.name == 'mess_committee_mess1' or d.designation.name == 'mess_convener_mess1':
-                newmenu = Menu_change_request.objects.all()
+                newmenu = Menu_change_request.objects.filter(dish__mess_option='mess1')
+                # newmenu = Menu_change_request.objects.all()
                 meeting = Mess_meeting.objects.all()
                 minutes = Mess_minutes.objects.all()
                 feed = Feedback.objects.filter(mess='mess1')
@@ -205,7 +206,8 @@ def mess(request):
                 return render(request, "messModule/mess.html", context)
 
             if d.designation.name == 'mess_committee_mess2' or d.designation.name == 'mess_convener_mess2':
-                newmenu = Menu_change_request.objects.all()
+                # newmenu = Menu_change_request.objects.all()
+                newmenu = Menu_change_request.objects.filter(dish__mess_option='mess2')
                 meeting = Mess_meeting.objects.all()
                 minutes = Mess_minutes.objects.all()
                 feed = Feedback.objects.filter(mess='mess2')
