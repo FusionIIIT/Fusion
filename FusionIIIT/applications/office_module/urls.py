@@ -20,6 +20,7 @@ urlpatterns = [
     url(r'^newordersPOonGem/',views.newordersPOonGem,name='newordersPOonGem'),
     url(r'^newordersPO/',views.newordersPO,name='newordersPO'),
     url(r'^newordersregistrar/',views.newordersregistrar,name='newordersregistrar'),
+    url(r'^newordersregistrar2/',views.newordersregistrar2,name='newordersregistrar2'),
     url(r'^officeOfDeanRSPC/submit/$',views.project_register,name='p_register'),
     url(r'^officeOfDeanRSPC/extention/$',views.project_extension,name='p_extension'),
     url(r'^officeOfDeanRSPC/close/$',views.project_closure,name='p_closure'),

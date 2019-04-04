@@ -595,7 +595,6 @@ def newordershod(request):
             print("model not exists")
     return HttpResponse("you are the best ")
 
-
 def newordersregistrar(request):
     print("hello2")
     #this one creates and stores the data in django forms
@@ -607,6 +606,7 @@ def newordersregistrar(request):
         try:
             obj = apply_for_purchase.objects.get(id = objid)
             obj.registrar_approve_tag = 1
+            obj.director_approve_tag = 0
             obj.save()
             print("work done")
             str = "order with id "+ objid +" has been approved by you"
@@ -617,6 +617,9 @@ def newordersregistrar(request):
     return HttpResponse("you are the best ")
 
 def newordersregistrar2(request):
+    print("hello2")
+    #this one creates and stores the data in django forms
+    print("new ord caled")
     if request.method=='POST':
         objid = request.POST.get('id')
         print(objid)
@@ -624,7 +627,6 @@ def newordersregistrar2(request):
         try:
             obj = apply_for_purchase.objects.get(id = objid)
             obj.registrar_approve_tag = 1
-            obj.director_approve_tag = 0
             obj.save()
             print("work done")
             str = "order with id "+ objid +" has been approved by you"
@@ -656,17 +658,18 @@ def newordersdirector(request):
     return HttpResponse("you are the best ")
 
 
-def newordersPO(request):
 
+def newordersPO(request):
+    print("*")
 
 
 
 
 
 def newordersPOonGem(request):
+    print("*")
 
 
-    
 
 
 
@@ -863,13 +866,14 @@ def officeOfPurchaseOfficer(request):
                 return render(request, "officeModule/officeOfPurchaseOfficer/approvalRegistrar.html",context=context)
 
             elif(user_type=="director" or user_type=="Director"):
-                alldata = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=1,expected_cost__gte = 50001,director_approve_tag=0)
+                #alldata = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=1,expected_cost__gte = 50001)
+                alldata = apply_for_purchase.objects.filter(expected_cost__gte = 50001,director_approve_tag=0)
                 print(alldata)
                 context = {'alldata':alldata}
                 return render(request, "officeModule/officeOfPurchaseOfficer/approvaldirector.html",context=context)
 
             elif(user_type=="purchaseofficer" or user_type=="PurchaseOfficer"):
-                alldata = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=1,expected_cost__gte = 50001,director_approve_tag=1)
+                alldata = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=1,expected_cost__gte = 50001,director_approve_tag=0)
                 alldata2 = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=1,expected_cost__lte = 50000)
                 context = {'alldata':alldata,'alldata2':alldata2}
                 return render(request, "officeModule/officeOfPurchaseOfficer/approvaldirector.html",context=context)
