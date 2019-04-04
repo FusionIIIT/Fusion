@@ -3,7 +3,7 @@ from notifications.signals import notify
 
 # Create your views here.
 
-def leave_module_notif(sender, recipient, type):
+def leave_module_notif(sender, recipient, type, date=None):
     url = 'leave:leave'
     module = 'Leave Module'
     sender=sender
@@ -26,8 +26,7 @@ def leave_module_notif(sender, recipient, type):
     if type=='replacement_request':
         verb = "You have a replacement request "
     if type=='replacement_cancel':
-        verb = "Your replacement has been cancelled"
-
+        verb = "Your replacement has been cancelled for "+date
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 

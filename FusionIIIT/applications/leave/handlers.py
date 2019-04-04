@@ -564,7 +564,7 @@ def delete_leave_application(request):
             if i.status == 'accepted':
                 #notification to replacement user that  user has cancelled the leave
                 print("It is working! Yeah")
-                leave_module_notif(request.user, i.replacer, 'replacement_cancel')
+                leave_module_notif(request.user, i.replacer, 'replacement_cancel', str(i.start_date))
 
         restore_leave_balance(leave)
         leave.delete()
