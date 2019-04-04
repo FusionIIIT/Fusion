@@ -213,12 +213,14 @@
 
         {% comment %}The right-rail segment starts here!{% endcomment %}
         <div class="three wide column">
-            <div class="row">
+            <center><div class="ui black button" onclick="toggleReport()" style="width: 100%;padding:8%;font-size: 18px;">Generate Report <i class="dropdown icon"></i></div></center>
+            <div class="row" style="display: none;" id="report_tab">
                 {% comment %}The Modules:{% endcomment %}
                 {% block generatereport %}
                     {% include 'eisModulenew/generatereport.html' %}
                 {% endblock %}
             </div>
+        
 
             <div class="row">
                 {% comment %}The Modules:{% endcomment %}
@@ -338,6 +340,15 @@
             
         }
 
+        function toggleReport(){
+            if(document.getElementById("report_tab").style.display == 'none'){
+                document.getElementById("report_tab").style.display = 'block';
+            }
+            else{
+                document.getElementById("report_tab").style.display = 'none';
+            }
+        }
+
         function editindianvisit(index,id,country,place,purpose,start_date,end_date)
         {
 
@@ -351,6 +362,22 @@
             document.getElementById("saveindianvisit").style.display='none';
             document.getElementById("editindianvisit").style.display='block';
             document.getElementById("indianvisitform").action="{% url 'eis:editindianvisit' %}";
+            
+        }
+
+        function editbooks(index,id,title,author,p_type,pyear,publisher)
+        {
+
+            $("#book_title").val(title);
+            $("#book_author").val(author);
+            $("#book_p_type").val(p_type);
+            $("#book_year").val(pyear);
+            $("#book_publisher").val(publisher);
+            $("#bookspk2").val(id);
+            $("#index15").val(index);
+            document.getElementById("savebook").style.display='none';
+            document.getElementById("editbook").style.display='block';
+            document.getElementById("booksform").action="{% url 'eis:editbooks' %}";
             
         }
 

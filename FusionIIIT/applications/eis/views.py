@@ -510,10 +510,14 @@ def emp_patentsDelete(request, pk,sr,mark):
     instance.delete()
     return redirect(url)
 
-def emp_published_booksDelete(request, pk):
+def emp_published_booksDelete(request, pk, sr, mark):
     instance = emp_published_books.objects.get(pk=pk)
+    page = int(sr)//10
+    page = page+1
+    url = '/profile/?page2='+str(page)
+    print("-------------"+url)
     instance.delete()
-    return redirect('eis:profile')
+    return redirect(url)
 
 def emp_research_papersDelete(request, pk, sr,mark):
     instance = emp_research_papers.objects.get(pk=pk)
@@ -983,13 +987,29 @@ def book_insert(request):
     pf = user.id
     eis = emp_published_books()
     eis.pf_no = pf
-    eis.p_type = request.POST.get('p_type')
-    eis.title = request.POST.get('title')
-    eis.publisher = request.POST.get('publisher')
-    eis.pyear = request.POST.get('year')
-    eis.authors = request.POST.get('author')
+    eis.p_type = request.POST.get('book_p_type')
+    eis.title = request.POST.get('book_title')
+    eis.publisher = request.POST.get('book_publisher')
+    eis.pyear = request.POST.get('book_year')
+    eis.authors = request.POST.get('book_author')
     eis.save()
     return redirect('/profile/?page2=1')
+
+def editbooks(request):
+    print("++++++++++++++"+ request.POST.get('bookspk2'))
+    print("--------------"+ str(request))
+    eis = emp_published_books.objects.get(pk=request.POST.get('bookspk2'))
+    eis.p_type = request.POST.get('book_p_type')
+    eis.title = request.POST.get('book_title')
+    eis.publisher = request.POST.get('book_publisher')
+    eis.pyear = request.POST.get('book_')
+    eis.authors = request.POST.get('book_author')
+    eis.save()
+    page = int(request.POST.get('index15'))//10
+    page = page+1
+    url = "/profile/?page2="+str(page)
+    print(url)
+    return redirect(url)
 
 def consym_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)

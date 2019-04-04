@@ -145,17 +145,17 @@
             </span></h3>
         </div>
      
-        <table class="ui fixed sortable celled table">
+        <table class="ui celled table">
             <thead>
             <tr>
-                <th class="sorted ascending" style="width: 7%;">Sr.</th>
-                <th class="" style="width: 20%;" >PI/CO-PI</th>
-                <th class="" style="width: 20%;">Title of Paper</th>
-                <th class="" style="width: 20%;">Funding Agency</th>
+                <th class="sorted ascending" >Sr.</th>
+                <th  >PI/CO-PI</th>
+                <th >Title of Paper</th>
+                <th >Funding Agency</th>
 
-                <th style="width:15%">Other Details</th>
+                <th >Other Details</th>
                 {% if request.user == user %}
-                <th class="" style="width: 25%;">Action</th>
+                <th >Action</th>
                 {% endif %}
             </tr>
             </thead>
@@ -189,7 +189,7 @@
                     {% if request.user == user %}
                     <td>
                     <a class="ui button left floated" onclick="updateRESEARCH({{ forloop.counter }})"><i id="bt" class="edit icon" ></i></a>     
-                    <a class="ui blue button right floated " href="{% url 'eis:emp_research_projectsDelete' project.pk forloop.counter|add:sr4 1%}"><i id="bt" class="ui red delete icon"></i>
+                    <a class="ui blue button left floated " href="{% url 'eis:emp_research_projectsDelete' project.pk forloop.counter|add:sr4 1%}"><i id="bt" class="ui red delete icon"></i>
                                 </a>
                      </td>
                      {% endif %}
@@ -311,17 +311,17 @@
             </span></h4>
         </div>
      
-        <table class="ui fixed sortable celled table">
+        <table class="ui celled table">
             <thead>
             <tr>
-                <th class="sorted ascending" style="width: 7%;">Sr.</th>
-                <th class="" style="width: 13%;" >Consultant(s)</th>
-                <th class="" style="width: 13%;">Title </th>
-                <th class="" style="width: 13%;">Client</th>
-                <th style="width:9%">Financial Outlay</th>
-                <th style="width:20%">Period </th>
+                <th class="sorted ascending" >Sr.</th>
+                <th  >Consultant(s)</th>
+                <th  >Title </th>
+                <th  >Client</th>
+                <th >Financial Outlay</th>
+                <th >Period </th>
                 {% if request.user == user %}
-                <th class="" style="width: 25%;">Action</th>
+                <th >Action</th>
                 {% endif %}
             </tr>
             </thead>
@@ -337,7 +337,7 @@
                      <td id="consultancy{{ forloop.counter }}E">From: {{ consult.start_date }}<br/>To: {{ consult.end_date }}</td>
                      {% if request.user == user %}
                     <td><a class="ui button left floated" onclick="updateCONSULTANCY({{ forloop.counter }})"><i id="bt" class="edit icon" ></i></a>
-                        <a class="ui blue button right floated" href="{% url 'eis:emp_consultancy_projectsDelete' consult.pk sr5 2 %}"><i id="bt" class="red delete icon" "></i> </a> </td>{% endif %}
+                        <a class="ui blue button left floated" href="{% url 'eis:emp_consultancy_projectsDelete' consult.pk sr5 2 %}"><i id="bt" class="red delete icon" "></i> </a> </td>{% endif %}
                 </tr>
             {% endfor %}
             </tbody>
@@ -407,6 +407,8 @@
                             <i class="dropdown icon" ></i>
                             <div class="default text">Year</div>
                             <div class="menu">
+                                <div class="item" data-value="2019">2019</div>
+                                <div class="item" data-value="2018">2018</div>
                                 <div class="item" data-value="2017">2017</div>
                                 <div class="item" data-value="2016">2016</div>
                                 <div class="item" data-value="2015">2015</div>
@@ -482,17 +484,17 @@
             </span></h4>
         </div>
      
-        <table class="ui fixed sortable celled table">
+        <table class="ui celled table">
             <thead>
             <tr>
-                <th class="sorted ascending" style="width: 7%;">Sr.</th>
-                <th class="" style="width: 15%;" >Patent No.</th>
-                <th class="" style="width: 15%;">Title </th>
-                <th class="" style="width: 15%;">Status</th>
-                <th style="width:15%">Year</th>
-                <th style="width:15%">Earning in (Rs.)</th>
+                <th class="sorted ascending" >Sr.</th>
+                <th >Patent No.</th>
+                <th >Title </th>
+                <th >Status</th>
+                <th >Year</th>
+                <th >Earning in (Rs.)</th>
                 {% if request.user == user %}
-                <th class="" style="width: 25%;">Action</th>
+                <th >Action</th>
                 {% endif %}
             </tr>
             </thead>
@@ -507,7 +509,7 @@
                      <td id="patent{{ forloop.counter }}D">{{ patent.a_month }}/{{ patent.p_year }}</td>
                      <td id="patent{{ forloop.counter }}E">{{ patent.earnings }}</td>
                      {% if request.user == user %}
-                    <td><a class="ui  button left floated" onclick="updatePATENT({{ forloop.counter }})"><i id="bt" class="edit icon" ></i></a><a class="ui  button right floated" href="{% url 'eis:emp_patentsDelete' patent.pk sr6 1 %}"><i id="bt" class="ui red delete icon" ></i> </a> </td>
+                    <td><a class="ui  button left floated" onclick="updatePATENT({{ forloop.counter }})"><i id="bt" class="edit icon" ></i></a><a class="ui blue button left floated" href="{% url 'eis:emp_patentsDelete' patent.pk sr6 1 %}"><i id="bt" class="ui red delete icon" ></i> </a> </td>
                     {% endif %}
                 </tr>
             {% endfor %}
@@ -581,12 +583,12 @@
             </span></h4>
         </div>
      
-        <table class="ui fixed sortable celled table">
+        <table class="ui celled table">
             <thead>
             <tr>
-                <th class="sorted ascending" style="width:15%">Sr.</th>
-                <th class="" style="width:60%">Details</th>
-                {% if request.user == user %}<th class="" style="width:25%">Action</th>{% endif %}
+                <th class="sorted ascending" >Sr.</th>
+                <th >Details</th>
+                {% if request.user == user %}<th >Action</th>{% endif %}
             </tr>
             </thead>
 
@@ -595,7 +597,7 @@
                 <tr>
                     <td id="tech{{ forloop.counter }}Z"><div style="display: none;">{{ techtransfer.id }}</div>{{ forloop.counter|add:sr7 }}.</td>
                     <td class="" id="tech{{ forloop.counter }}A">{{ techtransfer.details }}</td>
-                {% if request.user == user %}<td><a class="ui button left floated" onclick="updateTECH({{ forloop.counter }})"><i id="bt" class="edit icon" ></i></a><a class="ui blue button right floated " href="{% url 'eis:emp_techtransferDelete' techtransfer.pk sr7 1 %}"><i id="bt" class="red delete icon"></i> </a> </td>{% endif %}
+                {% if request.user == user %}<td><a class="ui button left floated" onclick="updateTECH({{ forloop.counter }})"><i id="bt" class="edit icon" ></i></a><a class="ui blue button left floated " href="{% url 'eis:emp_techtransferDelete' techtransfer.pk sr7 1 %}"><i id="bt" class="red delete icon"></i> </a> </td>{% endif %}
                 </tr>
             {% endfor %}
             </tbody>

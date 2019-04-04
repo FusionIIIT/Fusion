@@ -108,18 +108,18 @@
             </span></h3>
         </div>
      
-        <table class="ui fixed sortable celled table">
+        <table class="ui celled table">
             <thead>
             <tr>
-                <th class="sorted ascending" style="width: 7%;">Sr.</th>
-                <th class="" style="width: 17%;" >Student</th>
-                <th class="" style="width: 18%;">Title </th>
-                <th class="" style="width: 13%;">Year</th>
+                <th class="sorted ascending" >Sr.</th>
+                <th  >Student</th>
+                <th >Title </th>
+                <th >Year</th>
 
-                <th style="width:20%">Supervisor</th>
+                <th >Supervisor</th>
 
                  {% if request.user == user %}
-                <th class="" style="width: 25 %;">Action</th>
+                <th >Action</th>
                 {% endif %}
             </tr>
             </thead>
@@ -133,7 +133,7 @@
                     <td id="s{{ forloop.counter }}C">{{ mtech.a_month }}/{{ mtech.s_year }}</td>
                     <td id="s{{ forloop.counter }}D">{{ mtech.supervisors }}</td>
                      {% if request.user == user %}
-                     <td><a class="ui left floated button " onclick="getData({{ forloop.counter }})"><i id="bt" class="edit icon"></i></a><a class="ui blue right floated button " href="{% url 'eis:emp_mtechphd_thesisDelete' mtech.id sr8 1 %}"><i id="bt" class="red delete icon"></i></a> </td>{% endif %}
+                     <td><a class="ui left floated button " onclick="getData({{ forloop.counter }})"><i id="bt" class="edit icon"></i></a><a class="ui blue left floated button " href="{% url 'eis:emp_mtechphd_thesisDelete' mtech.id sr8 1 %}"><i id="bt" class="red delete icon"></i></a> </td>{% endif %}
                 </tr>
                 {% endfor %}
             </tbody>
@@ -260,18 +260,18 @@
             </span></h3>
         </div>
      
-        <table class="ui fixed sortable celled table">
+        <table class="ui celled table">
             <thead>
             <tr>
-                <th class="sorted ascending" style="width: 7%;">Sr.</th>
-                <th class="" style="width: 17%;" >Student</th>
-                <th class="" style="width: 18%;">Title </th>
-                <th class="" style="width: 13%;">Year</th>
+                <th class="sorted ascending" >Sr.</th>
+                <th >Student</th>
+                <th >Title </th>
+                <th >Year</th>
 
-                <th style="width:20%">Supervisor</th>
+                <th >Supervisor</th>
 
                  {% if request.user == user %}
-                <th class="" style="width: 25 %;">Action</th>
+                <th >Action</th>
                 {% endif %}
             </tr>
             </thead>
@@ -285,7 +285,7 @@
                 <td id="phd{{ forloop.counter }}C">{{ phd.a_month }}/{{ phd.s_year }}</td>
                 <td id="phd{{ forloop.counter }}D">{{ phd.supervisors }}</td>
                  {% if request.user == user %}
-                 <td><a class="ui left floated button " onclick="updatePHD({{ forloop.counter }})"><i id="bt" class="edit icon"></i></a><a class="ui blue right floated button " href="{% url 'eis:emp_mtechphd_thesisDelete' phd.id sr9 2%}"><i id="bt" class="red delete icon"></i></a> </td>
+                 <td><a class="ui left floated button " onclick="updatePHD({{ forloop.counter }})"><i id="bt" class="edit icon"></i></a><a class="ui blue left floated button " href="{% url 'eis:emp_mtechphd_thesisDelete' phd.id sr9 2%}"><i id="bt" class="red delete icon"></i></a> </td>
                  {% endif %}
 
 

@@ -217,16 +217,16 @@
                 </span></h4>
             </div>
         
-            <table class="ui fixed sortable celled table">
+            <table class="ui celled table">
                 <thead>
                 <tr>
-                    <th class="sorted ascending" style="width: 50px">Sr.</th>
-                    <th class="" style="width: 150px">Title of Paper</th>
-                    <th class="" style="width: 150px">Authors</th>
-                    <th class="" style="width: 80px">Details</th>
-                    <th class="" style="width: 80px">Download</th>
+                    <th class="sorted ascending" >Sr.</th>
+                    <th >Title of Paper</th>
+                    <th >Authors</th>
+                    <th >Details</th>
+                    <th >Download</th>
                     {% if request.user == user %}
-                    <th class="" style="width: 160px">Action</th>
+                    <th >Action</th>
                     {% endif %}
                 </tr>
                 </thead>
@@ -270,7 +270,7 @@
                             
                                 <a href="{% url 'eis:emp_research_papersDelete' publication.pk forloop.counter|add:sr 1%}"
                                    id="editButton"
-                                   class="ui blue button right floated" onclick=""
+                                   class="ui blue button left floated" onclick=""
                                    value = "Delete">
                                    <i class="ui red delete icon"></i>
                                 </a>
@@ -496,16 +496,16 @@
             </span></h3>
         </div>
         
-        <table class="ui fixed sortable celled table">
+        <table class="ui celled table">
             <thead>
             <tr>
-                <th class="sorted ascending" style="width: 50px">Sr.</th>
-                <th class="" style="width: 150px">Title of Paper</th>
-                <th class="" style="width: 150px">Authors</th>
-                <th class="" style="width: 80px">Details</th>
-                <th class="" style="width: 80px">Download</th>
+                <th class="sorted ascending" >Sr.</th>
+                <th >Title of Paper</th>
+                <th >Authors</th>
+                <th >Details</th>
+                <th >Download</th>
                 {% if request.user == user %}
-                <th class="" style="width: 160px">Action</th>
+                <th >Action</th>
                 {% endif %}
             </tr>
             </thead>
@@ -545,7 +545,7 @@
                         
                             <a href="{% url 'eis:emp_research_papersDelete' conference.pk forloop.counter|add:sr3 2 %}" 
                                id="deleteButton"
-                               class="ui blue button right floated" onclick=""
+                               class="ui blue button left floated" onclick=""
                                ><i class="ui red delete icon"></i>
                             </button>
                         </td>
@@ -584,14 +584,14 @@
     <div class="{% if mark2 == 1 %}ui active tab segment{% else %}ui tab segment{% endif %}" data-tab="books">
         {% if request.user == user %}<h4 class="ui dividing header">Add a Book/Book Chapter</h4>
         
-            <form class="ui form" method="POST" action="{% url 'eis:book_insert' %}" enctype="multipart/form-data" >
+            <form class="ui form" method="POST" id="booksform" name="booksform" action="{% url 'eis:book_insert' %}" enctype="multipart/form-data" >
                 {% csrf_token %}
                 <div class="field">
                     <div class="two fields">
                         <div class="field">
                             <label>Publish Type</label>
                             <div class="ui fluid search selection dropdown">
-                                <input type="hidden" id="p_type" name="p_type" required>
+                                <input type="hidden" id="book_p_type" name="book_p_type" required>
                                 <i class="dropdown icon"></i>
                                 <div class="default text">Select Type</div>
                                 <div class="menu">
@@ -606,7 +606,7 @@
 
                         <div class="field">
                             <label>Author</label>
-                            <input placeholder="Author" type="text" name="author" id="author" required>
+                            <input placeholder="Author" type="text" name="book_author" id="book_author" required>
                         </div>
                     </div>
                 </div>
@@ -615,12 +615,12 @@
                     <label>Publisher</label>
                     <div class="fields">
                         <div class="twelve wide field">
-                            <input placeholder="Publisher" type="text" id="publisher" name="publisher" required>
+                            <input placeholder="Publisher" type="text" id="book_publisher" name="book_publisher" required>
                         </div>
 
                         <div class="four wide field">
                             <div class="ui fluid search selection dropdown">
-                                <input type="hidden" id="year" name="year" required>
+                                <input type="hidden" id="book_year" name="book_year" required>
                                 <i class="dropdown icon"></i>
                                 <div class="default text">Publishing Year</div>
                                 <div class="menu">
@@ -632,6 +632,8 @@
                                     <div class="item" data-value="2015">2015</div>
                                     <div class="item" data-value="2016">2016</div>
                                     <div class="item" data-value="2017">2017</div>
+                                    <div class="item" data-value="2018">2018</div>
+                                    <div class="item" data-value="2019">2019</div>
                                 </div>
                             </div>
                         </div>
@@ -641,14 +643,20 @@
                         <div class="fourteen wide field">
                             <div class="field">
                                 <label>Title</label>
-                                <input placeholder="Title" type="text" id="title" name="title" required>
+                                <input type="text" id="book_title" name="book_title" required>
                             </div>
                         </div>
 
-                        <button class="ui right floated primary button" onclick = "">
-                            Save 
+                        <button class="ui right floated primary button" id="savebook" name="savebook"  style="display: block;">
+                            Save
                             <i class="ui save icon right floated"></i>
                         </button>
+                        <button class="ui right floated primary button" id="editbook" name="editbook" style="display: none;">
+                            Update
+                            <i class="ui edit icon right floated"></i>
+                        </button>
+                        <input type="text" id="bookspk2" name="bookspk2" hidden>
+                        <input type="text" id="index15" name="index15" hidden>
                     </div>
 
                 </div>
@@ -674,15 +682,18 @@
                 </span></h3>
             </div>
         
-            <table class="ui fixed sortable celled table">
+            <table class="ui celled table">
                 <thead>
                 <tr>
-                    <th class="sorted ascending" style="width: 50px">Sr.</th>
-                    <th class="" style="width: 150px">Title of Book</th>
-                    <th class="" style="width: 130px">Authors</th>
-                    <th class="" style="width: 110px">Publish Type</th>
-                    <th class="" style="width: 70px">Year</th>
-                    <th class="" style="width: 150px">Publisher</th>
+                    <th class="sorted ascending" >Sr.</th>
+                    <th >Title of Book</th>
+                    <th >Authors</th>
+                    <th >Publish Type</th>
+                    <th >Year</th>
+                    <th >Publisher</th>
+                    {% if request.user == user %}
+                    <th>Action</th>
+                    {% endif %}
                 </tr>
                 </thead>
 
@@ -697,6 +708,26 @@
                             <td>{{ book.p_type }} </td>
                             <td>{{ book.pyear }}</td>
                             <td>{{ book.publisher }}</td>
+                            {% if request.user == user %}
+                            <td>
+                                <button type="button"
+                                   id="editButton2"
+                                   class="ui button left floated" onclick="editbooks(
+                                    '{{ forloop.counter|add:sr2 }}','{{book.pk}}','{{book.title}}',
+                                    '{{book.authors}}', '{{book.p_type}}',
+                                    '{{book.pyear}}', '{{book.publisher}}')"
+                                   >
+                                   <i class="ui black edit icon"></i>
+                                </button>
+                                <a href="{% url 'eis:emp_published_booksDelete' book.pk forloop.counter|add:sr2 2%}"
+                                   id="editButton"
+                                   class="ui blue button left floated" onclick=""
+                                   value = "Delete">
+                                   <i class="ui red delete icon"></i>
+                                </a>
+                                
+                            </td>
+                        {% endif %}
                         </tr>
                     {% endfor %}
 
