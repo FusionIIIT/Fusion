@@ -3,15 +3,15 @@
 {% block viewstatus %}
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="mcm">
+        <a class="{% if last_clicked == 'Accept_mcm' or last_clicked == 'Reject_mcm' or last_clicked == ''%} active item {% else %} item {% endif %}" data-tab="mcm">
             Mcm Scholarship
         </a>
 
-        <a class="item" data-tab="convo">
+        <a class="{% if last_clicked == 'Accept_gold' or last_clicked == 'Reject_gold' or last_clicked == 'Accept_silver' or last_clicked == 'Reject_silver' or last_clicked == 'Accept_dm' or last_clicked == 'Reject_dm' %} active item {% else %} item {% endif %}" data-tab="convo">
             Convocation Medals
         </a>
     </div>
-<div class="ui active tab" data-tab="mcm">
+<div class="{% if last_clicked == 'Accept_mcm' or last_clicked == 'Reject_mcm' or last_clicked == '' %} ui active tab {% else %} ui tab {% endif %}" data-tab="mcm">
         <div class="ui vertical segment">
             <div class="ui header">
                 Mcm ScholarShip
@@ -76,7 +76,7 @@
     </div>
 </div>
 
-<div class="ui tab" data-tab="convo">
+<div class="{% if last_clicked == 'Accept_gold' or last_clicked == 'Reject_gold' or last_clicked == 'Accept_silver' or last_clicked == 'Reject_silver' or last_clicked == 'Accept_dm' or last_clicked == 'Reject_dm' %} ui active tab {% else %} ui tab {% endif %}" data-tab="convo">
     <div class="ui vertical segment">
         <div class="ui header">
             Convocation Medals
