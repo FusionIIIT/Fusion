@@ -52,6 +52,7 @@ def retrun_content(roll, name, desig , club__ ):
 	club_session = Session_info.objects.all()
 	club_event = Club_report.objects.all()
 	venue_type = []
+	print(club_name)
 	id =0
 	for i in Constants.venue:
 		for j in i:
