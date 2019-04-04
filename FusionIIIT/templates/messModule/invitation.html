@@ -135,14 +135,12 @@
                     },
                     success: function (data) {
                         if (data.status === 1) {
-                            start_date = $("#date").val();
-                            var s_date = monthNames[start_date.getMonth()] + " " + start_date.getDate() + ", " + start_date.getFullYear();
-
+                            alert(data.message);
                             $("#mess_invitation").load(location.href + " #mess_invitation>*", "");
-                            $("#invitation_table").prepend("<tr><td>" + s_date + "</td><td>" +
+                            $("#invitation_table").prepend("<tr><td>" + data.date + "</td><td>" +
                                 $("#venue").val() + "</td><td>" + $("#agenda").val() + "</td><td>" +
                                 data.time, +"</td></tr>");
-                            alert(data.message);
+
                             document.getElementById('date').value = "";
                             document.getElementById('agenda').value = "";
                             document.getElementById('venue').value = "";

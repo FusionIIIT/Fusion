@@ -35,7 +35,8 @@
                 <div class="content">
                     <strong>Date of Application:</strong> {{list.app_date}}
                     <br>
-                    
+                    <strong>Student:</strong> Mess Convener
+                    <br>
                     <strong>Reason:</strong> {{list.reason}}
                     <br>
                     <strong>Items to be changed: </strong> {{list.dish}}
@@ -80,7 +81,8 @@
                     <p style="text-align: center; "><strong>Accepted</strong></p>
                     <strong>Date of Application:</strong> {{list.app_date}}
                     <br>
-                    
+                    <strong>Student:</strong> Mess Convener
+                    <br>
                     <strong>Reason:</strong> {{list.reason}}
                     <br>
                     <strong>Items changed: </strong> {{list.dish}}
@@ -97,6 +99,8 @@
                 <div class="content" id="menurp-{{list.pk}}">
                     <p style="text-align: center; "><strong>Rejected</strong></p>
                     <strong>Date of Application:</strong> {{list.app_date}}
+                    <br>
+                    <strong>Student:</strong> Mess Convener
                     <br>
                     <strong>Reason:</strong> {{list.reason}}
                     <br>
@@ -134,7 +138,7 @@
                 },
                 success: function(data) {
                     alert("Request has been accepted");
-                    $("#respondtomenuchange").load(location.href + " #respondtomenuchange>*", "");
+                    ("#respondtomenuchange").load(location.href + " #respondtomenuchange>*", "");
                 },
                 error: function(data, err) {
                     alert(err.message);
@@ -158,7 +162,7 @@
                         if(data.status == '1')
                             {
                                 alert("Application Rejected");
-                                $("#respondtomenuchange").load(location.href + " #respondtomenuchange>*", "");
+                                ("#respondtomenuchange").load(location.href + " #respondtomenuchange>*", "");
                             }
                         },
                     error: function(data, err) {

@@ -117,7 +117,7 @@
                         </tr>
                         </thead>
 
-                        <tbody id='vaca_table'>
+                        <tbody>
                         {% for req in vaca %}
                         <tr>
                             <td>
@@ -226,25 +226,8 @@
                     },
                     success: function (data) {
                         if (data.status == 1) {
-
-                            $("#lrequest").load(location.href + " #lrequest>*", "");
-
-                            var monthNames = ["January", "February", "March", "April", "May", "June",
-                                              "July", "August", "September", "October", "November", "December"];
-                            var start_date = new Date($("#sdate").val());
-                            var end_date = new Date($("#edate").val());
-                            var today_date = new Date();
-                            var s_date = monthNames[start_date.getMonth()] + " " + start_date.getDate() + ", " + start_date.getFullYear();
-                            var t_date = monthNames[today_date.getMonth()] + " " + today_date.getDate() + ", " + today_date.getFullYear();
-                            var e_date = monthNames[end_date.getMonth()] + " " + end_date.getDate() + ", " + end_date.getFullYear();
-
-                            $('#vaca_table').prepend("<tr><td>" + t_date + "</td><td>" +
-                                s_date + "</td><td>" + e_date+ "</td><td>"+ $("#purpose1").val()
-                             + "</td><td><i class='large orange warning icon'></i>" +
-                            "</td></tr>");
-
                             alert("Vacation request placed Successfully");
-
+                            $("#lrequest").load(location.href + " #lrequest>*", "");
                             document.getElementById('sdate').value = "";
                             document.getElementById('edate').value = "";
                             document.getElementById('purpose1').value = "";
