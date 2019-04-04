@@ -255,7 +255,7 @@
                     },
                     success: function (data) {
                         if (data.status == 1) {
-                            alert("Data Inserted Successfully");
+
                             $("#leave").load(location.href + " #leave>*", "");
                             var monthNames = ["January", "February", "March", "April", "May", "June",
                                               "July", "August", "September", "October", "November", "December"];
@@ -270,6 +270,7 @@
                                 $("#leave_type").val() + "</td><td>" + s_date+ "</td><td>"+
                             e_date + "</td><td><i class='large orange warning icon'></i>" +
                             "</td></tr>");
+                            alert("Data Inserted Successfully");
 
                             document.getElementById('leave_type').value = "";
                             document.getElementById('start_date').value = "";
