@@ -2,18 +2,18 @@
 {% block body %}
 {% block respondtoleave %}
 
-<div class="ui tabular menu">
-    <a class="active item" data-tab="respondtoleaverequests">
+<div class="ui top attached tabular menu">
+    <a class="active item" data-tab="respondtoleaverequests" id="rlr">
         Respond to Rebate
     </a>
-    <a class="item" data-tab="respondtovacafoodrequests">
+    <a class="item" data-tab="respondtovacafoodrequests" id="rvr">
         Respond to Vacation Food Requests
     </a>
 
 </div>
 
-
-<div class="ui active tab" data-tab="respondtoleaverequests">
+<div class="bottom attached segment">
+<div class="ui active tab" data-tab="respondtoleaverequests" id="rlrtab">
     <div class="ui vertical segment">
     <div>
         <button class="ui primary fluid button" onclick="getLeave()">
@@ -126,7 +126,7 @@
 
     </div>
 </div>
-    <div class="ui tab" data-tab="respondtovacafoodrequests">
+    <div class="ui tab" data-tab="respondtovacafoodrequests" id="rvrtab">
     <div class="ui vertical segment">
 
             {% for item in vaca_all %}
@@ -225,6 +225,7 @@
             </form>
         </div>
     </div>
+</div>
 {% endblock %}
 {% endblock %}
 
