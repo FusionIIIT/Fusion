@@ -68,7 +68,7 @@ class RoomDetail(models.Model):
     room_type = models.CharField(max_length=12, choices=ROOM_TYPE)
     room_floor = models.CharField(max_length=12, choices=ROOM_FLOOR)
     room_status  = models.CharField(max_length=20, choices=ROOM_STATUS, default='Available')
-    visitor = models.ManyToManyField(VisitorDetail, null=True, blank=True)
+    visitor = models.ManyToManyField(VisitorDetail, blank=True)
 
     def __str__(self):
         return self.room_number
