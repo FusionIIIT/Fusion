@@ -102,3 +102,16 @@ def complaint_system_notif(sender, recipient, type):
     verb = ''
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
+
+def office_dean_PnD_notif(sender, recipient, type):
+    url = 'office:officeOfDeanPnD'
+    module = 'Office of Dean PnD Module'
+    sender=sender
+    recipient=recipient
+    verb=''
+    if type=='requisition_filed':
+        verb="Your requisition has been successfully submitted."
+    elif type=='request_accepted':
+        verb = "Your responsibility has been accepted "
+
+    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)

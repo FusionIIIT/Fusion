@@ -13,6 +13,8 @@ from applications.globals.models import (Designation, ExtraInfo,
                                          HoldsDesignation, User)
 from applications.scholarships.models import Mcm
 
+from notification.views import office_dean_PnD_notif
+
 from .forms import *
 from .models import *
 from .models import (Project_Closure, Project_Extension, Project_Reallocation,
@@ -134,6 +136,8 @@ def submitRequest(request):
     request_obj = Requisitions(userid=extrainfo, req_date=fdate,
                                description=description, department=dept, title=title, building=building)
     request_obj.save()
+    office_dean_PnD_notif(request.user, request.user, 'requisition_filed')
+
     context={}
     return HttpResponseRedirect("/office/officeOfDeanPnD")
 
