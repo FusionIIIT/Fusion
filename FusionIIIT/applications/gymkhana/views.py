@@ -24,22 +24,146 @@ def coordinator_club(request):
 			return(i)
 
 def facultyData(request):
+	current_value = request.POST['current_value']
 	try:
 		# students =ExtraInfo.objects.all().filter(user_type = "student")
 		faculty = ExtraInfo.objects.all().filter(user_type = "faculty")
-		faculty = serializers.serialize('json', faculty)
+		facultyNames = []
+		for i in faculty:
+			name = i.user.first_name + " " + i.user.last_name
+			if current_value is not "":
+				Lowname = name.lower()
+				Lowcurrent_value = current_value.lower()
+				if Lowcurrent_value in Lowname:
+					facultyNames.append(name)
+			else:
+				facultyNames.append(name)
+		print(facultyNames)
+		faculty = json.dumps(facultyNames)
 		return HttpResponse(faculty)
 	except Exception as e:
 		return HttpResponse("error")
 
 def studentsData(request):
+	current_value = request.POST['current_value']
 	try:
-		students =ExtraInfo.objects.all().filter(user_type = "student")
-		# faculty = ExtraInfo.objects.all().filter(user_type = "faculty")
+		students =ExtraInfo.objects.all().filter(user_type = "student").filter(id__startswith=current_value)
 		students = serializers.serialize('json', students)
 		return HttpResponse(students)
 	except Exception as e:
 		return HttpResponse("error")
+
+
+
+@login_required
+def new_club(request):
+	if request.method == 'POST':
+		print(request.POST)
+		club_name = request.POST.get("club_name")
+		category = request.POST.get("category")
+		co = request.POST.get("co")
+		coco = request.POST.get("coco")
+		faculty = request.POST.get("faculty")
+		# club_file = request.FILES.get("file")
+		d_d = request.POST.get("d_d")
+
+		res = "error"
+		message = ""
+		co = co.strip()
+		coco = coco.strip()
+		faculty = faculty.strip()
+		# print("co ", co)
+		# print("coco ", coco)
+		# print("faculty ", faculty)
+		#checking if the form data is authentic
+		#checking for coordinator field
+		students = ExtraInfo.objects.all().filter(user_type = "student")
+		CO = None
+		for i in students:
+			print("id ", len(i.id))
+			print("co ", len(co))
+			if co == i.id:
+				res = "success"
+				CO = i
+				break
+		if (res == "error"):
+			message = message + "The entered roll number of the co_ordinator does not exist"
+			content = {
+				'status' : res,
+				'message' : message
+			}
+			content = json.dumps(content)
+			return HttpResponse(content)
+
+		#checking for co-coordinator field
+		COCO = None
+		res = "error"
+		for i in students:
+			if coco == i.id:
+				res = "success"
+				COCO = i
+				break
+		if(res == "error"):
+			message = message + "The entered roll number of the co_coordinator does not exist"
+			content = {
+				'status' : res,
+				'message' : message
+			}
+			content = json.dumps(content)
+			return HttpResponse(content)
+
+		#checking for faculty field
+		FACUL = None
+		faculties = ExtraInfo.objects.all().filter(user_type = "faculty")
+		res = "error"
+		for i in faculties:
+			checkName = i.user.first_name + " " + i.user.last_name
+			if faculty == checkName:
+				res = "success"
+				FACUL = i
+				break
+		if (res == "error"):
+			message = message + "The entered faculty incharge does not exist"
+			content = {
+				'status' : res,
+				'message' : message
+			}
+			content = json.dumps(content)
+			return HttpResponse(content)
+		#getting queryset class objects
+		# CO = co.split(' - ')
+		# user_name = get_object_or_404(User, username = CO[1])
+		# extra = get_object_or_404(ExtraInfo, id = CO[0], user = user_name)
+		co_student = get_object_or_404(Student, id = CO)
+
+		#getting queryset class objects
+		# COCO = coco.split(' - ')
+		# user_name = get_object_or_404(User, username = COCO[1])
+		# extra = get_object_or_404(ExtraInfo, id = COCO[0], user = user_name)
+		coco_student = get_object_or_404(Student, id = COCO)
+
+		#    #    print "----------------------------------"
+		#    #    print COCO[1]
+		#    #    print COCO[0]
+		#    print "----------------------------"
+		#getting queryset class objects
+		# faculty = faculty.split(" - ")
+		# user_name = get_object_or_404(User, username = faculty[1])
+		# faculty = get_object_or_404(ExtraInfo, id = faculty[0], user = user_name)
+		faculty_inc = get_object_or_404(Faculty, id = FACUL)
+
+		# club_file.name = club_name+"_club_file"
+
+		club_info = Club_info(club_name = club_name, category = category, co_ordinator = co_student, co_coordinator = coco_student, faculty_incharge = faculty_inc, description = d_d)
+		club_info.save()
+
+		message = message + "The form has been successfully dispatched for further process"
+		content = {
+			'status' : res,
+			'message' : message
+		}
+		content = json.dumps(content)
+		return HttpResponse(content)
 
 
 def retrun_content(roll, name, desig , club__ ):
@@ -51,16 +175,10 @@ def retrun_content(roll, name, desig , club__ ):
 	club_budget = Club_budget.objects.all()
 	club_session = Session_info.objects.all()
 	club_event = Club_report.objects.all()
-	venue_type = []
-	id =0
+	venue = []
 	for i in Constants.venue:
-		for j in i:
-			if(id%2==0):
-				venue_type.append(j)
-			else:
-				lt = [k[0] for k in j]
-				# venue_details[venue_type[int(id/2)]] = lt
-			id=id+1
+		for j in i[1]:
+			venue.append(j[0])
 	b=[]
 	if 'student' in desig:
 		user_name = get_object_or_404(User, username = str(roll))
@@ -78,13 +196,10 @@ def retrun_content(roll, name, desig , club__ ):
 		'Club_session': club_session,
 		'Club_event' : club_event,
 		'Curr_club' : b,
-		'venue_type' : venue_type,
+		'venue' : venue,
 		'Curr_desig' : desig,
 		'club_details':club__
 	}
-	for fac in faculty:
-		print(type(fac))
-	# print(faculty)
 	return content
 
 @login_required
@@ -198,47 +313,6 @@ def core_team(request):
 
 	return redirect('/gymkhana/')
 
-@login_required
-def new_club(request):
-	if request.method == 'POST' and request.FILES["file"]:
-		club_name = request.POST.get("club_name")
-		category = request.POST.get("category")
-		co = request.POST.get("co")
-		coco = request.POST.get("coco")
-		faculty = request.POST.get("faculty")
-		club_file = request.FILES["file"]
-		d_d = request.POST.get("d_d")
-
-		#getting queryset class objects
-		CO = co.split(' - ')
-		user_name = get_object_or_404(User, username = CO[1])
-		extra = get_object_or_404(ExtraInfo, id = CO[0], user = user_name)
-		co_student = get_object_or_404(Student, id = extra)
-
-		#getting queryset class objects
-		COCO = coco.split(' - ')
-		user_name = get_object_or_404(User, username = COCO[1])
-		extra = get_object_or_404(ExtraInfo, id = COCO[0], user = user_name)
-		coco_student = get_object_or_404(Student, id = extra)
-
-		#    #    print "----------------------------------"
-		#    #    print COCO[1]
-		#    #    print COCO[0]
-		#    print "----------------------------"
-		#getting queryset class objects
-		faculty = faculty.split(" - ")
-		user_name = get_object_or_404(User, username = faculty[1])
-		faculty = get_object_or_404(ExtraInfo, id = faculty[0], user = user_name)
-		faculty_inc = get_object_or_404(Faculty, id = faculty)
-
-		club_file.name = club_name+"_club_file"
-
-		club_info = Club_info(club_name = club_name, category = category, co_ordinator = co_student, co_coordinator = coco_student, faculty_incharge = faculty_inc, club_file = club_file, description = d_d)
-		club_info.save()
-
-		messages.success(request,"Successfully sent the request !!!")
-
-	return redirect('/gymkhana/')
 
 @login_required
 def event_report(request):
@@ -386,7 +460,7 @@ def new_session(request):
 	if request.method == "POST":
 		club_name = None
 		print(request.POST)
-		venue = request.POST.get("venue_details")
+		venue = request.POST.get("venue_type")
 		session_poster = request.FILES.get("session_poster")
 		date = request.POST.get("date")
 		start_time = request.POST.get("start_time")

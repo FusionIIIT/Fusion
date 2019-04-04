@@ -12,57 +12,7 @@
     </div>
     <!-- <script src = "https://code.jquery.com/jquery-1.10.2.js"></script> -->
     <!-- <script src = "https://code.jquery.com/ui/1.10.4/jquery-ui.js"></script> -->
-    <script type="text/javascript">
-
-        $(document).ready(function(){
-            console.log("Ajax call for autocomplete");
-            $.ajax({
-                url: "/gymkhana/faculty_data/",
-                type: "post",
-                data: {},
-                success: function(response){
-                    // console.log(response);
-                    response = JSON.parse(response);
-                    // console.log(response);
-                    var items = [];
-                    var i ;
-                    for (i=0 ; i<response.length ; i++){
-                        items.push(response[i].fields.about_me);
-                    }
-                    console.log(items) ;
-                    $( "#coOrdinator" ).autocomplete({
-                        source: items
-                    })
-                }
-            });
-
-            $.ajax({
-                url: "/gymkhana/students_data/",
-                type: "post",
-                data: {},
-                success: function(response){
-                    // console.log(response);
-                    response = JSON.parse(response);
-                    console.log(response);
-                }
-            });
-        });
-
-        function ValidateExtension() {
-            var allowedFiles = [".doc", ".docx", ".pdf"];
-            var fileUpload = document.getElementById("fileUpload");
-            var lblError = document.getElementById("lblError");
-            var regex = new RegExp("([a-zA-Z0-9\s_\\.\-:])+(" + allowedFiles.join('|') + ")$");
-            if (!regex.test(fileUpload.value.toLowerCase())) {
-                lblError.innerHTML = "Please upload files having extensions: <b>" + allowedFiles.join(', ') + "</b> only.";
-                return false;
-            }
-            lblError.innerHTML = "";
-            return true;
-        }
-
-    </script>
-
+    
     <div class="ui active tab" data-tab="clubmembershipform">
         <div class="ui vertical segment">
             <form method="Post" id="club_membership_form">
@@ -136,7 +86,6 @@
                             <label>Club</label>
                             <input type="text" placeholder="Club" class="ui large input" name="club_name" required>
                         </div>
-
                         <div class="eight wide field">
                             <label>Category</label>
                             <div class="ui selection dropdown">
@@ -157,7 +106,8 @@
                     <div class="two fields">
                         <div class="eight wide field">
                             <label>Co-ordinator</label>
-                            <input type="text" id="coOrdinator" placeholder="Club" class="ui large input" name="coordinator" required>
+                            <input list="dropdown-menu1" name="co" id="co_Search" type="text" />
+                                <datalist class="dropdown-menu" id="dropdown-menu1"></datalist>
                             <!-- <select class="ui search fluid dropdown" id="co" name="co" required>
                                 <option value="">Select</option>
 
@@ -166,20 +116,24 @@
 
                         <div class="eight wide field">
                             <label>Co Co-ordinator</label>
-                                <select class="ui search fluid dropdown" id="coco" name="coco" required>
+                            <input list="dropdown-menu2" name="coco" id="co_co_Search" type="text" />
+                                <datalist class="dropdown-menu" id="dropdown-menu2"></datalist>
+                                <!-- <select class="ui search fluid dropdown" id="coco" name="coco" required>
                                     <option value="">Select</option>
 
-                                </select>
+                                </select> -->
                         </div>
 
                     </div>
 
                     <div class="eight wide field">
                         <label>Faculty Incharge</label>
-                            <select class="ui search fluid dropdown" id="faculty" name="faculty" required>
+                        <input list="dropdown-menu3" name="faculty" id="faculty_Search" type="text" />
+                            <datalist class="dropdown-menu" id="dropdown-menu3"></datalist>
+                            <!-- <select class="ui search fluid dropdown" id="faculty" name="faculty" required>
                                 <option value="">Select</option>
                     
-                            </select>
+                            </select> -->
                     </div>
 
 
@@ -195,7 +149,7 @@
                     </div>
 
                     <div class="field">
-                        <button class="ui primary button right floated" type="submit" onclick="form_submit('new_club','new_club_form',event)">
+                        <button class="ui primary button right floated" type="submit" onclick="form_submit('new_club','new_club_form',event);">
                             Submit
                         </button>
                     </div>
@@ -207,4 +161,97 @@
         <br>
         <div class="extra content"></div>
     </div>
+{% endblock %}
+
+{% block javascript %}
+    <script type="text/javascript">
+
+        $('#co_Search').keyup(function(){
+            current_value = $('#co_Search').val();
+            // console.log("keyup function");
+            $.ajax({
+                type: 'POST',
+                url: '/gymkhana/students_data/',
+                data: {
+                    'current_value': current_value,
+                },
+                success: function(response){
+                    response = JSON.parse(response);
+                    // console.log(response);
+                    $('#dropdown-menu1').html('');
+                    for(var i=0;i<response.length;i++){
+                        // console.log(response[i].pk);
+                        $('#dropdown-menu1').append('<option value="'+response[i].pk+'">'+response[i].pk+'</option>');
+                    }
+                },
+                error: function(rs, e){
+                    console.log('error');
+                },
+            });
+        });
+
+        $('#co_co_Search').keyup(function(){
+            current_value = $('#co_co_Search').val();
+            // console.log("keyup function");
+            $.ajax({
+                type: 'POST',
+                url: '/gymkhana/students_data/',
+                data: {
+                    'current_value': current_value,
+                },
+                success: function(response){
+                    response = JSON.parse(response);
+                    // console.log(response);
+                    $('#dropdown-menu2').html('');
+                    for(var i=0;i<response.length;i++){
+                        // console.log(response[i].pk);
+                        $('#dropdown-menu2').append('<option value="'+response[i].pk+'">'+response[i].pk+'</option>');
+                    }
+                },
+                error: function(rs, e){
+                    console.log('error');
+                },
+            });
+        });
+
+        $('#faculty_Search').keyup(function(){
+            current_value = $('#faculty_Search').val();
+            // console.log("keyup function");
+            $.ajax({
+                type: 'POST',
+                url: '/gymkhana/faculty_data/',
+                data: {
+                    'current_value': current_value,
+                },
+                success: function(response){
+                    response = JSON.parse(response);
+                    // console.log(response);
+                    $('#dropdown-menu3').html('');
+                    for(var i=0;i<response.length;i++){
+                        // console.log(response[i]);
+                        $('#dropdown-menu3').append('<option value="'+response[i]+'">'+response[i]+'</option>');
+                    }
+                },
+                error: function(rs, e){
+                    console.log('error');
+                },
+            });
+        });
+
+        function ValidateExtension() {
+            var allowedFiles = [".doc", ".docx", ".pdf"];
+            var fileUpload = document.getElementById("fileUpload");
+            var lblError = document.getElementById("lblError");
+            var regex = new RegExp("([a-zA-Z0-9\s_\\.\-:])+(" + allowedFiles.join('|') + ")$");
+            if (!regex.test(fileUpload.value.toLowerCase())) {
+                lblError.innerHTML = "Please upload files having extensions: <b>" + allowedFiles.join(', ') + "</b> only.";
+                return false;
+            }
+            lblError.innerHTML = "";
+            return true;
+        }
+
+    </script>
+
+
 {% endblock %}
