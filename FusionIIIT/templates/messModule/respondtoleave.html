@@ -263,15 +263,15 @@
 <script>
 
 function acceptReq(id){
+ document.getElementById('accr-'+id).style.display="none";
 
-         document.getElementById('accr-'+id).style.visibility='hidden';
          $.ajax({
                 type: 'POST',
                 url: 'rebateresponse',
                 dataType: 'json',
                 data: {
                     'csrfmiddlewaretoken' : '{{ csrf_token }}',
-                    'id_rebate':$("button.acc").attr("data-acc"),
+                    'id_rebate':id,
                     'status':'2',
 
                 },
@@ -289,14 +289,14 @@ function acceptReq(id){
          }
          function rejectReq(id){
 
-         document.getElementById('accr-'+id).style.visibility='hidden';
+          document.getElementById('accr-'+id).style.display="none";
          $.ajax({
                 type: 'POST',
                 url: 'rebateresponse',
                 dataType: 'json',
                 data: {
                     'csrfmiddlewaretoken' : '{{ csrf_token }}',
-                    'id_rebate':$("button.acc").attr("data-acc"),
+                    'id_rebate':id,
                     'status':'0',
 
                 },
