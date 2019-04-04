@@ -236,8 +236,10 @@ def handle_vacation_food_request(request, ap_id):
     """
 
     applications = Vacation_food.objects.get(pk=ap_id)
+    student = applications.student_id.id.user
     if request.POST.get('submit') == 'approve':
         applications.status = '2'
+        central_mess_notif(request.user, student, 'vacation_request_accepted')
 
     elif request.POST.get('submit') == 'reject':
         applications.status = '0'
@@ -376,6 +378,7 @@ def add_mess_meeting_invitation(request):
 
     invitation_obj = Mess_meeting(meet_date=date, agenda=agenda, venue=venue, meeting_time=time)
     invitation_obj.save()
+
     data = {
             'status': 1,
             'message': "Meeting Details recorded",
@@ -396,14 +399,22 @@ def handle_rebate_response(request):
     """
     id = request.POST.get('id_rebate')
     leaves = Rebate.objects.get(pk=id)
+
     # receiver = ExtraInfo.
     date_format = "%Y-%m-%d"
+    message = ''
     b = datetime.strptime(str(leaves.start_date), date_format)
     d = datetime.strptime(str(leaves.end_date), date_format)
-    rebate_count = (d - b).days
-    leaves.status = request.POST["status"]
+    rebate_count = abs((d - b).days) + 1
+    receiver = leaves.student_id.id.user
+    action = request.POST["status"]
+    leaves.status = action
     leaves.save()
-    # central_mess_notif(request.user, receiver, 'menu_change_accepted')
+    if action == '2':
+        message = ' accepted between dates ' + str(b) + ' and ' + str(d)
+    else:
+        message = ' rejected between dates ' + str(b) + ' and ' + str(d)
+    central_mess_notif(request.user, receiver, 'leave_request', message)
     data = {
         'message': 'You responded to request !'
     }
@@ -477,8 +488,14 @@ def handle_special_request(request):
        special_request: data corresponding to id of the special request being accepted or rejected
     """
     special_request = Special_request.objects.get(pk=request.POST["id"])
-    special_request.status = request.POST["status"]
+    receiver = special_request.student_id.id.user
+    action = request.POST["status"]
+    message =''
+    special_request.status = action
     special_request.save()
+    if action == '2':
+        message= "accepted"
+    central_mess_notif(request.user, receiver, 'leave_request', message)
     data = {
         'message': 'You responded to the request !'
     }

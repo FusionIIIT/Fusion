@@ -892,3 +892,13 @@ def download_bill_mess(request):
         'bill': bill_object,
     }
     return render_to_pdf('messModule/billpdfexport.html', context)
+
+
+def get_nonveg_order(request):
+    date_o = request.POST['order_date']
+    nonveg_orders_tomorrow = Nonveg_data.objects.filter(order_date=date_o) \
+        .values('dish__dish', 'order_interval').annotate(total=Count('dish'))
+    data = {
+        'status': 1,
+    }
+    return JsonResponse(data)

@@ -12,8 +12,8 @@
                 {% endif %}
                 <div class="content">
                     <div class="header">
-{#                        <a href="{% url 'notifications:mark_as_read_and_redirect' notice.slug %}"> {{ notice.data.module }} </a>#}
-                        <a > {{ notice.data.module }} </a>
+                        <a href="{% url 'notifications:mark_as_read_and_redirect' notice.slug %}"> {{ notice.data.module }} </a>
+{#                        <a > {{ notice.data.module }} </a>#}
                     </div>
                     <div class="meta">
                         {{ notice.timesince }} ago

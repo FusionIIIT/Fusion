@@ -2,14 +2,13 @@
 {% block body %}
 {% block respondtoleave %}
 
-<div class="ui pointing secondary menu">
+<div class="ui tabular menu">
     <a class="active item" data-tab="respondtoleaverequests">
-        Respond to Leave Requests
+        Respond to Rebate
     </a>
-
-{#    <a class="item" data-tab="leavepastrecords">#}
-{#        Past Records#}
-{#    </a>#}
+    <a class="item" data-tab="respondtovacafoodrequests">
+        Respond to Vacation Food Requests
+    </a>
 
 </div>
 
@@ -127,95 +126,65 @@
 
     </div>
 </div>
-<!-- end leave request-->
+    <div class="ui tab" data-tab="respondtovacafoodrequests">
+    <div class="ui vertical segment">
 
-<!--leav request past records-->
-{#<div class ="ui tab" data-tab="leavepastrecords" id="pastmessleave">#}
-{#    <div class="ui vertical segment">#}
-{#        <!--<div class="ui pointing tertiary menu>">-->#}
-{#            <!--<a class="active item" id="acceptedleave" data-tab="acceptedleave" onclick="getAcceptedLeave()">Accepted Requests</a>-->#}
-{##}
-{#            <!--<a class="item" id="rejectedleave" data-tab="rejectedleave">Rejected Requests</a>-->#}
-{#        <!--</div>-->#}
-{#        <table id="leaverecords" class="ui very basic collapsing celled large sortable table"#}
-{#               style="padding-left: 2.5%;#}
-{#                                                          padding-right: 2.5%;#}
-{#                                                          padding-top: 1%;#}
-{#                                                          padding-bottom: 1.5%;#}
-{#                                                          margin: auto;">#}
-{#            <thead>#}
-{#            <tr>#}
-{#                <th class="four wide">#}
-{#                    Student#}
-{#                </th>#}
-{##}
-{#                <th class="four wide">#}
-{#                    Type#}
-{#                </th>#}
-{##}
-{#                <th class="two wide">#}
-{#                    From#}
-{#                </th>#}
-{##}
-{#                <th class="two wide">#}
-{#                    To#}
-{#                </th>#}
-{#                <th class="one wide">#}
-{#                    Status#}
-{#                </th>#}
-{#            </tr>#}
-{#            </thead>#}
-{##}
-{#            <tbody>#}
-{#            {% for item in leave %}#}
-{#                {% if item.status == '2' %}#}
-{#                <tr>#}
-{#                <th class="four wide">#}
-{#                    {{item.student_id.id}}#}
-{#                </th>#}
-{##}
-{#                <th class="four wide">#}
-{#                    {{item.leave_type}}#}
-{#                </th>#}
-{##}
-{#                <th class="two wide">#}
-{#                    {{item.start_date}}#}
-{#                </th>#}
-{##}
-{#                <th class="two wide">#}
-{#                    {{item.end_date}}#}
-{#                </th>#}
-{#                <th class="one wide">#}
-{#                    Accepted#}
-{#                </th>#}
-{#            </tr>#}
-{#                {% endif %}#}
-{#            {% endfor %}#}
-{#            </tbody>#}
-{##}
-{#        </table>#}
-{##}
-{#        <br>#}
-{##}
-{#        <div class="ui divider"></div>#}
-{##}
-{#    </div>#}
-{#</div>#}
-    <div class="ui modal" id="leavedata" style="padding: 2.5%;">
+            {% for item in vaca_all %}
+            {% if item.status == '1' %}
+            <div>
+                <div class="content">
+                    <b>Application Date:</b> {{item.app_date}}
+                    <br>
+                    <b>Student:</b> {{item.student_id.id}}
+                    <br>
+                    <b>Reason:</b> {{item.purpose}}
+                    <br>
+                    <b>From:</b> {{item.start_date}}
+                    <br>
+                    <b>To:</b> {{item.end_date}}
+                    <br>
+                </div>
+                <div class="right floated content">
+                    <b>Approve:</b>
+                    <form action="/mess/{{item.pk}}/responsevacationfood/" method="post">
+                        {% csrf_token %}
+                        <div class="ui buttons">
+                            <button class="ui negative button" type="submit" name="submit" value="reject">R</button>
+                            <div class="or"></div>
+                            <button class="ui positive button" type="submit" name="submit" value="approve">A</button>
+                        </div>
+                    </form>
+                </div>
+                <hr>
+            </div>
+
+            {% endif %}
+            {% endfor %}
+    </div>
+        <!--</table>-->
+
+        <br>
+
+        <div class="ui divider"></div>
+
+</div>
+
+
+    <div class="ui small modal" id="leavedata" style="padding: 2.5%;">
         <div class="ui vertical segment">
-            <header>Statistics for Today</header>
-            <br>
-            <div id="leave_today">
+
+            <div style="text-align: center;" id="leave_today">
 
             </div>
             <br><br>
-            <header>Statistics for Tomorrow</header>
+
             <br>
-            <div id="leave_tomorrow">
+            <div style="text-align: center;" id="leave_tomorrow">
 
             </div>
         </div>
     </div>
+
 
     <div class="ui small modal" id="dateVacationModal" style="padding: 1.5%;">
         <div class="ui vertical segment">
@@ -312,6 +281,7 @@ function acceptReq(id){
             });
 
          }
+
         function getLeave(){
             $('#leavedata').modal('show');
             $.ajax({
@@ -333,6 +303,7 @@ function acceptReq(id){
                 }
             });
         }
+
         function dateVacation(){
             $('#dateVacationModal').modal('show');
         }
