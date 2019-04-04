@@ -234,6 +234,7 @@ class Mess_minutes(models.Model):
 
 class Menu_change_request(models.Model):
     dish = models.ForeignKey(Menu, on_delete=models.CASCADE)
+    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     reason = models.TextField()
     request = models.CharField(max_length=100)
     status = models.CharField(max_length=20, choices=STATUS, default='1')

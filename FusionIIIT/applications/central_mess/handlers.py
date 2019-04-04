@@ -140,7 +140,7 @@ def add_vacation_food_request(request, student):
     return data
 
 
-def add_menu_change_request(request):
+def add_menu_change_request(request, student):
     # TODO logic here is flawed if the same dish is use more than once then it will give an error !!!
     #  or if there are two requests on the same dish
     """
@@ -157,7 +157,7 @@ def add_menu_change_request(request):
         new_dish = request.POST.get("newdish")
         print("newdish")
         reason = request.POST.get("reason")
-        menu_object = Menu_change_request(dish=dish, request=new_dish, reason=reason)
+        menu_object = Menu_change_request(dish=dish, student_id=student, request=new_dish, reason=reason)
         menu_object.save()
         data = {
             'status': 1

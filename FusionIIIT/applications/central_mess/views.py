@@ -24,6 +24,7 @@ from .handlers import (add_nonveg_order, add_mess_feedback, add_vacation_food_re
                        add_mess_registration_time, add_leave_request, add_mess_meeting_invitation,
                        handle_rebate_response, add_special_food_request,
                        handle_special_request, add_bill_base_amount, add_mess_committee, generate_bill)
+from notification.views import central_mess_notif
 
 today_g = datetime.today()
 month_g = today_g.month
@@ -423,6 +424,7 @@ def submit_mess_feedback(request):
     student = Student.objects.get(id=extra_info)
     if extra_info.user_type == 'student':
         data = add_mess_feedback(request, student)
+        central_mess_notif(request.user, request.user, 'feedback_submitted')
         return JsonResponse(data)
 
 
@@ -459,13 +461,14 @@ def submit_mess_menu(request):
     # TODO add ajax for this
     user = request.user
     holds_designations = HoldsDesignation.objects.filter(user=user)
+    extrainfo = ExtraInfo.objects.get(user=user)
     designation = holds_designations
-
+    student = Student.objects.get(id=extrainfo)
     # globallyChange()
     context = {}
     # A user may hold multiple designations
 
-    data = add_menu_change_request(request)
+    data = add_menu_change_request(request,student)
     if data['status'] == 1:
         return HttpResponseRedirect("/mess")
 
