@@ -6,6 +6,12 @@
     <a class="active item" data-tab="splreq">
         Special Request
     </a>
+    <!--
+    <a class="item" data-tab="splreq_past">
+        Accepted Requests
+    </a>
+    -->
+
 </div>
 <div class="ui active tab" data-tab="splreq">
     <div class="ui vertical strip segment">
@@ -25,15 +31,15 @@
               <tbody>
                   {% for var in sprequest %}
                 <tr id="accpt-{{var.pk}}">
-                    <th class="two wide">
+                    <th class="two wide" id="date-{{ var.pk }}">
                         {{var.app_date}}
                     </th>
-                    <td class="two wide">
+                    <td class="two wide" id="id-{{ var.pk }}">
                         {{var.student_id.id}}
                     </td>
-                    <td class="two wide">{{var.start_date}}-{{var.end_date}}</td>
+                    <td class="two wide" id="dates-{{ var.pk }}">{{var.start_date}}-{{var.end_date}}</td>
 {#                    <td>{{var.end_date}}</td>#}
-                    <td class="three wide">{{var.item1}}, {{var.item2}}</td>
+                    <td class="three wide" id="food-{{ var.pk }}">{{var.item1}}, {{var.item2}}</td>
                     <td>{{var.request}}</td>
                     <td>
                             <div class="ui buttons">
@@ -59,6 +65,45 @@
     </div>
 </div>
 
+<div class="ui tab" data-tab="splreq_past">
+    <div class="ui vertical strip segment">
+
+            <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Student Id</th>
+                  <th>Request Dates</th>
+                  <th>Food</th>
+                  <th>purpose</th>
+                  <th>accept/reject</th>
+                </tr>
+              </thead>
+              <tbody id="sp_past_req">
+                  {% for var in sprequest_past %}
+                <tr id="accpt-{{var.pk}}">
+                    <th class="two wide">
+                        {{var.app_date}}
+                    </th>
+                    <td class="two wide">
+                        {{var.student_id.id}}
+                    </td>
+                    <td class="two wide">{{var.start_date}}-{{var.end_date}}</td>
+{#                    <td>{{var.end_date}}</td>#}
+                    <td class="three wide">{{var.item1}}, {{var.item2}}</td>
+                    <td>{{var.request}}</td>
+                    <td>
+                            Accepted
+                    </td>
+                </tr>
+                {% endfor %}
+
+              </tbody>
+            </table>
+    </div>
+</div>
+</div>
+
 <script>
 function acceptSplReq(id){
 
@@ -75,9 +120,7 @@ function acceptSplReq(id){
 
                 },
                 success: function(data) {
-
-                        alert(data.message);
-
+                    alert(data.message);
 }
 
             });
