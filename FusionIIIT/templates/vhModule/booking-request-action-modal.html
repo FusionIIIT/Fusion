@@ -15,10 +15,10 @@
   <!-- <div class="scrolling content"> -->
 
     <div class="ui pointing secondary menu">
-        <a class="item active" data-tab="view-visitors-detail">
+        <a class="item active" data-tab="view-visitors-detail" id="visitor-detail-action-data-tab">
             Visitor's Details
         </a> 
-        <a class="item" data-tab="view-request-booking">
+        <a class="item" data-tab="view-request-booking" id="booking-detail-action-data-tab">
             Booking Details
         </a>
  
@@ -28,12 +28,12 @@
     <!-- request booking datatab starts here! -->
 
 
-    <div class="ui tab" data-tab="view-request-booking">
+    <div class="ui tab" data-tab="view-request-booking" id="booking-detail-action-form-tab">
         <div class="ui vertical stripe team segment"
              style="padding-left: 3.5%;
                 padding-right: 3.5%;">
 
-        <form class="ui large form" id="behen-ka-bhai">
+        <form class="ui large form" id="behen-ka-bhai" style="height: 420px; overflow-y: auto;">
         <!-- <div class="field">
             <label>Name</label>
             <input type="text" value="{{ booking.intender.name }}" readonly>
@@ -167,7 +167,7 @@
                         
                         {% for i in booking.rooms.all %}
                             <!-- <input rows="2" value="{{ i.room_number }}" name="purpose-of-visit-{{ booking.id }}" readonly> -->
-                                    {{ i.room_number }}, &nbsp
+                                    {{ i.room_number }}, &nbsp;
 
                         {% endfor %}
                     </div>
@@ -221,7 +221,7 @@
             </div>
         </div>
 
-        <input type="hidden" name="booking-id-{{ booking.id }}" value="{{ booking.id }}"">
+        <input type="hidden" name="booking-id-{{ booking.id }}" value="{{ booking.id }}">
         <input type="hidden" name="csrf" value="{{ csrf_token }}">
 
         {% if user_designation == 'VhCaretaker'  %}
@@ -309,7 +309,7 @@
 
 
 
-    <div class="ui active tab" data-tab="view-visitors-detail">
+    <div class="ui active tab" data-tab="view-visitors-detail" id="visitor-detail-action-form-tab">
         <div class="ui vertical stripe team segment"
              style="padding-left: 3.5%;
                 padding-right: 3.5%;">
@@ -353,6 +353,14 @@
                         </div>
                     </div>
                 </div>
+
+<!--         <div class="field">
+            <label></label>
+            <div class="ui large primary button right floated" id="next-button" onclick="next_button_action_form(event)">
+                Next
+            </div>
+
+        </div> -->
 
 <!--         <div class="field">
             <label></label>

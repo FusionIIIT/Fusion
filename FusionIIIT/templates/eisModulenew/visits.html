@@ -339,6 +339,7 @@
             </div>
         </form>
         <br>
+        {% endif %}
         <h4 class="ui dividing header">Report:</h4>
         <div class="pagination">
                 <h4> <span class="step-links" >
@@ -377,6 +378,7 @@
                     <tr>
                         <td>{{ forloop.counter|add:sr10 }}</td>
                         <td>
+                            <i class="{{ f_visit.country|lower }} flag"></i>
                             {{ f_visit.country }}
                         </td>
                         <td>{{ f_visit.place }}</td>
@@ -426,7 +428,7 @@
                     {% endif %}
                 </span></h4>
             </div>
-        {% endif %}
+        
     </div>
     {% comment %}The Foreign Visit segment ends here!{% endcomment %}
 
@@ -508,7 +510,7 @@
 
             </div>
         </form>
-        <br>
+        <br>{% endif %}
         <h4 class="ui dividing header">Report:</h4>
 
         <div class="pagination">
@@ -548,7 +550,7 @@
                     <tr>
                         <td>{{ forloop.counter|add:sr11 }}</td>
                         <td>
-                            {{ f_visit.country }}
+                            <i class="in flag"></i> IN
                         </td>
                         <td>{{ f_visit.place }}</td>
                         <td>{{ f_visit.start_date }} - {{ f_visit.end_date }}</td>
@@ -597,7 +599,7 @@
                     {% endif %}
                 </span></h4>
             </div>
-        {% endif %}
+        
     </div>
     {% comment %}The Indian University visit segment ends here!{% endcomment %}
 {% endblock %}
