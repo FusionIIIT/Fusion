@@ -62,6 +62,8 @@ def visitorhostel(request):
         canceled_bookings = BookingDetail.objects.filter(status="Canceled", intender=user).select_related().order_by('booking_from')
         rejected_bookings = BookingDetail.objects.filter(status='Rejected', intender=user).order_by('booking_from')
         cancel_booking_requested = BookingDetail.objects.filter(status='CancelRequested', intender=user).order_by('booking_from')
+        print("complete bookings !!!")
+        print(complete_bookings)
 
         # pp = ExtraInfo.objects.all()
         # phone_no = pp.filter(Q(user=user))
@@ -103,6 +105,10 @@ def visitorhostel(request):
         canceled_bookings = BookingDetail.objects.filter(status="Canceled").select_related().order_by('booking_from')
         cancel_booking_requested = BookingDetail.objects.filter(status='CancelRequested', booking_to__gte=datetime.datetime.today(), intender=user).order_by('booking_from')
         rejected_bookings = BookingDetail.objects.filter(status='Rejected').order_by('booking_from')
+
+        print("complete bookings !!!")
+        print(complete_bookings)
+        
         for booking in pending_bookings:
             booking_from = booking.booking_from
             booking_to = booking.booking_to
@@ -474,7 +480,7 @@ def confirm_booking(request):
         bd = BookingDetail.objects.get(id=booking_id)
         bd.status = 'Confirmed'
         bd.category = category
-        # bd.confirmed_date = datetime.now()
+
         for room in rooms:
             room_object = RoomDetail.objects.get(room_number=room)
             bd.rooms.add(room_object)

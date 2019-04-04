@@ -7,10 +7,10 @@
 
     <div class="ui pointing secondary menu">
          
-        <a class="item active" data-tab="request-booking">
+        <a class="item active" data-tab="request-booking" id="booking-detail-data-tab">
             Booking Details
         </a>
-        <a class="item" data-tab="visitors-detail">
+        <a class="item" data-tab="visitors-detail" id="visitor-detail-data-tab">
             Visitor's Details
         </a>
          
@@ -19,12 +19,10 @@
 
     <!-- request booking datatab starts here! -->
 
-    <div class="ui active tab" data-tab="request-booking">
-        <div class="ui vertical stripe team segment"
-             style="padding-left: 3.5%;
-                padding-right: 3.5%;">
+    <div class="ui active tab" data-tab="request-booking" id="booking-detail-action-tab">
+        <div class="ui vertical stripe team segment" style="padding-left: 3.0%; padding-right: 3.0%;">
 
-            <form class="ui large form" id="request-booking-form">
+            <form class="ui large form" id="request-booking-form" style="height: 420px; overflow-y: auto;">
 
                 {% if user_designation == 'VhIncharge' or user_designation == 'VhCaretaker' %}
                 <div class="field">
@@ -196,6 +194,14 @@
                             </div>
                 </div>
 
+            <div class="field">
+            <label></label>
+            <div class="ui large primary button right floated" id="next-button" onclick="next_action(event)">
+                Next
+            </div>
+
+        </div>
+
             </form>
         </div>
 
@@ -229,7 +235,7 @@
 <!-- visitor's detail datatab starts here! -->
 
 
-    <div class="ui tab" data-tab="visitors-detail">
+    <div class="ui tab" data-tab="visitors-detail" id="visitor-detail-action-tab">
         <div class="ui vertical stripe team segment"
              style="padding-left: 3.5%;
                 padding-right: 3.5%;">
@@ -540,14 +546,8 @@
                     
                 </div>
 
-<!-- 
-        <div class="field">
-            <label></label>
-            <div class="ui large teal button right floated" id="next-button" onclick="next_action(event)">
-                Next
-            </div>
 
-        </div> -->
+
             </form>
 
             <br>
