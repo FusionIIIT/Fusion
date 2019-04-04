@@ -26,6 +26,7 @@ from xhtml2pdf import pisa
 from django.core import serializers
 
 from applications.academic_information.models import Student
+from notification.views import placement_cell_notif
 from applications.globals.models import (DepartmentInfo, ExtraInfo,
                                         HoldsDesignation)
 
@@ -1207,6 +1208,11 @@ def StudentRecords(request):
 
                 PlacementStatus.objects.bulk_create( [PlacementStatus(notify_id=notify,
                             unique_id=student, no_of_days=no_of_days) for student in students] )
+
+                for st in students:
+                    #print(request.user, '-----------------------', st.id.user,'-----------------')
+                    placement_cell_notif(request.user, st.id.user, "")
+
                 students = ''
                 messages.success(request, 'Notification Sent')
             else:
