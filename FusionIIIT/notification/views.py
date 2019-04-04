@@ -57,6 +57,8 @@ def central_mess_notif(sender, recipient, type):
     verb = ''
     if type=='feedback_submitted':
         verb='Your feedback has been successfully submitted.'
+    elif type=='menu_change_accepted':
+        verb='Menu request has been approved'
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 

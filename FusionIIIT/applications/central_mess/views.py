@@ -59,11 +59,11 @@ def mess(request):
     if extrainfo.user_type == 'student':
         student = Student.objects.get(id=extrainfo)
         vaca_obj = Vacation_food.objects.filter(student_id=student)
-        feedback_obj = Feedback.objects.filter(student_id=student)
-        data = Nonveg_data.objects.filter(student_id=student)
+        feedback_obj = Feedback.objects.filter(student_id=student).order_by('-fdate')
+        data = Nonveg_data.objects.filter(student_id=student).order_by('-app_date')
         monthly_bill = Monthly_bill.objects.filter(student_id=student)
         payments = Payments.objects.filter(student_id=student)
-        rebates = Rebate.objects.filter(student_id=student)
+        rebates = Rebate.objects.filter(student_id=student).order_by('-app_date')
         splrequest = Special_request.objects.filter(student_id=student).order_by('-app_date')
         mess_optn = Messinfo.objects.get(student_id=student)
         # newmenu = Menu_change_request.objects.all()
@@ -138,12 +138,12 @@ def mess(request):
 
         for d in desig:
             if d.designation.name == 'mess_committee_mess1' or d.designation.name == 'mess_convener_mess1':
-                newmenu = Menu_change_request.objects.filter(dish__mess_option='mess1')
+                newmenu = Menu_change_request.objects.filter(dish__mess_option='mess1').order_by('-app_date')
                 # newmenu = Menu_change_request.objects.all()
                 meeting = Mess_meeting.objects.all()
                 minutes = Mess_minutes.objects.all()
-                feed = Feedback.objects.filter(mess='mess1')
-                feed2 = Feedback.objects.filter(mess='mess1')
+                feed = Feedback.objects.filter(mess='mess1').order_by('-fdate')
+                feed2 = Feedback.objects.filter(mess='mess1').order_by('-fdate')
                 sprequest = Special_request.objects.filter(status='1')
                 # count1 = feed.filter(Q(feedback_type='Maintenance') & Q(mess='mess1')).count()
                 for f in feed:
@@ -207,11 +207,11 @@ def mess(request):
 
             if d.designation.name == 'mess_committee_mess2' or d.designation.name == 'mess_convener_mess2':
                 # newmenu = Menu_change_request.objects.all()
-                newmenu = Menu_change_request.objects.filter(dish__mess_option='mess2')
+                newmenu = Menu_change_request.objects.filter(dish__mess_option='mess2').order_by('-app_date')
                 meeting = Mess_meeting.objects.all()
                 minutes = Mess_minutes.objects.all()
-                feed = Feedback.objects.filter(mess='mess2')
-                feed2 = Feedback.objects.filter(mess='mess2')
+                feed = Feedback.objects.filter(mess='mess2').order_by('-fdate')
+                feed2 = Feedback.objects.filter(mess='mess2').order_by('-fdate')
                 sprequest = Special_request.objects.filter(status='1')
                 # count5 = feed.filter(Q(feedback_type='Maintenance') & Q(mess='mess2')).count()
                 for f in feed2:
@@ -302,15 +302,15 @@ def mess(request):
         nonveg_orders_tomorrow = Nonveg_data.objects.filter(order_date=tomorrow_g)\
             .values('dish__dish','order_interval').annotate(total=Count('dish'))
         # make info with diff name and then pass context
-        newmenu = Menu_change_request.objects.all()
-        vaca_all = Vacation_food.objects.all()
+        newmenu = Menu_change_request.objects.all().order_by('-app_date')
+        vaca_all = Vacation_food.objects.all().order_by('-app_date')
         # members_mess = HoldsDesignation.objects.filter(designation__name='mess_convener')
         members_mess = HoldsDesignation.objects.filter(Q(designation__name__contains='mess_convener')
                                                        | Q(designation__name__contains='mess_committee'))
         print(members_mess)
         y = Menu.objects.all()
         x = Nonveg_menu.objects.all()
-        leave = Rebate.objects.filter(status='1')
+        leave = Rebate.objects.filter(status='1').order_by('-app_date')
 
         context = {
                    'bill_base': current_bill,
@@ -334,7 +334,7 @@ def mess(request):
     elif extrainfo.user_type == 'faculty':
         meeting = Mess_meeting.objects.all()
         minutes = Mess_minutes.objects.all()
-        feed = Feedback.objects.all()
+        feed = Feedback.objects.all().order_by('-fdate')
         y = Menu.objects.all()
 
         for f in feed:

@@ -18,6 +18,7 @@ from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
                      Mess_minutes, Mess_reg, Messinfo, Monthly_bill,
                      Nonveg_data, Nonveg_menu, Payments, Rebate,
                      Special_request, Vacation_food, MessBillBase)
+from notification.views import central_mess_notif
 
 
 today_g = datetime.today()
@@ -185,9 +186,11 @@ def handle_menu_change_response(request):
             5 for error
     """
     ap_id = request.POST.get('idm')
+    user = request.user
     stat = request.POST['status']
     application = Menu_change_request.objects.get(pk=ap_id)
-    print(stat)
+    # student = application.student_id
+    # receiver = User.objects.get(username=student)
     if stat == '2':
         application.status = 2
         meal = application.dish
@@ -197,6 +200,7 @@ def handle_menu_change_response(request):
         data = {
             'status': '2',
         }
+        # central_mess_notif(user, receiver, 'menu_change_accepted')
 
     elif stat == '0':
         application.status = 0
@@ -392,12 +396,14 @@ def handle_rebate_response(request):
     """
     id = request.POST.get('id_rebate')
     leaves = Rebate.objects.get(pk=id)
+    # receiver = ExtraInfo.
     date_format = "%Y-%m-%d"
     b = datetime.strptime(str(leaves.start_date), date_format)
     d = datetime.strptime(str(leaves.end_date), date_format)
     rebate_count = (d - b).days
     leaves.status = request.POST["status"]
     leaves.save()
+    # central_mess_notif(request.user, receiver, 'menu_change_accepted')
     data = {
         'message': 'You responded to request !'
     }
