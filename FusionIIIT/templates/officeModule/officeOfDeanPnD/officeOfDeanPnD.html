@@ -1,13 +1,30 @@
 {% extends 'globals/base.html' %}
 {% load static %}
 
-
 {% block title %}
     Module
 {% endblock %}
 
 
 {% block body %}
+    <script type="text/javascript" type="text/javascript">
+        const hashCallback = () => {
+            const hash = location.hash.substring(1);
+            console.log("hash change", hash);
+            if (hash) {
+                $('.ui.menu .item').tab('change tab', hash);
+            }
+        };
+        window.addEventListener("hashchange", hashCallback, false);
+        window.addEventListener("DOMContentLoaded", hashCallback);
+        window.addEventListener("load", () => {
+            console.log("loaded");
+            $('.ui.menu .item').tab({
+                onVisible: (tab) => location.hash = '#' + tab
+            });
+        });
+    </script>
+
     {% block navBar %}
         {% include 'dashboard/navbar.html' %}
     {% endblock %}
