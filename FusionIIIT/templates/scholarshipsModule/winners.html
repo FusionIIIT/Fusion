@@ -6,6 +6,9 @@
         <a class="active item" data-tab="winners">
             Winners
         </a>
+        <a class="item" data-tab="yearwinners">
+            Yearwise Winners
+        </a>
     </div>
 
     <div class="ui active tab" data-tab="winners">
@@ -15,24 +18,36 @@
             <div class="ui grid row">
                 <div class="one wide column"></div>
 
-                <div class="seven wide column">
-                    <label>Batch</label>
+                <div class="four wide column">
+                    <label>Programme</label>
+                    <select class="ui fluid search large dropdown" id="programme_name" required>
+                        <option value="">Select</option>
+                        <option value="B.Tech"> B.Tech </option>
+                        <option value="B.Des"> B.Des </option>
+                        <option value="M.Tech"> M.Tech </option>
+                        <option value="M.Des"> M.Des </option>
+                        <option value="PhD"> PhD </option>
+                    </select>
+                </div>
+
+                <div class="four wide column">
+                    <label>Academic Year</label>
                     <select class="ui fluid search large dropdown" id="batch_year" required>
                         <option value="">Select</option>
-                        <option value="2013"> 2013 </option>
-                        <option value="2014"> 2014 </option>
-                        <option value="2015"> 2015 </option>
-                        <option value="2016"> 2016 </option>
-                        <option value="2017"> 2017 </option>
-                        <option value="2018"> 2018 </option>
+                        <option value="2013"> 2013-14 </option>
+                        <option value="2014"> 2014-15 </option>
+                        <option value="2015"> 2015-16 </option>
+                        <option value="2016"> 2016-17 </option>
+                        <option value="2017"> 2017-18 </option>
+                        <option value="2018"> 2018-19 </option>
 
 
                     </select>
                 </div>
 
-                <div class="seven wide column">
+                <div class="six wide column">
                     <label> Awards </label>
-                    <select class="ui fluid search large dropdown" id="award_name" required>
+                    <select class="ui fluid search large dropdown" id="award_name1" required>
                         <option value="">Select</option>
                         {% for i in awards %}
                         <option value="{{i.award_name}}">{{i.award_name}}</option>
@@ -107,6 +122,101 @@
     </div>
 
 
+
+    <div class="ui tab" data-tab="yearwinners">
+      <div class="ui vertical segment">
+      <form class="ui form" id="win_form">
+
+          <div class="ui grid row">
+              <div class="one wide column"></div>
+
+
+
+              <div class="eight wide column">
+                  <label>Academic Year</label>
+                  <select class="ui fluid search large dropdown" id="acad_year" required>
+                      <option value="">Select</option>
+                      <option value="2013"> 2013-14 </option>
+                      <option value="2014"> 2014-15 </option>
+                      <option value="2015"> 2015-16 </option>
+                      <option value="2016"> 2016-17 </option>
+                      <option value="2017"> 2017-18 </option>
+                      <option value="2018"> 2018-19 </option>
+
+
+                  </select>
+              </div>
+
+          </div>
+          <div class="ui grid row">
+              <div class="twelve wide column"></div>
+              <div class="three wide column">
+                  <button name="Submit" type="submit" class="ui primary large right floated button">
+                      Submit
+                  </button>
+              </div>
+
+          </div>
+
+      </form>
+      <div class="ui divider"></div>
+      <div class="ui vertical segment">
+          <table id="win_table" class="ui very basic collapsing celled sortable table"
+                 style="padding-left: 2.5%;
+                                                        padding-right: 2.5%;
+                                                        padding-top: 1%;
+                                                        padding-bottom: 1.5%;
+                                                        margin: auto;">
+              <thead>
+              <tr >
+                  <th class="three wide">
+                      Roll No
+                  </th>
+                  <th class="five wide">
+                      Name
+                  </th>
+                  <th class="three wide">
+                      Programme
+                  </th>
+                  <th class="three wide">
+                      Award Name
+                  </th>
+
+              </tr>
+              </thead>
+
+              <tbody>
+                  <tr style="display: None">
+                      <td>
+
+                      </td>
+
+                      <td>
+
+                      </td>
+
+                      <td>
+
+                      </td>
+
+                  </tr>
+
+
+              </tbody>
+          </table>
+
+
+
+          <br>
+
+      </div>
+
+
+
+      </div>
+    </div>
+
+
 {% endblock %}
 
 
@@ -116,16 +226,19 @@
     <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
 
     <script>
+      //Arihant:Showing Previous Winners
         $(document).on('submit','#winners_form',function (event) {
                 event.preventDefault();
                 $('#winners_table tbody').find("tr:gt(0)").remove();
                 var element = $('#winners_table tbody tr').first();
+                console.log($('award_name').val());
                 $.ajax({
                     url: '/spacs/get_winners/',
                     type: 'GET',
                     data: {
+                        programme: $('#programme_name').val(),
                         batch: $('#batch_year').val(),
-                        award_name: $('#award_name').val()
+                        award_name: $('#award_name1').val()
                     },
                     success: function (response) {
                         if(response.result==='Success'){
@@ -138,6 +251,56 @@
                                 txt += '<td>' + roll + '</td>' +
                                 '<td>' + student_name + '</td>' +
                                 '<td>' + student_program + '</td>';
+                                txt +='</tr>';
+                                element.after(txt);
+                            }
+
+                            console.log(response.result)
+                        }
+                        else{
+                                txt="<tr>";
+                                txt += '<td>' + "" + '</td>' +
+                                '<td>' + "No Data Found!!"  + '</td>' +
+                                '<td>' + "" + '</td>';
+                                txt +='</tr>';
+                                element.after(txt);
+                            console.log(response.result);
+                        }
+
+                    }
+                });
+            });
+
+
+
+    </script>
+    <script>
+      //Arihant:Showing Previous Winners
+        $(document).on('submit','#win_form',function (event) {
+                  console.log("Happy");
+                event.preventDefault();
+                $('#win_table tbody').find("tr:gt(0)").remove();
+                var element = $('#win_table tbody tr').first();
+                $.ajax({
+                    url: '/spacs/get_win/',
+                    type: 'GET',
+                    data: {
+                        acad_year: $('#acad_year').val()
+                    },
+
+                    success: function (response) {
+                        if(response.result==='Success'){
+
+                            for(var i=0;i<response.student_name.length;i++){
+                                var student_name=response.student_name[i];
+                                var roll=response.roll[i];
+                                var student_program=response.student_program[i];
+                                var x=response.award_n[i];
+                                txt="<tr>";
+                                txt += '<td>' + roll + '</td>' +
+                                '<td>' + student_name + '</td>' +
+                                '<td>' + student_program + '</td>' +
+                                '<td>' + x + '</td>';
                                 txt +='</tr>';
                                 element.after(txt);
                             }

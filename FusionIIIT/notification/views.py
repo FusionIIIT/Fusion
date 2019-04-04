@@ -11,19 +11,19 @@ def leave_module_notif(sender, recipient, type, date=None):
     verb=''
     if type=='leave_applied':
         verb="Your leave has been successfully submitted."
-    if type=='request_accepted':
+    elif type=='request_accepted':
         verb = "Your responsibility has been accepted "
-    if type=='request_declined':
+    elif type=='request_declined':
         verb = "Your responsibility has been declined "
-    if type=='leave_accepted':
+    elif type=='leave_accepted':
         verb = "You leave request has been accepted "
-    if type == 'leave_forwarded':
+    elif type == 'leave_forwarded':
         verb = "You leave request has been forwarded "
-    if type=='leave_rejected':
+    elif type=='leave_rejected':
         verb = "You leave request has been rejected "
-    if type=='offline_leave':
+    elif type=='offline_leave':
         verb = "Your offline leave has been updated "
-    if type=='replacement_request':
+    elif type=='replacement_request':
         verb = "You have a replacement request "
     if type=='replacement_cancel':
         verb = "Your replacement has been cancelled for "+date
@@ -54,6 +54,10 @@ def central_mess_notif(sender, recipient, type):
     sender = sender
     recipient = recipient
     verb = ''
+    if type=='feedback_submitted':
+        verb='Your feedback has been successfully submitted.'
+    elif type=='menu_change_accepted':
+        verb='Menu request has been approved'
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
@@ -85,12 +89,31 @@ def file_tracking_notif(sender, recipient, type):
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
 def scholarship_portal_notif(sender, recipient, type):
-    url=''
+    url='spacs:convener_view'
     module='Scholarship Portal'
     sender = sender
     recipient = recipient
     verb = ''
 
+    if type.startswith('award'):
+        s = type.split('-')
+        verb = "Invitation to apply for " + s[1]
+    elif type == 'Accept_mcm':
+        verb = "Your Mcm form has been accepted "
+    elif type == 'Reject_mcm':
+        verb = "Your Mcm form has been rejected as you have not fulfiled the required criteria "
+    elif type == 'Accept_gold':
+        verb = "Your Covocation form for Director Gold Medal has been accepted "
+    elif type == 'Reject_gold':
+        verb = "Your Covocation form for Director Gold Medal has been rejected "
+    elif type == 'Accept_silver':
+        verb = "Your Covocation form for Director Silver Medal has been accepted "
+    elif type == 'Reject_silver':
+        verb = "Your Covocation form for Director Silver Medal has been rejected "
+    elif type == 'Accept_dm':
+        verb = "Your Covocation form for D&M Proficiency Gold Medal has been accepted "
+    elif type == 'Reject_silver':
+        verb = "Your Covocation form for D&M Proficiency Gold Medal has been rejected "
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
 def complaint_system_notif(sender, recipient, type):

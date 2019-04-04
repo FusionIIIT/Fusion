@@ -160,19 +160,44 @@
           </div>
 
           <div class="{% if form5.errors %}ui tab{% else %}ui active tab{% endif %}" data-tab="placementschedule">
-            <div class="ui grid">
-              <div class="thirteen wide column">
-                <label>Company Name:</label>
-                <div class="ui fluid large input">
-                    <input type="text" id="sch_searchbar_text" placeholder="Search">
-                </div>
-              </div>
+            {% for c3 in current2 %}
+              {% if c3.designation.name == 'placement officer' %}
+                <div class="ui grid">
+                  <div class="thirteen wide column">
+                    <label>Company Name:</label>
+                    <div class="ui fluid large input">
+                        <input type="text" id="sch_searchbar_text" placeholder="Search">
+                    </div>
+                  </div>
 
-              <div class="three wide column">
-                <label><br></label>
-                <button class="ui large primary button" id="sch_searchbar_btn" type="submit"> Submit </button>
-              </div>
-            </div>
+                  <div class="three wide column">
+                    <label><br></label>
+                    <button class="ui large primary button" id="sch_searchbar_btn" type="submit"> Submit </button>
+                  </div>
+                </div>
+              {% endif %}
+            {% endfor %}
+
+
+            {% for c in current1 %}
+              {% if c.designation.name == 'placement chairman' %}
+                <div class="ui grid">
+                  <div class="thirteen wide column">
+                    <label>Company Name:</label>
+                    <div class="ui fluid large input">
+                        <input type="text" id="sch_searchbar_text" placeholder="Search">
+                    </div>
+                  </div>
+
+                  <div class="three wide column">
+                    <label><br></label>
+                    <button class="ui large primary button" id="sch_searchbar_btn" type="submit"> Submit </button>
+                  </div>
+                </div>
+              {% endif %}
+            {% endfor %}
+
+
             <div class="ui vertical segment">
                 {% for c in current %}
                   {% if c.designation.name == 'student' %}
@@ -205,6 +230,11 @@
                                         <div class="ui secondary red inverted segment">
                                           <p>Invitation was <b>{{ ps.invitation}}.</b></p>
                                         </div>
+                                      {% endif %}
+                                      {% if ps.invitation == 'IGNORE' %}
+                                      <div class="ui secondary grey inverted segment">
+                                        <p>Invitation was <b>{{ ps.invitation}}.</b></p>
+                                      </div>
                                       {% endif %}
                                     </div>
                                   </span>
@@ -384,7 +414,7 @@
                                                 {% comment %}The Institute Name input!{% endcomment %}
                                                 {{ form5.company_name }}
                                                 <datalist class="company_dropdown" id="company_dropdown1">
-                                                  
+
                                                 </datalist>
                                             </div>
                                         </div>
@@ -445,9 +475,9 @@
                                         <label>Role Offered</label>
                                           <input list="dropdown-menu1" name="role" id="txt_Search" type="text" />
                                           <datalist class="dropdown-menu" id="dropdown-menu1">
-                                            
+
                                           </datalist>
-                                          
+
                                     </div>
                                     <input type="file" name="attached_file">
                                     <div class="field">
@@ -681,7 +711,7 @@
 
       //---------------------role add dropdown----------------------------------------------------
 
-      // Ajax for company dropdown
+      // Ajax for company dropdown when adding schedule input values
       $('#company_input').keyup( function(){
         current_value = $('#company_input').val();
 
@@ -755,16 +785,13 @@
         }
       });
 
-
-
-
       //-------------------------search bar for placement schedule --------------------
         $('#sch_searchbar_btn').click(function(){
             console.log('search button is clicked');
 
             var search_string = $('#sch_searchbar_text').val();
 
-            console.log('search button is clicked  '+search_string);
+            console.log('search button is clicked  ' + search_string);
 
             $('.content_item').each(function(){
                 console.log(this.id);
@@ -784,10 +811,6 @@
               $(obj).click();
             });
         }
-
-
-
-
     </script>
 
     <script type="text/javascript" src="{% static 'globals/js/progress.js' %}"></script>

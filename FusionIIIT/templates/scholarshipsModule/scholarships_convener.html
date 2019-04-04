@@ -35,18 +35,18 @@
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
 
-                 <a class="item" data-tab="first" id="catalogue_clicked">
+                 <a class=" {% if last_clicked == ''%}active item {% else %}item {% endif %}" data-tab="first" id="catalogue_clicked">
                      Catalogue
                      <i class="right floated chevron right icon"></i>
                  </a>
-
+<!-- Arihant: We have changed the no of tab from five to two which looks simplified -->
               <!--<a class="active item" data-tab="first">
                     Previous Awards Winner
                     <i class="right floated chevron right icon"></i>
                 </a>-->
 
-                <a class="item" data-tab="second">
-                    Invite Award Applications
+                <a class="{% if last_clicked == 'Submit'%}active item {% else %}item {% endif %}" data-tab="second">
+                    Invite Applications
                     <i class="right floated chevron right icon"></i>
                 </a>
 
@@ -59,13 +59,13 @@
                 <a class="item" data-tab="four">
                     About_spacs
                     <i class="right floated chevron right icon"></i>
-                </a>
+                </a>-->
 
-                <a class="item" data-tab="five">
-                    Browse Submitted Applications
+                <a class="{% if last_clicked == 'Accept_mcm' or last_clicked == 'Reject_mcm' or last_clicked == 'Accept_gold' or last_clicked == 'Reject_gold' or last_clicked == 'Accept_silver' or last_clicked == 'Reject_silver' or last_clicked == 'Accept_dm' or last_clicked == 'Reject_dm' %} active item {% else %} item {% endif %}" data-tab="five">
+                    Browse Applications
                     <i class="right floated chevron right icon"></i>
                 </a>
-                <a class="item" data-tab="six" id="catalogue_clicked">
+                <!--<a class="item" data-tab="six" id="catalogue_clicked">
                     Catalogue
                     <i class="right floated chevron right icon"></i>
                 </a>-->
@@ -118,18 +118,18 @@
 
                             {% comment %}The Publications about awards ends here!{% endcomment %}
 
-                    {% comment %}The Publications browse catalogue starts here!{% endcomment %}
-                    <div class="ui tab segment" data-tab="five">
+                    {% comment %}The Publications browse catalogue starts here!{% endcomment %}-->
+                    <div class="{% if last_clicked == 'Accept_mcm' or last_clicked == 'Reject_mcm' or last_clicked == 'Accept_gold' or last_clicked == 'Reject_gold' or last_clicked == 'Accept_silver' or last_clicked == 'Reject_silver' or last_clicked == 'Accept_dm' or last_clicked == 'Reject_dm' %} ui active tab segment {% else %} ui tab segment {% endif %}" data-tab="five">
                         {% block browsecat %}
-                            {% include 'scholarshipsModule/browse1.html' %}
+                            {% include 'scholarshipsModule/browse1.html' with last_clicked=last_clicked%}
                         {% endblock %}
-                    </div>-->
-                    <div class="ui active tab segment" data-tab="first">
+                    </div>
+                  <div class="{% if last_clicked == '' %}ui active tab segment {% else %}ui tab segment {% endif %}" data-tab="first">
                         {% block catalogue %}
                             {% include 'scholarshipsModule/catalogue.html' %}
                         {% endblock %}
                      </div>
-                     <div class="ui tab segment" data-tab="second">
+                      <div class="{% if last_clicked == 'Submit' %} ui active tab segment {% else %} ui tab segment {% endif %}" data-tab="second">
                          {% block invite %}
                              {% include 'scholarshipsModule/invite.html' with release=release ch=ch time=time awards=awards %}
                          {% endblock %}

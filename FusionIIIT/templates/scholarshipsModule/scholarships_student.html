@@ -35,10 +35,11 @@
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
 
-                 <a class="item" data-tab="one">
+                 <a class="{% if last_clicked == ''%}active item {% else %}item {% endif %}" data-tab="one">
                      Browse Award Catalogue
                      <i class="right floated chevron right icon"></i>
                  </a>
+                 <!--Arihant Kumar Jain UI Card removed-->
                 <!--<a class="active item" data-tab="first">
                     Previous Award Winners
                     <i class="right floated chevron right icon"></i>
@@ -53,7 +54,7 @@
                     Spacs Members Details
                     <i class="right floated chevron right icon"></i>
                 </a>-->
-                <a class="item" data-tab="two">
+                <a class="{% if last_clicked == 'get_mcm_flag' or last_clicked == 'get_convocation_flag' or last_clicked == 'Submit_mcm' or last_clicked == 'Submit_silver' or last_clicked == 'Submit_gold' or last_clicked == 'Submit_dm' or last_clicked == 'studentapprovesubmit_mcm' or last_clicked == 'studentapprovesubmit_con' %}active item {% else %}item {% endif %}" data-tab="two">
                     Apply for Awards
                     <i class="right floated chevron right icon"></i>
                 </a>
@@ -105,14 +106,14 @@
                     {% comment %}The Publications about spacs  ends here!{% endcomment %}
 
                     {% comment %}The Publications awards  starts here!{% endcomment %}-->
-                    <div class="ui active tab segment" data-tab="one">
+                    <div class="{% if last_clicked == ''%}ui active tab segment {% else %}ui tab segment {% endif %}" data-tab="one">
                        {% block browsecatalogue %}
                                  {% include 'scholarshipsModule/browsecatalogue.html' with winners=winners mcm=mcm gold=gold silver=silver dandm=dandm awards=awards %}
                       {% endblock %}
                      </div>
-                        <div class="ui tab segment" data-tab="two">
+                        <div class="{% if last_clicked == 'get_mcm_flag' or last_clicked == 'get_convocation_flag' or last_clicked == 'Submit_mcm' or last_clicked == 'Submit_silver' or last_clicked == 'Submit_gold' or last_clicked == 'Submit_dm' or last_clicked == 'studentapprovesubmit_mcm' or last_clicked == 'studentapprovesubmit_con' %}ui active tab segment {% else %}ui tab segment {% endif %}" data-tab="two">
                                 {% block awards %}
-                                    {% include 'scholarshipsModule/applyNew.html' with mcm=mcm gold=gold silver=silver dandm=dandm source=source mother_occ=mother_occ awards=awards %}
+                                    {% include 'scholarshipsModule/applyNew.html' with mcm=mcm gold=gold silver=silver dandm=dandm source=source mother_occ=mother_occ awards=awards last_clicked=last_clicked %}
                                 {% endblock %}
                         </div>
                             {% comment %}The Publications about awards ends here!{% endcomment %}
@@ -229,6 +230,17 @@
 
     </div>
     {% comment %}The grid ends here!{% endcomment %}
+
+
+    <script type="text/javascript">
+      function incomeError(){
+        alert('sadasd');
+        var income = $('#income').val();
+        if(income[0] == '-'){
+          $('#income_error').html('Invalid character');
+        }
+      }
+    </script>
 
 {% endblock %}
 

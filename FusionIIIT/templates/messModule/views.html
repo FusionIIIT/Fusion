@@ -1,6 +1,6 @@
-{% extends 'globals/base.html' %}
+
 {% load static %}
-{% block body %}
+{#{% block body %}#}
 {% block views %}
 
     {% comment %}The tab menu starts here!{% endcomment %}
@@ -20,7 +20,7 @@
 
     <div class="ui active tab" data-tab="menu1">
         <div class="ui vertical segment">
-            <table class="ui definition padded table" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+            <table class="ui definition table" style="padding: 8px; padding-left: 8px; padding-right: 8px;">
                 <thead>
                 <tr>
                     <th></th>
@@ -209,7 +209,6 @@
             <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
                 <thead>
                 <tr>
-                    <th>Student</th>
                     <th>Month</th>
                     <th>Monthly bill</th>
                     <th>Rebate Count</th>
@@ -220,15 +219,7 @@
                 <tbody>
                 {% for stu in monthly_bill %}
                 <tr>
-                    <td>
-                        <h4 class="ui image header">
-                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
-                            <div class="content">
-                                {{stu.student_id}}
-                            </div>
-                        </h4>
-                    </td>
-                    <td>{{stu.month}}</td>
+                    <td>{{stu.month}} - {{ stu.year }}</td>
                     <td>{{stu.amount}}</td>
                     <td>{{stu.rebate_count}}</td>
                     <td>{{stu.rebate_amount}}</td>
@@ -287,7 +278,7 @@
     </div>
 
 {% endblock %}
-{% endblock %}
+{#{% endblock %}#}
 
 {% block javascript %}
 <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>

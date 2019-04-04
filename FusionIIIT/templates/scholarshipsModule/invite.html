@@ -11,9 +11,9 @@
                 Announce Award
         </a>
 
-        <a class="item" data-tab="bsa">
+      <!--<a class="item" data-tab="bsa">
             Browse Submitted Applications
-        </a>
+        </a>-->
 
     </div>
 
@@ -25,33 +25,51 @@
         </div>
     </div>
 
-    <div class="ui tab" data-tab="bsa">
+    <!--<div class="ui tab" data-tab="bsa">
        <div class="ui vertical segment">
         {% block browsecat %}
             {% include 'scholarshipsModule/browse1.html' %}
         {% endblock %}
         </div>
-    </div>
+    </div>-->
 
     <div class="ui active tab" data-tab="inviteapplications">
         <div class="ui vertical segment">
             <form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;">
                 {% csrf_token %}
-                <div class="two fields">
+                <div class="three fields">
                     <div class="six wide field">
                         <label>Type</label>
                         <select class="ui fluid search selection large dropdown" name="type" required>
                                 <option value="">Select</option>
-                                <option value="Convocation Medals">Convocation Medals</option>
                                 <option value="Mcm Scholarship">Mcm Scholarship</option>
+                                <option value="Convocation Medals">Convocation Medals</option>
                             </select>
                     </div>
-                    <div class="field">
-                        <div class="sixteen wide field">
-                            <label>Batch</label>
-                               <input type="text" value="all" name="batch" placeholder="All Batches"  required>
-                        </div>
-                   </div>
+                    <div class="six wide field">
+                        <label>Programme</label>
+                        <select class="ui fluid search selection large dropdown" name="programme">
+                                <option value="">Select</option>
+                                <option value="B.Tech"> B.Tech </option>
+                                <option value="B.Des"> B.Des </option>
+                                <option value="M.Tech"> M.Tech </option>
+                                <option value="M.Des"> M.Des </option>
+                                <option value="PhD"> PhD </option>
+                            </select>
+                    </div>
+                    <div class="six wide field">
+                        <label>Batch</label>
+                        <select class="ui fluid search selection large dropdown" name="batch" required>
+                                <option value="">Select</option>
+                                <option value="2014">2014</option>
+                                <option value="2015">2015</option>
+                                <option value="2016">2016</option>
+                                <option value="2017">2017</option>
+                                <option value="all">All Batch</option>
+                            </select>
+                           <!--<input type="text" value="all" name="batch" placeholder="All Batches"  required>-->
+                    </div>
+
 
                 </div>
 
@@ -61,17 +79,18 @@
 
                             <div class="ui input large left icon">
                                 <i class="calendar icon"></i>
-                                <input type="text" name="From" placeholder="YYYY-MM-DD" required>
+                                <input class="invite dates" type="date" id="frm" name="From" placeholder="YYYY-MM-DD" required>
                             </div>
 
                     </div>
 
                     <div class="field">
+                      <div id="show_error_message"></div>
                         <label>End Date</label>
 
                             <div class="ui input large left icon">
                                 <i class="calendar icon"></i>
-                                <input type="text" name="To" placeholder="YYYY-MMM-DD" required>
+                                <input class="invite dates" type="date" id="to" name="To" placeholder="YYYY-MMM-DD" onchange="date_check()" required>
                             </div>
                         </div>
 
@@ -85,7 +104,7 @@
 
                 <div class="field">
                     <label><br></label>
-                    <button name="Submit" type="submit" class="ui primary large right floated button">
+                    <button  name="Submit" type="submit" class="ui primary large right floated button">
                         Submit
                     </button>
                 </div>
@@ -97,5 +116,16 @@
             <div class="ui divider"></div>
         </div>
     </div>
+
+<script>
+function date_check(){
+    var from=document.getElementById("frm").value;
+    var to=document.getElementById("to").value;
+    if(from>=to)
+    {
+      alert("End Date is less Than Start Date");
+    }
+  }
+</script>
 
 {% endblock %}
