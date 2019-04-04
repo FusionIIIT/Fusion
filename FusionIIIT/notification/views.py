@@ -25,7 +25,7 @@ def leave_module_notif(sender, recipient, type, date=None):
         verb = "Your offline leave has been updated "
     elif type=='replacement_request':
         verb = "You have a replacement request "
-    if type=='replacement_cancel':
+    elif type=='replacement_cancel':
         verb = "Your replacement has been cancelled for "+date
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
@@ -114,6 +114,7 @@ def scholarship_portal_notif(sender, recipient, type):
         verb = "Your Covocation form for D&M Proficiency Gold Medal has been accepted "
     elif type == 'Reject_silver':
         verb = "Your Covocation form for D&M Proficiency Gold Medal has been rejected "
+
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
 def complaint_system_notif(sender, recipient, type):
