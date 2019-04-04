@@ -49,7 +49,8 @@ def complaint_reassign(request,wid,iid):
         try:
             detail = StudentComplain.objects.filter(id=iid).first()
             total_caretaker = Caretaker.objects.all()
-            worker = ''
+            worker = []
+            workertemp = []
             flag = ''
             temp = detail.location
             try:
@@ -57,7 +58,13 @@ def complaint_reassign(request,wid,iid):
                 if Workers.objects.filter(caretaker_id=a).count() == 0:
                     flag = 'no_worker'
                 else:
-                    worker = Workers.objects.filter(caretaker_id=a)
+                    workertemp = Workers.objects.filter(caretaker_id=a)
+                    j = 1
+                    for i in workertemp:
+                        if j%2 != 0:
+                            worker.append(i)
+                        j = j + 1
+
 
             except Caretaker.DoesNotExist:
                 flag = 'no_worker'
@@ -132,7 +139,8 @@ def assign_worker(request, comp_id1):
         try:
             detail = StudentComplain.objects.filter(id=comp_id1).first()
             total_caretaker = Caretaker.objects.all()
-            worker = ''
+            workertemp = []
+            worker = []
             flag = ''
             temp = detail.location
             try:
@@ -140,7 +148,13 @@ def assign_worker(request, comp_id1):
                 if Workers.objects.filter(caretaker_id=a).count() == 0:
                     flag = 'no_worker'
                 else:
-                    worker = Workers.objects.filter(caretaker_id=a)
+                    workertemp = Workers.objects.filter(caretaker_id=a)
+                    j = 1
+                    for i in workertemp:
+                        if j%2 != 0:
+                            worker.append(i)
+                        j = j + 1
+
 
             except Caretaker.DoesNotExist:
                 flag = 'no_worker'
@@ -208,9 +222,13 @@ def worker_id_know_more(request, work_id):
     this_worker = Workers.objects.get(id=work_id)
     num = StudentComplain.objects.filter(worker_id=this_worker).count();
     complaints_list = StudentComplain.objects.filter(worker_id=this_worker);
+    complaints_list_onhold = []
+    for i in complaints_list:
+        if i.status == 1:
+            complaints_list_onhold.append(i)
     work_under_caretaker1 = this_worker.caretaker_id.staff_id.user.first_name
     work_under_caretaker2 = this_worker.caretaker_id.staff_id.user.last_name
-    return render(request, "complaintModule/worker_id_know_more.html",{'this_worker':this_worker,'work_under_caretaker1':work_under_caretaker1,'work_under_caretaker2':work_under_caretaker2, 'num':num, 'complaints_list':complaints_list})
+    return render(request, "complaintModule/worker_id_know_more.html",{'this_worker':this_worker,'work_under_caretaker1':work_under_caretaker1,'work_under_caretaker2':work_under_caretaker2, 'num':num, 'complaints_list':complaints_list, 'complaints_list_onhold':complaints_list_onhold})
 
 
 
@@ -264,12 +282,15 @@ def user(request):
     """
     a = get_object_or_404(User, username=request.user.username)
     y = ExtraInfo.objects.all().filter(user=a).first()
+    num = 1
     comp_id = y.id
     if request.method == 'POST':
         comp_type = request.POST.get('complaint_type', '')
         location = request.POST.get('Location', '')
         specific_location = request.POST.get('specific_location', '')
         comp_file = request.FILES.get('myfile')
+       
+           
         print("Attachment : ",comp_file)
         details = request.POST.get('details', '')
         status = 0
@@ -296,18 +317,26 @@ def user(request):
                             specific_location=specific_location,
                             details=details,
                             status=status,
-                            complaint_finish=complaint_finish)
+                            complaint_finish=complaint_finish,
+                            upload_complaint=comp_file)
 
         x.save()
-        history = StudentComplain.objects.filter(complainer=y).order_by('-id')
+        historytemp = StudentComplain.objects.filter(complainer=y).order_by('-id')
+        history = []
         j = 1
-
-        for i in history:
-            i.serial_no = j
+        k = 1
+        for i in historytemp:
+            if j%2 != 0:
+                history.append(i)
             j = j+1
 
+
+        for h in history:
+            h.serial_no = k
+            k = k+1
+
         return render(request, "complaintModule/complaint_user.html",
-                      {'history': history, 'comp_id': comp_id})
+                      {'history': history, 'comp_id': comp_id })
         next = request.POST.get('next', '/')
         return HttpResponseRedirect(next)
 
@@ -344,6 +373,8 @@ def save_comp(request):
         comp_type = request.POST.get('complaint_type', '')
         location = request.POST.get('Location', '')
         specific_location = request.POST.get('specific_location', '')
+        comp_file = request.FILES.get('myfile')
+        print("Attachment : ",comp_file)
         details = request.POST.get('details', '')
         complaint_finish = datetime.now() + timedelta(days=2)
         if comp_type == 'Electricity':
@@ -367,7 +398,8 @@ def save_comp(request):
                             location=location,
                             specific_location=specific_location,
                             details=details,
-                            complaint_finish=complaint_finish)
+                            complaint_finish=complaint_finish,
+                            upload_complaint =comp_file)
 
         x.save()
        # messages.info(request,'Complaint successfully launched.')
@@ -392,18 +424,21 @@ def caretaker(request):
     y = ExtraInfo.objects.all().filter(user=current_user).first()
 
     if request.method == 'POST':
+       
         type = request.POST.get('submit', '')
-        if type == 'save':
-            worker_type = request.POST.get('complaint_type', '')
-            name = request.POST.get('name', '')
-            phone = request.POST.get('phone_no', '')
-            age = request.POST.get('age', '')
-            try:
-                y = ExtraInfo.objects.get(id=y.id)
-                a = Caretaker.objects.get(staff_id=y)
-            except:
-                a = None
-                y = None
+        
+        worker_type = request.POST.get('complaint_type', '')
+        name = request.POST.get('name', '')
+        phone = request.POST.get('phone_no', '')
+        age = request.POST.get('age', '')
+        try:
+            y = ExtraInfo.objects.get(id=y.id)
+            a = Caretaker.objects.get(staff_id=y)
+        except:
+            a = None
+            y = None
+        intage = int(age)
+        if len(phone) == 10 and intage > 20 and intage < 50:
             x = Workers(caretaker_id=a,
                         name=name,
                         age=age,
@@ -411,49 +446,39 @@ def caretaker(request):
                         worker_type=worker_type)
 
             x.save()
-            b = a.area
-            history = StudentComplain.objects.filter(location=b).order_by('-id')
-            j = 1
-            for i in history:
-                i.serial_no = j
-                j = j+1
+        b = a.area
+        historytemp = StudentComplain.objects.filter(location=b).order_by('-id')
+        history = []
+        j = 1
+        k = 1
+        for i in historytemp:
+            if j%2 == 1:
+                history.append(i)
+            j = j+1
+        for h in history:
+            h.serial_no = k
+            k=k+1
+        
 
-            total_worker = Workers.objects.filter(caretaker_id=a)
-            complaint_assign_no = []
+        total_worker = []
+        total_workertemp = Workers.objects.filter(caretaker_id=a)
+        j = 1
+        for i in total_workertemp:
+            if j%2 != 0:
+                total_worker.append(i)
+            j = j + 1
+        complaint_assign_no = []
 
-            for x in total_worker:
-                worker = Workers.objects.get(id=x.id)
-                temp = StudentComplain.objects.filter(worker_id=worker).count()
-                worker.total_complaint = temp
-                complaint_assign_no.append(worker)
-            return render(request, "complaintModule/complaint_caretaker.html",
-                          {'history': history, 'comp_id': y.id, 'total_worker':
-                              total_worker, 'complaint_assign_no': complaint_assign_no})
-        else:
-            try:
-                y = ExtraInfo.objects.get(id=y.id)
-                a = Caretaker.objects.get(staff_id=y)
-            except:
-                a = None
-                y = None
-            b = a.area
-            history = StudentComplain.objects.filter(location=b).order_by('-id')
-            j = 1
-            for i in history:
-                i.serial_no = j
-                j = j+1
-
-            total_worker = Workers.objects.filter(caretaker_id=a)
-            complaint_assign_no = []
-
-            for x in total_worker:
-                worker = Workers.objects.get(id=x.id)
-                temp = StudentComplain.objects.filter(worker_id=worker).count()
-                worker.total_complaint = temp
-                complaint_assign_no.append(worker)
-            return render(request, "complaintModule/complaint_caretaker.html",
-                          {'history': history, 'comp_id': y.id, 'total_worker':
-                              total_worker, 'complaint_assign_no': complaint_assign_no})
+        for x in total_worker:
+            worker = Workers.objects.get(id=x.id)
+            temp = StudentComplain.objects.filter(worker_id=worker).count()
+            worker.total_complaint = temp
+            complaint_assign_no.append(worker)
+            
+        return render(request, "complaintModule/complaint_caretaker.html",
+                      {'history': history, 'comp_id': y.id, 'total_worker':
+                        total_worker, 'complaint_assign_no': complaint_assign_no})
+        
 
 
     else:
@@ -461,8 +486,15 @@ def caretaker(request):
         a = Caretaker.objects.get(staff_id=y)
         b = a.area
         history = []
-        history = StudentComplain.objects.filter(location=b).order_by('-id')
-        total_worker = Workers.objects.filter(caretaker_id=a)
+        historytemp = StudentComplain.objects.filter(location=b).order_by('-id')
+        total_worker = []
+        total_workertemp = Workers.objects.filter(caretaker_id=a)
+        j = 1
+        for i in total_workertemp:
+            if j%2 != 0:
+                total_worker.append(i)
+            j = j + 1
+        complaint_assign_no = []
         complaint_assign_no = []
 
         for x in total_worker:
@@ -473,11 +505,17 @@ def caretaker(request):
 
         overduecomplaint = []
         j = 1
-        for i in history:
-            i.serial_no = j
+        k = 1
+        for i in historytemp:
+            if j%2 != 0:
+                history.append(i)
             j=j+1
-            if i.status != 0:
-                if i.complaint_finish < date.today() and i.status!=2:
+        for h in history:
+            h.serial_no = k
+            k = k + 1
+
+            if i.status != 2 and i.status !=3:
+                if i.complaint_finish < date.today():
                     i.delay = date.today() - i.complaint_finish
                     overduecomplaint.append(i)
 
@@ -485,7 +523,6 @@ def caretaker(request):
                       { 'history': history, 'comp_id': y.id, 'total_worker': total_worker,
                         'complaint_assign_no': complaint_assign_no,
                         'overduecomplaint': overduecomplaint, 'care_id': a})
-
 
 
 
@@ -620,12 +657,19 @@ def supervisor(request):
         all_caretaker = Caretaker.objects.filter(area=a.area).order_by('-id')
         area = all_caretaker[0].area
         # ExtraInfo.objects.get(id=sup_id)
-        num = StudentComplain.objects.filter(location =  area).filter(status = 0).count()
-        all_complaint = StudentComplain.objects.filter(location=a.area).order_by('-id')
+        all_complaint = []
+        numtemp = StudentComplain.objects.filter(location =  area).filter(status = 0).count()
+        num = numtemp/2
+        all_complainttemp = StudentComplain.objects.filter(location=a.area).order_by('-id')
+        j = 1
+        for i in all_complainttemp:
+            if j%2 != 0:
+                all_complaint.append(i)
+            j = j + 1
         overduecomplaint = []
         for i in all_complaint:
-            if i.status != 0:
-                if i.complaint_finish < date.today() and i.status!=2:
+            if i.status != 2 and i.status != 3:
+                if i.complaint_finish < date.today():
                     i.delay = date.today() - i.complaint_finish
                     overduecomplaint.append(i)
 
@@ -637,12 +681,19 @@ def supervisor(request):
         a = Supervisor.objects.get(sup_id=y)
         all_caretaker = Caretaker.objects.filter(area=a.area).order_by('-id')
         area = all_caretaker[0].area
-        num = StudentComplain.objects.filter(location =  area).filter(status = 0).count()
-        all_complaint = StudentComplain.objects.filter(location=a.area).order_by('-id')
+        numtemp = StudentComplain.objects.filter(location =  area).filter(status = 0).count()
+        num = numtemp/2
+        all_complaint = []
+        all_complainttemp = StudentComplain.objects.filter(location=a.area).order_by('-id')
+        j = 1
+        for i in all_complainttemp:
+            if j%2 != 0:
+                all_complaint.append(i)
+            j = j + 1
         overduecomplaint = []
         for i in all_complaint:
-            if i.status != 0:
-                if i.complaint_finish < date.today() and i.status!=2:
+            if i.status != 2 and i.status != 3:
+                if i.complaint_finish < date.today():
                     i.delay = date.today() - i.complaint_finish
                     overduecomplaint.append(i)
 
@@ -654,8 +705,16 @@ def supervisor(request):
 def caretaker_id_know_more(request,caretaker_id):
     this_caretaker = Caretaker.objects.get(id = caretaker_id)
     this_caretaker_area = this_caretaker.area;
-    list_pending_complaints = StudentComplain.objects.filter(location = this_caretaker_area).filter(status = 0)
-    num = StudentComplain.objects.filter(location = this_caretaker_area).filter(status = 0).count();
+    list_pending_complaints = []
+    list_pending_complaintstemp = StudentComplain.objects.filter(location = this_caretaker_area).filter(status = 0)
+    j = 1
+    for i in list_pending_complaintstemp:
+        if j%2 != 0:
+            list_pending_complaints.append(i)
+        j = j + 1
+
+    # num = StudentComplain.objects.filter(location = this_caretaker_area).filter(status = 0).count();
+    num = len(list_pending_complaints)
     return render(request, "complaintModule/caretaker_id_know_more.html",{'this_caretaker':this_caretaker , 'list_pending_complaints':list_pending_complaints, 'num':num})
 
 
@@ -728,26 +787,35 @@ def detail(request, detailcomp_id1):
     detail = StudentComplain.objects.get(id=detailcomp_id1)
     a=User.objects.get(username=detail.complainer.user.username)           
     y=ExtraInfo.objects.get(user=a)
+    num=0
+    if detail.upload_complaint != "":
+        num = 1
     temp=StudentComplain.objects.filter(complainer=y).first()                                                                  
     comp_id=temp.id 
-    return render(request, "complaintModule/complaint_user_detail.html", {"detail": detail, "comp_id":comp_id})
+    return render(request, "complaintModule/complaint_user_detail.html", {"detail": detail, "comp_id":comp_id,"num":num})
 
 @login_required
 def detail2(request, detailcomp_id1):
     detail2 = StudentComplain.objects.get(id=detailcomp_id1)
     a=User.objects.get(username=detail2.complainer.user.username)           
     y=ExtraInfo.objects.get(user=a)
+    num=0
+    if detail2.upload_complaint != "":
+        num = 1
     temp=StudentComplain.objects.filter(complainer=y).first()                                                                  
     comp_id=temp.id 
-    return render(request, "complaintModule/complaint_caretaker_detail.html", {"detail2": detail2, "comp_id":comp_id})
+    return render(request, "complaintModule/complaint_caretaker_detail.html", {"detail2": detail2, "comp_id":comp_id,"num":num})
 
 @login_required
 def detail3(request, detailcomp_id1):
     detail3 = StudentComplain.objects.get(id=detailcomp_id1)
     a=User.objects.get(username=detail3.complainer.user.username)           
     y=ExtraInfo.objects.get(user=a)
+    num=0
+    if detail3.upload_complaint != "":
+        num = 1
     temp=StudentComplain.objects.filter(complainer=y).first()                                                                  
     comp_id=temp.id 
-    loc = temp.location
+    loc = detail3.location
     care = Caretaker.objects.filter(area=loc).first()
-    return render(request, "complaintModule/complaint_supervisor_detail.html", {"detail3": detail3,"comp_id":comp_id,"care":care})
+    return render(request, "complaintModule/complaint_supervisor_detail.html", {"detail3": detail3,"comp_id":comp_id,"care":care,"num":num})

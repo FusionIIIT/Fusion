@@ -37,6 +37,8 @@ class Stock(models.Model):
     medicine_name = models.CharField(max_length=100)
     quantity = models.IntegerField(default=0)
     threshold = models.IntegerField(default=10)
+    # generic_name = models.CharField(max_length=80)
+
 
     def __str__(self):
         return self.medicine_name
@@ -50,7 +52,7 @@ class Medicine(models.Model):
     times = models.IntegerField(default=0)
 
     def __str__(self):
-        return self.medicine_name
+        return self.medicine_id
 
 class Hospital(models.Model):
     hospital_name=models.CharField(max_length=100)

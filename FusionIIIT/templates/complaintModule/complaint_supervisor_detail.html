@@ -1,3 +1,4 @@
+<!--THis HTML file is used for supervisor to view the details of the specific complaint-->
 {% extends 'globals/base.html' %}
 {% load static %}
 
@@ -54,7 +55,8 @@
                     Overdue Complaints
                     <i class="right floated chevron right icon"></i>
                 </a>
-
+               
+               
                
 
              
@@ -71,6 +73,9 @@
             <div class="ui active tab segment" data-tab="first">
 
                 <div class="ui pointing secondary menu ">
+                    <a>
+                        <a href="javascript:history.go(-1)"><i class="extra large green chevron circle left icon"></i></a>
+                    </a>
                     <a class="active item" data-tab="feedback">
                         Detail
                     </a>
@@ -98,7 +103,21 @@
                                 <h3><label><b>Complaint Details :</b></label></h3>
                                     <div><i>Complaint ID :</i> {{ comp_id }}<br> 
                                         <i>Complaint Details : </i>  <font color="red"> {{detail3.details }} </font></div>
+                            </div><br>
+                            {%if num == 1 %}
+                            <div class="eight wide field">
+                                <h3><label><b>View Image :</b></label>
+                                    <a href="/media/{{detail3.upload_complaint}}" class="header" target="_"><i class="extra large image outline icon"></i></a>
+                                </h3>
                             </div>
+                            {%else%}
+                             <div class="eight wide field">
+                                <h3><label><b>View Image : No Image available</b></label>
+                                   
+                                </h3>
+                            </div>
+                            {%endif%}
+
 
                         </div>
 

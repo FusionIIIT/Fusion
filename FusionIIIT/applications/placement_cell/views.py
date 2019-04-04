@@ -394,7 +394,9 @@ def Placement(request):
         print('coming--deletesch---\n\n')
         delete_sch_key = request.POST['delete_sch_key']
         try:
-            PlacementSchedule.objects.get(pk = delete_sch_key).delete()
+            placement_schedule = PlacementSchedule.objects.get(pk = delete_sch_key)
+            NotifyStudent.objects.get(pk=placement_schedule.notify_id.id).delete()
+            placement_schedule.delete()
             messages.success(request, 'Schedule Deleted Successfully')
         except Exception as e:
             messages.error(request, 'Problem Occurred for Schedule Delete!!!')
@@ -1845,6 +1847,7 @@ def PlacementStatistics(request):
     '''
     user = request.user
     statistics_tab = 1
+    delete_operation = 0
 
     pagination_placement = 0
     pagination_pbi = 0
@@ -1896,6 +1899,11 @@ def PlacementStatistics(request):
     current1 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement chairman"))
     current2 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement officer"))
     current = HoldsDesignation.objects.filter(Q(working=user, designation__name="student"))
+
+    if len(current1)!=0 or len(current2)!=0:
+        delete_operation = 1
+
+    print('\n\n\n\n-----------------', delete_operation)
 
     if len(current) == 0:
         current = None
@@ -2433,6 +2441,7 @@ def PlacementStatistics(request):
         'higherrecord'      :     higherrecord,
         'years'             :            years,
         'records'           :          records,
+        'delete_operation'  :       delete_operation,
         'page_range': page_range,
         'paginator': paginator,
         'pagination_placement': pagination_placement,
@@ -2466,8 +2475,10 @@ def delete_placement_statistics(request):
             print('------------------------\n\n\n')
             print(record_id)
             print(StudentRecord.objects.get(pk = record_id))
-
-            StudentRecord.objects.get(pk = record_id).delete()
+            student_record =  StudentRecord.objects.get(pk=record_id)
+            print('-asdasdasda', PlacementRecord.objects.get(pk=student_record.record_id.id))
+            PlacementRecord.objects.get(id=student_record.record_id.id).delete()
+            student_record.delete()
             messages.success(request, 'Placement Statistics deleted Successfully!!')
 
         except Exception as e:

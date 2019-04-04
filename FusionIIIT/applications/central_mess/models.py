@@ -234,6 +234,7 @@ class Mess_minutes(models.Model):
 
 class Menu_change_request(models.Model):
     dish = models.ForeignKey(Menu, on_delete=models.CASCADE)
+    # student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     reason = models.TextField()
     request = models.CharField(max_length=100)
     status = models.CharField(max_length=20, choices=STATUS, default='1')
@@ -245,6 +246,7 @@ class Menu_change_request(models.Model):
 
 class Feedback(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+    mess = models.CharField(max_length=10, choices=MESS_OPTION, default='mess1')
     fdate = models.DateField(default=datetime.date.today)
     description = models.TextField()
     feedback_type = models.CharField(max_length=20, choices=FEEDBACK_TYPE)
