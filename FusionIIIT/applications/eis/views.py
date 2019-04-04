@@ -490,11 +490,15 @@ def emp_keynote_addressDelete(request, pk):
     instance.delete()
     return redirect('eis:profile')
 
-def emp_mtechphd_thesisDelete(request, pk, sr):
+def emp_mtechphd_thesisDelete(request, pk, sr,mark):
     instance = emp_mtechphd_thesis.objects.get(pk=pk)
     page = int(sr)//10
     page = page+1
-    url = '/profile/?page8='+str(page)
+    url = ""
+    if mark == 1:
+        url = '/profile/?page8='+str(page)
+    else : 
+        url = '/profile/?page9='+str(page)
     instance.delete()
     return redirect(url)
 
@@ -597,7 +601,7 @@ def phd_insert(request):
     eis.s_name = request.POST.get('name')
 
     eis.save()
-    return redirect('eis:profile')
+    return redirect('/profile/?page9=1')
 
 def fvisit_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
@@ -720,14 +724,9 @@ def editjournal(request):
     eis.reference_number = request.POST.get('ref')
     eis.is_sci = request.POST.get('sci')
     volume_no = request.POST.get('volume')
-    page_no = request.POST.get('page')
-    year = request.POST.get('year')
-    if volume_no != '' and volume_no != None:
-        eis.volume_no=volume_no
-    if page_no != '' and page_no != None :
-        eis.page_no=page_no
-    if year != '' and year != None :
-        eis.year = year
+    eis.page_no = request.POST.get('page')
+    eis.year = request.POST.get('year')
+    
     if(request.POST.get('doi') != None and request.POST.get('doi') != '' and request.POST.get('doi') != 'None'):
         x = request.POST.get('doi')
         if x[-4:] == 'a.m.':
@@ -899,12 +898,11 @@ def editconference(request):
 
     eis.name = request.POST.get('name3')
     eis.venue = request.POST.get('venue3')
-    if request.POST.get('page_no3') != '' and request.POST.get('page_no3') != None:
-        eis.page_no = int(request.POST.get('page_no3'))
-    if request.POST.get('isbn_no3') != '' and request.POST.get('isbn_no3') != None:
-        eis.isbn_no = int(request.POST.get('isbn_no3'))
-    if request.POST.get('year3') != '' and request.POST.get('year3') != None:
-        eis.year = int(request.POST.get('year3'))
+    isbn  = request.POST.get('isbn_no3')
+    print(1)
+    eis.page_no = request.POST.get('page_no3')
+    print(2)
+    eis.year = request.POST.get('year3')
     eis.status = request.POST.get('status3')
     if(request.POST.get('doi3') != None and request.POST.get('doi3') != '' and request.POST.get('doi3') != 'None'):
         x = request.POST.get('doi3')
@@ -991,7 +989,7 @@ def book_insert(request):
     eis.pyear = request.POST.get('year')
     eis.authors = request.POST.get('author')
     eis.save()
-    return redirect('globals:profile')
+    return redirect('/profile/?page2=1')
 
 def consym_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
@@ -1221,7 +1219,7 @@ def project_insert(request):
         try:
             eis.finish_date = datetime.datetime.strptime(request.POST.get('end'), "%B %d, %Y")
         except:
-            eis.finish_date = datetime.datetime.strptime(request.POST.get('end'), "%B %d, %Y")
+            eis.finish_date = datetime.datetime.strptime(request.POST.get('end'), "%b. %d, %Y")
     if (request.POST.get('sub') != None and request.POST.get('sub') != '' and request.POST.get('sub') != 'None'):
         try:
             eis.date_submission = datetime.datetime.strptime(request.POST.get('sub'), "%B %d, %Y")
@@ -2024,21 +2022,21 @@ def generate_report(request):
     star_date = start + '-01-01'
     en = request.POST.get('lmonth')
     if(request.POST.get('journal_select')=="journal"):
-        journal = emp_research_papers.objects.filter(pf_no=pf, rtype='Journal').filter(year__range=[start,end]).filter(a_month__range=[star,en]).order_by('-year')
+        journal = emp_research_papers.objects.filter(pf_no=pf, rtype='Journal').filter(year__range=[start,end]).order_by('-date_entry')
         journal_req="1"
     else:
         journal=""
         journal_req="0"
 
     if (request.POST.get('conference_select') == "conference"):
-        conference = emp_research_papers.objects.filter(pf_no=pf, rtype='Conference').filter(year__range=[start,end]).filter(a_month__range=[star,en]).order_by('-year')
+        conference = emp_research_papers.objects.filter(pf_no=pf, rtype='Conference').filter(year__range=[start,end]).order_by('-date_entry')
         conference_req = "1"
     else:
         conference=""
         conference_req = "0"
 
     if (request.POST.get('books_select') == "books"):
-        books = emp_published_books.objects.filter(pf_no=pf).filter(pyear__range=[start,end]).filter(a_month__range=[star,en]).order_by('-pyear')
+        books = emp_published_books.objects.order_by('-date_entry')
         books_req = "1"
     else:
         books=""
@@ -2453,21 +2451,21 @@ def rspc_generate_report(request):
     star_date = start + '-01-01'
     en = request.POST.get('lmonth')
     if(request.POST.get('journal_select')=="journal"):
-        journal = emp_research_papers.objects.filter(rtype='Journal').filter(year__range=[start,end]).filter(a_month__range=[star,en]).order_by('-year')
+        journal = emp_research_papers.objects.filter(rtype='Journal').order_by('-date_entry')
         journal_req="1"
     else:
         journal=""
         journal_req="0"
 
     if (request.POST.get('conference_select') == "conference"):
-        conference = emp_research_papers.objects.filter(rtype='Conference').filter(year__range=[start,end]).filter(a_month__range=[star,en]).order_by('-year')
+        conference = emp_research_papers.objects.filter(rtype='Conference').order_by('-date_entry')
         conference_req = "1"
     else:
         conference=""
         conference_req = "0"
 
     if (request.POST.get('books_select') == "books"):
-        books = emp_published_books.objects.all().filter(pyear__range=[start,end]).filter(a_month__range=[star,en]).order_by('-pyear')
+        books = emp_published_books.objects.all().order_by('-date_entry')
         books_req = "1"
     else:
         books=""

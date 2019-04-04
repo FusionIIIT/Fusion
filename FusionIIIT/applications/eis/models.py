@@ -86,8 +86,8 @@ class emp_research_papers(models.Model):
     name = models.CharField(max_length=2500, null=True, blank=True)
     paper = models.CharField(max_length=1000, blank=True,null=True)
     venue = models.CharField(max_length=2500, null=True, blank=True)
-    volume_no = models.IntegerField( null=True , blank=True)
-    page_no = models.IntegerField(null=True, blank=True)
+    volume_no = models.CharField(max_length=500, null=True , blank=True)
+    page_no = models.CharField(max_length=500,null=True, blank=True)
     IS_SCI_TYPE_CHOICES = (
         ('SCI', 'SCI'),
         ('SCIE', 'SCIE'),
@@ -102,11 +102,11 @@ class emp_research_papers(models.Model):
     YEAR_CHOICES = []
     for r in range(1995, (datetime.datetime.now().year + 1)):
         YEAR_CHOICES.append((r, r))
-    year = models.IntegerField(('year'), choices=YEAR_CHOICES, null=True, blank=True)
+    year = models.CharField(max_length=10, choices=YEAR_CHOICES, null=True, blank=True)
     MONTH_CHOICES = []
     for r in range(1, 13):
         MONTH_CHOICES.append((r, r))
-    a_month = models.IntegerField(('Month'), choices=MONTH_CHOICES, null=True, blank=True, default=1)
+    a_month = models.CharField(max_length=500, choices=MONTH_CHOICES, null=True, blank=True, default=1)
     doc_id = models.CharField(max_length=50, null=True, blank=True)
     doc_description = models.CharField(max_length=1000, null=True, blank=True)
     date_entry = models.DateField(null=True, blank=True, default=datetime.datetime.now)

@@ -3,19 +3,19 @@
 {% block thesis %}
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="PG">
+        <a class="{% if mark9 != 1 %}active item{% else %} item {% endif %}" data-tab="PG">
             PG Thesis
         </a>
 
-        <a class="item" data-tab="PhD">
+        <a class="{% if mark9 == 1 %}active item{% else %} item {% endif %}" data-tab="PhD">
             PhD Thesis
         </a>
     </div>
 
 
     {% comment %}The PG Thesis supervision segment starts here!{% endcomment %}
-    <div class="ui active tab segment" data-tab="PG">
-        <h4 class="ui dividing header" id="changes3">Add a Thesis</h4>
+    <div class="{% if mark9 != 1 %}ui active tab segment {% else %} ui tab segment {% endif %}" data-tab="PG">
+        {% if request.user == user %} <h4 class="ui dividing header" id="changes3">Add a Thesis</h4>
         <form class="ui form" method="post" action="{% url 'eis:pg_insert' %}" onsubmit="return validatepg()">
             {% csrf_token %}
             <div style="display: none;"> <input type="text" id="fZ" name="pg_id"></div>
@@ -88,6 +88,7 @@
             </button>
         </form>
         <br>
+        {% endif %}
         <h4 class="ui dividing header">Report:</h4>
         <div class="pagination">
             <h4> <span class="step-links" >
@@ -117,8 +118,9 @@
 
                 <th style="width:20%">Supervisor</th>
 
-
+                 {% if request.user == user %}
                 <th class="" style="width: 25 %;">Action</th>
+                {% endif %}
             </tr>
             </thead>
 
@@ -130,8 +132,8 @@
                     <td id="s{{ forloop.counter }}B">{{ mtech.title }}</td>
                     <td id="s{{ forloop.counter }}C">{{ mtech.a_month }}/{{ mtech.s_year }}</td>
                     <td id="s{{ forloop.counter }}D">{{ mtech.supervisors }}</td>
-
-                     <td><a class="ui left floated button " onclick="getData({{ forloop.counter }})"><i id="bt" class="edit icon"></i></a><a class="ui blue right floated button " href="{% url 'eis:emp_mtechphd_thesisDelete' mtech.id sr8 %}"><i id="bt" class="red delete icon"></i></a> </td>
+                     {% if request.user == user %}
+                     <td><a class="ui left floated button " onclick="getData({{ forloop.counter }})"><i id="bt" class="edit icon"></i></a><a class="ui blue right floated button " href="{% url 'eis:emp_mtechphd_thesisDelete' mtech.id sr8 1 %}"><i id="bt" class="red delete icon"></i></a> </td>{% endif %}
                 </tr>
                 {% endfor %}
             </tbody>
@@ -159,8 +161,8 @@
 
 
     {% comment %}The PhD Thesis supervision segment starts here!{% endcomment %}
-    <div class="ui tab segment" data-tab="PhD">
-        <h4 class="ui dividing header"  id="changes4">Add a Thesis</h4>
+    <div class="{% if mark9 == 1 %}ui active tab segment {% else %} ui tab segment {% endif %}" data-tab="PhD">
+         {% if request.user == user %}<h4 class="ui dividing header"  id="changes4">Add a Thesis</h4>
         <form class="ui form"  method="post" action="{% url 'eis:phd_insert' %}" onsubmit="return validatephd()">
             {% csrf_token %}
             <div style="display: none;"> <input type="text" id="phdZ" name="phd_id"></div>
@@ -238,7 +240,85 @@
             </button>
         </form>
         <br>
+        {% endif %}
         <h4 class="ui dividing header">Report:</h4>
+        <div class="pagination">
+            <h4> <span class="step-links" >
+                {% if phdthesis.has_previous %}
+                    <a href="?page9=1" >&laquo; first</a>
+                    <a href="?page9={{ phdthesis.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ phdthesis.number }} of {{ phdthesis.paginator.num_pages }}.
+                </span>
+
+                {% if phdthesis.has_next %}
+                    <a href="?page9={{  phdthesis.next_page_number }}">next</a>
+                    <a href="?page9={{ phdthesis.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span></h3>
+        </div>
+     
+        <table class="ui fixed sortable celled table">
+            <thead>
+            <tr>
+                <th class="sorted ascending" style="width: 7%;">Sr.</th>
+                <th class="" style="width: 17%;" >Student</th>
+                <th class="" style="width: 18%;">Title </th>
+                <th class="" style="width: 13%;">Year</th>
+
+                <th style="width:20%">Supervisor</th>
+
+                 {% if request.user == user %}
+                <th class="" style="width: 25 %;">Action</th>
+                {% endif %}
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for phd in phdthesis %}
+                <tr>
+                    <td id="phd{{ forloop.counter }}Z"><div style="display: none;">{{ phd.id }}</div>{{ forloop.counter }}.</td>
+                <td id="phd{{ forloop.counter }}A"><b>Name: </b>{{ phd.s_name }}<br/><b>Roll No.: </b>{{ phd.rollno }}</td>
+                <td id="phd{{ forloop.counter }}B">{{ phd.title }}</td>
+                <td id="phd{{ forloop.counter }}C">{{ phd.a_month }}/{{ phd.s_year }}</td>
+                <td id="phd{{ forloop.counter }}D">{{ phd.supervisors }}</td>
+                 {% if request.user == user %}
+                 <td><a class="ui left floated button " onclick="updatePHD({{ forloop.counter }})"><i id="bt" class="edit icon"></i></a><a class="ui blue right floated button " href="{% url 'eis:emp_mtechphd_thesisDelete' phd.id sr9 2%}"><i id="bt" class="red delete icon"></i></a> </td>
+                 {% endif %}
+
+
+
+
+                    <!-- <td id="s{{ forloop.counter }}Z"><div style="display: none;">{{ phd.id }}</div> {{ forloop.counter|add:sr9 }}.</td>
+                    <td id="s{{ forloop.counter }}A"><b>Name: </b>{{ phd.s_name }}<br/><b>Roll No.: </b>{{ phd.rollno }}</td>
+                    <td id="s{{ forloop.counter }}B">{{ phd.title }}</td>
+                    <td id="s{{ forloop.counter }}C">{{ phd.a_month }}/{{ phd.s_year }}</td>
+                    <td id="s{{ forloop.counter }}D">{{ phd.supervisors }}</td>
+
+                     <td><a class="ui left floated button " onclick="updatePHD({{ forloop.counter }})"><i id="bt" class="edit icon"></i></a><a class="ui blue right floated button " href="{% url 'eis:emp_mtechphd_thesisDelete' phd.id sr9 2%}"><i id="bt" class="red delete icon"></i></a> </td> -->
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="pagination">
+            <h4> <span class="step-links" >
+                {% if phdthesis.has_previous %}
+                    <a href="?page9=1" >&laquo; first</a>
+                    <a href="?page9={{ phdthesis.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ phdthesis.number }} of {{ phdthesis.paginator.num_pages }}.
+                </span>
+
+                {% if phdthesis.has_next %}
+                    <a href="?page9={{  phdthesis.next_page_number }}">next</a>
+                    <a href="?page9={{ phdthesis.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span></h3>
+        </div>
         
     </div>
     {% comment %}The PhD Thesis supervision segment ends here!{% endcomment %}

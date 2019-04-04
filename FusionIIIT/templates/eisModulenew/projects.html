@@ -23,7 +23,7 @@
 
     {% comment %}The  Research Project segment starts here!{% endcomment %}
     <div class="{% if mark5 != 1 and mark6 != 1 and mark7 != 1 %}ui active tab segment {% else %} ui tab segment {% endif %}" data-tab="research projects">
-        <h4 class="ui dividing header" id="changes8">Add a Research Project</h4>
+        {% if request.user == user %}<h4 class="ui dividing header" id="changes8">Add a Research Project</h4>
         <form class="ui form"  method="post" action="{% url 'eis:project_insert' %}">
             {% csrf_token %}
             <div style="display: none;"> <input type="text" id="researchZ" name="project_id"></div>
@@ -125,6 +125,7 @@
             </button>
         </form>
         <br>
+        {% endif %}
         <h4 class="ui dividing header">Report:</h4>
         <div class="pagination">
             <h4> <span class="step-links" >
@@ -148,15 +149,19 @@
             <thead>
             <tr>
                 <th class="sorted ascending" style="width: 7%;">Sr.</th>
-                <th class="" style="width: 15%;" >PI/CO-PI</th>
-                <th class="" style="width: 15%;">Title of Paper</th>
-                <th class="" style="width: 15%;">Funding Agency</th>
+                <th class="" style="width: 20%;" >PI/CO-PI</th>
+                <th class="" style="width: 20%;">Title of Paper</th>
+                <th class="" style="width: 20%;">Funding Agency</th>
 
-                <th style="width:30%">Other Details</th>
-
+                <th style="width:15%">Other Details</th>
+                {% if request.user == user %}
                 <th class="" style="width: 25%;">Action</th>
+                {% endif %}
             </tr>
             </thead>
+            {% block viewprojectmodal %}
+                        {% include 'eisModulenew/viewprojectmodal.html' %}
+                    {% endblock %}
 
             <tbody>
             {% for project in research_projects %}
@@ -166,18 +171,28 @@
                     <td id="research{{ forloop.counter }}B">{{ project.title }}</td>
                     <td id="research{{ forloop.counter }}C">{{ project.funding_agency }}</td>
                     <td id="research{{ forloop.counter }}D">
+                        <input type="button" id="view"
+                           class="ui red mini button left floated" 
+                           onclick="viewproject('{{ forloop.counter|add:sr4 }}', '{{ project.pi }}',
+                            '{{ project.co_pi }}','{{ project.title }}','{{ project.funding_agency }}',
+                            '{{ project.date_submission }}','{{ project.start_date }}','{{ project.finish_date }}',
+                            '{{ project.financial_outlay }}','{{ project.status }}')" value = "View">
+<!-- 
+
                         <b>Submission Date:</b> {{ project.date_submission }}  <br>
                         <b>Start Date:</b> {{ project.start_date }}  <br>
                         <b>Expected Finish Date: </b>{{ project.finish_date }}<br>
                         <b>Financial Outlay :</b>{{ project.financial_outlay }}<br>
-                        <b>Status :</b>  {{ project.status }}
+                        <b>Status :</b>  {{ project.status }} -->
 
                     </td>
+                    {% if request.user == user %}
                     <td>
                     <a class="ui button left floated" onclick="updateRESEARCH({{ forloop.counter }})"><i id="bt" class="edit icon" ></i></a>     
                     <a class="ui blue button right floated " href="{% url 'eis:emp_research_projectsDelete' project.pk forloop.counter|add:sr4 1%}"><i id="bt" class="ui red delete icon"></i>
                                 </a>
                      </td>
+                     {% endif %}
                 </tr>
                 {% endfor %}
             </tbody>
@@ -208,7 +223,7 @@
 
     {% comment %}The Consultancy Project segment starts here!{% endcomment %}
     <div class="{% if mark5 == 1 %}ui active tab segment {% else %} ui tab segment {% endif %}" data-tab="Consultancy project">
-        <h4 class="ui dividing header"  id="changes9">Add a Consultancy Project</h4>
+        {% if request.user == user %}<h4 class="ui dividing header"  id="changes9">Add a Consultancy Project</h4>
         <form class="ui form"  method="post" action="{% url 'eis:consult_insert' %}">
             {% csrf_token %}
             <div style="display: none;"> <input type="text" id="consultancyZ" name="consultancy_id"></div>
@@ -276,6 +291,7 @@
             </button>
         </form>
         <br>
+        {% endif %}
         <h4 class="ui dividing header">Report:</h4>
         <div class="pagination">
             <h4> <span class="step-links" >
@@ -304,7 +320,9 @@
                 <th class="" style="width: 13%;">Client</th>
                 <th style="width:9%">Financial Outlay</th>
                 <th style="width:20%">Period </th>
+                {% if request.user == user %}
                 <th class="" style="width: 25%;">Action</th>
+                {% endif %}
             </tr>
             </thead>
 
@@ -317,8 +335,9 @@
                      <td id="consultancy{{ forloop.counter }}C">{{ consult.client }}</td>
                      <td id="consultancy{{ forloop.counter }}D">{{ consult.financial_outlay }}</td>
                      <td id="consultancy{{ forloop.counter }}E">From: {{ consult.start_date }}<br/>To: {{ consult.end_date }}</td>
+                     {% if request.user == user %}
                     <td><a class="ui button left floated" onclick="updateCONSULTANCY({{ forloop.counter }})"><i id="bt" class="edit icon" ></i></a>
-                        <a class="ui blue button right floated" href="{% url 'eis:emp_consultancy_projectsDelete' consult.pk sr5 2 %}"><i id="bt" class="red delete icon" "></i> </a> </td>
+                        <a class="ui blue button right floated" href="{% url 'eis:emp_consultancy_projectsDelete' consult.pk sr5 2 %}"><i id="bt" class="red delete icon" "></i> </a> </td>{% endif %}
                 </tr>
             {% endfor %}
             </tbody>
@@ -346,7 +365,7 @@
 
     {% comment %}The Patent segment starts here!{% endcomment %}
     <div class="{% if mark6 == 1 %}ui active tab segment {% else %} ui tab segment {% endif %}" data-tab="patents">
-        <h4 class="ui dividing header" id="changes10">Add a  Patent</h4>
+        {% if request.user == user %}<h4 class="ui dividing header" id="changes10">Add a  Patent</h4>
         <form class="ui form"  method="post" action="{% url 'eis:patent_insert' %}"  onsubmit="return validatepatent()">
             {% csrf_token %}
             <div style="display: none;"> <input type="text" id="patentZ" name="patent_id"></div>
@@ -442,6 +461,7 @@
             </button>
         </form>
         <br>
+        {% endif %}
         <h4 class="ui dividing header">Report:</h4>
 
         <div class="pagination">
@@ -471,7 +491,9 @@
                 <th class="" style="width: 15%;">Status</th>
                 <th style="width:15%">Year</th>
                 <th style="width:15%">Earning in (Rs.)</th>
+                {% if request.user == user %}
                 <th class="" style="width: 25%;">Action</th>
+                {% endif %}
             </tr>
             </thead>
 
@@ -484,7 +506,9 @@
                      <td id="patent{{ forloop.counter }}C">{{ patent.status }}</td>
                      <td id="patent{{ forloop.counter }}D">{{ patent.a_month }}/{{ patent.p_year }}</td>
                      <td id="patent{{ forloop.counter }}E">{{ patent.earnings }}</td>
+                     {% if request.user == user %}
                     <td><a class="ui  button left floated" onclick="updatePATENT({{ forloop.counter }})"><i id="bt" class="edit icon" ></i></a><a class="ui  button right floated" href="{% url 'eis:emp_patentsDelete' patent.pk sr6 1 %}"><i id="bt" class="ui red delete icon" ></i> </a> </td>
+                    {% endif %}
                 </tr>
             {% endfor %}
             </tbody>
@@ -514,7 +538,7 @@
     {% comment %}The Technology segment starts here!{% endcomment %}
 
     <div class="{% if mark7 == 1 %}ui active tab segment {% else %} ui tab segment {% endif %}" data-tab="technology transfer">
-        <h4 class="ui dividing header" id="changes11">Add a Technology Transfer</h4>
+        {% if request.user == user %}<h4 class="ui dividing header" id="changes11">Add a Technology Transfer</h4>
         <form class="ui form"  method="post" action="{% url 'eis:transfer_insert' %}">
             {% csrf_token %}
             <div style="display: none;"> <input type="text" id="techZ" name="tech_id"></div>
@@ -533,7 +557,9 @@
                             Save<i class="ui save icon right floated"></i>
             </button>
         </form>
+        
         <br>
+        {% endif %}
 
          <h4 class="ui dividing header">Report:</h4>
 
@@ -560,7 +586,7 @@
             <tr>
                 <th class="sorted ascending" style="width:15%">Sr.</th>
                 <th class="" style="width:60%">Details</th>
-                <th class="" style="width:25%">Action</th>
+                {% if request.user == user %}<th class="" style="width:25%">Action</th>{% endif %}
             </tr>
             </thead>
 
@@ -569,7 +595,7 @@
                 <tr>
                     <td id="tech{{ forloop.counter }}Z"><div style="display: none;">{{ techtransfer.id }}</div>{{ forloop.counter|add:sr7 }}.</td>
                     <td class="" id="tech{{ forloop.counter }}A">{{ techtransfer.details }}</td>
-                    <td><a class="ui button left floated" onclick="updateTECH({{ forloop.counter }})"><i id="bt" class="edit icon" ></i></a><a class="ui blue button right floated " href="{% url 'eis:emp_techtransferDelete' techtransfer.pk sr7 1 %}"><i id="bt" class="red delete icon"></i> </a> </td>
+                {% if request.user == user %}<td><a class="ui button left floated" onclick="updateTECH({{ forloop.counter }})"><i id="bt" class="edit icon" ></i></a><a class="ui blue button right floated " href="{% url 'eis:emp_techtransferDelete' techtransfer.pk sr7 1 %}"><i id="bt" class="red delete icon"></i> </a> </td>{% endif %}
                 </tr>
             {% endfor %}
             </tbody>

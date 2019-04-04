@@ -42,7 +42,7 @@
                  style="max-width: 320px;">
 
 
-                <a class=" {% if mark != 1 and mark2 != 1 and mark3 != 1 and mark4 != 1 and mark5 != 1 and mark6 != 1 and mark7 != 1 and mark8 != 1 and mark10 != 1 and mark11 != 1 and mark12 != 1 and mark13 != 1 %}active item {% else %}item{% endif %}" data-tab="first">
+                <a class=" {% if mark != 1 and mark2 != 1 and mark3 != 1 and mark4 != 1 and mark5 != 1 and mark6 != 1 and mark7 != 1 and mark8 != 1 and mark9 != 1 and mark10 != 1 and mark11 != 1 and mark12 != 1 and mark13 != 1 %}active item {% else %}item{% endif %}" data-tab="first">
                     Personal Details
                     <i class="right floated chevron right icon"></i>
                 </a>
@@ -57,7 +57,7 @@
                     <i class="right floated chevron right icon"></i>
                 </a>
 
-                <a class="{% if mark8 == 1 %} active item {% else %} item {% endif %} " data-tab="fourth">
+                <a class="{% if mark8 == 1 or mark9 == 1 %} active item {% else %} item {% endif %} " data-tab="fourth">
                     Thesis Supervision
                     <i class="right floated chevron right icon"></i>
                 </a>
@@ -115,7 +115,7 @@
         <div class="eight wide column">
             {% comment %}The Details start here!{% endcomment %}
 
-            <div class="{% if mark != 1 and mark2 != 1 and mark3 != 1 and mark4 != 1 and mark5 != 1 and mark6 != 1 and mark7 != 1 and mark8 != 1 and mark10 != 1 and mark11 != 1 and mark12 != 1 and mark13 != 1 %}ui active tab segment{% else %}ui tab segment{% endif %}" data-tab="first">
+            <div class="{% if mark != 1 and mark2 != 1 and mark3 != 1 and mark4 != 1 and mark5 != 1 and mark6 != 1 and mark7 != 1 and mark8 != 1 and mark9 != 1 and mark10 != 1 and mark11 != 1 and mark12 != 1 and mark13 != 1 %}ui active tab segment{% else %}ui tab segment{% endif %}" data-tab="first">
 
                 {% block personaldetails %}
                     {% include 'eisModulenew/personaldetails.html' %}
@@ -148,7 +148,7 @@
 
             {% comment %}The Thesis Supervision starts here!{% endcomment %}
 
-            <div class="{% if mark8 == 1 %}ui active tab segment {% else %} ui tab segment {% endif %}" data-tab="fourth">
+            <div class="{% if mark8 == 1 or mark9 == 1 %}ui active tab segment {% else %} ui tab segment {% endif %}" data-tab="fourth">
                 {% block thesis %}
                     {% include 'eisModulenew/thesis.html' %}
                 {% endblock %}
@@ -185,17 +185,16 @@
 
             {% comment %}The others starts here!{% endcomment %}
             <div class="ui tab segment" data-tab="eigth">
-                {% block others %}
+            <h1>Work in Progress</h1>
+               <!--  {% block others %}
                     {% include 'eisModulenew/others.html' %}
-                {% endblock %}
+                {% endblock %} -->
             </div>
             {% comment %}The others ends here!{% endcomment %}
 
             {% comment %}The Thesis Supervision starts here!{% endcomment %}
             <div class="ui tab segment" data-tab="ninth">
-                {% block form1 %}
-                    {% include 'officeModule/officeOfDeanRSPC/tab1.html' %}
-                {% endblock %}
+                <h1>Work in Progress</h1>
             </div>
 
 
@@ -282,6 +281,20 @@
             $("#choose2").text(choose2);
             $("#doi2").text(doi2);
             $("#papermodal").modal('show');
+        }
+        function viewproject(index,pi,co_pi,title,funding,dos,start,finish,finance,status)
+        {
+            $("#proj_pi").text(pi);
+            $("#proj_co_pi").text(co_pi);
+            $("#proj_title").text(title);
+            $("#proj_funding").text(funding);
+            $("#proj_dos").text(dos);
+            $("#proj_start").text(start);
+            $("#proj_finish").text(finish);
+            $("#proj_finance").text(finance);
+            $("#proj_status").text(status);
+           
+            $("#projectmodal").modal('show');
         }
 
 
@@ -530,6 +543,112 @@
 
         }
 
+    function updatePUB(_row){
+        var cols=new Array();
+        cols[0]="A";
+        cols[1]="B";
+        cols[2]="C";
+        cols[3]="D";
+        cols[4]="E",
+        cols[5]="F";
+        cols[6]="G";
+        cols[7]="H";
+        cols[8]="I";
+        var p = document.getElementById("pub"+_row+"Z").innerHTML.search(">");
+        var pend = document.getElementById("pub"+_row+"Z").innerHTML.indexOf("<",5);
+        document.getElementById("pubZ").value=document.getElementById("pub"+_row+"Z").innerHTML.slice(p+1,pend);
+        window.location.href="#top";
+        document.getElementById("changes5").innerHTML = "<span style='color:red;'>Edit the selected journal publications details</span>";
+        for(var i=0;i<cols.length;i++)  {
+            var _temp=document.getElementById("pub"+_row+cols[i]).innerHTML;
+            if(i == 2){
+                document.getElementById("pubC").value = _temp.slice(_temp.indexOf("Journal")+13,_temp.indexOf("<br>",_temp.indexOf("Journal"))).trim();
+                document.getElementById("pubE").value = _temp.slice(_temp.indexOf("Volume No./Issue No.: </b>")+26,_temp.indexOf("<br>",_temp.indexOf("Volume No./Issue No.: </b>"))).trim();
+                document.getElementById("pubF").value = _temp.slice(_temp.indexOf("Page")+14,_temp.indexOf("<br>",_temp.indexOf("Page"))).trim();
+                document.getElementById("pubG").value = _temp.slice(_temp.indexOf("Reference ")+20,_temp.indexOf("<br>",_temp.indexOf("Reference "))).trim();
+                document.getElementById("pubH").value = _temp.slice(_temp.indexOf("Submission ")+17,_temp.indexOf("<br>",_temp.indexOf("Submission "))).trim();
+                document.getElementById("pubI").value = _temp.slice(_temp.indexOf("Publication")+18,_temp.indexOf("<br>",_temp.indexOf("Publication"))).trim();
+                document.getElementById("pubK").value = _temp.slice(_temp.indexOf("SCIE ")+18,_temp.indexOf("<br>",_temp.indexOf("SCIE "))).trim();
+                document.getElementById("pubL").value = _temp.slice(_temp.indexOf("Issuance")+16,_temp.indexOf("<br>",_temp.indexOf("Issuance"))).trim();
+            }else if (i == 3){
+            document.getElementById("pubX").value=_temp.slice(0,_temp.search("/"));
+            document.getElementById("pub"+cols[i]).value=_temp.slice(_temp.search("/")+1,_temp.length);
+            }
+            else{
+                document.getElementById("pub"+cols[i]).value=_temp;
+            }
+        }
+
+    }
+
+
+
+    function updateCON(_row){
+        var cols=new Array();
+        cols[0]="A";
+        cols[1]="B";
+        cols[2]="C";
+        cols[3]="D";
+        cols[4]="E",
+        cols[5]="F";
+        cols[6]="G";
+        cols[7]="H";
+        cols[8]="I";
+        var p = document.getElementById("con"+_row+"Z").innerHTML.search(">");
+        var pend = document.getElementById("con"+_row+"Z").innerHTML.indexOf("<",5);
+        document.getElementById("conZ").value=document.getElementById("con"+_row+"Z").innerHTML.slice(p+1,pend);
+        window.location.href="#top";
+        document.getElementById("changes6").innerHTML = "<span style='color:red;'>Edit the selected conference publication details</span>";
+        for(var i=0;i<cols.length;i++)  {
+            var _temp=document.getElementById("con"+_row+cols[i]).innerHTML;
+            if(i == 2){
+                document.getElementById("conC").value = _temp.slice(_temp.indexOf("Confrence:")+52,_temp.indexOf("<br>",_temp.indexOf("Confrence:"))).trim();
+                document.getElementById("conE").value = _temp.slice(_temp.indexOf("Institute")+15,_temp.indexOf("<br>",_temp.indexOf("Institute"))).trim();
+                document.getElementById("conF").value = _temp.slice(_temp.indexOf("Submission")+17,_temp.indexOf("<br>",_temp.indexOf("Submission"))).trim();
+                document.getElementById("conG").value = _temp.slice(_temp.indexOf("Start")+18,_temp.indexOf("<br>",_temp.indexOf("Start"))).trim();
+                document.getElementById("conH").value = _temp.slice(_temp.indexOf("End")+16,_temp.indexOf("<br>",_temp.indexOf("End"))).trim();
+                document.getElementById("conI").value = _temp.slice(_temp.indexOf("Page ")+18,_temp.indexOf("<br>",_temp.indexOf("Page "))).trim();
+                document.getElementById("conL").value = _temp.slice(_temp.indexOf("ISBN ")+21,_temp.indexOf("<br>",_temp.indexOf("ISBN "))).trim();
+            }else if(i==3){
+            {
+                document.getElementById("conX").value=_temp.slice(0,_temp.search("/"));
+                document.getElementById("con"+cols[i]).value=_temp.slice(_temp.search("/")+1,_temp.length);
+            }
+            }
+            else{
+                document.getElementById("con"+cols[i]).value=_temp;
+            }
+        }
+    }
+
+
+    function updateBOOKS(_row){
+        var cols=new Array();
+        cols[0]="A";
+        cols[1]="B";
+        cols[2]="C";
+        cols[3]="D";
+        cols[4]="E",
+        cols[5]="F";
+        cols[6]="G";
+        cols[7]="H";
+        cols[8]="I";
+        var p = document.getElementById("books"+_row+"Z").innerHTML.search(">");
+        var pend = document.getElementById("books"+_row+"Z").innerHTML.indexOf("<",5);
+        document.getElementById("booksZ").value=document.getElementById("books"+_row+"Z").innerHTML.slice(p+1,pend);
+        window.location.href="#top";
+        document.getElementById("changes7").innerHTML = "<span style='color:red;'>Edit the selected published book details</span>";
+        for(var i=0;i<cols.length;i++)  {
+            var _temp=document.getElementById("books"+_row+cols[i]).innerHTML;
+            if(i==3){
+                document.getElementById("booksX").value=_temp.slice(0,_temp.search("/"));
+                document.getElementById("books"+cols[i]).value=_temp.slice(_temp.search("/")+1,_temp.length);
+            }
+            else{
+            document.getElementById("books"+cols[i]).value=_temp;
+            }
+        }
+    }
 
     function updateRESEARCH(_row){
         var cols=new Array();
@@ -671,6 +790,39 @@
             else{
 
                 document.getElementById("f"+cols[i]).value=_temp;
+            }
+        }
+    }
+
+    function updatePHD(_row){
+        var cols=new Array();
+        cols[0]="A";
+        cols[1]="B";
+        cols[2]="C";
+        cols[3]="D";
+        cols[4]="E",
+        cols[5]="F";
+        cols[6]="G";
+        cols[7]="H";
+        cols[8]="I";
+        var p = document.getElementById("phd"+_row+"Z").innerHTML.search(">");
+        var pend = document.getElementById("phd"+_row+"Z").innerHTML.indexOf("<",5);
+        document.getElementById("phdZ").value=document.getElementById("phd"+_row+"Z").innerHTML.slice(p+1,pend);
+        window.location.href="#top";
+        document.getElementById("changes4").innerHTML = "<span style='color:red;'>Edit the selected thesis details</span>";
+        for(var i=0;i<cols.length;i++)  {
+            var _temp=document.getElementById("phd"+_row+cols[i]).innerHTML;
+            if (_temp.search("<b>Name: </b>")==0){
+                var pos = _temp.search("<br>");
+                document.getElementById("phd"+cols[i]).value=_temp.slice(13, pos);
+                pos = _temp.lastIndexOf("</b>");
+                document.getElementById("phdE").value=_temp.slice(pos+4, _temp.length);
+            }else if(i==2){
+                document.getElementById("phdX").value=_temp.slice(0,_temp.search("/"));
+                document.getElementById("phd"+cols[i]).value=_temp.slice(_temp.search("/")+1,_temp.length);
+            }
+            else{
+                document.getElementById("phd"+cols[i]).value=_temp;
             }
         }
     }

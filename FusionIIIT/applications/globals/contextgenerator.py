@@ -230,6 +230,7 @@ def contextfacultymanage(request,user,profile):
 
   #pagiantion for Journal
   publications = emp_research_papers.objects.filter(pf_no=profile.id,rtype='Journal').order_by("-date_entry")
+  
   paginator = Paginator(publications, 10)
   page = request.GET.get('page')
   mark=0;
@@ -288,7 +289,7 @@ def contextfacultymanage(request,user,profile):
 
   #pagination for Consultancy Project
   consultancy_projects = emp_consultancy_projects.objects.filter(pf_no=profile.id).order_by("-date_entry") 
-  paginator5 = Paginator(consultancy_projects, 10)
+  paginator5 = Paginator(consultancy_projects, 20)
   page5 = request.GET.get('page5')
   mark5=0;
   if page5 != None:
@@ -298,6 +299,7 @@ def contextfacultymanage(request,user,profile):
   if page5 == None:
     page5=1
   consultancy_projects = paginator5.page(page5)
+  print(consultancy_projects,page5)
   sr5 = (consultancy_projects.number-1)*10
 
   #pagination for patents
@@ -345,6 +347,21 @@ def contextfacultymanage(request,user,profile):
   y=[]
   for r in range(1995, (datetime.datetime.now().year + 1)):
         y.append(r)
+
+
+  #pagination for phdthesis
+  phdthesis = emp_mtechphd_thesis.objects.filter(pf_no=profile.id, degree_type=2).order_by('-date_entry') 
+  paginator9 = Paginator(phdthesis, 10)
+  page9 = request.GET.get('page9')
+  mark9=0;
+  if page9 != None:
+    mark9=1
+  else:
+    mark9=0
+  if page9 == None:
+    page9=1
+  phdthesis = paginator9.page(page9)
+  sr9 = (phdthesis.number-1)*10
   
 
   #paginator for foreign visit
@@ -434,6 +451,9 @@ def contextfacultymanage(request,user,profile):
     'thesis' : thesis,
     'mark8' : mark8,
     'sr8' : sr8,
+    'phdthesis' : phdthesis,
+    'mark9' : mark9,
+    'sr9' : sr9,
     'year_range' : y,
     'foreign_visits' : foreign_visits,
     'mark10' : mark10,
