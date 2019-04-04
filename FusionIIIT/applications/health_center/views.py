@@ -87,13 +87,13 @@ def compounder_view(request):                                                   
                 data={'status':1}
                 return JsonResponse(data)
             elif 'discharge' in request.POST:                                        #
-                pk = request.POST.get('id')
+                pk = request.POST.get('discharge')
                 Hospital_admit.objects.filter(id=pk).update(discharge_date=datetime.now())
                 hosp=Hospital_admit.objects.filter(id=pk)
                 for f in hosp:
                     dateo=f.discharge_date
-                data={'datenow':dateo}
-                return JsonResponse(data)                                             #
+                data={'datenow':dateo, 'id':pk}
+                return JsonResponse(data)
             elif 'add_stock' in request.POST:
                 medicine = request.POST.get('medicine_id')
                 threshold_a = request.POST.get('threshold_a')
@@ -395,11 +395,17 @@ def compounder_view(request):                                                   
                 #                    Notification.objects.create(notif_type='healthcenter',recipient=user,action_verb='removed',display_text='Dr.'+doc+'will not be available from now')
                 data = {'status': 1}
                 return JsonResponse(data)
+            elif 'medicine' in request.POST:
+                med_id = request.POST.get('medicine')
+                thresh = Stock.objects.get(id=med_id).threshold
+                data = {'thresh': thresh}
+                return JsonResponse(data)
 
 
         else:
             all_complaints = Complaint.objects.all()
             all_hospitals = Hospital_admit.objects.all().order_by('-admission_date')
+            hospitals_list = Hospital.objects.all().order_by('hospital_name')
             all_ambulances = Ambulance_request.objects.all().order_by('-date_request')
             appointments_today =Appointment.objects.filter(date=datetime.now()).order_by('date')
             appointments_future=Appointment.objects.filter(date__gt=datetime.now()).order_by('date')
@@ -411,6 +417,7 @@ def compounder_view(request):                                                   
             live_meds=Expiry.objects.filter(returned=False).order_by('quantity')
             count=Counter.objects.all()
             presc_hist=Prescription.objects.all().order_by('-date')
+            medicines_presc=Prescribed_medicine.objects.all()
             if count:
                 Counter.objects.all().delete()
             Counter.objects.create(count=0,fine=0)
@@ -423,7 +430,7 @@ def compounder_view(request):                                                   
                            'stocks': stocks, 'all_complaints': all_complaints,
                            'all_hospitals': all_hospitals, 'hospitals':hospitals, 'all_ambulances': all_ambulances,
                            'appointments_today': appointments_today, 'doctors': doctors,
-                           'appointments_future': appointments_future, 'schedule': schedule, 'live_meds': live_meds, 'presc_hist': presc_hist})
+                           'appointments_future': appointments_future, 'schedule': schedule, 'live_meds': live_meds, 'presc_hist': presc_hist, 'medicines_presc': medicines_presc, 'hospitals_list': hospitals_list})
     elif usertype == 'student':
         return HttpResponseRedirect("/healthcenter/student")                                      # compounder view ends
 
