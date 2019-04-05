@@ -48,7 +48,7 @@ def academics_module_notif(sender, recipient, type):
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
-def central_mess_notif(sender, recipient, type):
+def central_mess_notif(sender, recipient, type, message=None):
     url='mess:mess'
     module='Central Mess'
     sender = sender
@@ -58,6 +58,10 @@ def central_mess_notif(sender, recipient, type):
         verb='Your feedback has been successfully submitted.'
     elif type=='menu_change_accepted':
         verb='Menu request has been approved'
+    elif type == 'vacation_request_accepted':
+        verb = 'Vacation request has been approved'
+    elif type == 'leave_request':
+        verb = 'Leave request has been' + message
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
