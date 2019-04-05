@@ -35,7 +35,7 @@
             <div class="ui divider"></div>
 
            {% comment %}The Tab-Menu starts here!{% endcomment %}
-            <!-- <div class="ui huge fluid vertical pointing menu"
+            <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
 
                 <a class="active item" data-tab="first">
@@ -59,7 +59,7 @@
              
 
 
-            </div> -->
+            </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
         </div>
         {% comment %}
@@ -70,9 +70,9 @@
             <div class="ui active tab segment" data-tab="first">
 
                 <div class="ui pointing secondary menu ">
-                    <a>
+                   <!--  <a>
                         <a href="javascript:history.go(-1)"><i class="extra large green chevron circle left icon"></i></a>
-                    </a>
+                    </a> -->
                     <a class="active item" data-tab="feedback">
                         Feedback
                     </a>
@@ -108,6 +108,10 @@
 
                         </form>
                     </div>
+                    <a href="javascript:history.go(-1)">
+                        <button class="ui primary button right floated">Back</button>
+                    </a>
+                    <br><br>
                 </div>
             {% comment %}The ... end here!{% endcomment %}
             </div>

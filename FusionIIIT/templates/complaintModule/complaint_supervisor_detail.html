@@ -36,14 +36,14 @@
             <div class="ui divider"></div>
 
            {% comment %}The Tab-Menu starts here!{% endcomment %}
-            <!-- <div class="ui huge fluid vertical pointing menu"
+            <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
 
                 <a class="active item" data-tab="first">
-                    Manage Caretaker
+                    View Caretaker
                     <i class="right floated chevron right icon"></i>
                 </a>
-                <a class="item" data-tab="second">
+               <!--  <a class="item" data-tab="second">
                     Resolved Complaints
                     <i class="right floated chevron right icon"></i>
                 </a>
@@ -54,7 +54,7 @@
                 <a class="item" data-tab="fourth">
                     Overdue Complaints
                     <i class="right floated chevron right icon"></i>
-                </a>
+                </a> -->
                
                
                
@@ -62,7 +62,7 @@
              
 
 
-            </div> -->
+            </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
         </div>
         {% comment %}
@@ -73,16 +73,13 @@
             <div class="ui active tab segment" data-tab="first">
 
                 <div class="ui pointing secondary menu ">
-                    <a>
-                        <a href="javascript:history.go(-1)"><i class="extra large green chevron circle left icon"></i></a>
-                    </a>
                     <a class="active item" data-tab="feedback">
                         Detail
                     </a>
                 </div>
 
                 <div class="ui active tab large" data-tab="feedback">
-                    <div class="ui vertical segment">
+                    <div class="ui vertical segment" style="padding:40px">
                         <form method="post" action=".">
                             {% csrf_token %}
                         <div class="ui header">
@@ -122,7 +119,11 @@
                         </div>
 
                         </form>
+
                     </div>
+                    <a href="javascript:history.go(-1)">
+                        <button class="ui primary button right floated">Back</button>
+                    </a><br><br>
                 </div>
             {% comment %}The ... end here!{% endcomment %}
             </div>
