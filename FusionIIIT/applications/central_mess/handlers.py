@@ -527,7 +527,10 @@ def add_bill_base_amount(request):
 
 
 def add_mess_committee(request, roll_number):
+    print("\n\n\\n\n\n\n\n")
+    print(roll_number)
     mess = Messinfo.objects.get(student_id__id=roll_number)
+    print(mess)
     if mess.mess_option == 'mess1':
         designation = Designation.objects.get(name='mess_committee_mess1')
     else:

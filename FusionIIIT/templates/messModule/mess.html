@@ -67,14 +67,6 @@ Central Mess
         </div>
         {% comment %}The ... ends here!{% endcomment %}
 
-        {% comment %}The ... starts here!{% endcomment %}
-        <div class="ui tab segment" data-tab="third">
-            {% block vacationfoodrequest %}
-            {% include 'messModule/vacationfoodrequest.html' %}
-            {% endblock %}
-        </div>
-        {% comment %}The ... ends here!{% endcomment %}
-
 
         {% comment %}The ... starts here!{% endcomment %}
         <div class="ui {% if info.user_type == 'student' %}active {% endif %}tab segment" data-tab="fourth">
@@ -83,16 +75,6 @@ Central Mess
             {% endblock %}
         </div>
         {% comment %}The ... ends here!{% endcomment %}
-
-
-        {% comment %}The ... starts here!{% endcomment %}
-        <div class="ui tab segment" data-tab="fifth">
-            {% block requests %}
-            {% include 'messModule/requests.html' %}
-            {% endblock %}
-        </div>
-        {% comment %}The ... ends here!{% endcomment %}
-
 
         {% comment %}The ... starts here!{% endcomment %}
         <div class="ui tab segment" data-tab="sixth">
@@ -127,13 +109,6 @@ Central Mess
         </div>
         {% comment %}The ... ends here!{% endcomment %}
 
-        {% comment %}The ... starts here!{% endcomment %}
-        <div class="ui tab segment" data-tab="tenth">
-            {% block view_minutes %}
-            {% include 'messModule/view_minutes.html' %}
-            {% endblock %}
-        </div>
-        {% comment %}The ... ends here!{% endcomment %}
 
         {% comment %}The ... starts here!{% endcomment %}
         <div class="ui tab segment" data-tab="eleventh">
@@ -181,37 +156,13 @@ Central Mess
             {% include 'messModule/statistics.html' %}
             {% endblock %}
         </div>
-        {% comment %}The ... ends here!{% endcomment %}
 
-        {% comment %}The ... starts here!{% endcomment %}
-        <div class="ui tab segment" data-tab="seventeenth">
-            {% block minutes %}
-            {% include 'messModule/minutes.html' %}
-            {% endblock %}
-        </div>
-        <div class="ui tab segment" data-tab="eighteenth">
-            {% block messbill %}
-            {% include 'messModule/messbill.html' %}
-            {% endblock %}
-        </div>
-        {% comment %}The ... ends here!{% endcomment %}
         <div class="ui tab segment" data-tab="nineteenth">
             {% block respondmenu %}
             {% include 'messModule/respondmenu.html' %}
             {% endblock %}
         </div>
 
-         <div class="ui tab segment" data-tab="twenty">
-            {% block respondvacationfood %}
-            {% include 'messModule/respondvacationfood.html' %}
-            {% endblock %}
-        </div>
-
-        <div class="ui tab segment" data-tab="twentyone">
-            {% block messcommittee %}
-            {% include 'messModule/mess_committee.html' %}
-            {% endblock %}
-        </div>
 
         <div class="ui tab segment" data-tab="twentytwo">
             {% block nonvegorders %}
