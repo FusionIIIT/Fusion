@@ -28,14 +28,15 @@ def leave_module_notif(sender, recipient, type, date=None):
     elif type=='replacement_cancel':
         verb = "Your replacement has been cancelled for "+date
 
+
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
 def placement_cell_notif(sender, recipient, type):
-    url = 'placement:placement'
+    url = ''
     module = 'Placement Cell'
     sender = sender
     recipient = recipient
-    verb = 'placement schedule invitation'
+    verb = ''
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
@@ -48,7 +49,7 @@ def academics_module_notif(sender, recipient, type):
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
-def central_mess_notif(sender, recipient, type, message=None):
+def central_mess_notif(sender, recipient, type):
     url='mess:mess'
     module='Central Mess'
     sender = sender
@@ -58,19 +59,28 @@ def central_mess_notif(sender, recipient, type, message=None):
         verb='Your feedback has been successfully submitted.'
     elif type=='menu_change_accepted':
         verb='Menu request has been approved'
-    elif type == 'vacation_request_accepted':
-        verb = 'Vacation request has been approved'
-    elif type == 'leave_request':
-        verb = 'Leave request has been' + message
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
+
 def visitors_hostel_notif(sender, recipient, type):
-    url=''
+    url='visitorhostel:visitorhostel'
     module="Visitor's Hostel"
     sender = sender
     recipient = recipient
     verb = ''
+    if type =='booking_confirmation':
+        verb='Your booking has been confirmed '
+    elif type =='booking_cancellation_request_accepted':
+        verb='Your Booking Cancellation Request has been accepted '
+    elif type =='booking_request':
+        verb='New Booking Request '
+    elif type =='cancellation_request_placed':
+        verb='New Booking Cancellation Request '
+    elif type =='booking_forwarded':
+        verb='New Forwarded Booking Request '     
+    elif type =='booking_rejected':
+        verb='Your Booking Request has been rejected '
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
@@ -118,7 +128,6 @@ def scholarship_portal_notif(sender, recipient, type):
         verb = "Your Covocation form for D&M Proficiency Gold Medal has been accepted "
     elif type == 'Reject_silver':
         verb = "Your Covocation form for D&M Proficiency Gold Medal has been rejected "
-
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
 def complaint_system_notif(sender, recipient, type):
