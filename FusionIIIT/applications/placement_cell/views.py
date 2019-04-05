@@ -2585,6 +2585,7 @@ def cv(request, username):
     achievement = Achievement.objects.filter(Q(unique_id=student))
     publication = Publication.objects.filter(Q(unique_id=student))
     patent = Patent.objects.filter(Q(unique_id=student))
+    today = datetime.date.today()
 
     return render_to_pdf('placementModule/cv.html', {'pagesize': 'A4', 'user': user,
                                                      'profile': profile, 'projects': project,
@@ -2601,7 +2602,8 @@ def cv(request, username):
                                                      'internshipcheck': internshipcheck,
                                                      'projectcheck': projectcheck,
                                                      'coursecheck': coursecheck,
-                                                     'skillcheck': skillcheck})
+                                                     'skillcheck': skillcheck,
+                                                     'today':today})
 
 
 def render_to_pdf(template_src, context_dict):
