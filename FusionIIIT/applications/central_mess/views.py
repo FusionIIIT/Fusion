@@ -101,7 +101,6 @@ def mess(request):
 
         for r in rebates:
             if r.status == '2':
-                print(r.start_date.month == month_g)
                 if r.start_date.month == month_g:
                     rebate_count = rebate_count + abs((r.end_date - r.start_date).days) + 1
 
