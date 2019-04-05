@@ -5,14 +5,14 @@
 
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui secondary pointing menu">
-        <a class="active item" data-tab="" id="meeting_info">
+        <a class="ui active item" data-tab="" id="meeting_info">
             Meeting information
         </a>
-        <a class="item" data-tab="" id="meeting_min">
+        <a class="ui item" data-tab="" id="meeting_min">
             Meeting Minutes
         </a>
     </div>
-    <div class="ui active tab" data-tab="" info="meeting_info_tab">
+    <div class="ui active tab" data-tab="" id="meeting_info_tab">
         <div class="ui vertical segment">
 
             <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
@@ -71,6 +71,7 @@
 {% endblock %}
 {% endblock %}
 {% block javascript %}
+
 <script>
 
     $(document).ready(function() {
@@ -86,8 +87,10 @@
         $('#meeting_min').on('click', function () {
             $(this).addClass('active');
             $('#meeting_info').removeClass('active');
+
+             $('#meeting_info_tab').hide();
             $('#meeting_min_tab').show();
-            $('#meeting_info_tab').hide();
+
         });
     });
 

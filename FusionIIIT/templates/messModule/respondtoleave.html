@@ -3,25 +3,25 @@
 {% block respondtoleave %}
 
 <div class="ui top attached tabular menu">
-    <a class="active item" data-tab="respondtoleaverequests" id="rlr">
+    <a class="active item" data-tab="" id="rlr">
         Respond to Rebate
     </a>
-    <a class="item" data-tab="respondtovacafoodrequests" id="rvr">
+    <a class="item" data-tab="" id="rvr">
         Respond to Vacation Food Requests
     </a>
 
 </div>
 
-<div class="bottom attached segment">
-<div class="ui active tab" data-tab="respondtoleaverequests" id="rlrtab">
+<div class="ui bottom attached segment">
+<div class="ui active tab" data-tab="" id="rlrtab">
     <div class="ui vertical segment">
     <div>
-        <button class="ui primary fluid button" onclick="getLeave()">
-            Get Leave Data
+        <button class="ui primary button right floated" onclick="getLeave()">
+            Leave Statistics
         </button>
-        <br>
-        <button class="ui primary fluid button" onclick="dateVacation()">
-            Accept Vacation leaves
+
+        <button class="ui primary button right floated" onclick="dateVacation()">
+            Accept Rebate Requests
         </button>
     </div>
         <table class="ui very basic collapsing celled large sortable table"
@@ -126,7 +126,7 @@
 
     </div>
 </div>
-    <div class="ui tab" data-tab="respondtovacafoodrequests" id="rvrtab">
+    <div class="ui tab" data-tab="" id="rvrtab">
     <div class="ui vertical segment">
 
             {% for item in vaca_all %}
@@ -170,18 +170,26 @@
 </div>
 
 
-    <div class="ui small modal" id="leavedata" style="padding: 2.5%;">
+    <div class="ui small modal" id="leavedata" style="padding: 0.5%;">
         <div class="ui vertical segment">
+            <table class="ui very basic collapsing celled large sortable table" style="margin: auto;">
+                <thead>
+                <td> Date </td>
+                <td> Number of Students Taking Leave</td>
+                </thead>
+                <tbody>
+                <tr>
+                <td id="today_modal"></td>
+                <td id="today_count"></td>
+                </tr>
+                <tr>
+                <td id="tomorrow_modal"></td>
+                <td id="tomorrow_count"></td>
+                </tr>
+                </tbody>
+            </table>
 
-            <div style="text-align: center;" id="leave_today">
 
-            </div>
-            <br><br>
-
-            <br>
-            <div style="text-align: center;" id="leave_tomorrow">
-
-            </div>
         </div>
     </div>
 
@@ -231,6 +239,30 @@
 
 {% block javascript %}
 <script>
+ $(document).ready(function(){
+     $('#rlr').on('click',function(){
+        $(this).addClass('active');
+         $('#rvr').removeClass('active');
+         $('#rlrtab').show();
+          $('#rvrtab').hide();
+
+     });
+
+ });
+ $(document).ready(function(){
+     $('#rvr').on('click',function(){
+        $(this).addClass('active');
+         $('#rlr').removeClass('active');
+        $('#rlrtab').hide();
+          $('#rvrtab').show();
+
+     });
+
+ });
+
+</script>
+
+    <script>
 
 function acceptReq(id){
  document.getElementById('accr-'+id).style.display="none";
@@ -293,10 +325,10 @@ function acceptReq(id){
                 },
                 success: function(data) {
 
-                        $('#leave_today').html("Number of students taking leave on " + data.today +
-                            " is " +data.counttoday);
-                        $('#leave_tomorrow').html("Number of students taking leave on " + data.tomorrow +
-                            " is " +data.counttomorrow);
+                        $('#today_modal').html(data.today);
+                        $('#today_count').html(data.counttoday);
+                        $('#tomorrow_modal').html(data.tomorrow);
+                        $('#tomorrow_count').html(data.counttomorrow);
 
                 },
                 error: function(data, err) {
