@@ -227,6 +227,11 @@ class NotifyStudent(models.Model):
     def __str__(self):
         return '{} - {}'.format(self.company_name, self.placement_type)
 
+    @property
+    def get_placement_schedule_object(self):
+        return PlacementSchedule.objects.filter(notify_id=self.id).first()
+
+
 class Role(models.Model):
     role = models.CharField(max_length=100, blank=True, null=True)
 
@@ -252,6 +257,10 @@ class PlacementStatus(models.Model):
 
     class Meta:
         unique_together = (('notify_id', 'unique_id'),)
+
+    @property
+    def response_date(self):
+        return self.timestamp+datetime.timedelta(days=self.no_of_days)
 
     def __str__(self):
         return '{} - {}'.format(self.unique_id.id, self.notify_id.company_name)

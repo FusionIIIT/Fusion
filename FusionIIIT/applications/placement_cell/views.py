@@ -26,6 +26,7 @@ from xhtml2pdf import pisa
 from django.core import serializers
 
 from applications.academic_information.models import Student
+from notification.views import placement_cell_notif
 from applications.globals.models import (DepartmentInfo, ExtraInfo,
                                         HoldsDesignation)
 
@@ -186,6 +187,7 @@ def Placement(request):
     schedule_tab = 1
     placementstatus = ''
 
+
     form5 = AddSchedule(initial={})
     current1 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement chairman"))
     current2 = HoldsDesignation.objects.filter(Q(working=user, designation__name="placement officer"))
@@ -194,14 +196,7 @@ def Placement(request):
     # If the user is Student
     if current:
         student = get_object_or_404(Student, Q(id=profile.id))
-        placementschedule = PlacementSchedule.objects.filter(
-            Q(placement_date__gte=date.today())).values_list('notify_id', flat=True)
 
-        placementstatus = PlacementStatus.objects.filter(
-            Q(unique_id=student,
-            notify_id__in=placementschedule)).order_by('-timestamp')
-
-        check_invitation_date(placementstatus)
         # Student view for showing accepted or declined schedule
         if request.method == 'POST':
             if 'studentapprovesubmit' in request.POST:
@@ -379,6 +374,17 @@ def Placement(request):
                 hid = request.POST['deletepat']
                 hs = Patent.objects.get(Q(pk=hid))
                 hs.delete()
+
+        placementschedule = PlacementSchedule.objects.filter(
+            Q(placement_date__gte=date.today())).values_list('notify_id', flat=True)
+
+        placementstatus = PlacementStatus.objects.filter(
+            Q(unique_id=student,
+            notify_id__in=placementschedule)).order_by('-timestamp')
+
+        print(type(placementstatus),'-----------------\n\n')
+
+        check_invitation_date(placementstatus)
 
     # facult and other staff view only statistics
     if not (current or current1 or current2):
@@ -1202,6 +1208,11 @@ def StudentRecords(request):
 
                 PlacementStatus.objects.bulk_create( [PlacementStatus(notify_id=notify,
                             unique_id=student, no_of_days=no_of_days) for student in students] )
+
+                for st in students:
+                    #print(request.user, '-----------------------', st.id.user,'-----------------')
+                    placement_cell_notif(request.user, st.id.user, "")
+
                 students = ''
                 messages.success(request, 'Notification Sent')
             else:

@@ -47,8 +47,8 @@ Resolved, Declined-->
                         <b>S.No</b>
                     </td>
 
-                    <td class="eight wide column">
-                       <b> Date </b>
+                     <td class="five wide column">
+                        <b>Date</b>
                     </td>
 
                     <td>
@@ -105,9 +105,8 @@ Resolved, Declined-->
                         {{ a.complaint_type }}
                     </td>
                     <td>
-                        {{ a.location }}<br>-
-                    
-                        {{ a.specific_location }}
+                        {{ a.specific_location }},&nbsp;
+                        {{ a.location }}
                     </td>
                     <td>
                         <a href="./detail/{{ a.id }}/">  <button class="ui inverted basic button" data-tooltip="Click here to view details" ><i class="large green info icon"></i></button></a>
@@ -138,18 +137,14 @@ Resolved, Declined-->
 
 
 
+
+
+
+
     <div class="ui tab" data-tab="onholdcomplaints">
         <div class="ui vertical segment">
 
-            <!-- <div class="extra content">
-                <div class="" style="text-align: center;">
-                    <i class="large orange warning icon"></i> : Pending &ensp;&ensp;&ensp;&ensp;&ensp;
-                    <i class="large orange add user icon"></i> : Worker Assigned &ensp;&ensp;&ensp;&ensp;&ensp;
-                    <i class="large green checkmark icon"></i> : Completed &ensp;&ensp;&ensp;&ensp;&ensp;
-                    <i class="large red x icon"></i> : Declined &ensp;&ensp;&ensp;&ensp;&ensp;
-                </div>
-            </div> -->
-             <!-- <div class="ui divider"></div> -->
+          
         
 
             <table class="ui very basic collapsing celled sortable table"
@@ -165,7 +160,7 @@ Resolved, Declined-->
                         <b>S.No</b>
                     </td>
 
-                    <td class="six wide column">
+                    <td class="five wide column">
                         <b>Date</b>
                     </td>
 
@@ -219,9 +214,8 @@ Resolved, Declined-->
                         {{ a.complaint_type }}
                     </td>
                     <td>
-                        {{ a.location }}<br>-
-                  
-                        {{ a.specific_location }}
+                        {{ a.specific_location }},&nbsp;
+                        {{ a.location }}
                     </td>
                     <td>
                         <a href="./detail/{{ a.id }}/">  <button class="ui inverted basic button" data-tooltip="Click here to view details" ><i class="large green info icon"></i></button></a>
@@ -278,7 +272,7 @@ Resolved, Declined-->
                         <b>S.No</b>
                     </td>
 
-                    <td class="six wide column">
+                    <td class="five wide column">
                         <b>Date</b>
                     </td>
 
@@ -330,9 +324,8 @@ Resolved, Declined-->
                         {{ a.complaint_type }}
                     </td>
                     <td>
-                        {{ a.location }}<br>-
-                    
-                        {{ a.specific_location }}
+                        {{ a.specific_location }},&nbsp;
+                        {{ a.location }}
                     </td>
                     <td>
                         <a href="./detail/{{ a.id }}/">  <button class="ui inverted basic button" data-tooltip="Click here to view details" ><i class="large green info icon"></i></button></a>
@@ -391,7 +384,7 @@ Resolved, Declined-->
                         <b>S.No</b>
                     </td>
 
-                    <td class="six wide column">
+                    <td class="five wide column">
                         <b>Date</b>
                     </td>
 
@@ -445,9 +438,8 @@ Resolved, Declined-->
                         {{ a.complaint_type }}
                     </td>
                     <td>
+                        {{ a.specific_location }},&nbsp;
                         {{ a.location }}
-                    <br>-
-                        {{ a.specific_location }}
                     </td>
                     <td>
                         <a href="./detail/{{ a.id }}/">  <button class="ui inverted basic button" data-tooltip="Click here to view details" ><i class="large green info icon"></i></button></a>
