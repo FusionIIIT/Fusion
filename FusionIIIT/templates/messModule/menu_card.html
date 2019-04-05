@@ -9,18 +9,13 @@
         <a class="item" data-tab="fifteenth">
             Meeting information
         </a>
-<!--
-        <a class="item" data-tab="tenth">
-            Meeting Minutes
-        </a>
-        -->
 
         <a class="item" data-tab="sixteenth">
             Feedback Statistics
         </a>
 
         <a class="item" data-tab="forteenth">
-            View Feedback
+            View Feedback | Statistics
         </a>
 
     {% endif %}
@@ -71,17 +66,19 @@
             -->
 
             <a class="item" data-tab="forteenth">
-                View Feedback
+                View Feedback | Statistics
             </a>
+            <!--
             <a class="item" data-tab="sixteenth">
                 Feedback Statistics
             </a>
+            -->
 
 
         {% endif %}
         {% if d.designation.name == 'mess_convener_mess1' or d.designation.name == 'mess_convener_mess2' %}
             <a class="item" data-tab="forteenth">
-                View Feedback
+                View Feedback | Statistics
             </a>
 
             <a class="item" data-tab="eighth">
@@ -103,9 +100,11 @@
 {#            <a class="item" data-tab="seventeenth">#}
 {#                Publish Minutes#}
 {#            </a>#}
+            <!--
             <a class="item" data-tab="sixteenth">
                 Feedback Statistics
             </a>
+            -->
         {% endif %}
     {% endif %}
 
