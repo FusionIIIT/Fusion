@@ -219,6 +219,7 @@
                                       </div>
                                       <div class="ui secondary segment">
                                         <p>{{ ps.notify_id.company_name }} ,<b> CTC: {{ ps.notify_id.ctc }}</b></p>
+                                        <p>{{ ps.notify_id.get_placement_schedule_object.placement_date }} | {{ ps.notify_id.get_placement_schedule_object.time }}</p>
                                         <p>{{ ps.notify_id.description }} </p>
                                       </div>
                                       {% if ps.invitation == 'ACCEPTED' or ps.invitation == 'Accepted' %}
@@ -621,7 +622,7 @@
                 <div class="ui styled accordion">
                     <div class="title">
                         <i class="dropdown icon"></i>
-                        Want a C.V.?
+                        Download a C.V.?
                         <div class="ui divider"></div>
                     </div>
                     <div class="content">
@@ -669,7 +670,7 @@
                             </div>
                             <br><br>
 
-                          <button type="submit" class="ui primary large button">Generate</button>
+                          <button type="submit" class="ui primary large button">Download</button>
                     </form>
                     </div>
                 </div>
