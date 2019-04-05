@@ -2585,6 +2585,7 @@ def cv(request, username):
     achievement = Achievement.objects.filter(Q(unique_id=student))
     publication = Publication.objects.filter(Q(unique_id=student))
     patent = Patent.objects.filter(Q(unique_id=student))
+    today = datetime.date.today()
 
     return render_to_pdf('placementModule/cv.html', {'pagesize': 'A4', 'user': user,
                                                      'profile': profile, 'projects': project,
@@ -2601,7 +2602,8 @@ def cv(request, username):
                                                      'internshipcheck': internshipcheck,
                                                      'projectcheck': projectcheck,
                                                      'coursecheck': coursecheck,
-                                                     'skillcheck': skillcheck})
+                                                     'skillcheck': skillcheck,
+                                                     'today':today})
 
 
 def render_to_pdf(template_src, context_dict):
@@ -2620,7 +2622,7 @@ def render_to_pdf(template_src, context_dict):
     template = get_template(template_src)
     html = template.render(context_dict)
     result = BytesIO()
-    pdf = pisa.pisaDocument(BytesIO(html.encode("ISO-8859-1")), result)
+    pdf = pisa.pisaDocument(BytesIO(html.encode("UTF-8")), result)
     if not pdf.err:
         return HttpResponse(result.getvalue(), content_type='application/pdf')
     return HttpResponse('We had some errors<pre>%s</pre>' % escape(html))
