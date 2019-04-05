@@ -29,3 +29,4 @@ urlpatterns = [
     url(r'^booking-details/', views.booking_details, name = 'booking_details'),
     url(r'^forward-booking/', views.forward_booking, name = 'forward_booking'),
 ]
+ 

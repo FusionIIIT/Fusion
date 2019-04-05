@@ -47,14 +47,23 @@ function request_booking (event) {
     csrfmiddlewaretoken = $('input[name="csrf"]').val();
     booking_from = $('input[name="request-booking-from"]').val();
     booking_to = $('input[name="request-booking-to"]').val();
-    booking_from_time = $('input[name="request-booking-from-time"]').val();
-    booking_to_time = $('input[name="request-booking-to-time"]').val();
+    arrival_hour = $('input[name="arrival-hour"]').val();
+    arrival_minute = $('input[name="arrival-minute"]').val();
+    arrival = $('input[name="arrival"]').val();
+    departure_hour = $('input[name="departure-hour"]').val();
+    departure_minute = $('input[name="departure-minute"]').val();
+    departure = $('input[name="departure"]').val();
     number_of_people =  parseInt($('input[name="number-of-people"]').val());
     number_of_rooms =  parseInt($('input[name="number-of-rooms"]').val());
     purpose_of_visit = $('input[name="purpose-of-visit"]').val();
     remarks_during_booking_request = $('input[name="remarks-during-booking-request"]').val();
     bill_settlement = $('input[name="bill_settlement"]').val();
 
+    booking_from_time = arrival_hour.concat(":").concat(arrival_minute).concat(" ").concat(arrival);
+    booking_to_time = departure_hour.concat(":").concat(departure_minute).concat(" ").concat(departure);
+    // console.log(arrival_hour);
+    // console.log("ffff");
+    // console.log(departure_time);
     console.log(bill_settlement);
 
 
@@ -63,55 +72,55 @@ function request_booking (event) {
     phone = $('input[name=phone-1]').val();
     email = $('input[name=email-1]').val();
     address = $('input[name=address-1]').val();
-    organization = $('input[name=organization-1]').val()
-    nationality = $('input[name=country]').val()
+    organization = $('input[name=organization-1]').val();
+    nationality = $('input[name=country]').val();
 
 
-    loc=booking_from_time.indexOf(':');
+    // loc=booking_from_time.indexOf(':');
 
-    if(loc == -1){
-        alertModal("Please check the arrival time.");
-            return;
-    }
-    hour = booking_from_time.substring(0,loc);
-    min = booking_from_time.substring(loc+1,booking_from_time.length);
+    // if(loc == -1){
+    //     alertModal("Please check the arrival time.");
+    //         return;
+    // }
+    // hour = booking_from_time.substring(0,loc);
+    // min = booking_from_time.substring(loc+1,booking_from_time.length);
 
-    h=parseInt(hour);
-    m=parseInt(min);
+    // h=parseInt(hour);
+    // m=parseInt(min);
 
-    if(h < 0 || h >= 24){
-        alertModal("Please check the arrival time.");
-            return;
+    // if(h < 0 || h >= 24){
+    //     alertModal("Please check the arrival time.");
+    //         return;
 
-    }
-    if(m < 0 || m >= 60){
-        alertModal("Please check the arrival time.");
-            return;
+    // }
+    // if(m < 0 || m >= 60){
+    //     alertModal("Please check the arrival time.");
+    //         return;
 
-    }
+    // }
 
-    loc=booking_to_time.indexOf(':');
+    // loc=booking_to_time.indexOf(':');
 
-    if(loc == -1){
-        alertModal("Please check the departure time.");
-            return;
-    }
-    hour = booking_to_time.substring(0,loc);
-    min = booking_to_time.substring(loc+1,booking_to_time.length);
+    // if(loc == -1){
+    //     alertModal("Please check the departure time.");
+    //         return;
+    // }
+    // hour = booking_to_time.substring(0,loc);
+    // min = booking_to_time.substring(loc+1,booking_to_time.length);
 
-    h=parseInt(hour);
-    m=parseInt(min);
+    // h=parseInt(hour);
+    // m=parseInt(min);
 
-    if(h < 0 || h >= 24){
-        alertModal("Please check the departure time.");
-            return;
+    // if(h < 0 || h >= 24){
+    //     alertModal("Please check the departure time.");
+    //         return;
 
-    }
-    if(m < 0 || m >= 60){
-        alertModal("Please check the departure time.");
-            return;
+    // }
+    // if(m < 0 || m >= 60){
+    //     alertModal("Please check the departure time.");
+    //         return;
 
-    }
+    // }
 
     
     if (name == '') {
@@ -154,17 +163,33 @@ function request_booking (event) {
         return;
     }
 
-    if (phone.charAt(0)!='9'&&phone.charAt(0)!='8'&&phone.charAt(0)!='7'){
-        alertModal("Oops! Please enter valid phone number.");
-        return;
-    }
+    
 
-    if (booking_from_time = '') {
+    if ( !arrival_hour) {
         alertModal ('Oops! Please enter the expected arrival time of the visitor');
         return;
     }
 
-    if (booking_to_time = '') {
+    if ( !arrival_minute) {
+        alertModal ('Oops! Please enter the expected arrival time of the visitor');
+        return;
+    }
+
+    if ( !arrival) {
+        alertModal ('Oops! Please enter the expected arrival time of the visitor');
+        return;
+    }
+
+    if ( !departure_hour) {
+        alertModal ('Oops! Please enter the expected departure time of the visitor');
+        return;
+    }
+    if ( !departure_minute) {
+        alertModal ('Oops! Please enter the expected departure time of the visitor');
+        return;
+    }
+
+    if ( !departure) {
         alertModal ('Oops! Please enter the expected departure time of the visitor');
         return;
     }
@@ -213,12 +238,26 @@ function request_booking (event) {
         alertModal ("Oops! Number of rooms can't be greater than 15.");
         return;
     } 
-
+    if ( !number_of_rooms ) {
+        alertModal ("Please fill required number of rooms!");
+        return;
+    }
+    if ( !number_of_people ) {
+        alertModal ("Please fill number of people!");
+        return;
+    }
     if ( !category ) {
         alertModal ("Please fill the Category!");
         return;
     } 
-
+    if ( ! booking_from ) {
+        alertModal ("Please fill expected arrival date!");
+        return;
+    }
+    if ( ! booking_to)  {
+        alertModal ("Please fill expected departure date!");
+        return;
+    }
     if ( !nationality ) {
          nationality = ' ';
     }
@@ -260,6 +299,7 @@ function request_booking (event) {
         error: function(data, err) {
             console.log(name + " " + phone + " " + email + " " + address);
             alertModal('Something missing! Please refill the form');
+            console.log(booking_to_time);
         }
     });
 };
@@ -952,3 +992,4 @@ $('.info.circle.icon')
     inline: true
   })
 ;
+

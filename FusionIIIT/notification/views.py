@@ -62,11 +62,23 @@ def central_mess_notif(sender, recipient, type):
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
 def visitors_hostel_notif(sender, recipient, type):
-    url=''
+    url='visitorhostel:visitorhostel'
     module="Visitor's Hostel"
     sender = sender
     recipient = recipient
     verb = ''
+    if type =='booking_confirmation':
+        verb='Your booking has been confirmed '
+    elif type =='booking_cancellation_request_accepted':
+        verb='Your Booking Cancellation Request has been accepted '
+    elif type =='booking_request':
+        verb='New Booking Request '
+    elif type =='cancellation_request_placed':
+        verb='New Booking Cancellation Request '
+    elif type =='booking_forwarded':
+        verb='New Forwarded Booking Request '     
+    elif type =='booking_rejected':
+        verb='Your Booking Request has been rejected '
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
