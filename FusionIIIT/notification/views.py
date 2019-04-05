@@ -61,6 +61,7 @@ def central_mess_notif(sender, recipient, type):
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
+
 def visitors_hostel_notif(sender, recipient, type):
     url='visitorhostel:visitorhostel'
     module="Visitor's Hostel"
