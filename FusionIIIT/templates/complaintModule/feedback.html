@@ -13,7 +13,7 @@
     </div>
 
     <div class="ui active tab " data-tab="feedback">
-        <div class="ui vertical segment" style="height: 700px;overflow-y: auto";>
+        <div class="ui vertical segment" style="overflow-y: auto";>
 
             <table class="ui very basic collapsing celled sortable table"
                    style="padding-left: 0.5%;
@@ -50,7 +50,7 @@
                         Status
                     </th>
                     <th class="one wide column">
-                        Worker</br>
+                        Worker<br>
                         Name
                     </th>
                     <th class="three wide column">
@@ -74,7 +74,7 @@
                     </td>
 
                     <td>
-                        {{ a.location }} -
+                        {{ a.location }} -<br>
                     
                         {{ a.specific_location }}
                     </td>
@@ -122,17 +122,6 @@
                     <i class="large green checkmark icon"></i> : Completed &ensp;&ensp;&ensp;&ensp;&ensp;
                 </div>
             </div>
-        
-       
     </div>
     </div>
-
-
-
-
-
-
-
-
-
 {% endblock %}
