@@ -17,6 +17,9 @@ urlpatterns = [
     url(r'^newordershod/',views.newordershod,name='newordershod'),
     url(r'^newordershod2/',views.newordershod,name='newordershod2'),
     url(r'^newordersdirector/',views.newordersdirector,name='newordersdirector'),
+
+    url(r'^newordersdirectorview/',views.newordersdirectorview,name='newordersdirectorview'),
+
     url(r'^newordersPOonGem/',views.newordersPOonGem,name='newordersPOonGem'),
     url(r'^newordersPO/',views.newordersPO,name='newordersPO'),
     url(r'^newordersregistrar/',views.newordersregistrar,name='newordersregistrar'),

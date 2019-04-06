@@ -657,6 +657,21 @@ def newordersdirector(request):
             print("model not exists")
     return HttpResponse("you are the best ")
 
+def newordersdirectorview(request):
+    print("metoo")
+    #return HttpResponse("pis of")
+    if request.method=='POST':
+        objid = request.POST.get('id')
+        print(objid)
+    try:
+        obj = apply_for_purchase.objects.get(id = objid)
+        context ={"data":obj}
+        print(context)
+        return HttpResponse("abhi iska template nahi bana hai")
+    except apply_for_purchase.DoesNotExist:
+        print("model not exists")
+    return render(request, "officeModule/officeOfPurchaseOfficer/viewordersdirector.html",context=context)
+
 
 
 def newordersPO(request):
@@ -805,7 +820,9 @@ def officeOfPurchaseOfficer(request):
     elif(len(usertype)>=2):
         user_type = usertype[2]
 
-
+    p = None
+    q = None
+    ph = None
     print ("yaha se")
     print(user_type)
     #use user_type to check the designation of actor
@@ -867,27 +884,52 @@ def officeOfPurchaseOfficer(request):
 
             elif(user_type=="director" or user_type=="Director"):
                 #alldata = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=1,expected_cost__gte = 50001)
-                alldata = apply_for_purchase.objects.filter(expected_cost__gte = 50001,director_approve_tag=0)
+                alldata = apply_for_purchase.objects.filter(expected_cost__gte = 50001)
                 print(alldata)
                 context = {'alldata':alldata}
                 return render(request, "officeModule/officeOfPurchaseOfficer/approvaldirector.html",context=context)
 
             elif(user_type=="purchaseofficer" or user_type=="PurchaseOfficer"):
-                alldata = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=1,expected_cost__gte = 50001,director_approve_tag=0)
-                alldata2 = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=1,expected_cost__lte = 50000)
-                context = {'alldata':alldata,'alldata2':alldata2}
-                return render(request, "officeModule/officeOfPurchaseOfficer/approvaldirector.html",context=context)
+                print("entered purchase officer section")
+                alldata = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=1,expected_cost__gte = 50001,director_approve_tag=1)
+                #alldata2 = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=1,expected_cost__lte = 50000)
+                #context = {'alldata':alldata,'alldata2':alldata2}
+
+                context = {'alldata':alldata}
+                return render(request, "officeModule/officeOfPurchaseOfficer/approvalpurchaseofficer.html",context=context)
 
 
 
         elif "approved_orders" in request.POST:
-            return HttpResponse("abhi iska template nahi bana hai")
+            if(user_type=="HOD" or per_user=="pkhanna"):
+                alldata = apply_for_purchase.objects.filter(HOD_approve_tag=1)
+                context={'alldata':alldata}
+                print(context)
+                return render(request, "officeModule/officeOfPurchaseOfficer/approvedHOD.html",context=context)
+
+            elif(user_type=="DeputyRegistrar" or user_type=="Registrar" or per_user=="swapnali"):
+                alldata = apply_for_purchase.objects.filter(registrar_approve_tag=1)
+                context = {'alldata':alldata}
+                return render(request, "officeModule/officeOfPurchaseOfficer/approvedRegistrar.html",context=context)
+
+            elif(user_type=="director" or user_type=="Director"):
+                #alldata = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=1,expected_cost__gte = 50001)
+                alldata = apply_for_purchase.objects.filter(expected_cost__gte = 50001,director_approve_tag=1)
+                print(alldata)
+                context = {'alldata':alldata}
+                return render(request, "officeModule/officeOfPurchaseOfficer/approvedDirector.html",context=context)
+
+            elif(user_type=="purchaseofficer" or user_type=="PurchaseOfficer"):
+                print("work in progress")
             #make the templates as per the actors
-
-
 
         elif "rejected_orders" in request.POST:
             return HttpResponse("abhi iska temp nahi hai")
+
+
+
+
+
 
 
 
@@ -896,18 +938,28 @@ def officeOfPurchaseOfficer(request):
             item_type=request.POST.get('item_type')
             item_name=request.POST.get('item_name')
             quantity=request.POST.get('qunatity')
-
-            stock.objects.create(
+            str2 = " "
+            it = " "
+            a = stock.objects.create(
                 item_type=item_type,
                 item_name=item_name,
                 quantity=quantity,
             )
-            return HttpResponse("successflly added item")
+            a.save()
+            if(item_type==0):
+                it="consumable"
+            else:
+                it="non-consumable"
+            str2 = "item " + item_name + "of type " + it + " has been added to the store"
+            messages.info(request,str2)
 
         elif "item_search" in request.POST:
-            print("store mein aa gya")
             srch = request.POST['item_name']
-            match = stock.objects.filter(Q(item_name__icontains=srch))
+            print("this is the itemset")
+            print(srch)
+            #match = stock.objects.filter(Q(item_name__icontains=srch))
+            match = stock.objects.filter(item_name=srch)
+            print(match)
             return render(request, "officeModule/officeOfPurchaseOfficer/officeOfPurchaseOfficer.html",{'match':match})
 
         elif "vendor_search" in request.POST:
@@ -927,9 +979,11 @@ def officeOfPurchaseOfficer(request):
             return HttpResponse("successflly deleted item")'''
 
     else:
+        #this is the manage store and vendors section
         p=vendor.objects.all()
         q=stock.objects.all()
         ph=apply_for_purchase.objects.all()
+
     return render(request, "officeModule/officeOfPurchaseOfficer/officeOfPurchaseOfficer.html",{'p':p,'q':q,'ph':ph,'utype':utype,'utype2':utype2,'utype3':utype3})
 
 def delete_item(request,id):

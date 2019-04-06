@@ -46,7 +46,7 @@
         {% endcomment %}
 
        <div class="eight wide column">
-
+         {% include 'officeModule/officeOfPurchaseOfficer/approvalHOD.html' %}
           <div style="overflow-x:auto;">
           <table class="ui very basic collapsing celled sortable table "
             style="padding-left: 2.5%;overflow-x:scroll;
@@ -91,6 +91,9 @@
              <th class="four wide column">
                 Approval
              </th>
+             <th class="four wide column">
+                View
+             </th>
          </tr>
          </thead>
          <tbody>
@@ -130,6 +133,9 @@
           <td>
              <button  class="approveme" m_id="{{data.id}}" >approve</button>
           </td>
+          <td>
+            <button  class="viewme" m_id="{{data.id}}" >view</button>
+            </td>
          </tr>
          {% endfor %}
            </tbody>
@@ -173,6 +179,24 @@ $.ajax({
 });
   window.location.reload();
   });
+
+  $(".viewme").click(function(event){
+   objid = $(this).attr("m_id");
+  console.log(objid)
+  alert("you clicked me")
+  $.ajax({
+      type: 'post',
+      url: '/office/newordersdirectorview/',
+      data: {id: objid},
+      success: function(data) {
+           console.log("success")
+      },
+      error: function(data, err) {
+          console.log("fail")
+      }
+  });
+
+    });
 });
 
   </script>
