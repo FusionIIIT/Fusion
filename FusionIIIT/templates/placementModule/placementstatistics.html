@@ -168,7 +168,7 @@
                                           <div class="field">
                                             {{ form3.stuname.errors }}
                                                   <label for="{{ form3.cname.id_for_label }}">
-                                                      Student Name {% if profile.designation.name != 'student' %}(Only for searching records){% endif %}
+                                                      Student Name
                                                   </label>
 
                                                   <div class="ui large input">
@@ -289,8 +289,8 @@
                                   <th class="two wide">Year</th>
                                   <th class="six wide">Company</th>
                                   <th class="two wide">CTC(LPA)</th>
-                                  {% if profile.designation.name != 'student' %}
-                                  <th class="two wide">Delete</th>
+                                  {% if delete_operation == 1 %}
+                                    <th class="two wide">Delete</th>
                                   {% endif %}
                               </tr>
                               </thead>
@@ -322,7 +322,7 @@
                                       {{ student.record_id.ctc }}
                                   </td>
 
-                                  {% if current == None %}
+                                  {% if delete_operation == 1 %}
                                   <td>
                                     <form method="post" action="{% url 'placement:delete_placement_statistics' %}" class="ui form" role="form">
                                       {% csrf_token %}
@@ -362,7 +362,7 @@
                                                     <div class="field">
                                                       {{ form3.stuname.errors }}
                                                             <label for="{{ form3.cname.id_for_label }}">
-                                                                Student Name {% if profile.designation.name != 'student' %}(Only for searching records){% endif %}
+                                                                Student Name
                                                             </label>
 
                                                             <div class="ui large input">
@@ -483,8 +483,8 @@
                                       <th class="two wide">Year</th>
                                       <th class="six wide">Company</th>
                                       <th class="two wide">CTC(LPA)</th>
-                                      {% if profile.designation.name != 'student' %}
-                                      <th class="two wide">Delete</th>
+                                      {% if delete_operation == 1 %}
+                                        <th class="two wide">Delete</th>
                                       {% endif %}
                                   </tr>
                                   </thead>
@@ -516,7 +516,7 @@
                                           &#8377; {{ student.record_id.ctc }}
                                       </td>
 
-                                      {% if current == None %}
+                                      {% if delete_operation == 1 %}
                                       <td>
                                         <form method="post" action="{% url 'placement:delete_placement_statistics' %}" class="ui form" role="form">
                                           {% csrf_token %}
@@ -558,7 +558,7 @@
                                     <div class="field">
                                       {{ form4.stuname.errors }}
                                         <label for="{{ form4.stuname.id_for_label }}">
-                                            Student Name {% if profile.designation.name != 'student' %}(Only for searching records){% endif %}
+                                            Student Name
                                         </label>
                                         <div class="ui large input">
                                             {{ form4.stuname }}
@@ -692,8 +692,8 @@
                                       <th class="two wide">Exam</th>
                                       <th class="six wide">University</th>
                                       <th class="two wide">Score</th>
-                                      {% if profile.designation.name != 'student' %}
-                                      <th class="two wide">Delete</th>
+                                      {% if delete_operation == 1 %}
+                                        <th class="two wide">Delete</th>
                                       {% endif %}
                                   </tr>
                                   </thead>
@@ -727,7 +727,7 @@
                                           {{ student.record_id.test_score }}
                                       </td>
 
-                                      {% if current == None %}
+                                      {% if delete_operation == 1 %}
                                       <td>
                                         <form method="post" action="{% url 'placement:delete_placement_statistics' %}" class="ui form" role="form">
                                           {% csrf_token %}

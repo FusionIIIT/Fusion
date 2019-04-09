@@ -771,11 +771,14 @@ def conference_insert(request):
     eis.authors = request.POST.get('authors3')
     eis.co_authors = request.POST.get('co_author3')
     eis.title_paper = request.POST.get('title3')
-    myfile = request.FILES['journal3']
-    fs = FileSystemStorage()
-    filename = fs.save(myfile.name, myfile)
-    uploaded_file_url = fs.url(filename)
-    eis.paper=uploaded_file_url
+    try:
+        myfile = request.FILES['journal3']
+        fs = FileSystemStorage()
+        filename = fs.save(myfile.name, myfile)
+        uploaded_file_url = fs.url(filename)
+        eis.paper=uploaded_file_url
+    except:
+        print("nothing")
     eis.name = request.POST.get('name3')
     eis.venue = request.POST.get('venue3')
     if request.POST.get('page_no3') != '':
