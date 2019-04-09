@@ -28,7 +28,7 @@
         {% for i in out %}
         <tr>
 
-            <td>{{i.receive_design}}</td>
+            <td>{{i.receive_design}} - {{i.receiver_id.username}}</td>
             <td>{{i.current_design}}</td>
             <td>{{i.file_id.uploader.department.name}}/{{i.file_id.upload_date.year}}/{{i.file_id.upload_date.month}}/#{{i.file_id.id}}</td>
             <td>{{i.file_id.subject}}</td>

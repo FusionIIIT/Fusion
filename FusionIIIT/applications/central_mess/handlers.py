@@ -18,6 +18,7 @@ from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
                      Mess_minutes, Mess_reg, Messinfo, Monthly_bill,
                      Nonveg_data, Nonveg_menu, Payments, Rebate,
                      Special_request, Vacation_food, MessBillBase)
+from notification.views import central_mess_notif
 
 
 today_g = datetime.today()
@@ -72,9 +73,11 @@ def add_mess_feedback(request, student):
         data: to record success or any errors
     """
     date_today = datetime.now().date()
+    mess_optn = Messinfo.objects.get(student_id=student)
     description = request.POST.get('description')
     feedback_type = request.POST.get('feedback_type')
     feedback_object = Feedback(student_id=student, fdate=date_today,
+                               mess=mess_optn.mess_option,
                                description=description,
                                feedback_type=feedback_type)
 
@@ -138,7 +141,7 @@ def add_vacation_food_request(request, student):
     return data
 
 
-def add_menu_change_request(request):
+def add_menu_change_request(request, student):
     # TODO logic here is flawed if the same dish is use more than once then it will give an error !!!
     #  or if there are two requests on the same dish
     """
@@ -155,7 +158,8 @@ def add_menu_change_request(request):
         new_dish = request.POST.get("newdish")
         print("newdish")
         reason = request.POST.get("reason")
-        menu_object = Menu_change_request(dish=dish, request=new_dish, reason=reason)
+        # menu_object = Menu_change_request(dish=dish, request=new_dish, reason=reason)
+        menu_object = Menu_change_request(dish=dish, student_id=student, request=new_dish, reason=reason)
         menu_object.save()
         data = {
             'status': 1
@@ -182,9 +186,11 @@ def handle_menu_change_response(request):
             5 for error
     """
     ap_id = request.POST.get('idm')
+    user = request.user
     stat = request.POST['status']
     application = Menu_change_request.objects.get(pk=ap_id)
-    print(stat)
+    # student = application.student_id
+    # receiver = User.objects.get(username=student)
     if stat == '2':
         application.status = 2
         meal = application.dish
@@ -194,6 +200,7 @@ def handle_menu_change_response(request):
         data = {
             'status': '2',
         }
+        # central_mess_notif(user, receiver, 'menu_change_accepted')
 
     elif stat == '0':
         application.status = 0
@@ -339,7 +346,7 @@ def add_leave_request(request, student):
                            end_date=end_date, purpose=purpose)
     rebate_object.save()
     data = {
-        'status': 1
+        'status': 1,
     }
     return data
 
@@ -389,12 +396,14 @@ def handle_rebate_response(request):
     """
     id = request.POST.get('id_rebate')
     leaves = Rebate.objects.get(pk=id)
+    # receiver = ExtraInfo.
     date_format = "%Y-%m-%d"
     b = datetime.strptime(str(leaves.start_date), date_format)
     d = datetime.strptime(str(leaves.end_date), date_format)
     rebate_count = (d - b).days
     leaves.status = request.POST["status"]
     leaves.save()
+    # central_mess_notif(request.user, receiver, 'menu_change_accepted')
     data = {
         'message': 'You responded to request !'
     }

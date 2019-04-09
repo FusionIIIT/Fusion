@@ -14,10 +14,10 @@
   <!-- <div class="scrolling content"> -->
 
     <div class="ui pointing secondary menu">
-        <a class="item active" data-tab="view-visitors-detail">
+        <a class="item active" data-tab="view-visitors-detail" id="visitor-detail-view-data-tab">
             Visitor's Details
         </a> 
-        <a class="item" data-tab="view-request-booking">
+        <a class="item" data-tab="view-request-booking" id="booking-detail-view-data-tab">
             Booking Details
         </a> 
     </div>
@@ -26,7 +26,7 @@
     <!-- request booking datatab starts here! -->
 
 
-    <div class="ui tab" data-tab="view-request-booking">
+    <div class="ui tab" data-tab="view-request-booking" id="booking-detail-view-action-tab">
         <div class="ui vertical stripe team segment"
              style="padding-left: 3.5%;
                 padding-right: 3.5%;">
@@ -205,7 +205,7 @@
             </div>
         </div> -->
 
-        <input type="hidden" name="booking-id-{{ booking.id }}" value="{{ booking.id }}"">
+        <input type="hidden" name="booking-id-{{ booking.id }}" value="{{ booking.id }}">
         <input type="hidden" name="csrf" value="{{ csrf_token }}">
 
         <!-- {% if user_designation == 'VhIncharge'  %}
@@ -253,7 +253,7 @@
 
 
 
-    <div class="ui active tab" data-tab="view-visitors-detail">
+    <div class="ui active tab" data-tab="view-visitors-detail" id="visitor-detail-view-action-tab">
         <div class="ui vertical stripe team segment"
              style="padding-left: 3.5%;
                 padding-right: 3.5%;">
@@ -297,6 +297,15 @@
                         </div>
                     </div>
                 </div>
+
+<!--         <div class="field">
+            <label></label>
+            <div class="ui large primary button right floated" id="next-button" onclick="next_action_view(event)">
+                Next
+            </div>
+
+        </div> -->
+
             </form>
 
             <br>

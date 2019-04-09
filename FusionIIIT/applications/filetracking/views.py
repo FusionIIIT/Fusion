@@ -36,6 +36,9 @@ def filetracking(request):
     if request.method =="POST":
         try:
             if 'save' in request.POST:
+
+
+
                 print("********************")
                 uploader = request.user.extrainfo
                 print(uploader)
@@ -43,8 +46,22 @@ def filetracking(request):
                 subject = request.POST.get('title')
                 description = request.POST.get('desc')
                 design = request.POST.get('design')
-                designation = Designation.objects.get(id=design)
+                print(design)
+                print('----------------')
+                designation = HoldsDesignation.objects.get(id=design)
+                print(designation)
                 upload_file = request.FILES.get('myfile')
+
+                # return HttpResponse ("sucess")
+                # tag = 'global'
+                # form_id = 1
+                # if  request.POST.get('form_id') is not None:
+                #     form_id = form_id
+
+
+                # if request.POST.get('tag') is not None:
+                #     tag = tag
+
 
                 File.objects.create(
                     uploader=uploader,
@@ -52,7 +69,9 @@ def filetracking(request):
                     description=description,
                     subject=subject,
                     designation=designation,
-                    upload_file=upload_file
+                    upload_file=upload_file,
+                    # tag = tag,
+                    # form_id = form_id
                 )
 
                 messages.success(request,'File created successfully')
@@ -66,7 +85,7 @@ def filetracking(request):
                 subject = request.POST.get('title')
                 description = request.POST.get('desc')
                 design = request.POST.get('design')
-                designation = Designation.objects.get(id=design)
+                designation = HoldsDesignation.objects.get(id=design)
                 upload_file = request.FILES.get('myfile')
 
                 file = File.objects.create(

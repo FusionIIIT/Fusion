@@ -6,13 +6,14 @@ from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 class File(models.Model):
     #ref_id = models.IntegerField(unique=True, null=True, blank=True)
     uploader = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE, related_name='uploaded_files')
-    designation = models.ForeignKey(Designation, on_delete=models.CASCADE, null=True, related_name='upload_designation')
+    designation = models.ForeignKey(HoldsDesignation, on_delete=models.CASCADE, null=True, related_name='upload_designation')
     subject = models.CharField(max_length=100, null=True, blank=True)
     description = models.CharField(max_length=400, null=True, blank=True)
     upload_date = models.DateTimeField(auto_now_add=True)
     upload_file = models.FileField(blank=True)
     is_read = models.BooleanField(default = False)
-
+    tag = models.CharField(default = 'global',max_length=100)
+    # form_id = models.IntegerField(default = 1, null = False)
 
     class Meta:
         db_table = 'File'
