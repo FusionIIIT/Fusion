@@ -62,12 +62,25 @@ def central_mess_notif(sender, recipient, type):
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
+
 def visitors_hostel_notif(sender, recipient, type):
-    url=''
+    url='visitorhostel:visitorhostel'
     module="Visitor's Hostel"
     sender = sender
     recipient = recipient
     verb = ''
+    if type =='booking_confirmation':
+        verb='Your booking has been confirmed '
+    elif type =='booking_cancellation_request_accepted':
+        verb='Your Booking Cancellation Request has been accepted '
+    elif type =='booking_request':
+        verb='New Booking Request '
+    elif type =='cancellation_request_placed':
+        verb='New Booking Cancellation Request '
+    elif type =='booking_forwarded':
+        verb='New Forwarded Booking Request '     
+    elif type =='booking_rejected':
+        verb='Your Booking Request has been rejected '
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
@@ -90,12 +103,31 @@ def file_tracking_notif(sender, recipient, type):
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
 def scholarship_portal_notif(sender, recipient, type):
-    url=''
+    url='spacs:convener_view'
     module='Scholarship Portal'
     sender = sender
     recipient = recipient
     verb = ''
 
+    if type.startswith('award'):
+        s = type.split('-')
+        verb = "Invitation to apply for " + s[1]
+    elif type == 'Accept_mcm':
+        verb = "Your Mcm form has been accepted "
+    elif type == 'Reject_mcm':
+        verb = "Your Mcm form has been rejected as you have not fulfiled the required criteria "
+    elif type == 'Accept_gold':
+        verb = "Your Covocation form for Director Gold Medal has been accepted "
+    elif type == 'Reject_gold':
+        verb = "Your Covocation form for Director Gold Medal has been rejected "
+    elif type == 'Accept_silver':
+        verb = "Your Covocation form for Director Silver Medal has been accepted "
+    elif type == 'Reject_silver':
+        verb = "Your Covocation form for Director Silver Medal has been rejected "
+    elif type == 'Accept_dm':
+        verb = "Your Covocation form for D&M Proficiency Gold Medal has been accepted "
+    elif type == 'Reject_silver':
+        verb = "Your Covocation form for D&M Proficiency Gold Medal has been rejected "
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
 def complaint_system_notif(sender, recipient, type):

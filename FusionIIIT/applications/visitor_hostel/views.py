@@ -14,7 +14,7 @@ from applications.visitor_hostel.models import *
 import numpy as np
 
 from .forms import InventoryForm
-
+from notification.views import visitors_hostel_notif
 
 @login_required(login_url='/accounts/login/')
 def visitorhostel(request):
@@ -401,6 +401,8 @@ def request_booking(request):
         print("exception occured")
             # return HttpResponse('/visitorhostel/')
 
+        caretaker_name = HoldsDesignation.objects.get(designation__name = "VhCaretaker")
+        visitors_hostel_notif(request.user, caretaker_name.user, 'booking_request')
 
         return HttpResponseRedirect('/visitorhostel/')
     else:
@@ -485,6 +487,9 @@ def confirm_booking(request):
             room_object = RoomDetail.objects.get(room_number=room)
             bd.rooms.add(room_object)
         bd.save()
+        print("zxcc")
+        print(bd.intender)
+        visitors_hostel_notif(request.user, bd.intender, 'booking_confirmation')
         return HttpResponseRedirect('/visitorhostel/')
     else:
         return HttpResponseRedirect('/visitorhostel/')
@@ -508,17 +513,23 @@ def cancel_booking(request):
             Bill.objects.create(booking=booking, meal_bill=x, room_bill=x, caretaker=user, payment_status=True)
 
         complete_bookings = BookingDetail.objects.filter(Q(status="Canceled") | Q(status="Complete"), booking_to__lt=datetime.datetime.today()).select_related().order_by('booking_from')
+        
+        visitors_hostel_notif(request.user, booking.intender, 'booking_cancellation_request_accepted')
         return HttpResponseRedirect('/visitorhostel/')
     else:
         return HttpResponseRedirect('/visitorhostel/')
 
-
+# cancel confirmed booing by intender
 @login_required(login_url='/accounts/login/')
 def cancel_booking_request(request):
     if request.method == 'POST':
+        intender = request.user.holds_designations.filter(designation__name = 'VhIncharge')
         booking_id = request.POST.get('booking-id')
         remark = request.POST.get('remark')
         BookingDetail.objects.filter(id=booking_id).update(status='CancelRequested', remark=remark)
+
+        incharge_name = HoldsDesignation.objects.get(designation__name = "VhIncharge")
+        visitors_hostel_notif(request.user, incharge_name.user, 'cancellation_request_placed')
         return HttpResponseRedirect('/visitorhostel/')
     else:
         return HttpResponseRedirect('/visitorhostel/')
@@ -531,6 +542,7 @@ def reject_booking(request):
         remark = request.POST.get('remark')
         BookingDetail.objects.filter(id=booking_id).update(
             status="Rejected", remark=remark)
+        visitors_hostel_notif(request.user, booking.intender, 'booking_rejected')
         return HttpResponseRedirect('/visitorhostel/')
     else:
         return HttpResponseRedirect('/visitorhostel/')
@@ -916,6 +928,8 @@ def forward_booking(request):
 
         # return render(request, "vhModule/visitorhostel.html",
         #           {'dashboard_bookings' : dashboard_bookings})
+        incharge_name = HoldsDesignation.objects.get(designation__name = "VhIncharge")
+        visitors_hostel_notif(request.user, incharge_name.user, 'booking_forwarded')
         return HttpResponseRedirect('/visitorhostel/')
     else:
         return HttpResponseRedirect('/visitorhostel/')

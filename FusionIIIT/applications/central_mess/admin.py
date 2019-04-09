@@ -147,11 +147,11 @@ class Menu_change_requestAdmin(admin.ModelAdmin):
     model = Menu_change_request
     fieldsets = [
         ('dish', {'fields': ['dish']}),
-        ('student_id', {'fields': ['student_id']}),
+        # ('student_id', {'fields': ['student_id']}),
         ('request', {'fields': ['request']}),
         ('status', {'fields': ['status']}),
         ]
-    list_display = ('dish','student_id', 'request', 'status')
+    list_display = ('dish', 'request', 'status')
 
 
 class Mess_meetingAdmin(admin.ModelAdmin):
