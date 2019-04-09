@@ -179,12 +179,12 @@
                     {% if req.leave.applicant.extrainfo.user_type == 'student' %}
                     <td><button type="button" data="{{ req.id }}" class="medium green ui button stud-request-accept"> Accept </button></td>
                     <td><button type="button" data="{{ req.id }}" class="medium red ui button stud-request-reject"> Reject </button></td>
-                    {% elif req.permission == 'sanc_auth' and req.leave.to_forward and not req.leave.applicant.leave_admins.is_one_level %}
-                        <td></td>
+                    
+                    {% elif req.permission == 'sanc_auth' %}
+                        <td><button type="button" data="{{ req.id }}" class="medium green ui button request-accept"> Accept </button></td>
                         <td> <button type="button" data="{{ req.id }}" class="medium ui button request-forward"> Forward </button> </td>
-                    {% elif req.permission == 'intermediary' %}
-                        <td> <button type="button" data="{{ req.id }}" class="medium ui button request-forward"> Forward </button> </td>
-                        <td> <button type="button" data="{{ req.id }}" class="medium red ui button request-reject"> Reject </button> </td>
+                        <td><button type="button" data="{{ req.id }}" class="medium red ui button request-reject"> Reject </button></td>
+                    
                     {% else %}
                         <td><button type="button" data="{{ req.id }}" class="medium green ui button request-accept"> Accept </button></td>
                         <td><button type="button" data="{{ req.id }}" class="medium red ui button request-reject"> Reject </button></td>

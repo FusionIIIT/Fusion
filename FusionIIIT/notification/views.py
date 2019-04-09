@@ -25,6 +25,10 @@ def leave_module_notif(sender, recipient, type, date=None):
         verb = "Your offline leave has been updated "
     elif type=='replacement_request':
         verb = "You have a replacement request "
+    elif type=='leave_request':
+        verb = "You have a leave request from "
+    elif type=='leave_withdrawn':
+        verb = "The leave has been withdrawn for " + date
     elif type=='replacement_cancel':
         verb = "Your replacement has been cancelled for "+date
 

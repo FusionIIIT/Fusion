@@ -111,12 +111,12 @@ class LeaveSegmentForm(forms.Form):
             if leave_type.name.lower() in ['restricted']:
                 count = get_special_leave_count(start_date, end_date, leave_type.name.lower())
                 if count < 0:
-                    return 'The period for this leave doesn\'t match with holiday calendar' \
+                    return 'The period for this leave doesn\'t match with restricted holiday calendar' \
                            '. Check Academic Calendar.'
             elif leave_type.name.lower() in ['vacation']:
                 count = get_vacation_leave_count(start_date,end_date,leave_type.name.lower())
                 if count < 0:
-                    return 'The period for this leave doesn\'t match with holiday calendar' \
+                    return 'The period for this leave doesn\'t match with vacation holidays' \
                            '. Check Academic Calendar.'
 
             return ''
@@ -177,9 +177,9 @@ class LeaveSegmentForm(forms.Form):
         if leave_type and leave_type.requires_proof and not data.get('document'):
             errors['document'] = [f'{leave_type.name} requires a document for proof.']
 
-        leave_type = LeaveType.objects.filter(id=data['leave_type']).first()
+        #leave_type = LeaveType.objects.filter(id=data['leave_type']).first()
         if leave_type and leave_type.requires_address and not data.get('address'):
-            errors['document'] = [f'{leave_type.name} requires Out of Station address.']
+            errors['address'] = [f'{leave_type.name} requires Out of Station address.']
 
         
         if errors.keys():
@@ -214,7 +214,7 @@ class AdminReplacementForm(forms.Form):
         if start_date > end_date:
             errors['admin_start_date'] = ['Start Date must not be more than End Date']
 
-        now = timezone.now().date()
+        """now = timezone.now().date()
         if data['admin_start_date'] < now:
             error = 'You have inserted past date.'
             if 'admin_start_date' in errors:
@@ -227,7 +227,7 @@ class AdminReplacementForm(forms.Form):
             if 'admin_end_date' in errors:
                 errors['admin_end_date'].append(error)
             else:
-                errors['admin_end_date'] = error
+                errors['admin_end_date'] = error"""
 
         rep_user = User.objects.get(username=data['admin_rep'])
 
@@ -268,7 +268,7 @@ class AcademicReplacementForm(forms.Form):
         if start_date > end_date:
             errors['acad_start_date'] = ['Start Date must not be more than End Date']
 
-        now = timezone.now().date()
+        """now = timezone.now().date()
         if data['acad_start_date'] < now:
             error = 'You have inserted past date.'
             if 'acad_start_date' in errors:
@@ -281,7 +281,7 @@ class AcademicReplacementForm(forms.Form):
             if 'acad_end_date' in errors:
                 errors['acad_end_date'].append(error)
             else:
-                errors['acad_end_date'] = error
+                errors['acad_end_date'] = error"""
 
         rep_user = User.objects.get(username=data['acad_rep'])
 
