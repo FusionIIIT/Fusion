@@ -26,17 +26,21 @@ from .handlers import (add_nonveg_order, add_mess_feedback, add_vacation_food_re
                        handle_special_request, add_bill_base_amount, add_mess_committee, generate_bill)
 from notification.views import central_mess_notif
 
+
 today_g = datetime.today()
 month_g = today_g.month
 month_g_l = today_g.strftime('%B')
 year_g = today_g.year
 tomorrow_g = today_g + timedelta(days=1)
 first_day_of_this_month = date.today().replace(day=1)
+first_day_of_next_month = (date.today().replace(day=28) + timedelta(days=4)).replace(day=1)
+last_day_of_this_month = first_day_of_next_month - timedelta(days=1)
+next_month = first_day_of_next_month.month
 last_day_prev_month = first_day_of_this_month - timedelta(days=1)
 month_last_g = last_day_prev_month.month
 year_last_g = last_day_prev_month.year
 previous_month = last_day_prev_month.strftime('%B')
-previous_month_year = last_day_prev_month.year
+
 
 def mess(request):
     user = request.user
@@ -101,20 +105,18 @@ def mess(request):
 
         for r in rebates:
             if r.status == '2':
-                print(r.start_date.month == month_g)
                 if r.start_date.month == month_g:
-                    rebate_count = rebate_count + abs((r.end_date - r.start_date).days) + 1
-
+                    if r.end_date.month == next_month:
+                        rebate_count = rebate_count + abs((last_day_of_this_month - r.start_date).days) + 1
+                    else:
+                        rebate_count = rebate_count + abs((r.end_date - r.start_date).days) + 1
+                elif r.end_date.month == month_g:
+                    rebate_count = rebate_count + abs((r.end_date - first_day_of_this_month).days) + 1
                 else:
                     rebate_count = 0
         rebate_amount = rebate_count * amount_c.bill_amount / 30
         total_bill = amount_c.bill_amount - rebate_amount + nonveg_total_bill
         if bill:
-            # bill.nonveg_total_bill = nonveg_total_bill
-            # bill.amount = amount_c.bill_amount
-            # bill.rebate_count = rebate_count
-            # bill.rebate_amount = rebate_amount
-            # bill.total_bill = total_bill
             bill.update(student_id = student,
                         month = month_g_l,
                         year = year_g,
@@ -124,7 +126,6 @@ def mess(request):
                         nonveg_total_bill=nonveg_total_bill,
                         total_bill = total_bill)
 
-            # bill.save()
         else:
             bill_object = Monthly_bill(student_id=student,
                                        amount=amount_c.bill_amount,
@@ -892,3 +893,13 @@ def download_bill_mess(request):
         'bill': bill_object,
     }
     return render_to_pdf('messModule/billpdfexport.html', context)
+
+
+def get_nonveg_order(request):
+    date_o = request.POST['order_date']
+    nonveg_orders_tomorrow = Nonveg_data.objects.filter(order_date=date_o) \
+        .values('dish__dish', 'order_interval').annotate(total=Count('dish'))
+    data = {
+        'status': 1,
+    }
+    return JsonResponse(data)

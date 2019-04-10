@@ -1,7 +1,19 @@
 {% load static %}
 {% block nonvegorder %}
+    <div class="ui tabular menu">
+        <a class="ui active item" data-tab="nonvegorderstab">
+            Non-Veg Orders
+        </a>
+        <!--
+        <a class="ui item" data-tab="leavedatatab">
+            Leave Data
+        </a>
+        -->
+    </div>
+
+<div class="ui active item" data-tab="nonvegorderstab">
     <div class="ui vertical segment">
-        <header> Order statistics for {{ today }} </header>
+        <p style="text-align: center";><strong> Non-Veg orders for:</strong> {{ today }} </p>
     <br>
         <table class="ui very basic collapsing celled large table"
                                                           style="padding-left: 2.5%;
@@ -42,7 +54,7 @@
         </table>
     <br>
     <hr>
-    <header> Order statistics for {{ tomorrow }} </header>
+    <p style="text-align: center";><strong> Non-Veg orders for:</strong> {{ tomorrow }} </p>
     <br>
         <table class="ui very basic collapsing celled large table"
                                                           style="padding-left: 2.5%;
@@ -82,6 +94,36 @@
 
         </table>
     </div>
+</div>
+
+    <!--
+<div class="ui tab" data-tab="leavedatatab">
+    <div class="ui form">
+        <div class="two fields">
+            <div class="field">
+                <input type="date" id="leavestatdate">
+            </div>
+            <div class="field">
+                <button class="ui primary button right floated" onclick="getLeave()">
+                Get Leave Data
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+-->
+
+    <!--
+
+<div class="ui small modal" id="leavedata" style="padding: 2.5%;">
+    <div class="ui vertical segment">
+        <p id="leave_header" style="text-align: center";><strong></strong></p>
+        <br>
+    </div>
+</div>
+-->
+
+
 {% endblock %}
 {% block javascipt %}
     <script>

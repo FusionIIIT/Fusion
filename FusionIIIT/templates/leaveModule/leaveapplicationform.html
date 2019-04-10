@@ -208,13 +208,42 @@
                         
                     </script>
 
-                        {% if leave_form_set.non_form_errors %}
+                        <!--{% if leave_form_set.non_form_errors %}
                             {% for error in leave_form_set.non_form_errors %}
                                 <div class="ui red message">
                                     {{ error }}
                                 </div>
                             {% endfor %}
 
+                        {% endif %}-->
+                        {% if leave_form_set.total_error_count %}
+                            <ul class="ui red message" style="list-style-type: none;">
+                            {% for dict in leave_form_set.errors %}
+                                {% for error in dict.values %}
+                                <li>{{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                            </ul>
+                        {% endif %}
+
+                        {% if acad_form_set.total_error_count %}
+                            <ul class="ui red message" style="list-style-type: none;">
+                            {% for dict in acad_form_set.errors %}
+                                {% for error in dict.values %}
+                                <li>{{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                            </ul>
+                        {% endif %}
+
+                        {% if admin_form_set.total_error_count %}
+                            <ul class="ui red message" style="list-style-type: none;">
+                            {% for dict in admin_form_set.errors %}
+                                {% for error in dict.values %}
+                                <li>{{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                            </ul>
                         {% endif %}
 
                     <div class="ui ordered steps">
