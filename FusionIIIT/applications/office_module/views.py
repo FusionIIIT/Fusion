@@ -97,7 +97,7 @@ def officeOfDeanPnD(request):
                 upload_file=upload_file,
             )
 
-
+"""
     if 'asearch' in request.POST:
         check=request.POST.get('status')
         dept=request.POST.get('dept')
@@ -113,7 +113,8 @@ def officeOfDeanPnD(request):
             req=req.filter(tag=0)
         elif check=="3":
             req=req.filter(tag=1)
-    """
+        
+
         sentfiles=''
         for des in design:
             if str(des.designation) in deslist:
@@ -165,57 +166,94 @@ def submitRequest(request):
 
 @login_required
 def action(request):
-    deslist=['Civil_JE','Civil_AE','EE','DeanPnD','Electrical_JE','Electrical_AE']
+    # deslist=['Civil_JE','Civil_AE','EE','DeanPnD','Electrical_JE','Electrical_AE']
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
-    design=HoldsDesignation.objects.filter(working=user)
-    fdate = datetime.datetime.now().date()
-    id=request.POST.get('select')
-    fileobj=Filemovement.objects.get(pk=id)
-    remarks=request.POST.get('remarks')
-    sentby=''
-    for des in deslist:
-        try:
-            sentby=HoldsDesignation.objects.get(working=user,designation__name=des)
-        except :
-            sentby=None
+    req_id=request.POST.get('req_id')
+    requisition = Requisitions.objects.get(pk=req_id)
+    description=request.POST.get('description')
+    upload_file=None
 
-        if sentby :
-            print(sentby)
-            i=Designation.objects.get(name=des)
-            i=i.id
-            break
+    track = Tracking.objects.filter(file_id=requisition.assign_file).filter(receiver_id=user)
 
-    reqobj=fileobj.rid
+    # current, previous and next Designation and HoldsDesignation found out
+    current_design = track.receive_design
+    current_hold_design = HoldsDesignation.objects.filter(user=user).filter(designation=current_design)
+    prev_design = track.current_id
+    prev_hold_design = track.current_design
+
+    if current_design == "Civil_AE" || current_design == "Electrical_AE":
+            next_hold_design = HoldsDesignation.objects.get(designation__name="EE")
+    elif current_design == "EE":
+        if requisition.building == "hostel"
+            next_hold_design = HoldsDesignation.objects.get(designation__name="Dean_s")
+        else:
+            next_hold_design = HoldsDesignation.objects.get(designation__name="DeanPnD")
+    elif current_design == "Dean_s":
+        next_hold_design = HoldsDesignation.objects.get(designation__name="DeanPnD")
+    # elif "DeanPnD" in designation: # && if estimate greater than 10 lacs
+    #     next_hold_design = HoldsDesignation.objects.get(designation__name="Director")
 
     if 'forward' in request.POST:
-        fileobj.actionby_receiver="forward"
-        fileobj.save()
-        receive=HoldsDesignation.objects.get(designation__id=i+1)
-        moveobj=Filemovement(rid=reqobj,sentby=sentby,receivedby=receive,date=fdate,remarks=remarks)
-        moveobj.save()
-
-    elif 'reject' in request.POST:
-        fileobj.actionby_receiver="reject"
-        fileobj.save()
-        reqobj.tag=1
-        reqobj.save()
+        Tracking.objects.create(
+                file_id=requisition.assign_file,
+                current_id=extrainfo,
+                current_design=current_hold_design,
+                receive_design=next_hold_design.designation,
+                receiver_id=next_hold_design.working,
+                remarks=description,
+                upload_file=upload_file,
+            )
 
     elif 'revert' in request.POST:
-        fileobj.actionby_receiver="revert"
-        fileobj.save()
+        Tracking.objects.create(
+                file_id=requisition.assign_file,
+                current_id=extrainfo,
+                current_design=current_hold_design,
+                receive_design=prev_design,
+                receiver_id=prev_hold_desig.working,
+                remarks=description,
+                upload_file=upload_file,
+            )
 
-        #   file=Requisitions.objects.get(pk=id)
-        receive=HoldsDesignation.objects.get(designation__id=i-1)
-        moveobj=Filemovement(rid=reqobj,sentby=sentby,receivedby=receive,date=fdate,remarks=remarks)
-        moveobj.save()
+    elif 'reject' in request.POST:
+        # fileobj.actionby_receiver="reject"
+        # fileobj.save()
+        # reqobj.tag=1
+        # reqobj.save()
+
+        # #   file=Requisitions.objects.get(pk=id)
+        # receive=HoldsDesignation.objects.get(designation__id=i-1)
+        # moveobj=Filemovement(rid=reqobj,sentby=sentby,receivedby=receive,date=fdate,remarks=remarks)
+        # moveobj.save()
 
     elif 'approve' in request.POST:
-        fileobj.actionby_receiver="accept"
-        fileobj.save()
-        print(">>>>>>>>>>>>>")
-        reqobj.tag=1
-        reqobj.save()
+        # fileobj.actionby_receiver="accept"
+        # fileobj.save()
+        # print(">>>>>>>>>>>>>")
+        # reqobj.tag=1
+        # reqobj.save()
+
+    # fileobj=Filemovement.objects.get(pk=id)
+    # remarks=request.POST.get('remarks')
+    # sentby=''
+    # for des in deslist:
+    #     try:
+    #         sentby=HoldsDesignation.objects.get(working=user,designation__name=des)
+    #     except :
+    #         sentby=None
+
+    #     if sentby :
+    #         print(sentby)
+    #         i=Designation.objects.get(name=des)
+    #         i=i.id
+    #         break
+
+    # if 
+
+    # reqobj=fileobj.rid
+
+    
 
     return HttpResponseRedirect("/office/officeOfDeanPnD/")
 
