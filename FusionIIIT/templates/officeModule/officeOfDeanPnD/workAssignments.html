@@ -3,15 +3,15 @@
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="tab4content1">
-            Incoming Assignments
+            All Assignments
         </a>
 
        <a class="item" data-tab="tab4content2">
-        Outgoing Assignments
+           Incoming Assignments
          </a>
 
         <a class="item" data-tab="tab4content3">
-             All Assignments
+            Outgoing Assignments
          </a>
 
     </div>
@@ -26,14 +26,14 @@
      <div class="ui tab" data-tab="tab4content2">
         <div class="ui vertical segment" >
             {% block tab4content2 %}
-                {% include 'officeModule/officeOfDeanPnD/searchAssignments_content1.html' %}
+               {% include 'officeModule/officeOfDeanPnD/incomingAssignments_content1.html' %}
             {% endblock %}
         </div>
     </div>
     <div class="ui tab" data-tab="tab4content3">
        <div class="ui vertical segment" >
            {% block tab4content3 %}
-               {% include 'officeModule/officeOfDeanPnD/searchAssignments_content1.html' %}
+           {% include 'officeModule/officeOfDeanPnD/outgoingAssignments_content1.html' %}
            {% endblock %}
        </div>
     </div>
