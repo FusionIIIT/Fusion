@@ -47,7 +47,7 @@
                     Spacs Members Details
                     <i class="right floated chevron right icon"></i>
                 </a>-->
-                <a class="{% if last_clicked == '' %} active item {% else %} item {% endif %}" data-tab="first">
+                <a class="{% if last_clicked == '' or last_clicked == 'Submit_previous_winner' %} active item {% else %} item {% endif %}" data-tab="first">
                         Browse Award Catalogue
                     <i class="right floated chevron right icon"></i>
                 </a>
@@ -94,7 +94,7 @@
                     {% comment %}The Publications about spacs  ends here!{% endcomment %}
 
                     {% comment %}The Publications awards  starts here!{% endcomment %}
-                    <div class="{% if last_clicked == '' %}ui active tab segment {% else %} ui tab segment {% endif %}" data-tab="first">
+                    <div class="{% if last_clicked == '' or last_clicked == 'Submit_previous_winner' %}ui active tab segment {% else %} ui tab segment {% endif %}" data-tab="first">
                      {% block browsecatalogue %}
                                  {% include 'scholarshipsModule/browsecatalogue.html' with awards=awards %}
                     {% endblock %}

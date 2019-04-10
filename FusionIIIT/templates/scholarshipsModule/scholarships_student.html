@@ -35,7 +35,7 @@
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
 
-                 <a class="{% if last_clicked == ''%}active item {% else %}item {% endif %}" data-tab="one">
+                 <a class="{% if last_clicked == 'Submit_previous_winner' or last_clicked == ''%}active item {% else %}item {% endif %}" data-tab="one">
                      Browse Award Catalogue
                      <i class="right floated chevron right icon"></i>
                  </a>
@@ -106,14 +106,14 @@
                     {% comment %}The Publications about spacs  ends here!{% endcomment %}
 
                     {% comment %}The Publications awards  starts here!{% endcomment %}-->
-                    <div class="{% if last_clicked == ''%}ui active tab segment {% else %}ui tab segment {% endif %}" data-tab="one">
+                    <div class="{% if last_clicked == 'Submit_previous_winner' or last_clicked == ''%}ui active tab segment {% else %}ui tab segment {% endif %}" data-tab="one">
                        {% block browsecatalogue %}
-                                 {% include 'scholarshipsModule/browsecatalogue.html' with winners=winners mcm=mcm gold=gold silver=silver dandm=dandm awards=awards %}
+                                 {% include 'scholarshipsModule/browsecatalogue.html' with winners_list=winners_list mcm=mcm gold=gold silver=silver dandm=dandm awards=awards %}
                       {% endblock %}
                      </div>
                         <div class="{% if last_clicked == 'get_mcm_flag' or last_clicked == 'get_convocation_flag' or last_clicked == 'Submit_mcm' or last_clicked == 'Submit_silver' or last_clicked == 'Submit_gold' or last_clicked == 'Submit_dm' or last_clicked == 'studentapprovesubmit_mcm' or last_clicked == 'studentapprovesubmit_con' %}ui active tab segment {% else %}ui tab segment {% endif %}" data-tab="two">
                                 {% block awards %}
-                                    {% include 'scholarshipsModule/applyNew.html' with mcm=mcm gold=gold silver=silver dandm=dandm source=source mother_occ=mother_occ awards=awards last_clicked=last_clicked %}
+                                    {% include 'scholarshipsModule/applyNew.html' with mcm=mcm gold=gold silver=silver dandm=dandm source=source mother_occ=mother_occ awards=awards last_clicked=last_clicked x=x x_notif_con_flag=x_notif_con_flag x_notif_mcm_flag=x_notif_mcm_flag %}
                                 {% endblock %}
                         </div>
                             {% comment %}The Publications about awards ends here!{% endcomment %}
@@ -150,67 +150,73 @@
                 </div>
 
 
-                {% if release %}
+                {% if x %}
 
                     <div class="ui cards">
 
-                    {% for m in release %}
-                    {% if m.award == 'Mcm Scholarship' and notif_mcm_flag == True  %}
+                    {% for m in x %}
+                    {% if m.release_id.award == 'Mcm Scholarship' and m.notification_mcm_flag == True  %}
                     <div class="ui fluid card">
                         <div class="content">
                             <div class="header">
-                                {{ m.award }} Invitation
+                                {{ m.release_id.award }} Invitation
                             </div>
                             <div class="meta">
-                                 Last Date: {{ m.enddate }}
+                                 Last Date: {{ m.release_id.enddate }}
                             </div>
 
                             <div class="ui divider"></div>
 
                             <div class="description">
-                                <p>{{ m.remarks }} </p>
+                                <p>{{ m.release_id.remarks }} </p>
                                 <p>Do you want to accept the invitation?</p>
                             </div>
                         </div>
                         <div class="extra content">
-                            <div class="ui two buttons">
+                            <div class="ui buttons">
                               <form method="post" action="{% url 'spacs:spacs' %}" class="ui form" role="form">
                                 {% csrf_token %}
-                                <button name="studentapprovesubmit" value="{{ m.award }}" class="ui basic green button" type="submit">Apply</button>
+                                <input type="hidden" name="release_id" value="{{m.release_id.id}}">
+                                <button name="studentapprovesubmit" value="{{ m.release_id.award }}" class="ui positive button" type="submit">Apply<i class="arrow alternate circle right icon"></i></button>
                               </form>
+                              <div class="or"></div>
                               <form method="post" action="{% url 'spacs:spacs' %}" class="ui form" role="form">
                                 {% csrf_token %}
-                                <button name="studentdeclinesubmit" value="{{ m.award }}" class="ui basic red button" type="submit">Ignore</button>
+                                <input type="hidden" name="release_id" value="{{m.release_id.id}}">
+                                <button name="studentdeclinesubmit" value="{{ m.release_id.award }}" class="ui button" type="submit">Ignore <i class="close icon"></i></button>
                               </form>
                             </div>
                         </div>
                     </div>
-                    {% elif m.award == 'Convocation Medals' and notif_convocation_flag == True  %}
+                    {% elif m.release_id.award == 'Convocation Medals' and m.notification_convocation_flag == True  %}
                     <div class="ui fluid card">
                         <div class="content">
                             <div class="header">
-                                {{ m.award }} Invitation
+                                {{ m.release_id.award }} Invitation
                             </div>
                             <div class="meta">
-                                 Last Date: {{ m.enddate }}
+                                 Last Date: {{ m.release_id.enddate }}
                             </div>
 
                             <div class="ui divider"></div>
 
                             <div class="description">
-                                <p>{{ m.remarks }} </p>
+                                <p>{{ m.release_id.remarks }} </p>
                                 <p>Do you want to accept the invitation?</p>
                             </div>
                         </div>
                         <div class="extra content">
-                            <div class="ui two buttons">
+                            <div class="ui buttons">
                               <form method="post" action="{% url 'spacs:spacs' %}" class="ui form" role="form">
                                 {% csrf_token %}
-                                <button name="studentapprovesubmit" value="{{ m.award }}" class="ui basic green button" type="submit">Apply</button>
+                                <input type="hidden" name="release_id" value="{{m.release_id.id}}">
+                                <button name="studentapprovesubmit" value="{{ m.release_id.award }}"class="ui positive button" type="submit">Apply<i class="arrow alternate circle right icon"></i></button>
                               </form>
+                              <div class="or"></div>
                               <form method="post" action="{% url 'spacs:spacs' %}" class="ui form" role="form">
                                 {% csrf_token %}
-                                <button name="studentdeclinesubmit" value="{{ m.award }}" class="ui basic red button" type="submit">Ignore</button>
+                                <input type="hidden" name="release_id" value="{{m.release_id.id}}">
+                                <button name="studentdeclinesubmit" value="{{ m.release_id.award }}" class="ui button" type="submit">Ignore <i class="close icon"></i></button>
                               </form>
                             </div>
                         </div>

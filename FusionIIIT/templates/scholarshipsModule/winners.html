@@ -7,20 +7,20 @@
             Winners
         </a>
         <a class="item" data-tab="yearwinners">
-            Yearwise Winners
+            Award Winners
         </a>
     </div>
 
     <div class="ui active tab" data-tab="winners">
         <div class="ui vertical segment">
-        <form class="ui form" id="winners_form">
-
+        <form class="ui form" method = "POST" id="winners_form">
+          {% csrf_token %}
             <div class="ui grid row">
                 <div class="one wide column"></div>
 
                 <div class="four wide column">
                     <label>Programme</label>
-                    <select class="ui fluid search large dropdown" id="programme_name" required>
+                    <select class="ui fluid search large dropdown" id="programme_name"  name = "Previous_winner_programme" required>
                         <option value="">Select</option>
                         <option value="B.Tech"> B.Tech </option>
                         <option value="B.Des"> B.Des </option>
@@ -32,7 +32,7 @@
 
                 <div class="four wide column">
                     <label>Academic Year</label>
-                    <select class="ui fluid search large dropdown" id="batch_year" required>
+                    <select class="ui fluid search large dropdown" id="batch_year" name = "Previous_winner_acad_year" required>
                         <option value="">Select</option>
                         <option value="2013"> 2013-14 </option>
                         <option value="2014"> 2014-15 </option>
@@ -46,8 +46,8 @@
                 </div>
 
                 <div class="six wide column">
-                    <label> Awards </label>
-                    <select class="ui fluid search large dropdown" id="award_name1" required>
+                    <label> Scholarship/Awards </label>
+                    <select class="ui fluid search large dropdown"  name = "Previous_winner_award" id="award_name1" required>
                         <option value="">Select</option>
                         {% for i in awards %}
                         <option value="{{i.award_name}}">{{i.award_name}}</option>
@@ -59,7 +59,7 @@
             <div class="ui grid row">
                 <div class="twelve wide column"></div>
                 <div class="three wide column">
-                    <button name="Submit" type="submit" class="ui primary large right floated button">
+                    <button name="Submit_previous_winner" type="submit" class="ui primary large right floated button">
                         Submit
                     </button>
                 </div>
@@ -69,6 +69,7 @@
         </form>
         <div class="ui divider"></div>
         <div class="ui vertical segment">
+          {% if winners_list %}
             <table id="winners_table" class="ui very basic collapsing celled sortable table"
                    style="padding-left: 2.5%;
                                                           padding-right: 2.5%;
@@ -86,31 +87,69 @@
                     <th class="three wide">
                         Programme
                     </th>
+                    <th class="three wide">
+                        Scholarship/Award Name
+                    </th>
 
                 </tr>
                 </thead>
 
                 <tbody>
-                    <tr style="display: None">
-                        <td>
 
+                  {% for winners in winners_list %}
+                    <tr>
+                        <td>
+                          {{ winners.student_id }}
                         </td>
 
                         <td>
-
+                          {{ winners.student.id.user.first_name }} {{ winners.student.id.user.last_name }}
                         </td>
 
                         <td>
+                          {{ winners.programme}}
+                        </td>
 
+                        <td>
+                          {{ winners.award_id.award_name}}
                         </td>
 
                     </tr>
-
-
+                    {% endfor %}
                 </tbody>
             </table>
+            <div class="pagination">
+              <span class="step-links">
+                  {% if winners_list.has_previous %}
+                      <a href="?page={{ contacts.previous_page_number }}">previous</a>
+                  {% endif %}
 
+                  <span class="current">
+                      Page {{ winners_list.number }} of {{ winners_list.paginator.num_pages }}.
+                  </span>
 
+                  {% if winners_list.has_next %}
+                      <a href="?page={{ winners_list.next_page_number }}">next</a>
+                  {% endif %}
+              </span>
+          </div>
+          {% else %}
+          <div class="pagination">
+            <span class="step-links">
+                {% if winners_list.has_previous %}
+                    <a href="?page={{ contacts.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page 0 of 0.
+                </span>
+
+                {% if winners_list.has_next %}
+                    <a href="?page={{ winners_list.next_page_number }}">next</a>
+                {% endif %}
+            </span>
+        </div>
+          {% endif %}
 
             <br>
 
@@ -225,55 +264,7 @@
     <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
     <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
 
-    <script>
-      //Arihant:Showing Previous Winners
-        $(document).on('submit','#winners_form',function (event) {
-                event.preventDefault();
-                $('#winners_table tbody').find("tr:gt(0)").remove();
-                var element = $('#winners_table tbody tr').first();
-                console.log($('award_name').val());
-                $.ajax({
-                    url: '/spacs/get_winners/',
-                    type: 'GET',
-                    data: {
-                        programme: $('#programme_name').val(),
-                        batch: $('#batch_year').val(),
-                        award_name: $('#award_name1').val()
-                    },
-                    success: function (response) {
-                        if(response.result==='Success'){
 
-                            for(var i=0;i<response.student_name.length;i++){
-                                var student_name=response.student_name[i];
-                                var roll=response.roll[i];
-                                var student_program=response.student_program[i];
-                                txt="<tr>";
-                                txt += '<td>' + roll + '</td>' +
-                                '<td>' + student_name + '</td>' +
-                                '<td>' + student_program + '</td>';
-                                txt +='</tr>';
-                                element.after(txt);
-                            }
-
-                            console.log(response.result)
-                        }
-                        else{
-                                txt="<tr>";
-                                txt += '<td>' + "" + '</td>' +
-                                '<td>' + "No Data Found!!"  + '</td>' +
-                                '<td>' + "" + '</td>';
-                                txt +='</tr>';
-                                element.after(txt);
-                            console.log(response.result);
-                        }
-
-                    }
-                });
-            });
-
-
-
-    </script>
     <script>
       //Arihant:Showing Previous Winners
         $(document).on('submit','#win_form',function (event) {
