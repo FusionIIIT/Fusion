@@ -44,7 +44,7 @@ def officeOfDeanPnD(request):
     extrainfo = ExtraInfo.objects.get(user=user)
     requisitions=Requisitions.objects.filter(userid=extrainfo)
     holds=HoldsDesignation.objects.filter(user=user)
-    civilreq=Requisitions.objects.filter(department='civil',assign_title=None)
+    civilreq=Requisitions.objects.filter(department='civil')
     electricalreq = Requisitions.objects.filter(department='electrical')
     req=Requisitions.objects.filter(assign_title__isnull=True)
     deslist=['Civil_JE','Civil_AE','EE','DeanPnD','Electrical_JE','Electrical_AE']
