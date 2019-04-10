@@ -42,42 +42,60 @@ def officeOfDeanRSPC(request):
 def officeOfDeanPnD(request):
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
+
     requisitions=Requisitions.objects.filter(userid=extrainfo)
-    holds=HoldsDesignation.objects.filter(user=user)
-    civilreq=Requisitions.objects.filter(department='civil',assign_title=None)
-    electricalreq = Requisitions.objects.filter(department='electrical')
-    req=Requisitions.objects.filter(assign_title__isnull=True)
+    civilreq=Requisitions.objects.filter(department='civil', assign_file=None)
+    electricalreq = Requisitions.objects.filter(department='electrical', assign_file=None)
+
+    req=Requisitions.objects.filter(assign_file__isnull=True)
+
     deslist=['Civil_JE','Civil_AE','EE','DeanPnD','Electrical_JE','Electrical_AE']
     deslist1=['Civil_JE','Civil_AE']
-    design=HoldsDesignation.objects.filter(working=user)
-    desig=[]
-    for i in design:
-        desig.append(str(i.designation))
-    print(desig)
+
+    holds=HoldsDesignation.objects.filter(working=user)
+    designations=[d.designation for d in HoldsDesignation.objects.filter(working=user)]
+
+    print(designations)
 
     if 'createassign' in request.POST:
-        id=request.POST.get('req_id')
-        obj = Requisitions.objects.get(id=id)
-        obj.assign_title = request.POST.get('title')
-        obj.assign_description = request.POST.get('description')
-        obj.estimate=request.FILES['estimate']
-        print(obj.estimate)
-        obj.assign_date=timezone.now()
-        obj.save()
-
+        print("createassign", request)
+        req_id=request.POST.get('req_id')
+        requisition=Requisitions.objects.get(pk=req_id)
+        description=request.POST.get('description')
+        upload_file=request.FILES.get('estimate')
+        sender_design=None
         for hold in holds:
-            if str(hold.designation.name) in deslist1:
-                if str(hold.designation.name) == "Civil_JE":
-                    receive=HoldsDesignation.objects.get(designation__name="Civil_AE")
-                    sent=HoldsDesignation.objects.get(designation__name="Civil_JE")
-                    fdate = datetime.datetime.now().date()
+            if str(hold.designation.name) == "Civil_JE":
+                if requisition.department != "civil":
+                    return HttpResponse('Unauthorized', status=401)
+                sender_design=hold
+                receive=HoldsDesignation.objects.get(designation__name="Civil_AE")
+                #fdate = datetime.dat
+            elif str(hold.designation.name)=="Electrical_JE":
+                if requisition.department != "electrical":
+                    return HttpResponse('Unauthorized', status=401)
+                sender_design=hold
+                receive=HoldsDesignation.objects.get(designation__name="Electrical_AE")
+                #fdate = datetime.datetime.now().date()
+ 
+        requisition.assign_file = File.objects.create(
+                uploader=extrainfo,
+                #ref_id=ref_id,
+                description=requisition.description,
+                subject=requisition.title,
+                designation=sender_design.designation,
+            )
+        requisition.save()
 
-                elif str(hold.designation.name)=="Electrical_JE":
-                    receive=ExtraInfo.objects.get(designation__name="Electrical_AE")
-                    fdate = datetime.datetime.now().date()
-        moveobj=Filemovement(rid=obj,sentby=sent,receivedby=receive)
-        moveobj.save()
-
+        Tracking.objects.create(
+                file_id=requisition.assign_file,
+                current_id=extrainfo,
+                current_design=sender_design,
+                receive_design=receive.designation,
+                receiver_id=receive.working,
+                remarks=description,
+                upload_file=upload_file,
+            )
 
 
     if 'asearch' in request.POST:
@@ -95,20 +113,23 @@ def officeOfDeanPnD(request):
             req=req.filter(tag=0)
         elif check=="3":
             req=req.filter(tag=1)
+    """
+        sentfiles=''
+        for des in design:
+            if str(des.designation) in deslist:
+                sentfiles=Filemovement.objects.filter(Q(sentby=des)|Q(actionby_receiver='accept'))
 
-    sentfiles=''
-    for des in design:
-        if str(des.designation) in deslist:
-            sentfiles=Filemovement.objects.filter(Q(sentby=des)|Q(actionby_receiver='accept'))
+        print(sentfiles)
 
-    print(sentfiles)
-
+        files=''
+        for des in design:
+            if str(des.designation) in deslist:
+                files=Filemovement.objects.filter(receivedby=des,actionby_receiver='')
+        allfiles=Filemovement.objects.all()
+    """
+    allfiles=None
+    sentfiles=None
     files=''
-    for des in design:
-        if str(des.designation) in deslist:
-            files=Filemovement.objects.filter(receivedby=des,actionby_receiver='')
-    allfiles=Filemovement.objects.all()
-
     context = {
             'civilreq':civilreq,
             'electricalreq':electricalreq,
@@ -117,7 +138,7 @@ def officeOfDeanPnD(request):
             'sentfiles':sentfiles,
             'allfiles':allfiles,
             'requisitions':requisitions,
-            'desig':desig,
+            'desig':designations,
     }
     return render(request, "officeModule/officeOfDeanPnD/officeOfDeanPnD.html", context)
 
