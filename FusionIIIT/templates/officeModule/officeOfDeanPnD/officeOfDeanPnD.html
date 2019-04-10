@@ -60,7 +60,7 @@
 
             {% comment %} For later use
             {% if "Civil_JE" in desig or "Civil_AE" in desig or "EE" in desig or "DeanPnD" in desig or "Director" in desig or "Electrical_JE" in desig or "Electrical_AE" in desig %}
-                
+
             {% endif %}
             {% endcomment %}
                 <a class="active item" data-tab="first">
@@ -71,19 +71,12 @@
                     View Requisitions
                     <i class="right floated chevron right icon"></i>
                 </a>
-                <a class="item" data-tab="third">
-                    Incoming Files
-                    <i class="right floated chevron right icon"></i>
-                </a>
+
                 <a class="item" data-tab="fourth">
                     Work Assignments
                     <i class="right floated chevron right icon"></i>
                 </a>
         
-                <!-- <a class="item" data-tab="fifth">
-                    Search Assignments
-                    <i class="right floated chevron right icon"></i>
-                </a> -->
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
 
@@ -99,7 +92,7 @@
         <div class="eight wide column">
             {% comment %}The Details start here!{% endcomment %}
             <div class="ui active tab segment" data-tab="first">
-                
+
                 {% block form3 %}
                     {% include 'officeModule/officeOfDeanPnD/createRequisition.html' %}
                 {% endblock %}
@@ -113,11 +106,7 @@
                     {% include 'officeModule/officeOfDeanPnD/viewRequisitions.html' %}
                {% endblock %}
             </div>
-            <div class="ui tab segment" data-tab="third">
-                {% block form1 %}
-                    {% include 'officeModule/officeOfDeanPnD/incomingFiles.html' %}
-                {% endblock %}
-            </div>
+            {% comment %}  Deleted Incoming Files tab. form1 {% endcomment %}
             <div class="ui tab segment" data-tab="fourth">
               {% block form4 %}
                     {% include 'officeModule/officeOfDeanPnD/workAssignments.html' %}
