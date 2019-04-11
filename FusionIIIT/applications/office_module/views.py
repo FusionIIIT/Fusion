@@ -65,7 +65,37 @@ def officeOfDeanPnD(request):
     designations=[d.designation for d in HoldsDesignation.objects.filter(working=user)]
 
     print(designations)
+    """
+        if 'asearch' in request.POST:
+            check=request.POST.get('status')
+            dept=request.POST.get('dept')
+            if dept=="all":
+                req=Requisitions.objects.all()
+            elif dept=="civil":
+                req=Requisitions.objects.filter(department='civil')
+            elif dept=="electrical":
+                req=Requisitions.objects.filter(department='electrical')
+            if check=="1":
+                req=req
+            elif check=="2":
+                req=req.filter(tag=0)
+            elif check=="3":
+                req=req.filter(tag=1)
 
+
+            sentfiles=''
+            for des in design:
+                if str(des.designation) in deslist:
+                    sentfiles=Filemovement.objects.filter(Q(sentby=des)|Q(actionby_receiver='accept'))
+
+            print(sentfiles)
+
+            files=''
+            for des in design:
+                if str(des.designation) in deslist:
+                    files=Filemovement.objects.filter(receivedby=des,actionby_receiver='')
+            allfiles=Filemovement.objects.all()
+    """
     if 'createassign' in request.POST:
         print("createassign", request)
         req_id=request.POST.get('req_id')
@@ -107,38 +137,6 @@ def officeOfDeanPnD(request):
                 remarks=description,
                 upload_file=upload_file,
             )
-
-"""
-    if 'asearch' in request.POST:
-        check=request.POST.get('status')
-        dept=request.POST.get('dept')
-        if dept=="all":
-            req=Requisitions.objects.all()
-        elif dept=="civil":
-            req=Requisitions.objects.filter(department='civil')
-        elif dept=="electrical":
-            req=Requisitions.objects.filter(department='electrical')
-        if check=="1":
-            req=req
-        elif check=="2":
-            req=req.filter(tag=0)
-        elif check=="3":
-            req=req.filter(tag=1)
-
-
-        sentfiles=''
-        for des in design:
-            if str(des.designation) in deslist:
-                sentfiles=Filemovement.objects.filter(Q(sentby=des)|Q(actionby_receiver='accept'))
-
-        print(sentfiles)
-
-        files=''
-        for des in design:
-            if str(des.designation) in deslist:
-                files=Filemovement.objects.filter(receivedby=des,actionby_receiver='')
-        allfiles=Filemovement.objects.all()
-    """
     allfiles=None
     sentfiles=None
     files=''
@@ -191,10 +189,10 @@ def action(request):
     prev_design = track.current_id
     prev_hold_design = track.current_design
 
-    if current_design == "Civil_AE" || current_design == "Electrical_AE":
+    if current_design == "Civil_AE" or current_design == "Electrical_AE":
             next_hold_design = HoldsDesignation.objects.get(designation__name="EE")
     elif current_design == "EE":
-        if requisition.building == "hostel"
+        if requisition.building == "hostel":
             next_hold_design = HoldsDesignation.objects.get(designation__name="Dean_s")
         else:
             next_hold_design = HoldsDesignation.objects.get(designation__name="DeanPnD")
@@ -226,6 +224,7 @@ def action(request):
             )
 
     elif 'reject' in request.POST:
+        pass
         # fileobj.actionby_receiver="reject"
         # fileobj.save()
         # reqobj.tag=1
@@ -237,6 +236,7 @@ def action(request):
         # moveobj.save()
 
     elif 'approve' in request.POST:
+        pass
         # fileobj.actionby_receiver="accept"
         # fileobj.save()
         # print(">>>>>>>>>>>>>")
