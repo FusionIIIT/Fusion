@@ -36,7 +36,7 @@
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
                  <a class="active item" data-tab="first">
-                       Previous Award Winners
+                       Previous Winners
                      <i class="right floated chevron right icon"></i>
                  </a>
 
@@ -58,10 +58,10 @@
 
              <div class="ui active tab segment" data-tab="first">
                   {% block winners %}
-                      {% include 'scholarshipsModule/winners.html' with winners=winners %}
+                      {% include 'scholarshipsModule/winners.html' with winners_list=winners_list awards=awards %}
                   {% endblock %}
               </div>
-            
+
 
 
                 {% comment %}The Publications about view mcm details ends here!{% endcomment %}
