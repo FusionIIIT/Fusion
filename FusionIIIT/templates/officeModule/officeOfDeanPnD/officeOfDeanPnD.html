@@ -19,7 +19,7 @@
         window.addEventListener("DOMContentLoaded", hashCallback);
         window.addEventListener("load", () => {
             console.log("loaded");
-            $('.ui.menu .item').tab({
+            $('.ui.menu .item.link').tab({
                 onVisible: (tab) => location.hash = '#' + tab
             });
         });
@@ -63,20 +63,20 @@
 
             {% endif %}
             {% endcomment %}
-                <a class="active item" data-tab="dashboard">
+                <a class="active item link" data-tab="dashboard">
                     Dashboard
                     <i class="right floated chevron right icon"></i>
                 </a>
-                <a class="item" data-tab="create">
+                <a class="item link" data-tab="create">
                     Create Requisitions
                     <i class="right floated chevron right icon"></i>
                 </a>
-                <a class="item" data-tab="requisitions">
+                <a class="item link" data-tab="requisitions">
                     View Requisitions
                     <i class="right floated chevron right icon"></i>
                 </a>
 
-                <a class="item" data-tab="assignments">
+                <a class="item link" data-tab="assignments">
                     Work Assignments
                     <i class="right floated chevron right icon"></i>
                 </a>
