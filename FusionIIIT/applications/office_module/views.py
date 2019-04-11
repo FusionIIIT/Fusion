@@ -38,16 +38,25 @@ def officeOfDeanRSPC(request):
 
     return render(request, "officeModule/officeOfDeanRSPC/officeOfDeanRSPC.html", context)
 
+def _list_find(lst, predicate):
+    for v in lst:
+        if predicate(v):
+            return v
+    return None
+
 @login_required
 def officeOfDeanPnD(request):
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
 
-    requisitions=Requisitions.objects.filter(userid=extrainfo)
-    civilreq=Requisitions.objects.filter(department='civil', assign_file=None)
-    electricalreq = Requisitions.objects.filter(department='electrical', assign_file=None)
-
     req=Requisitions.objects.filter(assign_file__isnull=True)
+    assigned_req=list(Requisitions.objects.filter(assign_file__isnull=False).select_related())
+    incoming_files=[(f, _list_find(assigned_req, lambda r: r.assign_file==f.file_id))
+            for f in Tracking.objects.filter(receiver_id=user)]
+    outgoing_files=[(f, _list_find(assigned_req, lambda r: r.assign_file==f.file_id))
+            for f in Tracking.objects.filter(current_id__user=user)]
+    print(incoming_files)
+    print(outgoing_files)
 
     deslist=['Civil_JE','Civil_AE','EE','DeanPnD','Electrical_JE','Electrical_AE']
     deslist1=['Civil_JE','Civil_AE']
@@ -77,7 +86,9 @@ def officeOfDeanPnD(request):
                 sender_design=hold
                 receive=HoldsDesignation.objects.get(designation__name="Electrical_AE")
                 #fdate = datetime.datetime.now().date()
- 
+        if not sender_design:
+            return HttpResponse('Unauthorized', status=401)
+
         requisition.assign_file = File.objects.create(
                 uploader=extrainfo,
                 #ref_id=ref_id,
@@ -113,7 +124,7 @@ def officeOfDeanPnD(request):
             req=req.filter(tag=0)
         elif check=="3":
             req=req.filter(tag=1)
-        
+
 
         sentfiles=''
         for des in design:
@@ -132,13 +143,11 @@ def officeOfDeanPnD(request):
     sentfiles=None
     files=''
     context = {
-            'civilreq':civilreq,
-            'electricalreq':electricalreq,
             'files':files,
             'req':req,
-            'sentfiles':sentfiles,
-            'allfiles':allfiles,
-            'requisitions':requisitions,
+            'incoming_files': incoming_files,
+            'outgoing_files': outgoing_files,
+            'assigned_req':assigned_req,
             'desig':designations,
     }
     return render(request, "officeModule/officeOfDeanPnD/officeOfDeanPnD.html", context)
@@ -249,11 +258,11 @@ def action(request):
     #         i=i.id
     #         break
 
-    # if 
+    # if
 
     # reqobj=fileobj.rid
 
-    
+
 
     return HttpResponseRedirect("/office/officeOfDeanPnD/")
 
