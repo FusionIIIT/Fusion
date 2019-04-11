@@ -140,6 +140,12 @@ def officeOfDeanPnD(request):
     allfiles=None
     sentfiles=None
     files=''
+    req_history = []
+    for r in assigned_req:
+        passed = [r.assign_file.designation] + [t.receive_design for t in Tracking.objects.filter(file_id=r.assign_file)]
+        last_date = Tracking.objects.filter(file_id=r.assign_file).last().receive_date
+        req_history.append((r, passed, last_date))
+
     context = {
             'files':files,
             'req':req,
@@ -147,6 +153,7 @@ def officeOfDeanPnD(request):
             'outgoing_files': outgoing_files,
             'assigned_req':assigned_req,
             'desig':designations,
+            'req_history': req_history
     }
     return render(request, "officeModule/officeOfDeanPnD/officeOfDeanPnD.html", context)
 
