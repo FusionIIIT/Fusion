@@ -70,6 +70,10 @@ def mess(request):
         rebates = Rebate.objects.filter(student_id=student).order_by('-app_date')
         splrequest = Special_request.objects.filter(student_id=student).order_by('-app_date')
         mess_optn = Messinfo.objects.get(student_id=student)
+        if student.programme == 'B.Tech' or student.programme == 'B.Des':
+            programme = 1
+        else:
+            programme = 0
         # newmenu = Menu_change_request.objects.all()
         # meeting = Mess_meeting.objects.all()
         # minutes = Mess_minutes.objects.all()
@@ -195,6 +199,7 @@ def mess(request):
                     'sprequest': sprequest,
                     'splrequest': splrequest,
                     'sprequest_past': sprequest_past,
+                    'programme':programme,
                     'count1': count1,
                     'count2': count2,
                     'count3': count3,
@@ -260,6 +265,7 @@ def mess(request):
                     'current_date': current_date,
                     'count': count,
                     'rebates': rebates,
+                    'programme': programme,
                     'meeting': meeting,
                     'minutes': minutes,
                     'sprequest': sprequest,
@@ -295,6 +301,7 @@ def mess(request):
                    'rebates': rebates,
                    'splrequest': splrequest,
                    'form': form,
+                   'programme': programme,
                    'desig': desig
             }
 
