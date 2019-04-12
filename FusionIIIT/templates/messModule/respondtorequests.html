@@ -71,7 +71,7 @@
                     <h4 class="ui image header">
                         <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
                         <div class="content">
-                            {{item.student_id.id}}
+                            {{ item.student_id.id|truncatewords:1|slice:"-4" }}
                         </div>
                     </h4>
                 </td>
@@ -135,7 +135,7 @@
                 <div class="content">
                     <b>Application Date:</b> {{item.app_date}}
                     <br>
-                    <b>Student:</b> {{item.student_id.id}}
+                    <b>Student:</b> {{ item.student_id.id|truncatewords:1|slice:"-4" }}
                     <br>
                     <b>Reason:</b> {{item.purpose}}
                     <br>

@@ -29,7 +29,7 @@
                         {{var.app_date}}
                     </th>
                     <td class="two wide">
-                        {{var.student_id.id}}
+                        {{var.student_id.id|truncatewords:1|slice:"-4"}}
                     </td>
                     <td class="two wide">{{var.start_date}}-{{var.end_date}}</td>
 {#                    <td>{{var.end_date}}</td>#}
