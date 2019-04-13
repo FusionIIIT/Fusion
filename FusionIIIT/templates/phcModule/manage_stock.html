@@ -50,6 +50,7 @@
                         <label>Threshold</label>
                         <div class="ui fluid large input">
                             <input placeholder="Threshold" id="thresh_a" name="thresh_a" type="number">
+                            <p id="thr"></p>
                         </div>
                     </div>
                     <div class="field">
@@ -62,12 +63,31 @@
                     <label><br></label>
 
                     <div >
-                      <input type="button" id="add_stock" name="add_stock"  onclick="window.location.reload();" value="Submit"class="ui large right floated primary button" />
+                      <input type="button" id="add_stock" name="add_stock"  value="Submit"class="ui large right floated primary button" />
                     </div>
 
                    </div>
             </form>
             <script type="text/javascript">
+
+            $('#medicine_a').change(function()
+                  {
+                      document.getElementById("thr").innerHTML = "";
+                      $.ajax({
+                      type:'post',
+                      url:'/healthcenter/compounder/',
+                      data: {
+                      csrfmiddlewaretoken: '{{ csrf_token }}',
+                      medicine:$("#medicine_a").val(),
+                      },
+                      success: function(data){
+                        $('#thr').append("Current Threshold: "+data.thresh);
+
+                                              }
+                   });
+                 });
+
+
               $('#add_stock').click(function(e)
                                                   {
                                                     var medicine = document.getElementById('medicine_a').value;
@@ -112,6 +132,9 @@
                                                       document.getElementById("medicine_a").value="";
                                                       document.getElementById("quantity").value="";
                                                       $('#medicine_add').html('');
+                                                      document.getElementById("thr").innerHTML = "";
+                                                      window.location.reload();
+
                                                     }
                                                   });
                                                 });
@@ -361,7 +384,9 @@
                                                           returned:$("#returned").val()
                                                         },
                                                           success: function(data){
+                                                            $('#'+id).parent().parent().remove();
                                                             alert("returned medicine to supplier");
+
                                                           }
                                                       });
                                                     });

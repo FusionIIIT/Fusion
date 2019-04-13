@@ -3,7 +3,7 @@
 
 {% block profile %}
 
-    <div hidden id="editModal" class="ui modal" ">
+    <div hidden id="editModal" class="ui modal" >
         <div class="header">
             Edit Profile
         </div>
@@ -45,7 +45,9 @@
 
         <form method="POST" action="/profile/" class="ui form" role="form">
                     {% csrf_token %}
+                    {% if request.user == user %}
                   <input type="button" value="Edit" class="ui red mini button right floated" id="editButton" onclick='javascript:showModal()'>
+                    {% endif %}
                 <!--$('.ui.modal')
                   .modal() onclick='javascript:editStudent()
                 ; -->

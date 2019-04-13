@@ -51,7 +51,7 @@ class AddSkill(forms.Form):
     skill = forms.CharField(widget=forms.TextInput(attrs={'max_length': 30,
                                                           'class': 'field'}),
                             label="skill")
-    skill_rating = forms.IntegerField(label="skill_rating")
+    skill_rating = forms.IntegerField(widget=forms.NumberInput(attrs={'min':0, 'max':100}), label="skill_rating")
 
 
 class AddCourse(forms.Form):

@@ -226,9 +226,10 @@ def worker_id_know_more(request, work_id):
     for i in complaints_list:
         if i.status == 1:
             complaints_list_onhold.append(i)
+    numpend = len(complaints_list_onhold)
     work_under_caretaker1 = this_worker.caretaker_id.staff_id.user.first_name
     work_under_caretaker2 = this_worker.caretaker_id.staff_id.user.last_name
-    return render(request, "complaintModule/worker_id_know_more.html",{'this_worker':this_worker,'work_under_caretaker1':work_under_caretaker1,'work_under_caretaker2':work_under_caretaker2, 'num':num, 'complaints_list':complaints_list, 'complaints_list_onhold':complaints_list_onhold})
+    return render(request, "complaintModule/worker_id_know_more.html",{'this_worker':this_worker,'work_under_caretaker1':work_under_caretaker1,'work_under_caretaker2':work_under_caretaker2, 'num':num, 'complaints_list':complaints_list, 'complaints_list_onhold':complaints_list_onhold, 'numpend':numpend})
 
 
 
@@ -424,9 +425,7 @@ def caretaker(request):
     y = ExtraInfo.objects.all().filter(user=current_user).first()
 
     if request.method == 'POST':
-       
         type = request.POST.get('submit', '')
-        
         worker_type = request.POST.get('complaint_type', '')
         name = request.POST.get('name', '')
         phone = request.POST.get('phone_no', '')
@@ -599,7 +598,7 @@ def submitfeedback(request, complaint_id):
         feedback = request.POST.get('feedback', '')
         rating = request.POST.get('rating', '')
         StudentComplain.objects.filter(id=complaint_id).\
-            update(feedback=feedback, flag=rating)
+        update(feedback=feedback, flag=rating)
         a = StudentComplain.objects.filter(id=complaint_id).first()
         care = Caretaker.objects.filter(area=a.location).first()
         rate = care.rating
@@ -659,7 +658,7 @@ def supervisor(request):
         # ExtraInfo.objects.get(id=sup_id)
         all_complaint = []
         numtemp = StudentComplain.objects.filter(location =  area).filter(status = 0).count()
-        num = numtemp/2
+        num = int(numtemp/2+0.5)
         all_complainttemp = StudentComplain.objects.filter(location=a.area).order_by('-id')
         j = 1
         for i in all_complainttemp:
@@ -682,7 +681,7 @@ def supervisor(request):
         all_caretaker = Caretaker.objects.filter(area=a.area).order_by('-id')
         area = all_caretaker[0].area
         numtemp = StudentComplain.objects.filter(location =  area).filter(status = 0).count()
-        num = numtemp/2
+        num = int(numtemp/2+0.5)
         all_complaint = []
         all_complainttemp = StudentComplain.objects.filter(location=a.area).order_by('-id')
         j = 1
