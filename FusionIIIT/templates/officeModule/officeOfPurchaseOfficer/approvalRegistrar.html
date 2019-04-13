@@ -79,12 +79,8 @@
              </th>
 
              <th class="three wide column">
-                Expected date
-             </th>
-             <th class="three wide column">
                 Amount
              </th>
-
              <th class="three wide column">
                 Nature
              </th>
@@ -116,19 +112,30 @@
               {{data.purpose}}
           </td>
           <td>
-              {{data.purchase_date}}
+              {{data.expected_purchase_date}}
           </td>
           <td>
-              {{data.amount}}
+              {{data.expected_cost}}
           </td>
           <td>
-              {{data.nature_of_item1}}
+            {% if data.nature_of_item1 == 1 %}
+              consumable
+              {% endif %}
+            {% if data.nature_of_item2 == 0 %}
+              non consumable
+              {% endif %}
           </td>
+
           <td>
-              {{data.registrar_approve_tag}}
-          </td>
-          <td>
-             <button  class="approveme2" m_id="{{data.id}}" >approve</button>
+            {% if data.expected_cost >= 50001 %}
+             <button  class="approveme" m_id="{{data.id}}" >approve</button>
+             {% endif %}
+
+             {% if data.expected_cost <= 50000 %}
+              <button  class="approveme2" m_id="{{data.id}}" >Fwd to Director</button>
+              {% endif %}
+
+
           </td>
          </tr>
          {% endfor %}
@@ -142,94 +149,6 @@
 
 
 
-                    <div style="overflow-x:auto;">
-                    <table class="ui very basic collapsing celled sortable table "
-                      style="padding-left: 2.5%;overflow-x:scroll;
-                                                                         padding-right: 2.5%;
-                                                                         padding-top: 1%;
-                                                                         padding-bottom: 1.5%;
-                                                                         margin: auto;">
-                   <thead>
-                   <tr>
-                       <th>
-                        id
-                       </th>
-                       <th>
-                          Indentor name
-                       </th>
-                       <th>
-                          Item name
-                       </th>
-                       <th>
-                          Expected cost
-                       </th>
-                       <th>
-                           quantity
-                       </th>
-                       <th>
-                            Purpose
-                       </th>
-                       <th>
-                            Intended purchase date
-                       </th>
-
-                       <th class="three wide column">
-                          Expected date
-                       </th>
-                       <th class="three wide column">
-                          Amount
-                       </th>
-
-                       <th class="three wide column">
-                          Nature
-                       </th>
-                       <th class="four wide column">
-                          Approval
-                       </th>
-                   </tr>
-                   </thead>
-                   <tbody>
-                     {% csrf_token %}
-                 {% for data in alldata2  %}
-                 <tr>
-                   <td>
-                     {{ data.id}}
-                   </td>
-                   <td>
-                     {{data.indentor_name}}
-                   </td>
-                    <td>
-                       {{data.item_name}}
-                    </td>
-                    <td>
-                        {{data.expected_cost}}
-                    </td>
-                    <td>
-                        {{data.quantity}}
-                    </td>
-                    <td>
-                        {{data.purpose}}
-                    </td>
-                    <td>
-                        {{data.purchase_date}}
-                    </td>
-                    <td>
-                        {{data.amount}}
-                    </td>
-                    <td>
-                        {{data.nature_of_item1}}
-                    </td>
-                    <td>
-                        {{data.registrar_approve_tag}}
-                    </td>
-                    <td>
-                       <button  class="approveme" m_id="{{data.id}}" >Fwd to Director</button>
-                    </td>
-                   </tr>
-                   {% endfor %}
-                     </tbody>
-                   </table>
-                      </div>
 
 
 

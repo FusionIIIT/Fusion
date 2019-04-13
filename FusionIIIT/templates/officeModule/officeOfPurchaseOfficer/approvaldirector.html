@@ -78,9 +78,7 @@
                   Intended purchase date
              </th>
 
-             <th class="three wide column">
-                Expected date
-             </th>
+
              <th class="three wide column">
                 Amount
              </th>
@@ -91,9 +89,9 @@
              <th class="four wide column">
                 Approval
              </th>
-             <th class="four wide column">
+             <!-- <th class="four wide column">
                 View
-             </th>
+             </th> -->
          </tr>
          </thead>
          <tbody>
@@ -119,23 +117,26 @@
               {{data.purpose}}
           </td>
           <td>
-              {{data.purchase_date}}
+              {{data.expected_purchase_date}}
           </td>
           <td>
-              {{data.amount}}
+              {{data.expected_cost}}
           </td>
           <td>
-              {{data.nature_of_item1}}
+            {% if data.nature_of_item1 == 1 %}
+              consumable
+              {% endif %}
+            {% if data.nature_of_item2 == 0 %}
+              non consumable
+              {% endif %}
           </td>
-          <td>
-              {{data.HOD_approve_tag}}
-          </td>
+
           <td>
              <button  class="approveme" m_id="{{data.id}}" >approve</button>
           </td>
-          <td>
+          <!-- <td>
             <button  class="viewme" m_id="{{data.id}}" >view</button>
-            </td>
+            </td> -->
          </tr>
          {% endfor %}
            </tbody>

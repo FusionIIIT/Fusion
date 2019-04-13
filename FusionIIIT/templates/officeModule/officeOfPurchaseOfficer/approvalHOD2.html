@@ -48,7 +48,7 @@
        <div class="eight wide column">
 
           <div style="overflow-x:auto;">
-          <table class="ui very basic collapsing celled sortable table "
+          <table class="ui celled sortable table "
             style="padding-left: 2.5%;overflow-x:scroll;
                                                                padding-right: 2.5%;
                                                                padding-top: 1%;
@@ -78,9 +78,7 @@
                   Intended purchase date
              </th>
 
-             <th class="three wide column">
-                Expected date
-             </th>
+
              <th class="three wide column">
                 Amount
              </th>
@@ -116,16 +114,19 @@
               {{data.purpose}}
           </td>
           <td>
-              {{data.purchase_date}}
+              {{data.expected_purchase_date}}
+          </td>
+
+          <td>
+              {{data.expected_cost}}
           </td>
           <td>
-              {{data.amount}}
-          </td>
-          <td>
-              {{data.nature_of_item1}}
-          </td>
-          <td>
-              {{data.HOD_approve_tag}}
+            {% if data.nature_of_item1 == 1 %}
+              consumable
+              {% endif %}
+            {% if data.nature_of_item2 == 0 %}
+              non consumable
+              {% endif %}
           </td>
           <td>
              <button  class="approveme" m_id="{{data.id}}" >approve</button>

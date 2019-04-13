@@ -79,9 +79,6 @@
              </th>
 
              <th class="three wide column">
-                Expected date
-             </th>
-             <th class="three wide column">
                 Amount
              </th>
 
@@ -89,7 +86,10 @@
                 Nature
              </th>
              <th class="four wide column">
-                Approval
+                On gem
+             </th>
+             <th class="four wide column">
+
              </th>
          </tr>
          </thead>
@@ -119,16 +119,21 @@
               {{data.purchase_date}}
           </td>
           <td>
-              {{data.amount}}
+              {{data.expected_cost}}
           </td>
           <td>
-              {{data.nature_of_item1}}
+            {% if data.nature_of_item1 == 1 %}
+              consumable
+              {% endif %}
+            {% if data.nature_of_item2 == 0 %}
+              non consumable
+              {% endif %}
           </td>
           <td>
-              {{data.HOD_approve_tag}}
+             <button  class="ongem" m_id="{{data.id}}" >available on gem</button>
           </td>
           <td>
-             <button  class="approveme" m_id="{{data.id}}" >approve</button>
+             <button  class="notongem" m_id="{{data.id}}" >Not on gem</button>
           </td>
          </tr>
          {% endfor %}
@@ -152,17 +157,17 @@ console.log("hellow")
 $(document).ready(function(){
 var objid;
 console.log("entered the script")
-$(".approveme").click(function(event){
+$(".ongem").click(function(event){
  objid = $(this).attr("m_id");
 
  //console.log($('#approveme').val())
 //objid = $(this).val();
 //console.log(String(objid))
 console.log(objid)
-alert("File with id " + objid + " has been approved by you")
+alert("Item in File with id " + objid + "availabe on gem")
 $.ajax({
     type: 'post',
-    url: '/office/newordershod/',
+    url: '/office/newordersPOonGem/',
     data: {id: objid},
     success: function(data) {
          console.log("success")
@@ -173,6 +178,30 @@ $.ajax({
 });
   window.location.reload();
   });
+
+  $(".notongem").click(function(event){
+   objid = $(this).attr("m_id");
+
+   //console.log($('#approveme').val())
+  //objid = $(this).val();
+  //console.log(String(objid))
+  console.log(objid)
+  alert("Item in File with id " + objid + "not availabe on gem")
+  $.ajax({
+      type: 'post',
+      url: '/office/newordersPO/',
+      data: {id: objid},
+      success: function(data) {
+           console.log("success")
+      },
+      error: function(data, err) {
+          console.log("fail")
+      }
+  });
+    window.location.reload();
+    });
+
+
 });
 
   </script>

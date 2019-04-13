@@ -606,7 +606,7 @@ def newordersregistrar(request):
         try:
             obj = apply_for_purchase.objects.get(id = objid)
             obj.registrar_approve_tag = 1
-            obj.director_approve_tag = 0
+            obj.director_approve_tag = 1
             obj.save()
             print("work done")
             str = "order with id "+ objid +" has been approved by you"
@@ -657,6 +657,7 @@ def newordersdirector(request):
             print("model not exists")
     return HttpResponse("you are the best ")
 
+#on operation
 def newordersdirectorview(request):
     print("metoo")
     #return HttpResponse("pis of")
@@ -675,17 +676,28 @@ def newordersdirectorview(request):
 
 
 def newordersPO(request):
-    print("*")
-
-
-
-
+    if request.method=='POST':
+        objid = request.POST.get('id')
+        print(objid)
+        try:
+            obj = apply_for_purchase.objects.get(id = objid)
+            obj.gem_tag=-1
+            obj.save()
+        except apply_for_purchase.DoesNotExist:
+            print("model not exists")
+    return HttpResponse("you are the best ")
 
 def newordersPOonGem(request):
-    print("*")
-
-
-
+    if request.method=='POST':
+        objid = request.POST.get('id')
+        print(objid)
+        try:
+            obj = apply_for_purchase.objects.get(id = objid)
+            obj.gem_tag=1
+            obj.save()
+        except apply_for_purchase.DoesNotExist:
+            print("model not exists")
+    return HttpResponse("you are the best ")
 
 
 
@@ -877,9 +889,9 @@ def officeOfPurchaseOfficer(request):
                 return render(request, "officeModule/officeOfPurchaseOfficer/approvalHOD2.html",context=context)
 
             elif(user_type=="DeputyRegistrar" or user_type=="Registrar" or per_user=="swapnali"):
-                alldata = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=0,expected_cost__lte = 50000)
-                alldata2 = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=0,expected_cost__gte = 50001)
-                context = {'alldata':alldata,'alldata2':alldata2}
+                alldata = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=0)
+                #alldata2 = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=0,expected_cost__gte = 50001)
+                context = {'alldata':alldata}
                 return render(request, "officeModule/officeOfPurchaseOfficer/approvalRegistrar.html",context=context)
 
             elif(user_type=="director" or user_type=="Director"):
@@ -891,7 +903,7 @@ def officeOfPurchaseOfficer(request):
 
             elif(user_type=="purchaseofficer" or user_type=="PurchaseOfficer"):
                 print("entered purchase officer section")
-                alldata = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=1,expected_cost__gte = 50001,director_approve_tag=1)
+                alldata = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=1,expected_cost__gte = 50001,director_approve_tag=1,gem_tag=0)
                 #alldata2 = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=1,expected_cost__lte = 50000)
                 #context = {'alldata':alldata,'alldata2':alldata2}
 
@@ -966,6 +978,21 @@ def officeOfPurchaseOfficer(request):
             sr = request.POST['item']
             matchv = vendor.objects.filter(Q(vendor_item__icontains=sr))
             return render(request, "officeModule/officeOfPurchaseOfficer/officeOfPurchaseOfficer.html",{'matchv':matchv})
+
+        elif "viewhistory" in request.POST:
+            alldata = apply_for_purchase.objects.filter(indentor_name = user_details)
+            print(alldata)
+            return render(request, "officeModule/officeOfPurchaseOfficer/purchaseHistory_content1.html",{'alldata':alldata})
+
+        elif "viewstatus" in request.POST:
+            alldata = apply_for_purchase.objects.filter(indentor_name = user_details)
+            print(alldata)
+            return render(request, "officeModule/officeOfPurchaseOfficer/purchaseHistory_content2.html",{'alldata':alldata})
+
+
+
+
+
 
         elif "purchase_search" in request.POST:
             pr = request.POST['file']
