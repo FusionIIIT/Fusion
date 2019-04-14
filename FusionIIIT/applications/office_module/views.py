@@ -12,6 +12,8 @@ from applications.academic_procedures.models import Thesis
 from applications.globals.models import (Designation, ExtraInfo,
                                          HoldsDesignation, User)
 from applications.scholarships.models import Mcm
+from applications.filetracking.models import (File, Tracking)
+
 
 from .forms import *
 from .models import *
@@ -230,7 +232,21 @@ def admin_reject(request):
 
 def officeOfRegistrar(request):
     view = registrar_create_doc.objects.all()
-    view2 = registrar_director_section.objects.all()
+    #file_track = Tracking.objects.all()
+    view2 = []
+    #tmp = HoldsDesignation.objects.filter(designation__name = "Director")
+    file_track = Tracking.objects.all()#filter(current_design__designation__name = "Director")
+    #view2 = Tracking.objects.filter(current_design__designation__name = "Director")
+    print("director data ")
+    print(view2)
+    #print(type(tmp[0]))
+    #view2 = []
+    #direct_file = []
+    #for file in file_track:
+    #    file.current_design.id == tmp[0].id
+    #    #if file.current_design == "Director":
+    #    direct_file.append(file)
+    
     view3 = registrar_establishment_section.objects.all()
     view4 = apply_for_purchase.objects.all()
     view5 = quotations.objects.all()
