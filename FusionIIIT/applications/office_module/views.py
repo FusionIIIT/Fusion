@@ -896,18 +896,19 @@ def officeOfPurchaseOfficer(request):
 
             elif(user_type=="director" or user_type=="Director"):
                 #alldata = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=1,expected_cost__gte = 50001)
-                alldata = apply_for_purchase.objects.filter(expected_cost__gte = 50001)
+                alldata = apply_for_purchase.objects.filter(expected_cost__gte = 50001,director_approve_tag=0)
                 print(alldata)
                 context = {'alldata':alldata}
                 return render(request, "officeModule/officeOfPurchaseOfficer/approvaldirector.html",context=context)
 
             elif(user_type=="purchaseofficer" or user_type=="PurchaseOfficer"):
                 print("entered purchase officer section")
-                alldata = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=1,expected_cost__gte = 50001,director_approve_tag=1,gem_tag=0)
+                alldata = apply_for_purchase.objects.filter(director_approve_tag=1,gem_tag=0)
                 #alldata2 = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=1,expected_cost__lte = 50000)
                 #context = {'alldata':alldata,'alldata2':alldata2}
 
                 context = {'alldata':alldata}
+                print("data 0",context)
                 return render(request, "officeModule/officeOfPurchaseOfficer/approvalpurchaseofficer.html",context=context)
 
 
@@ -932,11 +933,11 @@ def officeOfPurchaseOfficer(request):
                 return render(request, "officeModule/officeOfPurchaseOfficer/approvedDirector.html",context=context)
 
             elif(user_type=="purchaseofficer" or user_type=="PurchaseOfficer"):
-                print("work in progress")
+                return HttpResponse("the user template is WUP")
             #make the templates as per the actors
 
         elif "rejected_orders" in request.POST:
-            return HttpResponse("abhi iska temp nahi hai")
+            return HttpResponse("t")
 
 
 
