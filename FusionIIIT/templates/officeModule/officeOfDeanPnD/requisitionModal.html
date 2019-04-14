@@ -33,7 +33,12 @@
                         &emsp;&emsp;&emsp;
                         <label>Requester</label><br>
                         &emsp;&emsp;&emsp;
-                        <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                        <img src="
+                        {% if object.userid.user.extrainfo.profile_picture %}
+                            {{ object.userid.user.extrainfo.profile_picture.url }}
+                        {% else %}
+                            {% static 'globals/img/zlatan.jpg' %}
+                        {% endif %}" class="ui mini circular image">
                         <div class="content">
                             {{object.userid.user.first_name}}{{object.userid.user.last_name}}
                             <div class="sub header">
