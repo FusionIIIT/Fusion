@@ -162,6 +162,7 @@ def officeOfDeanPnD(request):
             je = 'Civil_JE' if r.department == 'civil' else 'Electrical_JE'
             passed = [deslist[je]]
             req_history.append((r, passed, r.req_date))
+    req_history.sort(key=lambda t: t[2], reverse=True)
 
     context = {
             'files':files,
