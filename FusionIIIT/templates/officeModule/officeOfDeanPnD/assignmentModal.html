@@ -53,50 +53,56 @@
                 <textarea readonly rows="4">{{object.description}}</textarea>
             </div>
 
-            <h4> Work Assignment </h4>
-
-            <form method="POST" enctype="multipart/form-data" action="/office/officeOfDeanPnD/#assignments">
-            {% csrf_token %}
-
-            <div class="field">
-                <label>Description</label>
-                <textarea rows="2" name="description"></textarea>
-            </div>
-
+            <h4> Assignment history </h4>
             {% for t in track %}
             <div class="ui comments">
                 <div class="comment">
-                     <div class="content">
-                         <a class="author">{{t.current_id.user}}
-                             <a class="metadata">
-                                 <span class="date">{{t.forward_date}}</span>
-                             </a>
+                    <div class="content">
+                     <a class="author">{{t.current_id.user}}
+                         <a class="metadata">
+                             <span class="date">{{t.forward_date}}</span>
                          </a>
+                     </a>
 
-                         <div class="right floated" style="font-color: black;">
-                             <b>Received by:</b>&nbsp{{t.receive_design}}
-                         </div>
-
-                         <div class="text">
-                             <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';">
-                                {% if t.remarks %}
-                                    {{t.remarks}}
-                                {% else %}
-                                    <span class="meta">No Remarks</span>
-                                {% endif %}
-
-                             </pre>
-                         </div>
+                     <div class="right floated" style="font-color: black;">
+                         <b>Received by:</b>&nbsp{{t.receive_design}}
                      </div>
+                     <div class="right floated" style="font-color: black;">
+                        <b>File uploaded:</b>
+                        {% if t.upload_file %}
+                            <a href="{{t.upload_file.url}}">Click here to view attached file</a>
+                        {% else %}
+                            <span class="meta">No file uploaded</span>
+                        {% endif %}
+                     </div>
+                     <div class="text">
+                         <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';">
+                            {% if t.remarks %}
+                                {{t.remarks}}
+                            {% else %}
+                                <span class="meta">No Remarks</span>
+                            {% endif %}
+                         </pre>
+                     </div>
+                    </div>
                 </div>
             </div>
             {% endfor %}
+            <h4> Perform actions on the assignment </h4>
+            <form method="POST" enctype="multipart/form-data" action="/office/officeOfDeanPnD/action">
+            {% csrf_token %}
+
+
             <div class="field">
-                <input type="button" class="ui button" value="forward" action/>
+                <label>Remark</label>
+                <textarea rows="2" name="description"></textarea>
             </div>
-            <div class="field">
-                <input type="button" class="ui button" value="revert" action/>
-            </div>
+                <div class="field">
+                    <input type="button" class="ui button" value="forward" action/>
+                </div>
+                <div class="field">
+                    <input type="button" class="ui button" value="revert" action/>
+                </div>
             </form>
 
 
