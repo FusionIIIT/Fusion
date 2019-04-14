@@ -116,6 +116,8 @@ def officeOfDeanPnD(request):
                 designation=sender_design.designation,
             )
         requisition.save()
+        office_dean_PnD_notif(request.user, request.user, 'assignment_created')#Notification generated
+        office_dean_PnD_notif(request.user, receive.working, 'assignment_received')
 
         Tracking.objects.create(
                 file_id=requisition.assign_file,
@@ -243,6 +245,8 @@ def action(request):
             )
         track.is_read = True
         track.save()
+        office_dean_PnD_notif(request.user,next_hold_design.working, 'assignment_received')
+
 
     elif 'revert' in request.POST:
         Tracking.objects.create(
@@ -256,6 +260,7 @@ def action(request):
             )
         track.is_read = True
         track.save()
+        office_dean_PnD_notif(request.user,prev_hold_design.working, 'assignment_reverted')
 
     elif 'reject' in request.POST:
         pass
