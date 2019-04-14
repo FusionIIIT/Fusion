@@ -97,9 +97,7 @@
         <th class="one wide column">
             Sr No
         </th>
-        <th class="one wide column">
-            Assisgnment ID
-        </th>
+
         <th class="two wide column">
             Date Created
         </th>
@@ -109,7 +107,7 @@
         </th>
 
         <th class="three wide column">
-            Building
+            Department
         </th>
 
 
@@ -126,9 +124,7 @@
         <td>
             {{forloop.counter}}
         </td>
-        <td>
-            {{req.id}}
-        </td>
+
         <td>
             {{track.receive_date}}
         </td>
@@ -138,9 +134,8 @@
         </td>
 
         <td>
-            {{req.title}}
+            {{req.department}}
         </td>
-
 
         <td>
             <button class="ui button" type="button" id="test" onclick="viewAssignment({{req.pk}},true)" >Details</button>
