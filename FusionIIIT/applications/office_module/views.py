@@ -135,8 +135,6 @@ def officeOfDeanPnD(request):
     outgoing_files=[(f, _list_find(assigned_req, lambda r: r.assign_file==f.file_id))
             for f in Tracking.objects.filter(current_id__user=user)]
     assign_history=[(r, _req_history(r)) for r in assigned_req]
-    print(incoming_files)
-    print(outgoing_files)
 
     deslist={
             'Civil_JE': 'Junior Engg. (Civil)',
@@ -204,8 +202,7 @@ def action(request):
     requisition = Requisitions.objects.get(pk=req_id)
     description=request.POST.get('description')
     upload_file=request.FILES.get('estimate')
-
-    track = Tracking.objects.filter(file_id=requisition.assign_file).filter(receiver_id=user).first()
+    track = Tracking.objects.filter(file_id=requisition.assign_file).filter(receiver_id=user).get(is_read=False)
 
     # current, previous and next Designation and HoldsDesignation found out
     current_design = track.receive_design
@@ -228,7 +225,6 @@ def action(request):
         next_hold_design = HoldsDesignation.objects.get(designation__name="DeanPnD")
     # elif "DeanPnD" in designation: # && if estimate greater than 10 lacs
     #     next_hold_design = HoldsDesignation.objects.get(designation__name="Director")
-    print(request.POST)
 
     if 'forward' in request.POST:
         Tracking.objects.create(
@@ -240,6 +236,8 @@ def action(request):
                 remarks=description,
                 upload_file=upload_file,
             )
+        print("in forward, old track")
+        print(vars(track))
         track.is_read = True
         track.save()
 
@@ -253,6 +251,8 @@ def action(request):
                 remarks=description,
                 upload_file=upload_file,
             )
+        print("in revert, old track")
+        print(vars(track))
         track.is_read = True
         track.save()
 
