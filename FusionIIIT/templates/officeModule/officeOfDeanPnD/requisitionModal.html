@@ -52,6 +52,13 @@
                 <label>Description</label>
                 <textarea readonly rows="4">{{object.description}}</textarea>
             </div>
+            <form method="POST" action="/office/officeOfDeanPnD/#requisitions">
+                {% csrf_token %}
+                <input type="hidden" name="req_id" value="{{object.pk}}"/>
+                <div class="field">
+                    <input type="submit" class="ui button" name="delete_requisition" value="Delete Requisition"/>
+                </div>
+            </form>
 
             <h4> Work Assignment </h4>
 

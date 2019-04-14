@@ -52,6 +52,16 @@ def officeOfDeanPnD(request):
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
 
+    deslist={
+            'Civil_JE': 'Junior Engg. (Civil)',
+            'Civil_AE':'Assistant Engg. (Civil)',
+            'Electrical_JE': 'Junior Engg. (Electrical)',
+            'Electrical_AE':'Assistant Engg. (Electrical)',
+            'EE': 'Executive Engg.',
+            'DeanPnD': 'Dean (P&D)',
+            'Director': 'Director'
+    }
+
     holds=HoldsDesignation.objects.filter(working=user)
     designations=[d.designation for d in HoldsDesignation.objects.filter(working=user)]
     """
@@ -126,6 +136,17 @@ def officeOfDeanPnD(request):
                 remarks=description,
                 upload_file=upload_file,
             )
+    elif 'delete_requisition' in request.POST:
+        print('delete requisition')
+        hold = HoldsDesignation.objects.get(working=user, designation__name__in=deslist)
+        if hold:
+            req_id=request.POST.get('req_id')
+            try:
+                Requisitions.objects.get(pk=req_id).delete()
+            except Requisitions.DoesNotExist:
+                print('ERROR NOT FOUND 409404040', req_id)
+        else:
+            return HttpResponse('Unauthorized', status=401)
 
     req=Requisitions.objects.filter(assign_file__isnull=True)
     all_req=Requisitions.objects.all()
@@ -136,15 +157,6 @@ def officeOfDeanPnD(request):
             for f in Tracking.objects.filter(current_id__user=user)]
     assign_history=[(r, _req_history(r)) for r in assigned_req]
 
-    deslist={
-            'Civil_JE': 'Junior Engg. (Civil)',
-            'Civil_AE':'Assistant Engg. (Civil)',
-            'Electrical_JE': 'Junior Engg. (Electrical)',
-            'Electrical_AE':'Assistant Engg. (Electrical)',
-            'EE': 'Executive Engg.',
-            'DeanPnD': 'Dean (P&D)',
-            'Director': 'Director'
-    }
 
     allfiles=None
     sentfiles=None
