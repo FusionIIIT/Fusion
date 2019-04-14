@@ -28,6 +28,7 @@ urlpatterns = [
     url(r'^rebateresponse', views.rebate_response, name='rebateresponse'),
     url(r'^specialrequestresponse', views.special_request_response, name='specialrequestresponse'),
     url(r'^updatecost', views.update_cost, name='updatecost'),
+    url(r'^getnonvegorder', views.get_nonveg_order, name='getnonvegorder'),
     url(r'^getleave', views.get_leave_data, name='getleave'),
     url(r'^generatemessbill', views.generate_mess_bill, name='generatemessbill'),
     url(r'^acceptleave', views.accept_vacation_leaves, name='acceptleave'),

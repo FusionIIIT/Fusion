@@ -31,7 +31,6 @@ from .contextgenerator import *
 
 def index(request):
     context = {}
-    print(request.user)
     if(str(request.user)!="AnonymousUser"):
         return HttpResponseRedirect('/dashboard/')
     else:

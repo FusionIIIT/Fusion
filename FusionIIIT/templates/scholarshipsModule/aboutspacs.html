@@ -17,11 +17,11 @@
                     </div>
 
                     <div class="image">
-                        <img  src="{% static 'globals/img/zlatan.jpg' %}">
+                        <img  src="{{ hd.user.extrainfo.profile_picture.url }}">
                     </div>
 
                     <div class="content">
-                        <a class="header"><h2>{{hd.user}}</h2></a>
+                        <a class="header"  href="/profile/subirs"><h2>{{hd.user}}</h2></a>
                         <div class="meta">
                             <span>{{hd.user.extrainfo.user_type}}</span>
                         </div>
@@ -59,11 +59,11 @@
                     </div>
 
                     <div class="image">
-                        <img src="{% static 'globals/img/zlatan.jpg' %}">
+                        <img src="{% static 'globals/img/zlatan.jpg' %} " >
                     </div>
 
                     <div class="content">
-                        <a class="header"><h2>{{hd1.user}}</h2></a>
+                        <a class="header"  href="/profile/rajeshk"><h2>{{hd1.user}}</h2></a>
                         <div class="meta">
                             <span>{{hd1.user.extrainfo.user_type}}</span>
                         </div>

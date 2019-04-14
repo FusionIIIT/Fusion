@@ -18,6 +18,7 @@ from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
                      Mess_minutes, Mess_reg, Messinfo, Monthly_bill,
                      Nonveg_data, Nonveg_menu, Payments, Rebate,
                      Special_request, Vacation_food, MessBillBase)
+from notification.views import central_mess_notif
 
 
 today_g = datetime.today()
@@ -27,6 +28,9 @@ first_day_of_this_month = date.today().replace(day=1)
 last_day_prev_month = first_day_of_this_month - timedelta(days=1)
 previous_month = last_day_prev_month.strftime('%B')
 previous_month_year = last_day_prev_month.year
+first_day_of_next_month = (date.today().replace(day=28) + timedelta(days=4)).replace(day=1)
+last_day_of_this_month = first_day_of_next_month - timedelta(days=1)
+next_month = first_day_of_next_month.month
 
 
 def add_nonveg_order(request, student):
@@ -72,9 +76,11 @@ def add_mess_feedback(request, student):
         data: to record success or any errors
     """
     date_today = datetime.now().date()
+    mess_optn = Messinfo.objects.get(student_id=student)
     description = request.POST.get('description')
     feedback_type = request.POST.get('feedback_type')
     feedback_object = Feedback(student_id=student, fdate=date_today,
+                               mess=mess_optn.mess_option,
                                description=description,
                                feedback_type=feedback_type)
 
@@ -138,7 +144,7 @@ def add_vacation_food_request(request, student):
     return data
 
 
-def add_menu_change_request(request):
+def add_menu_change_request(request, student):
     # TODO logic here is flawed if the same dish is use more than once then it will give an error !!!
     #  or if there are two requests on the same dish
     """
@@ -156,6 +162,7 @@ def add_menu_change_request(request):
         print("newdish")
         reason = request.POST.get("reason")
         menu_object = Menu_change_request(dish=dish, request=new_dish, reason=reason)
+        # menu_object = Menu_change_request(dish=dish, student_id=student, request=new_dish, reason=reason)
         menu_object.save()
         data = {
             'status': 1
@@ -182,9 +189,11 @@ def handle_menu_change_response(request):
             5 for error
     """
     ap_id = request.POST.get('idm')
+    user = request.user
     stat = request.POST['status']
     application = Menu_change_request.objects.get(pk=ap_id)
-    print(stat)
+    # student = application.student_id
+    # receiver = User.objects.get(username=student)
     if stat == '2':
         application.status = 2
         meal = application.dish
@@ -194,6 +203,7 @@ def handle_menu_change_response(request):
         data = {
             'status': '2',
         }
+        # central_mess_notif(user, receiver, 'menu_change_accepted')
 
     elif stat == '0':
         application.status = 0
@@ -229,11 +239,14 @@ def handle_vacation_food_request(request, ap_id):
     """
 
     applications = Vacation_food.objects.get(pk=ap_id)
+    student = applications.student_id.id.user
     if request.POST.get('submit') == 'approve':
         applications.status = '2'
+        central_mess_notif(request.user, student, 'vacation_request', ' accepted')
 
     elif request.POST.get('submit') == 'reject':
         applications.status = '0'
+        central_mess_notif(request.user, student, 'vacation_request', ' rejected')
 
     else:
         applications.status = '1'
@@ -339,7 +352,7 @@ def add_leave_request(request, student):
                            end_date=end_date, purpose=purpose)
     rebate_object.save()
     data = {
-        'status': 1
+        'status': 1,
     }
     return data
 
@@ -359,6 +372,9 @@ def add_mess_meeting_invitation(request):
     venue = request.POST['venue']
     agenda = request.POST['agenda']
     time = request.POST['time']
+    members_mess = HoldsDesignation.objects.filter(Q(designation__name__contains='mess_convener')
+                                                   | Q(designation__name__contains='mess_committee')|Q(designation__name='mess_manager')
+                                                   | Q(designation__name='mess_warden'))
     date_today = str(today_g.date())
     if date <= date_today:
         data = {
@@ -369,6 +385,10 @@ def add_mess_meeting_invitation(request):
 
     invitation_obj = Mess_meeting(meet_date=date, agenda=agenda, venue=venue, meeting_time=time)
     invitation_obj.save()
+    message = "Mess Committee meeting on " + date_today + " at " + time + ".\n Venue: " + venue + ".\n  Agenda: " + agenda
+    for invi in members_mess:
+        central_mess_notif(request.user, invi.user, 'meeting_invitation', message)
+
     data = {
             'status': 1,
             'message': "Meeting Details recorded",
@@ -389,12 +409,22 @@ def handle_rebate_response(request):
     """
     id = request.POST.get('id_rebate')
     leaves = Rebate.objects.get(pk=id)
+
+    # receiver = ExtraInfo.
     date_format = "%Y-%m-%d"
+    message = ''
     b = datetime.strptime(str(leaves.start_date), date_format)
     d = datetime.strptime(str(leaves.end_date), date_format)
-    rebate_count = (d - b).days
-    leaves.status = request.POST["status"]
+    rebate_count = abs((d - b).days) + 1
+    receiver = leaves.student_id.id.user
+    action = request.POST["status"]
+    leaves.status = action
     leaves.save()
+    if action == '2':
+        message = 'Your leave request has been accepted between dates ' + str(b.date()) + ' and ' + str(d.date())
+    else:
+        message = 'Your leave request has been rejected between dates ' + str(b.date()) + ' and ' + str(d.date())
+    central_mess_notif(request.user, receiver, 'leave_request', message)
     data = {
         'message': 'You responded to request !'
     }
@@ -468,8 +498,14 @@ def handle_special_request(request):
        special_request: data corresponding to id of the special request being accepted or rejected
     """
     special_request = Special_request.objects.get(pk=request.POST["id"])
-    special_request.status = request.POST["status"]
+    receiver = special_request.student_id.id.user
+    action = request.POST["status"]
+    message = 'rejected'
+    special_request.status = action
     special_request.save()
+    if action == '2':
+        message= "accepted"
+    central_mess_notif(request.user, receiver, 'special_request', message)
     data = {
         'message': 'You responded to the request !'
     }
@@ -501,14 +537,20 @@ def add_bill_base_amount(request):
 
 
 def add_mess_committee(request, roll_number):
+    print("\n\n\\n\n\n\n\n")
+    print(roll_number)
     mess = Messinfo.objects.get(student_id__id=roll_number)
+    print(mess)
     if mess.mess_option == 'mess1':
         designation = Designation.objects.get(name='mess_committee_mess1')
     else:
         designation = Designation.objects.get(name='mess_committee_mess2')
     # designation = Designation.objects.get(name='mess_committee')
-    add_obj = HoldsDesignation.objects.filter(Q(user__username=roll_number) & Q(designation=designation))
-    if add_obj:
+    # add_obj = HoldsDesignation.objects.filter(Q(user__username=roll_number) & Q(designation=designation))
+    check_obj = HoldsDesignation.objects.filter(Q(user__username=roll_number) &
+                                                (Q(designation__name__contains='mess_committee')
+                                                 | Q(designation__name__contains='mess_convener')))
+    if check_obj:
         data = {
             'status': 2,
             'message': roll_number + " is already a part of mess committee"
@@ -518,6 +560,7 @@ def add_mess_committee(request, roll_number):
         add_user = User.objects.get(username=roll_number)
         designation_object = HoldsDesignation(user=add_user, working=add_user, designation=designation)
         designation_object.save()
+        central_mess_notif(request.user, add_user, 'added_committee', '')
         data = {
             'status': 1,
             'message': roll_number + " is added to Mess Committee"
@@ -528,7 +571,8 @@ def add_mess_committee(request, roll_number):
 def generate_bill():
     student_all = Student.objects.all()
     month_t = datetime.now().month - 1
-
+    month_g = last_day_prev_month.month
+    first_day_prev_month = last_day_prev_month.replace(day=1)
     # previous_month = month_t.strftime("%B")
     amount_c = MessBillBase.objects.latest('timestamp')
     for student in student_all:
@@ -542,8 +586,15 @@ def generate_bill():
                 nonveg_total_bill = nonveg_total_bill + order.dish.price
         for r in rebates:
             if r.status == '2':
-                if r.start_date.strftime("%B") == previous_month:
-                    rebate_count = rebate_count + abs((r.end_date - r.start_date).days) + 1
+                if r.start_date.month == month_g:
+                    if r.end_date.month == today_g:
+                        rebate_count = rebate_count + abs((last_day_prev_month - r.start_date).days) + 1
+                    else:
+                        rebate_count = rebate_count + abs((r.end_date - r.start_date).days) + 1
+                elif r.end_date.month == month_g:
+                    rebate_count = rebate_count + abs((r.end_date - first_day_prev_month).days) + 1
+                else:
+                    rebate_count = 0
         rebate_amount = rebate_count*amount_c.bill_amount/30
         total = amount_c.bill_amount + nonveg_total_bill - rebate_amount
         bill_object = Monthly_bill(student_id=student,
@@ -575,31 +626,4 @@ def generate_bill():
         else:
             bill_object.save()
 
-#
-# def updatebill(student, rebate_count):
-#     base = MessBillBase.objects.latest('timestamp')
-#     amount_c = base.bill_amount
-#     rebate_amount = amount_c * rebate_count / 30
-#     if Monthly_bill.objects.filter(Q(student_id=student) and Q(year = previous_month_year) and Q(month = previous_month)):
-#         bill_update = Monthly_bill.objects.filter(Q(student_id=student) and Q(year = previous_month_year) and Q(month=previous_month))
-#         # nonveg_t = bill_update.nonveg_total_bill
-#         total = bill_update.total_bill + rebate_amount
-#         rebate_count2 = bill_update.rebate_count + rebate_count
-#         rebate_amount2 = bill_update.rebate_amount + rebate_amount
-#         bill_update.rebate_amount = rebate_amount2
-#         bill_update.rebate_count = rebate_count2
-#         bill_update.total_bill = total
-#         bill_update.save()
-#     # if bill does not exist
-#     else:
-#         bill_object = Monthly_bill(student_id=student,
-#                               month=today_g.month,
-#                                year = previous_month_year,
-#                               amount=amount_c.bill_amount,
-#                               rebate_count=rebate_count,
-#                               rebate_amount=rebate_amount,
-#                               nonveg_total_bill=0,
-#                               total_bill= amount_c + rebate_amount)
-#         bill_object.save()
-#     data = 1
-#     return data
+
