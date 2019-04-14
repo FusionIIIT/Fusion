@@ -126,6 +126,8 @@ def officeOfDeanPnD(request):
                 designation=sender_design.designation,
             )
         requisition.save()
+        office_dean_PnD_notif(request.user, request.user, 'assignment_created')#Notification generated
+        office_dean_PnD_notif(request.user, receive.working, 'assignment_received')
 
         Tracking.objects.create(
                 file_id=requisition.assign_file,
@@ -172,6 +174,7 @@ def officeOfDeanPnD(request):
             je = 'Civil_JE' if r.department == 'civil' else 'Electrical_JE'
             passed = [deslist[je]]
             req_history.append((r, passed, r.req_date))
+    req_history.sort(key=lambda t: t[2], reverse=True)
 
     context = {
             'files':files,
@@ -252,6 +255,8 @@ def action(request):
         print(vars(track))
         track.is_read = True
         track.save()
+        office_dean_PnD_notif(request.user,next_hold_design.working, 'assignment_received')
+
 
     elif 'revert' in request.POST:
         Tracking.objects.create(
@@ -267,6 +272,7 @@ def action(request):
         print(vars(track))
         track.is_read = True
         track.save()
+        office_dean_PnD_notif(request.user,prev_hold_design.working, 'assignment_reverted')
 
     elif 'reject' in request.POST:
         description = description + " This assignment has been rejected. No further changes to this assignment are possible. Please create new requisition if needed."
