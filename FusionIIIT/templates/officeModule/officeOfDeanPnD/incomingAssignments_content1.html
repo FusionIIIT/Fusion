@@ -1,5 +1,4 @@
 {% load static %}
-{% include 'officeModule/officeOfDeanPnD/assignmentModal.html' %}
 
 <!--
 <form method="POST" action="{% url 'office:officeOfDeanPnD' %}">
@@ -143,8 +142,8 @@
         </td>
 
 
-        <td onclick="viewAssignment({{req.pk}})">
-            <button class="ui button" type="button" id="test" onclick="viewAssignment({{req.pk}})" >Details</button>
+        <td>
+            <button class="ui button" type="button" id="test" onclick="viewAssignment({{req.pk}},true)" >Details</button>
         </td>
 
 

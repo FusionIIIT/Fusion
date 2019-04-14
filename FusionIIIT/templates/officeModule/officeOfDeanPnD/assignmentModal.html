@@ -1,9 +1,14 @@
 {% load static %}
 {% block modal4 %}
 <script type="text/javascript">
-    function viewAssignment(a){
+    function viewAssignment(a, isIncoming=false){
         var id= '.ui.modal#assignment'+a;
         $(id).modal('show');
+        console.log("Is incoming", isIncoming)
+        if (!isIncoming) {
+            var form = document.getElementById('action-form');
+            form.style.display = 'none';
+        }
     }
 
 </script>
@@ -88,11 +93,10 @@
                 </div>
             </div>
             {% endfor %}
-            <h4> Perform actions on the assignment </h4>
-            <form method="POST" enctype="multipart/form-data" action="/office/officeOfDeanPnD/action">
+            
+            <form id="action-form" method="POST" enctype="multipart/form-data" action="/office/officeOfDeanPnD/action">
             {% csrf_token %}
-
-
+            <h4> Perform actions on the assignment </h4>
             <div class="field">
                 <label>Remark</label>
                 <textarea rows="2" name="description"></textarea>

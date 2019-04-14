@@ -1,5 +1,4 @@
 {% load static %}
-{% include 'officeModule/officeOfDeanPnD/seachAssignments_content1Modal.html' %}
 
 {% comment %}
 <form method="POST" action="{% url 'office:officeOfDeanPnD' %}">
@@ -84,10 +83,6 @@
 </form>
 {% endcomment %}
 
-<br>
-<br>
-<div class="ui divider"></div>
-
 <table class="ui very basic collapsing celled sortable table"
        style="padding-left: 10%;
                                                           padding-right: 10%;
@@ -142,7 +137,7 @@
             {{object.department}}
         </td>
 
-        <td onclick="detail('{{ object.pk }}')">
+        <td onclick="viewAssignment({{object.pk}})">
             <button class="ui button" type="button" id="test">Details</button>
         </td>
 
