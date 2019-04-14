@@ -94,8 +94,8 @@
         <td>
         <h4 class="ui image header">
                 <img src="
-                {% if user.extrainfo.profile_picture %}
-                    {{ user.extrainfo.profile_picture.url }}
+                {% if object.userid.user.extrainfo.profile_picture %}
+                    {{ object.userid.user.extrainfo.profile_picture.url }}
                 {% else %}
                     {% static 'globals/img/zlatan.jpg' %}
                 {% endif %}" class="ui mini circular image">
