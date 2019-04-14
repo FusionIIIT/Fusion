@@ -54,8 +54,6 @@ def officeOfDeanPnD(request):
 
     holds=HoldsDesignation.objects.filter(working=user)
     designations=[d.designation for d in HoldsDesignation.objects.filter(working=user)]
-
-    print(designations)
     """
         if 'asearch' in request.POST:
             check=request.POST.get('status')
@@ -207,25 +205,27 @@ def action(request):
     description=request.POST.get('description')
     upload_file=None
 
-    track = Tracking.objects.filter(file_id=requisition.assign_file).filter(receiver_id=user)
+    track = Tracking.objects.filter(file_id=requisition.assign_file).filter(receiver_id=user).first()
+    print(track)
 
     # current, previous and next Designation and HoldsDesignation found out
     current_design = track.receive_design
-    current_hold_design = HoldsDesignation.objects.filter(user=user).filter(designation=current_design)
+    current_hold_design = HoldsDesignation.objects.filter(user=user).get(designation=current_design)
     prev_design = track.current_id
     prev_hold_design = track.current_design
 
-    if current_design == "Civil_AE" or current_design == "Electrical_AE":
+    if current_design.name == "Civil_AE" or current_design.name == "Electrical_AE":
             next_hold_design = HoldsDesignation.objects.get(designation__name="EE")
-    elif current_design == "EE":
+    elif current_design.name == "EE":
         if requisition.building == "hostel":
             next_hold_design = HoldsDesignation.objects.get(designation__name="Dean_s")
         else:
             next_hold_design = HoldsDesignation.objects.get(designation__name="DeanPnD")
-    elif current_design == "Dean_s":
+    elif current_design.name == "Dean_s":
         next_hold_design = HoldsDesignation.objects.get(designation__name="DeanPnD")
     # elif "DeanPnD" in designation: # && if estimate greater than 10 lacs
     #     next_hold_design = HoldsDesignation.objects.get(designation__name="Director")
+    print(request.POST)
 
     if 'forward' in request.POST:
         Tracking.objects.create(
@@ -237,6 +237,8 @@ def action(request):
                 remarks=description,
                 upload_file=upload_file,
             )
+        print("in forward")
+        print(requisition.assign_file, extrainfo, current_hold_design, next_hold_design.designation, next_hold_design.working,description)
 
     elif 'revert' in request.POST:
         Tracking.objects.create(
