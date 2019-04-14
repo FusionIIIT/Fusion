@@ -130,6 +130,7 @@ def officeOfDeanPnD(request):
             )
 
     req=Requisitions.objects.filter(assign_file__isnull=True)
+    all_req=Requisitions.objects.all()
     assigned_req=list(Requisitions.objects.filter(assign_file__isnull=False).select_related())
     incoming_files=[(f, _list_find(assigned_req, lambda r: r.assign_file==f.file_id))
             for f in Tracking.objects.filter(receiver_id=user)]
@@ -139,17 +140,30 @@ def officeOfDeanPnD(request):
     print(incoming_files)
     print(outgoing_files)
 
-    deslist=['Civil_JE','Civil_AE','EE','DeanPnD','Electrical_JE','Electrical_AE']
-    deslist1=['Civil_JE','Civil_AE']
+    deslist={
+            'Civil_JE': 'Junior Engg. (Civil)',
+            'Civil_AE':'Assistant Engg. (Civil)',
+            'Electrical_JE': 'Junior Engg. (Electrical)',
+            'Electrical_AE':'Assistant Engg. (Electrical)',
+            'EE': 'Executive Engg.',
+            'DeanPnD': 'Dean (P&D)',
+            'Director': 'Director'
+    }
 
     allfiles=None
     sentfiles=None
     files=''
     req_history = []
-    for r in assigned_req:
-        passed = [r.assign_file.designation] + [t.receive_design for t in Tracking.objects.filter(file_id=r.assign_file)]
-        last_date = Tracking.objects.filter(file_id=r.assign_file).last().receive_date
-        req_history.append((r, passed, last_date))
+    for r in all_req:
+        if r.assign_file:
+            passed = [r.assign_file.designation] + [t.receive_design for t in Tracking.objects.filter(file_id=r.assign_file)]
+            last_date = Tracking.objects.filter(file_id=r.assign_file).last().receive_date
+            passed = [deslist.get(str(d), d) for d in passed]
+            req_history.append((r, passed, last_date))
+        else:
+            je = 'Civil_JE' if r.department == 'civil' else 'Electrical_JE'
+            passed = [deslist[je]]
+            req_history.append((r, passed, r.req_date))
 
     context = {
             'files':files,
