@@ -21,16 +21,25 @@
 <div class="ui modal {{ object.pk }}" id="assignment{{object.pk}}">
     <div class="content">
         <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;" >
-            <div class="three fields">
-
-
-                <div class="four wide field">
+            <h4> Assignment </h4>
+            <div class="two fields">
+                <div class="field">
 
                     <label>Building</label>
 
                     <input value={{object.building}} class="ui large input" readonly>
                 </div>
-                <div class="four wide field">
+
+                <div class="field">
+
+                    <label>Department</label>
+
+                    <input value={{object.department}} class="ui large input" readonly>
+                </div>
+
+            </div>
+            <div class="two fields">
+                <div class="field">
 
                     <label>Date</label>
                     <input value="{{object.req_date}}" class="ui large input" readonly>
@@ -57,7 +66,6 @@
                     </h4>
                 </div>
             </div>
-            <h4> Requisition </h4>
             <div class="field">
                 <label>Title</label>
                 <input value="{{object.title}}" class="ui large input" readonly>
