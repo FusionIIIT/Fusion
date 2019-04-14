@@ -203,7 +203,7 @@ def action(request):
     req_id=request.POST.get('req_id')
     requisition = Requisitions.objects.get(pk=req_id)
     description=request.POST.get('description')
-    upload_file=None
+    upload_file=request.FILES.get('estimate')
 
     track = Tracking.objects.filter(file_id=requisition.assign_file).filter(receiver_id=user).first()
 

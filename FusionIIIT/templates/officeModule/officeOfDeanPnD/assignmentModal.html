@@ -6,11 +6,11 @@
         $(id).modal('show');
         console.log("Is incoming", isIncoming)
         if (!isIncoming) {
-            var form = document.getElementById('action-form');
+            var form = document.getElementById('action-form'+a);
             form.style.display = 'none';
         }
         else {
-            var form = document.getElementById('action-form');
+            var form = document.getElementById('action-form'+a);
             form.style.display = 'block';
         }
     }
@@ -98,14 +98,18 @@
             </div>
             {% endfor %}
             
-            <form id="action-form" method="POST" enctype="multipart/form-data" action="/office/officeOfDeanPnD/action">
+            <form id="action-form{{object.pk}}" method="POST" enctype="multipart/form-data" action="/office/officeOfDeanPnD/action">
             {% csrf_token %}
-            <h4> Perform actions on the assignment </h4>
-            <input type="hidden" name="req_id" value="{{object.pk}}"/>
-            <div class="field">
-                <label>Remark</label>
-                <textarea rows="2" name="description"></textarea>
-            </div>
+                <h4> Perform actions on the assignment </h4>
+                <input type="hidden" name="req_id" value="{{object.pk}}"/>
+                <div class="field">
+                    <label>Remark</label>
+                    <textarea rows="2" name="description"></textarea>
+                </div>
+                <div class="field">
+                    <label>Upload File</label>
+                    <input class="ui input" type="file" name="estimate" id="estimate" accept=".pdf, .docx,.doc" ></input>
+                </div>
                 <div class="field">
                     <input type="submit" class="ui button" name="forward" value="Forward"/>
                 </div>
