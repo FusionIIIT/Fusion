@@ -131,7 +131,7 @@ def officeOfDeanPnD(request):
     all_req=Requisitions.objects.all()
     assigned_req=list(Requisitions.objects.filter(assign_file__isnull=False).select_related())
     incoming_files=[(f, _list_find(assigned_req, lambda r: r.assign_file==f.file_id))
-            for f in Tracking.objects.filter(receiver_id=user)]
+            for f in Tracking.objects.filter(receiver_id=user).filter(is_read=False)]
     outgoing_files=[(f, _list_find(assigned_req, lambda r: r.assign_file==f.file_id))
             for f in Tracking.objects.filter(current_id__user=user)]
     assign_history=[(r, _req_history(r)) for r in assigned_req]
@@ -206,16 +206,19 @@ def action(request):
     upload_file=None
 
     track = Tracking.objects.filter(file_id=requisition.assign_file).filter(receiver_id=user).first()
-    print(track)
 
     # current, previous and next Designation and HoldsDesignation found out
     current_design = track.receive_design
     current_hold_design = HoldsDesignation.objects.filter(user=user).get(designation=current_design)
-    prev_design = track.current_id
+    prev_design = track.current_design.designation
     prev_hold_design = track.current_design
 
-    if current_design.name == "Civil_AE" or current_design.name == "Electrical_AE":
-            next_hold_design = HoldsDesignation.objects.get(designation__name="EE")
+    if current_design.name == "Civil_JE":
+        next_hold_design = HoldsDesignation.objects.get(designation__name="Civil_AE")
+    elif current_design.name == "Electrical_JE":
+        next_hold_design = HoldsDesignation.objects.get(designation__name="Electrical_AE")
+    elif current_design.name == "Civil_AE" or current_design.name == "Electrical_AE":
+        next_hold_design = HoldsDesignation.objects.get(designation__name="EE")
     elif current_design.name == "EE":
         if requisition.building == "hostel":
             next_hold_design = HoldsDesignation.objects.get(designation__name="Dean_s")
@@ -237,8 +240,8 @@ def action(request):
                 remarks=description,
                 upload_file=upload_file,
             )
-        print("in forward")
-        print(requisition.assign_file, extrainfo, current_hold_design, next_hold_design.designation, next_hold_design.working,description)
+        track.is_read = True
+        track.save()
 
     elif 'revert' in request.POST:
         Tracking.objects.create(
@@ -246,10 +249,12 @@ def action(request):
                 current_id=extrainfo,
                 current_design=current_hold_design,
                 receive_design=prev_design,
-                receiver_id=prev_hold_desig.working,
+                receiver_id=prev_hold_design.working,
                 remarks=description,
                 upload_file=upload_file,
             )
+        track.is_read = True
+        track.save()
 
     elif 'reject' in request.POST:
         pass
