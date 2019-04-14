@@ -44,22 +44,13 @@ def _list_find(lst, predicate):
             return v
     return None
 
+def _req_history(req):
+    return Tracking.objects.filter(file_id=req.assign_file)
+
 @login_required
 def officeOfDeanPnD(request):
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
-
-    req=Requisitions.objects.filter(assign_file__isnull=True)
-    assigned_req=list(Requisitions.objects.filter(assign_file__isnull=False).select_related())
-    incoming_files=[(f, _list_find(assigned_req, lambda r: r.assign_file==f.file_id))
-            for f in Tracking.objects.filter(receiver_id=user)]
-    outgoing_files=[(f, _list_find(assigned_req, lambda r: r.assign_file==f.file_id))
-            for f in Tracking.objects.filter(current_id__user=user)]
-    print(incoming_files)
-    print(outgoing_files)
-
-    deslist=['Civil_JE','Civil_AE','EE','DeanPnD','Electrical_JE','Electrical_AE']
-    deslist1=['Civil_JE','Civil_AE']
 
     holds=HoldsDesignation.objects.filter(working=user)
     designations=[d.designation for d in HoldsDesignation.objects.filter(working=user)]
@@ -137,6 +128,20 @@ def officeOfDeanPnD(request):
                 remarks=description,
                 upload_file=upload_file,
             )
+
+    req=Requisitions.objects.filter(assign_file__isnull=True)
+    assigned_req=list(Requisitions.objects.filter(assign_file__isnull=False).select_related())
+    incoming_files=[(f, _list_find(assigned_req, lambda r: r.assign_file==f.file_id))
+            for f in Tracking.objects.filter(receiver_id=user)]
+    outgoing_files=[(f, _list_find(assigned_req, lambda r: r.assign_file==f.file_id))
+            for f in Tracking.objects.filter(current_id__user=user)]
+    assign_history=[(r, _req_history(r)) for r in assigned_req]
+    print(incoming_files)
+    print(outgoing_files)
+
+    deslist=['Civil_JE','Civil_AE','EE','DeanPnD','Electrical_JE','Electrical_AE']
+    deslist1=['Civil_JE','Civil_AE']
+
     allfiles=None
     sentfiles=None
     files=''
@@ -145,7 +150,7 @@ def officeOfDeanPnD(request):
             'req':req,
             'incoming_files': incoming_files,
             'outgoing_files': outgoing_files,
-            'assigned_req':assigned_req,
+            'assigned_req':assign_history,
             'desig':designations,
     }
     return render(request, "officeModule/officeOfDeanPnD/officeOfDeanPnD.html", context)
