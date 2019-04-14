@@ -257,7 +257,19 @@ def action(request):
         track.save()
 
     elif 'reject' in request.POST:
-        pass
+        description = description + " This assignment has been rejected. No further changes to this assignment are possible. Please create new requisition if needed."
+        Tracking.objects.create(
+                file_id=requisition.assign_file,
+                current_id=extrainfo,
+                current_design=current_hold_design,
+                receive_design=None,
+                receiver_id=None,
+                remarks=description,
+                upload_file=upload_file,
+                is_read = True,
+            )
+        track.is_read = True
+        track.save()
         # fileobj.actionby_receiver="reject"
         # fileobj.save()
         # reqobj.tag=1
@@ -269,7 +281,19 @@ def action(request):
         # moveobj.save()
 
     elif 'approve' in request.POST:
-        pass
+        description = description + " This assignment has been approved. No further changes to this assignment are possible. Please create new requisition if needed."
+        Tracking.objects.create(
+                file_id=requisition.assign_file,
+                current_id=extrainfo,
+                current_design=current_hold_design,
+                receive_design=None,
+                receiver_id=None,
+                remarks=description,
+                upload_file=upload_file,
+                is_read = True,
+            )
+        track.is_read = True
+        track.save()
         # fileobj.actionby_receiver="accept"
         # fileobj.save()
         # print(">>>>>>>>>>>>>")
