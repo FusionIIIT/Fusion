@@ -41,36 +41,37 @@
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
 
-                <a class="active item" data-tab="first">
+
+                <a class=" {% if mark != 1 and mark2 != 1 and mark3 != 1 and mark4 != 1 and mark5 != 1 and mark6 != 1 and mark7 != 1 and mark8 != 1 and mark9 != 1 and mark10 != 1 and mark11 != 1 and mark12 != 1 and mark13 != 1 %}active item {% else %}item{% endif %}" data-tab="first">
                     Personal Details
                     <i class="right floated chevron right icon"></i>
                 </a>
 
-                <a class="item" data-tab="second">
+                <a class="{% if mark == 1 or mark2 == 1 or mark3 == 1 %}active item {% else %}item{% endif %} " data-tab="second">
                     Publications
                     <i class="right floated chevron right icon"></i>
                 </a>
 
-                <a class="item" data-tab="third">
+                <a class="{% if mark4 == 1 or mark5 == 1 or mark6 == 1 or mark7 == 1%}active item {% else %} item {% endif %}" data-tab="third">
                     Projects
                     <i class="right floated chevron right icon"></i>
                 </a>
 
-                <a class="item" data-tab="fourth">
+                <a class="{% if mark8 == 1 or mark9 == 1 %} active item {% else %} item {% endif %} " data-tab="fourth">
                     Thesis Supervision
                     <i class="right floated chevron right icon"></i>
                 </a>
 
-                <a class="item" data-tab="fifth">
+                <a class="{% if mark12 == 1 %}active item {% else %}item{% endif %}" data-tab="fifth">
                     Event Organised
                     <i class="right floated chevron right icon"></i>
                 </a>
 
-                <a class="item" data-tab="sixth">
+                <a class="{% if mark10 == 1 or mark11 == 1 %}active item {% else %}item{% endif %}" data-tab="sixth">
                     Visits
                     <i class="right floated chevron right icon"></i>
                 </a>
-                <a class="item" data-tab="seventh">
+                <a class="{% if mark13 == 1 %}active item {% else %}item{% endif %}" data-tab="seventh">
                     Conference/Symposium
                     <i class="right floated chevron right icon"></i>
                 </a>
@@ -80,18 +81,18 @@
                     <i class="right floated chevron right icon"></i>
                 </a>
 
-                <a class="item" data-tab="nin">
+                <!-- <a class="item" data-tab="ninth">
                     Administrative Responsibilities
                     <i class="right floated chevron right icon"></i>
-                </a>
-                 {% if request.user.extrainfo.user_type == "faculty" %}
-                 <a class="item" data-tab="ninth">
-                    Project Management Forms
-                    <i class="right floated chevron right icon"></i>
-                </a>
+                </a> -->
+                 {% if request.user.extrainfo.user_type == "faculty" and request.user == user %}
+                     <a class="item" data-tab="ninth">
+                        Project Management Forms
+                        <i class="right floated chevron right icon"></i>
+                    </a>
                 {% endif %}
 
-                 {% if "HOD" in desig %}
+                 {% if "HOD" in desig and request.user == user %}
                  <a class="item" data-tab="ten">
                     HOD_TAB
                     <i class="right floated chevron right icon"></i>
@@ -113,7 +114,9 @@
         {% endcomment %}
         <div class="eight wide column">
             {% comment %}The Details start here!{% endcomment %}
-            <div class="ui active tab segment" data-tab="first">
+
+            <div class="{% if mark != 1 and mark2 != 1 and mark3 != 1 and mark4 != 1 and mark5 != 1 and mark6 != 1 and mark7 != 1 and mark8 != 1 and mark9 != 1 and mark10 != 1 and mark11 != 1 and mark12 != 1 and mark13 != 1 %}ui active tab segment{% else %}ui tab segment{% endif %}" data-tab="first">
+
                 {% block personaldetails %}
                     {% include 'eisModulenew/personaldetails.html' %}
                 {% endblock %}
@@ -123,7 +126,7 @@
 
             {% comment %}The Publications starts here!{% endcomment %}
 
-            <div class="ui tab segment" data-tab="second">
+            <div class="{% if mark == 1 or mark2 == 1 or mark3 == 1  %}ui active tab segment{% else %}ui tab segment{% endif %}" data-tab="second">
                 {% block publications %}
                     {% include 'eisModulenew/publications.html' %}
                 {% endblock %}
@@ -134,7 +137,7 @@
 
             {% comment %}The Projects starts here!{% endcomment %}
 
-            <div class="ui tab segment" data-tab="third">
+            <div class="{% if mark4 == 1 or mark5 == 1 or mark6 == 1 or mark7 == 1%}ui active tab segment {% else %} ui tab segment {% endif %}" data-tab="third">
                 {% block projects %}
                     {% include 'eisModulenew/projects.html' %}
                 {% endblock %}
@@ -145,7 +148,7 @@
 
             {% comment %}The Thesis Supervision starts here!{% endcomment %}
 
-            <div class="ui tab segment" data-tab="fourth">
+            <div class="{% if mark8 == 1 or mark9 == 1 %}ui active tab segment {% else %} ui tab segment {% endif %}" data-tab="fourth">
                 {% block thesis %}
                     {% include 'eisModulenew/thesis.html' %}
                 {% endblock %}
@@ -155,7 +158,7 @@
 
             {% comment %}The events organised starts here!{% endcomment %}
 
-            <div class="ui tab segment" data-tab="fifth">
+            <div class="{% if mark12 == 1  %}ui active tab segment{% else %}ui tab segment{% endif %}" data-tab="fifth">
                 {% block eventorganised %}
                     {% include 'eisModulenew/eventorganized.html' %}
                 {% endblock %}
@@ -165,7 +168,7 @@
 
             {% comment %}The visits starts here!{% endcomment %}
 
-            <div class="ui tab segment" data-tab="sixth">
+            <div class="{% if mark10 == 1 or mark11 == 1 %}ui active tab segment{% else %}ui tab segment{% endif %}" data-tab="sixth">
                 {% block visits %}
                     {% include 'eisModulenew/visits.html' %}
                 {% endblock %}
@@ -173,7 +176,7 @@
             {% comment %}The visits ends here!{% endcomment %}
 
             {% comment %}The conference starts here!{% endcomment %}
-            <div class="ui tab segment" data-tab="seventh">
+            <div class="{% if mark13 == 1  %}ui active tab segment{% else %}ui tab segment{% endif %}" data-tab="seventh">
                 {% block conference %}
                     {% include 'eisModulenew/conference.html' %}
                 {% endblock %}
@@ -182,19 +185,16 @@
 
             {% comment %}The others starts here!{% endcomment %}
             <div class="ui tab segment" data-tab="eigth">
-                {% block others %}
+            <h1>Work in Progress</h1>
+               <!--  {% block others %}
                     {% include 'eisModulenew/others.html' %}
-                {% endblock %}
+                {% endblock %} -->
             </div>
             {% comment %}The others ends here!{% endcomment %}
 
             {% comment %}The Thesis Supervision starts here!{% endcomment %}
             <div class="ui tab segment" data-tab="ninth">
-                <!-- <div class="ui active tab segment" data-tab="first"> -->
-                {% block form1 %}
-                    {% include 'officeModule/officeOfDeanRSPC/tab1.html' %}
-                {% endblock %}
-                <!-- </div> -->
+                <h1>Work in Progress</h1>
             </div>
 
 
@@ -213,12 +213,14 @@
 
         {% comment %}The right-rail segment starts here!{% endcomment %}
         <div class="three wide column">
-            <div class="row">
+            <center><div class="ui black button" onclick="toggleReport()" style="width: 100%;padding:8%;font-size: 18px;">Generate Report <i class="dropdown icon"></i></div></center>
+            <div class="row" style="display: none;" id="report_tab">
                 {% comment %}The Modules:{% endcomment %}
                 {% block generatereport %}
                     {% include 'eisModulenew/generatereport.html' %}
                 {% endblock %}
             </div>
+        
 
             <div class="row">
                 {% comment %}The Modules:{% endcomment %}
@@ -240,237 +242,859 @@
 
 {% endblock %}
 
+
+
+
+
+
+
 {% block javascript %}
-    <script type="text/javascript" src="{% static 'fusion/js/editProfile.js' %}"></script>
-    <script type="text/javascript" src="{% static 'fusion/js/tablesort.js' %}"></script>
-    <script type="text/javascript" src="{% static 'fusion/js/jquery.min.js' %}"></script>
+{% csrf_token %}
+    <script type="text/javascript">
+        var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
+        </script>
 
-    <!-- <script src="https://code.jquery.com/jquery-2.1.4.js"></script> -->
-<script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+        <script type="text/javascript">
 
-{% comment %}
-    <script>
-        $(document).ready(function() {
-            $('table').tablesort();
+        function csrfSafeMethod(method) {
+            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+        }
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                }
+            }
         });
-    </script>
-{% endcomment %}
+        function viewpaper(index,name,author2,co_author2,tittle2,year2,
+            volume_no2,page_no2,ref2,dos2,dop2,status2,choose2,doi2)
+        {
+            $("#name2").text(name);
+            $("#authors2").text(author2);
+            $("#co_authors2").text(co_author2);
+            $("#tittle2").text(tittle2);
+            $("#year2").text(year2);
+            $("#volume_no2").text(volume_no2);
+            $("#page_no2").text(page_no2);
+            $("#ref2").text(ref2);
+            $("#dos2").text(dos2);
+            $("#dop2").text(dop2);
+            $("#status2").text(status2);
+            $("#choose2").text(choose2);
+            $("#doi2").text(doi2);
+            $("#papermodal").modal('show');
+        }
+        function viewproject(index,pi,co_pi,title,funding,dos,start,finish,finance,status)
+        {
+            $("#proj_pi").text(pi);
+            $("#proj_co_pi").text(co_pi);
+            $("#proj_title").text(title);
+            $("#proj_funding").text(funding);
+            $("#proj_dos").text(dos);
+            $("#proj_start").text(start);
+            $("#proj_finish").text(finish);
+            $("#proj_finance").text(finance);
+            $("#proj_status").text(status);
+           
+            $("#projectmodal").modal('show');
+        }
 
-    <script>
-        function toggleContent() {
-            $('.modulesContent').toggle();
 
-            if($('.modulesContent').is(':visible')){
-                $('#toggleIcon').removeClass("chevron down");
-                $('#toggleIcon').addClass("chevron up");
+        function editpaper(index,id,name,author2,co_author2,tittle2,year2,volume_no2,page_no2,ref2,dos2,dop2,status2,choose2,doi2)
+        {
+
+            $("#name").val(name);
+            $("#authors").val(author2);
+            $("#co_author").val(co_author2);
+            $("#title").val(tittle2);
+            $("#year").val(year2);
+            $("#volume").val(volume_no2);
+            $("#page").val(page_no2);
+            $("#ref").val(ref2);
+            $("#dos").val(dos2);
+            $("#dop").val(dop2);
+            $("#status").val(status2);
+            $("#sci").val(choose2);
+            $("#doi").val(doi2);
+            $("#journalpk").val(id);
+            $("#index").val(index);
+            document.getElementById("savejournal").style.display='none';
+            document.getElementById("editjournal").style.display='block';
+            document.getElementById("journalform").action="{% url 'eis:editjournal' %}";
+            
+        }
+
+        function editforeignvisit(index,id,country,place,purpose,start_date,end_date)
+        {
+
+            $("#country").val(country);
+            $("#place").val(place);
+            $("#purpose").val(purpose);
+            $("#start_date").val(start_date);
+            $("#end_date").val(end_date);
+            $("#foreignvisitpk").val(id);
+            $("#index10").val(index);
+            document.getElementById("saveforeignvisit").style.display='none';
+            document.getElementById("editforeignvisit").style.display='block';
+            document.getElementById("foreignvisitform").action="{% url 'eis:editforeignvisit' %}";
+            
+        }
+
+        function toggleReport(){
+            if(document.getElementById("report_tab").style.display == 'none'){
+                document.getElementById("report_tab").style.display = 'block';
             }
-            else if(!$('.modulesContent').is(':visible')){
-                $('#toggleIcon').removeClass("chevron up");
-                $('#toggleIcon').addClass("chevron down");
+            else{
+                document.getElementById("report_tab").style.display = 'none';
             }
+        }
+
+        function editindianvisit(index,id,country,place,purpose,start_date,end_date)
+        {
+
+            $("#country2").val(country);
+            $("#place2").val(place);
+            $("#purpose2").val(purpose);
+            $("#start_date2").val(start_date);
+            $("#end_date2").val(end_date);
+            $("#indianvisitpk").val(id);
+            $("#index11").val(index);
+            document.getElementById("saveindianvisit").style.display='none';
+            document.getElementById("editindianvisit").style.display='block';
+            document.getElementById("indianvisitform").action="{% url 'eis:editindianvisit' %}";
+            
+        }
+
+        function editbooks(index,id,title,author,p_type,pyear,publisher)
+        {
+
+            $("#book_title").val(title);
+            $("#book_author").val(author);
+            $("#book_p_type").val(p_type);
+            $("#book_year").val(pyear);
+            $("#book_publisher").val(publisher);
+            $("#bookspk2").val(id);
+            $("#index15").val(index);
+            document.getElementById("savebook").style.display='none';
+            document.getElementById("editbook").style.display='block';
+            document.getElementById("booksform").action="{% url 'eis:editbooks' %}";
+            
+        }
+
+        function editevent(index,id,role,agency,venue,start_date,end_date, type, name)
+        {
+
+            $("#event_role").val(role);
+            $("#sponsoring_agency").val(agency);
+            $("#event_venue").val(venue);
+            $("#event_start_date").val(start_date);
+            $("#event_end_date").val(end_date);
+            $("#event_type").val(type);
+
+            $("#event_name").val(name);
+            $("#eventpk").val(id);
+            $("#index12").val(index);
+            document.getElementById("saveevent").style.display='none';
+            document.getElementById("editevent").style.display='block';
+            document.getElementById("eventsform").action="{% url 'eis:editevent' %}";
+            
+        }
+
+        function editconference2(index,id,role1,role2,name,venue,start_date,end_date)
+        {
+
+            $("#conference_role").val(role1);
+            if (role2 != 'None' ){
+                $("#conference_organised").val(role2);
+            }
+            $("#conference_name").val(name);
+            $("#conference_venue").val(venue);
+            $("#conference_start_date").val(start_date);
+            $("#conference_end_date").val(end_date);
+            $("#conferencepk2").val(id);
+            $("#index13").val(index);
+            document.getElementById("saveconference2").style.display='none';
+            document.getElementById("editconference2").style.display='block';
+            document.getElementById("conferenceform2").action="{% url 'eis:editconsym' %}";
+            
+        }
+
+        function viewconference(c_name,c_author,c_co_author,c_tittle,c_year,c_venue,c_dos,c_doa,c_dop,c_page,c_status,c_isbn)
+        {
+            
+            $("#conf_name").text(c_name);
+            $("#conf_authors").text(c_author);
+            $("#conf_co_authors").text(c_co_author);
+            $("#conf_tittle").text(c_tittle);
+            $("#conf_year").text(c_year);
+            $("#conf_venue").text(c_venue);
+            $("#conf_dos").text(c_dos);
+            $("#conf_doa").text(c_doa);
+            $("#conf_dop").text(c_dop);
+            $("#conf_page").text(c_page);
+            $("#conf_status").text(c_status);
+            $("#conf_isbn").text(c_isbn);
+            $("#conferencemodal").modal('show');
+        }
+
+
+        function editconference(pk,index,c_name,c_author,c_co_author,c_tittle,c_year,c_venue,c_dos,c_doa,c_dop,c_page,c_status,c_isbn)
+        {
+            console.log("dvd")
+            $("#index3").val(index);
+            $("#conferencepk").val(pk);
+            $("#name3").val(c_name);
+            $("#authors3").val(c_author);
+            $("#co_author3").val(c_co_author);
+            $("#title3").val(c_tittle);
+            $("#year3").val(c_year);
+            $("#venue3").val(c_venue);
+            $("#dos3").val(c_dos);
+            $("#doa3").val(c_doa);
+            $("#dop3").val(c_dop);
+            $("#page_no3").val(c_page);
+            $("#status3").val(c_status);
+            $("#isbn_no3").val(c_isbn);
+            document.getElementById("saveconference").style.display='none';
+            document.getElementById("editconference").style.display='block';
+            document.getElementById("conferenceform").action="{% url 'eis:editconference' %}";
         }
 
 
 
-        $('#example1').calendar();
-        $('#example1a').calendar();
-        $('#example1b').calendar();
-        $('#example1d').calendar();
-        $('#example1e').calendar();
-        $('#example1f').calendar();
-        $('#example1g').calendar();
-         $('#example1h').calendar();
+        function editFirst(){
+            var aboutSpan = $("#aboutSpan").text().trim();
+            var educationSpan = $("#educationSpan").text().trim();
+            var interestSpan = $("#interestSpan").text().trim();
+            var contactSpan = $("#contactSpan").text().trim();
+            var buttonValue = $("#editButton").val();
+            var linkedinSpan = $("#linkedinSpan").text().trim();
+            var githubSpan = $("#githubSpan").text().trim();
+            console.log(buttonValue);
+            if(buttonValue == "Edit"){
+                console.log("2")
+                $("#editButton").val("Save");
+                console.log($("#contactInput").val(contactSpan));
+                $("#contactInput").val(contactSpan);
+                $("#contactInput").show();
+                $("#contactSpan").hide();
+                $("#contactIcon").hide();  
 
-        $('#example2').calendar({
-          type: 'date'
-        });
+                console.log($("#githubInput").val(githubSpan));
+                $("#githubInput").val(githubSpan);
+                $("#githubInput").show();
+                $("#githubSpan").hide();
+                $("#githubIcon").hide();
 
-        $('#example3').calendar({
-          type: 'time'
-        });
 
-        $('#rangestart').calendar({
-          type: 'date',
-          endCalendar: $('#rangeend')
-        });
+                console.log($("#linkedinInput").val(linkedinSpan));
+                $("#linkedinInput").val(linkedinSpan);
+                $("#linkedinInput").show();
+                $("#linkedinSpan").hide();
+                $("#linkedinIcon").hide();
+                 
+                $("#aboutTextarea").val(aboutSpan);
+                $("#aboutTextarea").show();
+                $("#aboutSpan").hide();
 
-        $('#rangeend').calendar({
-          type: 'date',
-          startCalendar: $('#rangestart')
-        });
+                $("#educationTextarea").val(educationSpan);
+                $("#educationTextarea").show();
+                $("#educationSpan").hide();
 
-         $('#rangestart1').calendar({
-          type: 'date',
-          endCalendar: $('#rangeend')
-        });
+                $("#interestTextarea").val(interestSpan);
+                $("#interestTextarea").show();
+                $("#interestSpan").hide();
 
-        $('#rangeend1').calendar({
-          type: 'date',
-          startCalendar: $('#rangestart')
-        });
-         $('#rangestart2').calendar({
-          type: 'date',
-          endCalendar: $('#rangeend')
-        });
-
-        $('#rangeend2').calendar({
-          type: 'date',
-          startCalendar: $('#rangestart')
-        });
-
-         $('#rangestart3').calendar({
-          type: 'date',
-          endCalendar: $('#rangeend')
-        });
-
-        $('#rangeend3').calendar({
-          type: 'date',
-          startCalendar: $('#rangestart')
-        });
-
-          $('#rangestart4').calendar({
-          type: 'date',
-          endCalendar: $('#rangeend')
-        });
-
-        $('#rangeend4').calendar({
-          type: 'date',
-          startCalendar: $('#rangestart')
-        });
-
-          $('#rangestart5').calendar({
-          type: 'date',
-          endCalendar: $('#rangeend')
-        });
-
-        $('#rangeend5').calendar({
-          type: 'date',
-          startCalendar: $('#rangestart')
-        });
-
-         $('#rangestart6').calendar({
-          type: 'date',
-          endCalendar: $('#rangeend')
-        });
-
-        $('#rangeend6').calendar({
-          type: 'date',
-          startCalendar: $('#rangestart')
-        });
-
-        $('#example4').calendar({
-          startMode: 'year'
-        });
-
-        $('#example5').calendar();
-
-        $('#example6').calendar({
-          ampm: false,
-          type: 'time'
-        });
-
-        $('#example7').calendar({
-          type: 'month'
-        });
-
-        $('#example8').calendar({
-          type: 'year'
-        });
-
-        $('#example9').calendar();
-        $('#example10').calendar({
-          on: 'hover'
-        });
-
-        var today = new Date();
-        $('#example11').calendar({
-          minDate: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 5),
-          maxDate: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 5)
-        });
-
-        $('#example12').calendar({
-          monthFirst: false
-        });
-
-        $('#example13').calendar({
-          monthFirst: false,
-          formatter: {
-            date: function (date, settings) {
-              if (!date) return '';
-              var day = date.getDate();
-              var month = date.getMonth() + 1;
-              var year = date.getFullYear();
-              return day + '/' + month + '/' + year;
             }
-          }
-        });
-        $('#example14').calendar({
-          inline: true
-        });
-        $('#example15').calendar();
+            else if(buttonValue == "Save"){
+                $.ajax({
+                    url : '{% url "eis:persinfo" %}',
+                    type : "POST",
+                    data: {
+                    'contact': $("#contactInput").val().trim(),
+                    'about': $("#aboutTextarea").val().trim(),
+                    'education':$("#educationTextarea").val().trim(),
+                    'interest' : $("#interestTextarea").val().trim() ,
+                    'linkedin' : $("#linkedinInput").val().trim(),
+                    'github' : $("#githubInput").val().trim(),
+                    'csrfmiddlewaretoken': '{{csrf_token}}',
+                  },
+                  success: function(returned, status, xhr){
+                    alert(returned['x']);
+                  },
+                    error: function(rs, e){
+                    console.log('error');
+                }
+                });
+                console.log("recieving");
+
+                $("#editButton").val("Edit");
 
 
+                console.log('after save')
 
-              function myFunction() {
-            var x = document.getElementById("myDIV");
-            if (x.style.display === "none") {
-                x.style.display = "block";
-            } else {
-                x.style.display = "none";
+                var contactValue = $("#contactInput").val().trim();
+                $("#contactSpan").text(contactValue);
+                $("#contactInput").hide();
+                $("#contactSpan").show();
+                $("#contactIcon").show();
+
+                var aboutSpan = $("#aboutTextarea").val().trim();
+                $("#aboutSpan").text(aboutSpan);
+                $("#aboutTextarea").hide();
+                $("#aboutSpan").show();
+
+                var educationSpan = $("#educationTextarea").val().trim();
+                $("#educationSpan").text(educationSpan);
+                $("#educationTextarea").hide();
+                $("#educationSpan").show();
+
+                var interestSpan = $("#interestTextarea").val().trim();
+                $("#interestSpan").text(interestSpan);
+                $("#interestTextarea").hide();
+                $("#interestSpan").show();
+
+                var linkedinValue = $("#linkedinInput").val().trim();
+                $("#linkedinSpan").text(linkedinValue);
+                $("#linkedinInput").hide();
+                $("#linkedinSpan").show();
+                $("#linkedinIcon").show();
+
+                var githubValue = $("#githubInput").val().trim();
+                $("#githubSpan").text(githubValue);
+                $("#githubInput").hide();
+                $("#githubSpan").show();
+                $("#githubIcon").show();
+
             }
-           }
 
-               function myFunction1() {
-            var x = document.getElementById("myDIV");
-            if (x.style.display === "block") {
-                x.style.display = "none";
-            } else {
-                x.style.display = "none";
+        }
+
+    function updatePUB(_row){
+        var cols=new Array();
+        cols[0]="A";
+        cols[1]="B";
+        cols[2]="C";
+        cols[3]="D";
+        cols[4]="E",
+        cols[5]="F";
+        cols[6]="G";
+        cols[7]="H";
+        cols[8]="I";
+        var p = document.getElementById("pub"+_row+"Z").innerHTML.search(">");
+        var pend = document.getElementById("pub"+_row+"Z").innerHTML.indexOf("<",5);
+        document.getElementById("pubZ").value=document.getElementById("pub"+_row+"Z").innerHTML.slice(p+1,pend);
+        window.location.href="#top";
+        document.getElementById("changes5").innerHTML = "<span style='color:red;'>Edit the selected journal publications details</span>";
+        for(var i=0;i<cols.length;i++)  {
+            var _temp=document.getElementById("pub"+_row+cols[i]).innerHTML;
+            if(i == 2){
+                document.getElementById("pubC").value = _temp.slice(_temp.indexOf("Journal")+13,_temp.indexOf("<br>",_temp.indexOf("Journal"))).trim();
+                document.getElementById("pubE").value = _temp.slice(_temp.indexOf("Volume No./Issue No.: </b>")+26,_temp.indexOf("<br>",_temp.indexOf("Volume No./Issue No.: </b>"))).trim();
+                document.getElementById("pubF").value = _temp.slice(_temp.indexOf("Page")+14,_temp.indexOf("<br>",_temp.indexOf("Page"))).trim();
+                document.getElementById("pubG").value = _temp.slice(_temp.indexOf("Reference ")+20,_temp.indexOf("<br>",_temp.indexOf("Reference "))).trim();
+                document.getElementById("pubH").value = _temp.slice(_temp.indexOf("Submission ")+17,_temp.indexOf("<br>",_temp.indexOf("Submission "))).trim();
+                document.getElementById("pubI").value = _temp.slice(_temp.indexOf("Publication")+18,_temp.indexOf("<br>",_temp.indexOf("Publication"))).trim();
+                document.getElementById("pubK").value = _temp.slice(_temp.indexOf("SCIE ")+18,_temp.indexOf("<br>",_temp.indexOf("SCIE "))).trim();
+                document.getElementById("pubL").value = _temp.slice(_temp.indexOf("Issuance")+16,_temp.indexOf("<br>",_temp.indexOf("Issuance"))).trim();
+            }else if (i == 3){
+            document.getElementById("pubX").value=_temp.slice(0,_temp.search("/"));
+            document.getElementById("pub"+cols[i]).value=_temp.slice(_temp.search("/")+1,_temp.length);
             }
-           }
-
-
-           function myFunction2() {
-            var x = document.getElementById("myDIV1");
-            if (x.style.display === "none") {
-                x.style.display = "block";
-            } else {
-                x.style.display = "none";
+            else{
+                document.getElementById("pub"+cols[i]).value=_temp;
             }
-           }
+        }
 
-               function myFunction3() {
-            var x = document.getElementById("myDIV1");
-            if (x.style.display === "block") {
-                x.style.display = "none";
-            } else {
-                x.style.display = "none";
-            }
-           }
+    }
 
-              function myFunction4() {
-            var x = document.getElementById("myDIV2");
-            if (x.style.display === "none") {
-                x.style.display = "block";
-            } else {
-                x.style.display = "none";
-            }
-           }
 
-               function myFunction5() {
-            var x = document.getElementById("myDIV2");
-            if (x.style.display === "block") {
-                x.style.display = "none";
-            } else {
-                x.style.display = "none";
+
+    function updateCON(_row){
+        var cols=new Array();
+        cols[0]="A";
+        cols[1]="B";
+        cols[2]="C";
+        cols[3]="D";
+        cols[4]="E",
+        cols[5]="F";
+        cols[6]="G";
+        cols[7]="H";
+        cols[8]="I";
+        var p = document.getElementById("con"+_row+"Z").innerHTML.search(">");
+        var pend = document.getElementById("con"+_row+"Z").innerHTML.indexOf("<",5);
+        document.getElementById("conZ").value=document.getElementById("con"+_row+"Z").innerHTML.slice(p+1,pend);
+        window.location.href="#top";
+        document.getElementById("changes6").innerHTML = "<span style='color:red;'>Edit the selected conference publication details</span>";
+        for(var i=0;i<cols.length;i++)  {
+            var _temp=document.getElementById("con"+_row+cols[i]).innerHTML;
+            if(i == 2){
+                document.getElementById("conC").value = _temp.slice(_temp.indexOf("Confrence:")+52,_temp.indexOf("<br>",_temp.indexOf("Confrence:"))).trim();
+                document.getElementById("conE").value = _temp.slice(_temp.indexOf("Institute")+15,_temp.indexOf("<br>",_temp.indexOf("Institute"))).trim();
+                document.getElementById("conF").value = _temp.slice(_temp.indexOf("Submission")+17,_temp.indexOf("<br>",_temp.indexOf("Submission"))).trim();
+                document.getElementById("conG").value = _temp.slice(_temp.indexOf("Start")+18,_temp.indexOf("<br>",_temp.indexOf("Start"))).trim();
+                document.getElementById("conH").value = _temp.slice(_temp.indexOf("End")+16,_temp.indexOf("<br>",_temp.indexOf("End"))).trim();
+                document.getElementById("conI").value = _temp.slice(_temp.indexOf("Page ")+18,_temp.indexOf("<br>",_temp.indexOf("Page "))).trim();
+                document.getElementById("conL").value = _temp.slice(_temp.indexOf("ISBN ")+21,_temp.indexOf("<br>",_temp.indexOf("ISBN "))).trim();
+            }else if(i==3){
+            {
+                document.getElementById("conX").value=_temp.slice(0,_temp.search("/"));
+                document.getElementById("con"+cols[i]).value=_temp.slice(_temp.search("/")+1,_temp.length);
             }
-           }
+            }
+            else{
+                document.getElementById("con"+cols[i]).value=_temp;
+            }
+        }
+    }
+
+
+    function updateBOOKS(_row){
+        var cols=new Array();
+        cols[0]="A";
+        cols[1]="B";
+        cols[2]="C";
+        cols[3]="D";
+        cols[4]="E",
+        cols[5]="F";
+        cols[6]="G";
+        cols[7]="H";
+        cols[8]="I";
+        var p = document.getElementById("books"+_row+"Z").innerHTML.search(">");
+        var pend = document.getElementById("books"+_row+"Z").innerHTML.indexOf("<",5);
+        document.getElementById("booksZ").value=document.getElementById("books"+_row+"Z").innerHTML.slice(p+1,pend);
+        window.location.href="#top";
+        document.getElementById("changes7").innerHTML = "<span style='color:red;'>Edit the selected published book details</span>";
+        for(var i=0;i<cols.length;i++)  {
+            var _temp=document.getElementById("books"+_row+cols[i]).innerHTML;
+            if(i==3){
+                document.getElementById("booksX").value=_temp.slice(0,_temp.search("/"));
+                document.getElementById("books"+cols[i]).value=_temp.slice(_temp.search("/")+1,_temp.length);
+            }
+            else{
+            document.getElementById("books"+cols[i]).value=_temp;
+            }
+        }
+    }
+
+    function updateRESEARCH(_row){
+        var cols=new Array();
+        cols[0]="A";
+        cols[1]="B";
+        cols[2]="C";
+        cols[3]="D";
+        cols[4]="E",
+        cols[5]="F";
+        cols[6]="G";
+        cols[7]="H";
+        cols[8]="I";
+        var p = document.getElementById("research"+_row+"Z").innerHTML.search(">");
+        var pend = document.getElementById("research"+_row+"Z").innerHTML.indexOf("<",5);
+        document.getElementById("researchZ").value=document.getElementById("research"+_row+"Z").innerHTML.slice(p+1,pend);
+        window.location.href="#top";
+        document.getElementById("changes8").innerHTML = "<span style='color:red;'>Edit the selected research project details</span>";
+        for(var i=0;i<cols.length;i++)  {
+            var _temp=document.getElementById("research"+_row+cols[i]).innerHTML;
+            if(i==0){
+                document.getElementById("research"+cols[i]).value=_temp.slice(_temp.indexOf("PI: ")+8,_temp.indexOf("<br>",_temp.indexOf("PI: "))).trim();
+                document.getElementById("researchE").value=_temp.slice(_temp.indexOf("<b>Co-PI: </b>")+14,_temp.length).trim();
+            }else if(i == 3){
+                document.getElementById("researchD").value = _temp.slice(_temp.indexOf("Submission")+20,_temp.indexOf("<br>",_temp.indexOf("Submission"))).trim();
+                document.getElementById("researchG").value = _temp.slice(_temp.indexOf("Start")+15,_temp.indexOf("<br>",_temp.indexOf("Start"))).trim();
+                document.getElementById("researchH").value = _temp.slice(_temp.indexOf("Expected")+26,_temp.indexOf("<br>",_temp.indexOf("Expected"))).trim();
+                document.getElementById("researchI").value = _temp.slice(_temp.indexOf("Financial")+22,_temp.indexOf("<br>",_temp.indexOf("Financial"))).trim();
+                document.getElementById("researchJ").value = _temp.slice(_temp.indexOf("Status")+12,_temp.indexOf("<br>",_temp.indexOf("Status"))).trim();
+            }else{
+                document.getElementById("research"+cols[i]).value=_temp;
+            }
+        }
+    }
+    function updateCONSULTANCY(_row){
+        var cols=new Array();
+        cols[0]="A";
+        cols[1]="B";
+        cols[2]="C";
+        cols[3]="D";
+        cols[4]="E",
+        cols[5]="F";
+        cols[6]="G";
+        cols[7]="H";
+        cols[8]="I";
+        var p = document.getElementById("consultancy"+_row+"Z").innerHTML.search(">");
+        var pend = document.getElementById("consultancy"+_row+"Z").innerHTML.indexOf("<",5);
+        document.getElementById("consultancyZ").value=document.getElementById("consultancy"+_row+"Z").innerHTML.slice(p+1,pend);
+        window.location.href="#top";
+        document.getElementById("changes9").innerHTML = "<span style='color:red;'>Edit the selected consultancy project details</span>";
+        for(var i=0;i<cols.length;i++)  {
+            var _temp=document.getElementById("consultancy"+_row+cols[i]).innerHTML;
+            if(i == 4){
+                document.getElementById("consultancyE").value=_temp.slice(_temp.indexOf("From:")+6,_temp.indexOf("<br>",_temp.indexOf("From:"))).trim();
+                document.getElementById("consultancyF").value=_temp.slice(_temp.indexOf("To:")+4,_temp.length).trim();
+            }else{
+                document.getElementById("consultancy"+cols[i]).value=_temp;
+            }
+        }
+    }
+
+    function updatePATENT(_row){
+        var cols=new Array();
+        cols[0]="A";
+        cols[1]="B";
+        cols[2]="C";
+        cols[3]="D";
+        cols[4]="E",
+        cols[5]="F";
+        cols[6]="G";
+        cols[7]="H";
+        cols[8]="I";
+        var p = document.getElementById("patent"+_row+"Z").innerHTML.search(">");
+        var pend = document.getElementById("patent"+_row+"Z").innerHTML.indexOf("<",5);
+        document.getElementById("patentZ").value=document.getElementById("patent"+_row+"Z").innerHTML.slice(p+1,pend);
+        window.location.href="#top";
+        document.getElementById("changes10").innerHTML = "<span style='color:red;'>Edit the selected patent details</span>";
+        for(var i=0;i<cols.length;i++)  {
+            var _temp=document.getElementById("patent"+_row+cols[i]).innerHTML;
+            if(i==3){
+                document.getElementById("patentX").value=_temp.slice(0,_temp.search("/"));
+                document.getElementById("patent"+cols[i]).value=_temp.slice(_temp.search("/")+1,_temp.length);
+            }
+            else{
+                document.getElementById("patent"+cols[i]).value=_temp;
+            }
+        }
+    }
+
+    function updateTECH(_row){
+        var cols=new Array();
+        cols[0]="A";
+        cols[1]="B";
+        cols[2]="C";
+        cols[3]="D";
+        cols[4]="E",
+        cols[5]="F";
+        cols[6]="G";
+        cols[7]="H";
+        cols[8]="I";
+        var p = document.getElementById("tech"+_row+"Z").innerHTML.search(">");
+        var pend = document.getElementById("tech"+_row+"Z").innerHTML.indexOf("<",5);
+        document.getElementById("techZ").value=document.getElementById("tech"+_row+"Z").innerHTML.slice(p+1,pend);
+        window.location.href="#top";
+        document.getElementById("changes11").innerHTML = "<span style='color:red;'>Edit the selected technology transfer details</span>";
+        for(var i=0;i<cols.length;i++)  {
+            var _temp=document.getElementById("tech"+_row+cols[i]).innerHTML;
+            document.getElementById("tech"+cols[i]).value=_temp;
+        }
+    }
+
+    function getData(_row){
+        var cols=new Array();
+        cols[0]="A";
+        cols[1]="B";
+        cols[2]="C";
+        cols[3]="D";
+        cols[4]="E",
+        cols[5]="F";
+        cols[6]="G";
+        cols[7]="H";
+        cols[8]="I";
+        var p = document.getElementById("s"+_row+"Z").innerHTML.search(">");
+        var pend = document.getElementById("s"+_row+"Z").innerHTML.indexOf("<",5);
+        document.getElementById("fZ").value=document.getElementById("s"+_row+"Z").innerHTML.slice(p+1,pend);
+        window.location.href="#top";
+        console.log(cols);
+        document.getElementById("changes3").innerHTML = "<span style='color:red;'>Edit the selected thesis details</span>";
+        for(var i=0;i<cols.length;i++)  {
+            var _temp=document.getElementById("s"+_row+cols[i]).innerHTML;
+            if (i==0){
+                var pos = _temp.indexOf("<br>");
+                document.getElementById("fA").value=_temp.slice(13, pos);
+                pos = _temp.lastIndexOf("</b>");
+                document.getElementById("fE").value=_temp.slice(pos+4, _temp.length);
+            }else if(i==2){
+                document.getElementById("fX").value=_temp.slice(0,_temp.search("/"));
+                document.getElementById("f"+cols[i]).value=_temp.slice(_temp.search("/")+1,_temp.length);
+            }
+            else{
+
+                document.getElementById("f"+cols[i]).value=_temp;
+            }
+        }
+    }
+
+    function updatePHD(_row){
+        var cols=new Array();
+        cols[0]="A";
+        cols[1]="B";
+        cols[2]="C";
+        cols[3]="D";
+        cols[4]="E",
+        cols[5]="F";
+        cols[6]="G";
+        cols[7]="H";
+        cols[8]="I";
+        var p = document.getElementById("phd"+_row+"Z").innerHTML.search(">");
+        var pend = document.getElementById("phd"+_row+"Z").innerHTML.indexOf("<",5);
+        document.getElementById("phdZ").value=document.getElementById("phd"+_row+"Z").innerHTML.slice(p+1,pend);
+        window.location.href="#top";
+        document.getElementById("changes4").innerHTML = "<span style='color:red;'>Edit the selected thesis details</span>";
+        for(var i=0;i<cols.length;i++)  {
+            var _temp=document.getElementById("phd"+_row+cols[i]).innerHTML;
+            if (_temp.search("<b>Name: </b>")==0){
+                var pos = _temp.search("<br>");
+                document.getElementById("phd"+cols[i]).value=_temp.slice(13, pos);
+                pos = _temp.lastIndexOf("</b>");
+                document.getElementById("phdE").value=_temp.slice(pos+4, _temp.length);
+            }else if(i==2){
+                document.getElementById("phdX").value=_temp.slice(0,_temp.search("/"));
+                document.getElementById("phd"+cols[i]).value=_temp.slice(_temp.search("/")+1,_temp.length);
+            }
+            else{
+                document.getElementById("phd"+cols[i]).value=_temp;
+            }
+        }
+    }
+
     </script>
- <!-- <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script> -->
-    <script type="text/javascript" src="{% static 'fusion/js/datepicker.js' %}"></script>
-     <!-- <script type="text/javascript" src="{% static 'fusion/js/jquery.min.js' %}"></script>
 
-    <script src="https://code.jquery.com/jquery-2.1.4.js"></script>
-<script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script> -->
+    <script type="text/javascript" src="{% static 'fusion/js/editProfile.js' %}"></script>
+    <script type="text/javascript" src="{% static 'fusion/js/modal.js' %}"></script>
+    <script type="text/javascript" src="{% static 'fusion/js/tablesort.js' %}"></script>
+    <script type="text/javascript" src="{% static 'fusion/js/jquery.min.js' %}"></script>
 
+    <!-- <script src="https://code.jquery.com/jquery-2.1.4.js"></script> -->
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+
+    {% comment %}
+        <script>
+            $(document).ready(function() {
+                $('table').tablesort();
+            });
+        </script>
+            {% endcomment %}
+        <script>
+
+        </script>
+
+
+        <script>
+            function toggleContent() {
+                $('.modulesContent').toggle();
+
+                if($('.modulesContent').is(':visible')){
+                    $('#toggleIcon').removeClass("chevron down");
+                    $('#toggleIcon').addClass("chevron up");
+                }
+                else if(!$('.modulesContent').is(':visible')){
+                    $('#toggleIcon').removeClass("chevron up");
+                    $('#toggleIcon').addClass("chevron down");
+                }
+            }
+
+
+
+            $('#example1').calendar();
+            $('#example1a').calendar();
+            $('#example1b').calendar();
+            $('#example1d').calendar();
+            $('#example1e').calendar();
+            $('#example1f').calendar();
+            $('#example1g').calendar();
+             $('#example1h').calendar();
+
+            $('#example2').calendar({
+              type: 'date'
+            });
+
+            $('#example3').calendar({
+              type: 'time'
+            });
+
+            $('#rangestart').calendar({
+              type: 'date',
+              endCalendar: $('#rangeend')
+            });
+
+            $('#rangeend').calendar({
+              type: 'date',
+              startCalendar: $('#rangestart')
+            });
+
+             $('#rangestart1').calendar({
+              type: 'date',
+              endCalendar: $('#rangeend')
+            });
+
+            $('#rangeend1').calendar({
+              type: 'date',
+              startCalendar: $('#rangestart')
+            });
+             $('#rangestart2').calendar({
+              type: 'date',
+              endCalendar: $('#rangeend')
+            });
+
+            $('#rangeend2').calendar({
+              type: 'date',
+              startCalendar: $('#rangestart')
+            });
+
+             $('#rangestart3').calendar({
+              type: 'date',
+              endCalendar: $('#rangeend')
+            });
+
+            $('#rangeend3').calendar({
+              type: 'date',
+              startCalendar: $('#rangestart')
+            });
+
+              $('#rangestart4').calendar({
+              type: 'date',
+              endCalendar: $('#rangeend')
+            });
+
+            $('#rangeend4').calendar({
+              type: 'date',
+              startCalendar: $('#rangestart')
+            });
+
+              $('#rangestart5').calendar({
+              type: 'date',
+              endCalendar: $('#rangeend')
+            });
+
+            $('#rangeend5').calendar({
+              type: 'date',
+              startCalendar: $('#rangestart')
+            });
+
+             $('#rangestart6').calendar({
+              type: 'date',
+              endCalendar: $('#rangeend')
+            });
+
+            $('#rangeend6').calendar({
+              type: 'date',
+              startCalendar: $('#rangestart')
+            });
+
+            $('#rangestart8').calendar({
+              type: 'date',
+              endCalendar: $('#rangeend8')
+            });
+
+            $('#rangeend8').calendar({
+              type: 'date',
+              startCalendar: $('#rangestart8')
+            });
+
+            $('#example4').calendar({
+              startMode: 'year'
+            });
+
+            $('#example5').calendar();
+
+            $('#example6').calendar({
+              ampm: false,
+              type: 'time'
+            });
+
+            $('#example7').calendar({
+              type: 'month'
+            });
+
+            $('#example8').calendar({
+              type: 'year'
+            });
+
+            $('#example9').calendar();
+            $('#example10').calendar({
+              on: 'hover'
+            });
+
+            var today = new Date();
+            $('#example11').calendar({
+              minDate: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 5),
+              maxDate: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 5)
+            });
+
+            $('#example12').calendar({
+              monthFirst: false
+            });
+
+            $('#example13').calendar({
+              monthFirst: false,
+              formatter: {
+                date: function (date, settings) {
+                  if (!date) return '';
+                  var day = date.getDate();
+                  var month = date.getMonth() + 1;
+                  var year = date.getFullYear();
+                  return day + '/' + month + '/' + year;
+                }
+              }
+            });
+            $('#example14').calendar({
+              inline: true
+            });
+            $('#example15').calendar();
+
+
+
+                  function myFunction() {
+                var x = document.getElementById("myDIV");
+                if (x.style.display === "none") {
+                    x.style.display = "block";
+                } else {
+                    x.style.display = "none";
+                }
+               }
+
+                   function myFunction1() {
+                var x = document.getElementById("myDIV");
+                if (x.style.display === "block") {
+                    x.style.display = "none";
+                } else {
+                    x.style.display = "none";
+                }
+               }
+
+
+               function myFunction2() {
+                var x = document.getElementById("myDIV1");
+                if (x.style.display === "none") {
+                    x.style.display = "block";
+                } else {
+                    x.style.display = "none";
+                }
+               }
+
+                   function myFunction3() {
+                var x = document.getElementById("myDIV1");
+                if (x.style.display === "block") {
+                    x.style.display = "none";
+                } else {
+                    x.style.display = "none";
+                }
+               }
+
+                  function myFunction4() {
+                var x = document.getElementById("myDIV2");
+                if (x.style.display === "none") {
+                    x.style.display = "block";
+                } else {
+                    x.style.display = "none";
+                }
+               }
+
+                   function myFunction5() {
+                var x = document.getElementById("myDIV2");
+                if (x.style.display === "block") {
+                    x.style.display = "none";
+                } else {
+                    x.style.display = "none";
+                }
+               }
+        </script>
+        <script type="text/javascript" src="{% static 'fusion/js/datepicker.js' %}"></script>
 {% endblock %}

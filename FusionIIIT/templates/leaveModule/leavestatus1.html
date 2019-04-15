@@ -8,7 +8,7 @@
 </div>
 
 <div class="ui bottom attached tab segment active" data-tab="afirst">
-	<div class="content">
+    <div class="content">
             <div class="description">
 
                 <table class="ui very basic celled large sortable table"
@@ -127,7 +127,7 @@
                                         <i class="hourglass half orange icon"></i>
                                     {% endif %}
                                 <td> <a href="/leave/generate_form?id={{ leave.id }}" class="ui button blue" target="_blank"> Generate </a> </td>
-                                <td> {% if leave.yet_not_started %} <a data="{{ leave.id }}" class="ui button red delete_leave"> Delete </a> {% endif %}
+                                <td> {% if leave.status != "rejected" %} <a data="{{ leave.id }}" class="ui button red delete_leave"> Cancel Leave </a> {% endif %}
                                  </td>
                             </tr>
 
@@ -140,7 +140,7 @@
 </div>
 
 <div class="ui bottom attached tab segment" data-tab="asecond">
-	<div class="content">
+    <div class="content">
             <div class="description">
 
                 <table class="ui very basic celled large sortable table"
@@ -164,7 +164,7 @@
                         {% for leave in user_leave_applications_offline %}
 
 
-							<tr id="leave-status-offline-{{ leave.id }}">
+                            <tr id="leave-status-offline-{{ leave.id }}">
 
                                 <div class="ui modal leave-detail-{{ leave.id }}">
                                     <div class="header">
@@ -250,7 +250,7 @@
 
         $('.delete_leave').on('click', function(e){
             e.preventDefault();
-            var d = window.confirm('Are you sure, you want to delete the application?');
+            var d = window.confirm('Are you sure, you want to cancel the application?');
             if(d == false){
                 return;
             }

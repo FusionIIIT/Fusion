@@ -42,30 +42,155 @@ $(document).ready(function(){
 function request_booking (event) {
     event.preventDefault();
 
-    console.log("casmnsac,");
-    // console.log(number_of_people);
-    // console.log("tada tada");
     intender = $('input[name="intender"]').val();
     category = $('input[name="visitor-category"]').val();
     csrfmiddlewaretoken = $('input[name="csrf"]').val();
     booking_from = $('input[name="request-booking-from"]').val();
     booking_to = $('input[name="request-booking-to"]').val();
-    number_of_people = $('input[name="number-of-people"]').val();
-    number_of_rooms = $('input[name="number-of-rooms"]').val();
+    arrival_hour = $('input[name="arrival-hour"]').val();
+    arrival_minute = $('input[name="arrival-minute"]').val();
+    arrival = $('input[name="arrival"]').val();
+    departure_hour = $('input[name="departure-hour"]').val();
+    departure_minute = $('input[name="departure-minute"]').val();
+    departure = $('input[name="departure"]').val();
+    number_of_people =  parseInt($('input[name="number-of-people"]').val());
+    number_of_rooms =  parseInt($('input[name="number-of-rooms"]').val());
     purpose_of_visit = $('input[name="purpose-of-visit"]').val();
+    remarks_during_booking_request = $('input[name="remarks-during-booking-request"]').val();
+    bill_settlement = $('input[name="bill_settlement"]').val();
+
+    booking_from_time = arrival_hour.concat(":").concat(arrival_minute).concat(" ").concat(arrival);
+    booking_to_time = departure_hour.concat(":").concat(departure_minute).concat(" ").concat(departure);
+    // console.log(arrival_hour);
+    // console.log("ffff");
+    // console.log(departure_time);
+    console.log(bill_settlement);
+
+
+// visitor details
+    name = $('input[name=visitor-name-1]').val();
+    phone = $('input[name=phone-1]').val();
+    email = $('input[name=email-1]').val();
+    address = $('input[name=address-1]').val();
+    organization = $('input[name=organization-1]').val();
+    nationality = $('input[name=country]').val();
+
+
+    // loc=booking_from_time.indexOf(':');
+
+    // if(loc == -1){
+    //     alertModal("Please check the arrival time.");
+    //         return;
+    // }
+    // hour = booking_from_time.substring(0,loc);
+    // min = booking_from_time.substring(loc+1,booking_from_time.length);
+
+    // h=parseInt(hour);
+    // m=parseInt(min);
+
+    // if(h < 0 || h >= 24){
+    //     alertModal("Please check the arrival time.");
+    //         return;
+
+    // }
+    // if(m < 0 || m >= 60){
+    //     alertModal("Please check the arrival time.");
+    //         return;
+
+    // }
+
+    // loc=booking_to_time.indexOf(':');
+
+    // if(loc == -1){
+    //     alertModal("Please check the departure time.");
+    //         return;
+    // }
+    // hour = booking_to_time.substring(0,loc);
+    // min = booking_to_time.substring(loc+1,booking_to_time.length);
+
+    // h=parseInt(hour);
+    // m=parseInt(min);
+
+    // if(h < 0 || h >= 24){
+    //     alertModal("Please check the departure time.");
+    //         return;
+
+    // }
+    // if(m < 0 || m >= 60){
+    //     alertModal("Please check the departure time.");
+    //         return;
+
+    // }
+
+    
+    if (name == '') {
+            alertModal("You didn't fill a visitor name! Please refill the form.");
+            return;
+    }
+
+    if (phone == '') {
+        alertModal("You didn't fill a visitor's phone number. Please fill the form again.");
+        return;
+    }
     //phone = $('input[name="phoneNum"]').val();
 
+    today = new Date();
+    dd = today.getDate();
+
+
+    // if (new Date(booking_from == dd)){
+    //     alertModal("Oops! booking cant be done.");
+    //     return;
+    // }
 
     //document.getElementById("request_booking_button").disabled=true;
-    phone="9897992049"
+    var oneDay = 24*60*60*1000; // hours*minutes*seconds*milliseconds
+    var firstDate = new Date(booking_from);
+    var secondDate = new Date(booking_to);
+
+    var days_diff = Math.round(Math.abs((firstDate.getTime() - secondDate.getTime())/(oneDay)));
+    console.log("here !!!");
+    console.log(days_diff);
+    console.log(phone + " " + email);
+
+    if (!(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email))){
+        alertModal("Oops! Please enter valid email address.");
+        return;
+    }
 
     if (phone.length!=10){
         alertModal("Oops! Please enter valid phone number.");
         return;
     }
 
-    if (phone.charAt(0)!='9'&&phone.charAt(0)!='8'&&phone.charAt(0)!='7'){
-        alertModal("Oops! Please enter valid phone number.");
+    
+
+    if ( !arrival_hour) {
+        alertModal ('Oops! Please enter the expected arrival time of the visitor');
+        return;
+    }
+
+    if ( !arrival_minute) {
+        alertModal ('Oops! Please enter the expected arrival time of the visitor');
+        return;
+    }
+
+    if ( !arrival) {
+        alertModal ('Oops! Please enter the expected arrival time of the visitor');
+        return;
+    }
+
+    if ( !departure_hour) {
+        alertModal ('Oops! Please enter the expected departure time of the visitor');
+        return;
+    }
+    if ( !departure_minute) {
+        alertModal ('Oops! Please enter the expected departure time of the visitor');
+        return;
+    }
+
+    if ( !departure) {
+        alertModal ('Oops! Please enter the expected departure time of the visitor');
         return;
     }
 
@@ -79,7 +204,7 @@ function request_booking (event) {
         return;
     }
 
-    if ( (new Date(booking_from) - new Date(booking_to)) > 15 ) {
+    if ( days_diff > 15 ) {
         alertModal ('You are only allowed to book a room for 15 days!');
         return;
     }
@@ -90,8 +215,9 @@ function request_booking (event) {
         return;
     }
 
-    if(number_of_rooms > number_of_people) {
-        alertModal("iwcLN");
+    if( number_of_rooms > number_of_people ) {
+        // alertModal("iwcLN");
+        console.log(number_of_rooms + " and people " + number_of_people)
         alertModal("Oops! Number of rooms can not be greater than number of people.");
         return;
     }
@@ -112,18 +238,31 @@ function request_booking (event) {
         alertModal ("Oops! Number of rooms can't be greater than 15.");
         return;
     } 
+    if ( !number_of_rooms ) {
+        alertModal ("Please fill required number of rooms!");
+        return;
+    }
+    if ( !number_of_people ) {
+        alertModal ("Please fill number of people!");
+        return;
+    }
+    if ( !category ) {
+        alertModal ("Please fill the Category!");
+        return;
+    } 
+    if ( ! booking_from ) {
+        alertModal ("Please fill expected arrival date!");
+        return;
+    }
+    if ( ! booking_to)  {
+        alertModal ("Please fill expected departure date!");
+        return;
+    }
+    if ( !nationality ) {
+         nationality = ' ';
+    }
+    console.log(nationality) 
 
-
-    console.log("casmnsac,");
-    console.log(intender);
-    console.log(category);
-    console.log(csrfmiddlewaretoken);
-    console.log(booking_from);
-    console.log(booking_to);
-    console.log(number_of_people);
-    console.log(purpose_of_visit);
-    console.log(number_of_rooms);
-    
 
 
     $.ajax({
@@ -138,15 +277,29 @@ function request_booking (event) {
                'number-of-people' : number_of_people,
                'purpose-of-visit' : purpose_of_visit,
                'number-of-rooms' : number_of_rooms,
+               'category' : category,
+               'booking_from_time' : booking_from_time,
+               'booking_to_time' : booking_to_time,
+               'remarks_during_booking_request': remarks_during_booking_request,
+               'bill_settlement' : bill_settlement,
+               'name' : name,
+                'phone' : phone,
+                'email' : email,
+                'address' : address,
+                'nationality' : nationality,
+                'organization' : organization,
          },
         success: function(data) {
+            console.log(name + " " + phone + " " + email + " " + address);
             alertModal(" Congratulations! Your booking has been placed successfully\n Please wait for confirmation");
             setTimeout(function() {
-                window.location.replace('http://localhost:8000/visitorhostel');
+               location.reload();
             }, 1500);
         },
         error: function(data, err) {
+            console.log(name + " " + phone + " " + email + " " + address);
             alertModal('Something missing! Please refill the form');
+            console.log(booking_to_time);
         }
     });
 };
@@ -312,11 +465,6 @@ function confirm_booking (id) {
     category = $('input[name=category-'+id+']').val();
     rooms = $('select[name=alloted-rooms-'+id+']').val();
 
-    if (category == 0) {
-        alertModal("Please fill the category to confirm.");
-        return;
-    }
-
     if (rooms == 0) {
         alertModal("Please fill the rooms to confirm booking.");
         return;
@@ -334,7 +482,7 @@ function confirm_booking (id) {
         success: function(data) {
             alertModal("This booking has been confirmed");
             setTimeout(function() {
-                window.location.replace('http://localhost:8000/visitorhostel');
+                location.reload();
             }, 1500);
         },
         error: function(data, err) {
@@ -364,7 +512,7 @@ function reject_booking (id) {
         success: function(data) {
             alertModal("This booking has been rejected");
             setTimeout(function() {
-                window.location.replace('http://localhost:8000/visitorhostel');
+                location.reload();
             }, 1500);
         },
         error: function(data, err) {
@@ -409,7 +557,7 @@ function update_booking (id) {
         success: function(data) {
             alertModal("This booking has been updated.");
             setTimeout(function() {
-                window.location.replace('http://localhost:8000/visitorhostel');
+                location.reload();
             }, 1500);
         },
         error: function(data, err) {
@@ -435,7 +583,7 @@ function cancel_booking (id) {
         success: function(data) {
             alertModal("This booking has been cancelled.");
             setTimeout(function() {
-                window.location.replace('http://localhost:8000/visitorhostel');
+                location.reload();
             }, 1500);
         },
         error: function(data, err) {
@@ -446,26 +594,76 @@ function cancel_booking (id) {
 
 // Forward Booking
 
+// function forward_booking (id) {
+//     id=id;
+//     $.ajax({
+//         type: 'POST',
+//         url: '/visitorhostel/forward-booking/',
+//         data: {
+//             'csrfmiddlewaretoken' : $('input[name="csrf"]').val(),
+//             'id' : id,
+//         },
+//         success: function(data) {
+//             alertModal("This booking has been forwarded");
+//             setTimeout(function() {
+//                 window.location.replace('http://localhost:8000/visitorhostel');
+//             }, 1500);
+//         },
+//         error: function(data, err) {
+//             alertModal('Something missing! Please refill the form');
+//         }
+//     });
+// }
+
+
+// new forward booking
+
 function forward_booking (id) {
+
     id=id;
+    csrfmiddlewaretoken = $('input[name=csrf]').val();
+    previous_category = $('input[name=category-'+id+']').val();
+    modified_category = $('input[name=modified-category-'+id+']').val();
+    rooms = $('select[name=alloted-rooms-'+id+']').val();
+
+    // if (previous_category == 0) {
+    //     alertModal("Please fill the category to confirm.");
+    //     return;
+    // }
+
+    if (modified_category == 0) {
+        modified_category = previous_category;
+    }
+
+    if (rooms == 0) {
+        alertModal("Please fill the rooms to confirm booking.");
+        return;
+    }
+
     $.ajax({
         type: 'POST',
         url: '/visitorhostel/forward-booking/',
         data: {
-            'csrfmiddlewaretoken' : $('input[name="csrf"]').val(),
             'id' : id,
+            'csrfmiddlewaretoken': csrfmiddlewaretoken,
+            'previous_category' : previous_category,
+            'modified_category' : modified_category,
+            'rooms' : rooms,
         },
         success: function(data) {
             alertModal("This booking has been forwarded");
             setTimeout(function() {
-                window.location.replace('http://localhost:8000/visitorhostel');
+                location.reload();
             }, 1500);
+
         },
         error: function(data, err) {
+            console.log(id + " " + previous_category + " "+ modified_category+ " " + rooms);
             alertModal('Something missing! Please refill the form');
         }
     });
-}
+};
+
 
 // Cancel Active Booking
 
@@ -486,7 +684,7 @@ function cancel_active_booking (id, booking_from) {
         success: function(data) {
             alertModal("Your cancellation request has been placed.\n Please await confirmation.");
             setTimeout(function() {
-                window.location.replace('http://localhost:8000/visitorhostel');
+                location.reload();
             }, 1500);
         },
         error: function(data, err) {
@@ -525,11 +723,13 @@ $("#update-inventory-submit").click(function(e){
 function submit_visitor_details (id) {
     vis_length = $('input[name=length-'+id+']').val();
     var temp = parseInt(vis_length);
-    for (var i=1; i<=vis_length+1; i++) {
+    for (var i=1; i<=vis_length; i++) {
         csrfmiddlewaretoken = $('input[name="csrf"]').val();
         name = $('input[name=visitor-name-'+id+'-'+i+']').val();
         phone = $('input[name=phone-'+id+'-'+i+']').val();
         email = $('input[name=email-'+id+'-'+i+']').val();
+        console.log(email);
+        console.log("lll");
         address = $('input[name=address-'+id+'-'+i+']').val();
 
         if (name == '') {
@@ -537,11 +737,28 @@ function submit_visitor_details (id) {
             return;
         }
 
+        if (!(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email))){
+        alertModal("Oops! Please enter valid email address.");
+        return;
+        }
+
         if (phone == '') {
             alertModal("You didn't fill a visitor's phone number. Please fill the form again.");
             return;
         }
+        if (phone.length!=10){
+            alertModal("Oops! Please enter valid phone number.");
+            return;
+        }
+
+        if (phone.charAt(0)!='9'&&phone.charAt(0)!='8'&&phone.charAt(0)!='7'){
+            alertModal("Oops! Please enter valid phone number.");
+            return;
+        }
     }
+    console.log(temp);
+    // console.log(name + " " + phone + " " + email + " " + address);
+
 
     for (var j=1; j<=temp+1; j++) {
         csrfmiddlewaretoken = $('input[name="csrf"]').val();
@@ -562,15 +779,17 @@ function submit_visitor_details (id) {
                 'address' : address
             },
             success: function(data) {
+                console.log(name + " " + phone + " " + email + " " + address);
                 alertModal("Great! Visitor's details have been recorded successfully");
             },
             error: function(data, err) {
+                console.log(name + " " + phone + " " + email + " " + address);
                 alertModal('Something missing! Please refill the form');
             }
         });
     }
     setTimeout(function() {
-        window.location.replace('http://localhost:8000/visitorhostel');
+        location.reload();
     }, 1500);
 }
 
@@ -589,7 +808,7 @@ function check_out (id , mess_bill , room_bill) {
         success: function(data) {
             alertModal("Visitor has Checked Out ");
             setTimeout(function() {
-                window.location.replace('http://localhost:8000/visitorhostel');
+                location.reload();
             }, 1500);
         },
         error: function(data, err) {
@@ -601,28 +820,39 @@ function check_out (id , mess_bill , room_bill) {
 
 function bill_between_date_range() {
 
-    start_date = $('input[name=start').val(),
-    end_date = $('input[name=end]').val(),
+    start_date = $('input[name=start').val();
+    end_date = $('input[name=end]').val();
+
+    if(new Date(start_date)>new Date(end_date))
+    {
+        alertModal('Please check start date and end date.')
+        return;
+    }
+
+        console.log(start_date);
+            console.log(end_date);
+
 
     $.ajax({
         type: 'POST',
         url: '/visitorhostel/bill_between_date_range/',
         data: {
             'csrfmiddlewaretoken' : $('input[name="csrf"]').val(),
+
             'start_date' : start_date,
             'end_date' : end_date,
 
         },
         success: function(data) {
             $('#replace-this-div-booking-bw-dates').html(data);
-            console.log("winning")
-            console.log(start_date)
+            console.log("winning");
+            console.log(start_date);
             // alert('Bookings Between range are ..');
         },
         error: function(data, err) {
-            alert('Error !');
-            console.log(start_date)
-            console.log(end_date)
+            alertModal ('Error !');
+            console.log(start_date);
+            console.log(end_date);
             // alertModal('Something missing! Please refill the form');
         }
     });
@@ -637,24 +867,77 @@ function bill_between_date_range() {
 // }
 
 
-function find_available_rooms () {
+function find_available_rooms ( available_rooms ) {
+    start_date = $('input[name=start-date').val();
+    end_date = $('input[name=end-date]').val();
+    if (new Date(start_date) > new Date(end_date)) {
+        alertModal ('Please check start date and end date!');
+        return;
+    }
+    console.log(start_date);
+            console.log(end_date);
+
     $.ajax({
         type: 'POST',
         url: '/visitorhostel/room-availability/',
         data: {
             'csrfmiddlewaretoken' : $('input[name="csrf"]').val(),
-            'start_date' : $('input[name=start-date]').val(),
-            'end_date' : $('input[name=end-date]').val(),
+            'start_date' : start_date,
+            'end_date' : end_date,
 
         },
         success: function(data) {
             $('#replace-this-div').html(data);
+            console.log("winning");
+            console.log(start_date);
+            // alert('Bookings Between range are ..');
         },
         error: function(data, err) {
-            alertModal('Something missing! Please refill the form');
+            alertModal ('Error !');
+            console.log(start_date);
+            console.log(end_date);
+            // alertModal('Something missing! Please refill the form');
+
         }
     });
 }
+
+
+
+function next_action(event){
+    event.preventDefault();
+    console.log("next!!");
+
+    
+    $("#booking-detail-data-tab").removeClass("active");
+    $("#booking-detail-action-tab").removeClass("active");
+    $("#visitor-detail-data-tab").addClass("active");
+    $("#visitor-detail-action-tab").addClass("active");
+}
+
+
+// function next_action_view(event){
+//     event.preventDefault();
+//     console.log("next!!");
+
+    
+//     $("#booking-detail-view-data-tab").addClass("active");
+//     $("#booking-detail-view-action-tab").addClass("active");
+//     $("#visitor-detail-view-data-tab").removeClass("active");
+//     $("#visitor-detail-view-action-tab").removeClass("active");
+// }
+
+function next_button_action_form(event){
+    event.preventDefault();
+    console.log("next!!@@@");
+
+    
+    $("#booking-detail-action-data-tab").addClass("active");
+    $("#booking-detail-action-form-tab").addClass("active");
+    $("#visitor-detail-action-data-tab").removeClass("active");
+    $("#visitor-detail-action-form-tab").removeClass("active");
+}
+
 
 
 // Various Modals
@@ -677,6 +960,7 @@ function cancellationRequestModal(id) {
 }
 
 function bookingDetailsModal(id){
+    console.log("booking detail modal! ");
     $('#booking-details-'.concat(id)).modal('show');
 }
 
@@ -708,4 +992,3 @@ $('.info.circle.icon')
     inline: true
   })
 ;
-

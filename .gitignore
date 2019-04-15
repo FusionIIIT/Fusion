@@ -113,3 +113,8 @@ FusionIIIT/dbinsertscripts
 FusionIIIT/Include
 FusionIIIT/Scripts
 FusionIIIT/tcl
+
+#folders
+Include
+Scripts
+tcl

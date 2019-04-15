@@ -12,6 +12,9 @@
         <a class="item" data-tab="hospitaladmit">
             Hospital Admission
         </a>
+        <a class="item" data-tab="prescriptionhistory">
+            Prescription History
+        </a>
     </div>
     {% comment %}the prescribe tab starts here {% endcomment %}
     <div class="ui active tab" data-tab="prescribe_app">
@@ -118,12 +121,13 @@
             <script src="{% static 'globals/js/jquery.min.js' %}"></script>
             <script type="text/javascript">
                   $('#medicine').click(function(e){
+                                                        $("#sched tr").remove();
                                                         var user = document.getElementById('user').value;
                                                         var quantity = document.getElementById('quantity').value;
                                                         var medicine = document.getElementById('medicine_id').value;
                                                         var days = document.getElementById('days').value;
                                                         var times = document.getElementById('times').value;
-                                                        if(user=="" || days=="" || days<0 || times=="" || times<0 || quantity=="" || quantity<0)
+                                                        if(user=="" || days=="" || days<0  || times=="" || times<0 || quantity=="" || quantity<0)
                                                         {
                                                         $('#usr').html("Enter Valid Information");
                                                         return false;
@@ -158,11 +162,18 @@
 </script>
 <script type="text/javascript">
                     $('#prescribe').click(function(e){
+
+                                                    var tbl = document.getElementById('sched');
+                                                    if(tbl.rows.length==0){
+                                                    $('#usr').html("Please prescribe some medicine!");
+                                                    return false;
+                                                     }
                                                     var user = document.getElementById('user').value;
                                                     var details = document.getElementById('details').value;
+
                                                     if(user=="" || details=="")
                                                     {
-                                                    $('#usr').html("Improve");
+                                                    $('#usr').html("Please enter all the details!");
                                                     return false;
                                                     }
                                                     $.ajax({
@@ -181,7 +192,11 @@
                                                           document.getElementById("details").value="";
                                                           document.getElementById("tests").value="";
                                                           $('#sched').empty();
+                                                          window.location.reload();
                                                         }
+                                                        else {
+                                                            alert("Prescription failed, please add some medicine");
+                                                            }
                                                     },
                                                   });
                                                   });
@@ -203,7 +218,7 @@
                   <div class="field">
                       <label>Patient</label>
                       <div class="ui fluid large input">
-                          <input placeholder="Patient Id" id="patient_b" name="patient_b" type="text">
+                          <input placeholder="Patient Id" id="patient_b" name="patient_b" type="number">
                       </div>
                    </div>
 
@@ -293,7 +308,7 @@
                 </div>
                 <div class="field">
                     <label><br></label>
-                    <input type="button" id="prescribe_b" name="prescribe" value="Submit"class="ui large right floated primary button" />
+                    <input type="button" id="prescribe_b" name="prescribe"  value="Submit"class="ui large right floated primary button" />
                 </div>
 
 
@@ -302,6 +317,7 @@
             <script src="{% static 'globals/js/jquery.min.js' %}"></script>
             <script type="text/javascript">
                   $('#medicine_b').click(function(e){
+                                                        $("#sched_b tr").remove();
                                                         var user = document.getElementById('patient_b').value;
                                                         var quantity = document.getElementById('quantity_b').value;
                                                         var medicine = document.getElementById('medicine_id_b').value;
@@ -343,9 +359,14 @@
                     $('#prescribe_b').click(function(e){
                                                     var user = document.getElementById('patient_b').value;
                                                     var details = document.getElementById('details_b').value;
+                                                    var tbl = document.getElementById('sched_b');
+                                                    if(tbl.rows.length==0){
+                                                    $('#usr_b').html("Please prescribe some medicine!");
+                                                    return false;
+                                                     }
                                                     if(user=="" || details=="")
                                                     {
-                                                    $('#usr_b').html("Improve");
+                                                    $('#usr_b').html("Please enter all the details!");
                                                     return false;
                                                     }
                                                     $.ajax({
@@ -367,6 +388,7 @@
                                                           document.getElementById("details_b").value="";
                                                           document.getElementById("tests_b").value="";
                                                           $('#sched_b').empty();
+                                                          window.location.reload();
                                                         }
                                                     },
                                                   });
@@ -379,10 +401,12 @@
     {% comment %}the compounder prescription tab ends here {% endcomment %}
 
 <div class="ui tab" data-tab="hospitaladmit">
+
   <p id="hospital"></p>
   <div class="ui vertical segment">
       <form class="ui form" method="POST" style="padding: 8px; padding-left: 24px; padding-right: 24px;">{% csrf_token %}
           <div class="field">
+              <h4>*Admission details for outside hospitals</h4>
             <div class="two fields">
               <div class="field">
                   <label>Doctor</label>
@@ -396,12 +420,13 @@
 
               <div class="field">
                   <label>User</label>
-                  <select class="ui search fluid dropdown" name="doc" id="doc" required="true">
-                    <option value="" disabled selected>--SELECT--</option>
-                    {% for user in users %}
-                    <option value="{{user.id}}">{{user.id}}-{{user.user}}</option>
-                    {% endfor %}
-                  </select>
+                  <div class="ui fluid large input">
+
+                      {% comment %} {% endcomment %}
+                      <input placeholder="Patient Id" name="doc" id="doc" type="text">
+                      {% comment %}  {% endcomment %}
+                      </div>
+
               </div>
             </div>
               <div class="two fields">
@@ -412,17 +437,21 @@
                   </div>
 
                   <div class="field">
-                      <label>Hospital</label>
-                      <select class="ui search fluid dropdown" name="hospital_name" id="hospital_name" required="true">
-                        <option value="" disabled selected>--SELECT--</option>
-                        {% for h in hospitals %}
-                        <option value="{{h.id}}">{{h.hospital_name}}</option>
-                        {% endfor %}
-                      </select>
-                    </div>
+                  <label>Hospital</label>
+                  <select class="ui search fluid dropdown" name="hospital_name" id="hospital_name" required="true">
+                    <option value="" disabled selected>--SELECT--</option>
+                    {% for hosp in hospitals_list %}
+                    <option value="{{hosp.id}}">{{hosp.hospital_name}}</option>
+                    {% endfor %}
+                  </select>
+                  </div>
+
+       {% comment %} <div class="field"><label>Hospital</label><input type='text' placeholder="Hospital Name" name="hospital_name" id="hospital_name" required="true" /></div>  {% endcomment %}
+
+
                   <div class="field">
                       <label>Hospital Doctor</label>
-                      <input type='text' placeholder="Hospital Doctor" name='hospital_doctor' id='hospital_doctor' />
+                      <input type="text" placeholder="Hospital Doctor" name='hospital_doctor' id='hospital_doctor' />
                   </div>
               </div>
           </div>
@@ -439,7 +468,7 @@
               <label><br></label>
 
               <div >
-                <input type="button" id="admission" name="admission" value="Submit"class="ui large right floated primary button" />
+                <input type="button" id="admission" name="admission"  value="Submit"class="ui large right floated primary button" />
               </div>
 
           </div>
@@ -457,11 +486,11 @@
                                                   $('#hospital').html('Enter valid details.');
                                                   return false;
                                               }
-                                              var admit = new Date(adm_Date);
-                                              var today = new Date();
-                                              if ( admit < today ) {
-                                                  $('#hospital').html('You cannot enter a date before today!.');
-
+                                              var admit = new Date(adm_Date).setHours(0, 0, 0, 0);
+                                              var today = new Date(new Date().setHours(0, 0, 0, 0));
+                                              if ( +today < +admit ) {
+                                                  $('#hospital').html('You cannot enter a date beyond today!');
+                                                  return false;
                                               }
 
                                               $.ajax({
@@ -486,6 +515,7 @@
                                                 document.getElementById("hospital_name").value="";
                                                 document.getElementById("hospital_doctor").value="";
                                                 document.getElementById("description").value="";
+                                                window.location.reload();
 
                                               }
                                             });
@@ -498,4 +528,120 @@
 </div>
   <br>
   <div class="extra segment"></div>
+
+<div class="ui tab" data-tab="prescriptionhistory">
+        <div class="ui vertical segment" >
+            <table  border=1 class="ui very basic collapsing celled large sortable table"
+                  style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;" >
+                <thead>
+                <tr>
+                    <td style="font-weight:bold;color:black;" >
+                        Patient ID
+                    </td>
+
+                    <td style="font-weight:bold;color:black;">
+                        Treated<br> By
+                    </td>
+
+                    <td style="font-weight:bold;color:black;" >
+                        Date
+                    </td>
+                    <td style="font-weight:bold;color:black;">
+                          Details
+                    </td>
+                    <td style="font-weight:bold;color:black;">
+                          Test
+                    </td>
+
+                    <td style="font-weight:bold;color:black;">
+
+                      <table>
+
+                        <tr><td style="font-weight:bold;color:black;">Medicine</td><td>D</td><td>T</td></tr>
+
+                      </table>
+                    </td>
+
+                </tr>
+                </thead>
+
+                <tbody>
+                {% for pre in presc_hist %}
+                <tr>
+
+                    <td>
+                        {{pre.user_id}}
+                    </td>
+
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                        </h4>
+                              {{pre.doctor_id}}
+
+
+                    </td>
+
+                    <td>
+                        {{pre.date}}
+                    </td>
+
+                    <td>
+                        {{pre.details}}
+                    </td>
+                    <td>
+                        {{pre.test}}
+                    </td>
+
+                    <td>
+                      <table>
+                        {% for medicine in medicines_presc %}
+                            {% if medicine.prescription_id.id == pre.id %}
+                                  <tr><td>{{medicine.medicine_id}}</td><td>{{medicine.days}}</td><td>{{medicine.times}}</td></tr>
+                            {% endif %}
+                        {% endfor%}
+                      </table>
+                    </td>
+                    <td>
+
+                        <input type="button" onclick="rem({{pre.pk}})" id="{{pre.pk}}" name="cancel" value="Cancel"class="ui large right floated primary button" />
+
+                    </td>
+
+                </tr>
+                {% endfor %}
+
+                </tbody>
+            </table>
+
+            <script>
+            function rem(id){
+
+			var dis = this;
+            var d = window.confirm('Are you sure, you want to cancel the prescription?');
+            if(d == false){
+                return;
+            }
+			     $('#'+id).parent().parent().remove();
+                                                      alert("prescription cancelled");
+
+					$.ajax({
+                             type:'post',
+                             url:'/healthcenter/compounder/',
+                            data: {'cancel_presc':id,},
+
+                            beforeSend: function(xhr) {
+               xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+            },
+                            success: function(data){
+                                                    }
+                                                  });
+
+
+      }
+      </script>
+
+          </div>
+        </div>
+
 {% endblock %}

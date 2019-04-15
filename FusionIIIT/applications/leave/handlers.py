@@ -16,6 +16,7 @@ from .models import (Leave, LeaveRequest, LeaveSegment,
                      LeaveType, ReplacementSegment, LeaveOffline, LeaveSegmentOffline, ReplacementSegmentOffline)
 from applications.globals.models import HoldsDesignation
 from notification.views import leave_module_notif
+import datetime
 
 LeaveFormSet = formset_factory(LeaveSegmentForm, extra=0, max_num=3, min_num=1,
                                formset=BaseLeaveFormSet)
@@ -424,6 +425,7 @@ def authority_processing(request, leave_request):
         leave_request.save()
         leave_module_notif(request.user, leave_request.leave.applicant, 'leave_forwarded')
         officer = leave.applicant.leave_admins.officer.designees.first().user
+        leave_module_notif(leave_request.leave.applicant, officer, 'leave_request')
         LeaveRequest.objects.create(
             leave=leave,
             requested_from=officer,
@@ -490,12 +492,19 @@ def process_staff_faculty_application(request):
                 rep_request.save()
                 leave_module_notif(request.user, rep_request.leave.applicant, 'request_accepted')
                 if rep_request.leave.relacements_accepted():
-                    leave_intermediary = HoldsDesignation.objects.get(
+                    """leave_intermediary = HoldsDesignation.objects.get(
                                                     designation__name='Leave Intermediary').user
                     LeaveRequest.objects.create(
                         requested_from=leave_intermediary,
                         leave=rep_request.leave,
                         permission='intermediary'
+                    )"""
+                    authority = rep_request.leave.applicant.leave_admins.authority.designees.first().user
+                    leave_module_notif(rep_request.leave.applicant, authority, 'leave_request')
+                    LeaveRequest.objects.create(
+                        leave=rep_request.leave,
+                        requested_from=authority,
+                        permission='sanc_auth',
                     )
                 return JsonResponse({'status': 'success', 'message': 'Successfully Accepted'})
 
@@ -515,10 +524,10 @@ def process_staff_faculty_application(request):
 
     else:
         leave_request = LeaveRequest.objects.get(id=id)
-        if leave_request.permission == 'intermediary':
-            return intermediary_processing(request, leave_request)
+        #if leave_request.permission == 'intermediary':
+        #    return intermediary_processing(request, leave_request)
 
-        elif leave_request.permission == 'sanc_auth':
+        if leave_request.permission == 'sanc_auth':
             return authority_processing(request, leave_request)
 
         else:
@@ -557,13 +566,29 @@ def process_student_application(request):
 def delete_leave_application(request):
     leave_id = request.POST.get('id')
     leave = request.user.all_leaves.filter(id=leave_id).first()
-    print(leave_id)
-    if leave and leave.applicant == request.user and leave.yet_not_started:
+    print(leave.status)
+    if leave and leave.applicant == request.user and leave.status != 'rejected':
+        rep_requests = ReplacementSegment.objects.filter(leave = leave)
+        leave_requests = LeaveRequest.objects.filter(leave = leave)
+        for i in rep_requests:
+            if i.status == 'accepted':
+                #notification to replacement user that  user has cancelled the leave
+                print("It is working! Yeah")
+                leave_module_notif(request.user, i.replacer, 'replacement_cancel', str(i.start_date))
+
+        for i in leave_requests:
+            if i.status == 'accepted':
+                #notification to replacement user that  user has cancelled the leave
+                print("It is working! Yeah")
+                leave_module_notif(request.user, i.requested_from, 'leave_withdrawn', str(leave.timestamp.date()))
+
         restore_leave_balance(leave)
         leave.delete()
-        response = JsonResponse({'status': 'success', 'message': 'Successfully Deleted'})
+        #notification to user that he has cancelled the leave
+        
+        response = JsonResponse({'status': 'success', 'message': 'Successfully Cancelled'})
     else:
-        response = JsonResponse({'status': 'failed', 'message': 'Deletion Failed'}, status=400)
+        response = JsonResponse({'status': 'failed', 'message': 'Cancellation Failed'}, status=400)
 
     return response
 

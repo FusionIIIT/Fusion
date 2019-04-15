@@ -74,8 +74,10 @@ class EmployeeCommonForm(forms.Form):
         data = self.cleaned_data
 
         #if data.get('is_station') and not data.get('leave_info'):
-        if not data.get('leave_info'):
-            raise VE({'leave_info': ['If there is a station leave, provide details about it.']})
+        #if not data.get('leave_info'):
+        #    raise VE({'leave_info': ['If there is a station leave, provide details about it.']})
+        if not data.get('purpose'):
+            raise VE({'purpose': ['Please provide purpose of the leave.']})
 
         return self.cleaned_data
 
@@ -111,12 +113,12 @@ class LeaveSegmentForm(forms.Form):
             if leave_type.name.lower() in ['restricted']:
                 count = get_special_leave_count(start_date, end_date, leave_type.name.lower())
                 if count < 0:
-                    return 'The period for this leave doesn\'t match with holiday calendar' \
+                    return 'The period for this leave doesn\'t match with restricted holiday calendar' \
                            '. Check Academic Calendar.'
             elif leave_type.name.lower() in ['vacation']:
                 count = get_vacation_leave_count(start_date,end_date,leave_type.name.lower())
                 if count < 0:
-                    return 'The period for this leave doesn\'t match with holiday calendar' \
+                    return 'The period for this leave doesn\'t match with vacation holidays' \
                            '. Check Academic Calendar.'
 
             return ''
@@ -177,9 +179,9 @@ class LeaveSegmentForm(forms.Form):
         if leave_type and leave_type.requires_proof and not data.get('document'):
             errors['document'] = [f'{leave_type.name} requires a document for proof.']
 
-        leave_type = LeaveType.objects.filter(id=data['leave_type']).first()
+        #leave_type = LeaveType.objects.filter(id=data['leave_type']).first()
         if leave_type and leave_type.requires_address and not data.get('address'):
-            errors['document'] = [f'{leave_type.name} requires Out of Station address.']
+            errors['address'] = [f'{leave_type.name} requires Out of Station address.']
 
         
         if errors.keys():
@@ -212,9 +214,9 @@ class AdminReplacementForm(forms.Form):
         errors = dict()
 
         if start_date > end_date:
-            errors['admin_start_date'] = ['Start Date must not be more than End Date']
+            errors['admin_start_date'] = ['Administrative Start Date must not be more than the End Date']
 
-        now = timezone.now().date()
+        """now = timezone.now().date()
         if data['admin_start_date'] < now:
             error = 'You have inserted past date.'
             if 'admin_start_date' in errors:
@@ -227,7 +229,7 @@ class AdminReplacementForm(forms.Form):
             if 'admin_end_date' in errors:
                 errors['admin_end_date'].append(error)
             else:
-                errors['admin_end_date'] = error
+                errors['admin_end_date'] = error"""
 
         rep_user = User.objects.get(username=data['admin_rep'])
 
@@ -266,9 +268,9 @@ class AcademicReplacementForm(forms.Form):
         start_date, end_date = data['acad_start_date'], data['acad_end_date']
 
         if start_date > end_date:
-            errors['acad_start_date'] = ['Start Date must not be more than End Date']
+            errors['acad_start_date'] = ['Academic Start Date must not be more than End Date']
 
-        now = timezone.now().date()
+        """now = timezone.now().date()
         if data['acad_start_date'] < now:
             error = 'You have inserted past date.'
             if 'acad_start_date' in errors:
@@ -281,7 +283,7 @@ class AcademicReplacementForm(forms.Form):
             if 'acad_end_date' in errors:
                 errors['acad_end_date'].append(error)
             else:
-                errors['acad_end_date'] = error
+                errors['acad_end_date'] = error"""
 
         rep_user = User.objects.get(username=data['acad_rep'])
 
@@ -291,6 +293,9 @@ class AcademicReplacementForm(forms.Form):
                                        Q(end_date__range=[start_date, end_date])).exists():
 
             errors['acad_rep'] = [f'{rep_user.get_full_name()} may be on leave in this period.']
+
+        if errors.keys():
+            raise VE(errors)
 
         return self.cleaned_data
 
@@ -381,12 +386,12 @@ class LeaveSegmentFormOffline(forms.Form):
             if leave_type.name.lower() in ['restricted']:
                 count = get_special_leave_count(start_date, end_date, leave_type.name.lower())
                 if count < 0:
-                    return 'The period for this leave doesn\'t match with holiday calendar' \
+                    return 'The period for this leave doesn\'t match with Restricted holiday calendar' \
                            '. Check Academic Calendar.'
             elif leave_type.name.lower() in ['vacation']:
                 count = get_vacation_leave_count(start_date,end_date,leave_type.name.lower())
                 if count < 0:
-                    return 'The period for this leave doesn\'t match with holiday calendar' \
+                    return 'The period for this leave doesn\'t match with Vacation holidays' \
                            '. Check Academic Calendar.'
 
             return ''
@@ -427,7 +432,7 @@ class LeaveSegmentFormOffline(forms.Form):
 
         leave_type = LeaveType.objects.filter(id=data['leave_type']).first()
         if leave_type and leave_type.requires_address and not data.get('address'):
-            errors['document'] = [f'{leave_type.name} requires Out of Station address.']
+            errors['address'] = [f'{leave_type.name} requires Out of Station address.']
 
         
         if errors.keys():
@@ -449,6 +454,10 @@ class EmployeeCommonFormOffline(forms.Form):
     def clean(self):
         super(EmployeeCommonFormOffline, self).clean()
         data = self.cleaned_data
+        if not data.get('purpose'):
+            raise VE({'purpose': ['Please provide purpose of the leave.']})
+        elif  not data.get('application_date'):
+            raise VE({'application_date': ['Please provide the application date of the leave.']})
 
         return self.cleaned_data
 
@@ -471,9 +480,9 @@ class AdminReplacementFormOffline(forms.Form):
         errors = dict()
 
         if start_date > end_date:
-            errors['admin_start_date'] = ['Start Date must not be more than End Date']
+            errors['admin_start_date'] = ['Administrative Start Date must not be more than End Date']
 
-        now = timezone.now().date()
+        """now = timezone.now().date()
         if data['admin_start_date'] < now:
             error = 'You have inserted past date.'
             if 'admin_start_date' in errors:
@@ -486,7 +495,10 @@ class AdminReplacementFormOffline(forms.Form):
             if 'admin_end_date' in errors:
                 errors['admin_end_date'].append(error)
             else:
-                errors['admin_end_date'] = error
+                errors['admin_end_date'] = error"""
+
+        if errors.keys():
+            raise VE(errors)
 
         return self.cleaned_data
 """
@@ -520,9 +532,9 @@ class AcademicReplacementFormOffline(forms.Form):
         start_date, end_date = data['acad_start_date'], data['acad_end_date']
 
         if start_date > end_date:
-            errors['acad_start_date'] = ['Start Date must not be more than End Date']
+            errors['acad_start_date'] = ['Academic Start Date must not be more than End Date']
 
-        now = timezone.now().date()
+        """now = timezone.now().date()
         if data['acad_start_date'] < now:
             error = 'You have inserted past date.'
             if 'acad_start_date' in errors:
@@ -535,9 +547,11 @@ class AcademicReplacementFormOffline(forms.Form):
             if 'acad_end_date' in errors:
                 errors['acad_end_date'].append(error)
             else:
-                errors['acad_end_date'] = error
+                errors['acad_end_date'] = error"""
 
-        
+        if errors.keys():
+            raise VE(errors)
+
         return self.cleaned_data
 
 class BaseLeaveFormSetOffline(BaseFormSet):

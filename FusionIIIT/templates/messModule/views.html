@@ -1,26 +1,30 @@
-{% extends 'globals/base.html' %}
+
 {% load static %}
-{% block body %}
+{#{% block body %}#}
 {% block views %}
 
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="menu1">
+        <a class="active item" id="menu1">
             Menu 
         </a>
 
-        <a class="item" data-tab="bill">
+        <a class="item" id="billm">
             Bill
         </a>
-
-        <a class="item" data-tab="paymenthistory">
+<!--
+        <a class="item" id="ph">
             Payment History
+        </a>
+        -->
+        <a class="item" id="regm">
+            Register for Mess
         </a>
     </div>
 
-    <div class="ui active tab" data-tab="menu1">
+    <div class="ui active tab" id="menu1tab">
         <div class="ui vertical segment">
-            <table class="ui definition padded table" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+            <table class="ui definition table" style="padding: 8px; padding-left: 8px; padding-right: 8px;">
                 <thead>
                 <tr>
                     <th></th>
@@ -203,13 +207,12 @@
         </div>
     </div>
 
-    <div class="ui tab" data-tab="bill">
+    <div class="ui tab" id="billmtab">
         <div class="ui vertical segment">
 
             <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
                 <thead>
                 <tr>
-                    <th>Student</th>
                     <th>Month</th>
                     <th>Monthly bill</th>
                     <th>Rebate Count</th>
@@ -220,15 +223,7 @@
                 <tbody>
                 {% for stu in monthly_bill %}
                 <tr>
-                    <td>
-                        <h4 class="ui image header">
-                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
-                            <div class="content">
-                                {{stu.student_id}}
-                            </div>
-                        </h4>
-                    </td>
-                    <td>{{stu.month}}</td>
+                    <td>{{stu.month}} - {{ stu.year }}</td>
                     <td>{{stu.amount}}</td>
                     <td>{{stu.rebate_count}}</td>
                     <td>{{stu.rebate_amount}}</td>
@@ -247,7 +242,7 @@
         </div>
     </div>
 
-    <div class="ui tab" data-tab="paymenthistory">
+    <div class="ui tab" id="phtab">
         <table class="ui very basic collapsing celled table sortable" style="margin: auto;">
             <thead>
                 <tr>
@@ -286,11 +281,122 @@
 
     </div>
 
+    <div class="ui active tab" id="regmtab">
+    <div class="ui vertical segment">
+
+        {% comment %}Form Tag starts here!{% endcomment %}
+        <form method="post" action="{% url 'mess:regsubmit' %}">
+            {% csrf_token %}
+            <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                <div class="ui header">
+                    Request for change of Central Mess:
+                </div>
+                {{current_date}}
+                <br>
+
+                {% if current_date <= mess_reg.end_reg %}
+                <div class="two fields">
+                    <div class="field">
+                        <strong> Currently registered in {{ messinfo.mess_option }}</strong>
+                        <br>
+                        <input type="date" id="date" name="date" value="{{mess_reg.end_reg}}" hidden>
+                        <br>
+                        <label>Choose Mess*</label>
+                        <select class="ui search fluid dropdown" name="mess_type" id="mess_type">
+                            <option value="mess2">Veg Mess</option>
+                            <option value="mess1">Nonveg Mess</option>
+                        </select>
+                    </div>
+                </div>
+
+
+                {% comment %}
+                TODO: Make this Optional!
+                {% endcomment %}
+
+                <div class="field">
+                    <button class="ui primary button right floated" type="submit" name="submit">
+                        Submit
+                    </button>
+                </div>
+                {% else %}
+                Registration Timed Out
+
+                {% endif %}
+            </div>
+        </form>
+        {% comment %}Form Tag ends here!{% endcomment %}
+
+        <br>
+        <br>
+        <div class="ui divider"></div>
+
+    </div>
+</div>
+
 {% endblock %}
-{% endblock %}
+{#{% endblock %}#}
 
 {% block javascript %}
-<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script>
+  $(document).ready(function() {
+        $('#menu1').on('click', function () {
+            $(this).addClass('active');
+            $('#ph').removeClass('active');
+            $('#regm').removeClass('active');
+               $('#billm').removeClass('active');
+             $('#menu1tab').show();
+               $('#billmtab').hide();
+                 $('#regmtab').hide();
+                   $('#phtab').hide();
+
+
+        });
+    });
+    $(document).ready(function() {
+        $('#ph').on('click', function () {
+            $(this).addClass('active');
+            $('#menu1').removeClass('active');
+            $('#billm').removeClass('active');
+               $('#regm').removeClass('active');
+             $('#phtab').show();
+               $('#menu1tab').hide();
+                 $('#regmtab').hide();
+                   $('#billmtab').hide();
+
+
+        });
+    });
+      $(document).ready(function() {
+        $('#billm').on('click', function () {
+            $(this).addClass('active');
+            $('#regm').removeClass('active');
+            $('#ph').removeClass('active');
+               $('#menu1').removeClass('active');
+             $('#billmtab').show();
+               $('#regmtab').hide();
+                 $('#menu1tab').hide();
+                   $('#phtab').hide();
+
+
+        });
+    });
+        $(document).ready(function() {
+        $('#regm').on('click', function () {
+            $(this).addClass('active');
+            $('#billm').removeClass('active');
+            $('#ph').removeClass('active');
+               $('#menu1').removeClass('active');
+             $('#regmtab').show();
+               $('#billmtab').hide();
+                 $('#menu1tab').hide();
+                   $('#phtab').hide();
+
+
+        });
+    });
+</script>
 
  <script>
   function download(){

@@ -1,7 +1,5 @@
 import datetime
-
 from django.db import models
-
 from applications.academic_information.models import Student
 
 # Create your models here.
@@ -108,21 +106,26 @@ class Mess_reg(models.Model):
     end_reg = models.DateField(default=datetime.date.today)
 
 
+class MessBillBase(models.Model):
+    bill_amount = models.PositiveIntegerField(default=0)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+
 class Monthly_bill(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     month = models.CharField(max_length=20, default=datetime.date.today().month)
     year = models.IntegerField(default=datetime.date.today().year)
-    amount = models.IntegerField(default=2370)
+    amount = models.IntegerField(default=0)
     rebate_count = models.IntegerField(default=0)
     rebate_amount = models.IntegerField(default=0)
     nonveg_total_bill = models.IntegerField(default=0)
-    total_bill = models.IntegerField(default=2370)
+    total_bill = models.IntegerField(default=0)
 
     class Meta:
         unique_together = (('student_id', 'month', 'year'),)
 
     def __str__(self):
-        return '{} - {}'.format(self.student_id.id, self.month)
+        return '{} - {} - {}'.format(self.student_id.id, self.month, self.year)
 
 
 class Payments(models.Model):
@@ -157,6 +160,7 @@ class Rebate(models.Model):
     status = models.CharField(max_length=20, choices=STATUS, default='1')
     app_date = models.DateField(default=datetime.date.today)
     leave_type = models.CharField(choices=LEAVE_TYPE, max_length=20, default="casual")
+    # leave_document = models.FileField(upload_to='central_mess/')
 
     def __str__(self):
         return str(self.student_id.id)
@@ -230,6 +234,7 @@ class Mess_minutes(models.Model):
 
 class Menu_change_request(models.Model):
     dish = models.ForeignKey(Menu, on_delete=models.CASCADE)
+    # student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     reason = models.TextField()
     request = models.CharField(max_length=100)
     status = models.CharField(max_length=20, choices=STATUS, default='1')
@@ -241,6 +246,8 @@ class Menu_change_request(models.Model):
 
 class Feedback(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+    mess = models.CharField(max_length=10, choices=MESS_OPTION, default='mess1')
+    # mess_rating = models.PositiveSmallIntegerField(default='5')
     fdate = models.DateField(default=datetime.date.today)
     description = models.TextField()
     feedback_type = models.CharField(max_length=20, choices=FEEDBACK_TYPE)

@@ -28,7 +28,8 @@
 
                     <div class="field">
                         <label><br></label>
-                            <input type='button' id='feed_submit' name='feed_submit' value="Submit" class="ui primary right floated button" >
+                            <input type='button' id='feed_submit' name='feed_submit' value="Submit"  class="ui primary right floated button" >
+                            <p id="feed"></p>
                     </div>
                 </div>
             </form>
@@ -45,7 +46,7 @@
 
                        if(trimfield(document.getElementById("feedback").value) == '')
                        {
-                       alert("Please fill out the feedback!")
+                       $('#feed').html('*Please fill out the feedback!');
                        document.getElementById("feedback").focus();
                         }
 
@@ -62,8 +63,11 @@
                             success: function(data){
 
                              if (data.status == 1){
+
                                 alert("feedback submitted")
                                 document.getElementById("feedback").value=""
+                                $('#feed').html('');
+                                window.location.reload();
                                                    }
                                                 }
                              });

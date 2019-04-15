@@ -81,30 +81,32 @@ class emp_research_papers(models.Model):
     )
     rtype = models.CharField(max_length=500, choices = R_TYPE_CHOICES, default='Conference')
     authors = models.CharField(max_length=2500, null=True, blank=True)
+    co_authors = models.CharField(max_length=2500, null=True, blank=True)
     title_paper = models.CharField(max_length=2500, null=True, blank=True)
-    name_journal = models.CharField(max_length=2500, null=True, blank=True)
+    name = models.CharField(max_length=2500, null=True, blank=True)
+    paper = models.CharField(max_length=1000, blank=True,null=True)
     venue = models.CharField(max_length=2500, null=True, blank=True)
-    volume_no = models.CharField(max_length=200, null=True, blank=True)
-    page_no = models.CharField(max_length=200, null=True, blank=True)
+    volume_no = models.CharField(max_length=500, null=True , blank=True)
+    page_no = models.CharField(max_length=500,null=True, blank=True)
     IS_SCI_TYPE_CHOICES = (
-        ('Yes', 'Yes'),
-        ('No', 'No'),
+        ('SCI', 'SCI'),
+        ('SCIE', 'SCIE'),
     )
     is_sci = models.CharField(max_length=3, choices=IS_SCI_TYPE_CHOICES, null=True, blank=True)
-    issn_no = models.CharField(max_length=250, null=True, blank=True)
-    doi = models.CharField(max_length=400, null=True, blank=True)
+    isbn_no = models.CharField(max_length=250, null=True, blank=True)
+    doi = models.DateTimeField(max_length=400, null=True, blank=True)
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
     date_acceptance = models.DateField(null=True, blank=True)
-    date_publication = models.DateField(null=True, blank=True)
+    date_publication = models.DateTimeField(null=True, blank=True)
     YEAR_CHOICES = []
     for r in range(1995, (datetime.datetime.now().year + 1)):
         YEAR_CHOICES.append((r, r))
-    year = models.IntegerField(('year'), choices=YEAR_CHOICES, null=True, blank=True)
+    year = models.CharField(max_length=10, choices=YEAR_CHOICES, null=True, blank=True)
     MONTH_CHOICES = []
     for r in range(1, 13):
         MONTH_CHOICES.append((r, r))
-    a_month = models.IntegerField(('Month'), choices=MONTH_CHOICES, null=True, blank=True, default=1)
+    a_month = models.CharField(max_length=500, choices=MONTH_CHOICES, null=True, blank=True, default=1)
     doc_id = models.CharField(max_length=50, null=True, blank=True)
     doc_description = models.CharField(max_length=1000, null=True, blank=True)
     date_entry = models.DateField(null=True, blank=True, default=datetime.datetime.now)
@@ -114,7 +116,7 @@ class emp_research_papers(models.Model):
         ('Communicated', 'Communicated'),
     )
     status = models.CharField(max_length=15, choices=STATUS_TYPE_CHOICES, null=True, blank=True)
-    date_submission = models.DateField(null=True, blank=True)
+    date_submission = models.DateTimeField(null=True, blank=True)
     reference_number = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self):
@@ -137,11 +139,7 @@ class emp_published_books(models.Model):
     for r in range(1995, (datetime.datetime.now().year + 1)):
         YEAR_CHOICES.append((r, r))
     pyear = models.IntegerField(('year'), choices=YEAR_CHOICES, null=True, blank=True)
-    MONTH_CHOICES = []
-    for r in range(1, 13):
-        MONTH_CHOICES.append((r, r))
-    a_month = models.IntegerField(('Month'), choices=MONTH_CHOICES, null=True, blank=True, default=1)
-    co_authors = models.CharField(max_length=250, default=" ")
+    authors = models.CharField(max_length=250, default=" ")
     date_entry = models.DateField(null=True, blank=True, default=datetime.datetime.now)
 
     def __str__(self):
@@ -355,7 +353,9 @@ class faculty_about(models.Model):
     doj = models.DateField(default=datetime.datetime.now)
     education = models.TextField(max_length=500)
     interest = models.TextField(max_length=500)
-    contact = models.CharField(max_length=20,null=True, blank=True)
+    contact = models.CharField(max_length=10,null=True, blank=True)
+    github = models.CharField(max_length=100,null=True, blank=True)
+    linkedin = models.CharField(max_length=100,null=True, blank=True)
 
     def __str__(self):
         return str(self.user)

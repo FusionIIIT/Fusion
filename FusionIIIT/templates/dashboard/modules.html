@@ -14,13 +14,9 @@
                 <div class="content modulesContent">
                     <div class="ui two column stackable doubling grid">
                         {% comment %}A single modules row starts here!{% endcomment %}
-
-                        {% comment %}A single modules row ends here!{% endcomment %}
-
-                        {% comment %}A single modules row starts here!{% endcomment %}
                         <div class="row">
                             <div class="column">
-                                <a class="ui large label" href="/placement">
+                                <a class="ui button large label" href="/placement">
                                     <div class="ui centered grid">
                                         <div class="row">
                                             <i class="ui bitcoin icon big"></i>
@@ -32,9 +28,9 @@
                                     </div>
                                 </a>
                             </div>
-
+			{% if request.user.extrainfo.user_type != "student" %}
                             <div class="column">
-                                <a class="ui large label" href="/leave">
+                                <a class="ui button large label" href="/leave">
                                     <div class="ui centered grid">
                                         <div class="row">
                                             <i class="ui file icon big"></i>
@@ -46,13 +42,34 @@
                                     </div>
                                 </a>
                             </div>
+			{% else %}
+			<div class="column">
+                                {% comment %}Change to anchor tags when module active <a class="ui large label" href="/leave">{% endcomment %}
+                                <div class="ui large label disabled" data-tooltip="Under construction">
+                                    <div class="ui centered grid">
+                                        <div class="row">
+                                            <i class="ui food icon big"></i>
+                                        </div>
+
+                                        <div class="row">
+                                            <span class="ui sub header centered">Leave Module</span>
+                                        </div>
+                                    </div>
+                                </div>
+                           </div>
+			{% endif %}
                         </div>
                         {% comment %}A single modules row ends here!{% endcomment %}
 
+                        <div class="ui divider"></div>
+
                         {% comment %}A single modules row starts here!{% endcomment %}
                         <div class="row">
+				{% if request.user.extrainfo.user_type != "faculty" %}
                             <div class="column">
-                                <a class="ui large label" href="/mess">
+                                {% comment %}Change to anchor tags when module active <a class="ui large label" href="/mess">{% endcomment %}
+                               <!-- <div class="ui large label disabled" data-tooltip="Under construction">-->
+				<a class="ui large label" href="/mess">
                                     <div class="ui centered grid">
                                         <div class="row">
                                             <i class="ui food icon big"></i>
@@ -64,9 +81,27 @@
                                     </div>
                                 </a>
                             </div>
+				{% else %}
+				 <div class="column">
+                                {% comment %}Change to anchor tags when module active <a class="ui large label" href="/mess">{% endcomment %}
+                                <div class="ui large label disabled" data-tooltip="Under construction">
+					<!-- <a class="ui large label" href="/mess">-->
+                                    <div class="ui centered grid">
+                                        <div class="row">
+                                            <i class="ui food icon big"></i>
+                                        </div>
+
+                                        <div class="row">
+                                            <span class="ui sub header centered">Central Mess</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+			    {% endif %}
 
                             <div class="column">
-                                <a class="ui large label" href="/visitorhostel">
+                                <!--<div class="ui large label disabled" data-tooltip="Under construction">-->
+                                <a class="ui button large label" href="/visitorhostel">
                                     <div class="ui centered grid">
                                         <div class="row">
                                             <i class="ui hotel icon big"></i>
@@ -84,7 +119,8 @@
                         {% comment %}A single modules row starts here!{% endcomment %}
                         <div class="row">
                             <div class="column">
-                                <a class="ui large label" href="/healthcenter">
+                                <!--<div class="ui large label disabled" data-tooltip="Under construction">-->
+                                <a class="ui button large label" href="/healthcenter">
                                     <div class="ui centered grid">
                                         <div class="row">
                                             <i class="ui first aid icon big"></i>
@@ -98,7 +134,7 @@
                             </div>
 
                             <div class="column">
-                                <a class="ui large label" href="/filetracking">
+                                <div class="ui large label disabled" data-tooltip="Under construction">
                                     <div class="ui centered grid">
                                         <div class="row">
                                             <i class="ui wpforms icon big"></i>
@@ -108,15 +144,17 @@
                                             <span class="ui sub header centered">File Tracking</span>
                                         </div>
                                     </div>
-                                </a>
+                                </div>
                             </div>
                         </div>
                         {% comment %}A single modules row ends here!{% endcomment %}
 
                         {% comment %}A single modules row starts here!{% endcomment %}
                         <div class="row">
+				
                             <div class="column">
-                                <a class="ui large label" href="/spacs">
+                                <!--<div class="ui large label disabled" data-tooltip="Under construction">-->
+                                <a class="ui button large label" href="/spacs">
                                     <div class="ui centered grid">
                                         <div class="row">
                                             <i class="ui student icon big"></i>
@@ -128,9 +166,27 @@
                                     </div>
                                 </a>
                             </div>
+			<!--
+				<div class="column">
+                                <div class="ui large label disabled" data-tooltip="Under construction">
+					<a class="ui button large label" href="/spacs">
+                                    <div class="ui centered grid">
+                                        <div class="row">
+                                            <i class="ui student icon big"></i>
+                                        </div>
+
+                                        <div class="row">
+                                            <span class="ui sub header centered">Scholarship Portal</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+			    -->
+
 
                             <div class="column">
-                                <a class="ui large label" href="/complaint">
+                                <!--<div class="ui large label disabled" data-tooltip="Under construction">-->
+                                <a class="ui button large label" href="/complaint">
                                     <div class="ui centered grid">
                                         <div class="row">
                                             <i class="ui line chart icon big"></i>
@@ -146,7 +202,7 @@
                         {% comment %}A single modules row ends here!{% endcomment %}
                         <div class="row">
                             <div class="column">
-                                <a class="ui large label" href="/academic-procedures">
+                                <div class="ui large label disabled" data-tooltip="Under construction">
                                     <div class="ui centered grid">
                                         <div class="row">
                                             <i class="ui university icon big"></i>
@@ -154,6 +210,21 @@
 
                                         <div class="row">
                                             <span class="ui sub header centered">Academic's Module</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="column">
+                                <!--<div class="ui large label disabled" data-tooltip="Under construction">-->
+                                <a class="ui button large label" href="/library/library">
+                                    <div class="ui centered grid">
+                                        <div class="row">
+                                            <i class="ui book icon big"></i>
+                                        </div>
+
+                                        <div class="row">
+                                            <span class="ui sub header centered">Library Module</span>
                                         </div>
                                     </div>
                                 </a>

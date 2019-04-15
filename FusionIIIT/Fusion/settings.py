@@ -136,6 +136,7 @@ INSTALLED_APPS = [
     'applications.feeds.apps.FeedsConfig',
     'pagedown',
     'markdown_deux',
+
 ]
 
 MIDDLEWARE = [
@@ -161,6 +162,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'applications.globals.context_processor.designation',
             ],
         },
     },
@@ -238,7 +240,8 @@ SITE_ID = 1
 
 # os.path.join(BASE_DIR, 'static/')
 STATIC_URL = '/static/'
-STATIC_ROOT = '/static'
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 

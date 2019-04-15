@@ -15,6 +15,8 @@ from applications.scholarships.models import Mcm
 from applications.filetracking.models import (File, Tracking)
 
 
+from notification.views import office_dean_PnD_notif
+
 from .forms import *
 from .models import *
 from .models import (Project_Closure, Project_Extension, Project_Reallocation,
@@ -38,47 +40,75 @@ def officeOfDeanRSPC(request):
 
     return render(request, "officeModule/officeOfDeanRSPC/officeOfDeanRSPC.html", context)
 
+def _list_find(lst, predicate):
+    for v in lst:
+        if predicate(v):
+            return v
+    return None
+
 @login_required
 def officeOfDeanPnD(request):
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
-    requisitions=Requisitions.objects.filter(userid=extrainfo)
-    holds=HoldsDesignation.objects.filter(user=user)
-    civilreq=Requisitions.objects.filter(department='civil',assign_title=None)
-    electricalreq = Requisitions.objects.filter(department='electrical')
-    req=Requisitions.objects.all()
+
+    req=Requisitions.objects.filter(assign_file__isnull=True)
+    assigned_req=list(Requisitions.objects.filter(assign_file__isnull=False).select_related())
+    incoming_files=[(f, _list_find(assigned_req, lambda r: r.assign_file==f.file_id))
+            for f in Tracking.objects.filter(receiver_id=user)]
+    outgoing_files=[(f, _list_find(assigned_req, lambda r: r.assign_file==f.file_id))
+            for f in Tracking.objects.filter(current_id__user=user)]
+    print(incoming_files)
+    print(outgoing_files)
+
     deslist=['Civil_JE','Civil_AE','EE','DeanPnD','Electrical_JE','Electrical_AE']
     deslist1=['Civil_JE','Civil_AE']
-    design=HoldsDesignation.objects.filter(working=user)
-    desig=[]
-    for i in design:
-        desig.append(str(i.designation))
-    print(desig)
+
+    holds=HoldsDesignation.objects.filter(working=user)
+    designations=[d.designation for d in HoldsDesignation.objects.filter(working=user)]
+
+    print(designations)
 
     if 'createassign' in request.POST:
-        id=request.POST.get('req_id')
-        obj = Requisitions.objects.get(id=id)
-        obj.assign_title = request.POST.get('title')
-        obj.assign_description = request.POST.get('description')
-        obj.estimate=request.FILES['estimate']
-        print(obj.estimate)
-        obj.assign_date=timezone.now()
-        obj.save()
-
+        print("createassign", request)
+        req_id=request.POST.get('req_id')
+        requisition=Requisitions.objects.get(pk=req_id)
+        description=request.POST.get('description')
+        upload_file=request.FILES.get('estimate')
+        sender_design=None
         for hold in holds:
-            if str(hold.designation.name) in deslist1:
-                if str(hold.designation.name) == "Civil_JE":
-                    receive=HoldsDesignation.objects.get(designation__name="Civil_AE")
-                    sent=HoldsDesignation.objects.get(designation__name="Civil_JE")
-                    fdate = datetime.now().date()
+            if str(hold.designation.name) == "Civil_JE":
+                if requisition.department != "civil":
+                    return HttpResponse('Unauthorized', status=401)
+                sender_design=hold
+                receive=HoldsDesignation.objects.get(designation__name="Civil_AE")
+                #fdate = datetime.dat
+            elif str(hold.designation.name)=="Electrical_JE":
+                if requisition.department != "electrical":
+                    return HttpResponse('Unauthorized', status=401)
+                sender_design=hold
+                receive=HoldsDesignation.objects.get(designation__name="Electrical_AE")
+                #fdate = datetime.datetime.now().date()
+        if not sender_design:
+            return HttpResponse('Unauthorized', status=401)
 
-                elif str(hold.designation.name)=="Electrical_JE":
-                    receive=ExtraInfo.objects.get(designation__name="Electrical_AE")
-                    fdate = datetime.now().date()
-        moveobj=Filemovement(rid=obj,sentby=sent,receivedby=receive)
-        moveobj.save()
+        requisition.assign_file = File.objects.create(
+                uploader=extrainfo,
+                #ref_id=ref_id,
+                description=requisition.description,
+                subject=requisition.title,
+                designation=sender_design.designation,
+            )
+        requisition.save()
 
-
+        Tracking.objects.create(
+                file_id=requisition.assign_file,
+                current_id=extrainfo,
+                current_design=sender_design,
+                receive_design=receive.designation,
+                receiver_id=receive.working,
+                remarks=description,
+                upload_file=upload_file,
+            )
 
     if 'asearch' in request.POST:
         check=request.POST.get('status')
@@ -95,21 +125,38 @@ def officeOfDeanPnD(request):
             req=req.filter(tag=0)
         elif check=="3":
             req=req.filter(tag=1)
+    """
+        sentfiles=''
+        for des in design:
+            if str(des.designation) in deslist:
+                sentfiles=Filemovement.objects.filter(Q(sentby=des)|Q(actionby_receiver='accept'))
 
-    sentfiles=''
-    for des in design:
-        if str(des.designation) in deslist:
-            sentfiles=Filemovement.objects.filter(Q(sentby=des)|Q(actionby_receiver='accept'))
+        print(sentfiles)
 
-    print(sentfiles)
-
+        files=''
+        for des in design:
+            if str(des.designation) in deslist:
+                files=Filemovement.objects.filter(receivedby=des,actionby_receiver='')
+        allfiles=Filemovement.objects.all()
+    """
+    allfiles=None
+    sentfiles=None
     files=''
-    for des in design:
-        if str(des.designation) in deslist:
-            files=Filemovement.objects.filter(receivedby=des,actionby_receiver='')
-    allfiles=Filemovement.objects.all()
+    req_history = []
+    for r in assigned_req:
+        passed = [r.assign_file.designation] + [t.receive_design for t in Tracking.objects.filter(file_id=r.assign_file)]
+        last_date = Tracking.objects.filter(file_id=r.assign_file).last().receive_date
+        req_history.append((r, passed, last_date))
 
-    context = {'civilreq':civilreq,'electricalreq':electricalreq,'files':files,'req':req,'sentfiles':sentfiles,'allfiles':allfiles,'requisitions':requisitions,'desig':desig}
+    context = {
+            'files':files,
+            'req':req,
+            'incoming_files': incoming_files,
+            'outgoing_files': outgoing_files,
+            'assigned_req':assigned_req,
+            'desig':designations,
+            'req_history': req_history
+    }
     return render(request, "officeModule/officeOfDeanPnD/officeOfDeanPnD.html", context)
 
 
@@ -118,7 +165,7 @@ def submitRequest(request):
 
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
-    fdate = datetime.now().date()
+    fdate = datetime.datetime.now().date()
     dept=request.POST.get('department')
     building = request.POST.get('building')
     title = request.POST.get('title')
@@ -127,6 +174,8 @@ def submitRequest(request):
     request_obj = Requisitions(userid=extrainfo, req_date=fdate,
                                description=description, department=dept, title=title, building=building)
     request_obj.save()
+    office_dean_PnD_notif(request.user, request.user, 'requisition_filed')
+
     context={}
     return HttpResponseRedirect("/office/officeOfDeanPnD")
 

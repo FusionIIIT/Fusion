@@ -22,6 +22,7 @@
             <th>Title</th>
             <th>Date</th>
             <th>View File</th>
+            <th>R/UnR</th>
         </tr>
         </thead>
 
@@ -34,9 +35,16 @@
             <td>{{j.file_id.uploader.department.name}}/{{j.file_id.upload_date.year}}/{{j.file_id.upload_date.month}}/#{{j.file_id.id}}  </td>
             <td>{{j.file_id.subject}}</td>
             <td>{{j.receive_date}}</td>
-            <td><a href="{% url 'filetracking:forward' j.file_id.id %}"><button class="ui primary button">
+            <td><a href="{% url 'filetracking:forward_inward' j.file_id.id %}"><button class="ui primary button">
                           View
                 </button></a></td>
+
+
+
+            <td> {{ j.file.is_read }}  </td>
+
+
+
         </tr>
 
         {% endfor %}

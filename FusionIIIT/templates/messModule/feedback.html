@@ -1,6 +1,6 @@
-{% extends 'globals/base.html'%}
+{#{% extends 'globals/base.html'%}#}
 {% load static %}
-{% block body %}
+{#{% block body %}#}
 {% block feedback %}
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
@@ -9,7 +9,7 @@
         </a>
 
         <a class="item" data-tab="viewfeedback">
-            Status
+            Previous Feedback
         </a>
     </div>
 
@@ -31,16 +31,16 @@
                     <div class="two fields">
                         <div class="field">
                             <label>Mess:</label>
-                            <input value={{messinfo.mess_option}} class="ui large input" readonly>
+                            <input value="{{messinfo.mess_option}}" class="ui large input" readonly>
                         </div>
 
                         <div class="two fields">
                             <div class="twelve wide field">
-                                <label>Type:</label>
-                                <select class="ui search fluid dropdown" name="feedback_type" id="feedback_type">
+                                <label>Type*</label>
+                                <select class="ui dropdown" name="feedback_type" id="feedback_type">
                                     <option value="Cleanliness">Cleanliness</option>
                                     <option value="Food">Food</option>
-                                    <option value="Maintainence">Maintainence</option>
+                                    <option value="Maintenance">Maintenance</option>
                                     <option value="Others">Others</option>
                                 </select>
                             </div>
@@ -49,13 +49,13 @@
                     </div>
 
                     <div class="field">
-                        <label>Description:</label>
+                        <label>Description*</label>
                         <textarea rows="2" id="description" name="description" required="true"></textarea>
                     </div>
                     
                     <div class="field">
                         <label><br></label>
-                            <button class="ui primary fluid button" onclick="return feedback()">
+                            <button class="ui primary fluid button" type="submit" onclick="return feedback()">
                             Submit
                             </button>
                     </div>
@@ -71,14 +71,16 @@
     </div>
 
     <div class="ui tab" data-tab="viewfeedback">
-        {% for app in feedback %}
-        <div class="ui very relaxed fluid selection list" style="padding-left: 24px; padding-top: 16px; padding-bottom: 16px; max-height: 70vh; overflow-y: auto;">
-            
+
+        <div id="feedback_history" class="ui very relaxed fluid selection list" style="padding-left: 24px; padding-top: 16px; padding-bottom: 16px; max-height: 70vh; overflow-y: auto;">
+        <a class="header" id="user_name" style="display: none">{{info.user.username}}</a>
+            {% for app in feedback %}
+                <!--<img class="ui mini circular image" src="{% static 'globals/img/zlatan.jpg' %}"> --->
             <div class="item">
-                <img class="ui mini circular image" src="{% static 'globals/img/zlatan.jpg' %}">
-                <div class="content">
+
+                <div class="left floated content">
                     <a class="header">{{info.user.username}}</a>
-                    <span class="meta">{{app.feedback_type}}</span>
+                    <a class="meta">{{app.feedback_type}}</a>
 
                     <div class="description">
                         {{app.description}}
@@ -90,47 +92,72 @@
                 </div>
                 
             </div>
-
+            {% endfor %}
         </div>
-        {% endfor %}
+
     <div class="ui divider"></div>
     </div>
 
 {% endblock %}
-{% endblock %}
+{#{% endblock %}#}
 
 {% block javascript %}
 <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
 
  <script>
+        function required_check_feedback(){
+            if ($("#description").val().length == 0) {
+                check = 0;
+                return check;
+            }
+            else {
+                check = 1;
+            }
+        }
         function feedback(){
-            $.ajax({
-                type: 'POST',
-                url: 'submit/',
-                dataType: 'json',
-                data: {
-                    'csrfmiddlewaretoken' : '{{ csrf_token }}',
-                    'feedback_type': $("#feedback_type").val(),
-                    'description': $("#description").val()
-                },                
-                success: function(data) {
-                    if(data.status){
-                        alert("Data Inserted Successfully");
-                        $("#feedback").load(location.href+" #feedback>*","")
-                         $('#ls_table').prepend("<tr><td>"+ $("#leave_type").val()+ "</td><td>"+
-                             $("#start_date").val() + "</td><td>" + $("end_date").val()+
-                             "</td><td>"+ $("#purpose").val()+ "</td></tr>")
+            check = required_check_feedback();
+            if(check == 0){
+                alert("Please add description");
+            }
+            else {
+                $.ajax({
+                    type: 'POST',
+                    url: 'submitmessfeedback/',
+                    dataType: 'json',
+                    data: {
+                        'csrfmiddlewaretoken': '{{ csrf_token }}',
+                        'feedback_type': $("#feedback_type").val(),
+                        'description': $("#description").val()
+                    },
+                    success: function (data) {
+                        if (data.status) {
 
-                        document.getElementById('feedback_type').value="";
-                        document.getElementById('description').value="";
+                            $("#feedback").load(location.href + " #feedback>*", "");
 
+                            var monthNames = ["January", "February", "March", "April", "May", "June",
+                                              "July", "August", "September", "October", "November", "December"];
+                            var name = $("#user_name").text();
+                            var today_date = new Date();
+                            var t_date = monthNames[today_date.getMonth()] + " " + today_date.getDate() + ", " + today_date.getFullYear();
+                            $("#feedback_history").prepend("<div class='item'><div class='left floated content'>" +
+                                    "<a class='header'>" + name + "</a>" +
+                                "<a class='meta'>" + $("#feedback_type").val() +"</a><div class='description'>"
+                                + $("#description").val() + "</div></div><div class='right floated content'>" +
+                                "<span class='meta'>" + t_date + "</span></div></div>");
+
+                            alert("Data Inserted Successfully");
+
+                            document.getElementById('feedback_type').value = "";
+                            document.getElementById('description').value = "";
+
+                        }
+                    },
+                    error: function (data, err) {
+                        alert(err.message);
+                        $("#feedback").load(location.href + " #feedback>*", "");
                     }
-                },
-                error: function(data, err) {
-                    alert(err.message);
-                    $("#feedback").load(location.href+" #feedback>*","")
-                }
-            });
+                });
+            }
         return false;
     }
     

@@ -22,32 +22,32 @@
 
     <div class="ui active tab" data-tab="prescriptionhistory">
         <div class="ui vertical segment" >
-            <table class="ui very basic collapsing celled large sortable table"
+            <table  border=1 class="ui very basic collapsing celled large sortable table"
                   style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;" >
                 <thead>
                 <tr>
-                    <th>
+                    <td style="font-weight:bold;color:black;">
                         Treated<br> By
-                    </th>
+                    </td>
 
-                    <th class="two wide" >
+                    <td style="font-weight:bold;color:black;" >
                         Date
-                    </th>
-                    <th>
+                    </td>
+                    <td style="font-weight:bold;color:black;">
                           Details
-                    </th>
-                    <th>
+                    </td>
+                    <td style="font-weight:bold;color:black;">
                           Test
-                    </th>
+                    </td>
 
-                    <th>
+                    <td style="font-weight:bold;color:black;">
 
                       <table>
 
-                        <tr><td>Medicine</td><td>D</td><td>T</td></tr>
+                        <tr><td style="font-weight:bold;color:black;">Medicine</td><td>D</td><td>T</td></tr>
 
                       </table>
-                    </th>
+                    </td>
 
                 </tr>
                 </thead>
@@ -143,12 +143,45 @@
                     <td>
                         {{ambulance.end_date}}
                     </td>
+					<td>
+
+                        <input type="button" onclick="rem({{ambulance.pk}})" id="{{ambulance.pk}}" name="cancel" value="Cancel"class="ui large right floated primary button" />
+
+                    </td> 
                 </tr>
                 {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
+
+<script>
+            function rem(id){
+           
+			var dis = this;
+            var d = window.confirm('Are you sure, you want to delete the Request?');
+            if(d == false){
+                return;
+            }
+            $('#'+id).parent().parent().remove();
+                                             alert("Ambulance request cancelled");
+
+					$.ajax({
+                            type:'POST',
+                            url:'/healthcenter/student/',
+                            data: {'cancel_amb':id},
+
+                            beforeSend: function(xhr) {
+               xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+            },
+                            success: function(data){
+
+                                                    }
+                          });
+
+            
+      }
+      </script>
 
     <div class="ui tab" data-tab="hospitalhistory">
         <div class="ui vertical segment" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
@@ -283,12 +316,46 @@
                     <td>
                       {{appointment.schedule.to_time}}
                     </td>
+					<td>
+
+                        <input type="button" onclick="rm({{appointment.pk}})" id="{{appointment.pk}}" name="cancel" value="Cancel"class="ui large right floated primary button" />
+
+                    </td> 
                 </tr>
                 {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
+	
+	<script type="text/javascript">
+            function rm(id){
+           
+			var dis = this;
+            var d = window.confirm('Are you sure, you want to delete the appointment?');
+            if(d == false){
+                return;
+            }
+			     $('#'+id).parent().parent().remove();                             
+                                                      alert("Appointment request cancelled");
+                   				
+					$.ajax({
+                             type:'post',
+                            url:'/healthcenter/student/',
+                            data: {'cancel_app':id},
+                            beforeSend: function(xhr) {
+               xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+            },
+
+                            success: function(data){
+
+                                                    }
+                                                  });
+
+            
+      }
+      </script>
+	
     <div class="ui tab" data-tab="complainthistory">
         <div class="ui vertical segment" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
             <table class="ui very basic collapsing celled large fluid sortable table"
