@@ -34,6 +34,7 @@ class Tracking(models.Model):
     forward_date = models.DateTimeField(auto_now_add=True)
     remarks = models.CharField(max_length=250, null=True, blank=True)
     upload_file = models.FileField(blank=True)
+    is_read = models.BooleanField(default = False)
 
     class Meta:
         db_table = 'Tracking'

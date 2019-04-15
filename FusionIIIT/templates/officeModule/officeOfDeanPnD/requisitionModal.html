@@ -12,16 +12,25 @@
 <div class="ui modal {{ object.pk }}" id="requisition{{object.pk}}">
     <div class="content">
         <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;" >
-            <div class="three fields">
-
-
-                <div class="four wide field">
+            <h4> Requisition </h4>
+            <div class="two fields">
+                <div class="field">
 
                     <label>Building</label>
 
                     <input value={{object.building}} class="ui large input" readonly>
                 </div>
-                <div class="four wide field">
+
+                <div class="field">
+
+                    <label>Department</label>
+
+                    <input value={{object.department}} class="ui large input" readonly>
+                </div>
+
+            </div>
+            <div class="two fields">
+                <div class="field">
 
                     <label>Date</label>
                     <input value="{{object.req_date}}" class="ui large input" readonly>
@@ -33,7 +42,12 @@
                         &emsp;&emsp;&emsp;
                         <label>Requester</label><br>
                         &emsp;&emsp;&emsp;
-                        <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                        <img src="
+                        {% if object.userid.user.extrainfo.profile_picture %}
+                            {{ object.userid.user.extrainfo.profile_picture.url }}
+                        {% else %}
+                            {% static 'globals/img/zlatan.jpg' %}
+                        {% endif %}" class="ui mini circular image">
                         <div class="content">
                             {{object.userid.user.first_name}}{{object.userid.user.last_name}}
                             <div class="sub header">
@@ -43,15 +57,21 @@
                     </h4>
                 </div>
             </div>
-            <h4> Requisition </h4>
             <div class="field">
                 <label>Title</label>
                 <input value="{{object.title}}" class="ui large input" readonly>
             </div>
             <div class="field">
                 <label>Description</label>
-                <textarea readonly rows="4">{{object.description}}"</textarea>
+                <textarea readonly rows="4">{{object.description}}</textarea>
             </div>
+            <form method="POST" action="/office/officeOfDeanPnD/#requisitions">
+                {% csrf_token %}
+                <input type="hidden" name="req_id" value="{{object.pk}}"/>
+                <div class="field">
+                    <input type="submit" class="ui button" name="delete_requisition" value="Delete Requisition"/>
+                </div>
+            </form>
 
             <h4> Work Assignment </h4>
 
