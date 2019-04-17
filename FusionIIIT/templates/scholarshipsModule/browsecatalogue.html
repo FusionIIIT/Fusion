@@ -2,7 +2,7 @@
 {% block catalog %}
 
     <div class="ui pointing secondary menu">
-        <a class="{% if last_clicked == '' or last_clicked == 'get_mcm_flag' or last_clicked == 'get_convocation_flag' or last_clicked == 'Submit_mcm' or last_clicked == 'Submit_silver' or last_clicked == 'Submit_gold' or last_clicked == 'Submit_dm' or last_clicked == 'studentapprovesubmit_mcm' or last_clicked == 'studentapprovesubmit_con' %} active item {% else %} item {% endif %}" data-tab="catalog">
+        <a class="{% if last_clicked == '' or last_clicked == 'studentapprovesubmit_mcm' or last_clicked == 'studentapprovesubmit_con' %} active item {% else %} item {% endif %}" data-tab="catalog">
             Catalogue
         </a>
 
@@ -19,7 +19,7 @@
 
 
 <!--Arihant: We changed the UI for the catalog before it appeared at the bottom of every page-->
-    <div class="{% if last_clicked == '' or last_clicked == 'get_mcm_flag' or last_clicked == 'get_convocation_flag' or last_clicked == 'Submit_mcm' or last_clicked == 'Submit_silver' or last_clicked == 'Submit_gold' or last_clicked == 'Submit_dm' or last_clicked == 'studentapprovesubmit_mcm' or last_clicked == 'studentapprovesubmit_con' %} ui active tab {% else %} ui tab {% endif %}" data-tab="catalog">
+    <div class="{% if last_clicked == '' or last_clicked == 'studentapprovesubmit_con' or last_clicked == 'studentapprovesubmit_mcm' %} ui active tab {% else %} ui tab {% endif %}" data-tab="catalog">
         <div class="ui vertical segment">
             <div class="ui floating dropdown labeled icon dropdown button" id="select_award_content">
                 <i class="search icon"></i>
