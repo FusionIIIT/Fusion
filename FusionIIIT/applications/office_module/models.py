@@ -532,3 +532,13 @@ class TA_assign(models.Model):
 
     def __str__(self):
         return str(self.id)
+
+class Registrar_response(models.Model):
+    track_id = models.ForeignKey(Tracking, on_delete=models.CASCADE, related_name='t_id')
+    remark = models.CharField(max_length=50, default='')
+    status = models.CharField(max_length=20, default='')
+    class Meta:
+        db_table = 'Registrar_response'
+
+    def __str__(self):
+        return str(self.id)+" "+str(track_id)+status

@@ -66,7 +66,9 @@ def filetracking(request):
                 subject = request.POST.get('title')
                 description = request.POST.get('desc')
                 design = request.POST.get('design')
-                designation = Designation.objects.get(id=design)
+                print("designation is ", design)
+                designation = Designation.objects.get(id = HoldsDesignation.objects.get(id = design).designation_id)
+
                 upload_file = request.FILES.get('myfile')
 
                 file = File.objects.create(

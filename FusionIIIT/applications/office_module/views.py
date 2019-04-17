@@ -387,31 +387,28 @@ def admin_reject(request):
 
 
 def officeOfRegistrar(request):
-    view = registrar_create_doc.objects.all()
-    #file_track = Tracking.objects.all()
-    view2 = []
-    #tmp = HoldsDesignation.objects.filter(designation__name = "Director")
-    file_track = Tracking.objects.all()#filter(current_design__designation__name = "Director")
-    #view2 = Tracking.objects.filter(current_design__designation__name = "Director")
-    print("director data ")
-    print(view2)
-    #print(type(tmp[0]))
-    #view2 = []
-    #direct_file = []
-    #for file in file_track:
-    #    file.current_design.id == tmp[0].id
-    #    #if file.current_design == "Director":
-    #    direct_file.append(file)
-    
-    view3 = registrar_establishment_section.objects.all()
-    view4 = apply_for_purchase.objects.all()
-    view5 = quotations.objects.all()
-    general= registrar_general_section.objects.all()
+
+    archive_view = []
+
+    director_track = Tracking.objects.filter(receive_design__name = "Registrar", current_design__designation__name = "Director")
+    director_view = {}
+    for track in director_track:
+        director_view[track.id] = File.objects.get(id = track.file_id.id)
+
+    estab_view = []
+    purch_view1 = []
+    purch_view2 = [] 
+    genadmin_view = []
     current_date = datetime.datetime.now()
 
-    context = {"view":view,"view2":view2,"view3":view3,"view4":view4,"view5":view5, "current_date":current_date,"general":general}
+    context = {"view":archive_view,"director_view":director_view, "director_track":director_track, "view3":estab_view,"view4":purch_view1,"view5":purch_view2, "current_date":current_date,"general":genadmin_view}
 
     return render(request, "officeModule/officeOfRegistrar/officeOfRegistrar.html", context)
+
+#def officeOfRegistrar_ajax_submit(request):
+
+#    if request.method == "POST":
+        
 
 
 def upload(request):
