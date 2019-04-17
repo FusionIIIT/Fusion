@@ -21,6 +21,7 @@
             <th>Title</th>
             <th>Date</th>
             <th>View File</th>
+            <th>Delete File</th>
         </tr>
         </thead>
 
@@ -34,6 +35,10 @@
             <td><a href="{% url 'filetracking:forward' j.id %}"><button class="ui primary button">
                           View
                 </button></a></td>
+
+             <td><a href="{% url 'filetracking:delete' j.id %}"><button class="ui positive button">
+                          Delete
+            </button></a></td>
         </tr>
 
         {% endfor %}
