@@ -176,6 +176,15 @@ def officeOfDeanPnD(request):
             passed = [deslist[je]]
             req_history.append((r, passed, r.req_date))
     req_history.sort(key=lambda t: t[2], reverse=True)
+    for des in designations:
+        if des.name == "DeanPnD":
+            allowed_actions = ["Forward", "Revert", "Approve", "Reject"]
+        elif des.name == "Director":
+            allowed_actions = ["Revert", "Approve", "Reject"]
+        elif des.name == "Electrical_JE" or "Civil_JE":
+            allowed_actions = ["Forward", "Reject"]
+        else:
+            allowed_actions = ["Forward", "Revert", "Reject"]
 
     context = {
             'files':files,
@@ -184,7 +193,8 @@ def officeOfDeanPnD(request):
             'outgoing_files': outgoing_files,
             'assigned_req':assign_history,
             'desig':designations,
-            'req_history': req_history
+            'req_history': req_history,
+            'allowed_actions': allowed_actions
     }
     return render(request, "officeModule/officeOfDeanPnD/officeOfDeanPnD.html", context)
 
@@ -239,10 +249,11 @@ def action(request):
             next_hold_design = HoldsDesignation.objects.get(designation__name="DeanPnD")
     elif current_design.name == "Dean_s":
         next_hold_design = HoldsDesignation.objects.get(designation__name="DeanPnD")
-    # elif "DeanPnD" in designation: # && if estimate greater than 10 lacs
-    #     next_hold_design = HoldsDesignation.objects.get(designation__name="Director")
+    # if estimate greater than 10 lacs, left to discretion of Dean PnD to forward when required
+    elif "DeanPnD" in designation: 
+        next_hold_design = HoldsDesignation.objects.get(designation__name="Director")
 
-    if 'forward' in request.POST:
+    if 'Forward' in request.POST:
         Tracking.objects.create(
                 file_id=requisition.assign_file,
                 current_id=extrainfo,
@@ -259,7 +270,7 @@ def action(request):
         office_dean_PnD_notif(request.user,next_hold_design.working, 'assignment_received')
 
 
-    elif 'revert' in request.POST:
+    elif 'Revert' in request.POST:
         Tracking.objects.create(
                 file_id=requisition.assign_file,
                 current_id=extrainfo,
@@ -275,7 +286,7 @@ def action(request):
         track.save()
         office_dean_PnD_notif(request.user,prev_hold_design.working, 'assignment_reverted')
 
-    elif 'reject' in request.POST:
+    elif 'Reject' in request.POST:
         description = description + " This assignment has been rejected. No further changes to this assignment are possible. Please create new requisition if needed."
         Tracking.objects.create(
                 file_id=requisition.assign_file,
@@ -299,7 +310,7 @@ def action(request):
         # moveobj=Filemovement(rid=reqobj,sentby=sentby,receivedby=receive,date=fdate,remarks=remarks)
         # moveobj.save()
 
-    elif 'approve' in request.POST:
+    elif 'Approve' in request.POST:
         description = description + " This assignment has been approved. No further changes to this assignment are possible. Please create new requisition if needed."
         Tracking.objects.create(
                 file_id=requisition.assign_file,
