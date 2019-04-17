@@ -105,13 +105,18 @@
                     <i class="right floated chevron right icon"></i>
                 </a>
 
-                <a class="item" data-tab="sixth" id="publications_tab" data-content="Add new publications">
-                    Publications
+                <a class="item" data-tab="sixth">
+                    Co-curricular
                     <i class="right floated chevron right icon"></i>
                 </a>
 
                 <a class="{% if reference_tab %}active item{% else %}item{% endif %}" data-tab="seven" id="reference_tab" data-content="Add new reference">
                     Reference
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="eighth">
+                    Extracurricular
                     <i class="right floated chevron right icon"></i>
                 </a>
                 {% endif %}
@@ -166,8 +171,16 @@
 
                     {% comment %}The Achievements tab starts here!{% endcomment %}
                     <div class="ui tab segment" data-tab="sixth">
-                        {% block publications %}
-                            {% include 'placementModule/publications.html' %}
+                        {% block cocurricular %}
+                            {% include 'placementModule/cocurricular.html' %}
+                        {% endblock %}
+                    </div>
+                    {% comment %}The Achievements tab ends here!{% endcomment %}
+
+                    {% comment %}The Achievements tab starts here!{% endcomment %}
+                    <div class="ui tab segment" data-tab="eighth">
+                        {% block extracurricular %}
+                            {% include 'placementModule/extracurricular.html' %}
                         {% endblock %}
                     </div>
                     {% comment %}The Achievements tab ends here!{% endcomment %}
@@ -179,6 +192,7 @@
                         {% endblock %}
                     </div>
                     {% comment %}The Reference tab ends here!{% endcomment %}
+
                     {% endif %}
                     {% endfor %}
                 </div>

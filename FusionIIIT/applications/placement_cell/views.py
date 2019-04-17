@@ -34,8 +34,9 @@ from .forms import (AddAchievement, AddChairmanVisit, AddCourse, AddEducation,
                     ManagePbiRecord, ManagePlacementRecord, SearchHigherRecord,
                     SearchPbiRecord, SearchPlacementRecord,
                     SearchStudentRecord, SendInvite)
-from .models import (Achievement, ChairmanVisit, Course, Education, Experience,
-                     Has, NotifyStudent, Patent, PlacementRecord, Reference,
+
+from .models import (Achievement, ChairmanVisit, Course, Education, Experience, Conference,
+                     Has, NotifyStudent, Patent, PlacementRecord, Extracurricular, Reference,
                      PlacementSchedule, PlacementStatus, Project, Publication,
                      Skill, StudentPlacement, StudentRecord, Role, CompanyDetails,)
 '''
@@ -2518,6 +2519,7 @@ def delete_placement_statistics(request):
 
 
 def cv(request, username):
+    print('first coming to function ---------------------\n\n\n')
     # Retrieve data or whatever you need
     """
     The function is used to generate the cv in the pdf format.
@@ -2568,7 +2570,10 @@ def cv(request, username):
             coursecheck = request.POST.get('coursecheck')
             skillcheck = request.POST.get('skillcheck')
             reference_list = request.POST.getlist('reference_checkbox_list')
+            extracurricularcheck = request.POST.get('extracurricularcheck')
+            conferencecheck =  request.POST.get('conferencecheck')
     else:
+        conferencecheck = '1'
         achievementcheck = '1'
         educationcheck = '1'
         publicationcheck = '1'
@@ -2577,6 +2582,7 @@ def cv(request, username):
         projectcheck = '1'
         coursecheck = '1'
         skillcheck = '1'
+        extracurricularcheck = '1'
 
 
     # print(achievementcheck,' ',educationcheck,' ',publicationcheck,' ',patentcheck,' ',internshipcheck,' ',projectcheck,' \n\n\n')
@@ -2602,6 +2608,8 @@ def cv(request, username):
     experience = Experience.objects.filter(Q(unique_id=student))
     project = Project.objects.filter(Q(unique_id=student))
     achievement = Achievement.objects.filter(Q(unique_id=student))
+    extracurricular = Extracurricular.objects.filter(Q(unique_id=student))
+    conference = Conference.objects.filter(Q(unique_id=student))
     publication = Publication.objects.filter(Q(unique_id=student))
     patent = Patent.objects.filter(Q(unique_id=student))
     today = datetime.date.today()
@@ -2617,12 +2625,16 @@ def cv(request, username):
                                                      'courses': course, 'experiences': experience,
                                                      'referencecheck': referencecheck,
                                                      'achievements': achievement,
+                                                     'extracurriculars': extracurricular,
                                                      'publications': publication,
                                                      'patents': patent, 'roll': roll,
                                                      'achievementcheck': achievementcheck,
+                                                     'extracurricularcheck': extracurricularcheck,
                                                      'educationcheck': educationcheck,
                                                      'publicationcheck': publicationcheck,
                                                      'patentcheck': patentcheck,
+                                                     'conferencecheck': conferencecheck,
+                                                     'conferences': conference,
                                                      'internshipcheck': internshipcheck,
                                                      'projectcheck': projectcheck,
                                                      'coursecheck': coursecheck,

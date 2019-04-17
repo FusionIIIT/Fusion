@@ -77,6 +77,26 @@ class AddCourse(forms.Form):
     edate = forms.DateField(label='edate', widget=forms.DateInput(attrs={'class':'datepicker'}))
 
 
+class AddConference(forms.Form):
+    """
+    The form is used to add external courses that user has done.
+    @variables:
+            course_name - name of the course
+            description - description of the course
+            license_no - licence number of the course
+            sdate - start date of the course
+            edate - end date of the course
+    """
+    conference_name = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
+                                                                'class': 'field'}),
+                                  label="course_name")
+    description = forms.CharField(widget=forms.Textarea(attrs={'max_length': 1000,
+                                                                'class': 'form-control'}),
+                                  label="description", required=False)
+    sdate = forms.DateField(label='sdate', widget=forms.DateInput(attrs={'class':'datepicker'}))
+    edate = forms.DateField(label='edate', widget=forms.DateInput(attrs={'class':'datepicker'}))
+
+
 class AddExperience(forms.Form):
     """
     The form is used to add experience that useris having.
@@ -155,6 +175,30 @@ class AddAchievement(forms.Form):
                                                                  'class': 'form-control'}),
                              label="issuer")
     date_earned = forms.DateField(label='date_earned', widget=forms.DateInput(attrs={'class':'datepicker'}))
+
+
+class AddExtracurricular(forms.Form):
+    """
+    The form is used to add social activity that user has participated.
+    @variables:
+            event_name - name of the event
+            description - description of achievement
+            name_of_position - name of holding position
+            date_earned - date of earning of achievement
+    """
+    event_name = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
+                                                                'class': 'field'}),
+                                  label="event_name")
+    event_type = forms.ChoiceField(choices = Constants.EVENT_TYPE,
+                                         label="event_type", widget=forms.Select(attrs={'style': "height:45px"}))
+    description = forms.CharField(widget=forms.Textarea(attrs={'max_length': 1000,
+                                                                'class': 'form-control'}),
+                                  label="description", required=False)
+    name_of_position = forms.CharField(widget=forms.TextInput(attrs={'max_length': 200,
+                                                                 'class': 'form-control'}),
+                             label="name_of_position")
+    date_earned = forms.DateField(label='date_earned', widget=forms.DateInput(attrs={'class':'datepicker'}))
+
 
 
 class AddPublication(forms.Form):

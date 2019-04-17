@@ -18,13 +18,12 @@ from applications.globals.models import (ExtraInfo, Feedback, HoldsDesignation,
                                          Issue, IssueImage, Faculty)
 from applications.placement_cell.forms import (AddAchievement, AddCourse,
                                                AddEducation, AddExperience,
-                                               AddPatent, AddProfile,
+                                               AddPatent, AddProfile, AddConference,
                                                AddProject, AddPublication,
-                                               AddSkill, AddReference)
-from applications.placement_cell.models import (Achievement, Course, Education,
-                                                Experience, Has, Patent, Reference,
-                                                Project, Publication, Skill,
-                                                Reference)
+                                               AddSkill, AddReference, AddExtracurricular)
+from applications.placement_cell.models import (Achievement, Course, Education, Conference,
+                                                Experience, Has, Patent, Extracurricular,
+                                                Project, Publication, Skill, Reference)
 from applications.eis.models import *
 from applications.academic_procedures.models import Thesis
 
@@ -70,18 +69,22 @@ def contextstudentmanage(current,profile,request,user,editable):
           extrainfo_obj.save()
       if 'skillsubmit' in request.POST:
           form = AddSkill(request.POST)
+          print('skill coming----------------\n\n')
           if form.is_valid():
               skill = form.cleaned_data['skill']
               skill_rating = form.cleaned_data['skill_rating']
               try:
                   skill_id = Skill.objects.get(skill=skill)
+                  skill_id = None
               except Exception as e:
                   skill_id = Skill.objects.create(skill=skill)
                   skill_id.save()
-              has_obj = Has.objects.create(unique_id=student,
+
+              if skill_id is not None:
+                has_obj = Has.objects.create(unique_id=student,
                                            skill_id=skill_id,
                                            skill_rating = skill_rating)
-              has_obj.save()
+                has_obj.save()
       if 'achievementsubmit' in request.POST:
           form = AddAchievement(request.POST)
           if form.is_valid():
@@ -96,7 +99,21 @@ def contextstudentmanage(current,profile,request,user,editable):
                                                            description=description,
                                                            issuer=issuer,
                                                            date_earned=date_earned)
-              achievement_obj.save()
+      if 'extracurricularsubmit' in request.POST:
+          form = AddExtracurricular(request.POST)
+          if form.is_valid():
+              event_name = form.cleaned_data['event_name']
+              event_type = form.cleaned_data['event_type']
+              description = form.cleaned_data['description']
+              name_of_position = form.cleaned_data['name_of_position']
+              date_earned = form.cleaned_data['date_earned']
+              extracurricular_obj = Extracurricular.objects.create(unique_id=student,
+                                                           event_name=event_name,
+                                                           event_type=event_type,
+                                                           description=description,
+                                                           name_of_position=name_of_position,
+                                                           date_earned=date_earned)
+              extracurricular_obj.save()
       if 'publicationsubmit' in request.POST:
           form = AddPublication(request.POST)
           if form.is_valid():
@@ -136,6 +153,18 @@ def contextstudentmanage(current,profile,request,user,editable):
                                                  description=description,
                                                  sdate=sdate, edate=edate)
               course_obj.save()
+
+      if 'conferencesubmit' in request.POST:
+          form = AddConference(request.POST)
+          if form.is_valid():
+              conference_name = form.cleaned_data['conference_name']
+              description = form.cleaned_data['description']
+              sdate = form.cleaned_data['sdate']
+              edate = form.cleaned_data['edate']
+              conference_obj = Conference.objects.create(unique_id=student, conference_name=conference_name,
+                                                 description=description,
+                                                 sdate=sdate, edate=edate)
+              conference_obj.save()
       if 'projectsubmit' in request.POST:
           form = AddProject(request.POST)
           if form.is_valid():
@@ -214,6 +243,14 @@ def contextstudentmanage(current,profile,request,user,editable):
           hid = request.POST['deleteach']
           hs = Achievement.objects.get(Q(pk=hid))
           hs.delete()
+      if 'deleteconference' in request.POST:
+          hid = request.POST['deleteconference']
+          hs = Conference.objects.get(Q(pk=hid))
+          hs.delete()
+      if 'deletextra' in request.POST:
+          hid = request.POST['deletextra']
+          hs = Extracurricular.objects.get(Q(pk=hid))
+          hs.delete()
       if 'deletepub' in request.POST:
           hid = request.POST['deletepub']
           hs = Publication.objects.get(Q(pk=hid))
@@ -233,23 +270,28 @@ def contextstudentmanage(current,profile,request,user,editable):
   form8 = AddExperience(initial={})
   form14 = AddProfile()
   form15 = AddReference()
+  form88 = AddExtracurricular()
+  form62 = AddConference()
   skills = Has.objects.filter(Q(unique_id=student))
   education = Education.objects.filter(Q(unique_id=student))
   course = Course.objects.filter(Q(unique_id=student))
+  conferences = Conference.objects.filter(Q(unique_id=student))
   experience = Experience.objects.filter(Q(unique_id=student))
   project = Project.objects.filter(Q(unique_id=student))
   achievement = Achievement.objects.filter(Q(unique_id=student))
   reference = Reference.objects.filter(Q(unique_id=student))
+  extracurriculars = Extracurricular.objects.filter(Q(unique_id=student))
   publication = Publication.objects.filter(Q(unique_id=student))
   patent = Patent.objects.filter(Q(unique_id=student))
-  context = {'user': user, 'profile': profile, 'skills': skills,
-             'educations': education, 'courses': course, 'experiences': experience,
-             'projects': project, 'achievements': achievement, 'publications': publication,
-             'patent': patent, 'form': form, 'form1': form1, 'form14': form14,
-             'form5': form5, 'form6': form6, 'form7': form7, 'form8': form8,
-             'form10':form10, 'form11':form11, 'form12':form12, 'form15': form15, 'current':current,
-             'editable': editable, 'reference_tab': reference_tab, 'references': reference
-             }
+  context = {
+    'user': user, 'profile': profile, 'skills': skills, 'extracurriculars': extracurriculars,
+    'educations': education, 'courses': course, 'experiences': experience, 'conferences': conferences,
+    'projects': project, 'achievements': achievement, 'publications': publication,
+    'patent': patent, 'form': form, 'form1': form1, 'form14': form14, 'form62': form62,
+    'form5': form5, 'form6': form6, 'form7': form7, 'form8': form8, 'form88': form88,
+    'form10':form10, 'form11':form11, 'form12':form12, 'current':current,  'form15': form15,
+    'editable': editable,  'reference_tab': reference_tab, 'references': reference
+  }
   return context
 
 
@@ -259,7 +301,7 @@ def contextfacultymanage(request,user,profile):
 
   #pagiantion for Journal
   publications = emp_research_papers.objects.filter(pf_no=profile.id,rtype='Journal').order_by("-date_entry")
-  
+
   paginator = Paginator(publications, 10)
   page = request.GET.get('page')
   mark=0;
@@ -274,7 +316,7 @@ def contextfacultymanage(request,user,profile):
 
 
   #pagination for book
-  books = emp_published_books.objects.filter(pf_no=profile.id).order_by("-date_entry")  
+  books = emp_published_books.objects.filter(pf_no=profile.id).order_by("-date_entry")
   paginator2 = Paginator(books, 10)
   page2 = request.GET.get('page2')
   mark2=0;
@@ -303,7 +345,7 @@ def contextfacultymanage(request,user,profile):
 
 
   #pagination for research project
-  research_projects = emp_research_projects.objects.filter(pf_no=profile.id).order_by("-date_entry") 
+  research_projects = emp_research_projects.objects.filter(pf_no=profile.id).order_by("-date_entry")
   paginator4 = Paginator(research_projects, 10)
   page4 = request.GET.get('page4')
   mark4=0;
@@ -317,7 +359,7 @@ def contextfacultymanage(request,user,profile):
   sr4 = (research_projects.number-1)*10
 
   #pagination for Consultancy Project
-  consultancy_projects = emp_consultancy_projects.objects.filter(pf_no=profile.id).order_by("-date_entry") 
+  consultancy_projects = emp_consultancy_projects.objects.filter(pf_no=profile.id).order_by("-date_entry")
   paginator5 = Paginator(consultancy_projects, 20)
   page5 = request.GET.get('page5')
   mark5=0;
@@ -332,7 +374,7 @@ def contextfacultymanage(request,user,profile):
   sr5 = (consultancy_projects.number-1)*10
 
   #pagination for patents
-  patents = emp_patents.objects.filter(pf_no=profile.id).order_by("-date_entry") 
+  patents = emp_patents.objects.filter(pf_no=profile.id).order_by("-date_entry")
   paginator6 = Paginator(patents, 10)
   page6 = request.GET.get('page6')
   mark6=0;
@@ -346,7 +388,7 @@ def contextfacultymanage(request,user,profile):
   sr6 = (patents.number-1)*10
 
   #pagination for technology transfer
-  techtransfer = emp_techtransfer.objects.filter(pf_no=profile.id).order_by("-date_entry") 
+  techtransfer = emp_techtransfer.objects.filter(pf_no=profile.id).order_by("-date_entry")
   paginator7 = Paginator(techtransfer, 10)
   page7 = request.GET.get('page7')
   mark7=0;
@@ -361,7 +403,7 @@ def contextfacultymanage(request,user,profile):
 
 
   #pagination for  thesis
-  thesis = emp_mtechphd_thesis.objects.filter(pf_no=profile.id, degree_type=1).order_by('-date_entry') 
+  thesis = emp_mtechphd_thesis.objects.filter(pf_no=profile.id, degree_type=1).order_by('-date_entry')
   paginator8 = Paginator(thesis, 10)
   page8 = request.GET.get('page8')
   mark8=0;
@@ -379,7 +421,7 @@ def contextfacultymanage(request,user,profile):
 
 
   #pagination for phdthesis
-  phdthesis = emp_mtechphd_thesis.objects.filter(pf_no=profile.id, degree_type=2).order_by('-date_entry') 
+  phdthesis = emp_mtechphd_thesis.objects.filter(pf_no=profile.id, degree_type=2).order_by('-date_entry')
   paginator9 = Paginator(phdthesis, 10)
   page9 = request.GET.get('page9')
   mark9=0;
@@ -391,7 +433,7 @@ def contextfacultymanage(request,user,profile):
     page9=1
   phdthesis = paginator9.page(page9)
   sr9 = (phdthesis.number-1)*10
-  
+
 
   #paginator for foreign visit
   foreign_visits = emp_visits.objects.filter(pf_no=profile.id,v_type=2).order_by("-start_date")
@@ -460,7 +502,7 @@ def contextfacultymanage(request,user,profile):
     'sr2' : sr2,
     'conferences' : conferences,
     'mark3' : mark3,
-    'sr3' : sr3, 
+    'sr3' : sr3,
     'thesis' : thesis,
     'mark4' : mark4,
     'sr4' : sr4,
