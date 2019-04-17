@@ -160,6 +160,17 @@ class Publication(models.Model):
         return '{} - {}'.format(self.unique_id.id, self.publication_title)
 
 
+class Reference(models.Model):
+    unique_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+    reference_name = models.CharField(max_length=100, default='')
+    post = models.CharField(max_length=100, default='', null=True, blank=True)
+    email = models.CharField(max_length=50, default='')
+    mobile_number = models.CharField(max_length=15, blank=True, null=True)
+
+    def __str__(self):
+        return '{} - {}'.format(self.unique_id.id, self.reference_name)
+
+
 class Coauthor(models.Model):
     publication_id = models.ForeignKey(Publication, on_delete=models.CASCADE)
     coauthor_name = models.CharField(max_length=100, default='')

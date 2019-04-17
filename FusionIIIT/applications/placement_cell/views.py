@@ -4,11 +4,11 @@ import datetime
 import decimal
 import zipfile
 import xlwt
+
 from cgi import escape
 from datetime import date
 from io import BytesIO
 from wsgiref.util import FileWrapper
-
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -24,22 +24,20 @@ from django.utils import timezone
 from django.utils.encoding import smart_str
 from xhtml2pdf import pisa
 from django.core import serializers
-
 from applications.academic_information.models import Student
 from notification.views import placement_cell_notif
 from applications.globals.models import (DepartmentInfo, ExtraInfo,
                                         HoldsDesignation)
-
 from .forms import (AddAchievement, AddChairmanVisit, AddCourse, AddEducation,
-                    AddExperience, AddPatent, AddProfile, AddProject,
+                    AddExperience, AddReference, AddPatent, AddProfile, AddProject,
                     AddPublication, AddSchedule, AddSkill, ManageHigherRecord,
                     ManagePbiRecord, ManagePlacementRecord, SearchHigherRecord,
                     SearchPbiRecord, SearchPlacementRecord,
                     SearchStudentRecord, SendInvite)
 from .models import (Achievement, ChairmanVisit, Course, Education, Experience,
-                     Has, NotifyStudent, Patent, PlacementRecord,
+                     Has, NotifyStudent, Patent, PlacementRecord, Reference,
                      PlacementSchedule, PlacementStatus, Project, Publication,
-                     Skill, StudentPlacement, StudentRecord, Role, CompanyDetails)
+                     Skill, StudentPlacement, StudentRecord, Role, CompanyDetails,)
 '''
     @variables:
             user - logged in user
@@ -142,8 +140,27 @@ from .models import (Achievement, ChairmanVisit, Course, Education, Experience,
             skillcheck - checking for skill to be shown in cv
 '''
 
+
+def get_reference_list(request):
+    if request.method == 'POST':
+        # arr = request.POST.getlist('arr[]')
+        # print(arr)
+        # print(type(arr))
+        user = request.user
+        profile = get_object_or_404(ExtraInfo, Q(user=user))
+        student = get_object_or_404(Student, Q(id=profile.id))
+        print(student)
+        reference_objects = Reference.objects.filter(unique_id=student)
+        reference_objects = serializers.serialize('json', list(reference_objects))
+
+        context = {
+            'reference_objs': reference_objects
+        }
+        return JsonResponse(context)
+
+
 # Ajax for the company name dropdown for CompanyName when filling AddSchedule
-def CompanyNameDropdown(request):
+def company_name_dropdown(request):
     if request.method == 'POST':
         current_value = request.POST.get('current_value')
         company_names = CompanyDetails.objects.filter(Q(company_name__startswith=current_value))
@@ -159,7 +176,7 @@ def CompanyNameDropdown(request):
 
 
 # Ajax for all the roles in the dropdown
-def CheckingRoles(request):
+def checking_roles(request):
     if request.method == 'POST':
         current_value = request.POST.get('current_value')
         all_roles = Role.objects.filter(Q(role__startswith=current_value))
@@ -170,7 +187,7 @@ def CheckingRoles(request):
 
 
 @login_required
-def Placement(request):
+def placement(request):
     '''
     function include the functionality of first tab of UI
     for student, placement officer & placement chairman
@@ -342,6 +359,7 @@ def Placement(request):
                                                                description=description,
                                                                sdate=sdate, edate=edate)
                     experience_obj.save()
+
             if 'deleteskill' in request.POST:
                 hid = request.POST['deleteskill']
                 hs = Has.objects.get(Q(pk=hid))
@@ -466,7 +484,7 @@ def Placement(request):
 
 
 @login_required
-def deleteInvitationStatus(request):
+def delete_invitation_status(request):
     '''
     function to delete the invitation that has been sent to the students
     '''
@@ -528,7 +546,7 @@ def deleteInvitationStatus(request):
     return render(request, 'placementModule/studentrecords.html', context)
 
 
-def InvitationStatus(request):
+def invitation_status(request):
     '''
     function to check the invitation status
     '''
@@ -907,7 +925,7 @@ def InvitationStatus(request):
 
 
 @login_required
-def StudentRecords(request):
+def student_records(request):
     '''
         function for searching the records of student
     '''
@@ -1240,7 +1258,7 @@ def StudentRecords(request):
 
 
 @login_required
-def ManageRecords(request):
+def manage_records(request):
     '''
         function to manage the records
         - can add the records under placement | pbi | higher studies
@@ -1847,7 +1865,7 @@ def ManageRecords(request):
 
 
 @login_required
-def PlacementStatistics(request):
+def placement_statistics(request):
     '''
     logic of the view shown under Placement Statistics tab
     '''
@@ -2549,6 +2567,7 @@ def cv(request, username):
             projectcheck = request.POST.get('projectcheck')
             coursecheck = request.POST.get('coursecheck')
             skillcheck = request.POST.get('skillcheck')
+            reference_list = request.POST.getlist('reference_checkbox_list')
     else:
         achievementcheck = '1'
         educationcheck = '1'
@@ -2576,9 +2595,9 @@ def cv(request, username):
           roll = (now.year)-int("20"+str(profile.id)[0:2])
 
     student = get_object_or_404(Student, Q(id=profile.id))
-    studentplacement = get_object_or_404(StudentPlacement, Q(unique_id=student))
     skills = Has.objects.filter(Q(unique_id=student))
     education = Education.objects.filter(Q(unique_id=student))
+    reference = Reference.objects.filter(id__in=reference_list)
     course = Course.objects.filter(Q(unique_id=student))
     experience = Experience.objects.filter(Q(unique_id=student))
     project = Project.objects.filter(Q(unique_id=student))
@@ -2586,11 +2605,16 @@ def cv(request, username):
     publication = Publication.objects.filter(Q(unique_id=student))
     patent = Patent.objects.filter(Q(unique_id=student))
 
-    return render_to_pdf('placementModule/cv.html', {'pagesize': 'A4', 'user': user,
+    if len(reference) == 0:
+        referencecheck = '0'
+    else:
+        referencecheck = '1'
+
+    return render_to_pdf('placementModule/cv.html', {'pagesize': 'A4', 'user': user, 'references': reference,
                                                      'profile': profile, 'projects': project,
-                                                     'student': studentplacement,
                                                      'skills': skills, 'educations': education,
                                                      'courses': course, 'experiences': experience,
+                                                     'referencecheck': referencecheck,
                                                      'achievements': achievement,
                                                      'publications': publication,
                                                      'patents': patent, 'roll': roll,
@@ -2772,6 +2796,50 @@ def check_invitation_date(placementstatus):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+'''
+    OLD CODE
+'''
 
 # @login_required
 # def placement(request):

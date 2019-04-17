@@ -229,6 +229,35 @@
           {% endfor %}<br>
       {% endif %}
 
+      <br>
+      {% if referencecheck == '1' %}
+      <table><b><th style="background-color:#b0e2ff; border-top: solid 0px #3d3d3d; text-align: left;"><h6>Reference</h6></th></b></table><br>
+
+          {% for reference in references %}
+            <table>
+              <tr>
+                <td style="text-align: left">
+                  {{ reference.reference_name }}
+                </td>
+
+                <td style="text-align: right">
+                  <b>Post: </b> {{ reference.post }}
+                </td>
+              </tr>
+
+              <tr>
+                <td style="text-align: left">
+                  <b>Email: </b>{{ reference.email }}
+                </td>
+
+                <td style="text-align: right">
+                  <b>Number: </b>{{ reference.mobile_number }}
+                </td>
+              </tr>
+            </table>
+            <hr>
+          {% endfor %}<br>
+      {% endif %}
     </div>
 
 </div>

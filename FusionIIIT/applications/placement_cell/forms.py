@@ -178,6 +178,35 @@ class AddPublication(forms.Form):
     publication_date = forms.DateField(label='publication_date', widget=forms.DateInput(attrs={'class':'datepicker'}))
 
 
+class AddReference(forms.Form):
+    """
+    The form is used to add reference.
+    @variables:
+            reference_name - name of the referenced person
+            post - post of the referenced person
+            email - email of the referenced person
+            mobile_number - mobile number/phone number of the referenced person
+    """
+    reference_name = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
+                                                                      'class': 'field',
+                                                                      'id': 'reference_name'}),
+                                        label="reference_name")
+    post = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
+                                                                'class': 'form-control',
+                                                                'id': 'reference_post'}),
+                                  label="post", required=False)
+    email = forms.CharField(widget=forms.TextInput(attrs={'max_length': 50,
+                                                              'class': 'form-control',
+                                                              'id': 'reference_email',
+                                                              }),
+                                label="email")
+    mobile_number = forms.CharField(widget=forms.TextInput(attrs={'max_length': 15,
+                                                                      'class': 'field',
+                                                                      'id': 'reference_mobile',
+                                                                      'type': 'number'}),
+                                        label="mobile_number")
+
+
 class AddPatent(forms.Form):
     """
     The form is used to add patents that user has done.

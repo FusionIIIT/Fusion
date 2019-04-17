@@ -1,6 +1,7 @@
 import json
 
 from django.contrib.auth import logout
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.files.storage import FileSystemStorage
@@ -19,16 +20,19 @@ from applications.placement_cell.forms import (AddAchievement, AddCourse,
                                                AddEducation, AddExperience,
                                                AddPatent, AddProfile,
                                                AddProject, AddPublication,
-                                               AddSkill)
+                                               AddSkill, AddReference)
 from applications.placement_cell.models import (Achievement, Course, Education,
-                                                Experience, Has, Patent,
-                                                Project, Publication, Skill)
+                                                Experience, Has, Patent, Reference,
+                                                Project, Publication, Skill,
+                                                Reference)
 from applications.eis.models import *
 from applications.academic_procedures.models import Thesis
 
 
 def contextstudentmanage(current,profile,request,user,editable):
   student = get_object_or_404(Student, Q(id=profile.id))
+  reference_tab = 0
+
   if editable and request.method == 'POST':
       if 'studentapprovesubmit' in request.POST:
           status = PlacementStatus.objects.filter(pk=request.POST['studentapprovesubmit']).update(invitation='ACCEPTED', timestamp=timezone.now())
@@ -163,6 +167,25 @@ def contextstudentmanage(current,profile,request,user,editable):
                                                          description=description,
                                                          sdate=sdate, edate=edate)
               experience_obj.save()
+
+      if 'addreference' in request.POST:
+          form = AddReference(request.POST)
+          reference_tab = 1
+          print(form.errors)
+          if form.is_valid():
+              reference_name = form.cleaned_data['reference_name']
+              post = form.cleaned_data['post']
+              email = form.cleaned_data['email']
+              mobile_number = form.cleaned_data['mobile_number']
+
+              Reference.objects.create(
+                  unique_id=student,
+                  reference_name=reference_name,
+                  post=post,
+                  email=email,
+                  mobile_number=mobile_number)
+              messages.success(request, "Successfully added your reference!")
+
       if 'deleteskill' in request.POST:
           hid = request.POST['deleteskill']
           hs = Has.objects.get(Q(pk=hid))
@@ -182,6 +205,10 @@ def contextstudentmanage(current,profile,request,user,editable):
       if 'deletepro' in request.POST:
           hid = request.POST['deletepro']
           hs = Project.objects.get(Q(pk=hid))
+          hs.delete()
+      if 'deletereference' in request.POST:
+          hid = request.POST['deletereference']
+          hs = Reference.objects.get(Q(pk=hid))
           hs.delete()
       if 'deleteach' in request.POST:
           hid = request.POST['deleteach']
@@ -205,12 +232,14 @@ def contextstudentmanage(current,profile,request,user,editable):
   form7 = AddPatent(initial={})
   form8 = AddExperience(initial={})
   form14 = AddProfile()
+  form15 = AddReference()
   skills = Has.objects.filter(Q(unique_id=student))
   education = Education.objects.filter(Q(unique_id=student))
   course = Course.objects.filter(Q(unique_id=student))
   experience = Experience.objects.filter(Q(unique_id=student))
   project = Project.objects.filter(Q(unique_id=student))
   achievement = Achievement.objects.filter(Q(unique_id=student))
+  reference = Reference.objects.filter(Q(unique_id=student))
   publication = Publication.objects.filter(Q(unique_id=student))
   patent = Patent.objects.filter(Q(unique_id=student))
   context = {'user': user, 'profile': profile, 'skills': skills,
@@ -218,8 +247,8 @@ def contextstudentmanage(current,profile,request,user,editable):
              'projects': project, 'achievements': achievement, 'publications': publication,
              'patent': patent, 'form': form, 'form1': form1, 'form14': form14,
              'form5': form5, 'form6': form6, 'form7': form7, 'form8': form8,
-             'form10':form10, 'form11':form11, 'form12':form12, 'current':current,
-             'editable': editable
+             'form10':form10, 'form11':form11, 'form12':form12, 'form15': form15, 'current':current,
+             'editable': editable, 'reference_tab': reference_tab, 'references': reference
              }
   return context
 
