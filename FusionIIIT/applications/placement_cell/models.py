@@ -21,6 +21,13 @@ class Constants:
         ('OTHER', 'Other'),
     )
 
+    EVENT_TYPE = (
+        ('SOCIAL', 'Social'),
+        ('CULTURE', 'Culture'),
+        ('SPORT', 'Sport'),
+        ('OTHER', 'Other'),
+    )
+
     INVITATION_TYPE = (
         ('ACCEPTED', 'Accepted'),
         ('REJECTED', 'Rejected'),
@@ -206,6 +213,18 @@ class Achievement(models.Model):
 
     def __str__(self):
         return '{} - {}'.format(self.unique_id.id, self.achievement)
+
+class Extracurricular(models.Model):
+    unique_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+    event_name = models.CharField(max_length=100, default='')
+    event_type = models.CharField(max_length=20, choices=Constants.EVENT_TYPE,
+                                        default='OTHER')
+    description = models.TextField(max_length=1000, default='', null=True, blank=True)
+    name_of_position = models.CharField(max_length=200, default='')
+    date_earned = models.DateField(_("Date"), default=datetime.date.today)
+
+    def __str__(self):
+        return '{} - {}'.format(self.unique_id.id, self.event_name)
 
 
 class MessageOfficer(models.Model):

@@ -37,7 +37,7 @@ from .forms import (AddAchievement, AddChairmanVisit, AddCourse, AddEducation,
                     SearchPbiRecord, SearchPlacementRecord,
                     SearchStudentRecord, SendInvite)
 from .models import (Achievement, ChairmanVisit, Course, Education, Experience,
-                     Has, NotifyStudent, Patent, PlacementRecord,
+                     Has, NotifyStudent, Patent, PlacementRecord, Extracurricular,
                      PlacementSchedule, PlacementStatus, Project, Publication,
                      Skill, StudentPlacement, StudentRecord, Role, CompanyDetails)
 '''
@@ -2500,6 +2500,7 @@ def delete_placement_statistics(request):
 
 
 def cv(request, username):
+    print('first coming to function ---------------------\n\n\n')
     # Retrieve data or whatever you need
     """
     The function is used to generate the cv in the pdf format.
@@ -2549,6 +2550,7 @@ def cv(request, username):
             projectcheck = request.POST.get('projectcheck')
             coursecheck = request.POST.get('coursecheck')
             skillcheck = request.POST.get('skillcheck')
+            extracurricularcheck = request.POST.get('extracurricularcheck')
     else:
         achievementcheck = '1'
         educationcheck = '1'
@@ -2558,6 +2560,7 @@ def cv(request, username):
         projectcheck = '1'
         coursecheck = '1'
         skillcheck = '1'
+        extracurricularcheck = '1'
 
 
     # print(achievementcheck,' ',educationcheck,' ',publicationcheck,' ',patentcheck,' ',internshipcheck,' ',projectcheck,' \n\n\n')
@@ -2576,26 +2579,28 @@ def cv(request, username):
           roll = (now.year)-int("20"+str(profile.id)[0:2])
 
     student = get_object_or_404(Student, Q(id=profile.id))
-    studentplacement = get_object_or_404(StudentPlacement, Q(unique_id=student))
     skills = Has.objects.filter(Q(unique_id=student))
     education = Education.objects.filter(Q(unique_id=student))
     course = Course.objects.filter(Q(unique_id=student))
     experience = Experience.objects.filter(Q(unique_id=student))
     project = Project.objects.filter(Q(unique_id=student))
     achievement = Achievement.objects.filter(Q(unique_id=student))
+    extracurricular = Extracurricular.objects.filter(Q(unique_id=student))
     publication = Publication.objects.filter(Q(unique_id=student))
     patent = Patent.objects.filter(Q(unique_id=student))
     today = datetime.date.today()
 
+    print('coming to function ---------------------\n\n\n')
     return render_to_pdf('placementModule/cv.html', {'pagesize': 'A4', 'user': user,
                                                      'profile': profile, 'projects': project,
-                                                     'student': studentplacement,
                                                      'skills': skills, 'educations': education,
                                                      'courses': course, 'experiences': experience,
                                                      'achievements': achievement,
+                                                     'extracurriculars': extracurricular,
                                                      'publications': publication,
                                                      'patents': patent, 'roll': roll,
                                                      'achievementcheck': achievementcheck,
+                                                     'extracurricularcheck': extracurricularcheck,
                                                      'educationcheck': educationcheck,
                                                      'publicationcheck': publicationcheck,
                                                      'patentcheck': patentcheck,

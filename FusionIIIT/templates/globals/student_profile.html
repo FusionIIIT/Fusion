@@ -109,6 +109,12 @@
                     Publications
                     <i class="right floated chevron right icon"></i>
                 </a>
+
+                <a class="item" data-tab="eighth">
+                    Extracurricular
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
                 {% endif %}
                 {% endfor %}
               </div>
@@ -166,6 +172,15 @@
                         {% endblock %}
                     </div>
                     {% comment %}The Achievements tab ends here!{% endcomment %}
+
+                    {% comment %}The Achievements tab starts here!{% endcomment %}
+                    <div class="ui tab segment" data-tab="eighth">
+                        {% block extracurricular %}
+                            {% include 'placementModule/extracurricular.html' %}
+                        {% endblock %}
+                    </div>
+                    {% comment %}The Achievements tab ends here!{% endcomment %}
+
                     {% endif %}
                     {% endfor %}
                 </div>

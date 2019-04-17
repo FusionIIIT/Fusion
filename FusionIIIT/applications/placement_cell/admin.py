@@ -3,7 +3,7 @@ from django.contrib import admin
 from .models import (Achievement, ChairmanVisit, Coauthor, Coinventor, Course,
                      Education, Experience, Has, Interest, MessageOfficer,
                      NotifyStudent, Patent, PlacementRecord, PlacementSchedule,
-                     PlacementStatus, Project, Publication, Skill,
+                     PlacementStatus, Project, Publication, Skill, Extracurricular,
                      StudentPlacement, StudentRecord, Role, CompanyDetails)
 
 
@@ -111,3 +111,4 @@ admin.site.register(ChairmanVisit, ChairmanVisitAdmin)
 admin.site.register(PlacementSchedule, PlacementScheduleAdmin)
 admin.site.register(Role)
 admin.site.register(CompanyDetails)
+admin.site.register(Extracurricular)
