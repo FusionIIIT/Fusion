@@ -126,11 +126,11 @@
                     <label>Upload File</label>
                     <input class="ui input" type="file" name="estimate" id="estimate" accept=".pdf, .docx,.doc" ></input>
                 </div>
-                {% for action in allowed_actions %}
                 <div class="field">
+                    {% for action in allowed_actions %}
                     <input type="submit" class="ui button" name="{{action}}" value="{{action}}"/>
+                    {% endfor %}
                 </div>
-                {% endfor %}
             </form>
         </div>
     </div>
