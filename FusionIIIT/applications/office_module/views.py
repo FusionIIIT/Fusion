@@ -181,7 +181,7 @@ def officeOfDeanPnD(request):
             allowed_actions = ["Forward", "Revert", "Approve", "Reject"]
         elif des.name == "Director":
             allowed_actions = ["Revert", "Approve", "Reject"]
-        elif des.name == "Electrical_JE" or "Civil_JE":
+        elif des.name == "Electrical_JE" or des.name == "Civil_JE":
             allowed_actions = ["Forward", "Reject"]
         else:
             allowed_actions = ["Forward", "Revert", "Reject"]
