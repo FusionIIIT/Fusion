@@ -77,6 +77,26 @@ class AddCourse(forms.Form):
     edate = forms.DateField(label='edate', widget=forms.DateInput(attrs={'class':'datepicker'}))
 
 
+class AddConference(forms.Form):
+    """
+    The form is used to add external courses that user has done.
+    @variables:
+            course_name - name of the course
+            description - description of the course
+            license_no - licence number of the course
+            sdate - start date of the course
+            edate - end date of the course
+    """
+    conference_name = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
+                                                                'class': 'field'}),
+                                  label="course_name")
+    description = forms.CharField(widget=forms.Textarea(attrs={'max_length': 1000,
+                                                                'class': 'form-control'}),
+                                  label="description", required=False)
+    sdate = forms.DateField(label='sdate', widget=forms.DateInput(attrs={'class':'datepicker'}))
+    edate = forms.DateField(label='edate', widget=forms.DateInput(attrs={'class':'datepicker'}))
+
+
 class AddExperience(forms.Form):
     """
     The form is used to add experience that useris having.

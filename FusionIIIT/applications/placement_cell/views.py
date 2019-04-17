@@ -36,7 +36,7 @@ from .forms import (AddAchievement, AddChairmanVisit, AddCourse, AddEducation,
                     ManagePbiRecord, ManagePlacementRecord, SearchHigherRecord,
                     SearchPbiRecord, SearchPlacementRecord,
                     SearchStudentRecord, SendInvite)
-from .models import (Achievement, ChairmanVisit, Course, Education, Experience,
+from .models import (Achievement, ChairmanVisit, Course, Education, Experience, Conference,
                      Has, NotifyStudent, Patent, PlacementRecord, Extracurricular,
                      PlacementSchedule, PlacementStatus, Project, Publication,
                      Skill, StudentPlacement, StudentRecord, Role, CompanyDetails)
@@ -2551,7 +2551,9 @@ def cv(request, username):
             coursecheck = request.POST.get('coursecheck')
             skillcheck = request.POST.get('skillcheck')
             extracurricularcheck = request.POST.get('extracurricularcheck')
+            conferencecheck =  request.POST.get('conferencecheck')
     else:
+        conferencecheck = '1'
         achievementcheck = '1'
         educationcheck = '1'
         publicationcheck = '1'
@@ -2586,6 +2588,7 @@ def cv(request, username):
     project = Project.objects.filter(Q(unique_id=student))
     achievement = Achievement.objects.filter(Q(unique_id=student))
     extracurricular = Extracurricular.objects.filter(Q(unique_id=student))
+    conference = Conference.objects.filter(Q(unique_id=student))
     publication = Publication.objects.filter(Q(unique_id=student))
     patent = Patent.objects.filter(Q(unique_id=student))
     today = datetime.date.today()
@@ -2604,6 +2607,8 @@ def cv(request, username):
                                                      'educationcheck': educationcheck,
                                                      'publicationcheck': publicationcheck,
                                                      'patentcheck': patentcheck,
+                                                     'conferencecheck': conferencecheck,
+                                                     'conferences': conference,
                                                      'internshipcheck': internshipcheck,
                                                      'projectcheck': projectcheck,
                                                      'coursecheck': coursecheck,

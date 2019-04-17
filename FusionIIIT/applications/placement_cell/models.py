@@ -156,6 +156,17 @@ class Course(models.Model):
         return '{} - {}'.format(self.unique_id.id, self.course_name)
 
 
+class Conference(models.Model):
+    unique_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+    conference_name = models.CharField(max_length=100, default='')
+    description = models.TextField(max_length=250, default='', null=True, blank=True)
+    sdate = models.DateField(_("Date"), default=datetime.date.today)
+    edate = models.DateField(null=True, blank=True)
+
+    def __str__(self):
+        return '{} - {}'.format(self.unique_id.id, self.conference_name)
+
+
 class Publication(models.Model):
     unique_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     publication_title = models.CharField(max_length=100, default='')

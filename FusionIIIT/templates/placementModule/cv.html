@@ -174,6 +174,26 @@
           {% endfor %}<br>
       {% endif %}
 
+      <br>
+      {% if conferences and conferencecheck == '1' %}
+          <table><b><th style="background-color:#b0e2ff; border-top: solid 0px #3d3d3d; text-align: left;"><h6>Conferences</h6></th></b></table><br>
+
+          {% for conference in conferences %}
+            <div style="padding-left:10px">
+              <li style="font-size: 10px;"><b>{{ conference.conference_name }}</b></li>
+              {% if conference.license_no %}
+              <table style="padding-left:10px"><tr><td style="text-align: left">
+              {% endif %}</td><td style="text-align: right">
+              <b>{{ conference.sdate }}
+              {% if conference.edate %}
+              - {{ conference.edate }}</b>
+              {% else %}(Ongoing){% endif %}</td></tr></table><br>
+              {% if conference.description %}{{ conference.description }}<br>{% endif %}
+            </div>
+          {% endfor %}
+
+      {% endif %}
+
 
             {% if skills and skillcheck == '1' %}
                 <table><b><th style="background-color:#b0e2ff; border-top: solid 0px #3d3d3d; text-align: left;"><h6>Skills and Technologies</h6></th></b></table>

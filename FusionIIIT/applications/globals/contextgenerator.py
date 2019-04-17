@@ -17,10 +17,10 @@ from applications.globals.models import (ExtraInfo, Feedback, HoldsDesignation,
                                          Issue, IssueImage, Faculty)
 from applications.placement_cell.forms import (AddAchievement, AddCourse,
                                                AddEducation, AddExperience,
-                                               AddPatent, AddProfile,
+                                               AddPatent, AddProfile, AddConference,
                                                AddProject, AddPublication,
                                                AddSkill, AddExtracurricular)
-from applications.placement_cell.models import (Achievement, Course, Education,
+from applications.placement_cell.models import (Achievement, Course, Education, Conference,
                                                 Experience, Has, Patent, Extracurricular,
                                                 Project, Publication, Skill)
 from applications.eis.models import *
@@ -150,6 +150,18 @@ def contextstudentmanage(current,profile,request,user,editable):
                                                  description=description,
                                                  sdate=sdate, edate=edate)
               course_obj.save()
+
+      if 'conferencesubmit' in request.POST:
+          form = AddConference(request.POST)
+          if form.is_valid():
+              conference_name = form.cleaned_data['conference_name']
+              description = form.cleaned_data['description']
+              sdate = form.cleaned_data['sdate']
+              edate = form.cleaned_data['edate']
+              conference_obj = Conference.objects.create(unique_id=student, conference_name=conference_name,
+                                                 description=description,
+                                                 sdate=sdate, edate=edate)
+              conference_obj.save()
       if 'projectsubmit' in request.POST:
           form = AddProject(request.POST)
           if form.is_valid():
@@ -205,6 +217,10 @@ def contextstudentmanage(current,profile,request,user,editable):
           hid = request.POST['deleteach']
           hs = Achievement.objects.get(Q(pk=hid))
           hs.delete()
+      if 'deleteconference' in request.POST:
+          hid = request.POST['deleteconference']
+          hs = Conference.objects.get(Q(pk=hid))
+          hs.delete()
       if 'deletextra' in request.POST:
           hid = request.POST['deletextra']
           hs = Extracurricular.objects.get(Q(pk=hid))
@@ -228,9 +244,11 @@ def contextstudentmanage(current,profile,request,user,editable):
   form8 = AddExperience(initial={})
   form14 = AddProfile()
   form88 = AddExtracurricular()
+  form62 = AddConference()
   skills = Has.objects.filter(Q(unique_id=student))
   education = Education.objects.filter(Q(unique_id=student))
   course = Course.objects.filter(Q(unique_id=student))
+  conferences = Conference.objects.filter(Q(unique_id=student))
   experience = Experience.objects.filter(Q(unique_id=student))
   project = Project.objects.filter(Q(unique_id=student))
   achievement = Achievement.objects.filter(Q(unique_id=student))
@@ -238,9 +256,9 @@ def contextstudentmanage(current,profile,request,user,editable):
   publication = Publication.objects.filter(Q(unique_id=student))
   patent = Patent.objects.filter(Q(unique_id=student))
   context = {'user': user, 'profile': profile, 'skills': skills, 'extracurriculars': extracurriculars,
-             'educations': education, 'courses': course, 'experiences': experience,
+             'educations': education, 'courses': course, 'experiences': experience, 'conferences': conferences,
              'projects': project, 'achievements': achievement, 'publications': publication,
-             'patent': patent, 'form': form, 'form1': form1, 'form14': form14,
+             'patent': patent, 'form': form, 'form1': form1, 'form14': form14, 'form62': form62,
              'form5': form5, 'form6': form6, 'form7': form7, 'form8': form8, 'form88': form88,
              'form10':form10, 'form11':form11, 'form12':form12, 'current':current,
              'editable': editable
