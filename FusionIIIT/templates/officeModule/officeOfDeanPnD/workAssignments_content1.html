@@ -1,8 +1,8 @@
 {% load static %}
-{% include 'officeModule/officeOfDeanPnD/seachAssignments_content1Modal.html' %}
 
+{% comment %}
 <form method="POST" action="{% url 'office:officeOfDeanPnD' %}">
-    {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+    <!-- The add a new skill Accordian starts here! -->
     {% csrf_token %}
     <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
         <div class="inline fields">
@@ -48,7 +48,7 @@
             </div>
 
             <div class="field">
-                {% comment %}The Dropdown field starts here!{% endcomment %}
+                <!-- The Dropdown field starts here! -->
                 <label>Department</label>
 
                 <div class="ui fluid search selection dropdown">
@@ -70,7 +70,7 @@
                         </div>
                     </div>
                 </div>
-                {% comment %}The Dropdown field ends here!{% endcomment %}
+                <!-- The Dropdown field ends here! -->
             </div>
         </div>
 
@@ -81,10 +81,7 @@
         </div>
     </div>
 </form>
-
-<br>
-<br>
-<div class="ui divider"></div>
+{% endcomment %}
 
 <table class="ui very basic collapsing celled sortable table"
        style="padding-left: 10%;
@@ -96,9 +93,6 @@
     <tr>
         <th class="one wide column">
             Sr No
-        </th>
-        <th class="one wide column">
-            Assisgnment ID
         </th>
         <th class="two wide column">
             Date Created
@@ -119,15 +113,13 @@
     </thead>
 
     <tbody>
-    {% for object in assigned_req%}
+    {% for object, _ in assigned_req%}
     <tr>
 
         <td>
             {{forloop.counter}}
         </td>
-        <td>
-            {{object.id}}
-        </td>
+        
         <td>
             {{object.assign_file.upload_date}}
         </td>
@@ -140,7 +132,7 @@
             {{object.department}}
         </td>
 
-        <td onclick="detail('{{ object.pk }}')">
+        <td onclick="viewAssignment({{object.pk}})">
             <button class="ui button" type="button" id="test">Details</button>
         </td>
 
@@ -151,4 +143,3 @@
     </tbody>
 </table>
 <div class="ui divider"></div>
-

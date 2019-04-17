@@ -1,6 +1,4 @@
 {% load static %}
-{% include 'officeModule/officeOfDeanPnD/seachAssignments_content1Modal.html' %}
-
 <!--
 <form method="POST" action="{% url 'office:officeOfDeanPnD' %}">
     {% comment %}The add a new skill Accordian starts here!{% endcomment %}
@@ -98,9 +96,7 @@
         <th class="one wide column">
             Sr No
         </th>
-        <th class="one wide column">
-            Assisgnment ID
-        </th>
+
         <th class="two wide column">
             Date Created
         </th>
@@ -110,11 +106,7 @@
         </th>
 
         <th class="three wide column">
-            Building
-        </th>
-
-        <th class="one wide column">
-            Estimate
+            Department
         </th>
 
         <th class="one wide column">
@@ -130,9 +122,7 @@
         <td>
             {{forloop.counter}}
         </td>
-        <td>
-            {{req.id}}
-        </td>
+
         <td>
             {{track.receive_date}}
         </td>
@@ -142,18 +132,11 @@
         </td>
 
         <td>
-            {{req.title}}
+            {{req.department}}
         </td>
 
-        <td>
-            <a class="ui inverted huge circular icon button" target="_blank" href="/media/{{object.estimate}}"
-               style="margin: auto;">
-                <i class="attach black icon"></i>
-            </a>
-
-        </td>
-        <td onclick="detail('{{ object.pk }}')">
-            <button class="ui button" type="button" id="test">Details</button>
+        <td onclick="viewAssignment({{req.pk}})">
+            <button class="ui button" type="button" id="test" >Details</button>
         </td>
 
 
@@ -163,4 +146,3 @@
     </tbody>
 </table>
 <div class="ui divider"></div>
-
