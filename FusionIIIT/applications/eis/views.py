@@ -525,9 +525,9 @@ def emp_research_papersDelete(request, pk, sr,mark):
     page = page+1
     url = ""
     if mark== '1':
-        url = 'http://127.0.0.1:8000/profile/?page='+str(page)
+        url = '/profile/?page='+str(page)
     if mark== '2':
-        url = 'http://127.0.0.1:8000/profile/?page3='+str(page)
+        url = '/profile/?page3='+str(page)
     print(url)
     instance.delete()
     return redirect(url)
@@ -704,7 +704,7 @@ def journal_insert(request):
     if (request.POST.get('dos') != None and request.POST.get('dos') != '' and request.POST.get('dos') != 'None'):
         eis.date_submission = datetime.datetime.strptime(request.POST.get('dos'), "%B %d, %Y %I:%M %p")
     eis.save()
-    return redirect('http://127.0.0.1:8000/profile/?page=1')
+    return redirect('/profile/?page=1')
 
 
 def editjournal(request):
@@ -739,7 +739,9 @@ def editjournal(request):
         if x[-4:] == 'p.m.':
             x = x[:-4]
             x = x+"PM"
-        print(x)
+       
+        if x[:5] == "Sept." :
+            x = "Sep." + x[5:]
        
         try: 
             try:
@@ -758,6 +760,8 @@ def editjournal(request):
         if x[-4:] == 'p.m.':
             x = x[:-4]
             x = x+"PM"
+        if x[:5] == "Sept." :
+            x = "Sep." + x[5:]
         try:
             try:
                 eis.date_acceptance = datetime.datetime.strptime(x, "%B %d, %Y %I:%M %p")
@@ -774,6 +778,8 @@ def editjournal(request):
         if x[-4:] == 'p.m.':
             x = x[:-4]
             x = x+"PM"
+        if x[:5] == "Sept." :
+            x = "Sep." + x[5:]
         try:
             try:
                 eis.date_publication = datetime.datetime.strptime(x, "%B %d, %Y %I:%M %p")
@@ -790,6 +796,8 @@ def editjournal(request):
         if x[-4:] == 'p.m.':
             x = x[:-4]
             x = x+"PM"
+        if x[:5] == "Sept." :
+            x = "Sep." + x[5:]
         try:
             try:
                 eis.date_submission = datetime.datetime.strptime(x, "%B %d, %Y %I:%M %p")
@@ -800,7 +808,7 @@ def editjournal(request):
     eis.save()
     page = int(request.POST.get('index'))//10
     page = page+1
-    url = "http://127.0.0.1:8000/profile/?page="+str(page)
+    url = "/profile/?page="+str(page)
     print(url)
     return redirect(url)
 
@@ -810,14 +818,21 @@ def editforeignvisit(request):
     eis.country = request.POST.get('country')
     eis.place = request.POST.get('place')
     eis.purpose = request.POST.get('purpose')
+    x = request.POST.get('start_date')
+    if x[:5] == "Sept." :
+            x = "Sep." + x[5:]
+    print(x,"/////////////")
     try:
-        eis.start_date = datetime.datetime.strptime(request.POST.get('start_date'), "%B %d, %Y")
+        eis.start_date = datetime.datetime.strptime(x, "%B %d, %Y")
     except:
-        eis.start_date = datetime.datetime.strptime(request.POST.get('start_date'), "%b. %d, %Y")
+        eis.start_date = datetime.datetime.strptime(x, "%b. %d, %Y")
+    x = request.POST.get('end_date')
+    if x[:5] == "Sept." :
+            x = "Sep." + x[5:]
     try:
-        eis.end_date = datetime.datetime.strptime(request.POST.get('end_date'), "%B %d, %Y")
+        eis.end_date = datetime.datetime.strptime(x, "%B %d, %Y")
     except:
-        eis.end_date = datetime.datetime.strptime(request.POST.get('end_date'), "%b. %d, %Y")
+        eis.end_date = datetime.datetime.strptime(x, "%b. %d, %Y")
     #eis.end_date = request.POST.get('end_date')
     eis.save()
     page = int(request.POST.get('index10'))//10
@@ -832,14 +847,20 @@ def editindianvisit(request):
     eis.country = request.POST.get('country2')
     eis.place = request.POST.get('place2')
     eis.purpose = request.POST.get('purpose2')
+    x = request.POST.get('start_date2')
+    if x[:5] == "Sept." :
+            x = "Sep." + x[5:]
     try:
-        eis.start_date = datetime.datetime.strptime(request.POST.get('start_date2'), "%B %d, %Y")
+        eis.start_date = datetime.datetime.strptime(x, "%B %d, %Y")
     except:
-        eis.start_date = datetime.datetime.strptime(request.POST.get('start_date2'), "%b. %d, %Y")
+        eis.start_date = datetime.datetime.strptime(x, "%b. %d, %Y")
+    x = request.POST.get('end_date2')
+    if x[:5] == "Sept." :
+            x = "Sep." + x[5:]
     try:
-        eis.end_date = datetime.datetime.strptime(request.POST.get('end_date2'), "%B %d, %Y")
+        eis.end_date = datetime.datetime.strptime(x, "%B %d, %Y")
     except:
-        eis.end_date = datetime.datetime.strptime(request.POST.get('end_date2'), "%b. %d, %Y")
+        eis.end_date = datetime.datetime.strptime(x, "%b. %d, %Y")
     #eis.end_date = request.POST.get('end_date')
     eis.save()
     page = int(request.POST.get('index11'))//10
@@ -883,8 +904,7 @@ def conference_insert(request):
     if (request.POST.get('dos3') != None and request.POST.get('dos3') != '' and request.POST.get('dos3') != 'None'):
         eis.date_submission = datetime.datetime.strptime(request.POST.get('dos3'), "%B %d, %Y %I:%M %p")
     eis.save()
-    print("////////////////////")
-    return redirect('globals:profile')
+    return redirect('/profile/?page3=1')
 
 def editconference(request):
     eis = emp_research_papers.objects.get(pk=request.POST.get('conferencepk'))
@@ -916,13 +936,15 @@ def editconference(request):
         if x[-4:] == 'p.m.':
             x = x[:-4]
             x = x+"PM"
+        if x[:5] == "Sept." :
+            x = "Sep." + x[5:]
         
        
         try: 
             try:
                 eis.doi = datetime.datetime.strptime(x, "%B %d, %Y %I:%M %p")
             except:
-                eis.doi = datetime.datetime.strptime(x, "%B %d, %Y, %I:%M %p")
+                eis.doi = datetime.datetime.strptime(x, "%b. %d, %Y, %I:%M %p")
 
         except:
             eis.doi = datetime.datetime.strptime(x, "%B %d, %Y")
@@ -935,11 +957,13 @@ def editconference(request):
         if x[-4:] == 'p.m.':
             x = x[:-4]
             x = x+"PM"
+        if x[:5] == "Sept." :
+            x = "Sep." + x[5:]
         try:
             try:
                 eis.date_acceptance = datetime.datetime.strptime(x, "%B %d, %Y %I:%M %p")
             except:
-                eis.date_acceptance = datetime.datetime.strptime(x, "%B %d, %Y, %I:%M %p")
+                eis.date_acceptance = datetime.datetime.strptime(x, "%b. %d, %Y, %I:%M %p")
         except:
             eis.date_acceptance = datetime.datetime.strptime(x, "%B %d, %Y")
 
@@ -951,11 +975,13 @@ def editconference(request):
         if x[-4:] == 'p.m.':
             x = x[:-4]
             x = x+"PM"
+        if x[:5] == "Sept." :
+            x = "Sep." + x[5:]
         try:
             try:
                 eis.date_publication = datetime.datetime.strptime(x, "%B %d, %Y %I:%M %p")
             except:
-                eis.date_publication = datetime.datetime.strptime(x, "%B %d, %Y, %I:%M %p")
+                eis.date_publication = datetime.datetime.strptime(x, "%b. %d, %Y, %I:%M %p")
         except:
             eis.date_publication = datetime.datetime.strptime(x, "%B %d, %Y")
 
@@ -967,17 +993,19 @@ def editconference(request):
         if x[-4:] == 'p.m.':
             x = x[:-4]
             x = x+"PM"
+        if x[:5] == "Sept." :
+            x = "Sep." + x[5:]
         try:
             try:
                 eis.date_submission = datetime.datetime.strptime(x, "%B %d, %Y %I:%M %p")
             except:
-                eis.date_submission = datetime.datetime.strptime(x, "%B %d, %Y, %I:%M %p")
+                eis.date_submission = datetime.datetime.strptime(x, "%b. %d, %Y, %I:%M %p")
         except:
             eis.date_submission = datetime.datetime.strptime(x, "%B %d, %Y")
     eis.save()
     page = int(request.POST.get('index3'))//10
     page = page+1
-    url = "http://127.0.0.1:8000/profile/?page3="+str(page)
+    url = "/profile/?page3="+str(page)
     print(url)
     return redirect(url)
 
@@ -1029,19 +1057,24 @@ def consym_insert(request):
     if (eis.role1 == "" or eis.role1==None):
         eis.role1 = "Any Other"
         eis.role2 = "Any Other"
+    x = request.POST.get('conference_start_date')
+    if x[:5] == "Sept." :
+            x = "Sep." + x[5:]
     try:
-        eis.start_date = datetime.datetime.strptime(request.POST.get('conference_start_date'), "%B %d, %Y")
+        eis.start_date = datetime.datetime.strptime(x, "%B %d, %Y")
     except:
-        eis.start_date = datetime.datetime.strptime(request.POST.get('conference_start_date'), "%b. %d, %Y")
+        eis.start_date = datetime.datetime.strptime(x, "%b. %d, %Y")
+    x = request.POST.get('conference_end_date')
+    if x[:5] == "Sept." :
+            x = "Sep." + x[5:]
     try:
-        eis.end_date = datetime.datetime.strptime(request.POST.get('conference_end_date'), "%B %d, %Y")
+        eis.end_date = datetime.datetime.strptime(x, "%B %d, %Y")
     except:
-        eis.end_date = datetime.datetime.strptime(request.POST.get('conference_end_date'), "%b. %d, %Y")
+        eis.end_date = datetime.datetime.strptime(x, "%b. %d, %Y")
     eis.save()
     return redirect('/profile/?page13=1')
 
 def editconsym(request):
-    print("+++++++++++++++++"+request.POST.get('conferencepk2'))
     eis = emp_confrence_organised.objects.get(pk=request.POST.get('conferencepk2'))
     eis.name = request.POST.get('conference_name')
     eis.venue = request.POST.get('conference_venue')
@@ -1056,14 +1089,20 @@ def editconsym(request):
     if (eis.role1 == "" or eis.role1==None):
         eis.role1 = "Any Other"
         eis.role2 = "Any Other"
+    x = request.POST.get('conference_start_date')
+    if x[:5] == "Sept." :
+            x = "Sep." + x[5:]
     try:
-        eis.start_date = datetime.datetime.strptime(request.POST.get('conference_start_date'), "%B %d, %Y")
+        eis.start_date = datetime.datetime.strptime(x, "%B %d, %Y")
     except:
-        eis.start_date = datetime.datetime.strptime(request.POST.get('conference_start_date'), "%b. %d, %Y")
+        eis.start_date = datetime.datetime.strptime(x, "%b. %d, %Y")
+    x = request.POST.get('conference_end_date')
+    if x[:5] == "Sept." :
+            x = "Sep." + x[5:]
     try:
-        eis.end_date = datetime.datetime.strptime(request.POST.get('conference_end_date'), "%B %d, %Y")
+        eis.end_date = datetime.datetime.strptime(x, "%B %d, %Y")
     except:
-        eis.end_date = datetime.datetime.strptime(request.POST.get('conference_end_date'), "%b. %d, %Y")
+        eis.end_date = datetime.datetime.strptime(x, "%b. %d, %Y")
     eis.save()
     page = int(request.POST.get('index13'))//10
     page = page+1
@@ -1112,14 +1151,20 @@ def editevent(request):
     eis.name = request.POST.get('event_name')
     eis.venue = request.POST.get('event_venue')
     eis.role = request.POST.get('event_role')
+    x = request.POST.get('event_start_date')
+    if x[:5] == "Sept." :
+        x = "Sep." + x[5:]
     try:
-        eis.start_date = datetime.datetime.strptime(request.POST.get('event_start_date'), "%B %d, %Y")
+        eis.start_date = datetime.datetime.strptime(x, "%B %d, %Y")
     except:
-        eis.start_date = datetime.datetime.strptime(request.POST.get('event_start_date'), "%b. %d, %Y")
+        eis.start_date = datetime.datetime.strptime(x, "%b. %d, %Y")
+    x = request.POST.get('event_end_date')
+    if x[:5] == "Sept." :
+        x = "Sep." + x[5:]
     try:
-        eis.end_date = datetime.datetime.strptime(request.POST.get('event_end_date'), "%B %d, %Y")
+        eis.end_date = datetime.datetime.strptime(x, "%B %d, %Y")
     except:
-        eis.end_date = datetime.datetime.strptime(request.POST.get('event_end_date'), "%b. %d, %Y")
+        eis.end_date = datetime.datetime.strptime(x, "%b. %d, %Y")
     eis.save()
     page = int(request.POST.get('index12'))//10
     page = page+1
@@ -1230,21 +1275,30 @@ def project_insert(request):
     eis.financial_outlay = request.POST.get('financial_outlay')
     eis.funding_agency = request.POST.get('funding_agency')
     eis.status = request.POST.get('status')
+    x = request.POST.get('start')
+    if x[:5] == "Sept." :
+        x = "Sep." + x[5:]
     if (request.POST.get('start') != None and request.POST.get('start') != '' and request.POST.get('start') != 'None'):
         try:
-            eis.start_date = datetime.datetime.strptime(request.POST.get('start'), "%B %d, %Y")
+            eis.start_date = datetime.datetime.strptime(x, "%B %d, %Y")
         except:
-            eis.start_date = datetime.datetime.strptime(request.POST.get('start'), "%b. %d, %Y")
+            eis.start_date = datetime.datetime.strptime(x, "%b. %d, %Y")
+    x = request.POST.get('end')
+    if x[:5] == "Sept." :
+        x = "Sep." + x[5:]
     if (request.POST.get('end') != None and request.POST.get('end') != '' and request.POST.get('end') != 'None'):
         try:
-            eis.finish_date = datetime.datetime.strptime(request.POST.get('end'), "%B %d, %Y")
+            eis.finish_date = datetime.datetime.strptime(x, "%B %d, %Y")
         except:
-            eis.finish_date = datetime.datetime.strptime(request.POST.get('end'), "%b. %d, %Y")
+            eis.finish_date = datetime.datetime.strptime(x, "%b. %d, %Y")
+    x = request.POST.get('sub')
+    if x[:5] == "Sept." :
+        x = "Sep." + x[5:]
     if (request.POST.get('sub') != None and request.POST.get('sub') != '' and request.POST.get('sub') != 'None'):
         try:
-            eis.date_submission = datetime.datetime.strptime(request.POST.get('sub'), "%B %d, %Y")
+            eis.date_submission = datetime.datetime.strptime(x, "%B %d, %Y")
         except:
-            eis.date_submission = datetime.datetime.strptime(request.POST.get('sub'), "%b. %d, %Y")
+            eis.date_submission = datetime.datetime.strptime(x, "%b. %d, %Y")
     eis.save()
     return redirect('/profile/?page4=1')
 
@@ -1261,16 +1315,22 @@ def consult_insert(request):
     eis.client = request.POST.get('client')
     eis.title = request.POST.get('title')
     eis.financial_outlay = request.POST.get('financial_outlay')
+    x = request.POST.get('start')
+    if x[:5] == "Sept." :
+        x = "Sep." + x[5:]
     if (request.POST.get('start') != None and request.POST.get('start') != '' and request.POST.get('start') != 'None'):
         try:
-            eis.start_date = datetime.datetime.strptime(request.POST.get('start'), "%B %d, %Y")
+            eis.start_date = datetime.datetime.strptime(x, "%B %d, %Y")
         except:
-            eis.start_date = datetime.datetime.strptime(request.POST.get('start'), "%b. %d, %Y")
+            eis.start_date = datetime.datetime.strptime(x, "%b. %d, %Y")
+    x = request.POST.get('end')
+    if x[:5] == "Sept." :
+        x = "Sep." + x[5:]
     if (request.POST.get('end') != None and request.POST.get('end') != '' and request.POST.get('end') != 'None'):
         try:
-            eis.end_date = datetime.datetime.strptime(request.POST.get('end'), "%B %d, %Y")
+            eis.end_date = datetime.datetime.strptime(x, "%B %d, %Y")
         except:
-            eis.end_date = datetime.datetime.strptime(request.POST.get('end'), "%b. %d, %Y")
+            eis.end_date = datetime.datetime.strptime(x, "%b. %d, %Y")
     eis.save()
     return redirect('/profile/?page5=1')
 
@@ -1861,6 +1921,7 @@ def projects(request):
                 e.funding_agency = row['funding_agency']
                 e.financial_outlay = row['financial_outlay']
                 e.status = row['status']
+
 
 
                 try:

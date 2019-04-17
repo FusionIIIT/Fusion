@@ -30,6 +30,14 @@
             {% comment %}The user image card ends here!{% endcomment %}
 
             <div class="ui divider"></div>
+             <div class="ui huge fluid vertical pointing menu"
+                 style="max-width: 320px;">
+
+                <a class=" item">
+                     Fill Feedback
+                    <i class="right floated chevron right icon"></i>
+                </a>
+            </div>
 
 
             {% comment %}The Tab-Menu ends here!{% endcomment %}
@@ -48,9 +56,9 @@
             {% comment %}The ... start here!{% endcomment %}
             <div class="ui active tab segment" data-tab="first">
                 <div class="ui pointing secondary menu">
-                    <a>
+                   <!--  <a>
                         <a href="javascript:history.go(-1)"><i class="extra large green chevron circle left icon"></i></a>
-                    </a>
+                    </a> -->
         <a class="active item" data-tab="submitfeedback">
             Feedback
         </a>
@@ -58,7 +66,7 @@
     </div>
 
     <div class="ui active tab" data-tab="complaint">
-        <div class="ui vertical segment">
+        <div class="ui vertical segment" style="padding:0px">
             <form class="ui form" style="padding-left: 24px; padding-right: 24px;" method="POST"  
                   action="">
                 {% csrf_token %}
@@ -132,15 +140,14 @@
 
                 <br>
 
-                <button class="ui large primary button right floated" onclick="feedsubmit()">
+                <button class="ui large primary button right floated" onclick="feedsubmit()" >
                     Submit
                 </button>
 
-                <br>
-                <br>
-
             </form>
-
+            <a href="javascript:history.go(-1)">
+                        <button class="ui large primary button right floated">Back</button>
+                    </a><br><br>
             <br>
             <div class="ui divider"></div>
         </div>
