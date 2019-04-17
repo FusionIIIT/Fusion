@@ -163,11 +163,17 @@ def office_dean_PnD_notif(sender, recipient, type):
     if type=='requisition_filed':
         verb = "Your requisition has been successfully submitted."
     elif type=='request_accepted':
-        verb = "Your requisition has been accepted "
+        verb = "Your requisition has been accepted."
+    elif type=='request_rejected':
+        verb = "Your requisition has been rejected."
     elif type=='assignment_created':
         verb = "Assignment has been created."
     elif type=='assignment_received':
         verb = "You have received an assignment."
     elif type=='assignment_reverted':
-        verb = "Your assignment has been reverted."
+        verb = "Assignment has been reverted."
+    elif type=='assignment_approved':
+        verb = "Assignment has been approved."
+    elif type=='assignment_rejected':
+        verb = "Assignment has been rejected."
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)

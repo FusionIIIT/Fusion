@@ -127,7 +127,8 @@ def officeOfDeanPnD(request):
                 designation=sender_design.designation,
             )
         requisition.save()
-        office_dean_PnD_notif(request.user, request.user, 'assignment_created')#Notification generated
+        office_dean_PnD_notif(request.user, requisition.userid.user, 'request_accepted')
+        office_dean_PnD_notif(request.user, request.user, 'assignment_created')
         office_dean_PnD_notif(request.user, receive.working, 'assignment_received')
 
         Tracking.objects.create(
@@ -145,7 +146,9 @@ def officeOfDeanPnD(request):
         if hold:
             req_id=request.POST.get('req_id')
             try:
-                Requisitions.objects.get(pk=req_id).delete()
+                req = Requisitions.objects.get(pk=req_id)
+                office_dean_PnD_notif(request.user, req.userid.user, 'request_rejected')
+                req.delete()
             except Requisitions.DoesNotExist:
                 print('ERROR NOT FOUND 409404040', req_id)
         else:
@@ -300,15 +303,7 @@ def action(request):
             )
         track.is_read = True
         track.save()
-        # fileobj.actionby_receiver="reject"
-        # fileobj.save()
-        # reqobj.tag=1
-        # reqobj.save()
-
-        # #   file=Requisitions.objects.get(pk=id)
-        # receive=HoldsDesignation.objects.get(designation__id=i-1)
-        # moveobj=Filemovement(rid=reqobj,sentby=sentby,receivedby=receive,date=fdate,remarks=remarks)
-        # moveobj.save()
+        office_dean_PnD_notif(request.user,request.user, 'assignment_rejected')
 
     elif 'Approve' in request.POST:
         description = description + " This assignment has been approved. No further changes to this assignment are possible. Please create new requisition if needed."
@@ -324,32 +319,7 @@ def action(request):
             )
         track.is_read = True
         track.save()
-        # fileobj.actionby_receiver="accept"
-        # fileobj.save()
-        # print(">>>>>>>>>>>>>")
-        # reqobj.tag=1
-        # reqobj.save()
-
-    # fileobj=Filemovement.objects.get(pk=id)
-    # remarks=request.POST.get('remarks')
-    # sentby=''
-    # for des in deslist:
-    #     try:
-    #         sentby=HoldsDesignation.objects.get(working=user,designation__name=des)
-    #     except :
-    #         sentby=None
-
-    #     if sentby :
-    #         print(sentby)
-    #         i=Designation.objects.get(name=des)
-    #         i=i.id
-    #         break
-
-    # if
-
-    # reqobj=fileobj.rid
-
-
+        office_dean_PnD_notif(request.user,request.user, 'assignment_approved')
 
     return HttpResponseRedirect("/office/officeOfDeanPnD/")
 
