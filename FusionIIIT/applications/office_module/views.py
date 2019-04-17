@@ -148,14 +148,15 @@ def officeOfDeanPnD(request):
             try:
                 req = Requisitions.objects.get(pk=req_id)
                 office_dean_PnD_notif(request.user, req.userid.user, 'request_rejected')
-                req.delete()
+                req.tag = 1
+                req.save()
             except Requisitions.DoesNotExist:
                 print('ERROR NOT FOUND 409404040', req_id)
         else:
             return HttpResponse('Unauthorized', status=401)
 
-    req=Requisitions.objects.filter(assign_file__isnull=True)
-    all_req=Requisitions.objects.all()
+    req=Requisitions.objects.filter(assign_file__isnull=True, tag=0)
+    all_req=Requisitions.objects.filter(tag=0)
     assigned_req=list(Requisitions.objects.filter(assign_file__isnull=False).select_related())
     incoming_files=[(f, _list_find(assigned_req, lambda r: r.assign_file==f.file_id))
             for f in Tracking.objects.filter(receiver_id=user).filter(is_read=False)]
