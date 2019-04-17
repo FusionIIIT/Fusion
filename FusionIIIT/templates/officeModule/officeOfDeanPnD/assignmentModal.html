@@ -87,7 +87,11 @@
                      </a>
 
                      <div class="right floated" style="font-color: black;">
+                         {% if t.receive_design %}
                          <b>Received by:</b>&nbsp{{t.receive_design}}
+                         {% else %}
+                         <b>Assignment closed!</b>
+                         {% endif %}
                      </div>
                      <div class="right floated" style="font-color: black;">
                         <b>File uploaded:</b>
