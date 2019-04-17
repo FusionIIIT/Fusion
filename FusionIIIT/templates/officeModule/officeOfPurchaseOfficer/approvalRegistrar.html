@@ -127,11 +127,11 @@
           </td>
 
           <td>
-            {% if data.expected_cost >= 50001 %}
+            {% if data.expected_cost <= 50000 %}
              <button  class="approveme" m_id="{{data.id}}" >approve</button>
              {% endif %}
 
-             {% if data.expected_cost <= 50000 %}
+             {% if data.expected_cost >= 50001 %}
               <button  class="approveme2" m_id="{{data.id}}" >Fwd to Director</button>
               {% endif %}
 

@@ -33,12 +33,12 @@ def healthcenter(request):
 
 
 @login_required
-def compounder_view(request):
+def compounder_view(request):                                                              # compounder view starts here
     usertype = ExtraInfo.objects.get(user=request.user).user_type
     if usertype == 'compounder':
         if request.method == 'POST':
 
-            if 'feed_com' in request.POST:
+            if 'feed_com' in request.POST:                                    # compounder response to patients feedback
                 pk = request.POST.get('com_id')
                 feedback = request.POST.get('feed')
                 Complaint.objects.filter(id=pk).update(feedback=feedback)
@@ -52,7 +52,7 @@ def compounder_view(request):
                     dateo=f.end_date
                 data={'datenow':dateo}
                 return JsonResponse(data)
-            elif 'returned' in request.POST:
+            elif 'returned' in request.POST:                                     # return expired medicine and update db
                 pk = request.POST.get('id')
                 Expiry.objects.filter(id=pk).update(returned=True,return_date=datetime.now())
                 qty=Expiry.objects.get(id=pk).quantity
@@ -62,7 +62,7 @@ def compounder_view(request):
                 Stock.objects.filter(id=med).update(quantity=quantity)
                 data={'status':1}
                 return JsonResponse(data)
-            elif 'add_doctor' in request.POST:
+            elif 'add_doctor' in request.POST:                                         # updating new doctor info in db
                 doctor=request.POST.get('new_doctor')
                 specialization=request.POST.get('specialization')
                 phone=request.POST.get('phone')
@@ -77,7 +77,7 @@ def compounder_view(request):
 #                    Notification.objects.create(notif_type='healthcenter',recipient=user,action_verb='appoiinted',display_text='New Doctor has been appointed : Dr.'+doctor)
                 data={'status':1}
                 return JsonResponse(data)
-            elif 'remove_doctor' in request.POST:
+            elif 'remove_doctor' in request.POST:                              # remove doctor by changing active status
                 doctor=request.POST.get('doctor_active')
                 Doctor.objects.filter(id=doctor).update(active=False)
                 doc=Doctor.objects.get(id=doctor).doctor_name
@@ -86,16 +86,17 @@ def compounder_view(request):
 #                    Notification.objects.create(notif_type='healthcenter',recipient=user,action_verb='removed',display_text='Dr.'+doc+'will not be available from now')
                 data={'status':1}
                 return JsonResponse(data)
-            elif 'discharge' in request.POST:
-                pk = request.POST.get('id')
+            elif 'discharge' in request.POST:                                        #
+                pk = request.POST.get('discharge')
                 Hospital_admit.objects.filter(id=pk).update(discharge_date=datetime.now())
                 hosp=Hospital_admit.objects.filter(id=pk)
                 for f in hosp:
                     dateo=f.discharge_date
-                data={'datenow':dateo}
+                data={'datenow':dateo, 'id':pk}
                 return JsonResponse(data)
             elif 'add_stock' in request.POST:
                 medicine = request.POST.get('medicine_id')
+                threshold_a = request.POST.get('threshold_a')
                 medicine_name = Stock.objects.get(id=medicine)
                 qty = int(request.POST.get('quantity'))
                 supplier=request.POST.get('supplier')
@@ -110,9 +111,11 @@ def compounder_view(request):
                 quantity = (Stock.objects.get(id=medicine)).quantity
                 quantity = quantity + qty
                 Stock.objects.filter(id=medicine).update(quantity=quantity)
-                data={'status':1}
+                Stock.objects.filter(id=medicine).update(threshold=threshold_a)
+                #data = {'medicine': medicine_name, 'quantity': qty, 'new_supplier': supplier, 'new_expiry_date': expiry}
+                data = {'status': 1}
                 return JsonResponse(data)
-            elif 'edit' in request.POST:
+            elif 'edit' in request.POST:                                              # edit schedule for doctors
                 doctor = request.POST.get('doctor')
                 day = request.POST.get('day')
                 time_in = request.POST.get('time_in')
@@ -153,7 +156,9 @@ def compounder_view(request):
                     return_date=None,
                     date=datetime.now()
                 )
-                data={'status':1}
+                data = {'medicine':  medicine, 'quantity': quantity, 'threshold': threshold,
+                        'new_supplier': new_supplier, 'new_expiry_date': new_expiry_date  }
+                # data={'status': 1}
                 return JsonResponse(data)
             elif 'admission' in request.POST:
                 user = request.POST.get('user_id')
@@ -164,7 +169,7 @@ def compounder_view(request):
                 reason = request.POST.get('description')
                 hospital_doctor = request.POST.get('hospital_doctor')
                 hospital_id = request.POST.get('hospital_name')
-                hospital_name=Hospital.objects.get(id=hospital_id)
+                hospital_name = Hospital.objects.get(id=hospital_id)
                 Hospital_admit.objects.create(
                      user_id=user_id,
                      doctor_id=doctor_id,
@@ -310,18 +315,12 @@ def compounder_view(request):
                                 qty = qty-quan
                                 Stock.objects.filter(medicine_name=medicine_id).update(quantity=qty)
                                 quantity=quantity-quan
-                        status=1
+                        status = 1
                     else:
-                        status=0
-
-
+                        status = 0
                     Medicine.objects.all().delete()
-                    data = {
-                            'status': status,
-                            'stock':stock
-                            }
 #                    Notification.objects.create(notif_type='healthcenter',recipient=user.user,action_verb='prescribed',display_text='You have been prescribed for '+details)
-
+                data = {'status': status, 'stock': stock}
                 return JsonResponse(data)
             elif 'prescribe_b' in request.POST:
                 user_id = request.POST.get('user')
@@ -381,21 +380,32 @@ def compounder_view(request):
                                 qty = qty-quan
                                 Stock.objects.filter(medicine_name=medicine_id).update(quantity=qty)
                                 quantity=quantity-quan
-                        status=1
+                        status = 1
                     else:
-                        status=0
-
+                        status = 0
                     Medicine.objects.all().delete()
 #                    Notification.objects.create(notif_type='healthcenter',recipient=user.user,action_verb='prescribed',display_text='You have been prescribed for '+details)
-
-                    data = {
-                            'status': status
-                            }
+                data = {'status': status}
                 return JsonResponse(data)
+            elif 'cancel_presc' in request.POST:
+                presc_id = request.POST.get('cancel_presc')
+                Prescription.objects.filter(pk=presc_id).delete()
+                #a = User.objects.all()
+                #                for user in a:
+                #                    Notification.objects.create(notif_type='healthcenter',recipient=user,action_verb='removed',display_text='Dr.'+doc+'will not be available from now')
+                data = {'status': 1}
+                return JsonResponse(data)
+            elif 'medicine' in request.POST:
+                med_id = request.POST.get('medicine')
+                thresh = Stock.objects.get(id=med_id).threshold
+                data = {'thresh': thresh}
+                return JsonResponse(data)
+
 
         else:
             all_complaints = Complaint.objects.all()
             all_hospitals = Hospital_admit.objects.all().order_by('-admission_date')
+            hospitals_list = Hospital.objects.all().order_by('hospital_name')
             all_ambulances = Ambulance_request.objects.all().order_by('-date_request')
             appointments_today =Appointment.objects.filter(date=datetime.now()).order_by('date')
             appointments_future=Appointment.objects.filter(date__gt=datetime.now()).order_by('date')
@@ -404,7 +414,10 @@ def compounder_view(request):
             days = Constants.DAYS_OF_WEEK
             schedule=Schedule.objects.all().order_by('doctor_id')
             expired=Expiry.objects.filter(expiry_date__lt=datetime.now(),returned=False).order_by('expiry_date')
+            live_meds=Expiry.objects.filter(returned=False).order_by('quantity')
             count=Counter.objects.all()
+            presc_hist=Prescription.objects.all().order_by('-date')
+            medicines_presc=Prescribed_medicine.objects.all()
             if count:
                 Counter.objects.all().delete()
             Counter.objects.create(count=0,fine=0)
@@ -417,11 +430,12 @@ def compounder_view(request):
                            'stocks': stocks, 'all_complaints': all_complaints,
                            'all_hospitals': all_hospitals, 'hospitals':hospitals, 'all_ambulances': all_ambulances,
                            'appointments_today': appointments_today, 'doctors': doctors,
-                           'appointments_future': appointments_future, 'schedule': schedule })
+                           'appointments_future': appointments_future, 'schedule': schedule, 'live_meds': live_meds, 'presc_hist': presc_hist, 'medicines_presc': medicines_presc, 'hospitals_list': hospitals_list})
     elif usertype == 'student':
-        return HttpResponseRedirect("/healthcenter/student")
+        return HttpResponseRedirect("/healthcenter/student")                                      # compounder view ends
 
-def student_view(request):
+
+def student_view(request):                                                                    # student view starts here
     usertype = ExtraInfo.objects.get(user=request.user).user_type
     if usertype == 'student' or usertype == 'faculty' or usertype == 'staff':
         if request.method == 'POST':
@@ -489,6 +503,23 @@ def student_view(request):
                 )
                 data = {'status': 1}
                 return JsonResponse(data)
+            elif 'cancel_amb' in request.POST:
+                amb_id = request.POST.get('cancel_amb')
+                Ambulance_request.objects.filter(pk=amb_id).delete()
+                #a = User.objects.all()
+                #                for user in a:
+                #                    Notification.objects.create(notif_type='healthcenter',recipient=user,action_verb='removed',display_text='Dr.'+doc+'will not be available from now')
+                data = {'status': 1}
+                return JsonResponse(data)
+            elif 'cancel_app' in request.POST:
+                app_id = request.POST.get('cancel_app')
+                Appointment.objects.filter(pk=app_id).delete()
+                #a = User.objects.all()
+                #                for user in a:
+                #                    Notification.objects.create(notif_type='healthcenter',recipient=user,action_verb='removed',display_text='Dr.'+doc+'will not be available from now')
+                data = {'status': 1}
+                return JsonResponse(data)
+
         else:
             users = ExtraInfo.objects.all()
             user_id = ExtraInfo.objects.get(user=request.user)
@@ -502,6 +533,7 @@ def student_view(request):
             schedule=Schedule.objects.all().order_by('doctor_id')
             doctors=Doctor.objects.filter(active=True)
             count=Counter.objects.all()
+
             if count:
                 Counter.objects.all().delete()
             Counter.objects.create(count=0,fine=0)
@@ -513,4 +545,4 @@ def student_view(request):
                            'hospitals': hospitals, 'appointments': appointments,
                            'prescription': prescription, 'schedule': schedule, 'users': users})
     elif usertype == 'compounder':
-        return HttpResponseRedirect("/healthcenter/compounder")
+        return HttpResponseRedirect("/healthcenter/compounder")                                     # student view ends

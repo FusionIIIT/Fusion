@@ -259,9 +259,9 @@
 
                         {% if hospital.discharge_date == None %}
                         <form method='POST'>{% csrf_token %}
-                        <input type="hidden" id="disc_id" name="id" value={{hospital.id}} />
-                        <td><input type="button" id="discharge" name="discharge" class="ui small floated primary button" value="Discharge"/>
-                        <p id="disc_p"></p>
+
+                        <td><div id="dis"><input type="button"  onclick="dis({{hospital.pk}})" id="{{hospital.pk}}" name="discharge" class="ui small floated primary button" value="Discharge"/></div>
+                            <p id="disc_p"></p>
                         </td>
                         </form>
                         {% else %}
@@ -278,23 +278,23 @@
                   </tbody>
               </table>
               <script type="text/javascript">
-                    $('#discharge').click(function(e)
-                                                        {
+                    function dis(id)
+                                       {
+
                                                           $.ajax({
                                                             type:'post',
                                                             url:'/healthcenter/compounder/',
                                                             data: {
                                                             csrfmiddlewaretoken: '{{ csrf_token }}',
-                                                            id:$("#disc_id").val(),
-                                                            discharge:$("#discharge").val()
+                                                            'discharge':id
                                                           },
                                                             success: function(data){
                                                               alert("discharged from hospital");
                                                               $('#disc_p').html(data.datenow);
-                                                              document.getElementById("discharge").style.visibility='hidden';
+                                                              document.getElementById("dis").style.visibility='hidden';
                                                           }
                                                         });
-                                                      });
+                                        }
   </script>
           </div>
 
@@ -359,7 +359,7 @@
                   </td>
 
                   <td>
-                      {{appointment.schedule.to_time}}
+                      {{appointment_f.schedule.to_time}}
                   </td>
 
               </tr>

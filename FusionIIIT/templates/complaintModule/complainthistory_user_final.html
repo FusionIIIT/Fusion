@@ -1,36 +1,38 @@
+<!--HTML file for user in Complaint Hostory to view the list of complaints lodged by him ; sorted as Pending, ON Hold,
+Resolved, Declined-->
 {% load static %}
 {% block complainthistory %}
 
     {% comment %}The tab menu starts here!{% endcomment %}
      <div class="ui pointing secondary menu">
         <a class="active item" data-tab="pendingcomplaints">
-            Pending Complaints
+           <i class="large orange warning icon"></i> Pending <br>Complaints
         </a>
          <a class="item" data-tab="onholdcomplaints">
-            On-Hold Complaints
+           <i class="large orange add user icon"></i> On-Hold <br>Complaints
         </a>
          <a class="item" data-tab="resolvedcomplaints">
-            Resolved Complaints
+             <i class="large green checkmark icon"></i>Resolved<br> Complaints
         </a>
          <a class="item" data-tab="declinedcomplaints">
-            Declined Complaints
+           <i class="large red x icon"></i>  Declined<br> Complaints
         </a>
     </div> 
 
 
     <div class="ui active tab" data-tab="pendingcomplaints">
-        <div class="ui vertical segment">
+        <div class="ui vertical segment" style="height: 700px;overflow-y: auto";>
 
-            <div class="extra content">
+            <!-- <div class="extra content">
                 <div class="" style="text-align: center;">
                     <i class="large orange warning icon"></i> : Pending &ensp;&ensp;&ensp;&ensp;&ensp;
                     <i class="large orange add user icon"></i> : Worker Assigned &ensp;&ensp;&ensp;&ensp;&ensp;
                     <i class="large green checkmark icon"></i> : Completed &ensp;&ensp;&ensp;&ensp;&ensp;
                     <i class="large red x icon"></i> : Declined &ensp;&ensp;&ensp;&ensp;&ensp;
                 </div>
-            </div>
-             <div class="ui divider"></div>
-        </br>
+            </div> -->
+            <!--  <div class="ui divider"></div> -->
+        
 
             <table class="ui very basic collapsing celled sortable table"
                    style="padding-left: 0.5%;
@@ -41,37 +43,37 @@
              
              <thead>
                 <tr>
-                    <th>
-                        S.No
-                    </th>
+                    <td>
+                        <b>S.No</b>
+                    </td>
 
-                    <th class="six wide column">
-                        Date
-                    </th>
+                     <td class="five wide column">
+                        <b>Date</b>
+                    </td>
 
-                    <th>
-                    Complaint </br>
-                        Type
-                    </th>
+                    <td>
+                    <b>Complaint </br>
+                        Type</b>
+                    </td>
 
-                    <th>
-                        Location
-                    </th>
+                    <td>
+                        <b>Location</b>
+                    </td>
 
-                    <th>
+                    <!-- <th>
                         Specific </br> Location
-                    </th>
+                    </th> -->
 
-                    <th class="two wide column">
-                        Details
-                    </th>
+                    <td class="one wide column">
+                        <b>Details</b>
+                    </td>
 
-                   <th class="one wide column">
+                   <!-- <th class="one wide column">
                         Status
-                    </th>
-                    <th class="three wide column">
-                        Worker </br> Name
-                    </th>
+                    </th> -->
+                    <td class="three wide column">
+                        <b>Worker </br> Name</b>
+                    </td>
                     
                     
                    
@@ -103,17 +105,15 @@
                         {{ a.complaint_type }}
                     </td>
                     <td>
+                        {{ a.specific_location }},&nbsp;
                         {{ a.location }}
-                    </td>
-                    <td>
-                        {{ a.specific_location }}
                     </td>
                     <td>
                         <a href="./detail/{{ a.id }}/">  <button class="ui inverted basic button" data-tooltip="Click here to view details" ><i class="large green info icon"></i></button></a>
                     </td>
-                    <td>
+                    <!-- <td>
                           <i class="large orange warning icon"></i>
-                    </td>
+                    </td> -->
                     <td>
                         <b>NOT ASSIGN</b>
                     </td>
@@ -137,19 +137,15 @@
 
 
 
+
+
+
+
     <div class="ui tab" data-tab="onholdcomplaints">
         <div class="ui vertical segment">
 
-            <div class="extra content">
-                <div class="" style="text-align: center;">
-                    <i class="large orange warning icon"></i> : Pending &ensp;&ensp;&ensp;&ensp;&ensp;
-                    <i class="large orange add user icon"></i> : Worker Assigned &ensp;&ensp;&ensp;&ensp;&ensp;
-                    <i class="large green checkmark icon"></i> : Completed &ensp;&ensp;&ensp;&ensp;&ensp;
-                    <i class="large red x icon"></i> : Declined &ensp;&ensp;&ensp;&ensp;&ensp;
-                </div>
-            </div>
-             <div class="ui divider"></div>
-        </br>
+          
+        
 
             <table class="ui very basic collapsing celled sortable table"
                    style="padding-left: 0.5%;
@@ -160,37 +156,37 @@
              
              <thead>
                 <tr>
-                    <th>
-                        S.No
-                    </th>
+                    <td>
+                        <b>S.No</b>
+                    </td>
 
-                    <th class="six wide column">
-                        Date
-                    </th>
+                    <td class="five wide column">
+                        <b>Date</b>
+                    </td>
 
-                    <th>
-                        Complaint </br>
-                        Type
-                    </th>
+                    <td>
+                        <b>Complaint </br>
+                        Type</b>
+                    </td>
 
-                    <th>
-                        Location
-                    </th>
+                    <td>
+                        <b>Location</b>
+                    </td>
 
-                    <th>
+                   <!--  <th>
                         Specific </br> Location
-                    </th>
+                    </th> -->
 
-                    <th class="two wide column">
-                        Details
-                    </th>
+                    <td class="two wide column">
+                        <b>Details</b>
+                    </td>
 
-                   <th class="one wide column">
+                  <!--  <th class="one wide column">
                         Status
-                    </th>
-                    <th class="three wide column">
-                        Worker </br> Name
-                    </th>
+                    </th> -->
+                    <td class="three wide column">
+                        <b>Worker </br> Name</b>
+                    </td>
                     
                     
                    
@@ -218,17 +214,15 @@
                         {{ a.complaint_type }}
                     </td>
                     <td>
+                        {{ a.specific_location }},&nbsp;
                         {{ a.location }}
-                    </td>
-                    <td>
-                        {{ a.specific_location }}
                     </td>
                     <td>
                         <a href="./detail/{{ a.id }}/">  <button class="ui inverted basic button" data-tooltip="Click here to view details" ><i class="large green info icon"></i></button></a>
                     </td>
-                    <td>
+                    <!-- <td>
                           <i class="large orange add user icon"></i>
-                    </td>
+                    </td> -->
                     <td>
                         <b> {{ a.worker_id.name }}</b>
                     </td>
@@ -254,7 +248,7 @@
     <div class="ui tab" data-tab="resolvedcomplaints">
         <div class="ui vertical segment">
 
-            <div class="extra content">
+            <!-- <div class="extra content">
                 <div class="" style="text-align: center;">
                     <i class="large orange warning icon"></i> : Pending &ensp;&ensp;&ensp;&ensp;&ensp;
                     <i class="large orange add user icon"></i> : Worker Assigned &ensp;&ensp;&ensp;&ensp;&ensp;
@@ -262,8 +256,8 @@
                     <i class="large red x icon"></i> : Declined &ensp;&ensp;&ensp;&ensp;&ensp;
                 </div>
             </div>
-             <div class="ui divider"></div>
-        </br>
+             <div class="ui divider"></div> -->
+        
 
             <table class="ui very basic collapsing celled sortable table"
                    style="padding-left: 0.5%;
@@ -274,37 +268,35 @@
              
              <thead>
                 <tr>
-                    <th>
-                        S.No
-                    </th>
+                    <td>
+                        <b>S.No</b>
+                    </td>
 
-                    <th class="six wide column">
-                        Date
-                    </th>
+                    <td class="five wide column">
+                        <b>Date</b>
+                    </td>
 
-                    <th>
-                        Complaint </br>
-                        Type
-                    </th>
+                    <td>
+                        <b>Complaint </br>
+                        Type</b>
+                    </td>
 
-                    <th>
-                        Location
-                    </th>
+                    <td>
+                        <b>Location</b>
+                    </td>
 
-                    <th>
-                        Specific </br> Location
-                    </th>
+                   
 
-                    <th class="two wide column">
-                        Details
-                    </th>
+                    <td class="two wide column">
+                        <b>Details</b>
+                    </td>
 
-                   <th class="one wide column">
+                   <!-- <th class="one wide column">
                         Status
-                    </th>
-                    <th class="three wide column">
-                        Worker </br> Name
-                    </th>
+                    </th> -->
+                    <td class="three wide column">
+                        <b>Worker </br> Name </b>
+                    </td>
                     
                     
                    
@@ -332,17 +324,15 @@
                         {{ a.complaint_type }}
                     </td>
                     <td>
+                        {{ a.specific_location }},&nbsp;
                         {{ a.location }}
-                    </td>
-                    <td>
-                        {{ a.specific_location }}
                     </td>
                     <td>
                         <a href="./detail/{{ a.id }}/">  <button class="ui inverted basic button" data-tooltip="Click here to view details" ><i class="large green info icon"></i></button></a>
                     </td>
-                    <td>
+                    <!-- <td>
                           <i class="large green checkmark icon"></i>
-                    </td>
+                    </td> -->
                     <td>
                         <b> {{ a.worker_id.name }}</b>
                     </td>
@@ -370,7 +360,7 @@
  <div class="ui tab" data-tab="declinedcomplaints">
         <div class="ui vertical segment">
 
-            <div class="extra content">
+            <!-- <div class="extra content">
                 <div class="" style="text-align: center;">
                     <i class="large orange warning icon"></i> : Pending &ensp;&ensp;&ensp;&ensp;&ensp;
                     <i class="large orange add user icon"></i> : Worker Assigned &ensp;&ensp;&ensp;&ensp;&ensp;
@@ -378,8 +368,8 @@
                     <i class="large red x icon"></i> : Declined &ensp;&ensp;&ensp;&ensp;&ensp;
                 </div>
             </div>
-             <div class="ui divider"></div>
-        </br>
+             <div class="ui divider"></div> -->
+        
 
             <table class="ui very basic collapsing celled sortable table"
                    style="padding-left: 0.5%;
@@ -390,37 +380,37 @@
              
              <thead>
                 <tr>
-                    <th width="1">
-                        S.No
-                    </th>
+                    <td width="1">
+                        <b>S.No</b>
+                    </td>
 
-                    <th class="six wide column">
-                        Date
-                    </th>
+                    <td class="five wide column">
+                        <b>Date</b>
+                    </td>
 
-                    <th>
-                        Complaint </br>
-                        Type
-                    </th>
+                    <td>
+                        <b>Complaint </br>
+                        Type</b>
+                    </td>
 
-                    <th>
-                        Location
-                    </th>
+                    <td>
+                        <b>Location</b>
+                    </td>
 
-                    <th>
+                    <!-- <th>
                         Specific </br> Location
-                    </th>
+                    </th> -->
 
-                    <th class="two wide column">
-                        Details
-                    </th>
+                    <td class="two wide column">
+                        <b>Details</b>
+                    </td>
 
-                   <th class="one wide column">
+                  <!--  <th class="one wide column">
                         Status
-                    </th>
-                    <th class="three wide column">
-                        Worker </br> Name
-                    </th>
+                    </th> -->
+                    <td class="three wide column">
+                        <b>Worker </br> Name</b>
+                    </td>
                     
                     
                    
@@ -448,17 +438,15 @@
                         {{ a.complaint_type }}
                     </td>
                     <td>
+                        {{ a.specific_location }},&nbsp;
                         {{ a.location }}
-                    </td>
-                    <td>
-                        {{ a.specific_location }}
                     </td>
                     <td>
                         <a href="./detail/{{ a.id }}/">  <button class="ui inverted basic button" data-tooltip="Click here to view details" ><i class="large green info icon"></i></button></a>
                     </td>
-                    <td>
+                   <!--  <td>
                           <i class="large red x icon"></i>
-                    </td>
+                    </td> -->
                     <td>
                         <b> {{ a.worker_id.name }}</b>
                     </td>

@@ -34,145 +34,10 @@ Central Mess
         {% comment %}The Tab-Menu starts here!{% endcomment %}
         <div class="ui huge fluid vertical pointing menu"
              style="max-width: 320px;">
+            {% block menucard %}
+                {% include 'messModule/menu_card.html' %}
+            {% endblock %}
 
-            {% for d in desig %}
-            {% if info.user_type == 'student' %}
-                {%if d.designation.name == 'student' %}
-                    <a class=" item" data-tab="first">
-                        Feedback
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-
-                    <a class="item" data-tab="second">
-                        Apply For Leave
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-
-                    <a class="item" data-tab="third">
-                        Apply For Vacation Food
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-
-                    <a class="item" data-tab="fourth">
-                        Menu | Bill | Payment Details
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-
-                    <a class="item" data-tab="fifth">
-                        Special Food Request | Choose mess
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-
-                    {% if messinfo.mess_option == 'mess1' %}
-                        <a class="item" data-tab="sixth">
-                            Apply For Non-veg | Check History
-                            <i class="right floated chevron right icon"></i>
-                        </a>
-                    {% endif %}
-                {% endif %}
-                {% if d.designation.name == 'mess_committee' %}
-                    <a class="item" data-tab="fifteenth">
-                        Meeting information
-                    </a>
-
-                    <a class="item" data-tab="tenth">
-                        Meeting Minutes
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-                {% endif %}
-                {% if d.designation.name == 'mess_convener'%}
-                    <a class="item" data-tab="eighth">
-                        Change Menu
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-
-                    <a class="item" data-tab="ninth">
-                        Meeting Invitation
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-
-                    <a class="item" data-tab="eleventh">
-                        View Special Food Request
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-
-                    <a class="item" data-tab="seventeenth">
-                        Publish Minutes
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-
-                    <a class="item" data-tab="forteenth">
-                        View Feedback
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-
-                    <a class="item" data-tab="sixteenth">
-                        Feedback Statistics
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-                {% endif %}
-            {% endif %}
-
-
-            {% if info.user_type == 'staff' and d.designation.name == 'mess_manager' %}
-                <a class="item" data-tab="seventh">
-                    Leave Requests
-                    <i class="right floated chevron right icon"></i>
-
-                </a><a class="item" data-tab="nineteenth">
-                    Menu Requests
-                    <i class="right floated chevron right icon"></i>
-
-                </a><a class="item" data-tab="twenty">
-                    Vacation Food Requests
-                    <i class="right floated chevron right icon"></i>
-                </a>
-
-                <a class="item active" data-tab="thirteenth">
-                    View Menu
-                    <i class="right floated chevron right icon"></i>
-                </a>
-
-                <a class="item" data-tab="twelfth">
-                    Start Registration
-                    <i class="right floated chevron right icon"></i>
-                </a>
-
-                <a class="item" data-tab="eighteenth">
-                Monthly Bill
-                <i class="right floated chevron right icon"></i>
-                </a>
-            {% endif %}
-
-            {% if info.user_type == 'faculty' and d.designation.name == 'mess_warden' %}
-
-                <a class="item active" data-tab="thirteenth">
-                    View Menu
-                    <i class="right floated chevron right icon"></i>
-                </a>
-
-                <a class="item" data-tab="fifteenth">
-                    Meeting information
-                    <i class="right floated chevron right icon"></i>
-                </a>
-
-                <a class="item" data-tab="tenth">
-                    Meeting Minutes
-                    <i class="right floated chevron right icon"></i>
-                </a>
-
-                <a class="item" data-tab="sixteenth">
-                    Feedback Statistics
-                    <i class="right floated chevron right icon"></i>
-                </a>
-
-                <a class="item" data-tab="forteenth">
-                    View Feedback
-                    <i class="right floated chevron right icon"></i>
-                </a>
-
-            {% endif %}
-            {% endfor %}
         </div>
         {% comment %}The Tab-Menu ends here!{% endcomment %}
 
@@ -197,37 +62,19 @@ Central Mess
         {% comment %}The ... starts here!{% endcomment %}
         <div class="ui tab segment" data-tab="second">
             {% block leaveRequest %}
-            {% include 'messModule/leaverequest.html' %}
-            {% endblock %}
-        </div>
-        {% comment %}The ... ends here!{% endcomment %}
-
-        {% comment %}The ... starts here!{% endcomment %}
-        <div class="ui tab segment" data-tab="third">
-            {% block vacationfoodrequest %}
-            {% include 'messModule/vacationfoodrequest.html' %}
+            {% include 'messModule/applications.html' %}
             {% endblock %}
         </div>
         {% comment %}The ... ends here!{% endcomment %}
 
 
         {% comment %}The ... starts here!{% endcomment %}
-        <div class="ui tab segment" data-tab="fourth">
+        <div class="ui {% if info.user_type == 'student' %}active {% endif %}tab segment" data-tab="fourth">
             {% block views %}
             {% include 'messModule/views.html' %}
             {% endblock %}
         </div>
         {% comment %}The ... ends here!{% endcomment %}
-
-
-        {% comment %}The ... starts here!{% endcomment %}
-        <div class="ui tab segment" data-tab="fifth">
-            {% block requests %}
-            {% include 'messModule/requests.html' %}
-            {% endblock %}
-        </div>
-        {% comment %}The ... ends here!{% endcomment %}
-
 
         {% comment %}The ... starts here!{% endcomment %}
         <div class="ui tab segment" data-tab="sixth">
@@ -240,7 +87,7 @@ Central Mess
         {% comment %}The ... starts here!{% endcomment %}
         <div class="ui tab segment" data-tab="seventh">
             {% block respondtoleave %}
-            {% include 'messModule/respondtoleave.html' %}
+            {% include 'messModule/respondtorequests.html' %}
             {% endblock %}
         </div>
         {% comment %}The ... ends here!{% endcomment %}
@@ -257,18 +104,11 @@ Central Mess
         <div class="ui tab segment" data-tab="ninth">
             <!--in invitation-->
             {% block invitation %}
-            {% include 'messModule/invitation.html' %}
+            {% include 'messModule/meeting_information.html' %}
             {% endblock %}
         </div>
         {% comment %}The ... ends here!{% endcomment %}
 
-        {% comment %}The ... starts here!{% endcomment %}
-        <div class="ui tab segment" data-tab="tenth">
-            {% block view_minutes %}
-            {% include 'messModule/view_minutes.html' %}
-            {% endblock %}
-        </div>
-        {% comment %}The ... ends here!{% endcomment %}
 
         {% comment %}The ... starts here!{% endcomment %}
         <div class="ui tab segment" data-tab="eleventh">
@@ -281,13 +121,13 @@ Central Mess
         {% comment %}The ... starts here!{% endcomment %}
         <div class="ui tab segment" data-tab="twelfth">
             {% block registration %}
-            {% include 'messModule/registration.html' %}
+            {% include 'messModule/messactivities.html' %}
             {% endblock %}
         </div>
         {% comment %}The ... ends here!{% endcomment %}
 
         {% comment %}The ... starts here!{% endcomment %}
-        <div class="ui tab segment" data-tab="thirteenth">
+        <div class="ui {% if info.user_type == 'staff' or info.user_type == 'faculty' %}active {% endif %} tab segment" data-tab="thirteenth">
             {% block viewmenu %}
             {% include 'messModule/viewmenu.html' %}
             {% endblock %}
@@ -305,7 +145,7 @@ Central Mess
         {% comment %}The ... starts here!{% endcomment %}
         <div class="ui tab segment" data-tab="fifteenth">
             {% block view_meeting %}
-            {% include 'messModule/view_meeting.html' %}
+            {% include 'messModule/view_meeting_information.html' %}
             {% endblock %}
         </div>
         {% comment %}The ... ends here!{% endcomment %}
@@ -316,29 +156,17 @@ Central Mess
             {% include 'messModule/statistics.html' %}
             {% endblock %}
         </div>
-        {% comment %}The ... ends here!{% endcomment %}
 
-        {% comment %}The ... starts here!{% endcomment %}
-        <div class="ui tab segment" data-tab="seventeenth">
-            {% block minutes %}
-            {% include 'messModule/minutes.html' %}
-            {% endblock %}
-        </div>
-        <div class="ui tab segment" data-tab="eighteenth">
-            {% block messbill %}
-            {% include 'messModule/messbill.html' %}
-            {% endblock %}
-        </div>
-        {% comment %}The ... ends here!{% endcomment %}
         <div class="ui tab segment" data-tab="nineteenth">
             {% block respondmenu %}
             {% include 'messModule/respondmenu.html' %}
             {% endblock %}
         </div>
 
-         <div class="ui tab segment" data-tab="twenty">
-            {% block respondvacationfood %}
-            {% include 'messModule/respondvacationfood.html' %}
+
+        <div class="ui tab segment" data-tab="twentytwo">
+            {% block nonvegorders %}
+            {% include 'messModule/nonvegorder.html' %}
             {% endblock %}
         </div>
 
@@ -376,9 +204,10 @@ Central Mess
 
 
 <script>
-        $(document).ready(function(
-            var tab = $('[data-tab'='first']).tabs('getSelected');
-            tab.panel('refresh');
+        $(document).ready(function() {
+                var tab = $([data-tab = 'first']).tabs('getSelected');
+                tab.panel('refresh');
+            }
             )
         var ctx = document.getElementById("myChart").getContext('2d');
         var myChart = new Chart(ctx, {

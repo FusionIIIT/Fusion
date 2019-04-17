@@ -15,7 +15,7 @@
 </div>
 
 
-<div class="ui active tab" data-tab="respondtomenuchange">
+<div class="ui active tab" data-tab="respondtomenuchange" id="respondtomenuchange">
     <div class="ui vertical segment">
         <table class="ui very basic collapsing celled large sortable table"
                style="padding-left: 2.5%;
@@ -23,11 +23,15 @@
                                                           padding-top: 1%;
                                                           padding-bottom: 1.5%;
                                                           margin: auto;">
+        <thead>
+        <th>Details</th>
+        <th>Accept/Reject</th>
+        </thead>
             <tbody>
             {% for list in newmenu %}
             {% if list.status == '1' %}
-
-            <tr id="menu-{{list.pk}}">
+            <tr id="m-{{list.pk}}">
+            <td>
                 <div class="content">
                     <strong>Date of Application:</strong> {{list.app_date}}
                     <br>
@@ -40,8 +44,8 @@
                     <strong>Items to be added:</strong> {{list.request}}
                     <br>
                 </div>
-                <div class="right floated content">
-                    <strong>Accept or Reject :</strong>
+            </td>
+                <td>
                     <div class="ui buttons">
                         <button class="accm ui positive button" name="submit" value="approve" data-accm="{{list.pk}}"
                                 onclick="acceptReqMess({{list.pk}})">A
@@ -52,7 +56,7 @@
                                 onclick="rejectReqMess({{list.pk}})">R
                         </button>
                     </div>
-                </div>
+                </td>
                 <hr>
             </tr>
 
@@ -118,71 +122,55 @@
 {% endblock %}
 
 {% block javascript %}
-<script>
-        <!--function getMenu(){-->
-            <!--console.log("responding");-->
-            <!--$.ajax({-->
-                <!--type: 'POST',-->
-                <!--url: 'menurequest/',-->
-                <!--dataType: 'json',-->
-                <!--data: {-->
-                    <!--'csrfmiddlewaretoken' : '{{ csrf_token }}',-->
-                    <!--'status' : 1-->
-                <!--},-->
-                <!--success: function(data) {-->
-                    <!--$("#rec").html("<strong>"+data.newmenu+"</strong>");-->
-                <!--},-->
-                <!--error: function(data, err) {-->
-                    <!--alert(err.message);-->
-                <!--}-->
-            <!--});-->
-        <!--}-->
-         function acceptReqMess(id){
 
+    <script>
+
+         function acceptReqMess(id){
+         document.getElementById('m-'+id).style.display="none";
          $.ajax({
                 type: 'POST',
                 url: 'response',
                 dataType: 'json',
                 data: {
                     'csrfmiddlewaretoken' : '{{ csrf_token }}',
-                    'idm':$("button.accm").attr("data-accm"),
+                    'idm':id,
                     'status':'2',
                 },
                 success: function(data) {
-                    document.getElementById('menu-'+id).style.visibility='hidden';
                     alert("Request has been accepted");
+                    ("#respondtomenuchange").load(location.href + " #respondtomenuchange>*", "");
                 },
                 error: function(data, err) {
                     alert(err.message);
+
                 }
             });
          }
          function rejectReqMess(id){
+                    document.getElementById('m-'+id).style.display="none";
              $.ajax({
                     type: 'POST',
                     url: 'response',
                     dataType: 'json',
                     data: {
                         'csrfmiddlewaretoken' : '{{ csrf_token }}',
-                        'idm':$("button.accm").attr("data-accm"),
+                        'idm':id,
                         'status':'0',
                     },
                     success: function(data) {
-                        document.getElementById('menu-'+id).style.visibility='hidden';
+
                         if(data.status == '1')
-                        {
-                            alert("Application Rejected");
-                        }
-                            alert(data.message);
-                    },
+                            {
+                                alert("Application Rejected");
+                                ("#respondtomenuchange").load(location.href + " #respondtomenuchange>*", "");
+                            }
+                        },
                     error: function(data, err) {
                         alert(err.message);
+
                     }
                 });
          }
-
-
-
 
 </script>
 {% endblock %}
