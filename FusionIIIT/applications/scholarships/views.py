@@ -76,6 +76,11 @@ def spacs(request):
 
 @login_required(login_url='/accounts/login')
 def convener_view(request):
+    try:
+        convener = Designation.objects.get(name='spacsconvenor')
+        hd = HoldsDesignation.objects.get(user=request.user,designation=convener)
+    except:
+        return HttpResponseRedirect('/logout')
     if request.method == 'POST':
         if 'Submit' in request.POST:
             award = request.POST.get('type')
@@ -419,6 +424,7 @@ def convener_view(request):
 def student_view(request):
     if request.method == 'POST':
         if 'Submit_mcm' in request.POST:
+            print('found post request in MCM')
             i = Notification.objects.filter(student_id = request.user.extrainfo.id)
             for x in i:
                 x.invite_mcm_accept_flag=False
@@ -487,7 +493,9 @@ def student_view(request):
                     college_name=college_name,
                     status='INCOMPLETE'
                     )
+                    print('update mcm')
                     messages.success(request,'Mcm scholarhsip is successfully Updated')
+                    break
                 else:
                     Mcm.objects.create(
                     father_occ=father_occ,
@@ -519,7 +527,9 @@ def student_view(request):
                     college_fee=college_fee,
                     college_name=college_name
                     )
+                    print('mcm applied')
                     messages.success(request,'Mcm scholarhsip is successfully applied')
+                    break
 
             request.session['last_clicked']='Submit_mcm'
 
@@ -583,6 +593,7 @@ def student_view(request):
                         status='INCOMPLETE'
                     )
                     messages.success(request,'Application is successfully updated')
+                    break
                 else:
                     Director_gold.objects.create(
                         student=student_id,
@@ -609,6 +620,7 @@ def student_view(request):
                         justification=justification
                     )
                     messages.success(request,'Application is successfully submitted')
+                    break
             request.session['last_clicked']='Submit_gold'
             messages.success(request,'Application is successfully submitted')
             return HttpResponseRedirect('/spacs/student_view')
@@ -649,6 +661,7 @@ def student_view(request):
                         status='INCOMPLETE'
                     )
                     messages.success(request,'Application is successfully updated')
+                    break
                 else:
                     Director_silver.objects.create(
                         student=student_id,
@@ -664,6 +677,7 @@ def student_view(request):
                         outside_achievements=outside_achievements
                     )
                     messages.success(request,'Application is successfully submitted')
+                    break
             request.session['last_clicked']='Submit_silver'
             return HttpResponseRedirect('/spacs/student_view')
 
@@ -752,6 +766,7 @@ def student_view(request):
                         status='INCOMPLETE'
                     )
                     messages.success(request,'Application is successfully updated')
+                    break
                 else:
                     Proficiency_dm.objects.create(
                         title_name=title_name,
@@ -781,6 +796,7 @@ def student_view(request):
                         justification=justification
                     )
                     messages.success(request,'Application is successfully submitted')
+                    break
             request.session['last_clicked']='Submit_dm'
             return HttpResponseRedirect('/spacs/student_view')
 
@@ -1078,6 +1094,11 @@ def student_view(request):
 
 @login_required(login_url='/accounts/login')
 def staff_view(request):
+    try:
+        assistant = Designation.objects.get(name='spacsassistant')
+        hd = HoldsDesignation.objects.get(user=request.user,designation=assistant)
+    except:
+        return HttpResponseRedirect('/logout')
     if request.method == 'POST':
         if 'Verify_mcm' in request.POST:
             pk = request.POST.get('id')

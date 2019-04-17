@@ -93,7 +93,7 @@ def visitors_hostel_notif(sender, recipient, type):
     elif type =='cancellation_request_placed':
         verb='New Booking Cancellation Request '
     elif type =='booking_forwarded':
-        verb='New Forwarded Booking Request '     
+        verb='New Forwarded Booking Request '
     elif type =='booking_rejected':
         verb='Your Booking Request has been rejected '
 
@@ -118,7 +118,7 @@ def file_tracking_notif(sender, recipient, type):
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
 def scholarship_portal_notif(sender, recipient, type):
-    url='spacs:convener_view'
+    url='spacs:spacs'
     module='Scholarship Portal'
     sender = sender
     recipient = recipient
