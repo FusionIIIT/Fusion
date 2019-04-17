@@ -420,6 +420,50 @@ def contextfacultymanage(request,user,profile):
   confs = paginator13.page(page13)
   sr13 = (confs.number-1)*10
 
+
+  awards = emp_achievement.objects.filter(pf_no=profile.id).order_by("-date_entry")
+  paginator14 = Paginator(awards, 10)
+  page14 = request.GET.get('page14')
+  mark14=0;
+  if page14 != None:
+    mark14=1
+  else:
+    mark14=0
+  if page14 == None:
+    page14=1
+  awards = paginator14.page(page14)
+  sr14 = (awards.number-1)*10
+
+
+
+  talks = emp_expert_lectures.objects.filter(pf_no=profile.id).order_by("-date_entry")
+  paginator15 = Paginator(talks, 10)
+  page15 = request.GET.get('page15')
+  mark15=0;
+  if page15 != None:
+    mark15=1
+  else:
+    mark15=0
+  if page15 == None:
+    page15=1
+  talks = paginator15.page(page15)
+  sr15 = (talks.number-1)*10
+
+
+  talks = emp_expert_lectures.objects.filter(pf_no=profile.id).order_by("-date_entry")
+  paginator15 = Paginator(talks, 10)
+  page15 = request.GET.get('page15')
+  mark15=0;
+  if page15 != None:
+    mark15=1
+  else:
+    mark15=0
+  if page15 == None:
+    page15=1
+  talks = paginator15.page(page15)
+  sr15 = (talks.number-1)*10
+
+
   context = {'about':detail.about,
     'user' : user,
     'detail' : detail,
@@ -467,5 +511,11 @@ def contextfacultymanage(request,user,profile):
     'confs' : confs,
     'mark13' : mark13,
     'sr13' : sr13,
+    'awards' : awards,
+    'mark14' : mark14,
+    'sr14' : sr14,
+    'talks' : talks,
+    'mark15' : mark15,
+    'sr15' : sr15,
     }
   return context
