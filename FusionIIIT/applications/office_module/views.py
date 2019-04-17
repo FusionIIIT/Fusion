@@ -59,7 +59,8 @@ def officeOfDeanPnD(request):
             'Electrical_AE':'Assistant Engg. (Electrical)',
             'EE': 'Executive Engg.',
             'DeanPnD': 'Dean (P&D)',
-            'Director': 'Director'
+            'Director': 'Director',
+            'None':'Closed'
     }
 
     holds=HoldsDesignation.objects.filter(working=user)
