@@ -85,7 +85,7 @@
                     Administrative Responsibilities
                     <i class="right floated chevron right icon"></i>
                 </a> -->
-                 {% if request.user.extrainfo.user_type == "faculty" and request.user == user %}
+                <!--  {% if request.user.extrainfo.user_type == "faculty" and request.user == user %}
                      <a class="item" data-tab="ninth">
                         Project Management Forms
                         <i class="right floated chevron right icon"></i>
@@ -97,7 +97,7 @@
                     HOD_TAB
                     <i class="right floated chevron right icon"></i>
                 </a>
-                {% endif %}
+                {% endif %} -->
 
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
@@ -192,19 +192,18 @@
             </div>
             {% comment %}The others ends here!{% endcomment %}
 
-            {% comment %}The Thesis Supervision starts here!{% endcomment %}
-            <div class="ui tab segment" data-tab="ninth">
+
+            <!-- <div class="ui tab segment" data-tab="ninth">
                 <h1>Work in Progress</h1>
             </div>
+ -->
 
-
-            <div class="ui tab segment" data-tab="ten">
-                <!-- <div class="ui active tab segment" data-tab="first"> -->
+            <!-- <div class="ui tab segment" data-tab="ten">
+                
                 {% block form2 %}
                     {% include 'officeModule/officeOfDeanRSPC/Hod_Applications_content.html' %}
                 {% endblock %}
-                <!-- </div> -->
-            </div>
+            </div> -->
 
             {% comment %}The Publications ends here!{% endcomment %}
 
@@ -213,13 +212,17 @@
 
         {% comment %}The right-rail segment starts here!{% endcomment %}
         <div class="three wide column">
-            <center><div class="ui black button" onclick="toggleReport()" style="width: 100%;padding:8%;font-size: 18px;">Generate Report <i class="dropdown icon"></i></div></center>
+            {% if request.user == user %}
+            <center>
+                <div class="ui black button" onclick="toggleReport()" style="width: 100%;padding:8%;font-size: 18px;">Generate Report <i class="dropdown icon"></i></div>
+            </center>
             <div class="row" style="display: none;" id="report_tab">
                 {% comment %}The Modules:{% endcomment %}
                 {% block generatereport %}
                     {% include 'eisModulenew/generatereport.html' %}
                 {% endblock %}
             </div>
+            {% endif %}
         
 
             <div class="row">
