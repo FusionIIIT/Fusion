@@ -113,6 +113,8 @@ def healthcare_center_notif(sender, recipient, type):
         verb = "You have been prescribed some medicine"
     if type == 'appoint_req':
         verb = "You have a new appointment request"
+    if type == 'amb_req':
+        verb = "You have a new ambulance request"
 
 
 
