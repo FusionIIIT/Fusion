@@ -1,5 +1,5 @@
 {% load static %}
-<form action="{%url 'office:pWorkRequest' %}" method="POST">
+<form action="{%url 'office:pWorkRequest' %}" method="POST" id="create_req_form" onsubmit="return validateForm()">
     {% comment %}The file requiistion starts here!{% endcomment %}
     <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
         {% csrf_token %}
@@ -10,12 +10,10 @@
                 {% comment %}The Dropdown field starts here!{% endcomment %}
                 <label>Requisition Department</label>
 
-                <div class="ui fluid search selection dropdown">
+                <div class="ui fluid selection dropdown">
                     <input name="department" type="hidden">
                     <i class="dropdown icon"></i>
-
                     <div class="default text">Select Department</div>
-
                     <div class="menu">
                         <div class="item" data-value="civil">
                             Civil
@@ -23,12 +21,6 @@
                         <div class="item" data-value="electrical">
                             Electrical
                         </div>
-
-
-
-
-
-
                     </div>
                 </div>
 
@@ -39,12 +31,10 @@
                 {% comment %}The Dropdown field starts here!{% endcomment %}
                 <label>Building</label>
 
-                <div class="ui fluid search selection dropdown">
+                <div class="ui fluid selection dropdown">
                     <input name="building" type="hidden">
                     <i class="dropdown icon"></i>
-
-                    <div class="default text">Select Department</div>
-
+                    <div class="default text">Select Building</div>
                     <div class="menu">
                         <div class="item" data-value="cc">
                             CC
@@ -65,8 +55,6 @@
                         <div class="item" data-value="library">
                             Library
                         </div>
-
-
                     </div>
                 </div>
                 {% comment %}The Dropdown field ends here!{% endcomment %}
@@ -97,6 +85,22 @@
 <br>
 <br>
 <div class="ui divider"></div>
+
+    <script>
+        function validate(form, n) {
+            if (!form[n].value) {
+                window.alert(n + ' should have valid value!');
+                return false;
+            }
+            return true;
+        }
+        function validateForm() {
+            let form = document.getElementById("create_req_form");
+            return validate(form, 'title')
+                && validate(form, 'department')
+                && validate(form, 'building');
+        }
+    </script>
 
 <!-- <form method="POST">
 {% csrf_token %}

@@ -80,33 +80,43 @@
                  style="max-width: 320px;">
                  {% for c in current %}
                  {% if c.designation.name == 'student' %}
-                <a class="active item" data-tab="first">
+                <a class="{% if reference_tab %}item{% else %}active item{% endif %}" data-tab="first" id="profile_tab" data-content="Edit your profile">
                     Profile
                     <i class="right floated chevron right icon"></i>
                 </a>
 
-                <a class="item" data-tab="second">
+                <a class="item" data-tab="second" id="skills_tab" data-content="Add new Skills/Technologies">
                     Skills &nbsp; Technologies
                     <i class="right floated chevron right icon"></i>
                 </a>
 
-                <a class="item" data-tab="third">
+                <a class="item" data-tab="third" id="education_tab" data-content="Add new Educational Qualifications/Certificates">
                     Education &nbsp; Courses
                     <i class="right floated chevron right icon"></i>
                 </a>
 
-                <a class="item" data-tab="fourth">
+                <a class="item" data-tab="fourth" id="work_tab" data-content="Add new Work Experience (Internship/Projects)">
                     Work Experience
                     <i class="right floated chevron right icon"></i>
                 </a>
 
-                <a class="item" data-tab="fifth">
+                <a class="item" data-tab="fifth" id="achievements_tab" data-content="Add new Achievements">
                     Achievements
                     <i class="right floated chevron right icon"></i>
                 </a>
 
-                <a class="item" data-tab="sixth">
-                    Publications
+                <a class="item" data-tab="sixth" id="curricular_tab" data-content="Add new Co-curricular activities">
+                    Co-curricular
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="{% if reference_tab %}active item{% else %}item{% endif %}" data-tab="seven" id="reference_tab" data-content="Add new reference">
+                    Reference
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="eighth" id="extracurricular_tab" data-content="Add new Extracurricular activities">
+                    Extracurricular
                     <i class="right floated chevron right icon"></i>
                 </a>
                 {% endif %}
@@ -119,7 +129,7 @@
                   {% for c in current %}
                   {% if c.designation.name == 'student' %}
                     {% comment %}The Details start here!{% endcomment %}
-                    <div class="ui active tab segment" data-tab="first">
+                    <div class="{% if reference_tab %}ui tab segment{% else %}ui active tab segment{% endif %}" data-tab="first">
                         {% block profile %}
                             {% include 'placementModule/profile.html' %}
                         {% endblock %}
@@ -161,11 +171,28 @@
 
                     {% comment %}The Achievements tab starts here!{% endcomment %}
                     <div class="ui tab segment" data-tab="sixth">
-                        {% block publications %}
-                            {% include 'placementModule/publications.html' %}
+                        {% block cocurricular %}
+                            {% include 'placementModule/cocurricular.html' %}
                         {% endblock %}
                     </div>
                     {% comment %}The Achievements tab ends here!{% endcomment %}
+
+                    {% comment %}The Achievements tab starts here!{% endcomment %}
+                    <div class="ui tab segment" data-tab="eighth">
+                        {% block extracurricular %}
+                            {% include 'placementModule/extracurricular.html' %}
+                        {% endblock %}
+                    </div>
+                    {% comment %}The Achievements tab ends here!{% endcomment %}
+
+                    {% comment %}The Reference tab starts here!{% endcomment %}
+                    <div class="{% if reference_tab %}ui active tab segment{% else %}ui tab segment{% endif %}" data-tab="seven">
+                        {% block reference %}
+                            {% include 'placementModule/reference.html' %}
+                        {% endblock %}
+                    </div>
+                    {% comment %}The Reference tab ends here!{% endcomment %}
+
                     {% endif %}
                     {% endfor %}
                 </div>
@@ -241,6 +268,42 @@
 
     </script>
     <script type="text/javascript">
+
+        function validateEmail(email) {
+          var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+          return re.test(email);
+        }
+
+        $('#reference_form').on('submit', function(e){
+            email = $('#reference_email').val();
+            mobile_no = $('#reference_mobile').val();
+
+            if (mobile_no.length != 10){
+                $('#reference_error').css('display', 'block');
+                $('#reference_ul').html('');
+                $('#reference_ul').append('<li>'+ mobile_no +' mobile number is not valid </li>')
+                e.preventDefault();
+            }
+
+            if (validateEmail(email)) {
+            }
+            else{
+                $('#reference_error').css('display', 'block');
+                $('#reference_ul').html('');
+                $('#reference_ul').append('<li>'+ email +' email is not valid </li>');
+                e.preventDefault();
+            }
+        });
+
+        $('#skills_tab').popup();
+        $('#achievements_tab').popup();
+        $('#education_tab').popup();
+        $('#work_tab').popup();
+        $('#publications_tab').popup();
+        $('#profile_tab').popup();
+        $('#reference_tab').popup();
+        $('#curricular_tab').popup();
+        $('#extracurricular_tab').popup();
 
         $(function() {
 

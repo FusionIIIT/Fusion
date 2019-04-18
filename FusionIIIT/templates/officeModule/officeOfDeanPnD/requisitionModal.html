@@ -69,7 +69,7 @@
                 {% csrf_token %}
                 <input type="hidden" name="req_id" value="{{object.pk}}"/>
                 <div class="field">
-                    <input type="submit" class="ui button" name="delete_requisition" value="Delete Requisition"/>
+                    <input type="submit" class="ui negative button" name="delete_requisition" value="Delete Requisition"/>
                 </div>
             </form>
 
@@ -91,7 +91,7 @@
             </div>
 
             <div class="field">
-                <input type="submit" class="ui button" value="Create Assignment"/>
+                <input type="submit" class="ui primary button" value="Create Assignment"/>
             </div>
             </form>
 

@@ -2,7 +2,7 @@
 {% block catalog %}
 
     <div class="ui pointing secondary menu">
-        <a class="{% if last_clicked == '' or last_clicked == 'Enddate_updated' %} active item {% else %} item {% endif %}" data-tab="catalog">
+        <a class="{% if last_clicked == '' or last_clicked == 'Enddate_updated' or last_clicked == 'Submit' %} active item {% else %} item {% endif %}" data-tab="catalog">
             Catalog
         </a>
 
@@ -31,7 +31,7 @@
             </div>
     </div>
 
-    <div class="{% if last_clicked == '' or last_clicked == 'Enddate_updated' %} ui active tab {% else %} ui tab {% endif %}" data-tab="catalog">
+    <div class="{% if last_clicked == '' or last_clicked == 'Enddate_updated' or last_clicked == 'Submit' %} ui active tab {% else %} ui tab {% endif %}" data-tab="catalog">
 
         <div class="ui vertical segment">
 

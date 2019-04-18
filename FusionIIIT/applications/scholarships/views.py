@@ -73,9 +73,13 @@ def spacs(request):
         return HttpResponseRedirect('/spacs/stats')# Arihant:this view is for the other members of the college
 
 
-
 @login_required(login_url='/accounts/login')
 def convener_view(request):
+    try:
+        convener = Designation.objects.get(name='spacsconvenor')
+        hd = HoldsDesignation.objects.get(user=request.user,designation=convener)
+    except:
+        return HttpResponseRedirect('/logout')
     if request.method == 'POST':
         if 'Submit' in request.POST:
             award = request.POST.get('type')
@@ -488,6 +492,7 @@ def student_view(request):
                     status='INCOMPLETE'
                     )
                     messages.success(request,'Mcm scholarhsip is successfully Updated')
+                    break
                 else:
                     Mcm.objects.create(
                     father_occ=father_occ,
@@ -520,7 +525,7 @@ def student_view(request):
                     college_name=college_name
                     )
                     messages.success(request,'Mcm scholarhsip is successfully applied')
-
+                    break
             request.session['last_clicked']='Submit_mcm'
 
             return HttpResponseRedirect('/spacs/student_view')
@@ -583,6 +588,7 @@ def student_view(request):
                         status='INCOMPLETE'
                     )
                     messages.success(request,'Application is successfully updated')
+                    break
                 else:
                     Director_gold.objects.create(
                         student=student_id,
@@ -609,6 +615,7 @@ def student_view(request):
                         justification=justification
                     )
                     messages.success(request,'Application is successfully submitted')
+                    break
             request.session['last_clicked']='Submit_gold'
             messages.success(request,'Application is successfully submitted')
             return HttpResponseRedirect('/spacs/student_view')
@@ -649,6 +656,7 @@ def student_view(request):
                         status='INCOMPLETE'
                     )
                     messages.success(request,'Application is successfully updated')
+                    break
                 else:
                     Director_silver.objects.create(
                         student=student_id,
@@ -664,6 +672,7 @@ def student_view(request):
                         outside_achievements=outside_achievements
                     )
                     messages.success(request,'Application is successfully submitted')
+                    break
             request.session['last_clicked']='Submit_silver'
             return HttpResponseRedirect('/spacs/student_view')
 
@@ -752,6 +761,7 @@ def student_view(request):
                         status='INCOMPLETE'
                     )
                     messages.success(request,'Application is successfully updated')
+                    break
                 else:
                     Proficiency_dm.objects.create(
                         title_name=title_name,
@@ -781,6 +791,7 @@ def student_view(request):
                         justification=justification
                     )
                     messages.success(request,'Application is successfully submitted')
+                    break
             request.session['last_clicked']='Submit_dm'
             return HttpResponseRedirect('/spacs/student_view')
 
@@ -845,11 +856,12 @@ def student_view(request):
                 if check_date(dates.startdate,dates.enddate):
                     print('correct date found not deleting',dates.enddate)
                     #print('finding the batch',request.user.extrainfo.id)
-                    if dates.award == 'Mcm Scholarship' and dates.batch == str(request.user.extrainfo.student)[0:4]:
+                    if dates.award == 'Mcm Scholarship' and dates.batch == str(request.user.extrainfo.student)[0:4] and dates.programme == request.user.extrainfo.student.programme:
+                        print('apply true', str(request.user.extrainfo.student)[0:4])
                         x_notif_mcm_flag = True
                         if no_of_mcm_filled > 0 :
                             update_mcm_flag = True
-                    elif dates.award == 'Convocation Medals' and dates.batch == str(request.user.extrainfo.student)[0:4]:
+                    elif dates.award == 'Convocation Medals' and dates.batch == str(request.user.extrainfo.student)[0:4] and dates.programme == request.user.extrainfo.student.programme:
                         x_notif_con_flag = True
                         if no_of_con_filled > 0:
                             update_con_flag = True
@@ -947,11 +959,11 @@ def student_view(request):
                 if check_date(dates.startdate,dates.enddate):
                     print('correct date found not deleting',dates.enddate)
                     #print('finding the batch',request.user.extrainfo.id)
-                    if dates.award == 'Mcm Scholarship' and dates.batch == str(request.user.extrainfo.student)[0:4]:
+                    if dates.award == 'Mcm Scholarship' and dates.batch == str(request.user.extrainfo.student)[0:4] and dates.programme == request.user.extrainfo.student.programme:
                         x_notif_mcm_flag = True
                         if no_of_mcm_filled > 0 :
                             update_mcm_flag = True
-                    elif dates.award == 'Convocation Medals' and dates.batch == str(request.user.extrainfo.student)[0:4]:
+                    elif dates.award == 'Convocation Medals' and dates.batch == str(request.user.extrainfo.student)[0:4] and dates.programme == request.user.extrainfo.student.programme:
                         x_notif_con_flag = True
                         if no_of_con_filled > 0:
                             update_con_flag = True
@@ -1031,11 +1043,12 @@ def student_view(request):
             if check_date(dates.startdate,dates.enddate):
                 print('correct date found not deleting',dates.enddate)
                 #print('finding the batch',request.user.extrainfo.id)
-                if dates.award == 'Mcm Scholarship' and dates.batch == str(request.user.extrainfo.student)[0:4]:
+                if dates.award == 'Mcm Scholarship' and dates.batch == str(request.user.extrainfo.student)[0:4] and dates.programme == request.user.extrainfo.student.programme:
+                    print('same batch found', str(request.user.extrainfo.student)[0:4], dates.batch)
                     x_notif_mcm_flag = True
                     if no_of_mcm_filled > 0 :
                         update_mcm_flag = True
-                elif dates.award == 'Convocation Medals' and dates.batch == str(request.user.extrainfo.student)[0:4]:
+                elif dates.award == 'Convocation Medals' and dates.batch == str(request.user.extrainfo.student)[0:4] and dates.programme == request.user.extrainfo.student.programme:
                     x_notif_con_flag = True
                     if no_of_con_filled > 0:
                         update_con_flag = True
@@ -1078,17 +1091,24 @@ def student_view(request):
 
 @login_required(login_url='/accounts/login')
 def staff_view(request):
+    try:
+        assistant = Designation.objects.get(name='spacsassistant')
+        hd = HoldsDesignation.objects.get(user=request.user,designation=assistant)
+    except:
+        return HttpResponseRedirect('/logout')
     if request.method == 'POST':
         if 'Verify_mcm' in request.POST:
             pk = request.POST.get('id')
+            print('pk',pk)
             Mcm.objects.filter(id=pk).update(status='COMPLETE')
             request.session['last_clicked']='Verify_mcm'
             messages.success(request,'Verified successfully')
             return HttpResponseRedirect('/spacs/staff_view')
 
         elif 'Reject_mcm' in request.POST:
+            print('assitant reject')
             pk = request.POST.get('id')
-            Mcm.objects.filter(student=pk).update(status='Reject')
+            Mcm.objects.filter(id=pk).update(status='Reject')
             request.session['last_clicked']='Reject_mcm'
             messages.success(request,'Rejected successfully')
             return HttpResponseRedirect('/spacs/staff_view')

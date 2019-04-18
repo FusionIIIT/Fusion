@@ -5,20 +5,22 @@
 
         {% comment %}The tab menu starts here!{% endcomment %}
         <div class="ui pointing secondary menu">
+            {% if programme == 1 %}
             <a class="ui active item" data-tab="" id="la">
                 Leave Requests
             </a>
+            {% endif %}
 
-            <a class="ui item" data-tab="" id="va">
+            <a class="ui {% if programme == 0 %}active{% endif%} item" data-tab="" id="va">
                 Vacation Food Requests
             </a>
             <a class="ui item" data-tab="" id="sa">
                 Special Food Requests
             </a>
         </div>
-<div class="ui active tab" data-tab="" id="latab">
+<div class="ui {% if programme == 1 %}active{% endif%} tab" data-tab="" id="latab">
     <div class="ui two item menu">
-        <a class="ui active item" data-tab="" id="la_1">
+        <a class="ui item" data-tab="" id="la_1">
             Apply for leave
         </a>
         <a class="ui item" data-tab="" id="la_2">
@@ -193,7 +195,7 @@
         </div>
 </div>
 
-<div class="ui tab" data-tab="" id="vatab">
+<div class="ui {% if programme == 0 %}active{% endif%} tab" data-tab="" id="vatab">
         <div class="ui two item menu">
         <a class="ui active item" data-tab="" id="va_1">
             Apply for Food During Vacation
