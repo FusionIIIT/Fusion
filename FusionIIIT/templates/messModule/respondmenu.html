@@ -35,7 +35,7 @@
                 <div class="content">
                     <strong>Date of Application:</strong> {{list.app_date}}
                     <br>
-                    <strong>Student:</strong> Mess Convener
+                    <strong>Student:</strong> {{ list.student_id|truncatewords:1|slice:"-4" }}
                     <br>
                     <strong>Reason:</strong> {{list.reason}}
                     <br>
@@ -81,7 +81,7 @@
                     <p style="text-align: center; "><strong>Accepted</strong></p>
                     <strong>Date of Application:</strong> {{list.app_date}}
                     <br>
-                    <strong>Student:</strong> Mess Convener
+                    <strong>Student:</strong> {{ list.student_id|truncatewords:1|slice:"-4" }}
                     <br>
                     <strong>Reason:</strong> {{list.reason}}
                     <br>
@@ -100,7 +100,7 @@
                     <p style="text-align: center; "><strong>Rejected</strong></p>
                     <strong>Date of Application:</strong> {{list.app_date}}
                     <br>
-                    <strong>Student:</strong> Mess Convener
+                    <strong>Student:</strong> {{ list.student_id|truncatewords:1|slice:"-4" }}
                     <br>
                     <strong>Reason:</strong> {{list.reason}}
                     <br>

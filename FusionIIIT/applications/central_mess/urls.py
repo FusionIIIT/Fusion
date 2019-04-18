@@ -9,6 +9,7 @@ urlpatterns = [
     url(r'^$', views.mess, name='mess'),
     url(r'^menurequest/', views.menu_change_request, name='menu_change_request'),
     url(r'^placeorder/', views.place_order, name='placeorder'),
+    url(r'^addleavet/', views.add_leave_manager, name='addleavet'),
     url(r'^submitmessfeedback/', views.submit_mess_feedback, name='submitmessfeedback'),
     url(r'^messvacationsubmit/', views.mess_vacation_submit, name='messvacationsubmit'),
     url(r'^messmenusubmit/', views.submit_mess_menu, name='messmenusubmit'),
