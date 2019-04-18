@@ -198,14 +198,15 @@ def officeOfDeanPnD(request):
             'assigned_req':assign_history,
             'desig':designations,
             'req_history': req_history,
-            'allowed_actions': allowed_actions
+            'allowed_actions': allowed_actions,
+            'deslist': deslist,
     }
     return render(request, "officeModule/officeOfDeanPnD/officeOfDeanPnD.html", context)
 
 
 @login_required
 def submitRequest(request):
-
+    
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
     fdate = datetime.datetime.now().date()
@@ -220,7 +221,7 @@ def submitRequest(request):
     office_dean_PnD_notif(request.user, request.user, 'requisition_filed')
 
     context={}
-    return HttpResponseRedirect("/office/officeOfDeanPnD")
+    return HttpResponseRedirect("/office/officeOfDeanPnD#requisitions")
 
 
 @login_required
