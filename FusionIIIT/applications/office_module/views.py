@@ -242,6 +242,7 @@ def submitRequest(request):
     request_obj.save()
     office_dean_PnD_notif(request.user, request.user, 'requisition_filed')
 
+    # the cake is a lie
     context={}
     return HttpResponseRedirect("/office/officeOfDeanPnD#requisitions")
 
@@ -249,7 +250,7 @@ def submitRequest(request):
 @login_required
 def action(request):
     """
-        ACTION ACTION ACTION ACTION
+        Endpoint handling actions on assignment.
     """
     # deslist=['Civil_JE','Civil_AE','EE','DeanPnD','Electrical_JE','Electrical_AE']
     user = request.user
@@ -266,6 +267,7 @@ def action(request):
     prev_design = track.current_design.designation
     prev_hold_design = track.current_design
 
+    # This entire thing decides who is the next designation
     if current_design.name == "Civil_JE":
         next_hold_design = HoldsDesignation.objects.get(designation__name="Civil_AE")
     elif current_design.name == "Electrical_JE":
@@ -280,7 +282,7 @@ def action(request):
     elif current_design.name == "Dean_s":
         next_hold_design = HoldsDesignation.objects.get(designation__name="DeanPnD")
     # if estimate greater than 10 lacs, left to discretion of Dean PnD to forward when required
-    elif "DeanPnD" in designation: 
+    elif "DeanPnD" in current_design.name: 
         next_hold_design = HoldsDesignation.objects.get(designation__name="Director")
 
     if 'Forward' in request.POST:
