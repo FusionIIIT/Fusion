@@ -786,7 +786,9 @@ def remove_mess_committee(request):
     member_id = request.POST['member_id']
     data_m = member_id.split("-")
     roll_number = data_m[1]
-
+    print(member_id)
+    print(data_m)
+    print(roll_number)
     if data_m[0] == 'mess_committee_mess1':
         designation = Designation.objects.get(name='mess_committee_mess1')
     elif data_m[0] == 'mess_convener_mess1':
@@ -796,6 +798,7 @@ def remove_mess_committee(request):
     else:
         designation = Designation.objects.get(name='mess_convener_mess2')
     remove_object = HoldsDesignation.objects.get(Q(user__username=roll_number) & Q(designation=designation))
+    print(remove_object)
     remove_object.delete()
     data = {
         'status': 1,
