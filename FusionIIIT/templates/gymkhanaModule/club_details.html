@@ -51,7 +51,9 @@
 
 <b>Activity Calender : </b><a target="_blank" href="{{ i.activity_calender.url }}"><i class="large attach black icon"></i>
 </a>
+{% if i.club_file %}
 <b>Club File : </b><a target="_blank" href="{{ i.club_file.url }}"><i class="large attach black icon"></i>
+{% endif %}
 </a>
 <b>Club Website : </b><a target="_blank" href="{{ i.club_website }}">URL</a>
 </a>
@@ -153,12 +155,6 @@
             console.log(id);
             $(id).modal('show');
         }
-
-        function display_club_session() {
-            var data1 = document.getElementById('club_session_').value;
-            return data1;
-
-        }
         function display_club_events() {
             var data1 = "_"+document.getElementById('club_events_').value+"_event";
             document.getElementById(data1).hidden = false;
@@ -171,7 +167,7 @@
             var x =  "{{ i.club.club_name }}";
             if(data1==x)
             {
-                $('#tbody').append('<tr><td onclick="view_session_(\'' + {{i}} + '\')">{{i.venue }}</td><td>{{ i.date }}</td><td>{{ i.start_time }}-{{ i.end_time }}</td><td>{{ i.details }}</td></tr>');
+                $('#tbody').append('<tr><td onclick="view_session_(\'' + {{i}} + '\')">{{i.venue }}</td><td>{{ i.date }}</td><td>{{ i.start_time }}-{{ i.end_time }}</td><td>{{ i.details }}</td></tr>')
             }
             {% endfor %}
             return data1;
@@ -285,27 +281,28 @@
                         {% endif %}
                     {% endfor %}
                 {% else %}
-                    {% for i in Club_member %}
-                        {% if request.user.username in i.member.id.user|stringformat:"s" and i.status == "confirmed" %}
-                        <tr id="_{{ i.club.club_name }}">
-                            <td onclick="view_('{{ i.club.club_name }}_')">
-                                {{ i.club.club_name }}
+                    {% for i in Club_name %}
+                        {% if i.status == "confirmed" %}
+
+                       <tr id="_{{ i.club_name }}">
+                            <td onclick="view_('{{ i.club_name }}_')">
+                               {{ i.club_name }} 
                             </td>
 
-                            <td>
+                            <td onclick="view_('{{ i.club_name }}_')">
                                 <h4 class="ui image header">
-                                    <img src="" class="ui mini circular image">
+                                    <!-- <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image"> -->
                                     <div class="content">
-                                        {{ i.club.co_ordinator }}
+                                        {{ i.co_ordinator }}
                                     </div>
                                 </h4>
                             </td>
 
-                            <td>
+                            <td onclick="view_('{{ i.club_name }}_')">
                                 <h4 class="ui image header">
-                                    <img src="" class="ui mini circular image">
+                                    <!-- <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image"> -->
                                     <div class="content">
-                                        {{ i.club.co_coordinator }}
+                                        {{ i.co_coordinator }}
                                     </div>
                                 </h4>
                             </td>
@@ -314,7 +311,7 @@
                                 {% comment %}
                                     TODO: Add the attachment here!
                                 {% endcomment %}
-                                <a class="ui inverted circular icon button" style="margin: auto;" target="_blank" href="{{ i.club.activity_calender.url }}">
+                                <a class="ui inverted circular icon button" style="margin: auto;" target="_blank" href="{{ i.activity_calender.url }}">
                                     <i class="large attach black icon"></i>
                                 </a>
                             </td>

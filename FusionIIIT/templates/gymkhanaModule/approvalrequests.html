@@ -182,9 +182,11 @@
                                 {% comment %}
                                     TODO: Add the attachment here!
                                 {% endcomment %}
+                                {% if i.club_file %}
                                 <a class="ui inverted circular icon button" style="margin: auto;" target="_blank" href="{{ i.club_file.url }}">
                                     <i class="large attach black icon"></i>
                                 </a>
+                                {% endif %}
                             </td>
                         </tr>
                     {% endif %}

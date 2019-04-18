@@ -20,13 +20,13 @@
             // alert(b);
             event.preventDefault();
             var form = document.getElementById(b); // You need to use standard javascript object here
-            var i=0 ;
-            for( ; i<form.length ; i++){
+            console.log(b);
+            console.log(a) ;
+            var i ;
+            for(i=0 ; i<form.length ; i++){
                 console.log(form.elements[i].name) ;
                 console.log(form.elements[i].value) ;
             }
-            console.log(b);
-            console.log(a) ;
             var status = 1 ;
             if (b == 'new_session_form'){
                 status = validateNewSessionForm(form);
@@ -34,11 +34,17 @@
             if (b == 'club_membership_form'){
                 status = validateClubMembershipForm(form) ;
             }
+            if (b == 'new_club_form'){
+                status = validateNewClubForm(form) ;
+            }
+            // console.log("status");
+            // console.log(status);
             // status = 1 ;
+            // form.reset();
             if(status == 0)
             {
                 var formData = new FormData(form);
-                // console.log(formData);
+                console.log(formData);
                 form.reset();
                 $.ajax({
                     url: a,
@@ -100,6 +106,24 @@
                 $(".formErrors").modal('show') ;
                 ret = 1 ;
                 // setTimeout(function(){ location.reload(); }, 5000);
+            }
+            return ret ;
+        }
+
+        function validateNewClubForm(form){
+            var i ;
+            var message = "" ;
+            for(i=0 ; i<form.length ; i++){
+                if(form.elements[i].name != "" && form.elements[i].name != "file" && form.elements[i].value=="")
+                {
+                    message = message + "<p><b>Please fill the " + form.elements[i].name + " field.</b></p>" ;
+                }
+            }
+            var ret = 0 ;
+            if (message != ""){
+                ret = 1 ;
+                $("#errorContent").html(message);
+                $(".formErrors").modal("show") ;
             }
             return ret ;
         }
