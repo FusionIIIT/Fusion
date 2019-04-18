@@ -22,7 +22,7 @@
 
     <div class="ui active tab" data-tab="prescriptionhistory">
         <div id="presc_print" class="ui vertical segment" >
-          <!--  <h4 style="padding-left: 15.5%;">D - No.of days, &nbsp;&nbsp; T - No.of times per day</h4>  -->
+            <h4 align="center">D - No.of days, &nbsp;&nbsp; T - No.of times per day</h4>
 
             <table  border=1 class="ui very basic collapsing celled large sortable table"
                   style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;" >
@@ -42,26 +42,14 @@
                           Test
                     </td>
 
-                  <!--  <td style="font-weight:bold;color:black;">
+                    <td style="font-weight:bold;color:black;">
 
                       <table>
 
-                        <tr><td style="font-weight:bold;color:black;">Medicine</td><td>Days</td><td>Times</td></tr>
+                        <tr><td style="font-weight:bold;color:black;">Medicine</td><td>D</td><td>T</td></tr>
 
                       </table>
-                    </td>  -->
-
-                    <td style="font-weight:bold;color:black;">
-                         Medicine
                     </td>
-                    <td style="font-weight:bold;color:black;">
-                          Days
-                    </td>
-                    <td style="font-weight:bold;color:black;">
-                         Times
-                    </td>
-
-
 
                 </tr>
                 </thead>
@@ -90,7 +78,7 @@
                         {{pre.test}}
                     </td>
 
-                   <!-- <td>
+                    <td>
                       <table>
                         {% for medicine in medicines %}
                             {% if medicine.prescription_id.id == pre.id %}
@@ -98,14 +86,7 @@
                             {% endif %}
                         {% endfor%}
                       </table>
-                    </td>  -->
-                    {% for medicine in medicines %}
-                            {% if medicine.prescription_id.id == pre.id %}
-                                   <td>{{medicine.medicine_id}}</td>
-                                   <td>{{medicine.days}}</td>
-                                  <td>{{medicine.times}}</td>
-                            {% endif %}
-                        {% endfor%}
+                    </td>
                 </tr>
 
                 {% endfor %}

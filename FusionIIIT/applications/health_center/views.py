@@ -8,6 +8,7 @@ from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 
 from applications.globals.models import ExtraInfo
+from notification.views import  healthcare_center_notif
 #from notification_channels.models import Notification
 
 from .models import (Ambulance_request, Appointment, Complaint, Constants,
@@ -331,6 +332,8 @@ def compounder_view(request):                                                   
                     else:
                         status = 0
                     Medicine.objects.all().delete()
+
+                healthcare_center_notif(request.user, user.user, 'presc')
 #                   Notification.objects.create(notif_type='healthcenter',recipient=user.user,action_verb='prescribed',display_text='You have been prescribed for '+details)
                 data = {'status': status, 'stock': stock}
                 return JsonResponse(data)
@@ -397,6 +400,8 @@ def compounder_view(request):                                                   
                     else:
                         status = 0
                     Medicine.objects.all().delete()
+
+                healthcare_center_notif(request.user, user.user, 'presc')
 #                    Notification.objects.create(notif_type='healthcenter',recipient=user.user,action_verb='prescribed',display_text='You have been prescribed for '+details)
                 data = {'status': status}
                 return JsonResponse(data)
@@ -467,6 +472,8 @@ def student_view(request):                                                      
                      reason=reason
                  )
                 data = {'status': 1}
+                healthcare_center_notif(request.user, request.user, 'amb_request')
+
 
                 return JsonResponse(data)
             elif "appointment" in request.POST:
@@ -488,6 +495,7 @@ def student_view(request):                                                      
                 data = {
                         'app_time': app_time, 'dt': datei
                         }
+                healthcare_center_notif(request.user, request.user, 'appoint')
 
                 return JsonResponse(data)
             elif 'doctor' in request.POST:

@@ -396,15 +396,12 @@
                           Test
                     </td>
 
-                    <td style="font-weight:bold;color:black;">
-                          Medicine
+                     <td>
+                     <table>
+                                  <tr><td> Medicine</td><td>D</td><td>T</td></tr>
+                      </table>
                     </td>
-                <td style="font-weight:bold;color:black;">
-                          Days
-                    </td>
-                    <td style="font-weight:bold;color:black;">
-                          Times
-                    </td>
+
                     <td></td>
 
                 </tr>
@@ -441,7 +438,7 @@
                         {{pre.test}}
                     </td>
 
-                  <!--   <td>
+                    <td>
                      <table>
                         {% for medicine in medicines_presc %}
                             {% if medicine.prescription_id.id == pre.id %}
@@ -449,12 +446,8 @@
                             {% endif %}
                         {% endfor%}
                       </table>
-                    </td>-->
-                     {% for medicine in medicines_presc %}
-                            {% if medicine.prescription_id.id == pre.id %}
-                                  <td>{{medicine.medicine_id}}</td><td>{{medicine.days}}</td><td>{{medicine.times}}</td>
-                            {% endif %}
-                        {% endfor%}
+                    </td>
+
                     <td>
 
                         <input type="button" onclick="rem({{pre.pk}})" id="{{pre.pk}}" name="cancel" value="Cancel"class="ui red button" />
