@@ -73,7 +73,6 @@ def spacs(request):
         return HttpResponseRedirect('/spacs/stats')# Arihant:this view is for the other members of the college
 
 
-
 @login_required(login_url='/accounts/login')
 def convener_view(request):
     try:
@@ -857,11 +856,12 @@ def student_view(request):
                 if check_date(dates.startdate,dates.enddate):
                     print('correct date found not deleting',dates.enddate)
                     #print('finding the batch',request.user.extrainfo.id)
-                    if dates.award == 'Mcm Scholarship' and dates.batch == str(request.user.extrainfo.student)[0:4]:
+                    if dates.award == 'Mcm Scholarship' and dates.batch == str(request.user.extrainfo.student)[0:4] and dates.programme == request.user.extrainfo.student.programme:
+                        print('apply true', str(request.user.extrainfo.student)[0:4])
                         x_notif_mcm_flag = True
                         if no_of_mcm_filled > 0 :
                             update_mcm_flag = True
-                    elif dates.award == 'Convocation Medals' and dates.batch == str(request.user.extrainfo.student)[0:4]:
+                    elif dates.award == 'Convocation Medals' and dates.batch == str(request.user.extrainfo.student)[0:4] and dates.programme == request.user.extrainfo.student.programme:
                         x_notif_con_flag = True
                         if no_of_con_filled > 0:
                             update_con_flag = True
@@ -959,11 +959,11 @@ def student_view(request):
                 if check_date(dates.startdate,dates.enddate):
                     print('correct date found not deleting',dates.enddate)
                     #print('finding the batch',request.user.extrainfo.id)
-                    if dates.award == 'Mcm Scholarship' and dates.batch == str(request.user.extrainfo.student)[0:4]:
+                    if dates.award == 'Mcm Scholarship' and dates.batch == str(request.user.extrainfo.student)[0:4] and dates.programme == request.user.extrainfo.student.programme:
                         x_notif_mcm_flag = True
                         if no_of_mcm_filled > 0 :
                             update_mcm_flag = True
-                    elif dates.award == 'Convocation Medals' and dates.batch == str(request.user.extrainfo.student)[0:4]:
+                    elif dates.award == 'Convocation Medals' and dates.batch == str(request.user.extrainfo.student)[0:4] and dates.programme == request.user.extrainfo.student.programme:
                         x_notif_con_flag = True
                         if no_of_con_filled > 0:
                             update_con_flag = True
@@ -1043,11 +1043,12 @@ def student_view(request):
             if check_date(dates.startdate,dates.enddate):
                 print('correct date found not deleting',dates.enddate)
                 #print('finding the batch',request.user.extrainfo.id)
-                if dates.award == 'Mcm Scholarship' and dates.batch == str(request.user.extrainfo.student)[0:4]:
+                if dates.award == 'Mcm Scholarship' and dates.batch == str(request.user.extrainfo.student)[0:4] and dates.programme == request.user.extrainfo.student.programme:
+                    print('same batch found', str(request.user.extrainfo.student)[0:4], dates.batch)
                     x_notif_mcm_flag = True
                     if no_of_mcm_filled > 0 :
                         update_mcm_flag = True
-                elif dates.award == 'Convocation Medals' and dates.batch == str(request.user.extrainfo.student)[0:4]:
+                elif dates.award == 'Convocation Medals' and dates.batch == str(request.user.extrainfo.student)[0:4] and dates.programme == request.user.extrainfo.student.programme:
                     x_notif_con_flag = True
                     if no_of_con_filled > 0:
                         update_con_flag = True
@@ -1098,14 +1099,16 @@ def staff_view(request):
     if request.method == 'POST':
         if 'Verify_mcm' in request.POST:
             pk = request.POST.get('id')
+            print('pk',pk)
             Mcm.objects.filter(id=pk).update(status='COMPLETE')
             request.session['last_clicked']='Verify_mcm'
             messages.success(request,'Verified successfully')
             return HttpResponseRedirect('/spacs/staff_view')
 
         elif 'Reject_mcm' in request.POST:
+            print('assitant reject')
             pk = request.POST.get('id')
-            Mcm.objects.filter(student=pk).update(status='Reject')
+            Mcm.objects.filter(id=pk).update(status='Reject')
             request.session['last_clicked']='Reject_mcm'
             messages.success(request,'Rejected successfully')
             return HttpResponseRedirect('/spacs/staff_view')
