@@ -478,6 +478,7 @@ def student_view(request):                                                      
                 return JsonResponse(data)
             elif "appointment" in request.POST:
                 user_id = ExtraInfo.objects.get(user=request.user)
+                #comp_id = ExtraInfo.objects.filter(user_type='compounder')
                 doctor_id = request.POST.get('doctor')
                 doctor = Doctor.objects.get(id=doctor_id)
                 date = request.POST.get('date')
@@ -496,6 +497,8 @@ def student_view(request):                                                      
                         'app_time': app_time, 'dt': datei
                         }
                 healthcare_center_notif(request.user, request.user, 'appoint')
+                #for cmp in comp_id:
+                     #healthcare_center_notif(request.user, cmp.id, 'appoint_req')
 
                 return JsonResponse(data)
             elif 'doctor' in request.POST:
