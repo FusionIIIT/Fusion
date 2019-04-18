@@ -83,8 +83,8 @@ INTERVAL = (
 )
 
 MESS_OPTION = (
-    ('mess1', 'Non_veg_mess'),
-    ('mess2', 'Veg_mess')
+    ('mess1', 'Veg_mess'),
+    ('mess2', 'Non_veg_mess')
 )
 
 
