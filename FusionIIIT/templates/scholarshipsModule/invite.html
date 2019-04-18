@@ -3,7 +3,7 @@
 
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
-        <a class="{% if last_clicked == 'Submit' or last_clicked == '' %} active item {% else %} item {% endif %}" data-tab="inviteapplications">
+        <a class="{% if last_clicked == 'Submit' or last_clicked == '' or last_clicked == 'Submit_previous_winner' or last_clicked == 'Enddate_updated'%} active item {% else %} item {% endif %}" data-tab="inviteapplications">
             Invite Applications
         </a>
         <a class="{% if last_clicked == 'Enddate_updated' %} active item {% else %} item {% endif %}" data-tab="recent_app">
@@ -35,7 +35,7 @@
         </div>
     </div>-->
 
-    <div class="{% if last_clicked == 'Submit' or last_clicked == '' %} ui active tab {% else %} ui tab {% endif %}" data-tab="inviteapplications">
+    <div class="{% if last_clicked == 'Submit' or last_clicked == ''  or last_clicked == 'Submit_previous_winner' or last_clicked == 'Enddate_updated' %} ui active tab {% else %} ui tab {% endif %}" data-tab="inviteapplications">
         <div class="ui vertical segment">
             <form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;">
                 {% csrf_token %}
