@@ -323,6 +323,7 @@ def mess(request):
         y = Menu.objects.all()
         x = Nonveg_menu.objects.all()
         leave = Rebate.objects.filter(status='1').order_by('-app_date')
+        leave_past = Rebate.objects.filter(status='2').order_by('-app_date')
 
         context = {
                    'bill_base': current_bill,
@@ -336,6 +337,7 @@ def mess(request):
                    'vaca_all': vaca_all,
                    'info': extrainfo,
                    'leave': leave,
+                   'leave_past': leave_past,
                    'current_date': current_date,
                    'mess_reg': mess_reg,
                    'desig': desig,
@@ -410,14 +412,8 @@ def place_order(request):
     if extra_info.user_type == 'student':
         student = Student.objects.get(id=extra_info)
         student_mess = Messinfo.objects.get(student_id=student)
-
-        if student_mess.mess_option == 'mess1':
-            add_nonveg_order(request, student)
-            return HttpResponseRedirect('/mess')
-        elif student_mess.mess_option == 'mess2':
-            messages.info(request,"You cannot apply for non veg food")
-        else:
-            return HttpResponse("you can't apply for this application sorry for the inconvenience")
+        add_nonveg_order(request, student)
+        return HttpResponseRedirect('/mess')
 
 
 @csrf_exempt
@@ -910,3 +906,51 @@ def get_nonveg_order(request):
         'status': 1,
     }
     return JsonResponse(data)
+
+
+def add_leave_manager(request):
+    flag = 1
+    start_date = request.POST.get('l_startd')
+    end_date = request.POST.get('l_endd')
+    roll_number = request.POST.get('l_rollno')
+    type = request.POST.get('l_type')
+    purpose = request.POST.get('l_purpose')
+    student = Student.objects.get(id__id=roll_number)
+    add_obj = Rebate(student_id = student,
+                     start_date = start_date,
+                     end_date = end_date,
+                     purpose = purpose,
+                     status='2',
+                     leave_type=type)
+
+    if (end_date < start_date):
+        data = {
+            'status': 3,
+            'message': "Please check the dates"
+        }
+        flag = 0
+        return HttpResponse('Check the dates')
+
+    date_format = "%Y-%m-%d"
+    b = datetime.strptime(str(start_date), date_format)
+    d = datetime.strptime(str(end_date), date_format)
+
+    rebates = Rebate.objects.filter(student_id=student)
+    rebate_check = rebates.filter(status='2')
+
+    for r in rebate_check:
+        a = datetime.strptime(str(r.start_date), date_format)
+        c = datetime.strptime(str(r.end_date), date_format)
+        if ((b <= a and (d >= a and d <= c)) or (b >= a and (d >= a and d <= c))
+                or (b <= a and (d >= c)) or ((b >= a and b <= c) and (d >= c))):
+            flag = 0
+            data = {
+                'status': 3,
+                'message': "Already applied for these dates",
+            }
+            return HttpResponse('You are seeing this page : As the leave has been applied for these days already')
+    if flag == 1:
+        message = 'Your leave request has been accepted between dates ' + str(b.date()) + ' and ' + str(d.date())
+        central_mess_notif(request.user, student.id.user, 'leave_request', message)
+        add_obj.save()
+    return HttpResponseRedirect('/mess')
