@@ -1,0 +1,105 @@
+{% load static %}
+<form action="{%url 'office:pWorkRequest' %}" method="POST">
+    {% comment %}The file requiistion starts here!{% endcomment %}
+    <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+        {% csrf_token %}
+
+
+        <div class="two fields">
+            <div class="six wide field">
+                {% comment %}The Dropdown field starts here!{% endcomment %}
+                <label>Requisition Department</label>
+
+                <div class="ui fluid search selection dropdown">
+                    <input name="department" type="hidden">
+                    <i class="dropdown icon"></i>
+
+                    <div class="default text">Select Department</div>
+
+                    <div class="menu">
+                        <div class="item" data-value="civil">
+                            Civil
+                        </div>
+                        <div class="item" data-value="electrical">
+                            Electrical
+                        </div>
+
+
+
+
+
+
+                    </div>
+                </div>
+
+                {% comment %}The Dropdown field ends here!{% endcomment %}
+            </div>
+
+            <div class="six wide field">
+                {% comment %}The Dropdown field starts here!{% endcomment %}
+                <label>Building</label>
+
+                <div class="ui fluid search selection dropdown">
+                    <input name="building" type="hidden">
+                    <i class="dropdown icon"></i>
+
+                    <div class="default text">Select Department</div>
+
+                    <div class="menu">
+                        <div class="item" data-value="cc">
+                            CC
+                        </div>
+
+                        <div class="item" data-value="corelab">
+                            CoreLab
+                        </div>
+
+                        <div class="item" data-value="hostel">
+                            Hostel
+                        </div>
+
+                        <div class="item" data-value="lhtc">
+                            LHTC
+                        </div>
+
+                        <div class="item" data-value="library">
+                            Library
+                        </div>
+
+
+                    </div>
+                </div>
+                {% comment %}The Dropdown field ends here!{% endcomment %}
+            </div>
+
+        </div>
+
+
+        <div class="field">
+            <label>Title</label>
+            <input placeholder="Title" class="ui large input" name="title">
+        </div>
+
+
+        <div class="field">
+            <label>Description</label>
+            <textarea rows="2" name="description"></textarea>
+        </div>
+
+        <div class="field">
+            <button class="ui primary button right floated" type="submit">
+                Submit
+            </button>
+        </div>
+    </div>
+</form>
+
+<br>
+<br>
+<div class="ui divider"></div>
+
+<!-- <form method="POST">
+{% csrf_token %}
+{{ form.as_p }}
+<button type="submit"></button>
+</form> -->

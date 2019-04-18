@@ -93,7 +93,7 @@ def visitors_hostel_notif(sender, recipient, type):
     elif type =='cancellation_request_placed':
         verb='New Booking Cancellation Request '
     elif type =='booking_forwarded':
-        verb='New Forwarded Booking Request '     
+        verb='New Forwarded Booking Request '
     elif type =='booking_rejected':
         verb='Your Booking Request has been rejected '
 
@@ -152,4 +152,22 @@ def complaint_system_notif(sender, recipient, type):
     recipient = recipient
     verb = ''
 
+    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
+
+def office_dean_PnD_notif(sender, recipient, type):
+    url = 'office:officeOfDeanPnD'
+    module = 'Office of Dean PnD Module'
+    sender=sender
+    recipient=recipient
+    verb=''
+    if type=='requisition_filed':
+        verb = "Your requisition has been successfully submitted."
+    elif type=='request_accepted':
+        verb = "Your requisition has been accepted "
+    elif type=='assignment_created':
+        verb = "Assignment has been created."
+    elif type=='assignment_received':
+        verb = "You have received an assignment."
+    elif type=='assignment_reverted':
+        verb = "Your assignment has been reverted."
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
