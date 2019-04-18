@@ -326,7 +326,14 @@
 
 <script>
 function showLeaveDiv(){
-    document.getElementById('leave-form-t').style.display="block";
+    if($('#leave-form-t').css('display') == 'none')
+    {
+        document.getElementById('leave-form-t').style.display="block";
+    }
+    else{
+        document.getElementById('leave-form-t').style.display="none";
+    }
+<!--    document.getElementById('leave-form-t').style.display="block";-->
 }
 
 function acceptReq(id){
