@@ -34,7 +34,7 @@
                         <td>
                             {% for items in members %}
                                 {% if items.designation.name == "mess_committee_mess1" or items.designation.name == "mess_convener_mess1" %}
-                                    <p> {{ items.user }} - {{ items.user.first_name }} {{ items.user.last_name }}
+                                    <p> {{ items.user|truncatechars:7 }} - {{ items.user.first_name|title }} {{ items.user.last_name|title }}
                                         {% if items.designation.name == "mess_convener_mess1" %}
                                             (Mess Convener)
                                         {% endif %}
@@ -46,7 +46,7 @@
                             {% for items in members %}
 
                                 {% if items.designation.name == "mess_committee_mess2" or items.designation.name == "mess_convener_mess2" %}
-                                    <p> {{ items.user }} - {{ items.user.first_name }} {{ items.user.last_name }}
+                                    <p> {{ items.user|truncatechars:7 }} - {{ items.user.first_name|title }} {{ items.user.last_name|title }}
                                         {% if items.designation.name == "mess_convener_mess2" %}
                                             (Mess Convener)
                                         {% endif %}
@@ -241,7 +241,7 @@
                             <label>Select Member*</label>
                             <select class="ui search fluid dropdown" name="member" id="member_id">
                                 {% for item in members %}
-                                    <option value={{ item.designation }}-{{ item.user }} id={{ item.pk }}>
+                                    <option value='{{item.designation}}-{{item.user}}' id='{{ item.pk }}'>
                                         {{ item.user.first_name }} {{ item.user.last_name }} : {{ item.user }}
                                         - {{ item.designation }}
                                     </option>
@@ -266,11 +266,11 @@
                         <div class="field">
                             <label>Select Member*</label>
                             <select class="ui search fluid dropdown" name="member" id="member_id2">
-                                {% for item in members %}
-                                    {% if item.designation.name == 'mess_committee_mess1' or item.designation.name == 'mess_committee_mess2' %}
-                                        <option value={{ item.designation }}-{{ item.user }} id={{ item.pk }}>
-                                            {{ item.user.first_name }} {{ item.user.last_name }} : {{ item.user }}
-                                            - {{ item.designation }}
+                                {% for item1 in members %}
+                                    {% if item1.designation.name == 'mess_committee_mess1' or item1.designation.name == 'mess_committee_mess2' %}
+                                        <option value='{{ item1.designation }}-{{ item1.user }}' id='{{ item1.pk }}'>
+                                            {{ item1.user.first_name }} {{ item1.user.last_name }} : {{ item1.user }}
+                                            - {{ item1.designation }}
                                         </option>
                                     {% endif %}
                                 {% endfor %}

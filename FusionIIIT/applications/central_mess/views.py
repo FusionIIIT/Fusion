@@ -70,6 +70,10 @@ def mess(request):
         rebates = Rebate.objects.filter(student_id=student).order_by('-app_date')
         splrequest = Special_request.objects.filter(student_id=student).order_by('-app_date')
         mess_optn = Messinfo.objects.get(student_id=student)
+        if student.programme == 'B.Tech' or student.programme == 'B.Des':
+            programme = 1
+        else:
+            programme = 0
         # newmenu = Menu_change_request.objects.all()
         # meeting = Mess_meeting.objects.all()
         # minutes = Mess_minutes.objects.all()
@@ -144,7 +148,7 @@ def mess(request):
                 meeting = Mess_meeting.objects.all()
                 minutes = Mess_minutes.objects.all()
                 feed = Feedback.objects.filter(mess='mess1').order_by('-fdate')
-                feed2 = Feedback.objects.filter(mess='mess1').order_by('-fdate')
+                feed2 = Feedback.objects.filter(mess='mess2').order_by('-fdate')
                 sprequest = Special_request.objects.filter(status='1').order_by('-app_date')
                 sprequest_past = Special_request.objects.filter(status='2').order_by('-app_date')
                 # count1 = feed.filter(Q(feedback_type='Maintenance') & Q(mess='mess1')).count()
@@ -195,6 +199,7 @@ def mess(request):
                     'sprequest': sprequest,
                     'splrequest': splrequest,
                     'sprequest_past': sprequest_past,
+                    'programme':programme,
                     'count1': count1,
                     'count2': count2,
                     'count3': count3,
@@ -214,7 +219,7 @@ def mess(request):
                 meeting = Mess_meeting.objects.all()
                 minutes = Mess_minutes.objects.all()
                 feed = Feedback.objects.filter(mess='mess2').order_by('-fdate')
-                feed2 = Feedback.objects.filter(mess='mess2').order_by('-fdate')
+                feed2 = Feedback.objects.filter(mess='mess1').order_by('-fdate')
                 sprequest = Special_request.objects.filter(status='1').order_by('-app_date')
                 sprequest_past = Special_request.objects.filter(status='2').order_by('-app_date')
                 # count5 = feed.filter(Q(feedback_type='Maintenance') & Q(mess='mess2')).count()
@@ -260,6 +265,7 @@ def mess(request):
                     'current_date': current_date,
                     'count': count,
                     'rebates': rebates,
+                    'programme': programme,
                     'meeting': meeting,
                     'minutes': minutes,
                     'sprequest': sprequest,
@@ -295,6 +301,7 @@ def mess(request):
                    'rebates': rebates,
                    'splrequest': splrequest,
                    'form': form,
+                   'programme': programme,
                    'desig': desig
             }
 
@@ -316,6 +323,7 @@ def mess(request):
         y = Menu.objects.all()
         x = Nonveg_menu.objects.all()
         leave = Rebate.objects.filter(status='1').order_by('-app_date')
+        leave_past = Rebate.objects.filter(status='2').order_by('-app_date')
 
         context = {
                    'bill_base': current_bill,
@@ -329,6 +337,7 @@ def mess(request):
                    'vaca_all': vaca_all,
                    'info': extrainfo,
                    'leave': leave,
+                   'leave_past': leave_past,
                    'current_date': current_date,
                    'mess_reg': mess_reg,
                    'desig': desig,
@@ -403,14 +412,8 @@ def place_order(request):
     if extra_info.user_type == 'student':
         student = Student.objects.get(id=extra_info)
         student_mess = Messinfo.objects.get(student_id=student)
-
-        if student_mess.mess_option == 'mess1':
-            add_nonveg_order(request, student)
-            return HttpResponseRedirect('/mess')
-        elif student_mess.mess_option == 'mess2':
-            messages.info(request,"You cannot apply for non veg food")
-        else:
-            return HttpResponse("you can't apply for this application sorry for the inconvenience")
+        add_nonveg_order(request, student)
+        return HttpResponseRedirect('/mess')
 
 
 @csrf_exempt
@@ -783,7 +786,9 @@ def remove_mess_committee(request):
     member_id = request.POST['member_id']
     data_m = member_id.split("-")
     roll_number = data_m[1]
-
+    print(member_id)
+    print(data_m)
+    print(roll_number)
     if data_m[0] == 'mess_committee_mess1':
         designation = Designation.objects.get(name='mess_committee_mess1')
     elif data_m[0] == 'mess_convener_mess1':
@@ -793,6 +798,7 @@ def remove_mess_committee(request):
     else:
         designation = Designation.objects.get(name='mess_convener_mess2')
     remove_object = HoldsDesignation.objects.get(Q(user__username=roll_number) & Q(designation=designation))
+    print(remove_object)
     remove_object.delete()
     data = {
         'status': 1,
@@ -903,3 +909,51 @@ def get_nonveg_order(request):
         'status': 1,
     }
     return JsonResponse(data)
+
+
+def add_leave_manager(request):
+    flag = 1
+    start_date = request.POST.get('l_startd')
+    end_date = request.POST.get('l_endd')
+    roll_number = request.POST.get('l_rollno')
+    type = request.POST.get('l_type')
+    purpose = request.POST.get('l_purpose')
+    student = Student.objects.get(id__id=roll_number)
+    add_obj = Rebate(student_id = student,
+                     start_date = start_date,
+                     end_date = end_date,
+                     purpose = purpose,
+                     status='2',
+                     leave_type=type)
+
+    if (end_date < start_date):
+        data = {
+            'status': 3,
+            'message': "Please check the dates"
+        }
+        flag = 0
+        return HttpResponse('Check the dates')
+
+    date_format = "%Y-%m-%d"
+    b = datetime.strptime(str(start_date), date_format)
+    d = datetime.strptime(str(end_date), date_format)
+
+    rebates = Rebate.objects.filter(student_id=student)
+    rebate_check = rebates.filter(status='2')
+
+    for r in rebate_check:
+        a = datetime.strptime(str(r.start_date), date_format)
+        c = datetime.strptime(str(r.end_date), date_format)
+        if ((b <= a and (d >= a and d <= c)) or (b >= a and (d >= a and d <= c))
+                or (b <= a and (d >= c)) or ((b >= a and b <= c) and (d >= c))):
+            flag = 0
+            data = {
+                'status': 3,
+                'message': "Already applied for these dates",
+            }
+            return HttpResponse('You are seeing this page : As the leave has been applied for these days already')
+    if flag == 1:
+        message = 'Your leave request has been accepted between dates ' + str(b.date()) + ' and ' + str(d.date())
+        central_mess_notif(request.user, student.id.user, 'leave_request', message)
+        add_obj.save()
+    return HttpResponseRedirect('/mess')
