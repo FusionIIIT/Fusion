@@ -100,11 +100,23 @@ def visitors_hostel_notif(sender, recipient, type):
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
 def healthcare_center_notif(sender, recipient, type):
-    url=''
+    url='healthcenter:healthcenter'
     module='Healthcare Center'
     sender = sender
     recipient = recipient
     verb = ''
+    if type == 'appoint':
+        verb = "Your Appointment has been booked"
+    if type == 'amb_request':
+        verb = "Your Ambulance request has been placed"
+    if type == 'Presc':
+        verb = "You have been prescribed some medicine"
+    if type == 'appoint_req':
+        verb = "You have a new appointment request"
+    if type == 'amb_req':
+        verb = "You have a new ambulance request"
+
+
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 

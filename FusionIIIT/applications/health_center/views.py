@@ -8,6 +8,7 @@ from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 
 from applications.globals.models import ExtraInfo
+from notification.views import  healthcare_center_notif
 #from notification_channels.models import Notification
 
 from .models import (Ambulance_request, Appointment, Complaint, Constants,
@@ -331,6 +332,8 @@ def compounder_view(request):                                                   
                     else:
                         status = 0
                     Medicine.objects.all().delete()
+
+                healthcare_center_notif(request.user, user.user, 'presc')
 #                   Notification.objects.create(notif_type='healthcenter',recipient=user.user,action_verb='prescribed',display_text='You have been prescribed for '+details)
                 data = {'status': status, 'stock': stock}
                 return JsonResponse(data)
@@ -397,6 +400,8 @@ def compounder_view(request):                                                   
                     else:
                         status = 0
                     Medicine.objects.all().delete()
+
+                healthcare_center_notif(request.user, user.user, 'presc')
 #                    Notification.objects.create(notif_type='healthcenter',recipient=user.user,action_verb='prescribed',display_text='You have been prescribed for '+details)
                 data = {'status': status}
                 return JsonResponse(data)
@@ -454,6 +459,7 @@ def student_view(request):                                                      
         if request.method == 'POST':
             if 'amb_submit' in request.POST:
                 user_id = ExtraInfo.objects.get(user=request.user)
+                comp_id = ExtraInfo.objects.filter(user_type='compounder')
                 reason = request.POST.get('reason')
                 start_date = request.POST.get('start_date')
                 end_date = request.POST.get('end_date')
@@ -467,10 +473,14 @@ def student_view(request):                                                      
                      reason=reason
                  )
                 data = {'status': 1}
+                healthcare_center_notif(request.user, request.user, 'amb_request')
+                for cmp in comp_id:
+                     healthcare_center_notif(request.user, cmp.user, 'amb_req')
 
                 return JsonResponse(data)
             elif "appointment" in request.POST:
                 user_id = ExtraInfo.objects.get(user=request.user)
+                comp_id = ExtraInfo.objects.filter(user_type='compounder')
                 doctor_id = request.POST.get('doctor')
                 doctor = Doctor.objects.get(id=doctor_id)
                 date = request.POST.get('date')
@@ -488,6 +498,9 @@ def student_view(request):                                                      
                 data = {
                         'app_time': app_time, 'dt': datei
                         }
+                healthcare_center_notif(request.user, request.user, 'appoint')
+                for cmp in comp_id:
+                     healthcare_center_notif(request.user, cmp.user, 'appoint_req')
 
                 return JsonResponse(data)
             elif 'doctor' in request.POST:

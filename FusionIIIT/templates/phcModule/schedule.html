@@ -14,12 +14,12 @@
     {% comment %}the doctor appointment tab starts here {% endcomment %}
     <div class="ui active tab" data-tab="viewschedule">
         <div class="ui vertical segment">
-            <button type="button"  id="pr_sch" name="PDF" value="PDF" class="ui primary button right floated" align="right">
-                    <!-- Download -->
+            <button type="button"  id="pr_sch" name="PDF" value="PDF" class="ui primary button left floated">
                     <i class="ui download icon right floated"></i>
-                </button>
+            </button>
+
             <script>
-    $('#pr_sch').click(function(e){
+         $('#pr_sch').click(function(e){
         var sTable = document.getElementById('doc_sc').innerHTML;
 
         var style = "<style>";
@@ -45,6 +45,7 @@
     });
 
 </script>
+
 
             <div id="doc_sc" class="field">
                   <table  border=1 class="ui definition padded table" style="margin: auto;">
