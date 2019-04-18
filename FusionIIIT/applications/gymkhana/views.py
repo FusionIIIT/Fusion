@@ -23,6 +23,18 @@ def coordinator_club(request):
 		if co[0] == str(request.user):
 			return(i)
 
+def delete_sessions(request):
+	selectedIds = request.POST['ids']
+	selectedIds = json.loads(selectedIds)
+	try:
+		for i in selectedIds:
+			delSession = Session_info.objects.get(id=i)
+			delSession.delete()
+		return HttpResponse("success")
+	except e:
+		print("An error was encountered")
+		return HttpResponse("error")
+
 def facultyData(request):
 	current_value = request.POST['current_value']
 	try:
@@ -175,9 +187,7 @@ def retrun_content(roll, name, desig , club__ ):
 	club_budget = Club_budget.objects.all()
 	club_session = Session_info.objects.all()
 	club_event = Club_report.objects.all()
-
 	venue_type = []
-	print(club_name)
 	id =0
 
 	venue = []
@@ -192,6 +202,7 @@ def retrun_content(roll, name, desig , club__ ):
 		student = get_object_or_404(Student, id = extra)
 	else :
 		b = []
+	print(club__)
 	content = {
 		'Students' : students,
 		'Club_name' : club_name,
