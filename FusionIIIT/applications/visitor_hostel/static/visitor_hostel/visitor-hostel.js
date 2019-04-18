@@ -47,14 +47,23 @@ function request_booking (event) {
     csrfmiddlewaretoken = $('input[name="csrf"]').val();
     booking_from = $('input[name="request-booking-from"]').val();
     booking_to = $('input[name="request-booking-to"]').val();
-    booking_from_time = $('input[name="request-booking-from-time"]').val();
-    booking_to_time = $('input[name="request-booking-to-time"]').val();
+    arrival_hour = $('input[name="arrival-hour"]').val();
+    arrival_minute = $('input[name="arrival-minute"]').val();
+    arrival = $('input[name="arrival"]').val();
+    departure_hour = $('input[name="departure-hour"]').val();
+    departure_minute = $('input[name="departure-minute"]').val();
+    departure = $('input[name="departure"]').val();
     number_of_people =  parseInt($('input[name="number-of-people"]').val());
     number_of_rooms =  parseInt($('input[name="number-of-rooms"]').val());
     purpose_of_visit = $('input[name="purpose-of-visit"]').val();
     remarks_during_booking_request = $('input[name="remarks-during-booking-request"]').val();
     bill_settlement = $('input[name="bill_settlement"]').val();
 
+    booking_from_time = arrival_hour.concat(":").concat(arrival_minute).concat(" ").concat(arrival);
+    booking_to_time = departure_hour.concat(":").concat(departure_minute).concat(" ").concat(departure);
+    // console.log(arrival_hour);
+    // console.log("ffff");
+    // console.log(departure_time);
     console.log(bill_settlement);
 
 
@@ -63,10 +72,57 @@ function request_booking (event) {
     phone = $('input[name=phone-1]').val();
     email = $('input[name=email-1]').val();
     address = $('input[name=address-1]').val();
-    organization = $('input[name=organization-1]').val()
-    nationality = $('input[name=country]').val()
+    organization = $('input[name=organization-1]').val();
+    nationality = $('input[name=country]').val();
 
 
+    // loc=booking_from_time.indexOf(':');
+
+    // if(loc == -1){
+    //     alertModal("Please check the arrival time.");
+    //         return;
+    // }
+    // hour = booking_from_time.substring(0,loc);
+    // min = booking_from_time.substring(loc+1,booking_from_time.length);
+
+    // h=parseInt(hour);
+    // m=parseInt(min);
+
+    // if(h < 0 || h >= 24){
+    //     alertModal("Please check the arrival time.");
+    //         return;
+
+    // }
+    // if(m < 0 || m >= 60){
+    //     alertModal("Please check the arrival time.");
+    //         return;
+
+    // }
+
+    // loc=booking_to_time.indexOf(':');
+
+    // if(loc == -1){
+    //     alertModal("Please check the departure time.");
+    //         return;
+    // }
+    // hour = booking_to_time.substring(0,loc);
+    // min = booking_to_time.substring(loc+1,booking_to_time.length);
+
+    // h=parseInt(hour);
+    // m=parseInt(min);
+
+    // if(h < 0 || h >= 24){
+    //     alertModal("Please check the departure time.");
+    //         return;
+
+    // }
+    // if(m < 0 || m >= 60){
+    //     alertModal("Please check the departure time.");
+    //         return;
+
+    // }
+
+    
     if (name == '') {
             alertModal("You didn't fill a visitor name! Please refill the form.");
             return;
@@ -107,17 +163,33 @@ function request_booking (event) {
         return;
     }
 
-    if (phone.charAt(0)!='9'&&phone.charAt(0)!='8'&&phone.charAt(0)!='7'){
-        alertModal("Oops! Please enter valid phone number.");
-        return;
-    }
+    
 
-    if (booking_from_time = '') {
+    if ( !arrival_hour) {
         alertModal ('Oops! Please enter the expected arrival time of the visitor');
         return;
     }
 
-    if (booking_to_time = '') {
+    if ( !arrival_minute) {
+        alertModal ('Oops! Please enter the expected arrival time of the visitor');
+        return;
+    }
+
+    if ( !arrival) {
+        alertModal ('Oops! Please enter the expected arrival time of the visitor');
+        return;
+    }
+
+    if ( !departure_hour) {
+        alertModal ('Oops! Please enter the expected departure time of the visitor');
+        return;
+    }
+    if ( !departure_minute) {
+        alertModal ('Oops! Please enter the expected departure time of the visitor');
+        return;
+    }
+
+    if ( !departure) {
         alertModal ('Oops! Please enter the expected departure time of the visitor');
         return;
     }
@@ -166,12 +238,26 @@ function request_booking (event) {
         alertModal ("Oops! Number of rooms can't be greater than 15.");
         return;
     } 
-
+    if ( !number_of_rooms ) {
+        alertModal ("Please fill required number of rooms!");
+        return;
+    }
+    if ( !number_of_people ) {
+        alertModal ("Please fill number of people!");
+        return;
+    }
     if ( !category ) {
         alertModal ("Please fill the Category!");
         return;
     } 
-
+    if ( ! booking_from ) {
+        alertModal ("Please fill expected arrival date!");
+        return;
+    }
+    if ( ! booking_to)  {
+        alertModal ("Please fill expected departure date!");
+        return;
+    }
     if ( !nationality ) {
          nationality = ' ';
     }
@@ -207,12 +293,13 @@ function request_booking (event) {
             console.log(name + " " + phone + " " + email + " " + address);
             alertModal(" Congratulations! Your booking has been placed successfully\n Please wait for confirmation");
             setTimeout(function() {
-                window.location.replace('http://localhost:8000/visitorhostel');
+               location.reload();
             }, 1500);
         },
         error: function(data, err) {
             console.log(name + " " + phone + " " + email + " " + address);
             alertModal('Something missing! Please refill the form');
+            console.log(booking_to_time);
         }
     });
 };
@@ -395,7 +482,7 @@ function confirm_booking (id) {
         success: function(data) {
             alertModal("This booking has been confirmed");
             setTimeout(function() {
-                window.location.replace('http://localhost:8000/visitorhostel');
+                location.reload();
             }, 1500);
         },
         error: function(data, err) {
@@ -425,7 +512,7 @@ function reject_booking (id) {
         success: function(data) {
             alertModal("This booking has been rejected");
             setTimeout(function() {
-                window.location.replace('http://localhost:8000/visitorhostel');
+                location.reload();
             }, 1500);
         },
         error: function(data, err) {
@@ -470,7 +557,7 @@ function update_booking (id) {
         success: function(data) {
             alertModal("This booking has been updated.");
             setTimeout(function() {
-                window.location.replace('http://localhost:8000/visitorhostel');
+                location.reload();
             }, 1500);
         },
         error: function(data, err) {
@@ -496,7 +583,7 @@ function cancel_booking (id) {
         success: function(data) {
             alertModal("This booking has been cancelled.");
             setTimeout(function() {
-                window.location.replace('http://localhost:8000/visitorhostel');
+                location.reload();
             }, 1500);
         },
         error: function(data, err) {
@@ -566,7 +653,7 @@ function forward_booking (id) {
         success: function(data) {
             alertModal("This booking has been forwarded");
             setTimeout(function() {
-                window.location.replace('http://localhost:8000/visitorhostel');
+                location.reload();
             }, 1500);
 
         },
@@ -597,7 +684,7 @@ function cancel_active_booking (id, booking_from) {
         success: function(data) {
             alertModal("Your cancellation request has been placed.\n Please await confirmation.");
             setTimeout(function() {
-                window.location.replace('http://localhost:8000/visitorhostel');
+                location.reload();
             }, 1500);
         },
         error: function(data, err) {
@@ -702,7 +789,7 @@ function submit_visitor_details (id) {
         });
     }
     setTimeout(function() {
-        window.location.replace('http://localhost:8000/visitorhostel');
+        location.reload();
     }, 1500);
 }
 
@@ -721,7 +808,7 @@ function check_out (id , mess_bill , room_bill) {
         success: function(data) {
             alertModal("Visitor has Checked Out ");
             setTimeout(function() {
-                window.location.replace('http://localhost:8000/visitorhostel');
+                location.reload();
             }, 1500);
         },
         error: function(data, err) {
@@ -822,12 +909,34 @@ function next_action(event){
     console.log("next!!");
 
     
-    $("#booking-detail-data-tab").addClass("active");
-    $("#booking-detail-action-tab").addClass("active");
-    $("#visitor-detail-data-tab").removeClass("active");
-        $("#visitor-detail-action-tab").removeClass("active");
+    $("#booking-detail-data-tab").removeClass("active");
+    $("#booking-detail-action-tab").removeClass("active");
+    $("#visitor-detail-data-tab").addClass("active");
+    $("#visitor-detail-action-tab").addClass("active");
 }
 
+
+// function next_action_view(event){
+//     event.preventDefault();
+//     console.log("next!!");
+
+    
+//     $("#booking-detail-view-data-tab").addClass("active");
+//     $("#booking-detail-view-action-tab").addClass("active");
+//     $("#visitor-detail-view-data-tab").removeClass("active");
+//     $("#visitor-detail-view-action-tab").removeClass("active");
+// }
+
+function next_button_action_form(event){
+    event.preventDefault();
+    console.log("next!!@@@");
+
+    
+    $("#booking-detail-action-data-tab").addClass("active");
+    $("#booking-detail-action-form-tab").addClass("active");
+    $("#visitor-detail-action-data-tab").removeClass("active");
+    $("#visitor-detail-action-form-tab").removeClass("active");
+}
 
 
 
@@ -883,4 +992,3 @@ $('.info.circle.icon')
     inline: true
   })
 ;
-

@@ -3,6 +3,15 @@
 
 {% block filetracking_tab %}
     {% comment %}the compounder prescription tab starts here {% endcomment %}
+
+    {% if messages %}
+                <ul class = "messages">
+                    {% for message in messages %}
+                    <li> <div class = "alert alert-success"> {{message}} </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
     <div class="ui pointing secondary menu">
         <h3>
             <a class="active item" data-tab="composefile">
@@ -53,8 +62,12 @@
                         <select required class="ui fluid search selection dropdown" name="design">
                             <option selected hidden>Select</option>
 
-                            {% for designations in designations %}
+                           <!--  {% for designations in designations %}
                             <option value="{{designations.designation.name}}">{{designations.designation.name}}</option>
+                            {% endfor %} -->
+
+                             {% for designations in designations %}
+                            <option value="{{designations.id}}">{{designations}}</option>
                             {% endfor %}
 
                         </select>
@@ -74,14 +87,51 @@
                     <a class="right floated item">
 
                         <button type="submit" name="save" class="ui large right floated primary button">
-                            Create<i class="ui save icon right floated"></i>
+                            Save to drafts<i class="ui save icon right floated"></i>
+                        </button>
+                    </a>
+                </div>
+
+                <br>
+                <br>
+                <div class="field">
+                            <label>Remarks:<textarea rows="2" name="remarks"></textarea></label>
+                </div>
+
+                <div class="field">
+                            <label>Forward To:
+
+                                    <input type ="search" id="input_search" list = "input_list" name = "receiver">
+                                    <datalist  id="input_list">
+
+                                    </datalist>
+                               
+                            </label>
+                </div>
+
+                <div class="field">
+                    <label>Receiver Designation:
+                        <input type ="search" id="input_search1" list = "input_list1" name = "recieve">
+                            <datalist  id="input_list1">
+
+                            </datalist>
+
+
+                       
+                    </label>
+                </div>
+
+
+                <div>
+                    <a class="right floated item">
+
+                        <button type="submit" name="send" class="ui large right floated primary button" onclick="popup()">
+                            Send<i class="ui save icon right floated"></i>
                         </button>
                     </a>
                 </div>
 
 
-                <br>
-                <br>
 
             </form>
 
@@ -93,6 +143,80 @@
         <div class="extra content"></div>
     </div>
     {% comment %}the compounder prescription tab ends here {% endcomment %}
+
+
+<script type="text/javascript">
+
+
+        $('#input_search1').keyup(function(){
+
+            console.log('asdasd');
+            value = $('#input_search1').val();
+
+              $.ajax({
+                type: 'POST',
+                url: '/filetracking/ajax/',
+                data: {
+                    'value': value,
+                    'csrfmiddlewaretoken': '{{csrf_token}}'
+                },
+                dataType: 'json',
+                success: function(response){
+                    console.log('coming-----------------------');
+
+                    console.log(response.holds[0]);
+
+                    all_designations = JSON.parse(response.holds);
+                    console.log(all_designations[0].fields.name);
+                    app = []
+                    $('#input_list1').html('');
+                    for(var i=0;i<all_designations.length;i++){
+                       $('#input_list1').append('<option value="'+all_designations[i].fields.name+'">'+all_designations[i].fields.name+'</option>');
+                    }
+                },
+                error: function(rs, e){
+                    console.log('error-------');
+                },
+            });
+            console.log("dsfagdfdshadf");
+        });
+    </script>
+
+    <script type="text/javascript">
+        $('#input_search').keyup(function(){
+
+            console.log('asdasd');
+            value = $('#input_search').val();
+
+              $.ajax({
+                type: 'POST',
+                url: '/filetracking/ajax_dropdown/',
+                data: {
+                    'value': value,
+                    'csrfmiddlewaretoken': '{{csrf_token}}'
+                },
+                dataType: 'json',
+                success: function(response){
+                    console.log('coming-----------------------');
+
+
+
+                    all_users = JSON.parse(response.users);
+                    console.log(all_users[0].fields.username);
+                    app = []
+                    $('#input_list').html('');
+                    for(var i=0;i<all_users.length;i++){
+                       $('#input_list').append('<option value="'+all_users[i].fields.username+'">'+all_users[i].fields.username+'</option>');
+                    }
+                },
+                error: function(rs, e){
+                    console.log('error-------');
+                },
+            });
+            console.log("dsfagdfdshadf");
+        });
+</script>
+
 {% endblock %}
 
 <script type="text/javascript">

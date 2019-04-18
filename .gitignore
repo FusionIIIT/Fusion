@@ -9,7 +9,7 @@ __pycache__/
 
 
 # db file
-fusion.db
+
 
 
 # Distribution / packaging
@@ -118,3 +118,5 @@ FusionIIIT/tcl
 Include
 Scripts
 tcl
+
+*/media/*

@@ -54,17 +54,15 @@
           <a class = "item" href="/gymkhana">
               <h4> Gymkhana Module </h4>
           </a>-->
-            <a class = "item" href="/library/library">
-  			        <h4> Library Module </h4>
-  			    </a>
+            
 		
     			    <a class="item" href="{% url 'spacs:spacs' %}">
                                 <h4>Awards & Scholarship</h4>
                             </a>
 		
-<!--                            <a class="item" href="{% url 'complaint:complaint' %}">
+                           <a class="item" href="{% url 'complaint:complaint' %}">
                                 <h4>Complaint Module</h4>
-                            </a>-->
+                            </a>
                               {% if user.extrainfo.user_type != 'faculty' %}
                             <a class="item" href="{% url 'mess:mess' %}">
                                 <h4>Central Mess Module</h4>
@@ -86,6 +84,9 @@
                             <a class="item" href="{% url 'visitorhostel:visitorhostel' %}">
                                 <h4>Visitor Hostel Module</h4>
                             </a>
+                            <a class="item" href="/library/library">
+                                <h4>Library Module</h4>
+                            </a>
 <!--			    <a class="item" href="{% url 'filetracking:filetracking' %}">
 				<h4> File Tracking </h4>
 		            </a>
@@ -97,7 +98,7 @@
             <!--The Modules Accordian ends here!-->
 
             <!--The Profile Item starts here!-->
-            <a class="centered raised item" href="/dashboard">
+            <a class="centered raised item" href="/profile">
                 <span class="inverted header">Profile</span>
                 <i class="large inverted user icon right floated"></i>
             </a>
@@ -151,12 +152,10 @@
 <!--The email Item ends here!-->
 
 <!--The Profile Item starts here!-->
-{% if "Dean (P&D)" in all_designation %}
 <a class="centered raised item" href="{% url 'office:officeOfDeanPnD'%}">
     <span class="inverted header">Office Of P & D</span>
     <i class="large inverted briefcase icon right floated"></i>
 </a>
-{% endif %}
 <!--The email Item ends here!-->
 
 

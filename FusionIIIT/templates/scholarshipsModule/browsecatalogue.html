@@ -2,16 +2,16 @@
 {% block catalog %}
 
     <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="catalog">
+        <a class="{% if last_clicked == '' or last_clicked == 'get_mcm_flag' or last_clicked == 'get_convocation_flag' or last_clicked == 'Submit_mcm' or last_clicked == 'Submit_silver' or last_clicked == 'Submit_gold' or last_clicked == 'Submit_dm' or last_clicked == 'studentapprovesubmit_mcm' or last_clicked == 'studentapprovesubmit_con' %} active item {% else %} item {% endif %}" data-tab="catalog">
             Catalogue
         </a>
 
         <a class="item" data-tab="smd">
-            Spacs Members Details
+          Spacs Members Details
         </a>
 
-        <a class="item" data-tab="paw">
-            Previous Award Winners
+        <a class="{% if last_clicked == 'Submit_previous_winner' %} active item {% else %} item {% endif %}" data-tab="paw">
+            Previous Winners
         </a>
     </div>
 
@@ -19,11 +19,11 @@
 
 
 <!--Arihant: We changed the UI for the catalog before it appeared at the bottom of every page-->
-    <div class="ui active tab" data-tab="catalog">
+    <div class="{% if last_clicked == '' or last_clicked == 'get_mcm_flag' or last_clicked == 'get_convocation_flag' or last_clicked == 'Submit_mcm' or last_clicked == 'Submit_silver' or last_clicked == 'Submit_gold' or last_clicked == 'Submit_dm' or last_clicked == 'studentapprovesubmit_mcm' or last_clicked == 'studentapprovesubmit_con' %} ui active tab {% else %} ui tab {% endif %}" data-tab="catalog">
         <div class="ui vertical segment">
             <div class="ui floating dropdown labeled icon dropdown button" id="select_award_content">
                 <i class="search icon"></i>
-                <span class="text">Select Award </span>
+                <span class="text">Select Scholarship/Award </span>
                 <div class="menu">
                     {% for award in awards %}
                         <div class="item" data-value="{{ award.award_name }}">{{ award.award_name }}</div>
@@ -52,10 +52,10 @@
                 </div>
         </div>
 
-        <div class="ui tab " data-tab="paw">
+        <div class="{% if last_clicked == 'Submit_previous_winner' %} ui active tab {% else %} ui tab {% endif %}" data-tab="paw">
             <div class="ui vertical segment">
               {% block winners %}
-                  {% include 'scholarshipsModule/winners.html' with winners=winners %}
+                  {% include 'scholarshipsModule/winners.html' with winners_list=winners_list awards=awards %}
               {% endblock %}
             </div>
         </div>

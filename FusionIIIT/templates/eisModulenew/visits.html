@@ -5,26 +5,29 @@
 
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="foreign">
+        <a class="{% if mark11 != 1 %}ui active item{% else %}ui item{% endif %}" data-tab="foreign">
             Foreign Visits
         </a>
 
-        <a class="item" data-tab="indian">
+        <a class="{% if mark11 == 1 %}ui active item{% else %}ui item{% endif %}" data-tab="indian">
             Indian University Visits
         </a>
     </div>
 
 
     {% comment %}The Foreign Visit segment starts here!{% endcomment %}
-    <div class="ui active tab segment" data-tab="foreign">
-        <h4 class="ui dividing header">Add a Foreign Visit</h4>
-        <form class="ui form">
+    <div class="{% if mark11 != 1 %}ui active tab segment{% else %}ui tab segment{% endif %}" data-tab="foreign">
+        {% if request.user == user %}
+    
+        <h4 class="ui dividing header" >Add a Foreign Visit</h4>
+        <form class="ui form" id="foreignvisitform" name="foreignvisitform" method="POST" action="{% url 'eis:fvisit_insert' %}" enctype="multipart/form-data">
+            {% csrf_token %}
             <div class="field">
                 <div class="two fields">
                     <div class="field">
                         <label>Country</label>
                         <div class="ui fluid search selection dropdown">
-                            <input name="country" value="af" type="hidden">
+                            <input id="country" name="country" value="af" type="hidden">
                             <i class="dropdown icon"></i>
                             <div class="default text">Select Country</div>
                             <div class="menu">
@@ -276,7 +279,7 @@
 
                     <div class="field">
                         <label>Place</label>
-                        <input placeholder="Place" type="text">
+                        <input id="place" name="place" placeholder="Place" type="text">
                     </div>
                 </div>
             </div>
@@ -290,7 +293,7 @@
                          <div class="ui calendar" id="rangestart3">
                               <div class="ui input left icon">
                                 <i class="calendar icon"></i>
-                                <input type="text" placeholder="Start">
+                                <input type="text" id="start_date" name="start_date" placeholder="Start">
                               </div>
                         </div>
                         <!-- code change ends -->
@@ -303,7 +306,7 @@
                           <div class="ui calendar" id="rangeend3">
                               <div class="ui input left icon">
                                 <i class="calendar icon"></i>
-                                <input type="text" placeholder="End">
+                                <input type="text" id="end_date" name="end_date" placeholder="End">
                               </div>
                             </div>
                          <!-- code change ends --> 
@@ -314,25 +317,49 @@
                     <div class="fourteen wide field">
                         <div class="field">
                             <label>Purpose</label>
-                            <input placeholder="Purpose" type="text">
+                            <input placeholder="Purpose" id="purpose" name="purpose" type="text">
                         </div>
                     </div>
 
                     <div class="two wide field">
                         <label><br></label>
-                        <div class="ui primary button">
+                        <button class="ui right floated primary button" id="saveforeignvisit" name="saveforeignvisit"  style="display: block;">
                             Save
                             <i class="ui save icon right floated"></i>
-                        </div>
+                        </button>
+                        <button class="ui right floated primary button" id="editforeignvisit" name="editforeignvisit" style="display: none;">
+                            Update
+                            <i class="ui edit icon right floated"></i>
+                        </button>
+                        <input type="text" id="foreignvisitpk" name="foreignvisitpk" hidden>
+                        <input type="text" id="index10" name="index10" hidden>
                     </div>
                 </div>
 
             </div>
         </form>
         <br>
+        {% endif %}
         <h4 class="ui dividing header">Report:</h4>
+        <div class="pagination">
+                <h4> <span class="step-links" >
+                    {% if foreign_visits.has_previous %}
+                        <a href="?page10=1" >&laquo; first</a>
+                        <a href="?page10={{ foreign_visits.previous_page_number }}">previous</a>
+                    {% endif %}
 
-        <table class="ui fixed single line sortable celled table">
+                    <span class="current">
+                        Page {{ foreign_visits.number }} of {{ foreign_visits.paginator.num_pages }}.
+                    </span>
+
+                    {% if foreign_visits.has_next %}
+                        <a href="?page10={{ foreign_visits.next_page_number }}">next</a>
+                        <a href="?page10={{ foreign_visits.paginator.num_pages }}">last &raquo;</a>
+                    {% endif %}
+                </span></h4>
+            </div>
+
+        <table class="ui sortable celled table">
             <thead>
             <tr>
                 <th class="sorted ascending">Sr.</th>
@@ -340,86 +367,91 @@
                 <th class="">Place</th>
                 <th class="">From - To</th>
                 <th class="">Purpose</th>
+                {% if request.user == user %}
                 <th class="">Action</th>
+                {% endif %}
             </tr>
             </thead>
 
             <tbody>
-            <tr>
-                <td>1.</td>
-                <td>
-                    <i class="de flag"></i>
-                    Germany
-                </td>
-                <td>Munich</td>
-                <td>10.01.2017 - 15.01.2017</td>
-                <td>Attend Bayern Munich's Matches</td>
-                <td>Edit</td>
-            </tr>
-
-            <tr>
-                <td>2.</td>
-                <td>
-                    <i class="jp flag"></i>
-                    Japan
-                </td>
-                <td>Tokyo</td>
-                <td>05.12.2016 - 09.12.2016</td>
-                <td>Attend Bayern Munich's Matches</td>
-                <td>Edit</td>
-            </tr>
-
-            <tr>
-                <td>3.</td>
-                <td>
-                    <i class="au flag"></i>
-                    Australia
-                </td>
-                <td>Sydney</td>
-                <td>10.08.2015 - 15.08.2015</td>
-                <td>Attend Bayern Munich's Matches</td>
-                <td>Edit</td>
-            </tr>
+                {% for f_visit in foreign_visits %}
+                    <tr>
+                        <td>{{ forloop.counter|add:sr10 }}</td>
+                        <td>
+                            <i class="{{ f_visit.country|lower }} flag"></i>
+                            {{ f_visit.country }}
+                        </td>
+                        <td>{{ f_visit.place }}</td>
+                        <td>{{ f_visit.start_date }} - {{ f_visit.end_date }}</td>
+                        <td>{{ f_visit.purpose }}</td>
+                        {% if request.user == user %}
+                            <td>
+                                <button type="button"
+                                   id="editButton10"
+                                   class="ui button left floated" onclick="editforeignvisit(
+                                    '{{ forloop.counter|add:sr10 }}','{{f_visit.pk}}','{{f_visit.country}}',
+                                    '{{f_visit.place}}', '{{f_visit.purpose}}',
+                                    '{{f_visit.start_date}}', '{{f_visit.end_date}}')"
+                                   >
+                                   <i class="ui black edit icon"></i>
+                                </button>
+                                <a href="{% url 'eis:emp_visitsDelete' f_visit.pk forloop.counter|add:sr10 10%}"
+                                   id="editButton"
+                                   class="ui blue button left floated" onclick=""
+                                   value = "Delete">
+                                   <i class="ui red delete icon"></i>
+                                </a>
+                                
+                            </td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
 
             </tbody>
 
-            <tfoot>
-            <tr>
-                <th colspan="6">
-                    <div class="ui right floated pagination menu">
-                        <a class="icon item">
-                            <i class="left chevron icon"></i>
-                        </a>
-                        <a class="item">1</a>
-                        <a class="item">2</a>
-                        <a class="item">3</a>
-                        <a class="item">4</a>
-                        <a class="icon item">
-                            <i class="right chevron icon"></i>
-                        </a>
-                    </div>
-                </th>
-            </tr></tfoot>
+            
         </table>
+            <div class="pagination">
+                <h4><span class="step-links">
+                    {% if foreign_visits.has_previous %}
+                        <a href="?page10=1">&laquo; first</a>
+                        <a href="?page10={{ foreign_visits.previous_page_number }}">previous</a>
+                    {% endif %}
+
+                    <span class="current">
+                        Page {{ foreign_visits.number }} of {{ foreign_visits.paginator.num_pages }}.
+                    </span>
+
+                    {% if foreign_visits.has_next %}
+                        <a href="?page10={{ foreign_visits.next_page_number }}">next</a>
+                        <a href="?page10={{ foreign_visits.paginator.num_pages }}">last &raquo;</a>
+                    {% endif %}
+                </span></h4>
+            </div>
+        
     </div>
     {% comment %}The Foreign Visit segment ends here!{% endcomment %}
 
 
 
+
+
     {% comment %}The Indian University Visit segment starts here!{% endcomment %}
-    <div class="ui tab segment" data-tab="indian">
+    <div class="{% if mark11 == 1 %}ui active tab segment{% else %}ui tab segment{% endif %}" data-tab="indian">
+        {% if request.user == user %}
         <h4 class="ui dividing header">Add an Indian University Visit</h4>
-        <form class="ui form">
+        <form class="ui form" id="indianvisitform" name="indianvisitform" method="POST" action="{% url 'eis:ivisit_insert' %}" enctype="multipart/form-data">
+            {% csrf_token %}
             <div class="field">
                 <div class="two fields">
                     <div class="field">
                         <label>Country</label>
-                        <input readonly value="India" type="text">
+                        <input readonly value="India" type="text" id="country2" name="country2">
                     </div>
 
                     <div class="field">
                         <label>Place</label>
-                        <input placeholder="Place" type="text">
+                        <input placeholder="Place" type="text" id="place2" name="place2">
                     </div>
                 </div>
             </div>
@@ -433,7 +465,7 @@
                          <div class="ui calendar" id="rangestart4">
                               <div class="ui input left icon">
                                 <i class="calendar icon"></i>
-                                <input type="text" placeholder="Start">
+                                <input type="text" placeholder="Start" id="start_date2" name="start_date2">
                               </div>
                         </div>
                         <!-- code change ends -->
@@ -446,7 +478,7 @@
                           <div class="ui calendar" id="rangeend4">
                               <div class="ui input left icon">
                                 <i class="calendar icon"></i>
-                                <input type="text" placeholder="End">
+                                <input type="text" placeholder="End" id="end_date2" name="end_date2">
                               </div>
                             </div>
                          <!-- code change ends -->
@@ -457,80 +489,117 @@
                     <div class="fourteen wide field">
                         <div class="field">
                             <label>Purpose</label>
-                            <input placeholder="Purpose" type="text">
+                            <input placeholder="Purpose" type="text" id="purpose2" name="purpose2">
                         </div>
                     </div>
 
                     <div class="two wide field">
                         <label><br></label>
-                        <div class="ui primary button">
+                        <button class="ui right floated primary button" id="saveindianvisit" name="saveindianvisit"  style="display: block;">
                             Save
                             <i class="ui save icon right floated"></i>
-                        </div>
+                        </button>
+                        <button class="ui right floated primary button" id="editindianvisit" name="editindianvisit" style="display: none;">
+                            Update
+                            <i class="ui edit icon right floated"></i>
+                        </button>
+                        <input type="text" id="indianvisitpk" name="indianvisitpk" hidden>
+                        <input type="text" id="index11" name="index11" hidden>
                     </div>
                 </div>
 
             </div>
         </form>
-        <br>
+        <br>{% endif %}
         <h4 class="ui dividing header">Report:</h4>
 
-        <table class="ui fixed single line sortable celled table">
+        <div class="pagination">
+                <h4> <span class="step-links" >
+                    {% if indian_visits.has_previous %}
+                        <a href="?page11=1" >&laquo; first</a>
+                        <a href="?page11={{ indian_visits.previous_page_number }}">previous</a>
+                    {% endif %}
+
+                    <span class="current">
+                        Page {{ indian_visits.number }} of {{ indian_visits.paginator.num_pages }}.
+                    </span>
+
+                    {% if indian_visits.has_next %}
+                        <a href="?page11={{ indian_visits.next_page_number }}">next</a>
+                        <a href="?page11={{ indian_visits.paginator.num_pages }}">last &raquo;</a>
+                    {% endif %}
+                </span></h4>
+            </div>
+
+        <table class="ui sortable celled table">
             <thead>
             <tr>
                 <th class="sorted ascending">Sr.</th>
+                <th class="">Country</th>
                 <th class="">Place</th>
                 <th class="">From - To</th>
                 <th class="">Purpose</th>
+                {% if request.user == user %}
                 <th class="">Action</th>
+                {% endif %}
             </tr>
             </thead>
 
             <tbody>
-            <tr>
-                <td>1.</td>
-                <td>Delhi</td>
-                <td>10.01.2017 - 15.01.2017</td>
-                <td>Attend Bayern Munich's Matches</td>
-                <td>Edit</td>
-            </tr>
-
-            <tr>
-                <td>2.</td>
-                <td>Kanpur</td>
-                <td>05.12.2016 - 09.12.2016</td>
-                <td>Attend Bayern Munich's Matches</td>
-                <td>Edit</td>
-            </tr>
-
-            <tr>
-                <td>3.</td>
-                <td>Bangalore</td>
-                <td>10.08.2015 - 15.08.2015</td>
-                <td>Attend Bayern Munich's Matches</td>
-                <td>Edit</td>
-            </tr>
+                {% for f_visit in indian_visits %}
+                    <tr>
+                        <td>{{ forloop.counter|add:sr11 }}</td>
+                        <td>
+                            <i class="in flag"></i> IN
+                        </td>
+                        <td>{{ f_visit.place }}</td>
+                        <td>{{ f_visit.start_date }} - {{ f_visit.end_date }}</td>
+                        <td>{{ f_visit.purpose }}</td>
+                        {% if request.user == user %}
+                            <td>
+                                <button type="button"
+                                   id="editButton11"
+                                   class="ui button left floated" onclick="editindianvisit(
+                                    '{{ forloop.counter|add:sr11 }}','{{f_visit.pk}}','{{f_visit.country}}',
+                                    '{{f_visit.place}}', '{{f_visit.purpose}}',
+                                    '{{f_visit.start_date}}', '{{f_visit.end_date}}')"
+                                   >
+                                   <i class="ui black edit icon"></i>
+                                </button>
+                                <a href="{% url 'eis:emp_visitsDelete' f_visit.pk forloop.counter|add:sr11 11%}"
+                                   id="editButton"
+                                   class="ui blue button left floated" onclick=""
+                                   value = "Delete">
+                                   <i class="ui red delete icon"></i>
+                                </a>
+                                
+                            </td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
 
             </tbody>
 
-            <tfoot>
-            <tr>
-                <th colspan="5">
-                    <div class="ui right floated pagination menu">
-                        <a class="icon item">
-                            <i class="left chevron icon"></i>
-                        </a>
-                        <a class="item">1</a>
-                        <a class="item">2</a>
-                        <a class="item">3</a>
-                        <a class="item">4</a>
-                        <a class="icon item">
-                            <i class="right chevron icon"></i>
-                        </a>
-                    </div>
-                </th>
-            </tr></tfoot>
+            
         </table>
+            <div class="pagination">
+                <h4><span class="step-links">
+                    {% if indian_visits.has_previous %}
+                        <a href="?page11=1">&laquo; first</a>
+                        <a href="?page11={{ indian_visits.previous_page_number }}">previous</a>
+                    {% endif %}
+
+                    <span class="current">
+                        Page {{ indian_visits.number }} of {{ indian_visits.paginator.num_pages }}.
+                    </span>
+
+                    {% if indian_visits.has_next %}
+                        <a href="?page11={{ indian_visits.next_page_number }}">next</a>
+                        <a href="?page11={{ indian_visits.paginator.num_pages }}">last &raquo;</a>
+                    {% endif %}
+                </span></h4>
+            </div>
+        
     </div>
     {% comment %}The Indian University visit segment ends here!{% endcomment %}
 {% endblock %}

@@ -219,6 +219,7 @@
                                       </div>
                                       <div class="ui secondary segment">
                                         <p>{{ ps.notify_id.company_name }} ,<b> CTC: {{ ps.notify_id.ctc }}</b></p>
+                                        <p>{{ ps.notify_id.get_placement_schedule_object.placement_date }} | {{ ps.notify_id.get_placement_schedule_object.time }}</p>
                                         <p>{{ ps.notify_id.description }} </p>
                                       </div>
                                       {% if ps.invitation == 'ACCEPTED' or ps.invitation == 'Accepted' %}
@@ -621,7 +622,7 @@
                 <div class="ui styled accordion">
                     <div class="title">
                         <i class="dropdown icon"></i>
-                        Want a C.V.?
+                        Download a C.V.?
                         <div class="ui divider"></div>
                     </div>
                     <div class="content">
@@ -649,6 +650,11 @@
                             </div>
                             <br><br>
                             <div class="ui slider checkbox">
+                            <input type="checkbox" name="conferencecheck" value=1 checked="">
+                            <label>Conferences</label>
+                            </div>
+                            <br><br>
+                            <div class="ui slider checkbox">
                             <input type="checkbox" name="internshipcheck" value=1 checked="">
                             <label>Internships</label>
                             </div>
@@ -656,6 +662,11 @@
                             <div class="ui slider checkbox">
                             <input type="checkbox" name="projectcheck" value=1 checked="">
                             <label>Projects</label>
+                            </div>
+                            <br><br>
+                            <div class="ui slider checkbox">
+                            <input type="checkbox" name="extracurricularcheck" value=1 checked="">
+                            <label>Extracurricular</label>
                             </div>
                             <br><br>
                             <div class="ui slider checkbox">
@@ -668,8 +679,16 @@
                             <label>Skills</label>
                             </div>
                             <br><br>
+                            <div onchange="showReference(this);" class="ui slider checked checkbox">
+                              <input type="checkbox" name="referencecheck" value=1 checked="">
+                              <label>Reference</label>
+                            </div>
+                            <div id="reference_list">
+                                
+                            </div>
+                            <br><br>
 
-                          <button type="submit" class="ui primary large button">Generate</button>
+                          <button type="submit" class="ui primary large button">Download</button>
                     </form>
                     </div>
                 </div>
@@ -708,6 +727,34 @@
 
 
     <script type="text/javascript">
+      // arr = [1, 2, 3, 4];
+      function showReference(obj){
+        if ($(obj).hasClass('checked')){
+          $.ajax({
+            type: 'POST',
+            url: '{% url "placement:get_reference_list" %}',
+            data: {
+              // 'arr':arr
+            },
+            dataType: 'json',
+            success: function(response){
+              reference_objs = JSON.parse(response.reference_objs);
+              console.log(reference_objs[0].pk);
+              $('#reference_list').html('');
+              for (var i=0; i<reference_objs.length; i++){
+                $('#reference_list').append('<br><div class="ui checkbox"><input name="reference_checkbox_list" value="'+ reference_objs[i].pk +'" type="checkbox"><label>'+ reference_objs[i].fields.reference_name +'</label></div><br>');
+              }
+            },
+            error: function(rs, e){
+              alert('error');
+            }
+          });
+        }
+        else{
+          $('#reference_list').html('');
+        }
+      }
+
 
       //---------------------role add dropdown----------------------------------------------------
 
