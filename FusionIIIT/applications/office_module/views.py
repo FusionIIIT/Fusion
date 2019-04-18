@@ -39,19 +39,41 @@ def officeOfDeanRSPC(request):
     return render(request, "officeModule/officeOfDeanRSPC/officeOfDeanRSPC.html", context)
 
 def _list_find(lst, predicate):
+    """
+    Find the first element in a list that satisfies the given predicate
+    Arguments:
+        - lst: List to search through
+        - predicate: Predicate that determines what to return
+    Returns:
+        The first element that satisfies the predicate otherwise None
+    """
     for v in lst:
         if predicate(v):
             return v
     return None
 
 def _req_history(req):
+    """
+    Return requisition history: All tracking rows that are associated with the passet requisition
+    """
     return Tracking.objects.filter(file_id=req.assign_file)
 
 @login_required
 def officeOfDeanPnD(request):
+    """
+        Main view for the office of dean (p&d) module.
+        Generates four tabs:
+            * Dashboard: Shows overview of requisitions and assignments
+            * Create Requisition: Form to create new requisitions
+            * View Requisitions: Lists all open requisitions and allows Junior Engg.
+                to create work assignment from them.
+            * View Assignments: Lists all assignments, incoming assignments and
+                outgoing assignments. Allows performing actions on incoming assignments.
+    """
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
 
+    # Map designations to readable titles.
     deslist={
             'Civil_JE': 'Junior Engg. (Civil)',
             'Civil_AE':'Assistant Engg. (Civil)',
@@ -65,37 +87,8 @@ def officeOfDeanPnD(request):
 
     holds=HoldsDesignation.objects.filter(working=user)
     designations=[d.designation for d in HoldsDesignation.objects.filter(working=user)]
-    """
-        if 'asearch' in request.POST:
-            check=request.POST.get('status')
-            dept=request.POST.get('dept')
-            if dept=="all":
-                req=Requisitions.objects.all()
-            elif dept=="civil":
-                req=Requisitions.objects.filter(department='civil')
-            elif dept=="electrical":
-                req=Requisitions.objects.filter(department='electrical')
-            if check=="1":
-                req=req
-            elif check=="2":
-                req=req.filter(tag=0)
-            elif check=="3":
-                req=req.filter(tag=1)
 
-
-            sentfiles=''
-            for des in design:
-                if str(des.designation) in deslist:
-                    sentfiles=Filemovement.objects.filter(Q(sentby=des)|Q(actionby_receiver='accept'))
-
-            print(sentfiles)
-
-            files=''
-            for des in design:
-                if str(des.designation) in deslist:
-                    files=Filemovement.objects.filter(receivedby=des,actionby_receiver='')
-            allfiles=Filemovement.objects.all()
-    """
+    # handle createassignment POST request
     if 'createassign' in request.POST:
         print("createassign", request)
         req_id=request.POST.get('req_id')
@@ -104,6 +97,7 @@ def officeOfDeanPnD(request):
         upload_file=request.FILES.get('estimate')
         sender_design=None
         for hold in holds:
+            # only allow respective Civil/Electrical JE to create assignment.
             if str(hold.designation.name) == "Civil_JE":
                 if requisition.department != "civil":
                     return HttpResponse('Unauthorized', status=401)
@@ -119,6 +113,7 @@ def officeOfDeanPnD(request):
         if not sender_design:
             return HttpResponse('Unauthorized', status=401)
 
+        # Create file in the File table from filetracking module
         requisition.assign_file = File.objects.create(
                 uploader=extrainfo,
                 #ref_id=ref_id,
@@ -127,10 +122,13 @@ def officeOfDeanPnD(request):
                 designation=sender_design.designation,
             )
         requisition.save()
+
+        # Send notifications to all concerned users
         office_dean_PnD_notif(request.user, requisition.userid.user, 'request_accepted')
         office_dean_PnD_notif(request.user, request.user, 'assignment_created')
         office_dean_PnD_notif(request.user, receive.working, 'assignment_received')
 
+        # Create tracking row to send the file to Assistant Engg.
         Tracking.objects.create(
                 file_id=requisition.assign_file,
                 current_id=extrainfo,
@@ -140,6 +138,9 @@ def officeOfDeanPnD(request):
                 remarks=description,
                 upload_file=upload_file,
             )
+    # Handle delete requisition post request
+    # Requisitions are "deleted" by hiding them from requisition lists, but are
+    # kept in the database for record-keeping reasons.
     elif 'delete_requisition' in request.POST:
         print('delete requisition')
         hold = HoldsDesignation.objects.get(working=user, designation__name__in=deslist)
@@ -148,20 +149,28 @@ def officeOfDeanPnD(request):
             try:
                 req = Requisitions.objects.get(pk=req_id)
                 office_dean_PnD_notif(request.user, req.userid.user, 'request_rejected')
-                req.tag = 1
+                req.tag = 1 # tag = 1 implies the requisition has been deleted
                 req.save()
             except Requisitions.DoesNotExist:
                 print('ERROR NOT FOUND 409404040', req_id)
         else:
             return HttpResponse('Unauthorized', status=401)
 
+    # Requisitions that *don't* have as assignment
     req=Requisitions.objects.filter(assign_file__isnull=True, tag=0)
+    # all requisitions
     all_req=Requisitions.objects.filter(tag=0)
+    # list of all requisitions that have an assignment
     assigned_req=list(Requisitions.objects.filter(assign_file__isnull=False).select_related())
+    # use list comprehension to create a list of pairs of (tracking file, corresponding requisition)
+    # for incoming tracking files
     incoming_files=[(f, _list_find(assigned_req, lambda r: r.assign_file==f.file_id))
             for f in Tracking.objects.filter(receiver_id=user).filter(is_read=False)]
+    # use list comprehension to create a list of pairs of (tracking file, corresponding requisition)
+    # for outgoing tracking files
     outgoing_files=[(f, _list_find(assigned_req, lambda r: r.assign_file==f.file_id))
             for f in Tracking.objects.filter(current_id__user=user)]
+    # history of assignment, list of pair of (requisition, history list)
     assign_history=[(r, _req_history(r)) for r in assigned_req]
 
 
@@ -169,17 +178,27 @@ def officeOfDeanPnD(request):
     sentfiles=None
     files=''
     req_history = []
+    # generate a list of requisitions history to render dashboard
     for r in all_req:
+        # in case the requisition has an assignment file
         if r.assign_file:
+            # Passed has a list of designations through which req. has passed
+            # First element is the sender + each tracking's receieve
+            # this way all history is generated
             passed = [r.assign_file.designation] + [t.receive_design for t in Tracking.objects.filter(file_id=r.assign_file)]
+            # the last date the requisition was sent
             last_date = Tracking.objects.filter(file_id=r.assign_file).last().receive_date
+            # map with readable titles from deslist
             passed = [deslist.get(str(d), d) for d in passed]
             req_history.append((r, passed, last_date))
+        # in case there is no assignment, that means the history only contains the junior engg. 
         else:
             je = 'Civil_JE' if r.department == 'civil' else 'Electrical_JE'
             passed = [deslist[je]]
             req_history.append((r, passed, r.req_date))
+    # sort based on last update, which is the element 2 in the 3-tuple
     req_history.sort(key=lambda t: t[2], reverse=True)
+    # list of allowed actions filtered by designation
     for des in designations:
         if des.name == "DeanPnD":
             allowed_actions = ["Forward", "Revert", "Approve", "Reject"]
@@ -190,6 +209,7 @@ def officeOfDeanPnD(request):
         else:
             allowed_actions = ["Forward", "Revert", "Reject"]
 
+    # Create context to render template
     context = {
             'files':files,
             'req':req,
@@ -206,7 +226,9 @@ def officeOfDeanPnD(request):
 
 @login_required
 def submitRequest(request):
-    
+    """
+        Endpoint used to create requisition
+    """
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
     fdate = datetime.datetime.now().date()
@@ -226,6 +248,9 @@ def submitRequest(request):
 
 @login_required
 def action(request):
+    """
+        ACTION ACTION ACTION ACTION
+    """
     # deslist=['Civil_JE','Civil_AE','EE','DeanPnD','Electrical_JE','Electrical_AE']
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
