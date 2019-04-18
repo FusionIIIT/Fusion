@@ -1,5 +1,5 @@
 {% load static %}
-<form action="{%url 'office:pWorkRequest' %}" method="POST">
+<form action="{%url 'office:pWorkRequest' %}" method="POST" id="create_req_form" onsubmit="return validateForm()">
     {% comment %}The file requiistion starts here!{% endcomment %}
     <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
         {% csrf_token %}
@@ -85,6 +85,22 @@
 <br>
 <br>
 <div class="ui divider"></div>
+
+    <script>
+        function validate(form, n) {
+            if (!form[n].value) {
+                window.alert(n + ' should have valid value!');
+                return false;
+            }
+            return true;
+        }
+        function validateForm() {
+            let form = document.getElementById("create_req_form");
+            return validate(form, 'title')
+                && validate(form, 'department')
+                && validate(form, 'building');
+        }
+    </script>
 
 <!-- <form method="POST">
 {% csrf_token %}
