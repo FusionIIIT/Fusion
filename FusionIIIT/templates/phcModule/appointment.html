@@ -27,16 +27,17 @@
                   </div>
                         <div class="field">
                             <label>Date Of Appointment</label>
-                            <select id="date" class="ui search fluid dropdown" name="date" required="true">
-                              <option value="" selected hidden>--SELECT--</option>
+                            <select id="date" class="ui search fluid dropdown" name="date">
+                              <option >--SELECT--</option>
                             </select>
-
+						
                         </div>
                 </div>
                 <div class="field">
-                    <label>Description of Disease</label>
+                    <label>Issues/Symptoms</label>
                     <div class="ui fluid input">
                         <textarea id="description" class="ui textarea" rows="2" name="description" required="true"></textarea>
+                        <p id="desc"></p>
                     </div>
                 </div>
 
@@ -51,6 +52,12 @@
             </form>
           <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
           <script type="text/javascript">
+
+             function trimfield(str)
+                                       {
+                                         return str.replace(/^\s+|\s+$/g,'');
+                                       }
+				 
                   $('#doc').change(function()
                   {
                       $.ajax({
@@ -61,18 +68,30 @@
                       doctor:$("#doc").val(),
                       },
                       success: function(JSON){
-                        $("#date").empty();
+                        $("#date").empty();						
                         $.each(JSON, function(key, value) {
                        $("#date").append("<option value="+value.pk +">" + value.fields.date+"-------"+value.fields.from_time+"-"+value.fields.to_time+"</option>");
-                   });
+					  
+	                   });
 
                     }
                    });
                  });
-
-
+						
+					
+					
+					
                 $('#appo').on('click',function(e){
                      e.preventDefault();
+									
+                     if(trimfield(document.getElementById("description").value) == '')
+                       {
+                       $('#desc').html('*Please fill out the Description!');
+                       document.getElementById("description").focus();
+                        }
+																										
+									 
+                     else{
                      $.ajax({
                      type:'post',
                      url:'/healthcenter/student/',
@@ -88,10 +107,14 @@
                          alert("Appointment requested.Check history for the status of appointment. ")
                          document.getElementById("doc").value=""
                          document.getElementById("date").value=""
-                         document.getElementById("description").value=""
+                         document.getElementById("description").value=" "
+                         $('#desc').html('');
+                         window.location.reload();
+
                        }
                    }
                   });
+                     }
                 });
 
               </script>
@@ -131,39 +154,56 @@
                     <label>Reason</label>
                     <div class="ui fluid input">
                         <textarea class="ui textarea" rows="2" id="reason" name="reason"></textarea>
+                        <p id="reas"></p>
                     </div>
                 </div>
 
                 <div class="field">
                     <label><br></label>
                     <div >
-                      <input type="button" id="amb_submit" name="amb_submit" value="Submit"class="ui large right floated primary button" />
+                      <input type="button" id="amb_submit" name="amb_submit"  value="Submit"class="ui large right floated primary button" />
                     </div>
                 </div>
 
             </form>
             <script type="text/javascript">
+
+            function trimfield(str)
+                                       {
+                                         return str.replace(/^\s+|\s+$/g,'');
+                                       }
+
               $('#amb_submit').click(function(e)
                                                   {
                                                     var startDate = document.getElementById('start_date').value;
                                                     var endDate = document.getElementById('end_date').value;
                                                     var start = new Date(startDate);
                                                     var end=new Date(endDate);
-                                                    var today = new Date();
+
+                                                    var today = new Date(new Date().setHours(0, 0, 0, 0));
+
 
                                                     $('#stdt').html('');
                                                     $('#endt').html('');
-                                                    if ( start < today ) {
+                                                    if ( +start < +today ) {
                                                         $('#stdt').html('You cannot enter a date before today!.');
                                                         return false;
                                                     }
                                                     if(endDate!="")
                                                     {
-                                                    if ( end < start ) {
+                                                    if ( +end < +start ) {
                                                         $('#endt').html('You cannot enter a date before start date!.');
                                                         return false;
                                                     }
                                                   }
+
+                                                   if(trimfield(document.getElementById("reason").value) == '')
+                                                     {
+                                                           $('#reas').html('*Please fill out the details!');
+                                                           document.getElementById("reason").focus();
+                                                      }
+
+                                                   else{
                                                     $.ajax({
                                                       type:'post',
                                                       url:'/healthcenter/student/',
@@ -179,9 +219,15 @@
                                                       document.getElementById("start_date").value="";
                                                       document.getElementById("end_date").value="";
                                                       document.getElementById("reason").value="";
+                                                      window.location.reload();
+
+                                                      $('#reas').html('');
+                                                      $('#stdt').html('');
+                                                      $('#endt').html('');
 
                                                     }
                                                   });
+                                                  }
                                                 });
 
 </script>

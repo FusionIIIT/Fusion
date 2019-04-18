@@ -11,8 +11,14 @@
                 <div class="ui card" id="notif{{notice.id}}">
                 {% endif %}
                 <div class="content">
-                    <div class="header">
-                        <a href="{% url 'notifications:mark_as_read_and_redirect' notice.slug %}"> {{ notice.data.module }} </a>
+                    <div class="ui grid">
+                        <div class="header fifteen wide column">
+                               <a href="{% url 'notifications:mark_as_read_and_redirect' notice.slug %}"> {{ notice.data.module }} </a>
+
+                        </div>
+                        <div class="one wide column">
+                            <i class="notif-delete close icon link icon" title="Delete notification" id="notif-delete{{notice.id}}" notif-id="{{notice.id}}" slug="{{notice.slug}}"></i>
+                        </div>
                     </div>
                     <div class="meta">
                         {{ notice.timesince }} ago
@@ -82,4 +88,24 @@
 
                    });
                    </script>
+                    <script type="text/javascript">
+                        $('.notif-delete').click(function(){
+                        var slug = $(this).attr("slug");
+                        var id = $(this).attr("notif-id");
+                        var url = '{% url 'notifications:delete' 0 %}'.replace('0', slug);
+                           $.ajax(
+                                {
+                                    type:"GET",
+                                    url: url,
+
+                                    success: function(data)
+                                    {
+                                        document.getElementById("notif"+id).remove();
+
+                                    }
+                                 })
+
+                       });
+                    </script>
+
 {% endblock %}

@@ -149,6 +149,13 @@
 
                     <div class="{% if officer_statistics_past_pbi_search or officer_statistics_past_higher_search %}ui tab{% else %}ui active tab{% endif %}" data-tab="Placement">
 
+                      <div style="display: none;" id="placement_required_message_error" class="ui negative message">
+                        <i onclick="closePlacementErrorMessage();" class="close icon"></i>
+                        <div class="header">
+                          Please fill all the fields in order to add record.
+                        </div>
+                      </div>
+
                       <form method="post" class="ui form" role="form" action="{% url 'placement:manage_records' %}">
                         {% comment %}The add a new skill Accordian starts here!{% endcomment %}
                         <div class="ui accordion field">
@@ -162,69 +169,69 @@
                                     {% csrf_token %}
                                     <div class="two fields">
                                     <div class="field">
-                                      {{ form3.stuname.errors }}
+                                      {{ form2.stuname.errors }}
                                             <label for="{{ form3.cname.id_for_label }}">
                                                 Student Name {% if profile.designation.name != 'student' %}(Only for searching records){% endif %}
                                             </label>
 
                                             <div class="ui large input">
-                                                {{ form3.stuname }}
+                                                {{ form2.stuname }}
                                             </div>
                                         </div>
                                         <div class="field">
-                                          {{ form3.cname.errors }}
+                                          {{ form2.cname.errors }}
                                                 <label for="{{ form3.cname.id_for_label }}">
                                                     Company
                                                 </label>
 
                                                 <div class="ui large input">
-                                                    {{ form3.cname }}
+                                                    {{ form2.cname }}
                                                 </div>
                                             </div>
                                             </div>
                                     <div class="three fields">
                                         <div class="field">
-                                          {{ form3.roll.errors }}
+                                          {{ form2.roll.errors }}
                                             <label for="{{ form3.stuname.id_for_label }}">
                                                 Roll No
                                             </label>
 
                                             <div class="ui large input">
-                                                {{ form3.roll}}
+                                                {{ form2.roll}}
                                             </div>
                                         </div>
 
                                         <div class="field">
-                                          {{ form3.year.errors }}
+                                          {{ form2.year.errors }}
                                             <label for="{{ form3.year.id_for_label }}">
                                                 Placed Year
                                             </label>
 
                                             <div class="ui large input">
-                                                {{ form3.year }}
+                                                {{ form2.year }}
                                             </div>
                                         </div>
 
                                         <div class="field">
-                                          {{ form3.ctc.errors }}
+                                          {{ form2.ctc.errors }}
                                             <label for="{{ form3.ctc.id_for_label }}">
-                                                CTC (LPA)
+                                                CTC (LPA) (minimum for Search)
                                             </label>
 
                                             <div class="ui large input">
-                                                {{ form3.ctc }}
+                                                {{ form2.ctc }}
                                             </div>
                                         </div>
                                     </div>
                                     <div class="two fields">
                                     <div class="field">
-                                      <button name="studentplacementrecordsubmit" name="studentplacementrecordsubmit" class="ui fluid large primary button" type="submit">
+                                      <button name="studentplacementrecordsubmit" class="ui fluid large primary button" type="submit">
                                           Search
                                       </button>
                                     </div>
                                     {% if current == None %}
                                     <div class="field">
-                                        <button name="studentplacementaddsubmit" value="studentplacementaddsubmit" class="ui fluid large primary button" type="submit">
+                                        <button name="studentplacementaddsubmit" value="studentplacementaddsubmit" id="studentplacementaddsubmit" class="ui fluid large primary button" type="submit">
                                             Add
                                         </button>
                                     </div>
@@ -244,7 +251,6 @@
                         <br>
                     <!-- Pagination Section starts here  --->
                     {% if pagination_placement %}
-
                         <center>
                           <div class="ui pagination menu">
                             {% if placementrecord.has_previous %}
@@ -291,10 +297,8 @@
                             <th class="four wide">Student</th>
                             <th class="two wide">Year</th>
                             <th class="six wide">Company</th>
-                            <th class="two wide">CTC</th>
-                            {% if profile.designation.name != 'student' %}
+                            <th class="two wide">CTC(LPA)</th>
                             <th class="two wide">Delete</th>
-                            {% endif %}
                         </tr>
                         </thead>
 
@@ -327,9 +331,9 @@
 
                             {% if current == None %}
                             <td>
-                              <form method="post" class="ui form" role="form">
+                              <form method="post" action="{% url 'placement:delete_placement_statistics' %}" class="ui form" role="form">
                                 {% csrf_token %}
-                                <button name="deleterecord" value="{{ student.pk }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
+                                <button name="deleterecordmanaged" value="{{ student.id }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
                                     <i class="delete red icon"></i>
                                 </button>
                                 </form>
@@ -348,6 +352,12 @@
                     </div>
 
                     <div class="{% if officer_statistics_past_pbi_search %}ui active tab{% else %}ui tab{% endif %}" data-tab="PBI">
+                      <div style="display: none;" id="pbi_required_message_error" class="ui negative message">
+                        <i onclick="closePbiErrorMessage();" class="close icon"></i>
+                        <div class="header">
+                          Please fill all the fields in order to add record.
+                        </div>
+                      </div>
                         <form method="post" class="ui form" role="form" action="{% url 'placement:manage_records' %}">
                               {% comment %}The add a new skill Accordian starts here!{% endcomment %}
                               <div class="ui accordion field">
@@ -407,7 +417,7 @@
                                               <div class="field">
                                                 {{ form3.ctc.errors }}
                                                   <label for="{{ form3.ctc.id_for_label }}">
-                                                      CTC
+                                                      CTC (LPA) (minimum for Search)
                                                   </label>
 
                                                   <div class="ui large input">
@@ -423,7 +433,7 @@
                                           </div>
                                           {% if current == None %}
                                           <div class="field">
-                                              <button name="studentpbiaddsubmit" value="studentpbiaddsubmit" class="ui fluid large primary button" type="submit">
+                                              <button name="studentpbiaddsubmit" id="studentpbiaddsubmit" value="studentpbiaddsubmit" class="ui fluid large primary button" type="submit">
                                                   Add
                                               </button>
                                           </div>
@@ -489,10 +499,8 @@
                                     <th class="four wide">Student</th>
                                     <th class="two wide">Year</th>
                                     <th class="six wide">Company</th>
-                                    <th class="two wide">CTC</th>
-                                    {% if profile.designation.name != 'student' %}
+                                    <th class="two wide">CTC(LPA)</th>
                                     <th class="two wide">Delete</th>
-                                    {% endif %}
                                 </tr>
                                 </thead>
 
@@ -525,9 +533,9 @@
 
                                                 {% if current == None %}
                                                 <td>
-                                                  <form method="post" class="ui form" role="form">
+                                                  <form method="post" action="{% url 'placement:delete_placement_statistics' %}" class="ui form" role="form">
                                                     {% csrf_token %}
-                                                    <button name="deleterecord" value="{{ student.pk }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
+                                                    <button name="deleterecordmanaged" value="{{ student.id }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
                                                         <i class="delete red icon"></i>
                                                     </button>
                                                     </form>
@@ -546,6 +554,13 @@
                     </div>
 
                     <div class="{% if officer_statistics_past_higher_search %}ui active tab{% else %}ui tab{% endif %}" data-tab="HigherStudies">
+
+                      <div style="display: none;" id="higher_required_message_error" class="ui negative message">
+                        <i onclick="closeHigherErrorMessage();" class="close icon"></i>
+                        <div class="header">
+                          Please fill all the fields in order to add record.
+                        </div>
+                      </div>
 
                          <form method="post" class="ui form" role="form" action="{% url 'placement:manage_records' %}">
                     {% comment %}The add a new skill Accordian starts here!{% endcomment %}
@@ -606,7 +621,7 @@
                                     <div class="field">
                                       {{ form4.test_score.errors }}
                                         <label for="{{ form4.test_score.id_for_label }}">
-                                            Minimum Test Score
+                                            Test Score (Minimum for Search)
                                         </label>
 
                                         <div class="ui large input">
@@ -633,7 +648,7 @@
                                 </div>
                                 {% if current == None %}
                                 <div class="field">
-                                    <button name="studenthigheraddsubmit" value="studenthigheraddsubmit" class="ui fluid large primary button" type="submit">
+                                    <button name="studenthigheraddsubmit" id="studenthigheraddsubmit" value="studenthigheraddsubmit" class="ui fluid large primary button" type="submit">
                                         Add
                                     </button>
                                 </div>
@@ -701,9 +716,7 @@
                                 <th class="two wide">Exam</th>
                                 <th class="six wide">University</th>
                                 <th class="two wide">Score</th>
-                                {% if profile.designation.name != 'student' %}
                                 <th class="two wide">Delete</th>
-                                {% endif %}
                             </tr>
                             </thead>
 
@@ -738,9 +751,9 @@
 
                                 {% if current == None %}
                                 <td>
-                                  <form method="post" class="ui form" role="form">
+                                  <form method="post" action="{% url 'placement:delete_placement_statistics' %}" class="ui form" role="form">
                                     {% csrf_token %}
-                                    <button name="deleterecord" value="{{ student.pk }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
+                                    <button name="deleterecordmanaged" value="{{ student.id }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
                                         <i class="delete red icon"></i>
                                     </button>
                                     </form>
@@ -757,10 +770,6 @@
                     {% endif %}
 
                     </div>
-
-
-
-
                 </div>
             </div>
         </div>
@@ -768,4 +777,63 @@
 
     </div>
 
+  {% endblock %}
+
+  {% block javascript %}
+  <script type="text/javascript">
+      $('#studentplacementaddsubmit').on('click', function(event){
+        var stuname = $('#add_placement_stuname').val();
+        var year = $('#add_placement_year').val();
+        var roll = $('#add_placement_roll').val();
+        var cname = $('#add_placement_cname').val();
+        var ctc = $('#add_placement_year').val();
+
+        if (year == '' || roll == '' || cname == '' || ctc == '') {
+          $('#placement_required_message_error').css('display', 'block');
+          event.preventDefault();
+        }
+      });
+
+      $('#studentpbiaddsubmit').on('click', function(event){
+        var stuname = $('#add_pbi_stuname').val();
+        var year = $('#add_pbi_year').val();
+        var roll = $('#add_pbi_roll').val();
+        var cname = $('#add_pbi_cname').val();
+        var ctc = $('#add_pbi_ctc').val();
+        console.log(stuname, year, roll, cname, ctc);
+
+        if (year == '' || roll == '' || cname == '' || ctc == '') {
+          $('#pbi_required_message_error').css('display', 'block');
+          event.preventDefault();
+        }
+      });
+
+
+      $('#studenthigheraddsubmit').on('click', function(event){
+        var stuname = $('#add_higher_stuname').val();
+        var year = $('#add_higher_year').val();
+        var roll = $('#add_higher_roll').val();
+        var test_score = $('#add_higher_test_score').val();
+        var test_type = $('#add_higher_test_type').val();
+        var uname = $('#add_higher_uname').val()
+
+        if (year == '' || roll == '' || test_score == '' || test_type == '' || uname == '') {
+          $('#higher_required_message_error').css('display', 'block');
+          event.preventDefault();
+        }
+      });
+
+
+      function closePlacementErrorMessage(){
+       $('#placement_required_message_error').css('display', 'none');
+      }
+
+      function closePbiErrorMessage(){
+       $('#pbi_required_message_error').css('display', 'none');
+      }
+
+      function closeHigherErrorMessage(){
+       $('#higher_required_message_error').css('display', 'none');
+      }
+  </script>
   {% endblock %}

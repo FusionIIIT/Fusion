@@ -12,41 +12,41 @@
 
 
     <div class="ui active tab" data-tab="resolved_super">
-        <div class="ui vertical segment">
+        <div class="ui vertical segment" style="height: 700px;overflow-y: auto";>
             Location of all these complaint is : <b>{{ area }}</b>
             <table class="ui very basic collapsing celled sortable table"
                    style="padding-left: 0%;
-                                                          padding-right: 0%
+                                                          padding-right: 0%;
                                                           padding-top: 1%;
                                                           padding-bottom: 1.5%;
                                                           margin: auto;">
                 <thead>
                 <tr>
-                    <th class="one wide column">
-                        Name
-                    </th>
-                    <th >
-                        Register <br> Date
-                    </th>
-                    <th >
-                        Finished <br> Date
-                    </th>
-                    <th>
-                        Complaint <br>Type
-                    </th>
-                     <th>
-                        Specific<br> Location
-                    </th>
-                    <th class="one wide column">
-                        Details
-                    </th>
+                    <td>
+                        <b>Name</b>
+                    </td>
+                    <td >
+                        <b>Register <br> Date </b>
+                    </td>
+                    <td >
+                        <b>Finished <br> Date</b>
+                    </td>
+                    <td>
+                     <b>Complaint <br>Type </b>
+                    </td>
+                     <td>
+                        <b>Specific<br> Location</b>
+                    </td>
+                    <td style='width=100px'>
+                       <b> Details </b>
+                    </td>
                     
-                    <th>
+                    <!-- <th>
                         Worker <br> Name
-                    </th>
-                     <th>
-                        Feedback
-                    </th>
+                    </th> -->
+                     <td>
+                        <b> Feedback </b>
+                    </td>
                 </tr>
                 </thead>
                 {% for a in all_complaint %}
@@ -77,7 +77,7 @@
                         {{ a.specific_location }}
                     </td>
 
-                    <td>
+                    <td class="one wide column">
                         <a href="./detail3/{{ a.id }}/">  <button class="tiny ui inverted basic button" data-tooltip="Click here to view details" ><i class="large green info icon"></i></button></a>
                         {% if a.remarks != 'Pending' %}
                            ( {{ a.remarks }} )
@@ -85,14 +85,14 @@
                     </td>
                     	
                     
-                    <td>
+                    <!-- <td>
                         
                             <b>{{ a.worker_id }}</b>
 
                         
-                    </td>
+                    </td> -->
                     <td>
-                        <a href="./feedback/{{a.id}}"><button class="tiny ui inverted basic button" data-tooltip="Click here to view feedback" ><i class="large green comments icon"></i></button></a>
+                        <a href="./feedback/{{a.id}}"><button class="tiny ui inverted basic button" data-tooltip=" View feedback" ><i class="large green comments icon"></i></button></a>
                     </td>
                 </tr>
             </tbody>

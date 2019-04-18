@@ -17,7 +17,8 @@
 
 
      <div class="ui active tab" data-tab="pendingcomplaints">
-        <div class="ui vertical segment">
+        <div class="ui vertical segment" style="height: 700px;overflow-y: auto";>
+            Location of all these complaint is : <b>{{ area }}</b>
             <table class="ui very basic collapsing celled sortable table"
                    style="padding-left: 2.5%;
                                                           padding-right: 2.5%;
@@ -27,34 +28,34 @@
              
              <thead>
                 <tr>
-                    <th>
-                        Name
-                    </th>
+                    <td>
+                        <b> Name </b>
+                    </td>
 
-                    <th class="three wide column">
-                        Date
-                    </th>
+                    <td class="three wide column">
+                       <b> Date </b>
+                    </td>
 
-                    <th>
-                        Type
-                    </th>
+                    <td>
+                       <b> Type </b>
+                    </td>
 
-                    <th>
-                        Location
-                    </th>
+                    <td>
+                        <b>Specific <br>Location </b>
+                    </td>
 
-                    <th>
+                    <!-- <th>
                         Specific <br> Location
-                    </th>
+                    </th> -->
 
-                    <th class="two wide column">
-                        Details
-                    </th>
+                    <td class="two wide column">
+                        <b> Details </b>
+                    </td>
 
                   
-                    <th class="two large column">
-                        Worker <br> Name
-                    </th>
+                    <td class="two large column">
+                       <b> Worker <br> Name </b>
+                    </td>
                     
                     
                    
@@ -81,10 +82,8 @@
                         {{ a.complaint_type }}
                     </td>
                     <td>
+                        {{ a.specific_location }},&nbsp;
                         {{ a.location }}
-                    </td>
-                    <td>
-                        {{ a.specific_location }}
                     </td>
                     <td>
                         <a href="./detail3/{{ a.id }}/">  <button class="ui inverted basic button" data-tooltip="Click here to view details" ><i class="large green info icon"></i></button></a>
@@ -132,7 +131,8 @@
 
 
 <div class="ui tab" data-tab="onholdcomplaints">
-        <div class="ui vertical segment">
+        <div class="ui vertical segment" style="height: 700px;overflow-y: auto";>
+            Location of all these complaint is : <b>{{ area }}</b>
             <table class="ui very basic collapsing celled sortable table"
                    style="padding-left: 2.5%;
                                                           padding-right: 2.5%;
@@ -142,33 +142,33 @@
              
              <thead>
                 <tr>
-                    <th>
-                        Name
-                    </th>
+                    <td>
+                       <b> Name </b>
+                    </td>
 
-                    <th class="three wide column">
-                        Date
-                    </th>
+                    <td class="three wide column">
+                       <b> Date </b>
+                    </td>
 
-                    <th>
-                        Type
-                    </th>
+                    <td>
+                        <b> Type </b>
+                    </td>
 
-                    <th>
-                        Location
-                    </th>
+                    <td>
+                        <b> Location </b>
+                    </td>
 
-                    <th>
-                        Specific <br> Location
-                    </th>
+                    <td>
+                       <b> Specific <br> Location</b>
+                    </td>
 
-                    <th class="two wide column">
-                        Details
-                    </th>
+                    <td class="two wide column">
+                       <b> Details </b>
+                    </td>
 
-                    <th class="two large column">
-                        Worker <br> Name
-                    </th>
+                    <td class="two large column">
+                       <b> Worker <br> Name </b>
+                    </td>
                     
                     
                    
