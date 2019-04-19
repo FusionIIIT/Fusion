@@ -21,7 +21,7 @@
 <div class="ui modal {{ object.pk }}" id="assignment{{object.pk}}">
     <div class="content">
         <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;" >
-            <h4> Assignment </h4>
+            <h4> Proposal </h4>
             <div class="two fields">
                 <div class="field">
 
@@ -76,7 +76,7 @@
             </div>
           
             <div class="ui comments">
-                <h4 class="ui dividing header">Assignment history</h4>
+                <h4 class="ui dividing header">Proposal history</h4>
             {% for t in track %}
                 <div class="comment">
                     <div class="content">
@@ -88,7 +88,7 @@
                      <div class="right floated" style="font-color: black;">
                         <b>File uploaded:</b>
                         {% if t.upload_file %}
-                            <a href="{{t.upload_file.url}}">Click here to view attached file</a>
+                            <a target="_blank" rel="noopener noreferrer" href="{{t.upload_file.url}}">Click here to view attached file</a>
                         {% else %}
                             <span class="meta">No file uploaded</span>
                         {% endif %}
@@ -105,7 +105,7 @@
                          {% if t.receive_design %}
                          <b>Sent to:</b>&nbsp{{t.receive_design}}
                          {% else %}
-                         <b>Assignment closed!</b>
+                         <b>Proposal closed!</b>
                          {% endif %}
                      </div>
                     </div>
@@ -116,7 +116,7 @@
             
             <form id="action-form{{object.pk}}" method="POST" enctype="multipart/form-data" action="/office/officeOfDeanPnD/action">
             {% csrf_token %}
-                <h4> Perform actions on the assignment </h4>
+                <h4> Perform actions on the Proposal </h4>
                 <input type="hidden" name="req_id" value="{{object.pk}}"/>
                 <div class="field">
                     <label>Remark</label>
