@@ -212,6 +212,11 @@ def officeOfDeanPnD(request):
     # sort based on last update, which is the element 2 in the 3-tuple
     req_history.sort(key=lambda t: t[2], reverse=True)
     # list of allowed actions filtered by designation
+    allowed_actions = []
+    for des in designations:
+        if des.name == "DeanPnD" or des.name == "Director" or des.name == "EE":
+            allowed_actions = ["Approve", "Reject"]
+    """
     for des in designations:
         if des.name == "DeanPnD":
             allowed_actions = ["Forward", "Revert", "Approve", "Reject"]
@@ -221,6 +226,7 @@ def officeOfDeanPnD(request):
             allowed_actions = ["Forward", "Reject"]
         else:
             allowed_actions = ["Forward", "Revert", "Reject"]
+    """
 
     # Create context to render template
     context = {
@@ -273,13 +279,14 @@ def action(request):
     description=request.POST.get('description')
     upload_file=request.FILES.get('estimate')
     track = Tracking.objects.filter(file_id=requisition.assign_file).filter(receiver_id=user).get(is_read=False)
-
+    
     # current, previous and next Designation and HoldsDesignation found out
     current_design = track.receive_design
     current_hold_design = HoldsDesignation.objects.filter(user=user).get(designation=current_design)
-    prev_design = track.current_design.designation
-    prev_hold_design = track.current_design
-
+    # prev_design = track.current_design.designation
+    # prev_hold_design = track.current_design
+    
+    """
     # This entire thing decides who is the next designation
     if current_design.name == "Civil_JE":
         next_hold_design = HoldsDesignation.objects.get(designation__name="Civil_AE")
@@ -297,14 +304,18 @@ def action(request):
     # if estimate greater than 10 lacs, left to discretion of Dean PnD to forward when required
     elif "DeanPnD" in current_design.name: 
         next_hold_design = HoldsDesignation.objects.get(designation__name="Director")
+    """
 
-    if 'Forward' in request.POST:
+    if 'Send' in request.POST:
+        sent_design=request.POST.get('sent_design')
+        sent_design = Designation.objects.get(name=sent_design)
+        sent_hold_design = HoldsDesignation.objects.get(designation=sent_design)
         Tracking.objects.create(
                 file_id=requisition.assign_file,
                 current_id=extrainfo,
                 current_design=current_hold_design,
-                receive_design=next_hold_design.designation,
-                receiver_id=next_hold_design.working,
+                receive_design=sent_design,
+                receiver_id=sent_hold_design.working,
                 remarks=description,
                 upload_file=upload_file,
             )
@@ -312,25 +323,24 @@ def action(request):
         print(vars(track))
         track.is_read = True
         track.save()
-        office_dean_PnD_notif(request.user,next_hold_design.working, 'assignment_received')
-
-
-    elif 'Revert' in request.POST:
-        Tracking.objects.create(
-                file_id=requisition.assign_file,
-                current_id=extrainfo,
-                current_design=current_hold_design,
-                receive_design=prev_design,
-                receiver_id=prev_hold_design.working,
-                remarks=description,
-                upload_file=upload_file,
-            )
-        print("in revert, old track")
-        print(vars(track))
-        track.is_read = True
-        track.save()
-        office_dean_PnD_notif(request.user,prev_hold_design.working, 'assignment_reverted')
-
+        office_dean_PnD_notif(request.user,sent_hold_design.working, 'assignment_received')
+        """
+        elif 'Revert' in request.POST:
+            Tracking.objects.create(
+                    file_id=requisition.assign_file,
+                    current_id=extrainfo,
+                    current_design=current_hold_design,
+                    receive_design=prev_design,
+                    receiver_id=prev_hold_design.working,
+                    remarks=description,
+                    upload_file=upload_file,
+                )
+            print("in revert, old track")
+            print(vars(track))
+            track.is_read = True
+            track.save()
+            office_dean_PnD_notif(request.user,prev_hold_design.working, 'assignment_reverted')
+        """
     elif 'Reject' in request.POST:
         description = description + " This assignment has been rejected. No further changes to this assignment are possible. Please create new requisition if needed."
         Tracking.objects.create(

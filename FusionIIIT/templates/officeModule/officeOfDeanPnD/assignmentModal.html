@@ -114,7 +114,7 @@
             </div>
             
             
-            <form id="action-form{{object.pk}}" method="POST" enctype="multipart/form-data" action="/office/officeOfDeanPnD/action">
+            <form id="action-form{{object.pk}}" method="POST" enctype="multipart/form-data" action="/office/officeOfDeanPnD/action" onsubmit="return validateForm(this)">
             {% csrf_token %}
                 <h4> Perform actions on the Proposal </h4>
                 <input type="hidden" name="req_id" value="{{object.pk}}"/>
@@ -126,10 +126,33 @@
                     <label>Upload File</label>
                     <input class="ui input" type="file" name="estimate" id="estimate" accept=".pdf, .docx,.doc" ></input>
                 </div>
+                <div class="two fields">
+                <div class="six wide field">
+                    <div class="ui fluid selection dropdown">
+                        <input name="sent_design" type="hidden">
+                        <i class="dropdown icon"></i>
+                        <div class="default text">Select designation to send </div>
+                        <div class="menu">
+                            {% for key, value in deslist.items %}
+                            {% if key != "None" %}
+                            <div class="item" data-value="{{key}}">
+                                {{value}}
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
                 <div class="field">
-                    {% for action in allowed_actions %}
-                    <input type="submit" class="ui button" name="{{action}}" value="{{action}}"/>
-                    {% endfor %}
+                    <input type="submit" class="ui primary button" name="Send" value="Send"/>
+                </div>
+                </div>
+                <div class="field">
+                    {% if allowed_actions %}
+                    <label>Other actions:</label>
+                    <input type="submit" class="ui positive button" name="Approve" value="Approve"/>
+                    <input type="submit" class="ui negative button" name="Reject" value="Reject"/>
+                    {% endif %}
                 </div>
             </form>
         </div>
@@ -139,3 +162,13 @@
 {% endfor %}
 
 {% endblock %}
+
+<script>
+    function validateForm(form) {
+        if (!form['sent_design'].value) {
+            window.alert('Select designation to send assignment to!');
+            return false;
+        }
+        return true;
+    }
+</script>
