@@ -1,4 +1,7 @@
 {% load static %}
+<head>
+    <script type="text/javascript" src="jspdf.debug.js"></script>
+</head>
 {% block stock %}
     {% comment %}the main tab starts here {% endcomment %}
     <div class="ui pointing secondary menu">
@@ -47,10 +50,9 @@
                         </div>
                     </div>
                     <div class="field">
-                        <label>Threshold</label>
+                        <label>Threshold</label> <p id="thr"></p>
                         <div class="ui fluid large input">
                             <input placeholder="Threshold" id="thresh_a" name="thresh_a" type="number">
-                            <p id="thr"></p>
                         </div>
                     </div>
                     <div class="field">
@@ -260,7 +262,40 @@
 
     {% comment %}the view stock tab starts here {% endcomment %}
     <div class="ui tab" data-tab="viewlivestock">
-        <div class="ui vertical segment" >
+        <div id="meds_print" class="ui vertical segment" >
+            <button type="button"  id="pr_meds" name="PDF" value="PDF" class="ui primary button right floated">
+                    <!-- Download -->
+                    <i class="ui download icon right floated"></i>
+                </button>
+
+                <script>
+    $('#pr_meds').click(function(e){
+        var sTable = document.getElementById('meds_print').innerHTML;
+
+        var style = "<style>";
+        style = style + "table {width: 100%;font: 17px Calibri;}";
+        style = style + "table, th, td {border: solid 1px #DDD; border-collapse: collapse;";
+        style = style + "padding: 2px 3px;text-align: center;}";
+        style = style + "</style>";
+
+        // CREATE A WINDOW OBJECT.
+        var win = window.open('', '', 'height=700,width=700');
+
+        win.document.write('<html><head>');
+        win.document.write('<title>Current Stock</title>');   // <title> FOR PDF HEADER.
+        win.document.write(style);          // ADD STYLE INSIDE THE HEAD TAG.
+        win.document.write('</head>');
+        win.document.write('<body>');
+        win.document.write(sTable);         // THE TABLE CONTENTS INSIDE THE BODY TAG.
+        win.document.write('</body></html>');
+
+        win.document.close(); 	// CLOSE THE CURRENT WINDOW.
+
+        win.print();    // PRINT THE CONTENTS.
+    });
+
+</script>
+
             <table class="ui very basic collapsing celled large fluid sortable table" id="live_stock"
                    style="padding-left: 2.5%;padding-right: 2.5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
                 <thead>
@@ -303,6 +338,7 @@
                     <td>
                         {{view.quantity}}
                     </td>
+
                 </tr>
                 {% endfor %}
                 </tbody>
@@ -313,7 +349,9 @@
 
     {% comment %}the view stock tab starts here {% endcomment %}
     <div class="ui tab" data-tab="viewexpiredstock">
-        <div class="ui vertical segment" >
+        <div  id="exmeds_print" class="ui vertical segment" >
+
+
             <table class="ui very basic collapsing celled large fluid sortable table"
                    style="padding-left: 2.5%;padding-right: 2.5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
                 <thead>
@@ -345,7 +383,7 @@
                 {% for view in expired %}
                 <tr>
 
-                    <td>
+                    <td style="white-space:nowrap;">
                        {{view.medicine_id}}
                     </td>
 
@@ -357,7 +395,7 @@
                         {{view.expiry_date}}
                     </td>
 
-                    <td>
+                    <td style="white-space:nowrap;">
                         {{view.supplier}}
                     </td>
 
@@ -396,9 +434,43 @@
     {% comment %}the view stock tab ends here {% endcomment %}
     
         {% comment %}the threshold stock tab starts here {% endcomment %}
-        <div class="ui tab" data-tab="thresholdstock">
-            <div class="ui vertical segment" >
-                <table class="ui very basic collapsing celled large fluid sortable table"
+        <div  class="ui tab" data-tab="thresholdstock">
+            <div id="med_print" class="ui vertical segment" >
+                <button type="button"  id="pr_med" name="PDF" value="PDF" class="ui primary button right floated">
+                    <!-- Download -->
+                    <i class="ui download icon right floated"></i>
+                </button>
+
+                <script>
+    $('#pr_med').click(function(e){
+        var sTable = document.getElementById('med_print').innerHTML;
+
+        var style = "<style>";
+        style = style + "table {width: 100%;font: 17px Calibri;}";
+        style = style + "table, th, td {border: solid 1px #DDD; border-collapse: collapse;";
+        style = style + "padding: 2px 3px;text-align: center;}";
+        style = style + "</style>";
+
+        // CREATE A WINDOW OBJECT.
+        var win = window.open('', '', 'height=700,width=700');
+
+        win.document.write('<html><head>');
+        win.document.write('<title >Required Medicines</title>');   // <title> FOR PDF HEADER.
+        win.document.write(style);          // ADD STYLE INSIDE THE HEAD TAG.
+        win.document.write('</head>');
+        win.document.write('<body>');
+        win.document.write(sTable);         // THE TABLE CONTENTS INSIDE THE BODY TAG.
+        win.document.write('</body></html>');
+
+        win.document.close(); 	// CLOSE THE CURRENT WINDOW.
+
+        win.print();    // PRINT THE CONTENTS.
+    });
+
+</script>
+
+
+                <table id="tblmeds" class="ui very basic collapsing celled large fluid sortable table"
                        style="padding-left: 2.5%;padding-right: 2.5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
                     <thead>
                     <tr>
@@ -416,7 +488,7 @@
                     </tr>
                     </thead>
 
-                    <tbody>
+                    <tbody id="req_med">
                     {% for stock in stocks %}
                     {% if stock.quantity < stock.threshold %}
                     <tr>
@@ -439,4 +511,5 @@
             </div>
         </div>
         {% comment %}the view inventory tab ends here {% endcomment %}
+
 {% endblock %}

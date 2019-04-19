@@ -21,6 +21,13 @@ class Constants:
         ('OTHER', 'Other'),
     )
 
+    EVENT_TYPE = (
+        ('SOCIAL', 'Social'),
+        ('CULTURE', 'Culture'),
+        ('SPORT', 'Sport'),
+        ('OTHER', 'Other'),
+    )
+
     INVITATION_TYPE = (
         ('ACCEPTED', 'Accepted'),
         ('REJECTED', 'Rejected'),
@@ -149,6 +156,17 @@ class Course(models.Model):
         return '{} - {}'.format(self.unique_id.id, self.course_name)
 
 
+class Conference(models.Model):
+    unique_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+    conference_name = models.CharField(max_length=100, default='')
+    description = models.TextField(max_length=250, default='', null=True, blank=True)
+    sdate = models.DateField(_("Date"), default=datetime.date.today)
+    edate = models.DateField(null=True, blank=True)
+
+    def __str__(self):
+        return '{} - {}'.format(self.unique_id.id, self.conference_name)
+
+
 class Publication(models.Model):
     unique_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     publication_title = models.CharField(max_length=100, default='')
@@ -158,6 +176,17 @@ class Publication(models.Model):
 
     def __str__(self):
         return '{} - {}'.format(self.unique_id.id, self.publication_title)
+
+
+class Reference(models.Model):
+    unique_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+    reference_name = models.CharField(max_length=100, default='')
+    post = models.CharField(max_length=100, default='', null=True, blank=True)
+    email = models.CharField(max_length=50, default='')
+    mobile_number = models.CharField(max_length=15, blank=True, null=True)
+
+    def __str__(self):
+        return '{} - {}'.format(self.unique_id.id, self.reference_name)
 
 
 class Coauthor(models.Model):
@@ -206,6 +235,18 @@ class Achievement(models.Model):
 
     def __str__(self):
         return '{} - {}'.format(self.unique_id.id, self.achievement)
+
+class Extracurricular(models.Model):
+    unique_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+    event_name = models.CharField(max_length=100, default='')
+    event_type = models.CharField(max_length=20, choices=Constants.EVENT_TYPE,
+                                        default='OTHER')
+    description = models.TextField(max_length=1000, default='', null=True, blank=True)
+    name_of_position = models.CharField(max_length=200, default='')
+    date_earned = models.DateField(_("Date"), default=datetime.date.today)
+
+    def __str__(self):
+        return '{} - {}'.format(self.unique_id.id, self.event_name)
 
 
 class MessageOfficer(models.Model):

@@ -32,7 +32,7 @@
               {% for complaint in all_complaints %}
               <tr>
 
-                  <td>
+                  <td style="white-space:nowrap;">
                       <h4 class="ui image header">
                           <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
                             {{complaint.user_id}}
@@ -85,6 +85,7 @@
                                                                   $('#update_feed').html(data.feedback);
                                                                   document.getElementById("feed").style.visibility='hidden';
                                                                   document.getElementById("feed_com").style.visibility='hidden';
+                                                                  window.location.reload();
                                                               }
                                                             });
                                                                  }

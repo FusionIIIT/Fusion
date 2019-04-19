@@ -1,10 +1,10 @@
 from django.contrib import admin
 
 from .models import (Achievement, ChairmanVisit, Coauthor, Coinventor, Course,
-                     Education, Experience, Has, Interest, MessageOfficer,
+                     Education, Experience, Has, Interest, MessageOfficer, Conference,
                      NotifyStudent, Patent, PlacementRecord, PlacementSchedule,
-                     PlacementStatus, Project, Publication, Skill,
-                     StudentPlacement, StudentRecord, Role, CompanyDetails)
+                     PlacementStatus, Project, Publication, Skill, Extracurricular,
+                     StudentPlacement, StudentRecord, Role, CompanyDetails, Reference)
 
 
 # Register your models here.
@@ -89,6 +89,10 @@ class PlacementScheduleAdmin(admin.ModelAdmin):
     list_display = ('title', 'placement_date', 'location', 'time')
 
 
+class ReferenceAdmin(admin.ModelAdmin):
+    list_display = ('reference_name', 'post', 'email', 'mobile_number')
+
+
 admin.site.register(Project, ProjectAdmin)
 admin.site.register(Skill, SkillAdmin)
 admin.site.register(Has, HasAdmin)
@@ -111,3 +115,6 @@ admin.site.register(ChairmanVisit, ChairmanVisitAdmin)
 admin.site.register(PlacementSchedule, PlacementScheduleAdmin)
 admin.site.register(Role)
 admin.site.register(CompanyDetails)
+admin.site.register(Reference)
+admin.site.register(Extracurricular)
+admin.site.register(Conference)

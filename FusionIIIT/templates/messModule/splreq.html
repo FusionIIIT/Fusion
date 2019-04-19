@@ -6,6 +6,9 @@
     <a class="active item" data-tab="splreq">
         Special Request
     </a>
+    <a class="item" data-tab="splreq_acc">
+        Accepted Requests
+    </a>
 </div>
 <div class="ui active tab" data-tab="splreq">
     <div class="ui vertical strip segment">
@@ -29,7 +32,7 @@
                         {{var.app_date}}
                     </th>
                     <td class="two wide">
-                        {{var.student_id.id}}
+                        {{var.student_id.id|truncatewords:1|slice:"-4"}}
                     </td>
                     <td class="two wide">{{var.start_date}}-{{var.end_date}}</td>
 {#                    <td>{{var.end_date}}</td>#}
@@ -58,6 +61,41 @@
             </table>
     </div>
 </div>
+
+<div class="ui tab" data-tab="splreq_acc">
+    <div class="ui vertical strip segment">
+
+            <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Student Id</th>
+                  <th>Request Dates</th>
+                  <th>Food</th>
+                  <th>purpose</th>
+                </tr>
+              </thead>
+              <tbody>
+                  {% for var in sprequest_past %}
+                <tr>
+                    <th class="two wide">
+                        {{var.app_date}}
+                    </th>
+                    <td class="two wide">
+                        {{var.student_id.id|truncatewords:1|slice:"-4"}}
+                    </td>
+                    <td class="two wide">{{var.start_date}}-{{var.end_date}}</td>
+{#                    <td>{{var.end_date}}</td>#}
+                    <td class="three wide">{{var.item1}}, {{var.item2}}</td>
+                    <td>{{var.request}}</td>
+                </tr>
+                {% endfor %}
+
+              </tbody>
+            </table>
+    </div>
+</div>
+
 
 <script>
 function acceptSplReq(id){

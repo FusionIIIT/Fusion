@@ -100,11 +100,23 @@ def visitors_hostel_notif(sender, recipient, type):
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
 def healthcare_center_notif(sender, recipient, type):
-    url=''
+    url='healthcenter:healthcenter'
     module='Healthcare Center'
     sender = sender
     recipient = recipient
     verb = ''
+    if type == 'appoint':
+        verb = "Your Appointment has been booked"
+    if type == 'amb_request':
+        verb = "Your Ambulance request has been placed"
+    if type == 'Presc':
+        verb = "You have been prescribed some medicine"
+    if type == 'appoint_req':
+        verb = "You have a new appointment request"
+    if type == 'amb_req':
+        verb = "You have a new ambulance request"
+
+
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
@@ -118,7 +130,7 @@ def file_tracking_notif(sender, recipient, type):
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
 def scholarship_portal_notif(sender, recipient, type):
-    url='spacs:convener_view'
+    url='spacs:spacs'
     module='Scholarship Portal'
     sender = sender
     recipient = recipient
@@ -166,11 +178,17 @@ def office_dean_PnD_notif(sender, recipient, type):
     if type=='requisition_filed':
         verb = "Your requisition has been successfully submitted."
     elif type=='request_accepted':
-        verb = "Your requisition has been accepted "
+        verb = "Your requisition has been accepted."
+    elif type=='request_rejected':
+        verb = "Your requisition has been rejected."
     elif type=='assignment_created':
         verb = "Assignment has been created."
     elif type=='assignment_received':
         verb = "You have received an assignment."
     elif type=='assignment_reverted':
-        verb = "Your assignment has been reverted."
+        verb = "Assignment has been reverted."
+    elif type=='assignment_approved':
+        verb = "Assignment has been approved."
+    elif type=='assignment_rejected':
+        verb = "Assignment has been rejected."
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)

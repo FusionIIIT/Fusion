@@ -307,7 +307,7 @@ class Requisitions(models.Model):
         building=models.CharField(max_length=50,choices=Constants.BUILDING)
         description=models.CharField(max_length=200)
         assign_file=models.ForeignKey(File, on_delete=models.CASCADE, null=True)
-        tag=models.IntegerField(default=0)                           # 0: ongoing  1: completed
+        tag=models.IntegerField(default=0)                           # 0: accepted  1: rejected
 
         def __str__(self):
             return str(self.id)
