@@ -2,6 +2,7 @@ import datetime
 from datetime import date, datetime
 
 from django.contrib.auth import authenticate, login
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
@@ -23,6 +24,7 @@ from .models import *
 from .models import (Project_Closure, Project_Extension, Project_Reallocation,
                      Project_Registration)
 from .views_office_students import *
+
 
 
 def officeOfDeanRSPC(request):
@@ -389,6 +391,8 @@ def admin_reject(request):
 
 def officeOfRegistrar(request):
 
+    """dashboard for the registrar to view files from different departments and navigate to a specific department"""
+
     archive_view = {}
     archive_track = Registrar_response.objects.all()
     for atrack in archive_track:
@@ -421,6 +425,9 @@ def officeOfRegistrar(request):
     return render(request, "officeModule/officeOfRegistrar/officeOfRegistrar.html", context)
 
 def officeOfRegistrar_ajax_submit(request):
+
+    """AJAX handler to handle request for approve/reject/forwarding of a file"""
+
     #print("ajax")
     if request.method == "POST":
         values = request.POST.getlist('values[]')
@@ -434,10 +441,16 @@ def officeOfRegistrar_ajax_submit(request):
         return HttpResponse("Error", content_type='text/html')
 
 def officeOfRegistrar_forward(request, id):
+
+    """form to set receiver and designation of forwarded file """
+
     context = {"track_id": id}
     return render(request, "officeModule/officeOfRegistrar/forwardingForm.html", context)
 
 def officeOfRegistrar_forward_submit(request):
+
+    """Submit handler for the above form"""
+    
     if request.method == "POST":
         try:
             track_id = int(request.POST.get("track_id"))
@@ -447,7 +460,7 @@ def officeOfRegistrar_forward_submit(request):
             receiver_id = User.objects.get(username=receiver)
             if not User.objects.get(username=receiver):
                 return HttpResponse("Cannot find user")
-            receiver_design = Designation.objects.filter(name=receiver_design_text)
+            receiver_design = Designation.objects.filter(name=receiver_design_text)[0]
             current_id = request.user.extrainfo
             current_design = HoldsDesignation.objects.filter(user = request.user)[0]
             t_id = Tracking.objects.get(id = track_id)
@@ -462,7 +475,8 @@ def officeOfRegistrar_forward_submit(request):
                         receiver_id=receiver_id,
                         remarks=remarks,
                     )
-
+            rr = Registrar_response(track_id = Tracking.objects.get(id=track_id), remark = "forwarded to"+receiver, status = "forward")
+            rr.save()
             messages.success(request,'File sent successfully')
             return HttpResponse('File sent successfully')
         except IntegrityError:
@@ -471,63 +485,14 @@ def officeOfRegistrar_forward_submit(request):
     else:
         return HttpResponse('Error sending file')
 
-def view_file(request, id):
+def officeOfRegistrar_view_file(request, id):
     """
-            The function is used to view files received by user(employee) from other
-            employees which are filtered from Tracking(table) objects by current user
-            i.e. sender_id to other employees.
-
-            It displays details file of a File(table) and remarks and attachments of user involved
-            in file of Tracking(table) of filetracking(model) in the template.
-
-            @param:
-                    request - trivial.
-                    id - id of the file object which the user intends to forward to other employee.
-
-            @variables:
-                    file - The File object.
-                    track - The Tracking object.
-                    remarks = Remarks posted by user.
-                    receiver = Receiver to be selected by user for forwarding file.
-                    receiver_id = Receiver_id who has been selected for forwarding file.
-                    upload_file = File attached by user.
-                    extrainfo = ExtraInfo object.
-                    holdsdesignations = HoldsDesignation objects.
-                    context - Holds data needed to make necessary changes in the template.
+        This is the view to handle registrar's request to view the details of a file, The file whoose id is passed is accessed through
     """
     #file = get_object_or_404(File, id=id)
     
-    track = Tracking.objects.get(id=file)
-
-
-    if request.method == "POST":
-        current_id = request.user.extrainfo
-        remarks = request.POST.get('remarks')
-
-        sender = request.POST.get('sender')
-        Sender_designation = HoldsDesignation.objects.get(id=sender)
-
-        receiver = request.POST.get('receiver')
-        receiver_id = User.objects.get(username=receiver)
-        print("Sender_id = ")
-        print(sender)
-        receive = request.POST.get('recieve')
-        print("recieve = ")
-        print(receive)
-        receive_designation = Designation.objects.filter(name=receive)
-        print("Sender_designation = ")
-        print(Sender_designation)
-        receive_design = receive_designation[0]
-        upload_file = request.FILES.get('myfile')
-        Tracking.objects.create(
-            file_id=file,
-            current_id=current_id,
-            current_design=current_design,
-            receive_design=receive_design,
-            receiver_id=receiver_id,
-            remarks=remarks,
-            )
-    
+    track = Tracking.objects.get(id=id)
+    file = track.file_id
     extrainfo = ExtraInfo.objects.all()
     holdsdesignations = HoldsDesignation.objects.all()
     designations = HoldsDesignation.objects.filter(user=request.user)
@@ -535,9 +500,9 @@ def view_file(request, id):
     context = {
         'designations':designations,
         'file': file,
-        'track': track,
+        'track': [track],
     }
-
+    print("view called")
     return render(request, 'officeModule/officeOfRegistrar/view_file.html', context)
 
 

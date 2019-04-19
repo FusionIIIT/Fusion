@@ -49,7 +49,16 @@ def academics_module_notif(sender, recipient, type):
     module="Academic's Module"
     sender = sender
     recipient = recipient
-    verb = ''
+    verb = type
+
+    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
+
+def office_module_notif(sender, recipient):
+    url='office:officeOfRegistrar'
+    module="Academic's Module"
+    sender = sender
+    recipient = recipient
+    verb = "New file received"
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 

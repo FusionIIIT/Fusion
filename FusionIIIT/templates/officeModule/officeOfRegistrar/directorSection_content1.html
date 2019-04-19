@@ -38,7 +38,7 @@
         <td>
             {{ views.subject }}
             <br>
-            <a href="#">View</a>
+            <a href="view/{{ key }}">View</a>
         </td>
 
         <td>
@@ -57,7 +57,7 @@
         <td>
             <div>
                 <button style="width: 100px" class="ui primary floated button action-button" data-row = "{{ forloop.counter0 }}" data-status = "approve">Approve</button>
-                <form action = "forward/{{ key }}" method = "get"> <button style="width: 100px" class="ui green floated button action-button" data-row = "{{ forloop.counter0 }}" data-status = "forward">Forward</button> </form>
+                <form action = "forward/{{ key }}" method = "get"> <button style="width: 100px" class="ui green floated button" data-row = "{{ forloop.counter0 }}" data-status = "forward">Forward</button> </form>
                 <button class="ui red floated button action-button" data-row = "{{ forloop.counter0 }}" data-status = "reject" style="width: 100px">Reject</button>
             </div>  
         </td>

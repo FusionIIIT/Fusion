@@ -9,6 +9,7 @@ from django.db import IntegrityError
 from django.core import serializers
 from django.contrib.auth.models import User
 from timeit import default_timer as time
+from notification.views import office_module_notif
 
 
 @login_required(login_url = "/accounts/login/")
@@ -54,8 +55,6 @@ def filetracking(request):
                     designation=designation,
                     upload_file=upload_file
                 )
-
-                messages.success(request,'File created successfully')
 
             if 'send' in request.POST:
 
@@ -109,7 +108,7 @@ def filetracking(request):
                     remarks=remarks,
                     upload_file=upload_file,
                 )
-
+                office_module_notif(request.user, receiver_id)
                 messages.success(request,'File sent successfully')
 
         except IntegrityError:
