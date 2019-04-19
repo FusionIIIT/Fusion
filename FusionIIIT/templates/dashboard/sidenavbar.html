@@ -54,12 +54,12 @@
           <a class = "item" href="/gymkhana">
               <h4> Gymkhana Module </h4>
           </a>-->
-            
-		
+
+
     			    <a class="item" href="{% url 'spacs:spacs' %}">
                                 <h4>Awards & Scholarship</h4>
                             </a>
-		
+
                            <a class="item" href="{% url 'complaint:complaint' %}">
                                 <h4>Complaint Module</h4>
                             </a>
@@ -136,12 +136,20 @@
 <!--The email Item ends here!-->
 
 <!--The Profile Item starts here!-->
+{% if "PurchaseOfficer" in all_designation %}
 <a class="centered raised item" href="{% url 'office:officeOfPurchaseOfficer'%}">
     <span class="inverted header">Office Of Purchase Officer</span>
     <i class="large inverted briefcase icon right floated"></i>
 </a>
+{% endif %}
 <!--The email Item ends here!-->
 
+{% if "PurchaseOfficer" not in all_designation %}
+<a class="centered raised item" href="{% url 'office:officeOfPurchaseOfficer'%}">
+    <span class="inverted header">Purchase and Sales</span>
+    <i class="large inverted briefcase icon right floated"></i>
+</a>
+{% endif %}
 <!--The Profile Item starts here!-->
 {% if "Registrar" in all_designation %}
 <a class="centered raised item" href="{% url 'office:officeOfRegistrar'%}">

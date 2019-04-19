@@ -14,7 +14,17 @@ urlpatterns = [
     url(r'^after_purchase/', views.after_purchase, name='after_purchase'),
     url(r'^officeOfRegistrar/$', views.officeOfRegistrar, name='officeOfRegistrar'),
     url(r'^officeOfDeanRSPC/$', views.officeOfDeanRSPC, name='officeOfDeanRSPC'),
+    url(r'^newordershod/',views.newordershod,name='newordershod'),
+    url(r'^newordershod2/',views.newordershod,name='newordershod2'),
+    url(r'^newordersdirector/',views.newordersdirector,name='newordersdirector'),
+    url(r'^add_items/',views.add_items,name='add_items'),
+    url(r'^view_items/',views.view_items,name='view_items'),
+    url(r'^newordersdirectorview/',views.newordersdirectorview,name='newordersdirectorview'),
 
+    url(r'^newordersPOonGem/',views.newordersPOonGem,name='newordersPOonGem'),
+    url(r'^newordersPO/',views.newordersPO,name='newordersPO'),
+    url(r'^newordersregistrar/',views.newordersregistrar,name='newordersregistrar'),
+    url(r'^newordersregistrar2/',views.newordersregistrar2,name='newordersregistrar2'),
     url(r'^officeOfDeanRSPC/submit/$',views.project_register,name='p_register'),
     url(r'^officeOfDeanRSPC/extention/$',views.project_extension,name='p_extension'),
     url(r'^officeOfDeanRSPC/close/$',views.project_closure,name='p_closure'),
@@ -36,7 +46,11 @@ urlpatterns = [
     url(r'^officeOfHOD/submit/$',views.teaching_form,name='teaching_form'),
     url(r'^officeOfHOD/work/$',views.hod_work,name='hod_work'),
     url(r'^genericModule/', views.genericModule, name='genericModule'),
-    url(r'^deleteitem/(?P<id>[0-9]+)',views.delete_item, name='delete_item'),
+
+
+
+
+    url(r'^deleteitem/',views.delete_item, name='delete_item'),
     url(r'^deletevendor/(?P<id>[0-9]+)',views.delete_vendor, name='delete_vendor'),
     url(r'^editvendor/(?P<id>[0-9]+)',views.edit_vendor, name='edit_vendor'),
     url(r'^editvendor/office/officeOfPurchaseOfficer/edit/',views.edit,name='edit'),

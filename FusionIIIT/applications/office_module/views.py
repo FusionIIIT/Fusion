@@ -1,10 +1,10 @@
 import datetime
 from datetime import date, datetime
-
+from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect,JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
@@ -426,6 +426,7 @@ def upload(request):
 def officeOfHOD(request):
     pro = Teaching_credits1.objects.filter(tag=0)
     pro1 = Assigned_Teaching_credits.objects.all()
+
     context = {'pro':pro,'pro1':pro1}
     return render(request, "officeModule/officeOfHOD/officeOfHOD.html", context)
 
@@ -739,19 +740,164 @@ def genericModule(request):
     return render(request, "ofricModule/genericModule.html", context)
 
 
+
+def newordershod(request):
+    print("hello2")
+    #this one creates and stores the data in django forms
+    print("new ord caled")
+    if request.method=='POST':
+        objid = request.POST.get('id')
+        print(objid)
+        #find the instance with this objid and set its hod_approve_bit to 1
+        try:
+            obj = apply_for_purchase.objects.get(id = objid)
+            obj.HOD_approve_tag = 1
+            obj.director_approve_tag = 0
+            obj.save()
+            print("work done")
+            str = "order with id "+ objid +" has been approved by you"
+            messages.info(request,str)
+            #render()
+        except apply_for_purchase.DoesNotExist:
+            print("model not exists")
+    return HttpResponse("you are the best ")
+
+def newordersregistrar(request):
+    print("hello2")
+    #this one creates and stores the data in django forms
+    print("new ord caled")
+    if request.method=='POST':
+        objid = request.POST.get('id')
+        print(objid)
+        #find the instance with this objid and set its hod_approve_bit to 1
+        try:
+            obj = apply_for_purchase.objects.get(id = objid)
+            obj.registrar_approve_tag = 1
+            obj.director_approve_tag = 1
+            obj.save()
+            print("work done")
+            str = "order with id "+ objid +" has been approved by you"
+            messages.info(request,str)
+            return HttpResponse('work is being done')
+        except apply_for_purchase.DoesNotExist:
+            print("model not exists")
+    return HttpResponse("you are the best ")
+
+def newordersregistrar2(request):
+    print("hello2")
+    #this one creates and stores the data in django forms
+    print("new ord caled")
+    if request.method=='POST':
+        objid = request.POST.get('id')
+        print(objid)
+        #find the instance with this objid and set its hod_approve_bit to 1
+        try:
+            obj = apply_for_purchase.objects.get(id = objid)
+            obj.registrar_approve_tag = 1
+            obj.save()
+            print("work done")
+            str = "order with id "+ objid +" has been approved by you"
+            messages.info(request,str)
+            return HttpResponse('work is being done')
+        except apply_for_purchase.DoesNotExist:
+            print("model not exists")
+    return HttpResponse("you are the best ")
+
+
+def newordersdirector(request):
+    print("hello2")
+    #this one creates and stores the data in django forms
+    print("new ord caled")
+    if request.method=='POST':
+        objid = request.POST.get('id')
+        print(objid)
+        #find the instance with this objid and set its hod_approve_bit to 1
+        try:
+            obj = apply_for_purchase.objects.get(id = objid)
+            obj.director_approve_tag = 1
+            obj.save()
+            print("work done")
+            str = "order with id "+ objid +" has been approved by you"
+            messages.info(request,str)
+            return HttpResponse('work is being done')
+        except apply_for_purchase.DoesNotExist:
+            print("model not exists")
+    return HttpResponse("you are the best ")
+
+#on operation
+def newordersdirectorview(request):
+    print("metoo")
+    #return HttpResponse("pis of")
+    if request.method=='POST':
+        objid = request.POST.get('id')
+        print(objid)
+    try:
+        obj = apply_for_purchase.objects.get(id = objid)
+        context ={"data":obj}
+        print(context)
+        return HttpResponse("abhi iska template nahi bana hai")
+    except apply_for_purchase.DoesNotExist:
+        print("model not exists")
+    return render(request, "officeModule/officeOfPurchaseOfficer/viewordersdirector.html",context=context)
+
+
+
+def newordersPO(request):
+    if request.method=='POST':
+        objid = request.POST.get('id')
+        print(objid)
+        try:
+            obj = apply_for_purchase.objects.get(id = objid)
+            obj.gem_tag=-1
+            obj.save()
+        except apply_for_purchase.DoesNotExist:
+            print("model not exists")
+    return HttpResponse("you are the best ")
+
+def newordersPOonGem(request):
+    if request.method=='POST':
+        objid = request.POST.get('id')
+        print(objid)
+        try:
+            obj = apply_for_purchase.objects.get(id = objid)
+            obj.gem_tag=1
+            obj.save()
+        except apply_for_purchase.DoesNotExist:
+            print("model not exists")
+    return HttpResponse("you are the best ")
+
+
+
 @login_required
+
 def apply_purchase(request):
-
+    print("hello")
     #
-    # name=ExtraInfo.objects.get(user=user)
-
+#    user = get_object_or_404(User,username=request.user.username)
+#    user=ExtraInfo.objects.get(user=user)
+    current_user = get_object_or_404(User, username=request.user.username)
+    #print(current_user)
+    user_details = ExtraInfo.objects.all().filter(user=current_user).first()
+    #print(user_details)
+    user_type = HoldsDesignation.objects.all().filter(user=current_user).first()
+    #print(user_type)
+    usertype=str.split(str(user_type))
+    #print(usertype)
+    # Academics Admin Check
+    user=usertype[0]
+    #desig_id = Designation.objects.all().filter(name='Faculty')
+    #print(desig_id)
+    #print ("yaha se")
+    #print(user)
+    #print(user_type)
     # user = request.user
     # user = User.objects.get(id=1).extrainfo
-    user=request.user.extrainfo
+    #user=request.user
+    if(user == "student"):
+        return HttpResponse('You are not authorised to view this page')
     # user=ExtraInfo.objects.get(id=user)
-
+    #print(hello)
     if request.method == 'POST':
-        '''if "submit" in request.POST:'''
         item_name=request.POST.get('item_name')
         quantity=request.POST.get('quantity')
         expected_cost=int(request.POST.get('expected_cost'))
@@ -776,7 +922,7 @@ def apply_purchase(request):
     # xyz=apply_for_purchase(indentor_name=name,)
     # xyz.save()
 
-
+        #print("hello1")
 
         a = apply_for_purchase.objects.create(
                 item_name=item_name,
@@ -788,10 +934,12 @@ def apply_purchase(request):
                 # budgetary_head_id = budgetary_head_id,
                 # inspecting_authority_id=inspecting_authority_id,
                 expected_purchase_date= expected_purchase_date,
-                indentor_name=user,
+                indentor_name=user_details,
 
         )
         a.save()
+        print("yahan tak toh pahunch gaya mai")
+        messages.info(request, 'order placed successfully')
         if  expected_cost >=25000 and expected_cost <= 250000 :
             b = purchase_commitee.objects.create(
 
@@ -803,10 +951,59 @@ def apply_purchase(request):
 
 
 
-
-        return render(request, "officeModule/officeOfPurchaseOfficer/officeOfPurchaseOfficer.html",{})
+            #right now its hard coded for pkhanna o/w  use utype : utype for context in both render
+        #return render(request, "officeModule/officeOfPurchaseOfficer/officeOfPurchaseOfficer.html",{'utype':2})
+        return HttpResponseRedirect('/office/officeOfPurchaseOfficer/')
     else:
-        return render(request, "officeModule/officeOfPurchaseOfficer/officeOfPurchaseOfficer.html",{})
+        return HttpResponseRedirect('/office/officeOfPurchaseOfficer/')
+
+
+
+
+
+@login_required
+
+def add_items(request):
+    current_user = get_object_or_404(User, username=request.user.username)
+    print(current_user)
+    user_details = ExtraInfo.objects.all().filter(user=current_user).first()
+    print(user_details)
+    user_type = HoldsDesignation.objects.all().filter(user=current_user).first()
+    print(user_type)
+    usertype=str.split(str(user_type))
+    print(usertype)
+    # Academics Admin Check
+    user=usertype[0]
+    #desig_id = Designation.objects.all().filter(name='Faculty')
+    quantity=0
+    #print(desig_id)
+    print ("yaha se")
+    print(user)
+    if(user == "student"):
+        return HttpResponse('You are not authorised to view this page')
+    if request.method == 'POST':
+        item_name=request.POST.get('item_name')
+        nature_of_item2= 1 if request.POST.get('nature_of_item2') == 'on' else 0
+        quantity=request.POST.get('quant')
+        order_id=request.POST.get('order_id')
+        print(quantity)
+        a = stock.objects.create(
+            item_type=nature_of_item2,
+            item_name=item_name,
+            quantity=quantity,
+        )
+        a.save()
+        messages.info(request, 'item added in inventory successfully')
+        return render(request, "officeModule/officeOfPurchaseOfficer/manageStore_content2.html",{})
+    else:
+        return render(request, "officeModule/officeOfPurchaseOfficer/manageStore_content2.html",{})
+
+
+
+@login_required
+
+def view_items(request):
+    return HttpResponse(1)
 
 
 def submit(request):
@@ -829,11 +1026,61 @@ def after_purchase(request):
         return render(request, "officeModule/officeOfPurchaseOfficer/after_purchase.html",{})
 
 
-@login_required
+
 def officeOfPurchaseOfficer(request):
     context={}
+    current_user = get_object_or_404(User, username=request.user.username)
+    #print(current_user)
+    user_details = ExtraInfo.objects.all().filter(user=current_user).first()
+    #print(user_details)
+    user_type = HoldsDesignation.objects.all().filter(user=current_user).first()
+    #print(user_type)
+    usertype=str.split(str(user_type))
+    print(usertype)
+    # Academics Admin Check
+    user_type=None
+    user = usertype[2]
+
+    if(user == "student"):
+        return HttpResponse('You are not authorised to view this page')
+    if(len(usertype)>3):
+        user_type=usertype[2]+usertype[3]
+    elif(len(usertype)>=2):
+        user_type = usertype[2]
+    print(user_type)
+    p = None
+    q = None
+    ph = None
+    #print ("yaha se")
+    #print(user_type)
+    #use user_type to check the designation of actor
+    #utype is for rendering tags (templates)
+    utype=0#this is for manage store and vendors
+    utype2=0#this is for orders tag
+    #but yahan par bhi divide as utype21 utype22(just a thought for.....)
+    utype3=0#this is for indent forms
+    utype4=0#this is for purchase history
+
+    per_user=str(current_user)
+    if(user_type=="DeputyRegistrar" or user_type=="Registrar" or user_type=="PurchaseOfficer"):
+        utype=1
+    #elif(user_type=="HOD(ME)" or user_type=="HOD(ECE)" or user_type=="CSE HOD" or user_type=="HOD"):
+    #bug was that pkhanna was being recognized as associate professor not HOD
+    if(per_user=="pkhanna" or user_type=="DeputyRegistrar" or user_type=="Registrar" or user_type=="HOD" or user_type=="PurchaseOfficer" or user_type =="Director" or user_type=="director"):
+        utype2=1
+        #print("hard code working hai yahan tak for HOD designation")
+
+    if(user_type == "AssociateProfessor" or user_type == "AssistantProfessor" or user_type=="HOD" or user_type=="Director" or user_type=="director"):#give more such equivalent designations
+        utype3=1
+        #print("recognized actor assoc prof")
+
+
+    #print("yahan tak sab sahi")
+
     if request.method == 'POST':
+
         if "submit" in request.POST:
+
             vendor_name=request.POST['vendor_name']
             vendor_item=request.POST['vendor_item']
             vendor_address=request.POST['vendor_address']
@@ -843,27 +1090,138 @@ def officeOfPurchaseOfficer(request):
                 vendor_item=vendor_item,
                 vendor_address=vendor_address,
             )
-            return HttpResponse("successflly added vendor")
+            messages.info(request, 'vendor added successfully')
+            return render(request, "officeModule/officeOfPurchaseOfficer/officeOfPurchaseOfficer.html",{})
+
+
+        elif "new_orders" in request.POST:
+            #note when not in hard code, pkhanna to be replaced  by str(current_user)
+            #render appropritate templates as per the actor like approvalHOD2 or approvalRegistrar2 etc
+            #this is working through user_type not utype
+            if(user_type=="HOD" or per_user=="pkhanna"):
+                alldata = apply_for_purchase.objects.filter(HOD_approve_tag=0).order_by('-id')
+                context={'alldata':alldata}
+                print(context)
+                return render(request, "officeModule/officeOfPurchaseOfficer/approvalHOD2.html",context=context)
+
+            elif(user_type=="DeputyRegistrar" or user_type=="Registrar" or per_user=="swapnali"):
+                alldata = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=0).order_by('-id')
+                #alldata2 = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=0,expected_cost__gte = 50001)
+                context = {'alldata':alldata,'des':user_type}
+                return render(request, "officeModule/officeOfPurchaseOfficer/approvalRegistrar.html",context=context)
+
+            elif(user_type=="director" or user_type=="Director"):
+                #alldata = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=1,expected_cost__gte = 50001)
+                alldata = apply_for_purchase.objects.filter(expected_cost__gte = 50001,director_approve_tag=0).order_by('-id')
+                print(alldata)
+                context = {'alldata':alldata,'des':user_type}
+                return render(request, "officeModule/officeOfPurchaseOfficer/approvaldirector.html",context=context)
+
+            elif(user_type=="purchaseofficer" or user_type=="PurchaseOfficer"):
+                print("entered purchase officer section")
+                alldata = apply_for_purchase.objects.filter(director_approve_tag=1,gem_tag=0).order_by('-id')
+                #alldata2 = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=1,expected_cost__lte = 50000)
+                #context = {'alldata':alldata,'alldata2':alldata2}SS
+
+                context = {'alldata':alldata,'des':user_type}
+                #print("data 0",context)
+                return render(request, "officeModule/officeOfPurchaseOfficer/approvalpurchaseofficer.html",context=context)
+
+
+
+        elif "approved_orders" in request.POST:
+            if(user_type=="HOD" or per_user=="pkhanna"):
+                alldata = apply_for_purchase.objects.filter(HOD_approve_tag=1).order_by('-id')
+                context={'alldata':alldata}
+                #print(context)
+                return render(request, "officeModule/officeOfPurchaseOfficer/approvedHOD.html",context=context)
+
+            elif(user_type=="DeputyRegistrar" or user_type=="Registrar" or per_user=="swapnali"):
+                alldata = apply_for_purchase.objects.filter(registrar_approve_tag=1,expected_cost__lte = 50000).order_by('-id')
+                context = {'alldata':alldata,'des':user_type}
+                return render(request, "officeModule/officeOfPurchaseOfficer/approvedRegistrar.html",context=context)
+
+            elif(user_type=="director" or user_type=="Director"):
+                #alldata = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=1,expected_cost__gte = 50001)
+                alldata = apply_for_purchase.objects.filter(expected_cost__gte = 50001,director_approve_tag=1).order_by('-id')
+                #print(alldata)
+                context = {'alldata':alldata}
+                return render(request, "officeModule/officeOfPurchaseOfficer/approvedDirector.html",context=context)
+
+            #make the templates as per the actors
+
+
+
+
+        elif "checked_orders" in request.POST:
+            if(user_type == "PurchaseOfficer" or user_type == "purchseofficer"):
+                #print("in checked orders")
+                alldata = apply_for_purchase.objects.filter(director_approve_tag=1).exclude(gem_tag=0)
+                context = {'alldata':alldata,'des':user_type}
+                return render(request, "officeModule/officeOfPurchaseOfficer/checkedpurchaseofficer.html",context=context)
+
+        elif "forwarded_orders" in request.POST:
+            if(user_type == "Registrar" or user_type == "DeputyRegistrar"):
+                #print("in checked orders")
+                alldata = apply_for_purchase.objects.filter(expected_cost__gte = 50001,director_approve_tag=0).order_by('-id')
+                context = {'alldata':alldata,'des':user_type}
+
+                return render(request, "officeModule/officeOfPurchaseOfficer/forwardedRegistrar.html",context=context)
+
 
         elif "store" in request.POST:
+
             item_type=request.POST.get('item_type')
             item_name=request.POST.get('item_name')
             quantity=request.POST.get('qunatity')
-
-            stock.objects.create(
+            str2 = " "
+            it = " "
+            a = stock.objects.create(
                 item_type=item_type,
                 item_name=item_name,
                 quantity=quantity,
             )
-            return HttpResponse("successflly added item")
+            a.save()
+            if(item_type==0):
+                it="consumable"
+            else:
+                it="non-consumable"
+            str2 = "item " + item_name + "of type " + it + " has been added to the store"
+            messages.info(request,str2)
+
+        elif "manage_store" in request.POST:
+            return render(request, "officeModule/officeOfPurchaseOfficer/manageStore_content2.html")
+
+        elif "view_store" in request.POST:
+            q=stock.objects.all()
+            return render(request, "officeModule/officeOfPurchaseOfficer/manageStore_content1.html",{"q":q})
+            #return HttpResponse(1)
+
         elif "item_search" in request.POST:
             srch = request.POST['item_name']
-            match = stock.objects.filter(Q(item_name__icontains=srch))
+            print("this is the itemset")
+            print(srch)
+            #match = stock.objects.filter(Q(item_name__icontains=srch))
+            match = stock.objects.filter(item_name=srch)
+            print(match)
             return render(request, "officeModule/officeOfPurchaseOfficer/officeOfPurchaseOfficer.html",{'match':match})
+
         elif "vendor_search" in request.POST:
             sr = request.POST['item']
             matchv = vendor.objects.filter(Q(vendor_item__icontains=sr))
             return render(request, "officeModule/officeOfPurchaseOfficer/officeOfPurchaseOfficer.html",{'matchv':matchv})
+
+        elif "viewhistory" in request.POST:
+            alldata = apply_for_purchase.objects.filter(indentor_name = user_details)
+            print(alldata)
+            return render(request, "officeModule/officeOfPurchaseOfficer/purchaseHistory_content1.html",{'alldata':alldata})
+
+        elif "viewstatus" in request.POST:
+            alldata = apply_for_purchase.objects.filter(indentor_name = user_details)
+            print(alldata)
+            return render(request, "officeModule/officeOfPurchaseOfficer/purchaseHistory_content2.html",{'alldata':alldata})
+
+
         elif "purchase_search" in request.POST:
             pr = request.POST['file']
             phmatch = apply_for_purchase.objects.filter(Q(id=pr))
@@ -876,17 +1234,23 @@ def officeOfPurchaseOfficer(request):
             return HttpResponse("successflly deleted item")'''
 
     else:
+        #this is the manage store and vendors section
         p=vendor.objects.all()
         q=stock.objects.all()
         ph=apply_for_purchase.objects.all()
-    return render(request, "officeModule/officeOfPurchaseOfficer/officeOfPurchaseOfficer.html",{'p':p,'q':q,'ph':ph})
+
+    return render(request, "officeModule/officeOfPurchaseOfficer/officeOfPurchaseOfficer.html",{'p':p,'q':q,'ph':ph,'utype':utype,'utype2':utype2,'utype3':utype3,'des':user_type})
 
 def delete_item(request,id):
     #template = 'officemodule/officeOfPurchaseOfficer/manageStore_content1.html'
-    print(">>>>>>>")
-    print(id)
-    item = get_object_or_404(stock,id=id)
-    item.delete()
+    print("reached delete_item")
+    if request.method=='POST':
+        objid = request.POST.get('id')
+        print(objid)
+        item = get_object_or_404(stock,id=id)
+        item.delete()
+
+
     return HttpResponse("Deleted successfully")
 
 def delete_vendor(request,id):
