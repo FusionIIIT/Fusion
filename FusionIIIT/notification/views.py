@@ -145,6 +145,9 @@ def scholarship_portal_notif(sender, recipient, type):
         verb = "Your Covocation form for D&M Proficiency Gold Medal has been rejected "
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
+
+
+
 def complaint_system_notif(sender, recipient, type):
     url=''
     module='Complaint System'

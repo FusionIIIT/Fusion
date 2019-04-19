@@ -17,7 +17,8 @@ urlpatterns = [
     url(r'^newordershod/',views.newordershod,name='newordershod'),
     url(r'^newordershod2/',views.newordershod,name='newordershod2'),
     url(r'^newordersdirector/',views.newordersdirector,name='newordersdirector'),
-
+    url(r'^add_items/',views.add_items,name='add_items'),
+    url(r'^view_items/',views.view_items,name='view_items'),
     url(r'^newordersdirectorview/',views.newordersdirectorview,name='newordersdirectorview'),
 
     url(r'^newordersPOonGem/',views.newordersPOonGem,name='newordersPOonGem'),
@@ -49,7 +50,7 @@ urlpatterns = [
 
 
 
-    url(r'^deleteitem/(?P<id>[0-9]+)',views.delete_item, name='delete_item'),
+    url(r'^deleteitem/',views.delete_item, name='delete_item'),
     url(r'^deletevendor/(?P<id>[0-9]+)',views.delete_vendor, name='delete_vendor'),
     url(r'^editvendor/(?P<id>[0-9]+)',views.edit_vendor, name='edit_vendor'),
     url(r'^editvendor/office/officeOfPurchaseOfficer/edit/',views.edit,name='edit'),
