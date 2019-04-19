@@ -82,7 +82,7 @@
                     <div class="content">
                      <a class="author blue header" href="/profile/{{t.current_id.user}}">{{t.current_id.user}}</a>
                      <div class="metadata">
-                         {{t.current_design.designation}},&nbsp
+                         {{t.current_design.designation|pndReadableDesignation}},&nbsp;
                          <span class="date">{{t.forward_date}}</span>
                      </div>
                      <div class="right floated" style="font-color: black;">
@@ -103,7 +103,7 @@
                      </div>
                      <div class="right floated" style="font-color: black;">
                          {% if t.receive_design %}
-                         <b>Sent to:</b>&nbsp{{t.receive_design}}
+                         <b>Sent to:</b>&nbsp;{{t.receive_design|pndReadableDesignation}}
                          {% else %}
                          <b>Proposal closed!</b>
                          {% endif %}

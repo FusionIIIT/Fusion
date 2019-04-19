@@ -25,6 +25,7 @@ from .models import (Project_Closure, Project_Extension, Project_Reallocation,
                      Project_Registration)
 from .views_office_students import *
 
+from django.template.defaulttags import register
 
 
 def officeOfDeanRSPC(request):
@@ -63,6 +64,23 @@ def _req_history(req):
     """
     return Tracking.objects.filter(file_id=req.assign_file)
 
+_pnd_deslist={
+            'Civil_JE': 'Junior Engg. (Civil)',
+            'Civil_AE':'Assistant Engg. (Civil)',
+            'Electrical_JE': 'Junior Engg. (Electrical)',
+            'Electrical_AE':'Assistant Engg. (Electrical)',
+            'EE': 'Executive Engg.',
+            'DeanPnD': 'Dean (P&D)',
+            'Director': 'Director',
+            'None':'Closed'
+}
+
+@register.filter
+def pndReadableDesignation(key):
+    # Map designations to readable titles.
+    d = str(key)
+    return _pnd_deslist.get(d, d) 
+
 @login_required
 def officeOfDeanPnD(request):
     """
@@ -78,17 +96,7 @@ def officeOfDeanPnD(request):
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
 
-    # Map designations to readable titles.
-    deslist={
-            'Civil_JE': 'Junior Engg. (Civil)',
-            'Civil_AE':'Assistant Engg. (Civil)',
-            'Electrical_JE': 'Junior Engg. (Electrical)',
-            'Electrical_AE':'Assistant Engg. (Electrical)',
-            'EE': 'Executive Engg.',
-            'DeanPnD': 'Dean (P&D)',
-            'Director': 'Director',
-            'None':'Closed'
-    }
+
 
     holds=HoldsDesignation.objects.filter(working=user)
     designations=[d.designation for d in HoldsDesignation.objects.filter(working=user)]
@@ -148,7 +156,7 @@ def officeOfDeanPnD(request):
     # kept in the database for record-keeping reasons.
     elif 'delete_requisition' in request.POST:
         print('delete requisition')
-        hold = HoldsDesignation.objects.get(working=user, designation__name__in=deslist)
+        hold = HoldsDesignation.objects.get(working=user, designation__name__in=_pnd_deslist)
         if hold:
             req_id=request.POST.get('req_id')
             try:
@@ -194,12 +202,12 @@ def officeOfDeanPnD(request):
             # the last date the requisition was sent
             last_date = Tracking.objects.filter(file_id=r.assign_file).last().receive_date
             # map with readable titles from deslist
-            passed = [deslist.get(str(d), d) for d in passed]
+            passed = [pndReadableDesignation(d) for d in passed]
             req_history.append((r, passed, last_date))
         # in case there is no assignment, that means the history only contains the junior engg. 
         else:
             je = 'Civil_JE' if r.department == 'civil' else 'Electrical_JE'
-            passed = [deslist[je]]
+            passed = [pndReadableDesignation(je)]
             req_history.append((r, passed, r.req_date))
     # sort based on last update, which is the element 2 in the 3-tuple
     req_history.sort(key=lambda t: t[2], reverse=True)
@@ -224,7 +232,7 @@ def officeOfDeanPnD(request):
             'desig':designations,
             'req_history': req_history,
             'allowed_actions': allowed_actions,
-            'deslist': deslist,
+            'deslist': _pnd_deslist,
     }
     return render(request, "officeModule/officeOfDeanPnD/officeOfDeanPnD.html", context)
 
