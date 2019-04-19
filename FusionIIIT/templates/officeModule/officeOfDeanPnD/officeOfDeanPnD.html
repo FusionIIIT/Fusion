@@ -67,10 +67,12 @@
                     Dashboard
                     <i class="right floated chevron right icon"></i>
                 </a>
+                {% if 'Civil_JE' in desig or 'Electrical_JE' in desig %}
                 <a class="item link" data-tab="create">
                     Create Requisitions
                     <i class="right floated chevron right icon"></i>
                 </a>
+                {% endif %}
                 <a class="item link" data-tab="requisitions">
                     View Requisitions
                     <i class="right floated chevron right icon"></i>
@@ -102,12 +104,14 @@
                 {% endblock %}
             </div>
 
+            {% if 'Civil_JE' in desig or 'Electrical_JE' in desig %}
             <div class="ui tab segment" data-tab="create">
 
                 {% block form3 %}
                     {% include 'officeModule/officeOfDeanPnD/createRequisition.html' %}
                 {% endblock %}
             </div>
+            {% endif %}
             {% comment %}The Personal Details end here!{% endcomment %}
 
 

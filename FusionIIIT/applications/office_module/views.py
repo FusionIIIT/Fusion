@@ -229,7 +229,7 @@ def officeOfDeanPnD(request):
             'incoming_files': incoming_files,
             'outgoing_files': outgoing_files,
             'assigned_req':assign_history,
-            'desig':designations,
+            'desig':[d.name for d in designations],
             'req_history': req_history,
             'allowed_actions': allowed_actions,
             'deslist': _pnd_deslist,
