@@ -65,7 +65,7 @@
                 {% endif %}
 
                 <a class="item" data-tab="eight" id="about">
-                    About
+                    Rules and Regulations
                     <i class="right floated chevron right icon"></i>
                 </a>
             </div>
@@ -86,19 +86,21 @@
                 {% endblock %}
             </div>
 
-            <div class="ui tab segment" data-tab="fourth">
+            <!-- fourth, fifth and sixth data tabs are dissabled.. just remove 1 from the end of their datatab value to enable them-->
+
+            <div class="ui tab segment" data-tab="fourth1">
                 {% block bookings %}
                     {% include 'vhModule/record-meal.html' %}
                 {% endblock %}
             </div>
 
-            <div class="ui tab segment" data-tab="fifth">
+            <div class="ui tab segment" data-tab="fifth1">
                 {% block viewinventory %}
                     {% include 'vhModule/view-inventory.html' %}
                 {% endblock %}
             </div>
 
-            <div class="ui tab segment" data-tab="sixth">
+            <div class="ui tab segment" data-tab="sixth1">
                 {% block checkout %}
                     {% include 'vhModule/accounts.html' %}
                 {% endblock %}
