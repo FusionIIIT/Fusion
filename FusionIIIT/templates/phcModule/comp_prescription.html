@@ -121,6 +121,7 @@
             <script src="{% static 'globals/js/jquery.min.js' %}"></script>
             <script type="text/javascript">
                   $('#medicine').click(function(e){
+                                                        $("#sched tr").remove();
                                                         var user = document.getElementById('user').value;
                                                         var quantity = document.getElementById('quantity').value;
                                                         var medicine = document.getElementById('medicine_id').value;
@@ -316,6 +317,7 @@
             <script src="{% static 'globals/js/jquery.min.js' %}"></script>
             <script type="text/javascript">
                   $('#medicine_b').click(function(e){
+                                                        $("#sched_b tr").remove();
                                                         var user = document.getElementById('patient_b').value;
                                                         var quantity = document.getElementById('quantity_b').value;
                                                         var medicine = document.getElementById('medicine_id_b').value;
@@ -435,12 +437,21 @@
                   </div>
 
                   <div class="field">
-                      <label>Hospital</label>
-                      <input type='text' placeholder="Hospital Name" name="hospital_name" id="hospital_name" required="true" />
-                    </div>
+                  <label>Hospital</label>
+                  <select class="ui search fluid dropdown" name="hospital_name" id="hospital_name" required="true">
+                    <option value="" disabled selected>--SELECT--</option>
+                    {% for hosp in hospitals_list %}
+                    <option value="{{hosp.id}}">{{hosp.hospital_name}}</option>
+                    {% endfor %}
+                  </select>
+                  </div>
+
+       {% comment %} <div class="field"><label>Hospital</label><input type='text' placeholder="Hospital Name" name="hospital_name" id="hospital_name" required="true" /></div>  {% endcomment %}
+
+
                   <div class="field">
                       <label>Hospital Doctor</label>
-                      <input type='text' placeholder="Hospital Doctor" name='hospital_doctor' id='hospital_doctor' />
+                      <input type="text" placeholder="Hospital Doctor" name='hospital_doctor' id='hospital_doctor' />
                   </div>
               </div>
           </div>
@@ -457,7 +468,7 @@
               <label><br></label>
 
               <div >
-                <input type="button" id="admission" name="admission"  onClick="window.location.reload();" value="Submit"class="ui large right floated primary button" />
+                <input type="button" id="admission" name="admission"  value="Submit"class="ui large right floated primary button" />
               </div>
 
           </div>
@@ -475,11 +486,11 @@
                                                   $('#hospital').html('Enter valid details.');
                                                   return false;
                                               }
-                                              var admit = new Date(adm_Date);
+                                              var admit = new Date(adm_Date).setHours(0, 0, 0, 0);
                                               var today = new Date(new Date().setHours(0, 0, 0, 0));
-                                              if ( admit < today ) {
-                                                  $('#hospital').html('You cannot enter a date before today!.');
-
+                                              if ( +today < +admit ) {
+                                                  $('#hospital').html('You cannot enter a date beyond today!');
+                                                  return false;
                                               }
 
                                               $.ajax({
@@ -504,6 +515,7 @@
                                                 document.getElementById("hospital_name").value="";
                                                 document.getElementById("hospital_doctor").value="";
                                                 document.getElementById("description").value="";
+                                                window.location.reload();
 
                                               }
                                             });
@@ -583,7 +595,7 @@
 
                     <td>
                       <table>
-                        {% for medicine in medicines %}
+                        {% for medicine in medicines_presc %}
                             {% if medicine.prescription_id.id == pre.id %}
                                   <tr><td>{{medicine.medicine_id}}</td><td>{{medicine.days}}</td><td>{{medicine.times}}</td></tr>
                             {% endif %}

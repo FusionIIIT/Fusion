@@ -62,6 +62,8 @@ def visitorhostel(request):
         canceled_bookings = BookingDetail.objects.filter(status="Canceled", intender=user).select_related().order_by('booking_from')
         rejected_bookings = BookingDetail.objects.filter(status='Rejected', intender=user).order_by('booking_from')
         cancel_booking_requested = BookingDetail.objects.filter(status='CancelRequested', intender=user).order_by('booking_from')
+        print("complete bookings !!!")
+        print(complete_bookings)
 
         # pp = ExtraInfo.objects.all()
         # phone_no = pp.filter(Q(user=user))
@@ -103,12 +105,16 @@ def visitorhostel(request):
         canceled_bookings = BookingDetail.objects.filter(status="Canceled").select_related().order_by('booking_from')
         cancel_booking_requested = BookingDetail.objects.filter(status='CancelRequested', booking_to__gte=datetime.datetime.today(), intender=user).order_by('booking_from')
         rejected_bookings = BookingDetail.objects.filter(status='Rejected').order_by('booking_from')
+
+        print("complete bookings !!!")
+        print(complete_bookings)
+        
         for booking in pending_bookings:
             booking_from = booking.booking_from
             booking_to = booking.booking_to
             temp1 = booking_details(booking_from, booking_to)
             available_rooms[booking.id] = temp1
-            
+
         for booking in c_bookings:
             booking_from = booking.booking_from
             booking_to = booking.booking_to
@@ -365,7 +371,7 @@ def request_booking(request):
             bookingObject.image = uploaded_file_url
             bookingObject.save()
 
-            # visitor datails from place request form 
+            # visitor datails from place request form
 
         visitor_name = request.POST.get('name')
         visitor_phone = request.POST.get('phone')
@@ -452,7 +458,7 @@ def update_booking(request):
         return render(request, "visitorhostel/",
                   {
                    'forwarded_rooms': forwarded_rooms})
-        
+
     else:
         return HttpResponseRedirect('/visitorhostel/')
 
@@ -474,7 +480,7 @@ def confirm_booking(request):
         bd = BookingDetail.objects.get(id=booking_id)
         bd.status = 'Confirmed'
         bd.category = category
-        # bd.confirmed_date = datetime.now()
+
         for room in rooms:
             room_object = RoomDetail.objects.get(room_number=room)
             bd.rooms.add(room_object)
@@ -790,9 +796,9 @@ def bill_between_dates(request):
         total_bill = meal_total + room_total
         # zip(bill_range_bw_dates, individual_total)
         return render(request, "vhModule/booking_bw_dates.html", {
-                                                                    # 'booking_bw_dates': bill_range_bw_dates, 
-                                                                    'booking_bw_dates_length': bill_range_bw_dates, 
-                                                                    'meal_total' : meal_total, 
+                                                                    # 'booking_bw_dates': bill_range_bw_dates,
+                                                                    'booking_bw_dates_length': bill_range_bw_dates,
+                                                                    'meal_total' : meal_total,
                                                                     'room_total' :room_total,
                                                                     'total_bill' : total_bill,
                                                                     'individual_total' : individual_total,
@@ -913,5 +919,3 @@ def forward_booking(request):
         return HttpResponseRedirect('/visitorhostel/')
     else:
         return HttpResponseRedirect('/visitorhostel/')
-
-

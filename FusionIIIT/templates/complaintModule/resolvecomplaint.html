@@ -56,10 +56,12 @@
                         Status
                     </th>-->
                     <td class="two large column">
-                        Worker </br> Name
+                       <b> Worker </br> Name</b>
                     </td>
                     
-                    
+                    <td>
+                        <b>Assign worker</b>
+                    </td>
                    
                 </tr>
                 </thead>
@@ -84,9 +86,8 @@
                         {{ a.complaint_type }}
                     </td>
                     <td>
-                        {{ a.location }}<br>
-                    
-                        {{ a.specific_location }}
+                        {{ a.specific_location }},&nbsp;
+                        {{ a.location }}
                     </td>
                     <td>
                         <a href="./detail2/{{ a.id }}/"> <button class="ui inverted basic button" data-tooltip="Click here to view details" ><i class="large green info icon"></i></button></a>
@@ -187,7 +188,9 @@
                         <b>Worker </br> Name</b>
                     </td>
                     
-                    
+                    <td>
+                        <b>change status</b>
+                    </td>
                    
                 </tr>
                 </thead>
@@ -212,9 +215,8 @@
                         {{ a.complaint_type }}
                     </td>
                     <td>
-                        {{ a.location }} <br>
-                   
-                        {{ a.specific_location }}
+                        {{ a.specific_location }},&nbsp;
+                        {{ a.location }}
                     </td>
                     <td>
                         <a href="./detail2/{{ a.id }}/"> 
@@ -258,17 +260,5 @@
             </div>
             </div>
         </div>
-
-
-
-
-
-
-
-    
-
-
-
-
 
 {% endblock %}

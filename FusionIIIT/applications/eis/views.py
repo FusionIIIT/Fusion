@@ -311,14 +311,13 @@ def profile(request, username=None):
     a1 = HoldsDesignation.objects.filter(working = user)
     flag_rspc = 0
     for i in a1:
-        print(i.designation)
         if(str(i.designation)=='Dean (RSPC)'):
             flag_rspc = 1
-    print(flag_rspc)
+    
     # done edit
 
     design = HoldsDesignation.objects.filter(working=user)
-    print(design)
+    
     desig=[]
     for i in design:
         desig.append(str(i.designation))
@@ -382,7 +381,7 @@ def rspc_profile(request):
 
     pers = get_object_or_404(faculty_about, user = request.user)
     design = HoldsDesignation.objects.filter(working=request.user)
-    print(design)
+    
     desig=[]
     for i in design:
         desig.append(str(i.designation))
@@ -414,7 +413,6 @@ def rspc_profile(request):
 
 # View for editing persnal Information
 def persinfo(request):
-    print("incoming")
     if request.method == 'POST':
         try:
             print(request.user)
@@ -448,17 +446,39 @@ def achievementDelete(request, pk):
 def emp_confrence_organisedDelete(request, pk):
     instance = emp_confrence_organised.objects.get(pk=pk)
     instance.delete()
-    return redirect('eis:profile')
+    return redirect('globals:profile')
 
-def emp_consultancy_projectsDelete(request, pk):
+def emp_consymDelete(request, pk, sr, mark):
+    instance = emp_confrence_organised.objects.get(pk=pk)
+    page = int(sr)//10
+    page = page+1
+    url = ""
+    if mark== '13':
+        url = '/profile/?page13='+str(page)
+    
+    print(url)
+    instance.delete()
+    return redirect(url)
+
+def emp_consultancy_projectsDelete(request, pk,sr,mark):
     instance = emp_consultancy_projects.objects.get(pk=pk)
+    page = int(sr)//10
+    page = page+1
+    url = '/profile/?page5='+str(page)
     instance.delete()
-    return redirect('eis:profile')
+    return redirect(url)
 
-def emp_event_organizedDelete(request, pk):
+def emp_event_organizedDelete(request, pk, sr, mark):
     instance = emp_event_organized.objects.get(pk=pk)
+    page = int(sr)//10
+    page = page+1
+    url = ""
+    if mark== '12':
+        url = '/profile/?page12='+str(page)
+    
+    print(url)
     instance.delete()
-    return redirect('eis:profile')
+    return redirect(url)
 
 def emp_expert_lecturesDelete(request, pk):
     instance = emp_expert_lectures.objects.get(pk=pk)
@@ -470,20 +490,34 @@ def emp_keynote_addressDelete(request, pk):
     instance.delete()
     return redirect('eis:profile')
 
-def emp_mtechphd_thesisDelete(request, pk):
+def emp_mtechphd_thesisDelete(request, pk, sr,mark):
     instance = emp_mtechphd_thesis.objects.get(pk=pk)
+    page = int(sr)//10
+    page = page+1
+    url = ""
+    if mark == 1:
+        url = '/profile/?page8='+str(page)
+    else : 
+        url = '/profile/?page9='+str(page)
     instance.delete()
-    return redirect('eis:profile')
+    return redirect(url)
 
-def emp_patentsDelete(request, pk):
+def emp_patentsDelete(request, pk,sr,mark):
     instance = emp_patents.objects.get(pk=pk)
+    page = int(sr)//10
+    page = page+1
+    url = '/profile/?page6='+str(page)
     instance.delete()
-    return redirect('eis:profile')
+    return redirect(url)
 
-def emp_published_booksDelete(request, pk):
+def emp_published_booksDelete(request, pk, sr, mark):
     instance = emp_published_books.objects.get(pk=pk)
+    page = int(sr)//10
+    page = page+1
+    url = '/profile/?page2='+str(page)
+    print("-------------"+url)
     instance.delete()
-    return redirect('eis:profile')
+    return redirect(url)
 
 def emp_research_papersDelete(request, pk, sr,mark):
     instance = emp_research_papers.objects.get(pk=pk)
@@ -498,25 +532,39 @@ def emp_research_papersDelete(request, pk, sr,mark):
     instance.delete()
     return redirect(url)
 
-def emp_research_projectsDelete(request, pk):
+def emp_research_projectsDelete(request, pk,sr,mark):
     instance = emp_research_projects.objects.get(pk=pk)
+    page = int(sr)//10
+    page = page+1
+    url = '/profile/?page4='+str(page)
     instance.delete()
-    return redirect('eis:profile')
+    return redirect(url)
 
 def emp_session_chairDelete(request, pk):
     instance = emp_session_chair.objects.get(pk=pk)
     instance.delete()
     return redirect('eis:profile')
 
-def emp_techtransferDelete(request, pk):
+def emp_techtransferDelete(request, pk,sr,mark):
     instance = emp_techtransfer.objects.get(pk=pk)
+    page = int(sr)//10
+    page = page+1
+    url = '/profile/?page7='+str(page)
     instance.delete()
-    return redirect('eis:profile')
+    return redirect(url)
 
-def emp_visitsDelete(request, pk):
+def emp_visitsDelete(request, pk, sr, mark):
     instance = emp_visits.objects.get(pk=pk)
+    page = int(sr)//10
+    page = page+1
+    url = ""
+    if mark== '10':
+        url = '/profile/?page10='+str(page)
+    if mark== '11':
+        url = '/profile/?page11='+str(page)
+    print(url)
     instance.delete()
-    return redirect('eis:profile')
+    return redirect(url)
 
 
 # Views for inserting fields in EIS
@@ -537,7 +585,7 @@ def pg_insert(request):
     eis.s_name = request.POST.get('name')
 
     eis.save()
-    return redirect('eis:profile')
+    return redirect('/profile/?page8=1')
 
 def phd_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
@@ -557,7 +605,7 @@ def phd_insert(request):
     eis.s_name = request.POST.get('name')
 
     eis.save()
-    return redirect('eis:profile')
+    return redirect('/profile/?page9=1')
 
 def fvisit_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
@@ -573,16 +621,16 @@ def fvisit_insert(request):
     eis.place = request.POST.get('place')
     eis.purpose = request.POST.get('purpose')
     try:
-        eis.start_date = datetime.datetime.strptime(request.POST.get('start'), "%B %d, %Y")
+        eis.start_date = datetime.datetime.strptime(request.POST.get('start_date'), "%B %d, %Y")
     except:
-        eis.start_date = datetime.datetime.strptime(request.POST.get('start'), "%b. %d, %Y")
+        eis.start_date = datetime.datetime.strptime(request.POST.get('start_date'), "%b. %d, %Y")
     try:
-        eis.end_date = datetime.datetime.strptime(request.POST.get('end'), "%B %d, %Y")
+        eis.end_date = datetime.datetime.strptime(request.POST.get('end_date'), "%B %d, %Y")
     except:
-        eis.end_date = datetime.datetime.strptime(request.POST.get('end'), "%b. %d, %Y")
+        eis.end_date = datetime.datetime.strptime(request.POST.get('end_date'), "%b. %d, %Y")
 
     eis.save()
-    return redirect('eis:profile')
+    return redirect('/profile/?page10=1')
 
 def ivisit_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
@@ -594,20 +642,21 @@ def ivisit_insert(request):
         eis = get_object_or_404(emp_visits, id=request.POST.get('ivisit_id'))
     eis.pf_no = pf
     eis.v_type = 1
-    eis.country = request.POST.get('country')
-    eis.place = request.POST.get('place')
-    eis.purpose = request.POST.get('purpose')
+    eis.country = request.POST.get('country2')
+    eis.place = request.POST.get('place2')
+    eis.purpose = request.POST.get('purpose2')
+    print(".............",request.POST.get('start_date2'))
     try:
-        eis.start_date = datetime.datetime.strptime(request.POST.get('start'), "%B %d, %Y")
+        eis.start_date = datetime.datetime.strptime(request.POST.get('start_date2'), "%B %d, %Y")
     except:
-        eis.start_date = datetime.datetime.strptime(request.POST.get('start'), "%b. %d, %Y")
+        eis.start_date = datetime.datetime.strptime(request.POST.get('start_date2'), "%b. %d, %Y")
     try:
-        eis.end_date = datetime.datetime.strptime(request.POST.get('end'), "%B %d, %Y")
+        eis.end_date = datetime.datetime.strptime(request.POST.get('end_date2'), "%B %d, %Y")
     except:
-        eis.end_date = datetime.datetime.strptime(request.POST.get('end'), "%b. %d, %Y")
+        eis.end_date = datetime.datetime.strptime(request.POST.get('end_date2'), "%b. %d, %Y")
 
     eis.save()
-    return redirect('eis:profile')
+    return redirect('/profile/?page11=1')
 
 
 #Function to save journal of employee 
@@ -679,14 +728,9 @@ def editjournal(request):
     eis.reference_number = request.POST.get('ref')
     eis.is_sci = request.POST.get('sci')
     volume_no = request.POST.get('volume')
-    page_no = request.POST.get('page')
-    year = request.POST.get('year')
-    if volume_no != '' and volume_no != None:
-        eis.volume_no=volume_no
-    if page_no != '' and page_no != None :
-        eis.page_no=page_no
-    if year != '' and year != None :
-        eis.year = year
+    eis.page_no = request.POST.get('page')
+    eis.year = request.POST.get('year')
+    
     if(request.POST.get('doi') != None and request.POST.get('doi') != '' and request.POST.get('doi') != 'None'):
         x = request.POST.get('doi')
         if x[-4:] == 'a.m.':
@@ -760,6 +804,50 @@ def editjournal(request):
     print(url)
     return redirect(url)
 
+def editforeignvisit(request):
+    print("its coming here")
+    eis = emp_visits.objects.get(pk=request.POST.get('foreignvisitpk'))
+    eis.country = request.POST.get('country')
+    eis.place = request.POST.get('place')
+    eis.purpose = request.POST.get('purpose')
+    try:
+        eis.start_date = datetime.datetime.strptime(request.POST.get('start_date'), "%B %d, %Y")
+    except:
+        eis.start_date = datetime.datetime.strptime(request.POST.get('start_date'), "%b. %d, %Y")
+    try:
+        eis.end_date = datetime.datetime.strptime(request.POST.get('end_date'), "%B %d, %Y")
+    except:
+        eis.end_date = datetime.datetime.strptime(request.POST.get('end_date'), "%b. %d, %Y")
+    #eis.end_date = request.POST.get('end_date')
+    eis.save()
+    page = int(request.POST.get('index10'))//10
+    page = page+1
+    url = "/profile/?page10="+str(page)
+    print(url)
+    return redirect(url)
+
+def editindianvisit(request):
+    print("its coming here")
+    eis = emp_visits.objects.get(pk=request.POST.get('indianvisitpk'))
+    eis.country = request.POST.get('country2')
+    eis.place = request.POST.get('place2')
+    eis.purpose = request.POST.get('purpose2')
+    try:
+        eis.start_date = datetime.datetime.strptime(request.POST.get('start_date2'), "%B %d, %Y")
+    except:
+        eis.start_date = datetime.datetime.strptime(request.POST.get('start_date2'), "%b. %d, %Y")
+    try:
+        eis.end_date = datetime.datetime.strptime(request.POST.get('end_date2'), "%B %d, %Y")
+    except:
+        eis.end_date = datetime.datetime.strptime(request.POST.get('end_date2'), "%b. %d, %Y")
+    #eis.end_date = request.POST.get('end_date')
+    eis.save()
+    page = int(request.POST.get('index11'))//10
+    page = page+1
+    url = "/profile/?page11="+str(page)
+    print(url)
+    return redirect(url)
+
 
 
 def conference_insert(request):
@@ -795,6 +883,7 @@ def conference_insert(request):
     if (request.POST.get('dos3') != None and request.POST.get('dos3') != '' and request.POST.get('dos3') != 'None'):
         eis.date_submission = datetime.datetime.strptime(request.POST.get('dos3'), "%B %d, %Y %I:%M %p")
     eis.save()
+    print("////////////////////")
     return redirect('globals:profile')
 
 def editconference(request):
@@ -813,12 +902,11 @@ def editconference(request):
 
     eis.name = request.POST.get('name3')
     eis.venue = request.POST.get('venue3')
-    if request.POST.get('page_no3') != '' and request.POST.get('page_no3') != None:
-        eis.page_no = int(request.POST.get('page_no3'))
-    if request.POST.get('isbn_no3') != '' and request.POST.get('isbn_no3') != None:
-        eis.isbn_no = int(request.POST.get('isbn_no3'))
-    if request.POST.get('year3') != '' and request.POST.get('year3') != None:
-        eis.year = int(request.POST.get('year3'))
+    isbn  = request.POST.get('isbn_no3')
+    print(1)
+    eis.page_no = request.POST.get('page_no3')
+    print(2)
+    eis.year = request.POST.get('year3')
     eis.status = request.POST.get('status3')
     if(request.POST.get('doi3') != None and request.POST.get('doi3') != '' and request.POST.get('doi3') != 'None'):
         x = request.POST.get('doi3')
@@ -828,7 +916,7 @@ def editconference(request):
         if x[-4:] == 'p.m.':
             x = x[:-4]
             x = x+"PM"
-        print(x)
+        
        
         try: 
             try:
@@ -899,44 +987,93 @@ def book_insert(request):
     pf = user.id
     eis = emp_published_books()
     eis.pf_no = pf
-    eis.p_type = request.POST.get('p_type')
-    eis.title = request.POST.get('title')
-    eis.publisher = request.POST.get('publisher')
-    eis.pyear = request.POST.get('year')
-    eis.authors = request.POST.get('author')
+    eis.p_type = request.POST.get('book_p_type')
+    eis.title = request.POST.get('book_title')
+    eis.publisher = request.POST.get('book_publisher')
+    eis.pyear = request.POST.get('book_year')
+    eis.authors = request.POST.get('book_author')
     eis.save()
-    return redirect('globals:profile')
+    return redirect('/profile/?page2=1')
+
+def editbooks(request):
+    print("++++++++++++++"+ request.POST.get('bookspk2'))
+    print("--------------"+ str(request))
+    eis = emp_published_books.objects.get(pk=request.POST.get('bookspk2'))
+    eis.p_type = request.POST.get('book_p_type')
+    eis.title = request.POST.get('book_title')
+    eis.publisher = request.POST.get('book_publisher')
+    eis.pyear = request.POST.get('book_')
+    eis.authors = request.POST.get('book_author')
+    eis.save()
+    page = int(request.POST.get('index15'))//10
+    page = page+1
+    url = "/profile/?page2="+str(page)
+    print(url)
+    return redirect(url)
 
 def consym_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
     pf = user.id
     eis = emp_confrence_organised()
     eis.pf_no = pf
-    eis.name = request.POST.get('name')
-    eis.venue = request.POST.get('venue')
-    eis.role1 = request.POST.get('role')
+    eis.name = request.POST.get('conference_name')
+    eis.venue = request.POST.get('conference_venue')
+    eis.role1 = request.POST.get('conference_role')
     if(eis.role1 == 'Any Other'):
-        eis.role2 = request.POST.get('other')
+        eis.role2 = request.POST.get('conference_organised')
     if(eis.role1 == 'Organised'):
-        if(request.POST.get('role2') == 'Any Other'):
-            eis.role2 = request.POST.get('other')
+        if(request.POST.get('conference_organised') == 'Any Other'):
+            eis.role2 = request.POST.get('myDIV1')
         else:
-            eis.role2 = request.POST.get('role2')
+            eis.role2 = request.POST.get('conference_organised')
     if (eis.role1 == "" or eis.role1==None):
         eis.role1 = "Any Other"
         eis.role2 = "Any Other"
     try:
-        eis.start_date = datetime.datetime.strptime(request.POST.get('start'), "%B %d, %Y")
+        eis.start_date = datetime.datetime.strptime(request.POST.get('conference_start_date'), "%B %d, %Y")
     except:
-        eis.start_date = datetime.datetime.strptime(request.POST.get('start'), "%b. %d, %Y")
+        eis.start_date = datetime.datetime.strptime(request.POST.get('conference_start_date'), "%b. %d, %Y")
     try:
-        eis.end_date = datetime.datetime.strptime(request.POST.get('end'), "%B %d, %Y")
+        eis.end_date = datetime.datetime.strptime(request.POST.get('conference_end_date'), "%B %d, %Y")
     except:
-        eis.end_date = datetime.datetime.strptime(request.POST.get('end'), "%b. %d, %Y")
+        eis.end_date = datetime.datetime.strptime(request.POST.get('conference_end_date'), "%b. %d, %Y")
     eis.save()
-    return redirect('eis:profile')
+    return redirect('/profile/?page13=1')
+
+def editconsym(request):
+    print("+++++++++++++++++"+request.POST.get('conferencepk2'))
+    eis = emp_confrence_organised.objects.get(pk=request.POST.get('conferencepk2'))
+    eis.name = request.POST.get('conference_name')
+    eis.venue = request.POST.get('conference_venue')
+    eis.role1 = request.POST.get('conference_role')
+    if(eis.role1 == 'Any Other'):
+        eis.role2 = request.POST.get('conference_organised')
+    if(eis.role1 == 'Organised'):
+        if(request.POST.get('conference_organised') == 'Any Other'):
+            eis.role2 = request.POST.get('myDIV1')
+        else:
+            eis.role2 = request.POST.get('conference_organised')
+    if (eis.role1 == "" or eis.role1==None):
+        eis.role1 = "Any Other"
+        eis.role2 = "Any Other"
+    try:
+        eis.start_date = datetime.datetime.strptime(request.POST.get('conference_start_date'), "%B %d, %Y")
+    except:
+        eis.start_date = datetime.datetime.strptime(request.POST.get('conference_start_date'), "%b. %d, %Y")
+    try:
+        eis.end_date = datetime.datetime.strptime(request.POST.get('conference_end_date'), "%B %d, %Y")
+    except:
+        eis.end_date = datetime.datetime.strptime(request.POST.get('conference_end_date'), "%b. %d, %Y")
+    eis.save()
+    page = int(request.POST.get('index13'))//10
+    page = page+1
+    url = "/profile/?page13="+str(page)
+    print(url)
+
+    return redirect('/profile/?page13=1')
 
 def event_insert(request):
+    print(request)
     user = get_object_or_404(ExtraInfo, user=request.user)
     pf = user.id
 
@@ -945,24 +1082,49 @@ def event_insert(request):
     else:
         eis = get_object_or_404(emp_event_organized, id=request.POST.get('event_id'))
     eis.pf_no = pf
-    eis.type = request.POST.get('type')
+    eis.type = request.POST.get('event_type')
     if(eis.type == 'Any Other'):
-        if(request.POST.get('other')!= None or request.POST.get('other') != ""):
-            eis.type = request.POST.get('other')
+        if(request.POST.get('myDIV')!= None or request.POST.get('myDIV') != ""):
+            eis.type = request.POST.get('myDIV')
     eis.sponsoring_agency = request.POST.get('sponsoring_agency')
-    eis.name = request.POST.get('name')
-    eis.venue = request.POST.get('venue')
-    eis.role = request.POST.get('role')
+    eis.name = request.POST.get('event_name')
+    eis.venue = request.POST.get('event_venue')
+    eis.role = request.POST.get('event_role')
     try:
-        eis.start_date = datetime.datetime.strptime(request.POST.get('start'), "%B %d, %Y")
+        eis.start_date = datetime.datetime.strptime(request.POST.get('event_start_date'), "%B %d, %Y")
     except:
-        eis.start_date = datetime.datetime.strptime(request.POST.get('start'), "%b. %d, %Y")
+        eis.start_date = datetime.datetime.strptime(request.POST.get('event_start_date'), "%b. %d, %Y")
     try:
-        eis.end_date = datetime.datetime.strptime(request.POST.get('end'), "%B %d, %Y")
+        eis.end_date = datetime.datetime.strptime(request.POST.get('event_end_date'), "%B %d, %Y")
     except:
-        eis.end_date = datetime.datetime.strptime(request.POST.get('end'), "%b. %d, %Y")
+        eis.end_date = datetime.datetime.strptime(request.POST.get('event_end_date'), "%b. %d, %Y")
     eis.save()
-    return redirect('eis:profile')
+    return redirect('/profile/?page12=1')
+
+def editevent(request):
+    eis = emp_event_organized.objects.get(pk=request.POST.get('eventpk'))
+    
+    eis.type = request.POST.get('event_type')
+    if(eis.type == 'Any Other'):
+        if(request.POST.get('myDIV')!= None or request.POST.get('myDIV') != ""):
+            eis.type = request.POST.get('myDIV')
+    eis.sponsoring_agency = request.POST.get('sponsoring_agency')
+    eis.name = request.POST.get('event_name')
+    eis.venue = request.POST.get('event_venue')
+    eis.role = request.POST.get('event_role')
+    try:
+        eis.start_date = datetime.datetime.strptime(request.POST.get('event_start_date'), "%B %d, %Y")
+    except:
+        eis.start_date = datetime.datetime.strptime(request.POST.get('event_start_date'), "%b. %d, %Y")
+    try:
+        eis.end_date = datetime.datetime.strptime(request.POST.get('event_end_date'), "%B %d, %Y")
+    except:
+        eis.end_date = datetime.datetime.strptime(request.POST.get('event_end_date'), "%b. %d, %Y")
+    eis.save()
+    page = int(request.POST.get('index12'))//10
+    page = page+1
+    url = "/profile/?page12="+str(page)
+    return redirect(url)
 
 def award_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
@@ -1077,14 +1239,14 @@ def project_insert(request):
         try:
             eis.finish_date = datetime.datetime.strptime(request.POST.get('end'), "%B %d, %Y")
         except:
-            eis.finish_date = datetime.datetime.strptime(request.POST.get('end'), "%B %d, %Y")
+            eis.finish_date = datetime.datetime.strptime(request.POST.get('end'), "%b. %d, %Y")
     if (request.POST.get('sub') != None and request.POST.get('sub') != '' and request.POST.get('sub') != 'None'):
         try:
             eis.date_submission = datetime.datetime.strptime(request.POST.get('sub'), "%B %d, %Y")
         except:
             eis.date_submission = datetime.datetime.strptime(request.POST.get('sub'), "%b. %d, %Y")
     eis.save()
-    return redirect('eis:profile')
+    return redirect('/profile/?page4=1')
 
 def consult_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
@@ -1110,7 +1272,7 @@ def consult_insert(request):
         except:
             eis.end_date = datetime.datetime.strptime(request.POST.get('end'), "%b. %d, %Y")
     eis.save()
-    return redirect('eis:profile')
+    return redirect('/profile/?page5=1')
 
 def patent_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
@@ -1128,7 +1290,7 @@ def patent_insert(request):
     eis.status = request.POST.get('status')
     eis.a_month = request.POST.get('month')
     eis.save()
-    return redirect('eis:profile')
+    return redirect('/profile/?page6=1')
 
 def transfer_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
@@ -1141,7 +1303,7 @@ def transfer_insert(request):
     eis.pf_no = pf
     eis.details = request.POST.get('details')
     eis.save()
-    return redirect('eis:profile')
+    return redirect('/profile/?page7=1')
 
 def achievements(request):
     if request.method == 'POST':
@@ -1880,21 +2042,21 @@ def generate_report(request):
     star_date = start + '-01-01'
     en = request.POST.get('lmonth')
     if(request.POST.get('journal_select')=="journal"):
-        journal = emp_research_papers.objects.filter(pf_no=pf, rtype='Journal').filter(year__range=[start,end]).filter(a_month__range=[star,en]).order_by('-year')
+        journal = emp_research_papers.objects.filter(pf_no=pf, rtype='Journal').filter(year__range=[start,end]).order_by('-date_entry')
         journal_req="1"
     else:
         journal=""
         journal_req="0"
 
     if (request.POST.get('conference_select') == "conference"):
-        conference = emp_research_papers.objects.filter(pf_no=pf, rtype='Conference').filter(year__range=[start,end]).filter(a_month__range=[star,en]).order_by('-year')
+        conference = emp_research_papers.objects.filter(pf_no=pf, rtype='Conference').filter(year__range=[start,end]).order_by('-date_entry')
         conference_req = "1"
     else:
         conference=""
         conference_req = "0"
 
     if (request.POST.get('books_select') == "books"):
-        books = emp_published_books.objects.filter(pf_no=pf).filter(pyear__range=[start,end]).filter(a_month__range=[star,en]).order_by('-pyear')
+        books = emp_published_books.objects.order_by('-date_entry')
         books_req = "1"
     else:
         books=""
@@ -2250,7 +2412,6 @@ def generate_report(request):
 
     pers = get_object_or_404(faculty_about, user = request.user)
     design = HoldsDesignation.objects.filter(working=request.user)
-    print(design)
     desig=[]
     for i in design:
         desig.append(str(i.designation))
@@ -2310,21 +2471,21 @@ def rspc_generate_report(request):
     star_date = start + '-01-01'
     en = request.POST.get('lmonth')
     if(request.POST.get('journal_select')=="journal"):
-        journal = emp_research_papers.objects.filter(rtype='Journal').filter(year__range=[start,end]).filter(a_month__range=[star,en]).order_by('-year')
+        journal = emp_research_papers.objects.filter(rtype='Journal').order_by('-date_entry')
         journal_req="1"
     else:
         journal=""
         journal_req="0"
 
     if (request.POST.get('conference_select') == "conference"):
-        conference = emp_research_papers.objects.filter(rtype='Conference').filter(year__range=[start,end]).filter(a_month__range=[star,en]).order_by('-year')
+        conference = emp_research_papers.objects.filter(rtype='Conference').order_by('-date_entry')
         conference_req = "1"
     else:
         conference=""
         conference_req = "0"
 
     if (request.POST.get('books_select') == "books"):
-        books = emp_published_books.objects.all().filter(pyear__range=[start,end]).filter(a_month__range=[star,en]).order_by('-pyear')
+        books = emp_published_books.objects.all().order_by('-date_entry')
         books_req = "1"
     else:
         books=""
@@ -2680,7 +2841,7 @@ def rspc_generate_report(request):
 
     pers = get_object_or_404(faculty_about, user = request.user)
     design = HoldsDesignation.objects.filter(working=request.user)
-    print(design)
+    
     desig=[]
     for i in design:
         desig.append(str(i.designation))

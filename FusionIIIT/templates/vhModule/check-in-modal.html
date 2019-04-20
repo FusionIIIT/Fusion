@@ -7,21 +7,22 @@
   <!-- <div class="ui divider"></div> -->
   <br>
         <div class="field" id="alloted-rooms-{{ booking.id }}" >
-                    <label><b> &nbsp &nbsp &nbsp Rooms Alloted</b></label>
+                    <label><b> &nbsp; &nbsp; &nbsp; Rooms Alloted</b></label>
                     <br>
                     <div class="ui fluid input">
-                        
+                        &nbsp; &nbsp; &nbsp; &nbsp;
                         {% for i in booking.rooms.all %}
-                            <input rows="2" value="{{ i.room_number }}" name="purpose-of-visit-{{ booking.id }}" readonly> &nbsp &nbsp
+                            <input rows="2" value="{{ i.room_number }}" name="purpose-of-visit-{{ booking.id }}" readonly> &nbsp; &nbsp;
                                     <!-- {{ i.room_number }} &nbsp -->
 
                         {% endfor %}
+                        &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;
                     </div>
             </div>
   <!-- <div class="ui divider"></div> -->
   <div class="scrolling content">
 
-    <div class="ui pointing secondary menu">
+    <div class="ui pointing secondary menu" style="width: 820px; overflow-x: auto;">
 
                 <a class="item active" data-tab="details-1">
                     Visitor 1 Details

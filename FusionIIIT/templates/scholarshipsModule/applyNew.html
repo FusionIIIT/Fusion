@@ -3,11 +3,11 @@
     {% comment %}The tab menu starts here!{% endcomment %}
     <body>
     <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="mcm">
+        <a class="{% if last_clicked == 'get_mcm_flag' or last_clicked == ''  or last_clicked == 'Submit_mcm' or last_clicked == 'studentapprovesubmit_mcm' %} active item {% else %} item {% endif %}" data-tab="mcm">
             Mcm Scholarship
         </a>
 
-        <a class="item" data-tab="medals">
+        <a class="{% if last_clicked == 'get_convocation_flag'  or last_clicked == 'Submit_silver' or last_clicked == 'Submit_gold' or last_clicked == 'Submit_dm' or last_clicked == 'studentapprovesubmit_con' %} active item {% else %} item {% endif %}" data-tab="medals">
             Convocation Medals
         </a>
 
@@ -24,7 +24,7 @@
           </div>
      </div>
 
-    <div class="ui active tab" data-tab="mcm" id="mcm_a">
+    <div class="{% if last_clicked == 'get_mcm_flag' or last_clicked == ''  or last_clicked == 'Submit_mcm' or last_clicked == 'studentapprovesubmit_mcm'%} ui active tab {% else %} ui tab {% endif %}" data-tab="mcm" id="mcm_a">
         <div class="ui vertical segment">
 <!-- Arihant: Notification feature for Mcm awards-->
           {% if show_mcm_flag == True %}
@@ -321,7 +321,7 @@
 
 
 
-    <div class="ui tab" data-tab="medals">
+    <div class="{% if last_clicked == 'get_convocation_flag'  or last_clicked == 'Submit_silver' or last_clicked == 'Submit_gold' or last_clicked == 'Submit_dm' or last_clicked == 'studentapprovesubmit_con' %} ui active tab {% else %} ui tab {% endif %}" data-tab="medals">
             <div class="ui vertical segment" id="form_part1">
 <!-- Arihant: Notification feature for Convocation awards-->
               {%  if show_convocation_flag == True %}
@@ -1012,7 +1012,7 @@
                         type: 'GET',
                         success: function (response) {
                             if(response.result==='Success'){
-                              location.reload();
+                            location.reload();
                                 console.log(response.result)
                             }
                             else{

@@ -1,7 +1,6 @@
 {% extends 'globals/base.html' %}
 {% load static %}
 
-
 {% block title %}
     ThisWorker
 {% endblock %}
@@ -71,25 +70,21 @@
                
 
                 <div class="ui active tab large" data-tab="thisworker">
-                    <!-- <div class="field">     
-                                     <button class="ui green icon button right floated">
-                                        <i class="large undo icon" onclick="back_to_remove_worker(event)"></i>
-                                    </button>
-                            </div> -->
+                    
                     <div class="ui vertical segment">
-                        <p><b>{{this_worker.name}}</b> works under <b><i>{{work_under_caretaker1}} {{work_under_caretaker2}}</i></b> </p></br></br></br>
+                        <p><b>{{this_worker.name}}</b> works under <b><i>{{work_under_caretaker1}} {{work_under_caretaker2}}</i></b> </p><br><br><br>
                       
-                    {%if num == 0 %}
+                    {%if numpend == 0 %}
                         <div><p>The Worker does not hold any pending complaints.</p>
                             <p>You can go ahead and remove him.</p></div>
                             <a href="javascript:history.go(-1)"><button class="ui primary button right floated">Back</button></i></a>
                             <a href="./removew/">
-                                <button class="ui primary button right floated">Remove</button></a></br></br>
-                    {%elif num > 0%}
+                                <button class="ui primary button right floated">Remove</button></a><br><br>
+                    {%elif numpend > 0%}
                         <div><p>The Worker has some pending complaints.</p>
                             <p>Click on the complaint to make sure you reassign them before Removing the worker.</p></div>
                         <div class="ui list">
-                        {%for i in complaints_list_onhold%}
+                        {% for i in complaints_list_onhold %}
                             <div class="item">
                             <a class="ui tiny image">
                             <img src="{% static 'complaint_system/img/boy.jpg'%}">
@@ -108,18 +103,12 @@
                             <div>Status: {{i.status}}</div>
                             </div>
                             </div>
-                            </div></br></br>
-                        {%endfor%}
+                            </div>
+                        {% endfor %}
+
+                         <a href="javascript:history.go(-1)"><button class="ui primary button right floated">Back</button></i></a><br><br>
                     {%endif%}
-
-
-
-
-
-
-
-
-
+                  
                     </div>
                 </div>
             {% comment %}The ... end here!{% endcomment %}
