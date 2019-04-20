@@ -2,16 +2,20 @@ import datetime
 from datetime import date, datetime
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect,JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
+from django.db import IntegrityError
 
 from applications.academic_procedures.models import Thesis
 from applications.globals.models import (Designation, ExtraInfo,
                                          HoldsDesignation, User)
 from applications.scholarships.models import Mcm
+from applications.filetracking.models import (File, Tracking)
+
 
 from notification.views import office_dean_PnD_notif
 
@@ -20,6 +24,7 @@ from .models import *
 from .models import (Project_Closure, Project_Extension, Project_Reallocation,
                      Project_Registration)
 from .views_office_students import *
+
 
 
 def officeOfDeanRSPC(request):
@@ -396,17 +401,120 @@ def admin_reject(request):
 
 
 def officeOfRegistrar(request):
-    view = registrar_create_doc.objects.all()
-    view2 = registrar_director_section.objects.all()
-    view3 = registrar_establishment_section.objects.all()
-    view4 = apply_for_purchase.objects.all()
-    view5 = quotations.objects.all()
-    general= registrar_general_section.objects.all()
+
+    """dashboard for the registrar to view files from different departments and navigate to a specific department"""
+
+    archive_view = {}
+    archive_track = Registrar_response.objects.all()
+    for atrack in archive_track:
+        archive_view[atrack] = atrack.track_id.file_id
+
+    director_track = Tracking.objects.filter(receive_design__name = "Registrar", current_design__designation__name = "Director")
+    director_view = {}
+    for track in director_track:
+        if not Registrar_response.objects.filter(track_id = track):
+            director_view[track.id] = track.file_id 
+
+    estab_view = []
+    purch_view1 = []
+    purch_view2 = [] 
+    genadmin_view = []
     current_date = datetime.datetime.now()
 
-    context = {"view":view,"view2":view2,"view3":view3,"view4":view4,"view5":view5, "current_date":current_date,"general":general}
+    context = { 
+                #"archive_track":archive_track,
+                "archive_view":archive_view,
+                "director_track":director_track,
+                "director_view":director_view,
+                "view3":estab_view,
+                "view4":purch_view1,
+                "view5":purch_view2,
+                "current_date":current_date,
+                "general":genadmin_view
+    }
 
     return render(request, "officeModule/officeOfRegistrar/officeOfRegistrar.html", context)
+
+def officeOfRegistrar_ajax_submit(request):
+
+    """AJAX handler to handle request for approve/reject/forwarding of a file"""
+
+    #print("ajax")
+    if request.method == "POST":
+        values = request.POST.getlist('values[]')
+        #print(values)
+        track = Tracking(pk = int(values[0]))
+        rr = Registrar_response(track_id = track, remark = values[1], status = values[2])
+        rr.save()
+        #print(rr.id) 
+        return HttpResponse("Done", content_type='text/html')
+    else:
+        return HttpResponse("Error", content_type='text/html')
+
+def officeOfRegistrar_forward(request, id):
+
+    """form to set receiver and designation of forwarded file """
+
+    context = {"track_id": id}
+    return render(request, "officeModule/officeOfRegistrar/forwardingForm.html", context)
+
+def officeOfRegistrar_forward_submit(request):
+
+    """Submit handler for the above form"""
+    
+    if request.method == "POST":
+        try:
+            track_id = int(request.POST.get("track_id"))
+            receiver = request.POST.get("receiver")
+            receiver_design_text = request.POST.get("designation")
+
+            receiver_id = User.objects.get(username=receiver)
+            if not User.objects.get(username=receiver):
+                return HttpResponse("Cannot find user")
+            receiver_design = Designation.objects.filter(name=receiver_design_text)[0]
+            current_id = request.user.extrainfo
+            current_design = HoldsDesignation.objects.filter(user = request.user)[0]
+            t_id = Tracking.objects.get(id = track_id)
+            up_file = Tracking.objects.get(id = track_id)
+            remarks = ""
+
+            Tracking.objects.create(
+                        file_id=t_id.file_id,
+                        current_id=current_id,
+                        current_design=current_design,
+                        receive_design=receiver_design,
+                        receiver_id=receiver_id,
+                        remarks=remarks,
+                    )
+            rr = Registrar_response(track_id = Tracking.objects.get(id=track_id), remark = "forwarded to"+receiver, status = "forward")
+            rr.save()
+            messages.success(request,'File sent successfully')
+            return HttpResponse('File sent successfully')
+        except IntegrityError:
+            message = "FileID Already Taken.!!"
+            return HttpResponse(message)
+    else:
+        return HttpResponse('Error sending file')
+
+def officeOfRegistrar_view_file(request, id):
+    """
+        This is the view to handle registrar's request to view the details of a file, The file whoose id is passed is accessed through
+    """
+    #file = get_object_or_404(File, id=id)
+    
+    track = Tracking.objects.get(id=id)
+    file = track.file_id
+    extrainfo = ExtraInfo.objects.all()
+    holdsdesignations = HoldsDesignation.objects.all()
+    designations = HoldsDesignation.objects.filter(user=request.user)
+
+    context = {
+        'designations':designations,
+        'file': file,
+        'track': [track],
+    }
+    print("view called")
+    return render(request, 'officeModule/officeOfRegistrar/view_file.html', context)
 
 
 def upload(request):

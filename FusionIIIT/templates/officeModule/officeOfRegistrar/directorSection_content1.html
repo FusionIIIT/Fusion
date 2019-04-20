@@ -8,99 +8,98 @@
                                                           margin: auto;">
     <thead>
     <tr>
-        <th class="one wide column">
+        <th class="three wide column">
+            Subject
         </th>
 
         <th class="three wide column">
-            File Name
-        </th>
-
-        <th class="three wide column">
-            Date
+            Date received
         </th>
 
         <th class="seven wide column">
-            Purpose
-        </th>
-
-        <th class="one wide column">
-            Status
+            Description
         </th>
 
         <th class="one wide column">
             Remark
         </th>
 
-        <th class="one wide column">
-            Attachment
+        <th class="three wide column">
+            Action
         </th>
+
     </tr>
     </thead>
 
     <tbody>
-    {% for views in view2  %}
-    <tr>
+    {% for key, views in director_view.items %}
+    <tr id = "row{{ forloop.counter0 }}">
 
-        <td class="collapsing">
-            <div class="ui fitted checkbox">
-                <input type="checkbox"> <label></label>
-            </div>
+        <td>
+            {{ views.subject }}
+            <br>
+            <a href="view/{{ key }}">View</a>
         </td>
 
         <td>
-            {{ views.file_name }}
+            {{ views.upload_date }}
         </td>
 
         <td>
-            {{ current_date }}
-        </td>
-
-        <td>
-            {{ views.purpose }}
-        </td>
-
-        <td>
-            <i class="large green checkmark icon"></i>
+            {{ views.description }}
         </td>
 
         <td>
             <div class="ui fitted textbox">
-            <input type="textbox"><label></label>
+                <input id = "remark{{forloop.counter0}}" type="textbox"><label></label>
             </div>
         </td>
-
         <td>
-            {% comment %}
-                TODO: Add the attachment here!
-            {% endcomment %}
-            <a class="ui inverted circular icon button" style="margin: auto;" target="_blank" href="{{ views.quotation1.url }}">
-                <i class="large attach black icon">{{ views.quotation1 }}</i>
-            </a>
+            <div>
+                <button style="width: 100px" class="ui primary floated button action-button" data-row = "{{ forloop.counter0 }}" data-status = "approve">Approve</button>
+                <form action = "forward/{{ key }}" method = "get"> <button style="width: 100px" class="ui green floated button" data-row = "{{ forloop.counter0 }}" data-status = "forward">Forward</button> </form>
+                <button class="ui red floated button action-button" data-row = "{{ forloop.counter0 }}" data-status = "reject" style="width: 100px">Reject</button>
+            </div>  
+        </td>
+
+        <td id = "trackid{{ forloop.counter0 }}" hidden data-key="{{ key }}">  
+            
         </td>
     </tr>
-
 
     {% endfor %}
     </tbody>
 </table>
 
+<script type="text/javascript">
+    $(".action-button").on('click', function(){
+        let row = $(this).attr("data-row");
+        let status = $(this).attr("data-status");
+        let remark = $("#remark"+row).val();
+        let trackid = $("#trackid"+row).attr("data-key");
+        console.log(row);
+        console.log(status);
+        console.log(remark);
+        console.log(trackid);
+        let values = [trackid, remark, status]   
+        $.ajax({
+                type: 'POST',
+                url: '/office/officeOfRegistrar/response/ajax',
+                data: {
+                    'values[]': values,
+                },
+                dataType: 'text',
+                success: function(response){
+                    $("#row"+row).empty();
+                    $("#row"+row).append("<span>"+response+"</span>");    
+                },
+                error: function(rs, e){
+                    console.log('error-------');
+                    $("#row"+row).empty();
+                    $("#row"+row).append("<span>error</span>"); 
+                },
+            });  
+    });
+</script>
 
-<br>
-
-<div class="ui primary right floated button">Approve Selected</div>
-<div class="ui green right floated button">Forward Selected</div>
-<div class="ui red right floated button">Reject Selected</div>
-
-
-<br>
-<br>
-<div class="ui divider"></div>
-
-<div class="extra content">
-    <div class="" style="text-align: center;">
-        <i class="large green checkmark icon"></i> : Approved &ensp;&ensp;&ensp;&ensp;&ensp;
-        <i class="large orange warning icon"></i> : Pending &ensp;&ensp;&ensp;&ensp;&ensp;
-        <i class="large red x icon"></i> : Declined
-    </div>
-</div>
 
