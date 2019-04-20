@@ -16,6 +16,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.db.models import Q
 from django.shortcuts import render
 from django.contrib.auth.models import User
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from applications.academic_information.models import Spi, Student
 from applications.globals.models import (Designation, ExtraInfo,
                                          HoldsDesignation)
@@ -34,26 +35,29 @@ def spacs(request):
     if request.method == 'POST':
         if 'studentapprovesubmit' in request.POST:
             award = request.POST.get('studentapprovesubmit')
-            x = Notification.objects.get(student_id = request.user.extrainfo.id)
+            #release_id = request.POST.get('release_id')
+            #print('release_id found',release_id)
+            #release = Release.objects.get(id=release_id)
+            #x = Notification.objects.get(student_id = request.user.extrainfo.id, release_id = release)
             if award=='Mcm Scholarship':
                 request.session['last_clicked']='studentapprovesubmit_mcm'
-                x.notification_mcm_flag=False
-                x.invite_mcm_accept_flag=True
+                #x.notification_mcm_flag=False
                 print('mcm accepted')
             else:
                 request.session['last_clicked']='studentapprovesubmit_con'
-                x.notification_convocation_flag=False
-                x.invite_covocation_accept_flag=True
-            x.save()
+                #x.notification_convocation_flag=False
+            #x.save()
         if 'studentdeclinesubmit' in request.POST:
             award = request.POST.get('studentdeclinesubmit')
-            x = Notification.objects.get(student_id = request.user.extrainfo.id)
+            release_id = request.POST.get('release_id')
+            release = Release.objects.get(id=release_id)
+            x = Notification.objects.get(student_id = request.user.extrainfo.id, release_id = release)
             if award=='Mcm Scholarship':
+                request.session['last_clicked']='studentapprovesubmit_mcm'
                 x.notification_mcm_flag=False
-                x.invite_mcm_accept_flag=False
             else:
+                request.session['last_clicked']='studentapprovesubmit_con'
                 x.notification_convocation_flag=False
-                x.invite_covocation_accept_flag=False
             x.save()
     convener = Designation.objects.get(name='spacsconvenor')
     assistant = Designation.objects.get(name='spacsassistant')
@@ -69,9 +73,13 @@ def spacs(request):
         return HttpResponseRedirect('/spacs/stats')# Arihant:this view is for the other members of the college
 
 
-
 @login_required(login_url='/accounts/login')
 def convener_view(request):
+    try:
+        convener = Designation.objects.get(name='spacsconvenor')
+        hd = HoldsDesignation.objects.get(user=request.user,designation=convener)
+    except:
+        return HttpResponseRedirect('/logout')
     if request.method == 'POST':
         if 'Submit' in request.POST:
             award = request.POST.get('type')
@@ -81,9 +89,11 @@ def convener_view(request):
             to_date = request.POST.get('To')
             remarks = request.POST.get('remarks')
             request.session['last_clicked']='Submit'
-
+            d_time = datetime.datetime.now()
 
             Release.objects.create(
+                date_time = d_time,
+                programme=programme,
                 startdate=from_date,
                 enddate=to_date,
                 award=award,
@@ -99,25 +109,44 @@ def convener_view(request):
                 receipent1 = Student.objects.filter(programme = programme)
                 for student in receipent1:
                     scholarship_portal_notif(convenor,student.id.user, 'award-' + award)
-                #Notification ends
+                    #Notification
                 if award == 'Mcm Scholarship':
-                    res = Notification.objects.filter(student_id__programme=programme).update(notification_mcm_flag=True)
+                    rel = Release.objects.get(date_time=d_time)
+                    Notification.objects.bulk_create( [Notification(
+                                            release_id = rel,
+                                            student_id = student,
+                                            notification_mcm_flag=True,
+                                            invite_mcm_accept_flag=False) for student in receipent1] )
                 else:
-                    res = Notification.objects.filter(student_id__programme=programme).update(notification_convocation_flag=True)
+                    rel = Release.objects.get(date_time=d_time)
+                    Notification.objects.bulk_create( [Notification(
+                                            release_id = rel,
+                                            student_id = student,
+                                            notification_convocation_flag=True,
+                                            invite_covocation_accept_flag=False) for student in receipent1] )
+                #Notification ends
             else:
                 #Notification starts
                 convenor = request.user
                 receipent1 = Student.objects.filter(programme = programme,id__id__startswith=batch)
                 for student in receipent1:
                     scholarship_portal_notif(convenor,student.id.user, 'award-' + award)
-                #Notification ends
+
                 if award == 'Mcm Scholarship':
-                    res = Notification.objects.filter(student_id__programme=programme,student_id__id__id__startswith=batch).update(notification_mcm_flag=True)
+                    rel = Release.objects.get(date_time=d_time)
+                    Notification.objects.bulk_create( [Notification(
+                                            release_id = rel,
+                                            student_id = student,
+                                            notification_mcm_flag=True,
+                                            invite_mcm_accept_flag=False) for student in receipent1] )
                 else:
-                    res = Notification.objects.filter(student_id__programme=programme,student_id__id__id__startswith=batch).update(notification_convocation_flag=True)
-
-
-
+                    rel = Release.objects.get(date_time=d_time)
+                    Notification.objects.bulk_create( [Notification(
+                                            release_id = rel,
+                                            student_id = student,
+                                            notification_convocation_flag=True,
+                                            invite_covocation_accept_flag=False) for student in receipent1] )
+                #Notification ends
             messages.success(request,award+' are invited successfully')
             return HttpResponseRedirect('/spacs/convener_view')
 
@@ -249,8 +278,114 @@ def convener_view(request):
             messages.success(request,'Application is rejected')
             return HttpResponseRedirect('/spacs/convener_view')
 
+        elif "Submit_previous_winner" in request.POST:
+            print("previous winner post request")
+            request.session["last_clicked"] = "Submit_previous_winner"
+            Previous_winner_award = request.POST.get("Previous_winner_award")
+            Previous_winner_acad_year = request.POST.get("Previous_winner_acad_year")
+            Previous_winner_programme = request.POST.get("Previous_winner_programme")
+            request.session["Previous_winner_award"] = Previous_winner_award
+            request.session["Previous_winner_acad_year"] = Previous_winner_acad_year
+            request.session["Previous_winner_programme"] = Previous_winner_programme
+
+            award = Award_and_scholarship.objects.get(award_name=Previous_winner_award)
+            winners=Previous_winner.objects.filter(year=Previous_winner_acad_year,award_id=award,programme=Previous_winner_programme)
+
+            paginator = Paginator(winners, 10)
+            #page = request.GET.get('page')
+            page = 1
+            print("ari",page)
+            try:
+                winners_list = paginator.page(page)
+            except PageNotAnInteger:
+                # If page is not an integer, deliver first page.
+                winners_list = paginator.page(1)
+            except EmptyPage:
+                # If page is out of range (e.g. 9999), deliver last page of results.
+                winners_list = paginator.page(paginator.num_pages)
+
+            mcm = Mcm.objects.all()
+            #mcm = Mcm.objects.all().order_by('annual_income').rever
+            ch = Constants.batch
+            source = Constants.father_occ_choice
+            time = Constants.time
+            release = Release.objects.all()
+            notification = Notification.objects.all()
+            spi = Spi.objects.all()
+            student = Student.objects.all()
+            awards = Award_and_scholarship.objects.all()
+            gold = Director_gold.objects.all()
+            silver = Director_silver.objects.all()
+            dandm = Proficiency_dm.objects.all()
+            con = Designation.objects.get(name='spacsconvenor')
+            assis = Designation.objects.get(name='spacsassistant')
+            hd = HoldsDesignation.objects.get(designation=con)
+            hd1 = HoldsDesignation.objects.get(designation=assis)
+
+            last_clicked=''
+            try:
+                last_clicked = request.session['last_clicked']
+            except:
+                print('last_clicked not found')
+
+            context={'mcm': mcm, 'source': source, 'time': time, 'ch': ch, 'awards': awards,
+                       'spi': spi, 'student': student, 'winners_list': winners_list, 'release': release,
+                       'gold': gold, 'silver': silver, 'dandm': dandm, 'con': con, 'assis': assis,
+                        'hd': hd, 'hd1': hd1,'last_clicked':last_clicked
+                       }
+            return render(request, 'scholarshipsModule/scholarships_convener.html',context)
+
 
     else:
+        try:
+            last_clicked = request.session['last_clicked']
+            Previous_winner_award = request.session['Previous_winner_award']
+            Previous_winner_acad_year = request.session['Previous_winner_acad_year']
+            Previous_winner_programme = request.session['Previous_winner_programme']
+            print("session found")
+            award = Award_and_scholarship.objects.get(award_name=Previous_winner_award)
+            winners=Previous_winner.objects.filter(year=Previous_winner_acad_year,award_id=award,programme=Previous_winner_programme)
+
+            paginator = Paginator(winners, 10)
+            page = request.GET.get('page')
+            print("arihant ", page)
+            try:
+                winners_list = paginator.page(page)
+            except PageNotAnInteger:
+                # If page is not an integer, deliver first page.
+                winners_list = paginator.page(1)
+            except EmptyPage:
+                # If page is out of range (e.g. 9999), deliver last page of results.
+                winners_list = paginator.page(paginator.num_pages)
+
+            mcm = Mcm.objects.all()
+            #mcm = Mcm.objects.all().order_by('annual_income').rever
+            ch = Constants.batch
+            source = Constants.father_occ_choice
+            time = Constants.time
+            release = Release.objects.all()
+            notification = Notification.objects.all()
+            spi = Spi.objects.all()
+            student = Student.objects.all()
+            awards = Award_and_scholarship.objects.all()
+            gold = Director_gold.objects.all()
+            silver = Director_silver.objects.all()
+            dandm = Proficiency_dm.objects.all()
+            con = Designation.objects.get(name='spacsconvenor')
+            assis = Designation.objects.get(name='spacsassistant')
+            hd = HoldsDesignation.objects.get(designation=con)
+            hd1 = HoldsDesignation.objects.get(designation=assis)
+
+            context={'mcm': mcm, 'source': source, 'time': time, 'ch': ch, 'awards': awards,
+                       'spi': spi, 'student': student, 'winners_list': winners_list, 'release': release,
+                       'gold': gold, 'silver': silver, 'dandm': dandm, 'con': con, 'assis': assis,
+                        'hd': hd, 'hd1': hd1,'last_clicked':last_clicked
+                       }
+            return render(request, 'scholarshipsModule/scholarships_convener.html',context)
+
+        except:
+            print("Error in try")
+
         mcm = Mcm.objects.all()
         #mcm = Mcm.objects.all().order_by('annual_income').rever
         ch = Constants.batch
@@ -258,7 +393,6 @@ def convener_view(request):
         time = Constants.time
         release = Release.objects.all()
         notification = Notification.objects.all()
-        winners = Previous_winner.objects.all()
         spi = Spi.objects.all()
         student = Student.objects.all()
         awards = Award_and_scholarship.objects.all()
@@ -278,7 +412,7 @@ def convener_view(request):
             print('last_clicked not found')
 
         context={'mcm': mcm, 'source': source, 'time': time, 'ch': ch, 'awards': awards,
-                   'spi': spi, 'student': student, 'winners': winners, 'release': release,
+                   'spi': spi, 'student': student, 'release': release,
                    'gold': gold, 'silver': silver, 'dandm': dandm, 'con': con, 'assis': assis,
                     'hd': hd, 'hd1': hd1,'last_clicked':last_clicked
                    }
@@ -289,9 +423,10 @@ def convener_view(request):
 def student_view(request):
     if request.method == 'POST':
         if 'Submit_mcm' in request.POST:
-            x = Notification.objects.get(student_id = request.user.extrainfo.id)
-            x.invite_mcm_accept_flag=False
-            x.save()
+            i = Notification.objects.filter(student_id = request.user.extrainfo.id)
+            for x in i:
+                x.invite_mcm_accept_flag=False
+                x.save()
             father_occ = request.POST.get('father_occ')
             mother_occ = request.POST.get('mother_occ')
             brother_name = request.POST.get('brother_name')
@@ -321,44 +456,85 @@ def student_view(request):
             annual_income = income_father + income_mother + income_other
             a = Award_and_scholarship.objects.get(award_name="Mcm").id
             award_id = Award_and_scholarship.objects.get(id=a)
-            Mcm.objects.create(
-                father_occ=father_occ,
-                mother_occ=mother_occ,
-                brother_name=brother_name,
-                sister_name=sister_name,
-                income_father=income_father,
-                income_mother=income_mother,
-                income_other=income_other,
-                brother_occupation=brother_occupation,
-                sister_occupation=sister_occupation,
-                student=student,
-                annual_income=annual_income,
-                income_certificate=income_certificate,
-                award_id=award_id,
-                father_occ_desc=father_occ_desc,
-                mother_occ_desc=mother_occ_desc,
-                four_wheeler=four_wheeler,
-                four_wheeler_desc=four_wheeler_desc,
-                two_wheeler_desc=two_wheeler_desc,
-                two_wheeler=two_wheeler,
-                house=house,
-                plot_area=plot_area,
-                constructed_area=constructed_area,
-                school_fee=school_fee,
-                school_name=school_name,
-                bank_name=bank_name,
-                loan_amount=loan_amount,
-                college_fee=college_fee,
-                college_name=college_name
-            )
+            releases = Release.objects.filter(Q(startdate__lte = datetime.datetime.today().strftime('%Y-%m-%d'),enddate__gte=datetime.datetime.today().strftime('%Y-%m-%d'))).filter(award='Mcm Scholarship')
+            for release in releases:
+                if Mcm.objects.filter(Q(date__gte = release.startdate, date__lte = release.enddate)).filter(student = request.user.extrainfo.student):
+                    #if len(Mcm.objects.filter(student = request.user.extrainfo.student)) > 0:
+                    Mcm.objects.filter(Q(date__gte = release.startdate, date__lte = release.enddate)).filter(student = request.user.extrainfo.student).update(
+                    father_occ=father_occ,
+                    mother_occ=mother_occ,
+                    brother_name=brother_name,
+                    sister_name=sister_name,
+                    income_father=income_father,
+                    income_mother=income_mother,
+                    income_other=income_other,
+                    brother_occupation=brother_occupation,
+                    sister_occupation=sister_occupation,
+                    student=student,
+                    annual_income=annual_income,
+                    income_certificate=income_certificate,
+                    award_id=award_id,
+                    father_occ_desc=father_occ_desc,
+                    mother_occ_desc=mother_occ_desc,
+                    four_wheeler=four_wheeler,
+                    four_wheeler_desc=four_wheeler_desc,
+                    two_wheeler_desc=two_wheeler_desc,
+                    two_wheeler=two_wheeler,
+                    house=house,
+                    plot_area=plot_area,
+                    constructed_area=constructed_area,
+                    school_fee=school_fee,
+                    school_name=school_name,
+                    bank_name=bank_name,
+                    loan_amount=loan_amount,
+                    college_fee=college_fee,
+                    college_name=college_name,
+                    status='INCOMPLETE'
+                    )
+                    messages.success(request,'Mcm scholarhsip is successfully Updated')
+                    break
+                else:
+                    Mcm.objects.create(
+                    father_occ=father_occ,
+                    mother_occ=mother_occ,
+                    brother_name=brother_name,
+                    sister_name=sister_name,
+                    income_father=income_father,
+                    income_mother=income_mother,
+                    income_other=income_other,
+                    brother_occupation=brother_occupation,
+                    sister_occupation=sister_occupation,
+                    student=student,
+                    annual_income=annual_income,
+                    income_certificate=income_certificate,
+                    award_id=award_id,
+                    father_occ_desc=father_occ_desc,
+                    mother_occ_desc=mother_occ_desc,
+                    four_wheeler=four_wheeler,
+                    four_wheeler_desc=four_wheeler_desc,
+                    two_wheeler_desc=two_wheeler_desc,
+                    two_wheeler=two_wheeler,
+                    house=house,
+                    plot_area=plot_area,
+                    constructed_area=constructed_area,
+                    school_fee=school_fee,
+                    school_name=school_name,
+                    bank_name=bank_name,
+                    loan_amount=loan_amount,
+                    college_fee=college_fee,
+                    college_name=college_name
+                    )
+                    messages.success(request,'Mcm scholarhsip is successfully applied')
+                    break
             request.session['last_clicked']='Submit_mcm'
-            messages.success(request,'Mcm scholarhsip is successfully applied')
+
             return HttpResponseRedirect('/spacs/student_view')
 
         elif 'Submit_gold' in request.POST:
-            x = Notification.objects.get(student_id = request.user.extrainfo.id)
-            x.invite_covocation_accept_flag=False
-            x.save()
+            i = Notification.objects.filter(student_id = request.user.extrainfo.id)
+            for x in i:
+                x.invite_covocation_accept_flag=False
+                x.save()
             relevant_document = request.FILES.get('myfile')
             student_id = request.user.extrainfo.student
             a = Award_and_scholarship.objects.get(award_name="Director Gold Medal").id
@@ -383,39 +559,72 @@ def student_view(request):
             grand_total=request.POST.get('grand_total')
             nearest_policestation=request.POST.get('nps')
             nearest_railwaystation=request.POST.get('nrs')
-
-            Director_gold.objects.create(
-                student=student_id,
-                relevant_document=relevant_document,
-                award_id=award_id,
-                academic_achievements=academic_achievements,
-                science_inside=science_inside,
-                science_outside=science_outside,
-                games_inside=games_inside,
-                games_outside=games_outside,
-                cultural_inside=cultural_inside,
-                cultural_outside=cultural_outside,
-                social=social,
-                coorporate=coorporate,
-                hall_activities=hall_activities,
-                gymkhana_activities=gymkhana_activities,
-                institute_activities=institute_activities,
-                counselling_activities=counselling_activities,
-                correspondence_address=correspondence_address,
-                financial_assistance=financial_assistance,
-                grand_total=grand_total,
-                nearest_policestation=nearest_policestation,
-                nearest_railwaystation=nearest_railwaystation,
-                justification=justification
-            )
+            releases = Release.objects.filter(Q(startdate__lte = datetime.datetime.today().strftime('%Y-%m-%d'),enddate__gte=datetime.datetime.today().strftime('%Y-%m-%d'))).filter(award='Convocation Medals')
+            for release in releases:
+                if Director_gold.objects.filter(Q(date__gte = release.startdate, date__lte = release.enddate)).filter(student = request.user.extrainfo.student):
+                    Director_gold.objects.filter(Q(date__gte = release.startdate, date__lte = release.enddate)).filter(student = request.user.extrainfo.student).update(
+                        student=student_id,
+                        relevant_document=relevant_document,
+                        award_id=award_id,
+                        academic_achievements=academic_achievements,
+                        science_inside=science_inside,
+                        science_outside=science_outside,
+                        games_inside=games_inside,
+                        games_outside=games_outside,
+                        cultural_inside=cultural_inside,
+                        cultural_outside=cultural_outside,
+                        social=social,
+                        coorporate=coorporate,
+                        hall_activities=hall_activities,
+                        gymkhana_activities=gymkhana_activities,
+                        institute_activities=institute_activities,
+                        counselling_activities=counselling_activities,
+                        correspondence_address=correspondence_address,
+                        financial_assistance=financial_assistance,
+                        grand_total=grand_total,
+                        nearest_policestation=nearest_policestation,
+                        nearest_railwaystation=nearest_railwaystation,
+                        justification=justification,
+                        status='INCOMPLETE'
+                    )
+                    messages.success(request,'Application is successfully updated')
+                    break
+                else:
+                    Director_gold.objects.create(
+                        student=student_id,
+                        relevant_document=relevant_document,
+                        award_id=award_id,
+                        academic_achievements=academic_achievements,
+                        science_inside=science_inside,
+                        science_outside=science_outside,
+                        games_inside=games_inside,
+                        games_outside=games_outside,
+                        cultural_inside=cultural_inside,
+                        cultural_outside=cultural_outside,
+                        social=social,
+                        coorporate=coorporate,
+                        hall_activities=hall_activities,
+                        gymkhana_activities=gymkhana_activities,
+                        institute_activities=institute_activities,
+                        counselling_activities=counselling_activities,
+                        correspondence_address=correspondence_address,
+                        financial_assistance=financial_assistance,
+                        grand_total=grand_total,
+                        nearest_policestation=nearest_policestation,
+                        nearest_railwaystation=nearest_railwaystation,
+                        justification=justification
+                    )
+                    messages.success(request,'Application is successfully submitted')
+                    break
             request.session['last_clicked']='Submit_gold'
             messages.success(request,'Application is successfully submitted')
             return HttpResponseRedirect('/spacs/student_view')
 
         elif 'Submit_silver' in request.POST:
-            x = Notification.objects.get(student_id = request.user.extrainfo.id)
-            x.invite_covocation_accept_flag=False
-            x.save()
+            i = Notification.objects.filter(student_id = request.user.extrainfo.id)
+            for x in i:
+                x.invite_covocation_accept_flag=False
+                x.save()
             relevant_document = request.FILES.get('myfile')
             award = request.POST.get('award')
             a = Award_and_scholarship.objects.get(award_name=award).id
@@ -429,29 +638,50 @@ def student_view(request):
             grand_total=request.POST.get('grand_total')
             nearest_policestation=request.POST.get('nps')
             nearest_railwaystation=request.POST.get('nrs')
-
-            Director_silver.objects.create(
-                student=student_id,
-                award_id=award_id,
-                relevant_document=relevant_document,
-                inside_achievements=inside_achievements,
-                justification=justification,
-                correspondence_address=correspondence_address,
-                financial_assistance=financial_assistance,
-                grand_total=grand_total,
-                nearest_policestation=nearest_policestation,
-                nearest_railwaystation=nearest_railwaystation,
-                outside_achievements=outside_achievements
-            )
+            releases = Release.objects.filter(Q(startdate__lte = datetime.datetime.today().strftime('%Y-%m-%d'),enddate__gte=datetime.datetime.today().strftime('%Y-%m-%d'))).filter(award='Convocation Medals')
+            for release in releases:
+                if Director_silver.objects.filter(Q(date__gte = release.startdate, date__lte = release.enddate)).filter(student = request.user.extrainfo.student):
+                    Director_silver.objects.filter(Q(date__gte = release.startdate, date__lte = release.enddate)).filter(student = request.user.extrainfo.student).update(
+                        student=student_id,
+                        award_id=award_id,
+                        relevant_document=relevant_document,
+                        inside_achievements=inside_achievements,
+                        justification=justification,
+                        correspondence_address=correspondence_address,
+                        financial_assistance=financial_assistance,
+                        grand_total=grand_total,
+                        nearest_policestation=nearest_policestation,
+                        nearest_railwaystation=nearest_railwaystation,
+                        outside_achievements=outside_achievements,
+                        status='INCOMPLETE'
+                    )
+                    messages.success(request,'Application is successfully updated')
+                    break
+                else:
+                    Director_silver.objects.create(
+                        student=student_id,
+                        award_id=award_id,
+                        relevant_document=relevant_document,
+                        inside_achievements=inside_achievements,
+                        justification=justification,
+                        correspondence_address=correspondence_address,
+                        financial_assistance=financial_assistance,
+                        grand_total=grand_total,
+                        nearest_policestation=nearest_policestation,
+                        nearest_railwaystation=nearest_railwaystation,
+                        outside_achievements=outside_achievements
+                    )
+                    messages.success(request,'Application is successfully submitted')
+                    break
             request.session['last_clicked']='Submit_silver'
-            messages.success(request,'Application is successfully submitted')
             return HttpResponseRedirect('/spacs/student_view')
 
 
         elif 'Submit_dandm' in request.POST:
-            x = Notification.objects.get(student_id = request.user.extrainfo.id)
-            x.invite_covocation_accept_flag=False
-            x.save()
+            i = Notification.objects.filter(student_id = request.user.extrainfo.id)
+            for x in i:
+                x.invite_covocation_accept_flag=False
+                x.save()
             title_name = request.POST.get('title')
             no_of_students = request.POST.get('students')
             relevant_document = request.FILES.get('myfile')
@@ -499,41 +729,283 @@ def student_view(request):
             grand_total=request.POST.get('grand_total')
             nearest_policestation=request.POST.get('nps')
             nearest_railwaystation=request.POST.get('nrs')
-
-
-            Proficiency_dm.objects.create(
-                title_name=title_name,
-                no_of_students=no_of_students,
-                student=student_id,
-                award_id=award_id,
-                relevant_document=relevant_document,
-                roll_no1=roll_no1,
-                roll_no2=roll_no2,
-                roll_no3=roll_no3,
-                roll_no4=roll_no4,
-                roll_no5=roll_no5,
-                ece_topic=ece_topic,
-                cse_topic=cse_topic,
-                mech_topic=mech_topic,
-                design_topic=design_topic,
-                ece_percentage=ece_percentage,
-                cse_percentage=cse_percentage,
-                mech_percentage=mech_percentage,
-                design_percentage=design_percentage,
-                brief_description=brief_description,
-                correspondence_address=correspondence_address,
-                financial_assistance=financial_assistance,
-                grand_total=grand_total,
-                nearest_policestation=nearest_policestation,
-                nearest_railwaystation=nearest_railwaystation,
-                justification=justification
-            )
+            releases = Release.objects.filter(Q(startdate__lte = datetime.datetime.today().strftime('%Y-%m-%d'),enddate__gte=datetime.datetime.today().strftime('%Y-%m-%d'))).filter(award='Convocation Medals')
+            for release in releases:
+                if Proficiency_dm.objects.filter(Q(date__gte = release.startdate, date__lte = release.enddate)).filter(student = request.user.extrainfo.student):
+                    Proficiency_dm.objects.filter(Q(date__gte = release.startdate, date__lte = release.enddate)).filter(student = request.user.extrainfo.student).update(
+                        title_name=title_name,
+                        no_of_students=no_of_students,
+                        student=student_id,
+                        award_id=award_id,
+                        relevant_document=relevant_document,
+                        roll_no1=roll_no1,
+                        roll_no2=roll_no2,
+                        roll_no3=roll_no3,
+                        roll_no4=roll_no4,
+                        roll_no5=roll_no5,
+                        ece_topic=ece_topic,
+                        cse_topic=cse_topic,
+                        mech_topic=mech_topic,
+                        design_topic=design_topic,
+                        ece_percentage=ece_percentage,
+                        cse_percentage=cse_percentage,
+                        mech_percentage=mech_percentage,
+                        design_percentage=design_percentage,
+                        brief_description=brief_description,
+                        correspondence_address=correspondence_address,
+                        financial_assistance=financial_assistance,
+                        grand_total=grand_total,
+                        nearest_policestation=nearest_policestation,
+                        nearest_railwaystation=nearest_railwaystation,
+                        justification=justification,
+                        status='INCOMPLETE'
+                    )
+                    messages.success(request,'Application is successfully updated')
+                    break
+                else:
+                    Proficiency_dm.objects.create(
+                        title_name=title_name,
+                        no_of_students=no_of_students,
+                        student=student_id,
+                        award_id=award_id,
+                        relevant_document=relevant_document,
+                        roll_no1=roll_no1,
+                        roll_no2=roll_no2,
+                        roll_no3=roll_no3,
+                        roll_no4=roll_no4,
+                        roll_no5=roll_no5,
+                        ece_topic=ece_topic,
+                        cse_topic=cse_topic,
+                        mech_topic=mech_topic,
+                        design_topic=design_topic,
+                        ece_percentage=ece_percentage,
+                        cse_percentage=cse_percentage,
+                        mech_percentage=mech_percentage,
+                        design_percentage=design_percentage,
+                        brief_description=brief_description,
+                        correspondence_address=correspondence_address,
+                        financial_assistance=financial_assistance,
+                        grand_total=grand_total,
+                        nearest_policestation=nearest_policestation,
+                        nearest_railwaystation=nearest_railwaystation,
+                        justification=justification
+                    )
+                    messages.success(request,'Application is successfully submitted')
+                    break
             request.session['last_clicked']='Submit_dm'
-            messages.success(request,'Application is successfully submitted')
             return HttpResponseRedirect('/spacs/student_view')
+
+        elif "Submit_previous_winner" in request.POST:
+            print("previous winner post request")
+            request.session["last_clicked"] = "Submit_previous_winner"
+            Previous_winner_award = request.POST.get("Previous_winner_award")
+            Previous_winner_acad_year = request.POST.get("Previous_winner_acad_year")
+            Previous_winner_programme = request.POST.get("Previous_winner_programme")
+            request.session["Previous_winner_award"] = Previous_winner_award
+            request.session["Previous_winner_acad_year"] = Previous_winner_acad_year
+            request.session["Previous_winner_programme"] = Previous_winner_programme
+
+            award = Award_and_scholarship.objects.get(award_name=Previous_winner_award)
+            winners=Previous_winner.objects.filter(year=Previous_winner_acad_year,award_id=award,programme=Previous_winner_programme)
+
+            paginator = Paginator(winners, 10)
+            #page = request.GET.get('page')
+            page = 1
+            print("ari",page)
+            try:
+                winners_list = paginator.page(page)
+            except PageNotAnInteger:
+                # If page is not an integer, deliver first page.
+                winners_list = paginator.page(1)
+            except EmptyPage:
+                # If page is out of range (e.g. 9999), deliver last page of results.
+                winners_list = paginator.page(paginator.num_pages)
+
+            mcm = Mcm.objects.all()
+            ch = Constants.batch
+            time = Constants.time
+            mother_occ = Constants.MOTHER_OCC_CHOICES
+            source = Constants.father_occ_choice
+            release = Release.objects.all()
+            mcm_release = Release.objects.filter(award='Mcm Scholarship')
+            convocation_release = Release.objects.filter(award='Convocation Medals')
+            release_count = release.count()
+            spi = Spi.objects.all()
+            student = Student.objects.all()
+            student_batch = str(request.user.extrainfo.student)[0:4]
+            awards = Award_and_scholarship.objects.all()
+            gold = Director_gold.objects.all()
+            silver = Director_silver.objects.all()
+            dandm = Proficiency_dm.objects.all()
+            con = Designation.objects.get(name='spacsconvenor')
+            assis = Designation.objects.get(name='spacsassistant')
+            hd = HoldsDesignation.objects.get(designation=con)
+            hd1 = HoldsDesignation.objects.get(designation=assis)
+            no_of_mcm_filled = len(Mcm.objects.filter(student = request.user.extrainfo.student))
+            no_of_con_filled = len(Director_silver.objects.filter(student = request.user.extrainfo.student)) + len(Director_gold.objects.filter(student = request.user.extrainfo.student)) + len(Proficiency_dm.objects.filter(student = request.user.extrainfo.student))
+            # Arihant: Here we are fetching the flags from the Notification table of student
+            #end of database queries
+
+
+            #notification flags
+            update_mcm_flag = False
+            update_con_flag = False
+            x_notif_mcm_flag = False
+            x_notif_con_flag = False
+            for dates in release:
+                if check_date(dates.startdate,dates.enddate):
+                    print('correct date found not deleting',dates.enddate)
+                    #print('finding the batch',request.user.extrainfo.id)
+                    if dates.award == 'Mcm Scholarship' and dates.batch == str(request.user.extrainfo.student)[0:4] and dates.programme == request.user.extrainfo.student.programme:
+                        print('apply true', str(request.user.extrainfo.student)[0:4])
+                        x_notif_mcm_flag = True
+                        if no_of_mcm_filled > 0 :
+                            update_mcm_flag = True
+                    elif dates.award == 'Convocation Medals' and dates.batch == str(request.user.extrainfo.student)[0:4] and dates.programme == request.user.extrainfo.student.programme:
+                        x_notif_con_flag = True
+                        if no_of_con_filled > 0:
+                            update_con_flag = True
+                else:
+                    print('enddate exceed deleting now',dates.enddate)
+                    if dates.award == "Mcm Scholarship" and dates.batch == str(request.user.extrainfo.student)[0:4]:
+                        x = Notification.objects.get(student_id = request.user.extrainfo.id,release_id=dates.id).delete()
+                    elif dates.award == 'Convocation Medals' and dates.batch == str(request.user.extrainfo.student)[0:4]:
+                        x = Notification.objects.get(student_id = request.user.extrainfo.id,release_id=dates.id).delete()
+
+            x = Notification.objects.filter(student_id = request.user.extrainfo.id).order_by('-release_id__date_time')
+
+            show_mcm_flag = False
+            show_convocation_flag = False
+            for i in x:
+                if i.invite_mcm_accept_flag == True:
+                    print('why is this true')
+                    show_mcm_flag = True
+                    break
+            for i in x:
+                if i.invite_covocation_accept_flag == True:
+                    show_convocation_flag = True
+                    break
+
+            last_clicked=''
+            try:
+                last_clicked = request.session['last_clicked']
+            except:
+                print('last_clicked not found')
+
+            return render(request, 'scholarshipsModule/scholarships_student.html',
+                      {'mcm': mcm, 'time': time, 'ch': ch, 'awards': awards, 'spi': spi,
+                       'student': student,'student_batch':student_batch, 'release': release,'winners_list':winners_list,
+                       'release_count': release_count,'x_notif_mcm_flag':x_notif_mcm_flag,'x_notif_con_flag':x_notif_con_flag,
+                       'gold': gold, 'silver': silver, 'dandm': dandm, 'source': source,'show_mcm_flag':show_mcm_flag,'show_convocation_flag':show_convocation_flag,
+                       'update_mcm_flag':update_mcm_flag,'update_con_flag':update_con_flag,
+                      'mother_occ': mother_occ, 'con': con, 'assis': assis,'hd': hd, 'hd1': hd1,'last_clicked':last_clicked,'x':x})
 
 
     else:
+        try:
+            last_clicked = request.session['last_clicked']
+            Previous_winner_award = request.session['Previous_winner_award']
+            Previous_winner_acad_year = request.session['Previous_winner_acad_year']
+            Previous_winner_programme = request.session['Previous_winner_programme']
+            print("session found")
+            award = Award_and_scholarship.objects.get(award_name=Previous_winner_award)
+            winners=Previous_winner.objects.filter(year=Previous_winner_acad_year,award_id=award,programme=Previous_winner_programme)
+
+            paginator = Paginator(winners, 10)
+            page = request.GET.get('page')
+            print("arihant ", page)
+            try:
+                winners_list = paginator.page(page)
+            except PageNotAnInteger:
+                # If page is not an integer, deliver first page.
+                winners_list = paginator.page(1)
+            except EmptyPage:
+                # If page is out of range (e.g. 9999), deliver last page of results.
+                winners_list = paginator.page(paginator.num_pages)
+
+
+            mcm = Mcm.objects.all()
+            ch = Constants.batch
+            time = Constants.time
+            mother_occ = Constants.MOTHER_OCC_CHOICES
+            source = Constants.father_occ_choice
+            release = Release.objects.all()
+            mcm_release = Release.objects.filter(award='Mcm Scholarship')
+            convocation_release = Release.objects.filter(award='Convocation Medals')
+            release_count = release.count()
+            spi = Spi.objects.all()
+            student = Student.objects.all()
+            student_batch = str(request.user.extrainfo.student)[0:4]
+            awards = Award_and_scholarship.objects.all()
+            gold = Director_gold.objects.all()
+            silver = Director_silver.objects.all()
+            dandm = Proficiency_dm.objects.all()
+            con = Designation.objects.get(name='spacsconvenor')
+            assis = Designation.objects.get(name='spacsassistant')
+            hd = HoldsDesignation.objects.get(designation=con)
+            hd1 = HoldsDesignation.objects.get(designation=assis)
+            no_of_mcm_filled = len(Mcm.objects.filter(student = request.user.extrainfo.student))
+            no_of_con_filled = len(Director_silver.objects.filter(student = request.user.extrainfo.student)) + len(Director_gold.objects.filter(student = request.user.extrainfo.student)) + len(Proficiency_dm.objects.filter(student = request.user.extrainfo.student))
+            # Arihant: Here we are fetching the flags from the Notification table of student
+            #end of database queries
+
+
+            #notification flags
+            update_mcm_flag = False
+            update_con_flag = False
+            x_notif_mcm_flag = False
+            x_notif_con_flag = False
+            for dates in release:
+                if check_date(dates.startdate,dates.enddate):
+                    print('correct date found not deleting',dates.enddate)
+                    #print('finding the batch',request.user.extrainfo.id)
+                    if dates.award == 'Mcm Scholarship' and dates.batch == str(request.user.extrainfo.student)[0:4] and dates.programme == request.user.extrainfo.student.programme:
+                        x_notif_mcm_flag = True
+                        if no_of_mcm_filled > 0 :
+                            update_mcm_flag = True
+                    elif dates.award == 'Convocation Medals' and dates.batch == str(request.user.extrainfo.student)[0:4] and dates.programme == request.user.extrainfo.student.programme:
+                        x_notif_con_flag = True
+                        if no_of_con_filled > 0:
+                            update_con_flag = True
+                else:
+                    print('enddate exceed deleting now',dates.enddate)
+                    if dates.award == "Mcm Scholarship" and dates.batch == str(request.user.extrainfo.student)[0:4]:
+                        x = Notification.objects.get(student_id = request.user.extrainfo.id,release_id=dates.id).delete()
+                    elif dates.award == 'Convocation Medals' and dates.batch == str(request.user.extrainfo.student)[0:4]:
+                        x = Notification.objects.get(student_id = request.user.extrainfo.id,release_id=dates.id).delete()
+
+            x = Notification.objects.filter(student_id = request.user.extrainfo.id).order_by('-release_id__date_time')
+
+            show_mcm_flag = False
+            show_convocation_flag = False
+            for i in x:
+                if i.invite_mcm_accept_flag == True:
+                    print('why is this true')
+                    show_mcm_flag = True
+                    break
+            for i in x:
+                if i.invite_covocation_accept_flag == True:
+                    show_convocation_flag = True
+                    break
+
+            last_clicked=''
+            try:
+                last_clicked = request.session['last_clicked']
+            except:
+                print('last_clicked not found')
+
+            return render(request, 'scholarshipsModule/scholarships_student.html',
+                      {'mcm': mcm, 'time': time, 'ch': ch, 'awards': awards, 'spi': spi,
+                       'student': student,'student_batch':student_batch, 'release': release,'winners_list':winners_list,
+                       'release_count': release_count,'x_notif_mcm_flag':x_notif_mcm_flag,'x_notif_con_flag':x_notif_con_flag,
+                       'gold': gold, 'silver': silver, 'dandm': dandm, 'source': source,'show_mcm_flag':show_mcm_flag,'show_convocation_flag':show_convocation_flag,
+                       'update_mcm_flag':update_mcm_flag,'update_con_flag':update_con_flag,
+                      'mother_occ': mother_occ, 'con': con, 'assis': assis,'hd': hd, 'hd1': hd1,'last_clicked':last_clicked,'x':x})
+
+        except:
+            print("sessiong not defined")
+
+
         #start of database queries
         mcm = Mcm.objects.all()
         ch = Constants.batch
@@ -544,7 +1016,7 @@ def student_view(request):
         mcm_release = Release.objects.filter(award='Mcm Scholarship')
         convocation_release = Release.objects.filter(award='Convocation Medals')
         release_count = release.count()
-        winners = Previous_winner.objects.all()
+        #winners = Previous_winner.objects.all()
         spi = Spi.objects.all()
         student = Student.objects.all()
         student_batch = str(request.user.extrainfo.student)[0:4]
@@ -556,35 +1028,50 @@ def student_view(request):
         assis = Designation.objects.get(name='spacsassistant')
         hd = HoldsDesignation.objects.get(designation=con)
         hd1 = HoldsDesignation.objects.get(designation=assis)
-        x = Notification.objects.get(student_id = request.user.extrainfo.id)
-
+        no_of_mcm_filled = len(Mcm.objects.filter(student = request.user.extrainfo.student))
+        no_of_con_filled = len(Director_silver.objects.filter(student = request.user.extrainfo.student)) + len(Director_gold.objects.filter(student = request.user.extrainfo.student)) + len(Proficiency_dm.objects.filter(student = request.user.extrainfo.student))
         # Arihant: Here we are fetching the flags from the Notification table of student
         #end of database queries
 
 
         #notification flags
+        update_mcm_flag = False
+        update_con_flag = False
+        x_notif_mcm_flag = False
+        x_notif_con_flag = False
         for dates in release:
             if check_date(dates.startdate,dates.enddate):
                 print('correct date found not deleting',dates.enddate)
+                #print('finding the batch',request.user.extrainfo.id)
+                if dates.award == 'Mcm Scholarship' and dates.batch == str(request.user.extrainfo.student)[0:4] and dates.programme == request.user.extrainfo.student.programme:
+                    print('same batch found', str(request.user.extrainfo.student)[0:4], dates.batch)
+                    x_notif_mcm_flag = True
+                    if no_of_mcm_filled > 0 :
+                        update_mcm_flag = True
+                elif dates.award == 'Convocation Medals' and dates.batch == str(request.user.extrainfo.student)[0:4] and dates.programme == request.user.extrainfo.student.programme:
+                    x_notif_con_flag = True
+                    if no_of_con_filled > 0:
+                        update_con_flag = True
             else:
                 print('enddate exceed deleting now',dates.enddate)
-                if dates.award == "Mcm":
-                    x = Notification.objects.get(student_id = request.user.extrainfo.id)
-                    x.invite_mcm_accept_flag=False
-                    x.save()
-                else:
-                    x = Notification.objects.get(student_id = request.user.extrainfo.id)
-                    x.invite_covocation_accept_flag=False
-                    x.save()
-                Release.objects.filter(id=dates.id).delete()
+                if dates.award == "Mcm Scholarship" and dates.batch == str(request.user.extrainfo.student)[0:4]:
+                    x = Notification.objects.get(student_id = request.user.extrainfo.id,release_id=dates.id).delete()
+                elif dates.award == 'Convocation Medals' and dates.batch == str(request.user.extrainfo.student)[0:4]:
+                    x = Notification.objects.get(student_id = request.user.extrainfo.id,release_id=dates.id).delete()
 
-        release = Release.objects.all()
-        notif_mcm_flag = x.notification_mcm_flag
-        #print('printing flag',notif_mcm_flag)
-        notif_convocation_flag  = x.notification_convocation_flag
-        show_mcm_flag=x.invite_mcm_accept_flag
-        show_convocation_flag=x.invite_covocation_accept_flag
-        #end
+        x = Notification.objects.filter(student_id = request.user.extrainfo.id).order_by('-release_id__date_time')
+
+        show_mcm_flag = False
+        show_convocation_flag = False
+        for i in x:
+            if i.invite_mcm_accept_flag == True:
+                print('why is this true')
+                show_mcm_flag = True
+                break
+        for i in x:
+            if i.invite_covocation_accept_flag == True:
+                show_convocation_flag = True
+                break
 
         last_clicked=''
         try:
@@ -595,25 +1082,33 @@ def student_view(request):
 
         return render(request, 'scholarshipsModule/scholarships_student.html',
                   {'mcm': mcm, 'time': time, 'ch': ch, 'awards': awards, 'spi': spi,
-                   'student': student,'student_batch':student_batch, 'winners': winners, 'release': release,
-                   'notif_mcm_flag':notif_mcm_flag,'notif_convocation_flag':notif_convocation_flag,'show_mcm_flag':show_mcm_flag,'show_convocation_flag':show_convocation_flag,'release_count': release_count,
-                   'gold': gold, 'silver': silver, 'dandm': dandm, 'source': source,
-                  'mother_occ': mother_occ, 'con': con, 'assis': assis,'hd': hd, 'hd1': hd1,'last_clicked':last_clicked})
+                   'student': student,'student_batch':student_batch, 'release': release,
+                   'release_count': release_count,'x_notif_mcm_flag':x_notif_mcm_flag,'x_notif_con_flag':x_notif_con_flag,
+                   'gold': gold, 'silver': silver, 'dandm': dandm, 'source': source,'show_mcm_flag':show_mcm_flag,'show_convocation_flag':show_convocation_flag,
+                   'update_mcm_flag':update_mcm_flag,'update_con_flag':update_con_flag,
+                  'mother_occ': mother_occ, 'con': con, 'assis': assis,'hd': hd, 'hd1': hd1,'last_clicked':last_clicked,'x':x})
 
 
 @login_required(login_url='/accounts/login')
 def staff_view(request):
+    try:
+        assistant = Designation.objects.get(name='spacsassistant')
+        hd = HoldsDesignation.objects.get(user=request.user,designation=assistant)
+    except:
+        return HttpResponseRedirect('/logout')
     if request.method == 'POST':
         if 'Verify_mcm' in request.POST:
             pk = request.POST.get('id')
+            print('pk',pk)
             Mcm.objects.filter(id=pk).update(status='COMPLETE')
             request.session['last_clicked']='Verify_mcm'
             messages.success(request,'Verified successfully')
             return HttpResponseRedirect('/spacs/staff_view')
 
         elif 'Reject_mcm' in request.POST:
+            print('assitant reject')
             pk = request.POST.get('id')
-            Mcm.objects.filter(student=pk).update(status='Reject')
+            Mcm.objects.filter(id=pk).update(status='Reject')
             request.session['last_clicked']='Reject_mcm'
             messages.success(request,'Rejected successfully')
             return HttpResponseRedirect('/spacs/staff_view')
@@ -656,7 +1151,107 @@ def staff_view(request):
             request.session['last_clicked']='Reject_dm'
             messages.success(request,'Rejected successfully')
             return HttpResponseRedirect('/spacs/staff_view')
+
+        elif "Submit_previous_winner" in request.POST:
+            print("previous winner post request")
+            request.session["last_clicked"] = "Submit_previous_winner"
+            Previous_winner_award = request.POST.get("Previous_winner_award")
+            Previous_winner_acad_year = request.POST.get("Previous_winner_acad_year")
+            Previous_winner_programme = request.POST.get("Previous_winner_programme")
+            request.session["Previous_winner_award"] = Previous_winner_award
+            request.session["Previous_winner_acad_year"] = Previous_winner_acad_year
+            request.session["Previous_winner_programme"] = Previous_winner_programme
+
+            award = Award_and_scholarship.objects.get(award_name=Previous_winner_award)
+            winners=Previous_winner.objects.filter(year=Previous_winner_acad_year,award_id=award,programme=Previous_winner_programme)
+
+            paginator = Paginator(winners, 10)
+            #page = request.GET.get('page')
+            page = 1
+            print("ari",page)
+            try:
+                winners_list = paginator.page(page)
+            except PageNotAnInteger:
+                # If page is not an integer, deliver first page.
+                winners_list = paginator.page(1)
+            except EmptyPage:
+                # If page is out of range (e.g. 9999), deliver last page of results.
+                winners_list = paginator.page(paginator.num_pages)
+
+            mcm = Mcm.objects.all()
+            gold = Director_gold.objects.all()
+            silver = Director_silver.objects.all()
+            dandm = Proficiency_dm.objects.all()
+            student = Student.objects.all()
+            awards = Award_and_scholarship.objects.all()
+            con = Designation.objects.get(name='spacsconvenor')
+            assis = Designation.objects.get(name='spacsassistant')
+            hd = HoldsDesignation.objects.get(designation=con)
+            hd1 = HoldsDesignation.objects.get(designation=assis)
+
+            last_clicked=''
+            try:
+                last_clicked = request.session['last_clicked']
+            except:
+                print('last_clicked not found')
+                print('printting value',last_clicked)
+
+
+            return render(request, 'scholarshipsModule/scholarships_staff.html',
+                      {'mcm': mcm, 'student': student,
+                       'awards': awards, 'gold': gold,
+                       'silver': silver, 'dandm': dandm, 'winners_list': winners_list,
+                       'con': con, 'assis': assis,'hd': hd, 'hd1': hd1,'last_clicked':last_clicked})
+
     else:
+        try:
+            last_clicked = request.session['last_clicked']
+            Previous_winner_award = request.session['Previous_winner_award']
+            Previous_winner_acad_year = request.session['Previous_winner_acad_year']
+            Previous_winner_programme = request.session['Previous_winner_programme']
+            print("session found")
+            award = Award_and_scholarship.objects.get(award_name=Previous_winner_award)
+            winners=Previous_winner.objects.filter(year=Previous_winner_acad_year,award_id=award,programme=Previous_winner_programme)
+
+            paginator = Paginator(winners, 10)
+            page = request.GET.get('page')
+            print("arihant ", page)
+            try:
+                winners_list = paginator.page(page)
+            except PageNotAnInteger:
+                # If page is not an integer, deliver first page.
+                winners_list = paginator.page(1)
+            except EmptyPage:
+                # If page is out of range (e.g. 9999), deliver last page of results.
+                winners_list = paginator.page(paginator.num_pages)
+            mcm = Mcm.objects.all()
+            gold = Director_gold.objects.all()
+            silver = Director_silver.objects.all()
+            dandm = Proficiency_dm.objects.all()
+            student = Student.objects.all()
+            awards = Award_and_scholarship.objects.all()
+            winners = Previous_winner.objects.all()
+            con = Designation.objects.get(name='spacsconvenor')
+            assis = Designation.objects.get(name='spacsassistant')
+            hd = HoldsDesignation.objects.get(designation=con)
+            hd1 = HoldsDesignation.objects.get(designation=assis)
+
+            last_clicked=''
+            try:
+                last_clicked = request.session['last_clicked']
+            except:
+                print('last_clicked not found')
+                print('printting value',last_clicked)
+
+
+            return render(request, 'scholarshipsModule/scholarships_staff.html',
+                      {'mcm': mcm, 'student': student,
+                       'awards': awards, 'gold': gold,
+                       'silver': silver, 'dandm': dandm, 'winners': winners,
+                       'con': con, 'assis': assis,'hd': hd, 'hd1': hd1,'last_clicked':last_clicked})
+        except:
+            print("error in try")
+
         #mcm = Mcm.objects.all().order_by('student__cpi')
         mcm = Mcm.objects.all()
         gold = Director_gold.objects.all()
@@ -687,23 +1282,78 @@ def staff_view(request):
 
 # Arihant: This view is created for the rest of audience excluding students, spacs convenor and spacs assistant
 def stats(request):
-    mcm = Mcm.objects.all()
-    gold = Director_gold.objects.all()
-    silver = Director_silver.objects.all()
-    dandm = Proficiency_dm.objects.all()
-    student = Student.objects.all()
-    awards = Award_and_scholarship.objects.all()
-    winners = Previous_winner.objects.all()
-    con = Designation.objects.get(name='spacsconvenor')
-    assis = Designation.objects.get(name='spacsassistant')
-    hd = HoldsDesignation.objects.get(designation=con)
-    hd1 = HoldsDesignation.objects.get(designation=assis)
+    if request.method == 'POST':
+        if "Submit_previous_winner" in request.POST:
+            print("previous winner post request")
+            request.session["Submit_previous_winner"] = "Submit_previous_winner"
+            Previous_winner_award = request.POST.get("Previous_winner_award")
+            Previous_winner_acad_year = request.POST.get("Previous_winner_acad_year")
+            Previous_winner_programme = request.POST.get("Previous_winner_programme")
+            request.session["Previous_winner_award"] = Previous_winner_award
+            request.session["Previous_winner_acad_year"] = Previous_winner_acad_year
+            request.session["Previous_winner_programme"] = Previous_winner_programme
 
-    return render(request, 'scholarshipsModule/stats.html',
-              {'mcm': mcm, 'student': student,
-               'awards': awards, 'gold': gold,
-               'silver': silver, 'dandm': dandm, 'winners': winners,
-               'con': con, 'assis': assis,'hd': hd, 'hd1': hd1})
+            award = Award_and_scholarship.objects.get(award_name=Previous_winner_award)
+            winners=Previous_winner.objects.filter(year=Previous_winner_acad_year,award_id=award,programme=Previous_winner_programme)
+
+            paginator = Paginator(winners, 10)
+            #page = request.GET.get('page')
+            page = 1
+            print("ari",page)
+            try:
+                winners_list = paginator.page(page)
+            except PageNotAnInteger:
+                # If page is not an integer, deliver first page.
+                winners_list = paginator.page(1)
+            except EmptyPage:
+                # If page is out of range (e.g. 9999), deliver last page of results.
+                winners_list = paginator.page(paginator.num_pages)
+
+
+            awards = Award_and_scholarship.objects.all()
+
+            print("winners",len(winners))
+            print("winners_list",len(winners_list))
+
+            return render(request, 'scholarshipsModule/stats.html',
+                      {'awards': awards, 'winners_list':winners_list})
+
+    else:
+        print("previous winner get request")
+        try:
+            Previous_winner_award = request.session['Previous_winner_award']
+            Previous_winner_acad_year = request.session['Previous_winner_acad_year']
+            Previous_winner_programme = request.session['Previous_winner_programme']
+            print("session found")
+            award = Award_and_scholarship.objects.get(award_name=Previous_winner_award)
+            winners=Previous_winner.objects.filter(year=Previous_winner_acad_year,award_id=award,programme=Previous_winner_programme)
+
+            paginator = Paginator(winners, 10)
+            page = request.GET.get('page')
+            print("arihant ", page)
+            try:
+                winners_list = paginator.page(page)
+            except PageNotAnInteger:
+                # If page is not an integer, deliver first page.
+                winners_list = paginator.page(1)
+            except EmptyPage:
+                # If page is out of range (e.g. 9999), deliver last page of results.
+                winners_list = paginator.page(paginator.num_pages)
+
+
+            awards = Award_and_scholarship.objects.all()
+
+
+            return render(request, 'scholarshipsModule/stats.html',
+                      {'awards': awards, 'winners_list':winners_list})
+
+
+        except:
+            print("sessiong not defined")
+
+        awards = Award_and_scholarship.objects.all()
+        return render(request, 'scholarshipsModule/stats.html',
+                      {'awards': awards})
 
 
 
@@ -808,10 +1458,12 @@ def get_win(request):
 # Arihant: Here we are extracting mcm_flag
 def get_mcm_flag(request):
     print('hello get_mcm_flag')
-    x = Notification.objects.get(student_id = request.user.extrainfo.id)
-    x.invite_mcm_accept_flag=True
-    x.notification_mcm_flag=False
-    x.save()
+    x = Notification.objects.filter(student_id = request.user.extrainfo.id)
+    print('found notifications',len(x))
+    for i in x:
+        i.invite_mcm_accept_flag=True
+        i.save()
+        #i.notification_mcm_flag=False
     request.session['last_clicked']='get_mcm_flag'
     context={}
     context['show_mcm_flag']=True
@@ -819,18 +1471,17 @@ def get_mcm_flag(request):
         context['result']='Success'
     else:
         context['result']='Failure'
-    print('printing accept flag',x.invite_mcm_accept_flag)
-    print('printing notification flag',x.notification_mcm_flag)
     return HttpResponse(json.dumps(context), content_type='get_mcm_flag/json')
     #return HttpResponseRedirect('/spacs/student_view')
 
 # Arihant: Here we are extracting convocation_flag
 def get_convocation_flag(request):
     print('hello get_convocation_flag')
-    x = Notification.objects.get(student_id = request.user.extrainfo.id)
-    x.invite_covocation_accept_flag=True
-    x.notification_convocation_flag=False
-    x.save()
+    x = Notification.objects.filter(student_id = request.user.extrainfo.id)
+    for i in x:
+        i.invite_covocation_accept_flag=True
+        i.save()
+        #i.notification_convocation_flag=False
     request.session['last_clicked']='get_convocation_flag'
     context={}
     context['show_convocation_flag']=True
@@ -838,8 +1489,6 @@ def get_convocation_flag(request):
         context['result']='Success'
     else:
         context['result']='Failure'
-    print('printing accept flag',x.invite_covocation_accept_flag)
-    print('printing notification flag',x.notification_convocation_flag)
     return HttpResponse(json.dumps(context), content_type='get_convocation_flag/json')
 
 def get_content(request):
@@ -866,3 +1515,16 @@ def check_date(start_date, end_date):
             return False
     else:
         return False
+
+def update_enddate(request):
+    id = request.GET.get('up_id')
+    end_dat = request.GET.get('up_d')
+    print("arihant",id,end_dat)
+    re = Release.objects.filter(pk=id).update(enddate=end_dat)
+    request.session['last_clicked'] = "Enddate_updated"
+    context={}
+    if re:
+        context['result']='Success'
+    else:
+        context['result']='Failure'
+    return HttpResponse(json.dumps(context), content_type='update_enddate/json')

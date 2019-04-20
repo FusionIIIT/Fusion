@@ -17,5 +17,6 @@ urlpatterns = [
     url(r'^get_mcm_flag/$', views.get_mcm_flag, name='get_mcm_flag'),
     url(r'^get_convocation_flag/$', views.get_convocation_flag, name='get_convocation_flag'),
     url(r'^get_content/$', views.get_content, name='get_content'),
+    url(r'^update_enddate/$', views.update_enddate, name='update_enddate'),
 
 ]

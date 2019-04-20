@@ -14,12 +14,16 @@ from applications.visitor_hostel.models import *
 import numpy as np
 
 from .forms import InventoryForm
+<<<<<<< HEAD
 
 # for notifications
 from notification.views import visitors_hostel_notif
 
 
 # main page showing dashboard of user
+=======
+from notification.views import visitors_hostel_notif
+>>>>>>> 165acc4a4b95a4b3ea67bc29541f01e49382bba3
 
 @login_required(login_url='/accounts/login/')
 def visitorhostel(request):
@@ -111,7 +115,10 @@ def visitorhostel(request):
             temp1 = booking_details(booking_from, booking_to)
             available_rooms[booking.id] = temp1
             
+<<<<<<< HEAD
         # forwarded rooms details
+=======
+>>>>>>> 165acc4a4b95a4b3ea67bc29541f01e49382bba3
         for booking in c_bookings:
             booking_from = booking.booking_from
             booking_to = booking.booking_to
@@ -365,7 +372,11 @@ def request_booking(request):
             bookingObject.image = uploaded_file_url
             bookingObject.save()
 
+<<<<<<< HEAD
         # visitor datails from place request form 
+=======
+            # visitor datails from place request form 
+>>>>>>> 165acc4a4b95a4b3ea67bc29541f01e49382bba3
 
         visitor_name = request.POST.get('name')
         visitor_phone = request.POST.get('phone')
@@ -392,8 +403,11 @@ def request_booking(request):
         print("exception occured")
             # return HttpResponse('/visitorhostel/')
 
+<<<<<<< HEAD
         # for sending notification of booking request to caretaker
 
+=======
+>>>>>>> 165acc4a4b95a4b3ea67bc29541f01e49382bba3
         caretaker_name = HoldsDesignation.objects.get(designation__name = "VhCaretaker")
         visitors_hostel_notif(request.user, caretaker_name.user, 'booking_request')
 
@@ -478,8 +492,13 @@ def confirm_booking(request):
             room_object = RoomDetail.objects.get(room_number=room)
             bd.rooms.add(room_object)
         bd.save()
+<<<<<<< HEAD
 
         # notification of booking confirmation 
+=======
+        print("zxcc")
+        print(bd.intender)
+>>>>>>> 165acc4a4b95a4b3ea67bc29541f01e49382bba3
         visitors_hostel_notif(request.user, bd.intender, 'booking_confirmation')
         return HttpResponseRedirect('/visitorhostel/')
     else:
@@ -507,16 +526,22 @@ def cancel_booking(request):
 
         complete_bookings = BookingDetail.objects.filter(Q(status="Canceled") | Q(status="Complete"), booking_to__lt=datetime.datetime.today()).select_related().order_by('booking_from')
         
+<<<<<<< HEAD
         
         # to notify the intender that his cancellation request has been confirmed
 
+=======
+>>>>>>> 165acc4a4b95a4b3ea67bc29541f01e49382bba3
         visitors_hostel_notif(request.user, booking.intender, 'booking_cancellation_request_accepted')
         return HttpResponseRedirect('/visitorhostel/')
     else:
         return HttpResponseRedirect('/visitorhostel/')
 
 # cancel confirmed booing by intender
+<<<<<<< HEAD
 
+=======
+>>>>>>> 165acc4a4b95a4b3ea67bc29541f01e49382bba3
 @login_required(login_url='/accounts/login/')
 def cancel_booking_request(request):
     if request.method == 'POST':
@@ -526,9 +551,12 @@ def cancel_booking_request(request):
         BookingDetail.objects.filter(id=booking_id).update(status='CancelRequested', remark=remark)
 
         incharge_name = HoldsDesignation.objects.get(designation__name = "VhIncharge")
+<<<<<<< HEAD
 
         # to notify the VhIncharge about a new cancelltaion request
 
+=======
+>>>>>>> 165acc4a4b95a4b3ea67bc29541f01e49382bba3
         visitors_hostel_notif(request.user, incharge_name.user, 'cancellation_request_placed')
         return HttpResponseRedirect('/visitorhostel/')
     else:
@@ -544,9 +572,12 @@ def reject_booking(request):
         remark = request.POST.get('remark')
         BookingDetail.objects.filter(id=booking_id).update(
             status="Rejected", remark=remark)
+<<<<<<< HEAD
 
         # to notify the intender that his request has been rejected
 
+=======
+>>>>>>> 165acc4a4b95a4b3ea67bc29541f01e49382bba3
         visitors_hostel_notif(request.user, booking.intender, 'booking_rejected')
         return HttpResponseRedirect('/visitorhostel/')
     else:
@@ -920,8 +951,11 @@ def forward_booking(request):
         # return render(request, "vhModule/visitorhostel.html",
         #           {'dashboard_bookings' : dashboard_bookings})
         incharge_name = HoldsDesignation.objects.get(designation__name = "VhIncharge")
+<<<<<<< HEAD
 
         # notify incharge about forwarded booking
+=======
+>>>>>>> 165acc4a4b95a4b3ea67bc29541f01e49382bba3
         visitors_hostel_notif(request.user, incharge_name.user, 'booking_forwarded')
         return HttpResponseRedirect('/visitorhostel/')
     else:

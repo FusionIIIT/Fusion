@@ -14,22 +14,54 @@
     </div>
     {% comment %}the view doctor tab starts here {% endcomment %}
     <div class="ui active tab" data-tab="viewdoctor">
-        <div class="ui vertical segment" >
-            <table class="ui very basic collapsing celled small fluid table"
-                  style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;" >
+         <div id="docs_print" class="ui vertical segment" >
+              <!--  <button type="button"  id="pr_docs" name="PDF" value="PDF" class="ui primary button right floated">
+                    Download
+                    <i class="ui download icon right floated"></i>
+                </button>  -->
+
+                <script>
+    $('#pr_docs').click(function(e){
+        var sTable = document.getElementById('docs_print').innerHTML;
+
+        var style = "<style>";
+        style = style + "table {width: 100%;font: 17px Calibri;}";
+        style = style + "table, th, td {border: solid 1px #DDD; border-collapse: collapse;";
+        style = style + "padding: 2px 3px;text-align: center;}";
+        style = style + "</style>";
+
+        // CREATE A WINDOW OBJECT.
+        var win = window.open('', '', 'height=700,width=700');
+
+        win.document.write('<html><head>');
+        win.document.write('<title >PHC Doctors</title>');   // <title> FOR PDF HEADER.
+        win.document.write(style);          // ADD STYLE INSIDE THE HEAD TAG.
+        win.document.write('</head>');
+        win.document.write('<body>');
+        win.document.write(sTable);         // THE TABLE CONTENTS INSIDE THE BODY TAG.
+        win.document.write('</body></html>');
+
+        win.document.close(); 	// CLOSE THE CURRENT WINDOW.
+
+        win.print();    // PRINT THE CONTENTS.
+    });
+
+</script>
+
+             <table border=1 class="ui definition padded table" style="margin: auto;"  id="phc_docs">
                 <thead>
                 <tr>
-                    <th >
+                    <td>
                         Doctor Name
-                    </th>
+                    </td>
 
-                    <th >
+                    <td>
                         Specialization
-                    </th>
+                    </td>
 
-                    <th >
+                    <td>
                           Phone
-                    </th>
+                    </td>
                   </tr>
                 </thead>
 
@@ -37,7 +69,7 @@
                 {% for doc in doctors %}
                 <tr>
 
-                    <td>
+                    <td id="{{doc.pk}}">
                         <h4 class="ui image header">
                             <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
                         </h4>
@@ -89,7 +121,7 @@
                 <label><br></label>
 
                 <div >
-                  <input type="button" id="add_doctor" name="add_doctor" onClick="window.location.reload();" value="Submit"class="ui large right floated primary button" />
+                  <input type="button" id="add_doctor" name="add_doctor"  value="Submit" class="ui large right floated primary button" />
                 </div>
 
                </div>
@@ -117,9 +149,15 @@
                                                     },
                                                       success: function(data){
                                                       alert("added doctor");
+
+                                            {% comment %}          $('#phc_docs').find('tbody');
+$('#phc_docs tbody').append("<tr><td>" + data.doctor + "</td><td>" + data.specialization + "</td><td>"  + data.phone + "</td></tr>");
+                                                       {% endcomment %}
+
                                                       document.getElementById("new_doctor").value="";
                                                       document.getElementById("specialization").value="";
                                                       document.getElementById("phone").value="";
+                                                      window.location.reload();
                                                     }
                                                   });
                                                 });
@@ -143,14 +181,14 @@
                   <option selected hidden>--SELECT--</option>
                   {% for doctor in doctors %}
                   <option value="{{doctor.id}}">{{doctor.doctor_name}}</option>
-                  {% endfor %}
+                    {% endfor %}
                 </select>
                 </div>
                 <div class="field">
                 <label><br></label>
 
                 <div >
-                  <input type="button" id="remove_doctor" name="remove_doctor" onClick="window.location.reload();" value="Submit"class="ui large right floated primary button" />
+                  <input type="button" id="remove_doctor" name="remove_doctor"  value="Submit"class="ui large right floated primary button" />
                 </div>
 
                </div>
@@ -168,7 +206,11 @@
                                                       remove_doctor:$('#remove_doctor').val()
                                                     },
                                                       success: function(data){
-                                                      alert("removed doctor");
+                                                      $('#'+data.id).parent().remove();
+
+                                                      alert("removed doctor : "+data.doc);
+                                                      document.getElementById("doc_active").value="";
+                                                      window.location.reload();
                                                     }
                                                   });
                                                 });

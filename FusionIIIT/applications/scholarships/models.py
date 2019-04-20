@@ -148,6 +148,8 @@ class Previous_winner(models.Model):
 
 #To Do:to reduce the last unused column
 class Release(models.Model):
+    date_time = models.DateTimeField(default=datetime.datetime.now, blank=True)
+    programme = models.CharField(max_length=10,default='B.Tech')
     startdate = models.DateField(default=datetime.date.today)
     enddate = models.DateField()
     award = models.CharField(default='',max_length=25)
@@ -161,6 +163,7 @@ class Release(models.Model):
 
 #Abhilash: new class added for keeping track of notifications and applied application by students
 class Notification(models.Model):
+    release_id = models.ForeignKey(Release,default=None)
     student_id = models.ForeignKey(Student, on_delete = models.CASCADE)
     notification_mcm_flag = models.BooleanField(default=False)
     notification_convocation_flag = models.BooleanField(default=False)

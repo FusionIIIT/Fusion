@@ -35,7 +35,7 @@
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
 
-                 <a class=" {% if last_clicked == ''%}active item {% else %}item {% endif %}" data-tab="first" id="catalogue_clicked">
+                 <a class=" {% if last_clicked == '' or last_clicked == 'Submit_previous_winner'%}active item {% else %}item {% endif %}" data-tab="first" id="catalogue_clicked">
                      Catalogue
                      <i class="right floated chevron right icon"></i>
                  </a>
@@ -45,7 +45,7 @@
                     <i class="right floated chevron right icon"></i>
                 </a>-->
 
-                <a class="{% if last_clicked == 'Submit'%}active item {% else %}item {% endif %}" data-tab="second">
+                <a class="{% if last_clicked == 'Submit' or last_clicked == 'Enddate_updated' %}active item {% else %}item {% endif %}" data-tab="second">
                     Invite Applications
                     <i class="right floated chevron right icon"></i>
                 </a>
@@ -124,12 +124,12 @@
                             {% include 'scholarshipsModule/browse1.html' with last_clicked=last_clicked%}
                         {% endblock %}
                     </div>
-                  <div class="{% if last_clicked == '' %}ui active tab segment {% else %}ui tab segment {% endif %}" data-tab="first">
+                  <div class="{% if last_clicked == '' or last_clicked == 'Submit_previous_winner' %}ui active tab segment {% else %}ui tab segment {% endif %}" data-tab="first">
                         {% block catalogue %}
-                            {% include 'scholarshipsModule/catalogue.html' %}
+                            {% include 'scholarshipsModule/catalogue.html'%}
                         {% endblock %}
                      </div>
-                      <div class="{% if last_clicked == 'Submit' %} ui active tab segment {% else %} ui tab segment {% endif %}" data-tab="second">
+                      <div class="{% if last_clicked == 'Submit' or last_clicked == 'Enddate_updated' %} ui active tab segment {% else %} ui tab segment {% endif %}" data-tab="second">
                          {% block invite %}
                              {% include 'scholarshipsModule/invite.html' with release=release ch=ch time=time awards=awards %}
                          {% endblock %}

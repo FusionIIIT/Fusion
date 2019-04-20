@@ -2,7 +2,7 @@
 {% block catalog %}
 
     <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="catalog">
+        <a class="{% if last_clicked == '' or last_clicked == 'Enddate_updated' or last_clicked == 'Submit' %} active item {% else %} item {% endif %}" data-tab="catalog">
             Catalog
         </a>
 
@@ -10,8 +10,8 @@
             About_spacs
         </a>
 
-        <a class="item" data-tab="paw">
-              Previous Awards Winner
+        <a class="{% if last_clicked == 'Submit_previous_winner' %} active item {% else %} item {% endif %}" data-tab="paw">
+              Previous Winners
           </a>
     </div>
 
@@ -23,15 +23,15 @@
             </div>
     </div>
 
-    <div class="ui tab " data-tab="paw">
+    <div class="{% if last_clicked == 'Submit_previous_winner' %} ui active tab {% else %} ui tab {% endif %}" data-tab="paw">
         <div class="ui vertical segment">
           {% block winners %}
-              {% include 'scholarshipsModule/winners.html' with winners=winners %}
+              {% include 'scholarshipsModule/winners.html' with winners_list=winners_list awards=awards%}
           {% endblock %}
             </div>
     </div>
 
-    <div class="ui active tab" data-tab="catalog">
+    <div class="{% if last_clicked == '' or last_clicked == 'Enddate_updated' or last_clicked == 'Submit' %} ui active tab {% else %} ui tab {% endif %}" data-tab="catalog">
 
         <div class="ui vertical segment">
 

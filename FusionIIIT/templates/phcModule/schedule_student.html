@@ -5,29 +5,118 @@
         <a class="active item" data-tab="viewschedule">
             View Schedule
         </a>
+         <a class="item" data-tab="viewdoctor">
+            Doctors Info
+       </a>
     </div>
 
+    {% comment %}the view doctor tab starts here {% endcomment %}
+    <div class="ui tab" data-tab="viewdoctor">
+         <div id="docs_print" class="ui vertical segment">
+              <!--  <button type="button"  id="pr_docs" name="PDF" value="PDF" class="ui primary button right floated">
+                    Download
+                    <i class="ui download icon right floated"></i>
+                </button>  -->
 
-    {% comment %}the doctor appointment tab starts here {% endcomment %}
+                <script>
+    $('#pr_docs').click(function(e){
+        var sTable = document.getElementById('docs_print').innerHTML;
+
+        var style = "<style>";
+        style = style + "table {width: 100%;font: 17px Calibri;}";
+        style = style + "table, th, td {border: solid 1px #DDD; border-collapse: collapse;";
+        style = style + "padding: 2px 3px;text-align: center;}";
+        style = style + "</style>";
+
+        // CREATE A WINDOW OBJECT.
+        var win = window.open('', '', 'height=700,width=700');
+
+        win.document.write('<html><head>');
+        win.document.write('<title >PHC Doctors</title>');   // <title> FOR PDF HEADER.
+        win.document.write(style);          // ADD STYLE INSIDE THE HEAD TAG.
+        win.document.write('</head>');
+        win.document.write('<body>');
+        win.document.write(sTable);         // THE TABLE CONTENTS INSIDE THE BODY TAG.
+        win.document.write('</body></html>');
+
+        win.document.close(); 	// CLOSE THE CURRENT WINDOW.
+
+        win.print();    // PRINT THE CONTENTS.
+    });
+
+</script>
+
+             <table border=1 class="ui definition padded table" style="margin: auto;" id="phc_docs">
+                <thead>
+                <tr>
+                    <td>
+                        Doctor Name
+                    </td>
+
+                    <td>
+                        Specialization
+                    </td>
+
+                    <td>
+                          Phone
+                    </td>
+                  </tr>
+                </thead>
+
+                <tbody>
+                {% for doc in doctors %}
+                <tr>
+
+                    <td id="{{doc.pk}}">
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                        </h4>
+                              {{doc.doctor_name}}
+                    </td>
+
+                    <td>
+                        {{doc.specialization}}
+                    </td>
+
+                    <td>
+                        {{doc.doctor_phone}}
+                    </td>
+                </tr>
+                {% endfor %}
+
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+{% comment %}the view doctor tab ends here {% endcomment %}
+
+
+
+    {% comment %}the doctor schedule tab starts here {% endcomment %}
     <div class="ui active tab" data-tab="viewschedule">
-        <div class="ui vertical segment">
+
+                 <input type='button' id='Book Appointment' name='Book Appointment' onClick="window.location.reload();" value="Book Appointment" class="ui primary right floated button" >
+
             <div class="field">
-
-                <div class="field">
-
-                            <input type='button' id='Book Appointment' name='Book Appointment' onClick="window.location.reload();" value="Book Appointment" class="ui primary right floated button" >
-                    </div>
-
-
-              <table  border=1 class="ui very basic celled small fluid table"
-                     style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;">
+              <table  border=1 class="ui definition padded table" style="margin: auto;">
+                   </br>
+                      </br>
+                         </br>
                   <thead>
 
                     <tr>
-                      <td style="font-weight:bold;color:black;">Schedule</td>
+                      <td style="font-weight:bold;color:black;">Doctor</td>
                       {% for d in doctors %}
                       {{count.doctor_count}}
-                      <td style="font-weight:bold;color:black;">{{d.doctor_name}}</td>
+                      <td style="font-weight:bold;color:black; word-wrap:break-word;">{{d.doctor_name}}</td>
+                      {% endfor %}
+                    </tr>
+                    <tr>
+                      <td >Specialization</td>
+                      {% for d in doctors %}
+                      {{count.doctor_count}}
+                      <td style="word-wrap:break-word;">{{d.specialization}}</td>
                       {% endfor %}
                     </tr>
                       {% for p,day in days %}
@@ -40,7 +129,7 @@
                         {% for s in schedule %}
                         {% if s.day == p %}
                         {% if d.id == s.doctor_id.id %}
-                        <td>{{s.from_time}}--{{s.to_time}}</td>
+                        <td style="white-space:nowrap;">{{s.from_time}}--{{s.to_time}}</td>
                         {{count.increment}}
                         {% else %}
                         {% endif %}
@@ -54,6 +143,8 @@
                     {% endfor %}
                   </thead>
               </table>
+                 </br>
+
 
         </div>
       </div>

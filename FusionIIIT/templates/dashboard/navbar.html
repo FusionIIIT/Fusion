@@ -1,4 +1,7 @@
 {% load static %}
+
+<!-- navbar -->
+
 {% block navBar %}
     {% include 'dashboard/sidenavbar.html' %}
 
@@ -29,7 +32,7 @@
                         </div>
                         <div class="results"></div>
                     </div>
-                    
+
                 </form>
             </div>
             <div class="right inverted menu">
@@ -44,19 +47,13 @@
 		    {% endif %}
                     {{request.user.first_name}} {{request.user.last_name}}
                 </a>
-                {% comment %}
-                <a class="item ui pointed dropdown link" href="{% url 'globals:dashboard' %}" id="new-notification">
-                    <div class="text">Notifications</div>
-                    <i class="dropdown"></i>
-                    <div class="ui red circular label">22</div>
-                        TODO: Make dropdown menu
-                    <div class="menu">
-                        <div class="item">Notification1</div>
-                        <div class="item">Notification1</div>
-                    </div>
-                    {% endcomment %}
-                </a>
-                    
+                <!-- <a class = "item" >
+                    <i class = "browser icon"></i></a>
+                <a class="item" id="new-notification">
+                    Notifications
+
+                </a> -->
+
                 <div class="ui fluid popup bottom left transition">
                     <div class="ui four column relaxed equal height stackable doubling grid">
                         <div class="row">

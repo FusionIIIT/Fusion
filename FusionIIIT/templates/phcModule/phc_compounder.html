@@ -37,11 +37,8 @@
             <div class="row">
                 {% comment %}The Tab-Menu starts here!{% endcomment %}
                 <div class="ui large fluid vertical pointing menu">
-                    <a class="active item" data-tab="third">
-                        Response
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-                    <a class="item" data-tab="fourth">
+
+                    <a class=" active item" data-tab="fourth">
                         Appointment
                         <i class="right floated chevron right icon"></i>
                     </a>
@@ -54,11 +51,16 @@
                         <i class="right floated chevron right icon"></i>
                     </a>
                     <a class="item" data-tab="eigth">
-                        Schedule
+                        Doctor Schedule
                         <i class="right floated chevron right icon"></i>
                     </a>
                     <a class="item" data-tab="ninth">
                         Doctors
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class=" item" data-tab="third">
+                        Feedback/Response
                         <i class="right floated chevron right icon"></i>
                     </a>
                 </div>
@@ -73,7 +75,7 @@
         {% comment %}The central-rail segment starts here!{% endcomment %}
         <div class="eight wide column">
             {% comment %}The complaint/feedback starts here!{% endcomment %}
-            <div class="ui active tab segment" data-tab="third">
+            <div class="ui tab segment" data-tab="third" style='height:650px;width:820px;overflow-x:scroll'>
                 {% block feedback %}
                     {% include 'phcModule/feedback_compounder.html' with all_complaints=all_complaints%}
                 {% endblock %}
@@ -81,7 +83,7 @@
             {% comment %}The complaint/feedback ends here!{% endcomment %}
 
             {% comment %}The ap `pointment approval tab starts here!{% endcomment %}
-            <div class="ui tab segment" data-tab="fourth">
+            <div class="ui active tab segment" data-tab="fourth" style='height:650px;width:820px;overflow-x:scroll'>
                 {% block comapproval %}
                     {% include 'phcModule/comapproval.html' with all_hospitals=all_hospitals all_ambulances=all_ambulances appointments_today=appointments_today appointments_approve=appointments_approve %}
                 {% endblock %}
@@ -106,7 +108,7 @@
             {% comment %}The Manage Stocks Form ends here!{% endcomment %}
 
             {% comment %}The Schedule Form starts here!{% endcomment %}
-            <div class="ui tab segment" data-tab="eigth">
+            <div class="ui tab segment" style='height:700px;width:1000px;' data-tab="eigth">
                 {% block schedule %}
                     {% include 'phcModule/schedule.html' with days=days count=count doctors=doctors%}
                 {% endblock %}
@@ -141,4 +143,8 @@
     <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
     <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
     <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.2/jspdf.min.js"></script>
+   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.22/pdfmake.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
+
 {% endblock %}

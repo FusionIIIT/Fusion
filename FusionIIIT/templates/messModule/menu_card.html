@@ -10,16 +10,12 @@
             Meeting information
         </a>
 
-        <a class="item" data-tab="tenth">
-            Meeting Minutes
-        </a>
-
         <a class="item" data-tab="sixteenth">
             Feedback Statistics
         </a>
 
         <a class="item" data-tab="forteenth">
-            View Feedback
+            View Feedback | Statistics
         </a>
 
     {% endif %}
@@ -35,16 +31,16 @@
                 Feedback
             </a>
 
-            {% if messinfo.mess_option == 'mess1' %}
+            {% if messinfo.mess_option == 'mess2' %}
                 <a class="item" data-tab="sixth">
                     Apply For Non-veg | Check History
                 </a>
             {% endif %}
 
             <a class="item" data-tab="second">
-                Apply For Leave
+                Applications
             </a>
-
+<!--
             <a class="item" data-tab="third">
                 Apply For Vacation Food
             </a>
@@ -52,6 +48,7 @@
             <a class="item" data-tab="fifth">
                 Special Food Request | Choose mess
             </a>
+            -->
 
 
         {% endif %}
@@ -62,23 +59,26 @@
             <a class="item" data-tab="fifteenth">
                 Meeting information
             </a>
-
+<!--
             <a class="item" data-tab="tenth">
                 Meeting Minutes
             </a>
+            -->
 
             <a class="item" data-tab="forteenth">
-                View Feedback
+                View Feedback | Statistics
             </a>
+            <!--
             <a class="item" data-tab="sixteenth">
                 Feedback Statistics
             </a>
+            -->
 
 
         {% endif %}
         {% if d.designation.name == 'mess_convener_mess1' or d.designation.name == 'mess_convener_mess2' %}
             <a class="item" data-tab="forteenth">
-                View Feedback
+                View Feedback | Statistics
             </a>
 
             <a class="item" data-tab="eighth">
@@ -90,30 +90,28 @@
             </a>
 
             <a class="item" data-tab="ninth">
-                Meeting Invitation
+                Meeting Information
             </a>
 
             <a class="item" data-tab="eleventh">
                 View Special Food Request
             </a>
-
-            <a class="item" data-tab="seventeenth">
-                Publish Minutes
-            </a>
+{##}
+{#            <a class="item" data-tab="seventeenth">#}
+{#                Publish Minutes#}
+{#            </a>#}
+            <!--
             <a class="item" data-tab="sixteenth">
                 Feedback Statistics
             </a>
+            -->
         {% endif %}
     {% endif %}
 
 
     {% if info.user_type == 'staff' and d.designation.name == 'mess_manager' %}
         <a class="item" data-tab="seventh">
-            Leave Requests
-        </a>
-
-        <a class="item" data-tab="twenty">
-            Vacation Food Requests
+            Respond to requests
         </a>
 
         <a class="item" data-tab="twentytwo">
@@ -125,15 +123,7 @@
         </a>
 
         <a class="item" data-tab="twelfth">
-            Start Registration
-        </a>
-
-        <a class="item" data-tab="eighteenth">
-            Monthly Bill
-        </a>
-
-        <a class="item" data-tab="twentyone">
-            Mess Committee
+            Mess Activities
         </a>
     {% endif %}
 
