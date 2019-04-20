@@ -11,6 +11,7 @@
                 <div class="ui card" id="notif{{notice.id}}">
                 {% endif %}
                 <div class="content">
+<<<<<<< HEAD
                     <div class="ui grid">
                         <div class="header fifteen wide column">
                                <a href="{% url 'notifications:mark_as_read_and_redirect' notice.slug %}"> {{ notice.data.module }} </a>
@@ -19,6 +20,10 @@
                         <div class="one wide column">
                             <i class="notif-delete close icon link icon" title="Delete notification" id="notif-delete{{notice.id}}" notif-id="{{notice.id}}" slug="{{notice.slug}}"></i>
                         </div>
+=======
+                    <div class="header">
+                           <a href="{% url 'notifications:mark_as_read_and_redirect' notice.slug %}"> {{ notice.data.module }} </a>
+>>>>>>> upstream/master
                     </div>
                     <div class="meta">
                         {{ notice.timesince }} ago

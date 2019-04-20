@@ -48,10 +48,17 @@ function request_booking (event) {
     booking_from = $('input[name="request-booking-from"]').val();
     booking_to = $('input[name="request-booking-to"]').val();
     arrival_hour = $('input[name="arrival-hour"]').val();
+<<<<<<< HEAD
+    arrival_minute = $('input[name="arrival-minutes"]').val();
+    arrival = $('input[name="arrival"]').val();
+    departure_hour = $('input[name="departure-hour"]').val();
+    departure_minute = $('input[name="departure-minutes"]').val();
+=======
     arrival_minute = $('input[name="arrival-minute"]').val();
     arrival = $('input[name="arrival"]').val();
     departure_hour = $('input[name="departure-hour"]').val();
     departure_minute = $('input[name="departure-minute"]').val();
+>>>>>>> 165acc4a4b95a4b3ea67bc29541f01e49382bba3
     departure = $('input[name="departure"]').val();
     number_of_people =  parseInt($('input[name="number-of-people"]').val());
     number_of_rooms =  parseInt($('input[name="number-of-rooms"]').val());
@@ -61,11 +68,14 @@ function request_booking (event) {
 
     booking_from_time = arrival_hour.concat(":").concat(arrival_minute).concat(" ").concat(arrival);
     booking_to_time = departure_hour.concat(":").concat(departure_minute).concat(" ").concat(departure);
+<<<<<<< HEAD
+=======
     // console.log(arrival_hour);
     // console.log("ffff");
     // console.log(departure_time);
     console.log(bill_settlement);
 
+>>>>>>> 165acc4a4b95a4b3ea67bc29541f01e49382bba3
 
 // visitor details
     name = $('input[name=visitor-name-1]').val();
@@ -74,6 +84,19 @@ function request_booking (event) {
     address = $('input[name=address-1]').val();
     organization = $('input[name=organization-1]').val();
     nationality = $('input[name=country]').val();
+<<<<<<< HEAD
+
+    // Conditions for arival and departure time
+    if ( ! booking_from ) {
+        alertModal ("Please fill expected arrival date!");
+        return;
+    }
+
+    if ( !arrival_hour) {
+        alertModal ('Oops! Please enter the expected arrival hour of the visitor');
+        return;
+    }
+=======
 
 
     // loc=booking_from_time.indexOf(':');
@@ -121,7 +144,149 @@ function request_booking (event) {
     //         return;
 
     // }
+>>>>>>> 165acc4a4b95a4b3ea67bc29541f01e49382bba3
 
+    // Arrival hour and minutes converted
+
+    if ( !arrival_minute) {
+        alertModal ('Oops! Please enter the expected arrival minutes of the visitor');
+        return;
+    }
+
+    if ( !arrival) {
+        alertModal ('Oops! Please enter the expected arrival time of the visitor');
+        return;
+    }
+
+    if ( ! booking_to)  {
+        alertModal ("Please fill expected departure date!");
+        return;
+    }
+
+<<<<<<< HEAD
+    if ( !departure_hour) {
+        alertModal ('Oops! Please enter the expected departure hour of the visitor');
+        return;
+    }
+    if ( !departure_minute) {
+        alertModal ('Oops! Please enter the expected departure minutes of the visitor');
+        return;
+    }
+
+=======
+    
+
+    if ( !arrival_hour) {
+        alertModal ('Oops! Please enter the expected arrival time of the visitor');
+        return;
+    }
+
+    if ( !arrival_minute) {
+        alertModal ('Oops! Please enter the expected arrival time of the visitor');
+        return;
+    }
+
+    if ( !arrival) {
+        alertModal ('Oops! Please enter the expected arrival time of the visitor');
+        return;
+    }
+
+    if ( !departure_hour) {
+        alertModal ('Oops! Please enter the expected departure time of the visitor');
+        return;
+    }
+    if ( !departure_minute) {
+        alertModal ('Oops! Please enter the expected departure time of the visitor');
+        return;
+    }
+
+>>>>>>> 165acc4a4b95a4b3ea67bc29541f01e49382bba3
+    if ( !departure) {
+        alertModal ('Oops! Please enter the expected departure time of the visitor');
+        return;
+    }
+
+    // if date is less than today's date
+    if (new Date(booking_from) < new Date(date)) {
+        alertModal ('Oops! Those dates are not available for booking.');
+        return;
+    }
+
+    if (new Date(booking_from) >new Date(booking_to)) {
+        alertModal ('Please check start date and end date!');
+        return;
+    }
+
+    // if duration of booking is greater than 15 days
+
+    if ( days_diff > 15 ) {
+        alertModal ('You are only allowed to book a room for 15 days!');
+        return;
+    }
+
+    if ( !number_of_people ) {
+        alertModal ("Please fill number of people!");
+        return;
+    }
+
+    if ( !number_of_rooms ) {
+        alertModal ("Please fill required number of rooms!");
+        return;
+    }
+
+    if (number_of_people < 1 ) {
+        alertModal ("Oops! People can't be zero or negative in number.");
+        return;
+    }
+
+    if( number_of_rooms > number_of_people ) {
+        console.log(number_of_rooms + " and people " + number_of_people)
+        alertModal("Oops! Number of rooms can not be greater than number of people.");
+        return;
+    }
+
+    // if number of people greater than 20
+    
+    if (number_of_people > 20) {
+        alertModal ("Oops! People can't be greater than 20 in number.");
+        return;
+    }
+
+    if (number_of_rooms < 1) {
+        alertModal ("Oops! Number of rooms can't be zero or negative.");
+        return;
+    }
+
+    if (number_of_rooms > 15) {
+        alertModal ("Oops! Number of rooms can't be greater than 15.");
+        return;
+    } 
+    if ( !number_of_rooms ) {
+        alertModal ("Please fill required number of rooms!");
+        return;
+    }
+    if ( !number_of_people ) {
+        alertModal ("Please fill number of people!");
+        return;
+    }
+    if ( !category ) {
+        alertModal ("Please fill the Category!");
+        return;
+    } 
+    if ( ! booking_from ) {
+        alertModal ("Please fill expected arrival date!");
+        return;
+    }
+    if ( ! booking_to)  {
+        alertModal ("Please fill expected departure date!");
+        return;
+    }
+    if ( !nationality ) {
+         nationality = ' ';
+    }
+    console.log(nationality) 
+
+    // Checking conditions for visitor
     
     if (name == '') {
             alertModal("You didn't fill a visitor name! Please refill the form.");
@@ -137,24 +302,19 @@ function request_booking (event) {
     today = new Date();
     dd = today.getDate();
 
-
-    // if (new Date(booking_from == dd)){
-    //     alertModal("Oops! booking cant be done.");
-    //     return;
-    // }
-
-    //document.getElementById("request_booking_button").disabled=true;
     var oneDay = 24*60*60*1000; // hours*minutes*seconds*milliseconds
     var firstDate = new Date(booking_from);
     var secondDate = new Date(booking_to);
 
     var days_diff = Math.round(Math.abs((firstDate.getTime() - secondDate.getTime())/(oneDay)));
-    console.log("here !!!");
-    console.log(days_diff);
-    console.log(phone + " " + email);
 
     if (!(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email))){
         alertModal("Oops! Please enter valid email address.");
+        return;
+    }
+
+    if (phone < 1000000000){
+        alertModal("Oops! Please enter valid phone number.");
         return;
     }
 
@@ -194,76 +354,9 @@ function request_booking (event) {
         return;
     }
 
-    if (new Date(booking_from) < new Date(date)) {
-        alertModal ('Oops! Those dates are not available for booking.');
-        return;
-    }
-
-    if (new Date(booking_from) >new Date(booking_to)) {
-        alertModal ('Please check start date and end date!');
-        return;
-    }
-
-    if ( days_diff > 15 ) {
-        alertModal ('You are only allowed to book a room for 15 days!');
-        return;
-    }
 
 
-    if (number_of_people < 1 ) {
-        alertModal ("Oops! People can't be zero or negative in number.");
-        return;
-    }
-
-    if( number_of_rooms > number_of_people ) {
-        // alertModal("iwcLN");
-        console.log(number_of_rooms + " and people " + number_of_people)
-        alertModal("Oops! Number of rooms can not be greater than number of people.");
-        return;
-    }
-
-    
-    if (number_of_people > 20) {
-        alertModal("yeah 20");
-        alertModal ("Oops! People can't be greater than 20 in number.");
-        return;
-    }
-
-    if (number_of_rooms < 1) {
-        alertModal ("Oops! Number of rooms can't be zero or negative.");
-        return;
-    }
-
-    if (number_of_rooms > 15) {
-        alertModal ("Oops! Number of rooms can't be greater than 15.");
-        return;
-    } 
-    if ( !number_of_rooms ) {
-        alertModal ("Please fill required number of rooms!");
-        return;
-    }
-    if ( !number_of_people ) {
-        alertModal ("Please fill number of people!");
-        return;
-    }
-    if ( !category ) {
-        alertModal ("Please fill the Category!");
-        return;
-    } 
-    if ( ! booking_from ) {
-        alertModal ("Please fill expected arrival date!");
-        return;
-    }
-    if ( ! booking_to)  {
-        alertModal ("Please fill expected departure date!");
-        return;
-    }
-    if ( !nationality ) {
-         nationality = ' ';
-    }
-    console.log(nationality) 
-
-
+    // Ajax call
 
     $.ajax({
         type: 'POST',
@@ -304,8 +397,8 @@ function request_booking (event) {
     });
 };
 
-// Meal Record
 
+// Meal Record
 
 $('.bookameal-submit').click(function(event){
     event.preventDefault();
@@ -366,6 +459,8 @@ function submit_inventory_form(id){
         }
     });
 };
+
+// Adding more items to inventory
 
 $('#add-more-items-inventory').click(function(event){
 
@@ -457,7 +552,7 @@ function submit_room_status(id){
     });
 };
 
-// Confirm Booking
+// Confirm Booking by incharge
 
 function confirm_booking (id) {
 
@@ -491,7 +586,7 @@ function confirm_booking (id) {
     });
 };
 
-// Reject Booking
+// Reject Booking by VhCaretaker
 
 function reject_booking (id) {
 
@@ -665,7 +760,7 @@ function forward_booking (id) {
 };
 
 
-// Cancel Active Booking
+// Cancel Active Booking by intender
 
 function cancel_active_booking (id, booking_from) {
 
@@ -746,12 +841,15 @@ function submit_visitor_details (id) {
             alertModal("You didn't fill a visitor's phone number. Please fill the form again.");
             return;
         }
+
+        // constraints on visitors phone number
+
         if (phone.length!=10){
             alertModal("Oops! Please enter valid phone number.");
             return;
         }
 
-        if (phone.charAt(0)!='9'&&phone.charAt(0)!='8'&&phone.charAt(0)!='7'){
+        if (phone < 1000000000){
             alertModal("Oops! Please enter valid phone number.");
             return;
         }
@@ -817,6 +915,7 @@ function check_out (id , mess_bill , room_bill) {
     });
 }
 
+// bill records between a date range
 
 function bill_between_date_range() {
 
@@ -828,10 +927,6 @@ function bill_between_date_range() {
         alertModal('Please check start date and end date.')
         return;
     }
-
-        console.log(start_date);
-            console.log(end_date);
-
 
     $.ajax({
         type: 'POST',
@@ -858,14 +953,7 @@ function bill_between_date_range() {
     });
 }
 
-
-// function row_total_bill() {
-//   var y = document.getElementById("meal_bill").value;
-//   var z = document.getElementById("room_bill").value;
-//   var x = y + z;
-//   document.getElementById("row_total").innerHTML = x;
-// }
-
+// finding available room's list between date range
 
 function find_available_rooms ( available_rooms ) {
     start_date = $('input[name=start-date').val();
@@ -902,6 +990,7 @@ function find_available_rooms ( available_rooms ) {
     });
 }
 
+// next button in request booking form
 
 
 function next_action(event){
@@ -915,17 +1004,7 @@ function next_action(event){
     $("#visitor-detail-action-tab").addClass("active");
 }
 
-
-// function next_action_view(event){
-//     event.preventDefault();
-//     console.log("next!!");
-
-    
-//     $("#booking-detail-view-data-tab").addClass("active");
-//     $("#booking-detail-view-action-tab").addClass("active");
-//     $("#visitor-detail-view-data-tab").removeClass("active");
-//     $("#visitor-detail-view-action-tab").removeClass("active");
-// }
+// next button in request action form
 
 function next_button_action_form(event){
     event.preventDefault();
@@ -951,7 +1030,6 @@ function bookingRequestModal(id){
 }
 
 function updateBookingModal(id){
-    console.log("EEEEEEEEEEE");
     $('#update-booking-'.concat(id)).modal('show');
 }
 
@@ -992,3 +1070,4 @@ $('.info.circle.icon')
     inline: true
   })
 ;
+

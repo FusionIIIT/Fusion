@@ -22,7 +22,15 @@
     <div class="ui active tab" data-tab="request-booking" id="booking-detail-action-tab">
         <div class="ui vertical stripe team segment" style="padding-left: 3.0%; padding-right: 3.0%;">
 
-            <form class="ui large form" id="request-booking-form" style="height: 420px; overflow-y: auto;">
+            <form class="ui large form" id="request-booking-form" style="height: 420px; overflow-y: auto; overflow-x: hidden;">
+                <div class="field">
+                <label></label>
+                    <div class="ui large primary button right floated" id="next-button" onclick="next_action(event)">
+                        Next
+                    </div>
+                    &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;
+
+                </div>
 
                 {% if user_designation == 'VhIncharge' or user_designation == 'VhCaretaker' %}
                 <div class="field">
@@ -59,6 +67,62 @@
                     </div>
 
             
+<<<<<<< HEAD
+                    <div class="field">
+                        <!-- <div class="eight wide column"> -->
+                            <label>Arrival Time * : Hours</label>
+                            <div class="ui fluid search selection dropdown">
+                                <input name="arrival-hour" type="hidden" style="width:10px;">
+                                <i class="dropdown icon"></i>
+
+                                <div class="default text">Select</div>
+
+                                <div class="menu">
+                                    <div class="item" data-value="01">
+                                        01
+                                    </div>
+                                    <div class="item" data-value="02">
+                                        02
+                                    </div>
+                                    <div class="item" data-value="03">
+                                        03
+                                    </div>
+                                    <div class="item" data-value="04">
+                                        04
+                                    </div>
+                                    <div class="item" data-value="05">
+                                        05
+                                    </div>
+                                    <div class="item" data-value="06">
+                                        06
+                                    </div>
+                                    <div class="item" data-value="07">
+                                        07
+                                    </div>
+                                    <div class="item" data-value="08">
+                                        08
+                                    </div>
+                                    <div class="item" data-value="09">
+                                        09
+                                    </div>
+                                    <div class="item" data-value="10">
+                                        10
+                                    </div>
+                                    <div class="item" data-value="11">
+                                        11
+                                    </div>
+                                    <div class="item" data-value="12">
+                                        12
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    <div class="field">
+                        <label> Minutes *</label>
+                        <div class="ui fluid search selection dropdown">
+                            <input name="arrival-minutes" type="hidden">
+=======
                     <div class="field">
                         <!-- <div class="eight wide column"> -->
                             <label>Arrival Time * : Hours</label>
@@ -113,12 +177,17 @@
                         <label> Minutes *</label>
                         <div class="ui fluid search selection dropdown">
                             <input name="arrival-minute" type="hidden">
+>>>>>>> 165acc4a4b95a4b3ea67bc29541f01e49382bba3
                             <i class="dropdown icon"></i>
 
                             <div class="default text">Select</div>
 
                             <div class="menu">
+<<<<<<< HEAD
+                                    <div class="item" data-value="01">
+=======
 <div class="item" data-value="01">
+>>>>>>> 165acc4a4b95a4b3ea67bc29541f01e49382bba3
                                         01
                                     </div>
                                     <div class="item" data-value="02">
@@ -161,7 +230,11 @@
                                         14
                                     </div>
                                     <div class="item" data-value="15">
+<<<<<<< HEAD
+                                        15
+=======
                                         0315
+>>>>>>> 165acc4a4b95a4b3ea67bc29541f01e49382bba3
                                     </div>
                                     <div class="item" data-value="16">
                                         16
@@ -330,6 +403,249 @@
                             </div>
                         </div>
 
+<<<<<<< HEAD
+                    </div>
+
+                    <div class="field">
+                        <!-- <div class="eight wide column"> -->
+                            <label>Departure Time * : Hours</label>
+                            <div class="ui fluid search selection dropdown">
+                                <input name="departure-hour" type="hidden" style="width:10px;">
+                                <i class="dropdown icon"></i>
+
+                                <div class="default text">Select</div>
+
+                                <div class="menu">
+                                    <div class="item" data-value="01">
+                                        01
+                                    </div>
+                                    <div class="item" data-value="02">
+                                        02
+                                    </div>
+                                    <div class="item" data-value="03">
+                                        03
+                                    </div>
+                                    <div class="item" data-value="04">
+                                        04
+                                    </div>
+                                    <div class="item" data-value="05">
+                                        05
+                                    </div>
+                                    <div class="item" data-value="06">
+                                        06
+                                    </div>
+                                    <div class="item" data-value="07">
+                                        07
+                                    </div>
+                                    <div class="item" data-value="08">
+                                        08
+                                    </div>
+                                    <div class="item" data-value="09">
+                                        09
+                                    </div>
+                                    <div class="item" data-value="10">
+                                        10
+                                    </div>
+                                    <div class="item" data-value="11">
+                                        11
+                                    </div>
+                                    <div class="item" data-value="12">
+                                        12
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                        <label> Minutes *</label>
+                        <div class="ui fluid search selection dropdown">
+                            <input name="departure-minutes" type="hidden">
+                            <i class="dropdown icon"></i>
+
+                            <div class="default text">Select</div>
+
+                            <div class="menu">
+                                    <div class="item" data-value="01">
+                                        01
+                                    </div>
+                                    <div class="item" data-value="02">
+                                        02
+                                    </div>
+                                    <div class="item" data-value="03">
+                                        03
+                                    </div>
+                                    <div class="item" data-value="04">
+                                        04
+                                    </div>
+                                    <div class="item" data-value="05">
+                                        05
+                                    </div>
+                                    <div class="item" data-value="06">
+                                        06
+                                    </div>
+                                    <div class="item" data-value="07">
+                                        07
+                                    </div>
+                                    <div class="item" data-value="08">
+                                        08
+                                    </div>
+                                    <div class="item" data-value="09">
+                                        09
+                                    </div>
+                                    <div class="item" data-value="10">
+                                        10
+                                    </div>
+                                    <div class="item" data-value="11">
+                                        11
+                                    </div>
+                                    <div class="item" data-value="12">
+                                        12
+                                    </div>
+                                    <div class="item" data-value="13">
+                                        13
+                                    </div>
+                                    <div class="item" data-value="14">
+                                        14
+                                    </div>
+                                    <div class="item" data-value="15">
+                                        15
+                                    </div>
+                                    <div class="item" data-value="16">
+                                        16
+                                    </div>
+                                    <div class="item" data-value="17">
+                                        17
+                                    </div>
+                                    <div class="item" data-value="18">
+                                        18
+                                    </div>
+                                    <div class="item" data-value="19">
+                                        19
+                                    </div>
+                                    <div class="item" data-value="20">
+                                        20
+                                    </div>
+                                    <div class="item" data-value="21">
+                                        21
+                                    </div>
+                                    <div class="item" data-value="22">
+                                        22
+                                    </div>
+                                    <div class="item" data-value="23">
+                                        23
+                                    </div>
+                                    <div class="item" data-value="24">
+                                        24
+                                    </div>
+                                    <div class="item" data-value="25">
+                                        25
+                                    </div>
+                                    <div class="item" data-value="26">
+                                        26
+                                    </div>
+                                    <div class="item" data-value="27">
+                                        27
+                                    </div>
+                                    <div class="item" data-value="28">
+                                        28
+                                    </div>
+                                    <div class="item" data-value="29">
+                                        29
+                                    </div>
+                                    <div class="item" data-value="30">
+                                        30
+                                    </div>
+                                    <div class="item" data-value="31">
+                                        31
+                                    </div>
+                                    <div class="item" data-value="32">
+                                        32
+                                    </div>
+                                    <div class="item" data-value="33">
+                                        33
+                                    </div>
+                                    <div class="item" data-value="34">
+                                        34
+                                    </div>
+                                    <div class="item" data-value="35">
+                                        35
+                                    </div>
+                                    <div class="item" data-value="36">
+                                        36
+                                    </div><div class="item" data-value="37">
+                                        37
+                                    </div>
+                                    <div class="item" data-value="38">
+                                        38
+                                    </div>
+                                    <div class="item" data-value="39">
+                                        39
+                                    </div>
+                                    <div class="item" data-value="40">
+                                        40
+                                    </div>
+                                    <div class="item" data-value="41">
+                                        41
+                                    </div>
+                                    <div class="item" data-value="42">
+                                        42
+                                    </div>
+                                    <div class="item" data-value="43">
+                                        43
+                                    </div>
+                                    <div class="item" data-value="44">
+                                        44
+                                    </div>
+                                    <div class="item" data-value="45">
+                                        45
+                                    </div>
+                                    <div class="item" data-value="46">
+                                        46
+                                    </div>
+                                    <div class="item" data-value="47">
+                                        47
+                                    </div>
+                                    <div class="item" data-value="48">
+                                        48
+                                    </div><div class="item" data-value="49">
+                                        49
+                                    </div>
+                                    <div class="item" data-value="50">
+                                        50
+                                    </div>
+                                    <div class="item" data-value="51">
+                                        51
+                                    </div>
+                                    <div class="item" data-value="52">
+                                        52
+                                    </div>
+                                    <div class="item" data-value="53">
+                                        53
+                                    </div>
+                                    <div class="item" data-value="54">
+                                        54
+                                    </div>
+                                    <div class="item" data-value="55">
+                                        55
+                                    </div>
+                                    <div class="item" data-value="56">
+                                        56
+                                    </div>
+                                    <div class="item" data-value="57">
+                                        57
+                                    </div>
+                                    <div class="item" data-value="58">
+                                        58
+                                    </div>
+                                    <div class="item" data-value="59">
+                                        59
+                                    </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+=======
                     </div>
 
                     <div class="field">
@@ -571,6 +887,7 @@
                     </div>
 
                     <div class="field">
+>>>>>>> 165acc4a4b95a4b3ea67bc29541f01e49382bba3
                         <label>AM / PM *</label>
                         <div class="ui fluid search selection dropdown">
                             <input name="departure" type="hidden">
@@ -708,13 +1025,7 @@
                             </div>
                 </div>
 
-            <div class="field">
-            <label></label>
-            <div class="ui large primary button right floated" id="next-button" onclick="next_action(event)">
-                Next
-            </div>
-
-        </div>
+            
 
             </form>
         </div>
