@@ -575,10 +575,20 @@
                   </div>
 
               </div>
-              <div class="field" >
-                  <button name="sendinvite" value="sendinvite" class="ui large primary button right floated" type="submit">
-                      Send
-                  </button>
+              <div class="four fields">
+                <div class="field">
+                  {{ form13.no_of_days.errors }}
+                    <label>Valid For (Days)</label>
+                  {{ form13.no_of_days }}
+                </div>
+                <div class="field"></div>
+                <div class="field"></div>
+                <div class="field" >
+                    <div><br></div>
+                    <button name="sendinvite" value="sendinvite" class="ui large primary button right floated" type="submit">
+                        Send
+                    </button>
+                </div>
               </div>
               <br><div class="row"></div><br>
               </form>
@@ -587,7 +597,7 @@
             <div class="{% if invitation_status_tab %}ui active tab{% else %}ui tab{% endif %}" data-tab="invitation_status">
               <div class="ui vertical segment">
                 <div class="ui two item menu">
-                    <a class="{% if mnplacement_post or mnplacement_tab %}active item{% else %}item{% endif %}" data-tab="Placement">
+                    <a class="{% if mnpbi_post %}item{% else %}active item{% endif %}" data-tab="Placement">
                       Placement
                     </a>
 
@@ -598,9 +608,9 @@
               </div>
 
               <div class="{% if mnpbi_post %}ui tab{% else %}ui active tab{% endif %}" data-tab="Placement">
-                {% if not placementstatus and officer_manage %}
-                  <div class="ui error message">
-                    <i class="close icon"></i>
+                {% if not placementstatus_placement and officer_manage %}
+                  <div id="placement_invitation_error_message" class="ui error message">
+                    <i onclick="placementInvitationStatusErrorMessage();" class="close icon"></i>
                     <div class="header">
                       There is no such record of this type.
                     </div>
@@ -671,40 +681,38 @@
                         </div>
                     </form>
 
-                    {% if placementstatus %}
+                    {% if placementstatus_placement %}
                       <br>
                       <!-- Pagination Section starts here  --->
                       {% if no_pagination %}
                         <center>
                           <div class="ui pagination menu">
-                            {% if placementstatus.has_previous %}
-                            <a href="?page={{placementstatus.previous_page_number}}" class="item">
+                            {% if placementstatus_placement.has_previous %}
+                            <a href="?placement_page={{placementstatus.previous_page_number}}" class="item">
                               Previous
                             </a>
                             {% endif %}
 
                             {% if is_disabled %}
-                              <a href="?page=1" class="item">1</a>
+                              <a href="?placement_page=1" class="item">1</a>
                               <div class="disabled item">
                                 ...
                               </div>
                             {% endif %}
 
                             {% for i in page_range %}
-                              {% if placementstatus.number == i %}
-                                <a href="?page={{i}}" class="active item">{{ i }} </a>
+                              {% if placementstatus_placement.number == i %}
+                                <a href="?placement_page={{i}}" class="active item">{{ i }} </a>
                               {% else %}
-                                <a href="?page={{ i }}" class="item">{{ i }}</a>
+                                <a href="?placement_page={{ i }}" class="item">{{ i }}</a>
                               {% endif %}
                             {% endfor %}
 
-
-
-                            {% if placementstatus.has_next %}
+                            {% if placementstatus_placement.has_next %}
                             <div class="disabled item">
                               ...
                             </div>
-                            <a href="?page={{placementstatus.next_page_number}}" class="item">
+                            <a href="?placement_page={{placementstatus_placement.next_page_number}}" class="item">
                               Next
                             </a>
                             {% endif %}
@@ -715,7 +723,7 @@
                       <br>
                       <div class="ui divider"></div>
 
-                        <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;" id="student">
+                      <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;" id="student">
                             <thead>
                             <tr>
                                 <th class="four wide">Student</th>
@@ -727,7 +735,7 @@
                             </thead>
 
                             <tbody>
-                              {% for student in placementstatus %}
+                              {% for student in placementstatus_placement %}
                                 {% if student.notify_id.placement_type == 'PLACEMENT' %}
                                 <tr>
                                     <td>
@@ -767,16 +775,16 @@
                               {% endfor %}
                             </tbody>
 
-                        </table>
+                      </table>
                     {% endif %}
 
                 </div>
               </div>
 
               <div class="{% if mnpbi_post %}ui active tab{% else %}ui tab{% endif %}" data-tab="PBI">
-                  {% if not placementstatus and mnpbi_post %}
-                    <div class="ui error message">
-                      <i class="close icon"></i>
+                  {% if not placementstatus_pbi and mnpbi_post %}
+                    <div id="pbi_invitation_error_message" class="ui error message">
+                      <i onclick="pbiInvitationStatusErrorMessage();" class="close icon"></i>
                       <div class="header">
                         There is no such record of this type.
                       </div>
@@ -847,41 +855,58 @@
                           </div>
                       </form>
 
-                    {% if placementstatus %}
+                    {% if placementstatus_pbi %}
                       <br>
+
+                      <!--
+                      <form method="post" target="_blank" action="{% url 'placement:invitation_status' %}" class="ui form" role="form">
+                        {% csrf_token %}
+                        <input type="hidden" name="pdf_gen_invitation_status_placement" value="pdf_gen_invitation_status_placement">
+                        <button name="pdf_gen_invitation_status" value="pdf_gen_invitation_status" class="ui medium positive button right floated" type="submit">
+                        PDF
+                      </button></form>
+
+                      <form method="post" target="_blank" action="{% url 'placement:invitation_status' %}" class="ui form" role="form">
+                        {% csrf_token %}
+                        <input type="hidden" name="excel_gen_invitation_status_placement" value="excel_gen_invitation_status_placement">
+                        <button name="excel_gen_invitation_status" value="excel_gen_invitation_status" class="ui medium positive button right floated" type="submit">
+                        Excel Sheet
+                      </button></form>
+                      -->
+
                       <!-- Pagination Section starts here  --->
                     {% if no_pagination %}
 
                         <center>
                           <div class="ui pagination menu">
-                            {% if placementstatus.has_previous %}
-                            <a href="?page={{placementstatus.previous_page_number}}" class="item">
+                            {% if placementstatus_pbi.has_previous %}
+                            <a href="?pbi_page={{placementstatus_pbi.previous_page_number}}" class="item">
                               Previous
                             </a>
                             {% endif %}
 
                             {% if is_disabled %}
-                              <a href="?page=1" class="item">1</a>
+                              <a href="?pbi_page=1" class="item">1</a>
                               <div class="disabled item">
                                 ...
                               </div>
                             {% endif %}
 
                             {% for i in page_range %}
-                              {% if placementstatus.number == i %}
-                                <a href="?page={{i}}" class="active item">{{ i }} </a>
+                              {% if placementstatus_pbi.number == i %}
+                                <a href="?pbi_page={{i}}" class="active item">{{ i }} </a>
                               {% else %}
-                                <a href="?page={{ i }}" class="item">{{ i }}</a>
+                                <a href="?pbi_page={{ i }}" class="item">{{ i }}</a>
                               {% endif %}
                             {% endfor %}
 
 
 
-                            {% if placementstatus.has_next %}
+                            {% if placementstatus_pbi.has_next %}
                             <div class="disabled item">
                               ...
                             </div>
-                            <a href="?page={{placementstatus.next_page_number}}" class="item">
+                            <a href="?pbi_page={{placementstatus_pbi.next_page_number}}" class="item">
                               Next
                             </a>
                             {% endif %}
@@ -904,7 +929,7 @@
                             </thead>
 
                             <tbody>
-                            {% for student in placementstatus %}
+                            {% for student in placementstatus_pbi %}
                               {% if student.notify_id.placement_type == 'PBI' %}
                               <tr>
                                 <td>
@@ -978,6 +1003,17 @@
 
 {% block javascript %}
 
+<script type="text/javascript">
+  function pbiInvitationStatusErrorMessage(){
+    $('#pbi_invitation_error_message').css('display', 'none');
+  }
+
+  function placementInvitationStatusErrorMessage(){
+    $('#placement_invitation_error_message').css('display', 'none');
+  }
+
+</script>
+
 <script>
   var fade_out = function() {
     $("#mydiv").fadeOut().empty();
@@ -1029,5 +1065,4 @@
   }
 
 </script>
-
 {% endblock %}

@@ -115,14 +115,11 @@ FusionIIIT/Scripts
 FusionIIIT/tcl
 
 #folders
-<<<<<<< HEAD
 Include
 Scripts
 tcl
 
-=======
+*/media/*
 
-Include
-Scripts
-tcl
->>>>>>> central_mess_main2
+#db file
+fusion.db

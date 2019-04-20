@@ -14,7 +14,6 @@
 
         <div class="ui vertical segment">
             {% comment %}Form Tag starts here!{% endcomment %}
-            {% if editable %}
             <form method="post" class="ui form" role="form">
                 {% comment %}The add a new internship Accordian starts here!{% endcomment %}
                 <div class="ui active accordion field">
@@ -91,7 +90,7 @@
                             <div class="eight wide field">
                               {{ form8.title.errors }}
                                 <label for="{{ form3.title.id_for_label }}">
-                                    Internship Title
+                                    Job Profile Title
                                 </label>
 
                                 <div class="ui large input">
@@ -122,7 +121,6 @@
         </div>
         {% comment %}The add a new internship Accordian ends here!{% endcomment %}
         </form>
-        {% endif %}
         {% comment %}Form Tag ends here!{% endcomment %}
 
         {% if experiences %}
@@ -173,23 +171,17 @@
                 </td>
 
                 <td>
-                    {% if editable %}
                   <form method="post" class="ui form" role="form">
                     {% csrf_token %}
                     <button name="deleteexp" value="{{ experience.pk }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
                         <i class="delete red icon"></i>
                     </button>
                     </form>
-                    {% endif %}
                 </td>
             </tr>
             {% endfor %}
             </tbody>
         </table>
-        {% else %}
-        <div>
-            No work experience added yet.
-        </div>
         {% endif %}
 
     </div>
@@ -197,7 +189,6 @@
     <div class="ui tab" data-tab="projects">
         <div class="ui vertical segment">
             {% comment %}Form Tag starts here!{% endcomment %}
-            {% if editable %}
             <form method="post" class="ui form" role="form">
                 {% comment %}The add a new skill Accordian starts here!{% endcomment %}
                 <div class="ui active accordion field">
@@ -289,7 +280,6 @@
                 </div>
                 {% comment %}The add a new project Accordian ends here!{% endcomment %}
             </form>
-            {% endif %}
             {% comment %}Form Tag ends here!{% endcomment %}
 
             {% if projects %}
@@ -335,24 +325,18 @@
                     </td>
 
                     <td>
-                        {% if editable %}
                       <form method="post" class="ui form" role="form">
                         {% csrf_token %}
                         <button name="deletepro" value="{{ project.pk }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
                             <i class="delete red icon"></i>
                         </button>
                         </form>
-                        {% endif %}
                     </td>
 
                 </tr>
                 {% endfor %}
                 </tbody>
             </table>
-            {% else %}
-            <div>
-                No projects added yet.
-            </div>
             {% endif %}
         </div>
     </div>

@@ -22,7 +22,7 @@
                 <div class="fields">
 
                     <div class="eight wide field">
-                        <label>Complaint Type</label>
+                        <label>Complaint Type<sup><i class="small red asterisk icon"></i></sup></label>
                         <div class="ui selection dropdown">
                             <input name="complaint_type" type="hidden" name="complaint_type" required="True">
                             <i class="dropdown icon"></i>
@@ -59,9 +59,9 @@
                     </div>
 
                     <div class="eight wide field">
-                        <label>Location</label>
+                        <label>Location<sup><i class="small red asterisk icon"></i></sup></label>
                         <div class="ui selection dropdown">
-                            <input name="Location" type="hidden" required="True">
+                            <input name="Location" type="hidden" required>
                             <i class="dropdown icon"></i>
 
                             <div class="default text">Select Location</div>
@@ -105,15 +105,15 @@
                 </div>
 
                 <div class="field">
-                    <label>Specific Location</label>
+                    <label>Specific Location<sup><i class="small red asterisk icon"></i></sup></label>
                     <div class="ui large input">
-                        <input placeholder="Room Number, Floor , Block etc." name="specific_location" required="True">
+                        <input placeholder="Room Number, Floor , Block etc." name="specific_location" required>
                     </div>
                 </div>
 
                 <div class="field">
-                    <label>Complaint Details</label>
-                    <textarea rows="2" placeholder="What is your Complaint?" name="details" required="True"></textarea>
+                    <label>Complaint Details<sup><i class="small red asterisk icon"></i></sup></label>
+                    <input placeholder="What is your Complaint?" name="details" required></textarea>
                 </div>
 
                 <div class = "field">
@@ -139,66 +139,12 @@
         </div>
     </div>
 
-   <script>
-    function myfunction() {
-        alert("Complaint Successfully Launched");
-    }
-    function sub(){
-        var f = $('#lodgecomplaint_form').serialize();
-        var input1= $('input[name="specific_location"]').val();
-        var input2 = $('input[name="Location"]').val();
-        var input3 =  $('input[name="complaint_type"]').val() ;
-        var input4 =$('input[name="details"]').val() ;
-        var input5= $('input[name="myfile"]').val();
-        if(input1=="" || input2=="" || input3=="" || input4=="")
-        {
-            alert("Please fill all the details!")
-        }
-        else
-        {
-            $.ajax({
-                type : 'POST',
-                url : 'check_complaint/',
-                data : f,
-                success : function (){
-
-                    alert("Complain successfully lodged");
-
-                    /*var table = document.getElementById("view_meeting");
-                    var row = table.insertRow();
-                    var cell1 = row.insertCell(0);
-                    var cell2 = row.insertCell(1);
-                    var cell3 = row.insertCell(2);
-                    var cell4 = row.insertCell(3);
-                    var cell5 = row.insertCell(4);
-                    cell1.innerHTML =   input1 ;
-                    cell2.innerHTML =   input2;
-                    cell3.innerHTML = input3;
-                    cell4.innerHTML =  input4;
-                    cell5.innerHTML =  input5;
-                    */
-                },
-                error : function (){
-                    alert ('Complain successfully lodged');
-
-                }
-            });
-        }
-    }
-    </script>
-{#                {% endif %}#}
-
-{#       {%  if messages %}#}
-{#                 <ul class = "messages">#}
-{#                    {%  for message in messages %}#}
-{#                    <li{% if message.tags %} class = "{{ message.tags }}"{%  endif %}>{{ message }}</li>#}
-{#                    {%  endfor %}#}
-{#                 </ul>#}
-{#       {%  endif %}#}
+   
 {% endblock %}
 
 {% block javascript %}
     <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
     <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
     <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+    <script type="text/javascript" src="{% static 'complaint_system/js/rating.js' %}"></script>
 {% endblock %}

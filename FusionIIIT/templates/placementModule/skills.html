@@ -4,7 +4,6 @@
             Skills & Technologies
         </div>
 
-        {% if editable %}
         <div class="ui divider"></div>
         <br>
 
@@ -49,7 +48,6 @@
             </div>
             {% comment %}The add a new skill Accordian ends here!{% endcomment %}
         </form>
-        {% endif %}
     </div>
     {% if skills %}
     <div class="extra content">
@@ -69,23 +67,17 @@
                             </div>
                 </div>
                 <div class="two wide column">
-                {% if editable %}
                 <form method="post" class="ui form" role="form">
                   {% csrf_token %}
                   <button name="deleteskill" value="{{ skill.pk }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
                       <i class="delete red icon"></i>
                   </button>
                   </form>
-                  {% endif %}
                   </div>
             </div>
             {% comment %}A skill row ends here!{% endcomment %}
             {% endfor %}
         </div>
-    </div>
-    {% else %}
-    <div>
-        No skills added yet.
     </div>
     {% endif %}
 {% endblock %}

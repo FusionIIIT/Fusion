@@ -40,45 +40,61 @@
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
 
-                <a class="active item" data-tab="first">
-                    Manage Store
+                 {%  if utype2 == 1 %}
+                 <a class=" active item" data-tab="sixth">
+                     Orders
+                     <i class="right floated chevron right icon"></i>
+                 </a>{% endif %}
+
+
+                 {%  if utype == 1 %}
+                 <a class="item" data-tab="first">
+                  Manage Store
+                     <i class="right floated chevron right icon"></i>
+                 </a>
+                 <a class=" item" data-tab="second">
+                     Vendors
+                     <i class="right floated chevron right icon"></i>
+                 </a>
+                 <a class="item" data-tab="fifth">
+                     After Purchase Form
+                     <i class="right floated chevron right icon"></i>
+                 </a>
+                  {% endif %}
+              {% comment %} use utype4 ifcondition here.this tag to be visible to assoc prof and hod only {% endcomment %}
+
+
+                {% if utype3 == 1 %}
+                {% comment %} if the actor is associate proffessor render the two forms{% endcomment %}
+                <a class="item" data-tab="fourth">
+                    Indent Form
                     <i class="right floated chevron right icon"></i>
                 </a>
 
-                <a class="item" data-tab="second">
-                    Vendors
+               {% comment %}django form version {% endcomment %}
+                <!-- <a class="item" data-tab="seventh">
+                    Indent Form(djf vern)
                     <i class="right floated chevron right icon"></i>
-                </a>
+                </a> -->
+
+
 
                 <a class="item" data-tab="third">
                     Purchase History
                     <i class="right floated chevron right icon"></i>
                 </a>
 
-                <a class="item" data-tab="fourth">
-                    Indent Form
-                    <i class="right floated chevron right icon"></i>
-                </a>
+                {% endif %}
 
-                <a class="item" data-tab="fifth">
-                    After Purchase Form
-                    <i class="right floated chevron right icon"></i>
-                </a>
             </div>
+
             {% comment %}The Tab-Menu ends here!{% endcomment %}
 
         </div>
-        {% comment %}
-            The left-rail segment ends here!
-        {% endcomment %}
 
-
-        {% comment %}
-            The central-rail segment starts here!
-        {% endcomment %}
         <div class="eight wide column">
             {% comment %}The Details start here!{% endcomment %}
-            <div class="ui active tab segment" data-tab="first">
+            <div class="ui tab segment" data-tab="first">
                 {% block tab1 %}
                     {% include 'officeModule/officeOfPurchaseOfficer/manageStore.html' %}
                 {% endblock %}
@@ -120,6 +136,30 @@
             </div>
             {% comment %}The Publications ends here!{% endcomment %}
 
+
+
+            {% comment %}The hod approval template{% endcomment %}
+            <div class="ui active tab segment" data-tab="sixth">
+                {% block tab6 %}
+                  {%  if utype2 == 1 %}
+                    {% include 'officeModule/officeOfPurchaseOfficer/approvalHOD.html' %}
+                  {% endif %}
+
+                {% endblock %}
+            </div>
+            {% comment %}The Publications ends here!{% endcomment %}
+
+
+
+            {% comment %}The django form template{% endcomment %}
+           <!-- <div class="ui tab segment" data-tab="seventh"  >
+                {% block tab7 %}
+
+                {% endblock %}
+            </div> -->
+            {% comment %}The Publications ends here!{% endcomment %}
+
+
         </div>
         {% comment %}The central-rail segment ends here!{% endcomment %}
 
@@ -135,7 +175,7 @@
 
             <div class="ui divider"></div>
 
-            <div class="row">
+            <!-- <div class="row">
                 <div class="ui row">
                     <div id="textSegmentDiv">
                         <div class="ui active large text loader"
@@ -151,7 +191,7 @@
 
                     </div>
                 </div>
-            </div>
+            </div> -->
         </div>
         {% comment %}The right-rail segment ends here!{% endcomment %}
 
@@ -193,7 +233,7 @@
             }
             };
             $('.ui.calendar').calendar(calendarOpts);
-           
+
 
         });
 
@@ -203,18 +243,28 @@
             $("#loader").removeClass("active");
             $("#loader").addClass("disabled");
         }
-        
-        
+
+
 
         function quantityInputOnChange(val){
             var quantityInput = document.getElementById("quantityInput");
-            var lpcFields = document.getElementById("lpcFields");   
-            //console.log(val); 
+            var lpcFields = document.getElementById("lpcFields");
+            //console.log(val);
             if (val >= 25000 && val < 250000)
                lpcFields.style.display = 'block';
             else
                lpcFields.style.display = 'none';
         };
     </script>
+    <script>
+    $(function() {
+                $( ".item" ).tabs({
+                  activate:function(event,ui){
 
+                    localStorage.setItem("lastTab",ui.newTab.index() );
+                  },
+                  active: localStorage.getItem("lastTab") || 0
+                });
+             });
+            </script>
 {% endblock %}

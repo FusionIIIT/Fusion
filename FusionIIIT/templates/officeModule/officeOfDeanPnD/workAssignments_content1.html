@@ -1,68 +1,54 @@
 {% load static %}
-<form action="{%url 'office:officeOfDeanPnD' %}" method="POST" enctype="multipart/form-data">
+
+{% comment %}
+<form method="POST" action="{% url 'office:officeOfDeanPnD' %}">
+    <!-- The add a new skill Accordian starts here! -->
     {% csrf_token %}
     <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
-
+        <div class="inline fields">
+            <div class="field">
+                <div class="ui radio checkbox">
+                    <input type="radio" name="status" checked="checked" value="1">
+                    <label>All</label>
+                </div>
+            </div>
+            <div class="field">
+                <div class="ui radio checkbox">
+                    <input type="radio" name="status" value="2">
+                    <label>Ongoing Projects</label>
+                </div>
+            </div>
+            <div class="field">
+                <div class="ui radio checkbox">
+                    <input type="radio" name="status" value="3">
+                    <label>Completed Projects</label>
+                </div>
+            </div>
+        </div>
+        <br>
         <div class="three fields">
             <div class="field">
-                {% comment %}The Dropdown field starts here!{% endcomment %}
-                <label>Requisition ID</label>
-                <div class="ui fluid search selection dropdown">
-                    <input name="req_id" type="hidden">
-                    <i class="dropdown icon"></i>
-
-                    <div class="default text">Select Requisition ID</div>
-
-                    <div class="menu">
-                       {% if "Civil_JE" in desig %}
-                        {% for req in civilreq %}
-                        <div class="item" data-value={{req.id}}>
-                            {{req.id}}
-                        </div>
-                        {% endfor %}
-                        {% elif "Electrical_JE" in desig %}
-                        {% for req in electricalreq %}
-                        <div class="item" data-value={{req.id}}>
-                            {{req.id}}
-                        </div>
-                        {% endfor %}
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            <div class="field">
-                {% comment %}The Dropdown field starts here!{% endcomment %}
-                <label>Building</label>
-                <div class="ui fluid search selection dropdown">
-                    <input name="department" type="hidden">
-                    <i class="dropdown icon"></i>
-
-                    <div class="default text">Select Department</div>
-
-                    <div class="menu">
-                        <div class="item" data-value="cc">
-                            CC
-                        </div>
-
-                        <div class="item" data-value="core_lab">
-                            Core
-                        </div>
-                        <div class="item" data-value="hostel">
-                            Hostel
-                        </div>
-
-                        <div class="item" data-value="lhtc">
-                            LHTC
-                        </div>
-                        <div class="item" data-value="library">
-                            Library
-                        </div>
+                <label>From</label>
+                <div class="ui calendar" id="rangestart">
+                    <div class="ui input left icon">
+                        <i class="calendar icon"></i>
+                        <input type="text" placeholder="From">
                     </div>
                 </div>
             </div>
 
             <div class="field">
-                {% comment %}The Dropdown field starts here!{% endcomment %}
+                <label>To</label>
+                <div class="ui calendar" id="rangeend">
+                    <div class="ui input left icon">
+                        <i class="calendar icon"></i>
+                        <input type="text" placeholder="To">
+                    </div>
+                </div>
+            </div>
+
+            <div class="field">
+                <!-- The Dropdown field starts here! -->
                 <label>Department</label>
 
                 <div class="ui fluid search selection dropdown">
@@ -72,6 +58,9 @@
                     <div class="default text">Select Department</div>
 
                     <div class="menu">
+                        <div class="item" data-value="all">
+                            All
+                        </div>
                         <div class="item" data-value="civil">
                             Civil
                         </div>
@@ -81,46 +70,76 @@
                         </div>
                     </div>
                 </div>
-                {% comment %}The Dropdown field ends here!{% endcomment %}
-            </div>
-        </div>
-
-        <div class="two fields">
-            <div class="field">
-                <label>Requester</label>
-                <input class="ui large input" value="Zlatan Ibrahimovic" readonly>
-            </div>
-            <div class="field">
-                <label></label>
-                <br>
-                <input class="ui large input" value="abc@gmail.com" readonly>
+                <!-- The Dropdown field ends here! -->
             </div>
         </div>
 
         <div class="field">
-            <label>Title</label>
-            <input name="title" class="ui large input">
-        </div>
-
-        <div class="field">
-            <label>Upload Estimate</label>
-            <input class="ui input" type="file" name="estimate" id="estimate" accept=".pdf, .docx,.doc" ></input>
-        </div>
-
-        <div class="field">
-            <label>Description</label>
-            <textarea rows="2" name="description"></textarea>
-        </div>
-
-        <div class="field">
-            <button class="ui primary button right floated" type="submit" name="createassign" value="createassign">
-                Submit
+            <button class="ui primary button right floated" type="submit" name="asearch" value="asearch">
+                Search
             </button>
         </div>
     </div>
 </form>
+{% endcomment %}
 
-<br>
-<br>
+<table class="ui very basic collapsing celled sortable table"
+       style="padding-left: 10%;
+                                                          padding-right: 10%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+    <thead>
+    <tr>
+        <th class="one wide column">
+            Sr No
+        </th>
+        <th class="two wide column">
+            Date Created
+        </th>
+
+        <th class="three wide column">
+            Title
+        </th>
+
+        <th class="three wide column">
+            Department
+        </th>
+
+        <th class="one wide column">
+            Details
+        </th>
+    </tr>
+    </thead>
+
+    <tbody>
+    {% for object, _ in assigned_req%}
+    <tr>
+
+        <td>
+            {{forloop.counter}}
+        </td>
+        
+        <td>
+            {{object.assign_file.upload_date}}
+        </td>
+
+        <td>
+            {{object.assign_file.subject}}
+        </td>
+
+        <td>
+            {{object.department}}
+        </td>
+
+        <td onclick="viewAssignment({{object.pk}})">
+            <button class="ui button" type="button" id="test">Details</button>
+        </td>
+
+
+
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
 <div class="ui divider"></div>
-

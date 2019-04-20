@@ -4,9 +4,33 @@
 <!-- update booking by intender -->
 
 {% for booking in dashboard_bookings %}
+{% for result in booking.visitor.all %}
+
+{% if forloop.first %}
+
 <div class="ui modal booking" id='update-booking-{{ booking.id }}'>
-  <div class="header"> View Booking</div>
+    <div class="header">View Request</div>
   <div class="scrolling content">
+  <!-- <div class="scrolling content"> -->
+
+    <div class="ui pointing secondary menu">
+        <a class="item active" data-tab="view-visitors-detail" id="visitor-detail-view-data-tab">
+            Visitor's Details
+        </a> 
+        <a class="item" data-tab="view-request-booking" id="booking-detail-view-data-tab">
+            Booking Details
+        </a> 
+    </div>
+
+
+    <!-- request booking datatab starts here! -->
+
+
+    <div class="ui tab" data-tab="view-request-booking" id="booking-detail-view-action-tab">
+        <div class="ui vertical stripe team segment"
+             style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+
     <form class="ui large form" id="behen-ka-bhai">
     
         <!-- <div class="field">
@@ -29,7 +53,7 @@
         </div>
 
 
-        <div class="two fields">
+        <div class="three fields">
             <div class="field">
                 <label>From:</label>
                 <div class="ui calendar" id="rangestart2">
@@ -49,21 +73,51 @@
                     </div>
                 </div>
             </div>
+
+            <div class="field">
+                <label>Booked On</label>
+                <div class="ui calendar" id="rangestart2">
+                    <div class="ui input left icon">
+                        <i class="calendar icon"></i>
+                        <input type="text" class="date-selector" name="update-booking-from" value="{{ booking.booking_date }}" required="True" readonly>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="field">
-            <div class="three fields">
+
+            <div class="four fields">
+                <div class="field">
+                    <label>Category</label>
+
+                    <div class="ui fluid input">
+                        <input value="{{ booking.visitor_category }}" name="category-{{ booking.id }}" type="text" readonly>
+                    </div>
+                </div>
+                {% if booking.status != 'Pending' %}
+
 
                 <div class="field">
+                        <label>Modified Category</label>
+
+                        <div class="ui fluid input">
+                            <input value="{{ booking.modified_visitor_category }}" name="modified-category-{{ booking.id }}" type="text" readonly>
+                        </div>
+                    </div>
+
+                {% endif %}
+
+              <!--   <div class="field">
                     <label>Category </label>
 
                     <div class="ui fluid search selection dropdown">
                         <input name="category-{{ booking.id }}" value="{{ booking.visitor_category }}" type="text" required="True" readonly>
-                        <!-- <i class="dropdown icon"></i> -->
+                        <i class="dropdown icon"></i>
 
-                        <!-- <div class="default text">{{ booking.visitor_category }}</div> -->
+                        <div class="default text">{{ booking.visitor_category }}</div>
 
-                        <!-- <div class="menu">
+                        <div class="menu">
                             <div class="item" data-value="A">
                                 A
                             </div>
@@ -79,9 +133,9 @@
                             <div class="item" data-value="D">
                                 D
                             </div>
-                        </div> -->
+                        </div>
                     </div>
-                </div>
+                </div> -->
 
                 <div class="field">
                     <label>Number Of People</label>
@@ -92,7 +146,7 @@
                 </div>
 
                 <div class="field">
-                    <label>Number Of Rooms</label>
+                    <label>Rooms Required</label>
 
                     <div class="ui fluid input">
                         <input value="{{ booking.number_of_rooms }}" name="number-of-rooms-{{ booking.id }}" type="number" readonly>
@@ -113,13 +167,36 @@
                     </select>
                 </div> -->
             </div>
-        </div>
 
+
+            {% if booking.status == 'Confirmed' or booking.status == 'Forward' %}
+                <div class="field" id="alloted-rooms-{{ booking.id }}" >
+                    <label>Rooms Alloted</label>
+                    <div class="ui fluid input">
+                        
+                        {% for i in booking.rooms.all %}
+                            <input rows="2" value="{{ i.room_number }}" name="purpose-of-visit-{{ booking.id }}" readonly>
+                                    <!-- {{ i.room_number }} &nbsp -->
+
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+        </div>
+        <div class="two fields">
         <div class="field">
             <label>Purpose Of Visit</label>
             <div class="ui fluid input">
                 <input rows="2" value="{{ booking.purpose }}" name="purpose-of-visit-{{ booking.id }}" readonly>
             </div>
+        </div>
+        <div class="field">
+            <label>Bill to be settled by:</label>
+            <div class="ui fluid input">
+                <input rows="2" value="{{ booking.bill_to_be_settled_by }}" name="purpose-of-visit-{{ booking.id }}" readonly>
+            </div>
+        </div>
         </div>
         <!-- <div class="field">
             <label>Remarks (required*)</label>
@@ -128,7 +205,7 @@
             </div>
         </div> -->
 
-        <input type="hidden" name="booking-id-{{ booking.id }}" value="{{ booking.id }}"">
+        <input type="hidden" name="booking-id-{{ booking.id }}" value="{{ booking.id }}">
         <input type="hidden" name="csrf" value="{{ csrf_token }}">
 
         <!-- {% if user_designation == 'VhIncharge'  %}
@@ -165,11 +242,91 @@
         </div> -->
         {% endif %}
         {% endif %}
-        <br>
-        <br>
-    </form>
-  </div>
+        </form>
+
+        </div>
+    </div>
+
+<!-- request booking datatab ends here! -->
+
+<!-- visitor's detail datatab starts here! -->
+
+
+
+    <div class="ui active tab" data-tab="view-visitors-detail" id="visitor-detail-view-action-tab">
+        <div class="ui vertical stripe team segment"
+             style="padding-left: 3.5%;
+                padding-right: 3.5%;">
+
+            <form class="ui large form" id="visitor-detail-1">
+
+                <div id="checkin">
+
+                    <div class="field">
+                        <div class="two fields">
+                            <div class="field">
+                                <label>Name</label>
+                                <input type="text" value="{{ result.visitor_name }}" readonly>
+                            </div>
+
+                            <div class="field">
+                                <label>Email</label>
+                                <input type="text" value="{{ result.visitor_email }}" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <div class="two fields">
+                            <div class="field">
+                                <label>Phone</label>
+                                <input type="text" value="{{ result.visitor_phone }}" readonly>
+                            </div>
+
+                            <div class="field">
+                                <label>Organization</label>
+                                <input type="text" value="{{ result.visitor_organization }}" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Address:</label>
+                        <div class="ui fluid input">
+                           <input type="text" value="{{ result.visitor_address }}" readonly>
+                        </div>
+                    </div>
+                </div>
+
+<!--         <div class="field">
+            <label></label>
+            <div class="ui large primary button right floated" id="next-button" onclick="next_action_view(event)">
+                Next
+            </div>
+
+        </div> -->
+
+            </form>
+
+            <br>
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+
+
+    <!-- visitors detail datatab ends here! -->
+    <div class="ui divider"></div>
+    <br>
+    <br>
+
+
+</div>
 </div>
 
+{% endif %}
+
 {% endfor %}
+    {% endfor %}
+
 {% endblock %}

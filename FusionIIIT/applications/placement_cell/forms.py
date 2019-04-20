@@ -51,7 +51,7 @@ class AddSkill(forms.Form):
     skill = forms.CharField(widget=forms.TextInput(attrs={'max_length': 30,
                                                           'class': 'field'}),
                             label="skill")
-    skill_rating = forms.IntegerField(label="skill_rating")
+    skill_rating = forms.IntegerField(widget=forms.NumberInput(attrs={'min':0, 'max':100}), label="skill_rating")
 
 
 class AddCourse(forms.Form):
@@ -73,6 +73,26 @@ class AddCourse(forms.Form):
     license_no = forms.CharField(widget=forms.TextInput(attrs={'max_length': 250,
                                                                 'class': 'field'}),
                                  label="license_no", required=False)
+    sdate = forms.DateField(label='sdate', widget=forms.DateInput(attrs={'class':'datepicker'}))
+    edate = forms.DateField(label='edate', widget=forms.DateInput(attrs={'class':'datepicker'}))
+
+
+class AddConference(forms.Form):
+    """
+    The form is used to add external courses that user has done.
+    @variables:
+            course_name - name of the course
+            description - description of the course
+            license_no - licence number of the course
+            sdate - start date of the course
+            edate - end date of the course
+    """
+    conference_name = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
+                                                                'class': 'field'}),
+                                  label="course_name")
+    description = forms.CharField(widget=forms.Textarea(attrs={'max_length': 1000,
+                                                                'class': 'form-control'}),
+                                  label="description", required=False)
     sdate = forms.DateField(label='sdate', widget=forms.DateInput(attrs={'class':'datepicker'}))
     edate = forms.DateField(label='edate', widget=forms.DateInput(attrs={'class':'datepicker'}))
 
@@ -157,6 +177,30 @@ class AddAchievement(forms.Form):
     date_earned = forms.DateField(label='date_earned', widget=forms.DateInput(attrs={'class':'datepicker'}))
 
 
+class AddExtracurricular(forms.Form):
+    """
+    The form is used to add social activity that user has participated.
+    @variables:
+            event_name - name of the event
+            description - description of achievement
+            name_of_position - name of holding position
+            date_earned - date of earning of achievement
+    """
+    event_name = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
+                                                                'class': 'field'}),
+                                  label="event_name")
+    event_type = forms.ChoiceField(choices = Constants.EVENT_TYPE,
+                                         label="event_type", widget=forms.Select(attrs={'style': "height:45px"}))
+    description = forms.CharField(widget=forms.Textarea(attrs={'max_length': 1000,
+                                                                'class': 'form-control'}),
+                                  label="description", required=False)
+    name_of_position = forms.CharField(widget=forms.TextInput(attrs={'max_length': 200,
+                                                                 'class': 'form-control'}),
+                             label="name_of_position")
+    date_earned = forms.DateField(label='date_earned', widget=forms.DateInput(attrs={'class':'datepicker'}))
+
+
+
 class AddPublication(forms.Form):
     """
     The form is used to add publications that user has published.
@@ -176,6 +220,35 @@ class AddPublication(forms.Form):
                                                               'class': 'form-control'}),
                                 label="publisher")
     publication_date = forms.DateField(label='publication_date', widget=forms.DateInput(attrs={'class':'datepicker'}))
+
+
+class AddReference(forms.Form):
+    """
+    The form is used to add reference.
+    @variables:
+            reference_name - name of the referenced person
+            post - post of the referenced person
+            email - email of the referenced person
+            mobile_number - mobile number/phone number of the referenced person
+    """
+    reference_name = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
+                                                                      'class': 'field',
+                                                                      'id': 'reference_name'}),
+                                        label="reference_name")
+    post = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
+                                                                'class': 'form-control',
+                                                                'id': 'reference_post'}),
+                                  label="post", required=False)
+    email = forms.CharField(widget=forms.TextInput(attrs={'max_length': 50,
+                                                              'class': 'form-control',
+                                                              'id': 'reference_email',
+                                                              }),
+                                label="email")
+    mobile_number = forms.CharField(widget=forms.TextInput(attrs={'max_length': 15,
+                                                                      'class': 'field',
+                                                                      'id': 'reference_mobile',
+                                                                      'type': 'number'}),
+                                        label="mobile_number")
 
 
 class AddPatent(forms.Form):
@@ -303,6 +376,10 @@ class SendInvite(forms.Form):
     dep_phd = forms.MultipleChoiceField(choices = Constants.PHD_DEP, required=False, label="department",
                                     widget=forms.CheckboxSelectMultiple)
     cpi = forms.DecimalField(label="cpi", required=False)
+    no_of_days = forms.CharField(required=True, widget=forms.NumberInput(attrs={ 'min':0,
+                                                            'max':30,
+                                                            'max_length': 10,
+                                                            'class': 'form-control'}))
 
 
 
@@ -367,16 +444,19 @@ class SearchPlacementRecord(forms.Form):
             cname - name of company
     """
     stuname = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
-                                                              'class': 'field'}),
+                                                              'class': 'field',
+                                                              'id': 'add_placement_stuname'}),
                               label="stuname", required=False)
-    year = forms.IntegerField(label="year", required=False)
-    ctc = forms.DecimalField(label="ctc", required=False)
+    year = forms.IntegerField(label="year", required=False, widget=forms.TextInput(attrs={'id': 'add_placement_year'}))
+    ctc = forms.CharField(label="ctc", required=False, widget=forms.TextInput(attrs={'id': 'add_placement_ctc'}))
     roll = forms.CharField(widget=forms.NumberInput(attrs={ 'min':0,
                                                             'max_length': 10,
-                                                            'class': 'form-control'}),
+                                                            'class': 'form-control',
+                                                            'id': 'add_placement_roll'}),
                             label="roll", required=False)
     cname = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
-                                                              'class': 'field'}),
+                                                              'class': 'field',
+                                                              'id': 'add_placement_cname'}),
                             label="cname", required=False)
 
 
@@ -391,16 +471,19 @@ class SearchPbiRecord(forms.Form):
             cname - name of company
     """
     stuname = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
-                                                            'class': 'field'}),
+                                                            'class': 'field',
+                                                            'id': 'add_pbi_stuname'}),
                               label="stuname", required=False)
-    year = forms.IntegerField(label="year", required=False)
-    ctc = forms.DecimalField(label="ctc", required=False)
+    year = forms.IntegerField(label="year", required=False, widget=forms.TextInput(attrs={'id': 'add_pbi_year'}))
+    ctc = forms.DecimalField(label="ctc", required=False, widget=forms.TextInput(attrs={'id': 'add_pbi_ctc'}))
     roll = forms.CharField(widget=forms.NumberInput(attrs={ 'min':0,
                                                             'max_length': 10,
-                                                            'class': 'form-control'}),
+                                                            'class': 'form-control',
+                                                            'id': 'add_pbi_roll'}),
                             label="roll", required=False)
     cname = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
-                                                            'class': 'field'}),
+                                                            'class': 'field',
+                                                            'id': 'add_pbi_cname'}),
                             label="cname", required=False)
 
 
@@ -416,19 +499,23 @@ class SearchHigherRecord(forms.Form):
             uname - name of the university
     """
     roll = forms.CharField(widget=forms.TextInput(attrs={'max_length': 10,
-                                                          'class': 'form-control'}),
+                                                          'class': 'form-control',
+                                                          'id': 'add_higher_roll'}),
                            label="roll", required=False)
     stuname = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
-                                                            'class': 'field'}),
+                                                            'class': 'field',
+                                                            'id': 'add_higher_stuname'}),
                               label="stuname", required=False,
                               help_text="Only for searching records")
     test_type = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
-                                                            'class': 'field'}),
+                                                            'class': 'field',
+                                                            'id': 'add_higher_test_type'}),
                                 label="test_type", required=False)
-    test_score = forms.IntegerField(label="test_score", required=False)
-    year = forms.IntegerField(label="year", required=False)
+    test_score = forms.IntegerField(label="test_score", required=False, widget=forms.TextInput(attrs={'id': 'add_higher_test_score'}))
+    year = forms.IntegerField(label="year", required=False, widget=forms.TextInput(attrs={'id': 'add_higher_year'}))
     uname = forms.CharField(widget=forms.TextInput(attrs={'max_length': 100,
-                                                            'class': 'field'}),
+                                                            'class': 'field',
+                                                            'id': 'add_higher_uname'}),
                             label="uname", required=False)
 
 

@@ -14,6 +14,8 @@ from applications.leave.models import Leave
 
 from .models_office_students import *
 
+from applications.filetracking.models import File
+
 
 class Constants:
     DAY_CHOICES = (
@@ -130,6 +132,7 @@ APPROVE_TAG = (
 
     ('0', "Pending"),
     ('1', "Approve"),
+    ('-1',"Rejected"),
 )
 
 
@@ -297,20 +300,17 @@ class Registrar(models.Model):
 
 
 class Requisitions(models.Model):
-	userid=models.ForeignKey(ExtraInfo,on_delete=models.CASCADE)
-	req_date=models.DateTimeField(auto_now_add=True)
-	title=models.CharField(max_length=50)
-	department=models.CharField(max_length=50,choices=Constants.DEPARTMENT)
-	building=models.CharField(max_length=50,choices=Constants.BUILDING)
-	description=models.CharField(max_length=200)
-	assign_date=models.DateTimeField(auto_now_add=True,null=True)
-	assign_title=models.CharField(max_length=50,null=True)
-	assign_description = models.CharField(max_length=200,null=True)
-	estimate=models.FileField(upload_to='documents/',blank=True,null=True)
-	tag=models.IntegerField(default=0)                           # 0: ongoing  1: completed
+        userid=models.ForeignKey(ExtraInfo,on_delete=models.CASCADE)
+        req_date=models.DateTimeField(auto_now_add=True)
+        title=models.CharField(max_length=50)
+        department=models.CharField(max_length=50,choices=Constants.DEPARTMENT)
+        building=models.CharField(max_length=50,choices=Constants.BUILDING)
+        description=models.CharField(max_length=200)
+        assign_file=models.ForeignKey(File, on_delete=models.CASCADE, null=True)
+        tag=models.IntegerField(default=0)                           # 0: accepted  1: rejected
 
-	def __str__(self):
-		return str(self.id)
+        def __str__(self):
+            return str(self.id)
 
 class Filemovement(models.Model):
 	rid=models.ForeignKey(Requisitions,on_delete=models.CASCADE)
@@ -341,7 +341,11 @@ class apply_for_purchase(models.Model):
     purchase_date = models.DateField(default='2018-06-01')
 
     registrar_approve_tag = models.IntegerField(choices=APPROVE_TAG, default=0)
+    director_approve_tag = models.IntegerField(choices=APPROVE_TAG,default=0)
+    HOD_approve_tag = models.IntegerField(choices=APPROVE_TAG, default=0)
     accounts_approve_tag = models.IntegerField(choices=APPROVE_TAG, default=0)
+    gem_tag =  models.IntegerField(choices=APPROVE_TAG, default=0)
+
 
     purchase_type = models.IntegerField(choices=PURCHASE_TYPE, default=0)
     purpose = models.CharField(max_length=200, default=0)
@@ -533,3 +537,13 @@ class TA_assign(models.Model):
 
     def __str__(self):
         return str(self.id)
+
+class Registrar_response(models.Model):
+    track_id = models.ForeignKey(Tracking, on_delete=models.CASCADE, related_name='t_id')
+    remark = models.CharField(max_length=50, default='')
+    status = models.CharField(max_length=20, default='')
+    class Meta:
+        db_table = 'Registrar_response'
+
+    def __str__(self):
+        return str(self.id)+" "+str(track_id)+status
