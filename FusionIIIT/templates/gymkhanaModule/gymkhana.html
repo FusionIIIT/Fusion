@@ -14,31 +14,144 @@
 
 
         function form_submit(a,b,event){
+            $("#dateDetails").html('');
             a = '/gymkhana/'+a+'/';
             // alert(a);
             // alert(b);
             event.preventDefault();
             var form = document.getElementById(b); // You need to use standard javascript object here
-            var formData = new FormData(form);
-            form.reset();
-            //alert(formData);
-            $.ajax({
-                url: a,
-                data: formData,
-                enctype: "multipart/form-data",
-                type: 'POST',
-                contentType: false, // NEEDED, DON'T OMIT THIS (requires jQuery 1.6+)
-                processData: false, // NEEDED, DON'T OMIT THIS
-                // ... Other options like success and etc
-                success: function(msg) {
-                    alert("success");
-                    form.reset();
-                },
-                error: function() {
-                    alert("unsuccessful");
-                }
-            });
+            console.log(b);
+            console.log(a) ;
+            var i ;
+            for(i=0 ; i<form.length ; i++){
+                console.log(form.elements[i].name) ;
+                console.log(form.elements[i].value) ;
+            }
+            var status = 1 ;
+            if (b == 'new_session_form'){
+                status = validateNewSessionForm(form);
+            }
+            if (b == 'club_membership_form'){
+                status = validateClubMembershipForm(form) ;
+            }
+            if (b == 'new_club_form'){
+                status = validateNewClubForm(form) ;
+            }
+            // console.log("status");
+            // console.log(status);
+            // status = 1 ;
+            // form.reset();
+            if(status == 0)
+            {
+                var formData = new FormData(form);
+                console.log(formData);
+                form.reset();
+                $.ajax({
+                    url: a,
+                    data: formData,
+                    enctype: "multipart/form-data",
+                    type: 'POST',
+                    contentType: false, // NEEDED, DON'T OMIT THIS (requires jQuery 1.6+)
+                    processData: false, // NEEDED, DON'T OMIT THIS
+                    // ... Other options like success and etc
+                    success: function(response) {
+                        response = JSON.parse(response);
+                        console.log(response);
+                        console.log("here") ;
+                        // $("#modalHeader").html(response.status);
+                        if (response.status == "success"){
+                            $(".succ").modal("show");
+                        }
+                        else
+                        {
+                            $("#errorContent").html('<p><b>'+response.message+'</p></b>');
+                            $(".formErrors").modal('show');
+                        }
+                        form.reset();
+                    }
+                });
+            }
         }
+
+        function validateNewSessionForm(form){
+            var i, startTime, endTime ;
+            var empty = new Array() ;
+            for (i=0 ; i<form.length; i++){
+                if(form.elements[i].value == "" && form.elements[i].name != ""){
+                    empty.push(form.elements[i].name);
+                }
+                else if (form.elements[i].name=="start_time"){
+                    startTime = form.elements[i].value ;
+                }
+                else if (form.elements[i].name=="end_time"){
+                    endTime = form.elements[i].value ;
+                }
+            }
+            var ret = 0 ;
+            //this array contains names of all the input fields included in newsession form
+            if(empty && empty.length && !(empty.length == 1 && empty[0] == "session_poster")){
+                // code to be executed if some fields are empty except session poster field
+                console.log("empty") ;
+                if (endTime <= startTime)
+                    $("#errorContent").append("<p><b>Start Time should be strictly less than end time.</b></p>");
+                $(".formErrors").modal('show') ;
+                ret = 1 ;
+                // form.reset();
+                // setTimeout(function(){ location.reload(); }, 5000);
+            }
+            else if (endTime <= startTime)
+            {
+                console.log("time problem") ;
+                $("#errorContent").html("<p><b>Start Time should be strictly less than end time.</b></p>");
+                $(".formErrors").modal('show') ;
+                ret = 1 ;
+                // setTimeout(function(){ location.reload(); }, 5000);
+            }
+            return ret ;
+        }
+
+        function validateNewClubForm(form){
+            var i ;
+            var message = "" ;
+            for(i=0 ; i<form.length ; i++){
+                if(form.elements[i].name != "" && form.elements[i].name != "file" && form.elements[i].value=="")
+                {
+                    message = message + "<p><b>Please fill the " + form.elements[i].name + " field.</b></p>" ;
+                }
+            }
+            var ret = 0 ;
+            if (message != ""){
+                ret = 1 ;
+                $("#errorContent").html(message);
+                $(".formErrors").modal("show") ;
+            }
+            return ret ;
+        }
+
+        function validateClubMembershipForm(form){
+            var i ;
+            var message = "" ;
+            for (i=0 ; i<form.length; i++){
+                if (form.elements[i].name != "" && form.elements[i].value ==""){
+                    message = message + "<p><b>Please fill the " + form.elements[i].name + " field.</b></p>" ; 
+                }
+                if (form.elements[i].name == "email" && form.elements[i].value != ""){
+                    var emailAddress = form.elements[i].value ;
+                    var emailReg = /^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+                    if (!(emailReg.test(emailAddress))){
+                        message = message + "<p><b>Please add a valid email address</b></p>" ;
+                    }
+                }
+            }
+            var ret = 0 ;
+            if(message != ""){
+                ret = 1 ;
+                $("#errorContent").html(message) ;
+                $(".formErrors").modal("show");
+            }
+            return ret ;
+        }
+
     </script>
 
     {% comment %}The grid starts here!{% endcomment %}
@@ -266,11 +379,69 @@
     </div>
     {% comment %}The grid ends here!{% endcomment %}
 
+    <!-- time slot error modal -->
+    <div class="ui basic modal err">
+      <div class="ui icon header">
+        <i class="bell icon"></i>
+        <a class="ui orange label">Time Slot Fault</a>
+      </div>
+      <div class="content">
+        <p><center><b>The selected time slot for the given date and venue conflicts with already booked session.</center></b></p>
+      </div>
+      <div class="actions">
+        <div class="ui red basic cancel inverted button">
+          <i class="remove icon"></i>
+          Try Again
+        </div>
+      </div>
+    </div>
+    <!-- form successfull submission modal -->
+    <div class="ui basic modal succ">
+      <div class="ui icon header">
+        <i class="bell icon"></i>
+        <a class="ui green label">Success</a>
+      </div>
+      <div class="content" id="modalBody">
+        <p><center><b>The form has been dispatched for further process</b></center></p>
+      </div>
+      <div class="actions">
+        <div class="ui red basic cancel inverted button">
+          <i class="remove icon"></i>
+          Cancel
+        </div>
+      </div>
+    </div>
+    <!-- form errors modal -->
+    <div class="ui basic modal formErrors">
+      <div class="ui icon header">
+        <i class="bell icon"></i>
+        <a class="ui red label">Error</a>
+      </div>
+      <div class="content">
+        <center>
+            <div id="errorContent">
+                <!-- This content will change based on type of error -->
+                <p><b>All the fields are required except session poster</b></p>
+            </div>
+        </center>
+      </div>
+      <div class="actions">
+        <div class="ui red basic cancel inverted button">
+          <i class="remove icon"></i>
+          Cancel
+        </div>
+      </div>
+    </div>
+
 {% endblock %}
 
 
 {% block javascript %}
     <script>
+
+        $(document).ready(function() {
+            $("div.venueType").find("div.dropdown").find("div.text").html('');
+        });
         function showSessions(){
             var date = $("#sessions_date").val() ;
             $.ajax({
@@ -278,6 +449,7 @@
                 type: "post",
                 data: {'date':date},
                 success: function(response){
+                    // console.log("hello")
                     // console.log(response)
                     response = JSON.parse(response);
                     $("#dateDetails").html('<h2>Booked Sessions</h2>');
@@ -286,9 +458,11 @@
                             $("#dateDetails").append(
                                 '<table class="ui celled table segment"><thead><tr>\
                                 <th>'+response[key].fields.club+'</th>\
-                                <th>'+response[key].fields.date.substring(11,19)+'<br><center>to</center>'+response[key].fields.end_time+'</th>\
+                                <th>'+response[key].fields.start_time+'<br><center>to</center>'+response[key].fields.end_time+'</th>\
                                 <th>'+response[key].fields.venue+'</th>\
-                                </tr></thead></table>') ;
+                                </tr></thead><tbody>\
+                                <tr><td colspan="3"><b>'+response[key].fields.status+'</b></td></tr>\
+                                </tbody></table>') ;
                         }
                     }
                     else

@@ -15,28 +15,27 @@
         <form method="post" action="" id="sentrequest">
         {% csrf_token %}
             <table id="mytable" class="ui very basic collapsing celled sortable table"
-                   style="padding-top: 1%;
-                                                          padding-bottom: 1.5%;
-                                                          margin: auto;">
+                   style="padding-top: 1%; padding-bottom: 1.5%;margin: auto;">
                 <thead>
                 <tr>
                     <th>
+                        Select
                     </th>
 
                     <th class="four wide column">
-                        Student
+                        Venue
                     </th>
 
                     <th>
-                        Roll No.
+                        Date
                     </th>
 
                     <th>
-                        Club
+                        Start Time
                     </th>
 
                     <th>
-                        Category
+                        End Time
                     </th>
 
                     <th>
@@ -45,7 +44,7 @@
                 </tr>
                 </thead>
 
-                <tbody>
+                <!-- <tbody>
                 {% for i in Club_member %}
                     {% if request.user.username in i.member|stringformat:"s" and i.status == "open" %}
                     <tr >
@@ -78,6 +77,40 @@
                 {% endfor %}
                 </tr>
 
+                </tbody> -->
+                <tbody>
+                    {% if "co-ordinator" in Curr_desig or "co co-ordinator" in Curr_desig %}
+                        {% for i in Club_session%}
+                            {% if club_details.club_name|stringformat:"s" == i.club|stringformat:"s" %}
+                                <tr>
+                                    <td class="collapsing">
+                                        <div class="ui fitted checkbox">
+                                            <input type="checkbox" id="{{ i.id }}" value="{{ i.id }}" name="check"><label></label>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {{ i.venue }}
+                                    </td>
+
+                                    <td>
+                                        {{ i.date }}
+                                    </td>
+
+                                    <td>
+                                        {{ i.start_time}}
+                                    </td>
+
+                                    <td>
+                                        {{ i.end_time}}
+                                    </td>
+
+                                    <td>
+                                        {{ i.status }}
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
                 </tbody>
             </table>
 
@@ -87,7 +120,7 @@
             <!-- <div class="ui primary right floated button" name="approve" onclick="approve();">Approve Selected</div> -->
             <!-- <div class="ui red right floated button" name = "reject" onclick="approve();">Reject Selected</div> -->
             <div class="field">
-                <button class="ui primary button right floated" type="submit" formaction="/gymkhana/cancel/">
+                <button class="ui primary button right floated" type="submit" onclick="event.preventDefault();deleteSessions()">
                     Cancel Request
                 </button>
                 <br>
@@ -99,4 +132,41 @@
         </div>
     </div>
     
+{% endblock %}
+
+{% block javascript %}
+    <script type="text/javascript">
+        function deleteSessions(){
+            var selectedIds = new Array() ;
+            $.each($("input[name='check']:checked"), function(){            
+                selectedIds.push($(this).val());
+            });
+            if (selectedIds.length > 0){
+                var selectedIds = JSON.stringify(selectedIds);
+                $.ajax({
+                    url: '/gymkhana/delete_sessions/',
+                    type: "post",
+                    data: {"ids":selectedIds},
+                    success: function(response){
+                        $.each($("input[name='check']"), function(){  
+                            this.checked = false ;          
+                            // console.log($(this).attr("checked", false));
+                        });
+                        if(response == "success"){
+                            location.reload();
+                        }
+                        else
+                        {
+                            $("#errorContent").html("There was a system error. Please contact the admin.");
+                            $(".formErrors").modal("show") ;
+                        }
+                    }
+                });
+            }
+            else{
+                $("#errorContent").html("Please select atleast one session to delete");
+                $(".formErrors").modal("show") ;
+            }
+        }
+    </script>
 {% endblock %}
