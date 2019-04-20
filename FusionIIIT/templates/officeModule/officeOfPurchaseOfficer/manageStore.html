@@ -1,29 +1,16 @@
-{% block tab1 %}
 
-    {% comment %}The tab menu starts here!{% endcomment %}
-    <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="tab1content1">
-            Manage Store
-        </a>
+    <form method='POST'>
+    {% csrf_token %}
+    <button class="ui green button" type="submit" name="manage_store">
+          add items
+    </button>
 
-        <a class="item" data-tab="tab1content2">
-            Add Items
-        </a>
+    <button class="ui green button" type="submit" name="view_store">
+      View items
+    </button>
+
+    </form>
+  <!---  <div class="collapsing">
+          {% comment %}  <a href="{% url 'office:new_orders' %}" class="ui red right floated button">Delete</a> {% endcomment%}
     </div>
-
-    <div class="ui active tab" data-tab="tab1content1">
-        <div class="ui vertical segment">
-            {% block tab1content1 %}
-                {% include 'officeModule/officeOfPurchaseOfficer/manageStore_content1.html' with q=q %}
-            {% endblock %}
-        </div>
-    </div>
-
-    <div class="ui tab" data-tab="tab1content2">
-        <div class="ui vertical segment">
-            {% block tab1content2 %}
-                {% include 'officeModule/officeOfPurchaseOfficer/manageStore_content2.html' %}
-            {% endblock %}
-        </div>
-    </div>
-{% endblock %}
+--->

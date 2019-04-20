@@ -161,8 +161,8 @@ def add_menu_change_request(request, student):
         new_dish = request.POST.get("newdish")
         print("newdish")
         reason = request.POST.get("reason")
-        menu_object = Menu_change_request(dish=dish, request=new_dish, reason=reason)
-        # menu_object = Menu_change_request(dish=dish, student_id=student, request=new_dish, reason=reason)
+        # menu_object = Menu_change_request(dish=dish, request=new_dish, reason=reason)
+        menu_object = Menu_change_request(dish=dish, student_id=student, request=new_dish, reason=reason)
         menu_object.save()
         data = {
             'status': 1

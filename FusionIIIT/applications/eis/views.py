@@ -441,7 +441,7 @@ def persinfo(request):
 def achievementDelete(request, pk):
     instance = emp_achievement.objects.get(pk=pk)
     instance.delete()
-    return redirect('eis:profile')
+    return redirect('/profile/?page14=1')
 
 def emp_confrence_organisedDelete(request, pk):
     instance = emp_confrence_organised.objects.get(pk=pk)
@@ -483,7 +483,7 @@ def emp_event_organizedDelete(request, pk, sr, mark):
 def emp_expert_lecturesDelete(request, pk):
     instance = emp_expert_lectures.objects.get(pk=pk)
     instance.delete()
-    return redirect('eis:profile')
+    return redirect('/profile/?page15=1')
 
 def emp_keynote_addressDelete(request, pk):
     instance = emp_keynote_address.objects.get(pk=pk)
@@ -694,15 +694,36 @@ def journal_insert(request):
     if year != '':
         eis.year = year
     if(request.POST.get('doi') != None and request.POST.get('doi') != '' and request.POST.get('doi') != 'None'):
-
-        eis.doi = datetime.datetime.strptime(request.POST.get('doi'), "%B %d, %Y %I:%M %p")
-        print(eis.doi)
+        try:
+            eis.doi = datetime.datetime.strptime(
+                request.POST.get('doi'), "%B %d, %Y")
+        except:
+            try:
+                eis.doi = datetime.datetime.strptime(
+                    request.POST.get('doi'), "%b. %d, %Y")
+            except:
+                eis.doi = request.POST.get('doi')
     if (request.POST.get('doa') != None and request.POST.get('doa') != '' and request.POST.get('doa') != 'None'):
-        eis.date_acceptance = datetime.datetime.strptime(request.POST.get('doa'), "%B %d, %Y %I:%M %p")
+        try:
+            eis.date_acceptance = datetime.datetime.strptime(
+                request.POST.get('doa'), "%B %d, %Y")
+        except:
+            eis.date_acceptance = datetime.datetime.strptime(
+                request.POST.get('doa'), "%b. %d, %Y")
     if (request.POST.get('dop') != None and request.POST.get('dop') != '' and request.POST.get('dop') != 'None'):
-        eis.date_publication = datetime.datetime.strptime(request.POST.get('dop'), "%B %d, %Y %I:%M %p")
+        try:
+            eis.date_publication = datetime.datetime.strptime(
+                request.POST.get('dop'), "%B %d, %Y")
+        except:
+            eis.date_publication = datetime.datetime.strptime(
+                request.POST.get('dop'), "%b. %d, %Y")
     if (request.POST.get('dos') != None and request.POST.get('dos') != '' and request.POST.get('dos') != 'None'):
-        eis.date_submission = datetime.datetime.strptime(request.POST.get('dos'), "%B %d, %Y %I:%M %p")
+        try:
+            eis.date_submission = datetime.datetime.strptime(
+                request.POST.get('dos'), "%B %d, %Y")
+        except:
+            eis.date_submission = datetime.datetime.strptime(
+                request.POST.get('dos'), "%b. %d, %Y")
     eis.save()
     return redirect('/profile/?page=1')
 
@@ -733,78 +754,59 @@ def editjournal(request):
     
     if(request.POST.get('doi') != None and request.POST.get('doi') != '' and request.POST.get('doi') != 'None'):
         x = request.POST.get('doi')
-        if x[-4:] == 'a.m.':
-            x = x[:-4]
-            x = x+"AM"
-        if x[-4:] == 'p.m.':
-            x = x[:-4]
-            x = x+"PM"
-       
-        if x[:5] == "Sept." :
-            x = "Sep." + x[5:]
-       
-        try: 
-            try:
-                eis.doi = datetime.datetime.strptime(x, "%B %d, %Y %I:%M %p")
-            except:
-                eis.doi = datetime.datetime.strptime(x, "%B %d, %Y, %I:%M %p")
 
-        except:
-            eis.doi = datetime.datetime.strptime(x, "%B %d, %Y, %I %p")
 
-    if (request.POST.get('doa') != None and request.POST.get('doa') != '' and request.POST.get('doa') != 'None'):
-        x = request.POST.get('doa')
-        if x[-4:] == 'a.m.':
-            x = x[:-4]
-            x = x+"AM"
-        if x[-4:] == 'p.m.':
-            x = x[:-4]
-            x = x+"PM"
+
         if x[:5] == "Sept." :
             x = "Sep." + x[5:]
         try:
-            try:
-                eis.date_acceptance = datetime.datetime.strptime(x, "%B %d, %Y %I:%M %p")
-            except:
-                eis.date_acceptance = datetime.datetime.strptime(x, "%B %d, %Y, %I:%M %p")
+            eis.doi = datetime.datetime.strptime(
+                x, "%B %d, %Y")
         except:
-            eis.date_acceptance = datetime.datetime.strptime(x, "%B %d, %Y, %I %p")
+            try:
+                eis.doi = datetime.datetime.strptime(
+                    x, "%b. %d, %Y")
+            except:
+                eis.doi = x
+    if (request.POST.get('doa') != None and request.POST.get('doa') != '' and request.POST.get('doa') != 'None'):
+        x = request.POST.get('doa')
+        if x[:-10] == ', midnight':
+            x = x[0:-10]
+
+        if x[:5] == "Sept." :
+            x = "Sep." + x[5:]
+        try:
+            eis.date_acceptance = datetime.datetime.strptime(
+                x, "%B %d, %Y")
+        except:
+            eis.date_acceptance = datetime.datetime.strptime(
+                x, "%b. %d, %Y")
 
     if (request.POST.get('dop') != None and request.POST.get('dop') != '' and request.POST.get('dop') != 'None'):
         x = request.POST.get('dop')
-        if x[-4:] == 'a.m.':
-            x = x[:-4]
-            x = x+"AM"
-        if x[-4:] == 'p.m.':
-            x = x[:-4]
-            x = x+"PM"
+        if x[:-10] == ', midnight':
+            x = x[0:-10]
         if x[:5] == "Sept." :
             x = "Sep." + x[5:]
         try:
-            try:
-                eis.date_publication = datetime.datetime.strptime(x, "%B %d, %Y %I:%M %p")
-            except:
-                eis.date_publication = datetime.datetime.strptime(x, "%B %d, %Y, %I:%M %p")
+            eis.date_publication = datetime.datetime.strptime(
+                x, "%B %d, %Y")
         except:
-            eis.date_publication = datetime.datetime.strptime(x, "%B %d, %Y, %I %p")
-
+            eis.date_publication = datetime.datetime.strptime(
+                x, "%b. %d, %Y")
     if (request.POST.get('dos') != None and request.POST.get('dos') != '' and request.POST.get('dos') != 'None'):
         x = request.POST.get('dos')
-        if x[-4:] == 'a.m.':
-            x = x[:-4]
-            x = x+"AM"
-        if x[-4:] == 'p.m.':
-            x = x[:-4]
-            x = x+"PM"
+        print(x[-10:])
+        if x[-10:] == ', midnight':
+            x = x[0:-10]
         if x[:5] == "Sept." :
             x = "Sep." + x[5:]
         try:
-            try:
-                eis.date_submission = datetime.datetime.strptime(x, "%B %d, %Y %I:%M %p")
-            except:
-                eis.date_submission = datetime.datetime.strptime(x, "%B %d, %Y, %I:%M %p")
+            eis.date_submission = datetime.datetime.strptime(
+                x, "%B %d, %Y")
         except:
-            eis.date_submission = datetime.datetime.strptime(x, "%B %d, %Y, %I %p")
+            eis.date_submission = datetime.datetime.strptime(
+                x, "%b. %d, %Y")
     eis.save()
     page = int(request.POST.get('index'))//10
     page = page+1
@@ -897,12 +899,57 @@ def conference_insert(request):
     if request.POST.get('year3') != '':
         eis.year = request.POST.get('year3')
     eis.status = request.POST.get('status3')
+    if(request.POST.get('doi3') != None and request.POST.get('doi3') != '' and request.POST.get('doi3') != 'None'):
+        x = request.POST.get('doi3')
+        if x[:-10] == ', midnight':
+            x = x[0:-10]
+        if x[:5] == "Sept." :
+            x = "Sep." + x[5:]
+        try:
+            eis.doi = datetime.datetime.strptime(
+                x, "%B %d, %Y")
+        except:
+            try:
+                eis.doi = datetime.datetime.strptime(
+                    x, "%b. %d, %Y")
+            except:
+                eis.doi = x
     if (request.POST.get('doa3') != None and request.POST.get('doa3') != '' and request.POST.get('doa3') != 'None'):
-        eis.date_acceptance = datetime.datetime.strptime(request.POST.get('doa3'), "%B %d, %Y %I:%M %p")
+        x = request.POST.get('doa3')
+        if x[:-10] == ', midnight':
+            x = x[0:-10]
+        if x[:5] == "Sept." :
+            x = "Sep." + x[5:]
+        try:
+            eis.date_acceptance = datetime.datetime.strptime(
+                x, "%B %d, %Y")
+        except:
+            eis.date_acceptance = datetime.datetime.strptime(
+                x, "%b. %d, %Y")
+
     if (request.POST.get('dop3') != None and request.POST.get('dop3') != '' and request.POST.get('dop3') != 'None'):
-        eis.date_publication = datetime.datetime.strptime(request.POST.get('dop3'), "%B %d, %Y %I:%M %p")
+        x = request.POST.get('dop3')
+        if x[:-10] == ', midnight':
+            x = x[0:-10]
+        if x[:5] == "Sept." :
+            x = "Sep." + x[5:]
+        try:
+            eis.date_publication = datetime.datetime.strptime(
+                x, "%B %d, %Y")
+        except:
+            eis.date_publication = datetime.datetime.strptime(
+                x, "%b. %d, %Y")
     if (request.POST.get('dos3') != None and request.POST.get('dos3') != '' and request.POST.get('dos3') != 'None'):
-        eis.date_submission = datetime.datetime.strptime(request.POST.get('dos3'), "%B %d, %Y %I:%M %p")
+        x = request.POST.get('dos3')
+        
+        if x[:5] == "Sept." :
+            x = "Sep." + x[5:]
+        try:
+            eis.date_submission = datetime.datetime.strptime(
+                x, "%B %d, %Y")
+        except:
+            eis.date_submission = datetime.datetime.strptime(
+                x, "%b. %d, %Y")
     eis.save()
     return redirect('/profile/?page3=1')
 
@@ -930,78 +977,50 @@ def editconference(request):
     eis.status = request.POST.get('status3')
     if(request.POST.get('doi3') != None and request.POST.get('doi3') != '' and request.POST.get('doi3') != 'None'):
         x = request.POST.get('doi3')
-        if x[-4:] == 'a.m.':
-            x = x[:-4]
-            x = x+"AM"
-        if x[-4:] == 'p.m.':
-            x = x[:-4]
-            x = x+"PM"
-        if x[:5] == "Sept." :
-            x = "Sep." + x[5:]
-        
-       
-        try: 
-            try:
-                eis.doi = datetime.datetime.strptime(x, "%B %d, %Y %I:%M %p")
-            except:
-                eis.doi = datetime.datetime.strptime(x, "%b. %d, %Y, %I:%M %p")
-
-        except:
-            eis.doi = datetime.datetime.strptime(x, "%B %d, %Y")
-
-    if (request.POST.get('doa3') != None and request.POST.get('doa3') != '' and request.POST.get('doa3') != 'None'):
-        x = request.POST.get('doa3')
-        if x[-4:] == 'a.m.':
-            x = x[:-4]
-            x = x+"AM"
-        if x[-4:] == 'p.m.':
-            x = x[:-4]
-            x = x+"PM"
         if x[:5] == "Sept." :
             x = "Sep." + x[5:]
         try:
-            try:
-                eis.date_acceptance = datetime.datetime.strptime(x, "%B %d, %Y %I:%M %p")
-            except:
-                eis.date_acceptance = datetime.datetime.strptime(x, "%b. %d, %Y, %I:%M %p")
+            eis.doi = datetime.datetime.strptime(
+                x, "%B %d, %Y")
         except:
-            eis.date_acceptance = datetime.datetime.strptime(x, "%B %d, %Y")
+            try:
+                eis.doi = datetime.datetime.strptime(
+                    x, "%b. %d, %Y")
+            except:
+                eis.doi = x
+    if (request.POST.get('doa3') != None and request.POST.get('doa3') != '' and request.POST.get('doa3') != 'None'):
+        x = request.POST.get('doa3')
+        if x[:5] == "Sept." :
+            x = "Sep." + x[5:]
+        try:
+            eis.date_acceptance = datetime.datetime.strptime(
+                x, "%B %d, %Y")
+        except:
+            eis.date_acceptance = datetime.datetime.strptime(
+                x, "%b. %d, %Y")
 
     if (request.POST.get('dop3') != None and request.POST.get('dop3') != '' and request.POST.get('dop3') != 'None'):
         x = request.POST.get('dop3')
-        if x[-4:] == 'a.m.':
-            x = x[:-4]
-            x = x+"AM"
-        if x[-4:] == 'p.m.':
-            x = x[:-4]
-            x = x+"PM"
         if x[:5] == "Sept." :
             x = "Sep." + x[5:]
         try:
-            try:
-                eis.date_publication = datetime.datetime.strptime(x, "%B %d, %Y %I:%M %p")
-            except:
-                eis.date_publication = datetime.datetime.strptime(x, "%b. %d, %Y, %I:%M %p")
+            eis.date_publication = datetime.datetime.strptime(
+                x, "%B %d, %Y")
         except:
-            eis.date_publication = datetime.datetime.strptime(x, "%B %d, %Y")
-
+            eis.date_publication = datetime.datetime.strptime(
+                x, "%b. %d, %Y")
     if (request.POST.get('dos3') != None and request.POST.get('dos3') != '' and request.POST.get('dos3') != 'None'):
         x = request.POST.get('dos3')
-        if x[-4:] == 'a.m.':
-            x = x[:-4]
-            x = x+"AM"
-        if x[-4:] == 'p.m.':
-            x = x[:-4]
-            x = x+"PM"
+        if x[-10:] == ', midnight':
+            x = x[0:-10]
         if x[:5] == "Sept." :
             x = "Sep." + x[5:]
         try:
-            try:
-                eis.date_submission = datetime.datetime.strptime(x, "%B %d, %Y %I:%M %p")
-            except:
-                eis.date_submission = datetime.datetime.strptime(x, "%b. %d, %Y, %I:%M %p")
+            eis.date_submission = datetime.datetime.strptime(
+                x, "%B %d, %Y")
         except:
-            eis.date_submission = datetime.datetime.strptime(x, "%B %d, %Y")
+            eis.date_submission = datetime.datetime.strptime(
+                x, "%b. %d, %Y")
     eis.save()
     page = int(request.POST.get('index3'))//10
     page = page+1
@@ -1190,7 +1209,7 @@ def award_insert(request):
     eis.details = request.POST.get('details')
 
     eis.save()
-    return redirect('eis:profile')
+    return redirect('/profile/?page14=1')
 
 def talk_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)
@@ -1204,13 +1223,16 @@ def talk_insert(request):
     eis.l_type = request.POST.get('type')
     eis.place = request.POST.get('place')
     eis.title = request.POST.get('title')
+    x = request.POST.get('l_date')
+    if x[:5] == "Sept." :
+            x = "Sep." + x[5:]
     try:
-        eis.l_date = datetime.datetime.strptime(request.POST.get('l_date'), "%B %d, %Y")
+        eis.l_date = datetime.datetime.strptime(x, "%B %d, %Y")
     except:
-        eis.l_date = datetime.datetime.strptime(request.POST.get('l_date'), "%b. %d, %Y")
+        eis.l_date = datetime.datetime.strptime(x, "%b. %d, %Y")
 
     eis.save()
-    return redirect('eis:profile')
+    return redirect('/profile/?page15=1')   
 
 def chaired_insert(request):
     user = get_object_or_404(ExtraInfo, user=request.user)

@@ -14,18 +14,60 @@
     {% comment %}the doctor appointment tab starts here {% endcomment %}
     <div class="ui active tab" data-tab="viewschedule">
         <div class="ui vertical segment">
-            <div class="field">
-                  <table  border=1 class="ui very basic celled small fluid table"
-                         style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;">
+            <button type="button"  id="pr_sch" name="PDF" value="PDF" class="ui primary button left floated">
+                    <i class="ui download icon right floated"></i>
+            </button>
+
+            <script>
+         $('#pr_sch').click(function(e){
+        var sTable = document.getElementById('doc_sc').innerHTML;
+
+        var style = "<style>";
+        style = style + "table {width: 100%;font: 17px Calibri;}";
+        style = style + "table, th, td {border: solid 1px #DDD; border-collapse: collapse;";
+        style = style + "padding: 2px 3px;text-align: center;}";
+        style = style + "</style>";
+
+        // CREATE A WINDOW OBJECT.
+        var win = window.open('', '', 'height=700,width=700');
+
+        win.document.write('<html><head>');
+        win.document.write('<title>PHC Doctor Schedule</title>');   // <title> FOR PDF HEADER.
+        win.document.write(style);          // ADD STYLE INSIDE THE HEAD TAG.
+        win.document.write('</head>');
+        win.document.write('<body>');
+        win.document.write(sTable);         // THE TABLE CONTENTS INSIDE THE BODY TAG.
+        win.document.write('</body></html>');
+
+        win.document.close(); 	// CLOSE THE CURRENT WINDOW.
+
+        win.print();    // PRINT THE CONTENTS.
+    });
+
+</script>
+
+
+            <div id="doc_sc" class="field">
+                  <table  border=1 class="ui definition padded table" style="margin: auto;">
+                  </br>
+                      </br>
+                         </br>
                       <thead>
 
                         <tr>
-                          <td style="font-weight:bold;color:black;"> Schedule </td>
+                          <td style="font-weight:bold;color:black;">Doctor</td>
                           {% for d in doctors %}
                           {{count.doctor_count}}
-                          <td style="font-weight:bold;color:black;" > {{d.doctor_name}} </td>
+                          <td style="font-weight:bold;color:black; word-wrap:break-word;" > {{d.doctor_name}} </td>
                           {% endfor %}
                         <tr>
+                            <tr>
+                      <td >Specialization</td>
+                      {% for d in doctors %}
+                      {{count.doctor_count}}
+                      <td style="word-wrap:break-word;">{{d.specialization}}</td>
+                      {% endfor %}
+                    </tr>
 
                           {% for p,day in days %}
                           {{count.empty_fine}}
@@ -37,7 +79,7 @@
                             {% for s in schedule %}
                             {% if s.day == p %}
                             {% if d.id == s.doctor_id.id %}
-                            <td>{{s.from_time}}--{{s.to_time}}</td>
+                            <td style="white-space:nowrap;">{{s.from_time}}--{{s.to_time}}</td>
                             {{count.increment}}
                             {% else %}
                             {% endif %}
@@ -60,8 +102,8 @@
     <div class="ui tab" data-tab="editschedule">
       <div class="ui vertical segment">
         <form class="ui form" method="POST" style="padding: 8px; padding-left: 24px; padding-right: 24px;">{% csrf_token %}
-            <div class="field">
-              <div class="two fields">
+            <div class="field"> <p id="valid_sche" />
+              <div class="three fields">
                 <div class="field">
                     <label>Doctor</label>
                     <select id="doctor_a" class="ui search fluid dropdown" name="doctor" required="true">
@@ -81,6 +123,11 @@
                         {% endfor %}
                     </select>
                 </div>
+                   <div class="field">
+                       <label></label>  <br> <label></label>
+                      <input type="button" id="rmv" name="rmv" value="Remove" class="ui red button" />
+                   </div>
+
               </div>
               <div class="three fields">
                 <div class="field">
@@ -96,13 +143,15 @@
                     <div class="field">
                         <label>Room No</label>
                         <input type="text" name="room" id="room" required="true">
-                    </div>
 
-                <div class="field">
-                    <label> </label>  <br><label></label>
-                      <input type="button" id="edit" name="edit" onClick="window.location.reload();" value="Submit"class="ui large right floated primary button" />
+                        <div class="field">
+                    <label> </label>  <br> <label></label> <br> <label></label>
+                      <input type="button" id="edit" name="edit" value="Add" class="ui large right floated primary button" />
 
                 </div>
+
+                    </div>
+
                 </div>
               </div>
           </form>
@@ -115,7 +164,7 @@
                                                          var time_in = document.getElementById('time_in').value;
                                                          var time_out = document.getElementById('time_out').value;
                                                          var room = document.getElementById('room').value;
-                                                          if(doc=="" || day=="" || time_in==""|| room=="" || time_out=="")
+                                                         if(doc == "" || day == "" || time_in == ""|| room == "" || time_out == "")
                                                          {
                                                          $('#valid_sche').html("Enter Valid Information");
                                                          return false;
@@ -139,6 +188,42 @@
                                                                    document.getElementById("room").value="";
                                                                    document.getElementById("time_in").value="";
                                                                    document.getElementById("time_out").value="";
+                                                                   window.location.reload();
+                                                                  $('#valid_sche').html("");
+
+
+                                                             },
+                                                           });
+                                                           });
+
+
+                           $('#rmv').click(function(e){
+                                                         var doc = document.getElementById('doctor_a').value;
+                                                         var day = document.getElementById('day_a').value;
+
+                                                          if(doc == "" || day == "" )
+                                                         {
+                                                         $('#valid_sche').html("Enter Valid Information");
+                                                         return false;
+                                                         }
+                                                             $.ajax({
+                                                               type:'post',
+                                                               url:'/healthcenter/compounder/',
+                                                               data: {
+                                                               csrfmiddlewaretoken: '{{ csrf_token }}',
+                                                               doctor:$("#doctor_a").val(),
+                                                               day:$("#day_a").val(),
+                                                               rmv:$("#rmv").val()
+                                                             },
+                                                               success: function(data){
+                                                                   alert("Removed schedule");
+                                                                   document.getElementById("doctor_a").value="";
+                                                                   document.getElementById("day_a").value="";
+                                                                   document.getElementById("room").value="";
+                                                                   document.getElementById("time_in").value="";
+                                                                   document.getElementById("time_out").value="";
+                                                                   window.location.reload();
+                                                                   $('#valid_sche').html("");
 
                                                              },
                                                            });

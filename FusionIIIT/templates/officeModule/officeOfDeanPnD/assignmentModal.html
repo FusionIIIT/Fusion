@@ -74,20 +74,16 @@
                 <label>Description</label>
                 <textarea readonly rows="4">{{object.description}}</textarea>
             </div>
-
-            <h4> Assignment history </h4>
-            {% for t in track %}
+          
             <div class="ui comments">
+                <h4 class="ui dividing header">Assignment history</h4>
+            {% for t in track %}
                 <div class="comment">
                     <div class="content">
-                     <a class="author">{{t.current_id.user}}
-                         <a class="metadata">
-                             <span class="date">{{t.forward_date}}</span>
-                         </a>
-                     </a>
-
-                     <div class="right floated" style="font-color: black;">
-                         <b>Received by:</b>&nbsp{{t.receive_design}}
+                     <a class="author blue header" href="/profile/{{t.current_id.user}}">{{t.current_id.user}}</a>
+                     <div class="metadata">
+                         {{t.current_design.designation}},&nbsp
+                         <span class="date">{{t.forward_date}}</span>
                      </div>
                      <div class="right floated" style="font-color: black;">
                         <b>File uploaded:</b>
@@ -97,19 +93,26 @@
                             <span class="meta">No file uploaded</span>
                         {% endif %}
                      </div>
-                     <div class="text">
-                         <pre class="overflow-visible" style="white-space:initial; font-family: 'Arial';">
-                            {% if t.remarks %}
-                                {{t.remarks}}
-                            {% else %}
-                                <span class="meta">No Remarks</span>
-                            {% endif %}
-                         </pre>
+                     <div class="right floated" style="font-color: black;">
+                        <b>Remarks:</b>
+                        {% if t.remarks %}
+                            {{t.remarks}}
+                        {% else %}
+                            <span class="meta">No remarks</span>
+                        {% endif %}
+                     </div>
+                     <div class="right floated" style="font-color: black;">
+                         {% if t.receive_design %}
+                         <b>Sent to:</b>&nbsp{{t.receive_design}}
+                         {% else %}
+                         <b>Assignment closed!</b>
+                         {% endif %}
                      </div>
                     </div>
                 </div>
+                {% endfor %}
             </div>
-            {% endfor %}
+            
             
             <form id="action-form{{object.pk}}" method="POST" enctype="multipart/form-data" action="/office/officeOfDeanPnD/action">
             {% csrf_token %}
@@ -124,23 +127,11 @@
                     <input class="ui input" type="file" name="estimate" id="estimate" accept=".pdf, .docx,.doc" ></input>
                 </div>
                 <div class="field">
-                    <input type="submit" class="ui button" name="forward" value="Forward"/>
-                </div>
-                <div class="field">
-                    <input type="submit" class="ui button" name="revert" value="Revert"/>
-                </div>
-                <div class="field">
-                    <input type="submit" class="ui button" name="approve" value="Approve"/>
-                </div>
-                <div class="field">
-                    <input type="submit" class="ui button" name="reject" value="Reject"/>
+                    {% for action in allowed_actions %}
+                    <input type="submit" class="ui button" name="{{action}}" value="{{action}}"/>
+                    {% endfor %}
                 </div>
             </form>
-
-
-
-
-
         </div>
     </div>
 </div>

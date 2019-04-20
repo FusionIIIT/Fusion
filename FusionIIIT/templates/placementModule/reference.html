@@ -1,0 +1,131 @@
+{% block reference %}
+    <div class="ui vertical segment">
+        <div class="ui header">
+            Reference
+        </div>
+
+        <div class="ui divider"></div>
+        <br>
+
+        <div id="reference_error" style="display: none;" class="ui error message">
+          <i class="close icon"></i>
+          <div class="header">
+            Please resolve the following error
+          </div>
+          <ul id="reference_ul">
+          </ul>
+        </div>
+
+        {% comment %}
+        TODO: Add a proper JS logic for Reference!
+        {% endcomment %}
+
+        <form method="post" id="reference_form" class="ui form" role="form" action="{% url 'globals:profile' %}">
+            {% comment %}The add a new Reference Accordian starts here!{% endcomment %}
+            <div class="ui active accordion field">
+                <div class="title">
+                    <i class="icon dropdown"></i>
+                    Add a new Reference
+                </div>
+                {{ form15.non_field_errors }}
+                <div class="active content">
+                    <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                        {% csrf_token %}
+                        <div class="two fields">
+                            <div class="eleven wide field">
+                                {{ form15.reference_name.errors }}
+                                <label for="{{ form5.publication_title.id_for_label }}">Reference Name:</label>
+                                <div class="ui fluid large input">
+                                    {% comment %}The Institute Name input!{% endcomment %}
+                                    {{ form15.reference_name }}
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                {{ form15.post.errors }}
+                                <label for="{{ form5.publication_date.id_for_label }}">Post:</label>
+                                <div class="ui fluid large input">
+                                    {% comment %}The Institute Name input!{% endcomment %}
+                                    {{ form15.post }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="two fields">
+                            <div class="eleven wide field">
+                                {{ form15.email.errors }}
+                                <label for="{{ form5.publication_title.id_for_label }}">Email:</label>
+                                <div class="ui fluid large input">
+                                    {% comment %}The Institute Name input!{% endcomment %}
+                                    {{ form15.email }}
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                {{ form15.mobile_number.errors }}
+                                <label for="{{ form5.publication_date.id_for_label }}">Mobile Number:</label>
+                                <div class="ui fluid large input">
+                                    {% comment %}The Institute Name input!{% endcomment %}
+                                    {{ form15.mobile_number }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label><br></label>
+                            <button name="addreference" value="addreference" class="ui fluid large primary button" type="submit">
+                                Add
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% comment %}The add a new skill Accordian ends here!{% endcomment %}
+        </form>
+        {% if references %}
+            <div class="ui divider"></div>
+
+            <table class="ui fixed sortable celled table">
+                <thead>
+                <tr>
+                    <th class="four wide">Name</th>
+                    <th class="three wide">Post</th>
+                    <th class="three wide">Email</th>
+                    <th class="four wide">Mobile Number</th>
+                    <th class="two wide">Delete</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for reference in references %}
+                <tr>
+                    <td>
+                        {{ reference.reference_name }}
+                    </td>
+
+                    <td>
+                        {{ reference.post }}
+                    </td>
+
+                    <td>
+                        {{ reference.email }}
+                    </td>
+
+                    <td>
+                        {{ reference.mobile_number }}
+                    </td>
+                    <td>
+                      <form method="post" class="ui form" role="form">
+                        {% csrf_token %}
+                        <button name="deletereference" value="{{ reference.pk }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
+                            <i class="delete red icon"></i>
+                        </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+
+    </div>
+{% endblock %}

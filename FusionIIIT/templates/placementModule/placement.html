@@ -650,6 +650,11 @@
                             </div>
                             <br><br>
                             <div class="ui slider checkbox">
+                            <input type="checkbox" name="conferencecheck" value=1 checked="">
+                            <label>Conferences</label>
+                            </div>
+                            <br><br>
+                            <div class="ui slider checkbox">
                             <input type="checkbox" name="internshipcheck" value=1 checked="">
                             <label>Internships</label>
                             </div>
@@ -660,6 +665,11 @@
                             </div>
                             <br><br>
                             <div class="ui slider checkbox">
+                            <input type="checkbox" name="extracurricularcheck" value=1 checked="">
+                            <label>Extracurricular</label>
+                            </div>
+                            <br><br>
+                            <div class="ui slider checkbox">
                             <input type="checkbox" name="coursecheck" value=1 checked="">
                             <label>Courses</label>
                             </div>
@@ -667,6 +677,14 @@
                             <div class="ui slider checkbox">
                             <input type="checkbox" name="skillcheck" value=1 checked="">
                             <label>Skills</label>
+                            </div>
+                            <br><br>
+                            <div onchange="showReference(this);" class="ui slider checked checkbox">
+                              <input type="checkbox" name="referencecheck" value=1 >
+                              <label>Reference</label>
+                            </div>
+                            <div id="reference_list">
+                                
                             </div>
                             <br><br>
 
@@ -709,6 +727,34 @@
 
 
     <script type="text/javascript">
+      // arr = [1, 2, 3, 4];
+      function showReference(obj){
+        if ($(obj).hasClass('checked')){
+          $.ajax({
+            type: 'POST',
+            url: '{% url "placement:get_reference_list" %}',
+            data: {
+              // 'arr':arr
+            },
+            dataType: 'json',
+            success: function(response){
+              reference_objs = JSON.parse(response.reference_objs);
+              console.log(reference_objs[0].pk);
+              $('#reference_list').html('');
+              for (var i=0; i<reference_objs.length; i++){
+                $('#reference_list').append('<br><div class="ui checkbox"><input name="reference_checkbox_list" value="'+ reference_objs[i].pk +'" type="checkbox"><label>'+ reference_objs[i].fields.reference_name +'</label></div><br>');
+              }
+            },
+            error: function(rs, e){
+              alert('error');
+            }
+          });
+        }
+        else{
+          $('#reference_list').html('');
+        }
+      }
+
 
       //---------------------role add dropdown----------------------------------------------------
 
