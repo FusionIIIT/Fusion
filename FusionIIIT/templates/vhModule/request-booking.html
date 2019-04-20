@@ -22,7 +22,15 @@
     <div class="ui active tab" data-tab="request-booking" id="booking-detail-action-tab">
         <div class="ui vertical stripe team segment" style="padding-left: 3.0%; padding-right: 3.0%;">
 
-            <form class="ui large form" id="request-booking-form" style="height: 420px; overflow-y: auto;">
+            <form class="ui large form" id="request-booking-form" style="height: 420px; overflow-y: auto; overflow-x: hidden;">
+                <div class="field">
+                <label></label>
+                    <div class="ui large primary button right floated" id="next-button" onclick="next_action(event)">
+                        Next
+                    </div>
+                    &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;
+
+                </div>
 
                 {% if user_designation == 'VhIncharge' or user_designation == 'VhCaretaker' %}
                 <div class="field">
@@ -112,13 +120,13 @@
                     <div class="field">
                         <label> Minutes *</label>
                         <div class="ui fluid search selection dropdown">
-                            <input name="arrival-minute" type="hidden">
+                            <input name="arrival-minutes" type="hidden">
                             <i class="dropdown icon"></i>
 
                             <div class="default text">Select</div>
 
                             <div class="menu">
-<div class="item" data-value="01">
+                                    <div class="item" data-value="01">
                                         01
                                     </div>
                                     <div class="item" data-value="02">
@@ -161,7 +169,7 @@
                                         14
                                     </div>
                                     <div class="item" data-value="15">
-                                        0315
+                                        15
                                     </div>
                                     <div class="item" data-value="16">
                                         16
@@ -385,7 +393,7 @@
                         <div class="field">
                         <label> Minutes *</label>
                         <div class="ui fluid search selection dropdown">
-                            <input name="departure-minute" type="hidden">
+                            <input name="departure-minutes" type="hidden">
                             <i class="dropdown icon"></i>
 
                             <div class="default text">Select</div>
@@ -434,7 +442,7 @@
                                         14
                                     </div>
                                     <div class="item" data-value="15">
-                                        0315
+                                        15
                                     </div>
                                     <div class="item" data-value="16">
                                         16
@@ -708,13 +716,7 @@
                             </div>
                 </div>
 
-            <div class="field">
-            <label></label>
-            <div class="ui large primary button right floated" id="next-button" onclick="next_action(event)">
-                Next
-            </div>
-
-        </div>
+            
 
             </form>
         </div>
