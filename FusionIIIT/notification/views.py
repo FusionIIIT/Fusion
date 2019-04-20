@@ -93,11 +93,7 @@ def visitors_hostel_notif(sender, recipient, type):
     elif type =='cancellation_request_placed':
         verb='New Booking Cancellation Request '
     elif type =='booking_forwarded':
-<<<<<<< HEAD
-        verb='New Forwarded Booking Request '     
-=======
         verb='New Forwarded Booking Request '
->>>>>>> 165acc4a4b95a4b3ea67bc29541f01e49382bba3
     elif type =='booking_rejected':
         verb='Your Booking Request has been rejected '
 
