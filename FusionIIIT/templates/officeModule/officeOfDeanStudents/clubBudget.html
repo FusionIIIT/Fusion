@@ -1,7 +1,8 @@
+
 {% load static %}
 {% include 'officeModule/officeOfDeanStudents/clubBudgetModal.html' %}
 {% block subform1 %}
-{% comment %}The tab menu starts here!{% endcomment %}
+<!--The tab menu starts here!-->
 
     <div class="ui pointing secondary menu">
         <a class=" active item" data-tab="approvals_budget">
@@ -12,6 +13,27 @@
             Past
         </a>
     </div>
+
+
+     {% if success_msg != 'none' and page == 2 %}
+    <div class="ui success message">
+        <i class="close icon"></i>
+        <div class="header">
+          {{ success_msg }}
+        </div>
+    </div>
+    {% endif %}
+    {% if err_msg != 'none' and page == 2 %}
+    <div class="ui error message">
+            <i class="close icon"></i>
+            <div class="header">
+              There were some errors with your submission
+            </div>
+            <p>{{ err_msg }}</p>
+    </div>
+    {% endif %}
+
+
     <div class="ui active  tab segment" data-tab="approvals_budget">
     	    <div class="ui vertical segment">
 
@@ -23,7 +45,7 @@
                                                           margin: auto;" id="tableID">
                 <thead>
                 <tr>
-                    <th>
+                    <th>Items
                     </th>
 
                     <th class="two wide column">
@@ -42,10 +64,13 @@
                     <th class="four wide column">
                         Amount
                     </th>
+                    <th class = "four wide column">
+                        Available Budget
+                    </th>
                     <th class="four wide column">
                         Remark
                     </th>
-                    <th> </th>
+
                 </tr>
                 </thead>
 
@@ -54,6 +79,10 @@
                         {% csrf_token %}
 
                 <tr>
+
+                    <!-- Fetch all the club details whose allotment status is open(not confirmed or declined)  -->
+
+
                     {% for i in budget_app %}
                     <td><input type="checkbox" name="check" value="{{i.id}}"></td>
                     <td > {{ i.club }}</td>
@@ -64,10 +93,18 @@
                             <i class="large attach black icon"></i>
                         </a></td>
                     <td>{{i.budget_amt}}</td>
+
+                    {% for j in budgets %}
+                    {% if j.club_name == i.club_id %}
+                    <td>{{ j.avail_budget }}</td>
+                    <input type="text" name="avail_budget" value="{{j.avail_budget}}" hidden="true">
+                    {% endif %}
+                    {% endfor %}
+
                     <td><textarea rows="2" name="{{i.id}}"></textarea></td>
-                    <td> <div class="ui compact icon button" onclick="view_budget('{{ i.pk }}')">
+                    <!--<td> <div class="ui compact icon button" onclick="view_budget('{{ i.pk }}')">
                             <i class="expand icon"></i>
-                                </div></td>
+                                </div></td>-->
                 </tr>
                 {% endfor %}
 
@@ -75,8 +112,9 @@
             </table>
 
             <br>
-            <button class="ui primary right floated button" type="submit" name="submit" id="approve" formaction="budget_approval">Approve Selected</button>
-            <button class="ui red right floated button" type="submit" name="submit" id="reject" formaction="budget_rejection">Reject Selected</button>
+
+            <button class="ui primary right floated button" type="submit" name="submit" id="approve" formaction="budget_approval" {% if not budget_app %} disabled {% endif %}>Approve Selected</button>
+            <button class="ui red right floated button" type="submit" name="submit" id="reject" formaction="budget_rejection" {% if not budget_app %} disabled {% endif %} >Reject Selected</button>
             </form>
             <br>
             <br>
@@ -125,7 +163,7 @@
 
                 <tbody>
                     {% for i in p_budget%}
-                <tr {% if i.status == "confirmed" %} class="positive" {% else %}  class="negative"  {% endif %}>
+                <tr {% if i.status == "confirmed" %} class="positive" {% else %}  class="negative"  {% endif %} >
                     <td> {{i.status}}</td>
                     <td> {{ i.club}}</td>
                     <td> {{ i.club.category }}</td>

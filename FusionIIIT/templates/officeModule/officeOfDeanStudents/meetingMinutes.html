@@ -1,5 +1,25 @@
 {% block form6 %}
 <h3>Meeting Minutes</h3>
+
+
+    {% if success_msg != 'none'  and page == 6 %}
+    <div class="ui success message">
+        <i class="close icon"></i>
+        <div class="header">
+          {{ success_msg }}
+        </div>
+    </div>
+    {% endif %}
+    {% if err_msg != 'none'  and page == 6 %}
+    <div class="ui error message">
+            <i class="close icon"></i>
+            <div class="header">
+              There were some errors with your submission
+            </div>
+            <p>{{ err_msg }}</p>
+    </div>
+    {% endif %}
+
 <div class="ui pointing secondary menu">
                                 <a class=" active item" data-tab="pending">
                                 Pending
@@ -10,53 +30,55 @@
 </div>
 <!--Pending minutes starts here-->
                  <div class="ui tab active segment" data-tab="pending">
-                     <table class="ui very basic  celled table">
+                     <table class="ui very basic celled table">
                          <thead>
                                             <tr>
-                                                <th>Title</th>
-                                                <th>Time</th>
-                                                 <th>Venue</th>
-                                                 <th>Date</th>
-                                                 <th>File upload</th>
-                                                <th></th>
+                                                <th class="two wide column">Agenda</th>
+                                                <th class="two wide column">Time</th>
+                                                <th class="two wide column">Venue</th>
+                                                <th class="two wide column">Date</th>
+                                                <th class="two wide column">File upload</th>
+                                                <th class="two wide column">YES</th>
                                             </tr>
                         </thead>
                         <tr>
-                                <form class="ui  form" action="meeting_Minutes/" method="post" enctype="multipart/form-data">
-                                    {% csrf_token %}
+
                                     {% for details in meetingMinutes%}
-                                <td>{{  details.title }}</td>
-                                <td>{{  details.time }}</td>
-                                <td>{{  details.venue }}</td>
-                                <td>{{  details.date }}
+                            <form class="ui  form" action="meeting_Minutes/" method="post" enctype="multipart/form-data">
+                                    {% csrf_token %}
+                                <td>{{  details.agenda }}</td>
+                                <td >{{  details.time }}</td>
+                                <td >{{  details.venue }}</td>
+                                <td >{{  details.date }}
                                     <input type="text" name="id" hidden="true" value="{{details.pk}}">
                                 </td>
-                                <td><input type="file" name="minutes_file" placeholder="meeting minutes"></td>
-                                <td> <button class="ui button" type="submit">Submit</button></td>
-                           </tr>
-                                {% endfor %}
+                                    <td ><div class="ui mini input"><input type="file" name="minutes_file" accept=".pdf, .doc, .docx"  placeholder="meeting minutes" required></div></td>
+                                <td > <button class="mini ui button" type="submit">Submit</button></td>
                             </form>
-                            
-                     
+                        </tr>
+                                {% endfor %}
+
+
+
                      </table>
-                     
+
                 </div>
-                    
+
                 <!-- Pending minutes ends here-->
                 <div class="ui tab segment" data-tab="submitted">
                     <table class="ui very basic  celled table">
                         <thead>
                                             <tr>
-                                                <th>Title</th>
-                                                <th>Time</th>
-                                                <th>Date</th>
-                                                 <th>Venue</th>
-                                                 <th>File</th>
+                                                <th class="two wide column">Agenda</th>
+                                                <th class="two wide column">Time</th>
+                                                <th class="two wide column">Date</th>
+                                                <th class="two wide column">Venue</th>
+                                                <th class="two wide column">File</th>
                                             </tr>
                         </thead>
                         <tr>
                             {% for details in final_minutes%}
-                                <td>{{  details.title }}</td>
+                                <td>{{  details.agenda }}</td>
                                 <td>{{  details.time }}</td>
                                 <td>{{  details.date }}</td>
                                 <td>{{  details.venue }}</td>
