@@ -48,17 +48,10 @@ function request_booking (event) {
     booking_from = $('input[name="request-booking-from"]').val();
     booking_to = $('input[name="request-booking-to"]').val();
     arrival_hour = $('input[name="arrival-hour"]').val();
-<<<<<<< HEAD
     arrival_minute = $('input[name="arrival-minutes"]').val();
     arrival = $('input[name="arrival"]').val();
     departure_hour = $('input[name="departure-hour"]').val();
     departure_minute = $('input[name="departure-minutes"]').val();
-=======
-    arrival_minute = $('input[name="arrival-minute"]').val();
-    arrival = $('input[name="arrival"]').val();
-    departure_hour = $('input[name="departure-hour"]').val();
-    departure_minute = $('input[name="departure-minute"]').val();
->>>>>>> 165acc4a4b95a4b3ea67bc29541f01e49382bba3
     departure = $('input[name="departure"]').val();
     number_of_people =  parseInt($('input[name="number-of-people"]').val());
     number_of_rooms =  parseInt($('input[name="number-of-rooms"]').val());
@@ -68,14 +61,6 @@ function request_booking (event) {
 
     booking_from_time = arrival_hour.concat(":").concat(arrival_minute).concat(" ").concat(arrival);
     booking_to_time = departure_hour.concat(":").concat(departure_minute).concat(" ").concat(departure);
-<<<<<<< HEAD
-=======
-    // console.log(arrival_hour);
-    // console.log("ffff");
-    // console.log(departure_time);
-    console.log(bill_settlement);
-
->>>>>>> 165acc4a4b95a4b3ea67bc29541f01e49382bba3
 
 // visitor details
     name = $('input[name=visitor-name-1]').val();
@@ -84,7 +69,6 @@ function request_booking (event) {
     address = $('input[name=address-1]').val();
     organization = $('input[name=organization-1]').val();
     nationality = $('input[name=country]').val();
-<<<<<<< HEAD
 
     // Conditions for arival and departure time
     if ( ! booking_from ) {
@@ -96,55 +80,6 @@ function request_booking (event) {
         alertModal ('Oops! Please enter the expected arrival hour of the visitor');
         return;
     }
-=======
-
-
-    // loc=booking_from_time.indexOf(':');
-
-    // if(loc == -1){
-    //     alertModal("Please check the arrival time.");
-    //         return;
-    // }
-    // hour = booking_from_time.substring(0,loc);
-    // min = booking_from_time.substring(loc+1,booking_from_time.length);
-
-    // h=parseInt(hour);
-    // m=parseInt(min);
-
-    // if(h < 0 || h >= 24){
-    //     alertModal("Please check the arrival time.");
-    //         return;
-
-    // }
-    // if(m < 0 || m >= 60){
-    //     alertModal("Please check the arrival time.");
-    //         return;
-
-    // }
-
-    // loc=booking_to_time.indexOf(':');
-
-    // if(loc == -1){
-    //     alertModal("Please check the departure time.");
-    //         return;
-    // }
-    // hour = booking_to_time.substring(0,loc);
-    // min = booking_to_time.substring(loc+1,booking_to_time.length);
-
-    // h=parseInt(hour);
-    // m=parseInt(min);
-
-    // if(h < 0 || h >= 24){
-    //     alertModal("Please check the departure time.");
-    //         return;
-
-    // }
-    // if(m < 0 || m >= 60){
-    //     alertModal("Please check the departure time.");
-    //         return;
-
-    // }
->>>>>>> 165acc4a4b95a4b3ea67bc29541f01e49382bba3
 
     // Arrival hour and minutes converted
 
@@ -163,7 +98,6 @@ function request_booking (event) {
         return;
     }
 
-<<<<<<< HEAD
     if ( !departure_hour) {
         alertModal ('Oops! Please enter the expected departure hour of the visitor');
         return;
@@ -173,34 +107,6 @@ function request_booking (event) {
         return;
     }
 
-=======
-    
-
-    if ( !arrival_hour) {
-        alertModal ('Oops! Please enter the expected arrival time of the visitor');
-        return;
-    }
-
-    if ( !arrival_minute) {
-        alertModal ('Oops! Please enter the expected arrival time of the visitor');
-        return;
-    }
-
-    if ( !arrival) {
-        alertModal ('Oops! Please enter the expected arrival time of the visitor');
-        return;
-    }
-
-    if ( !departure_hour) {
-        alertModal ('Oops! Please enter the expected departure time of the visitor');
-        return;
-    }
-    if ( !departure_minute) {
-        alertModal ('Oops! Please enter the expected departure time of the visitor');
-        return;
-    }
-
->>>>>>> 165acc4a4b95a4b3ea67bc29541f01e49382bba3
     if ( !departure) {
         alertModal ('Oops! Please enter the expected departure time of the visitor');
         return;
@@ -261,26 +167,12 @@ function request_booking (event) {
         alertModal ("Oops! Number of rooms can't be greater than 15.");
         return;
     } 
-    if ( !number_of_rooms ) {
-        alertModal ("Please fill required number of rooms!");
-        return;
-    }
-    if ( !number_of_people ) {
-        alertModal ("Please fill number of people!");
-        return;
-    }
+
     if ( !category ) {
         alertModal ("Please fill the Category!");
         return;
     } 
-    if ( ! booking_from ) {
-        alertModal ("Please fill expected arrival date!");
-        return;
-    }
-    if ( ! booking_to)  {
-        alertModal ("Please fill expected departure date!");
-        return;
-    }
+
     if ( !nationality ) {
          nationality = ' ';
     }
