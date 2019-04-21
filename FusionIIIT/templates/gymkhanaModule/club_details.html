@@ -165,8 +165,9 @@
             $('#tbody').empty();
              var data1 = document.getElementById('club_session_').value;
             {% for i in Club_session %}
+            console.log()
             var x =  "{{ i.club.club_name }}";
-            if(data1==x)
+            if(data1==x )
             {
                 $('#tbody').append('<tr><td onclick="view_session_(\'' + {{i}} + '\')">{{i.venue }}</td><td>{{ i.date }}</td><td>{{ i.start_time }}-{{ i.end_time }}</td><td>{{ i.details }}</td></tr>')
             }
@@ -338,7 +339,9 @@
                     <select class="ui search fluid dropdown" name="club" id="club_session_" onchange="display_club_session()" required>
                         <option value="">Select</option>
                             {% for i in Club_name %}
+                                {% if i.status == "confirmed" %}
                                 <option value="{{ i.club_name }}">{{ i.club_name }} </option>
+                                {% endif %}
                             {% endfor %}
                     </select>
                 </div>

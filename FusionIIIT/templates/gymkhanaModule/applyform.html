@@ -39,7 +39,9 @@
                             <div class="default text">Select</div>
                             <div class="menu">
                                 {% for i in Club_name %}
+                                {% if i.status == "confirmed" %}
                                     <div class="item" data-value="{{i.club_name}}">{{i.club_name}}</div>
+                                    {% endif %}
                                 {% endfor %}
                             </div>
                         </div>
