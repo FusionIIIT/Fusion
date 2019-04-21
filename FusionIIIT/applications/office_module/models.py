@@ -181,89 +181,116 @@ class Assistantship(models.Model):
 
 
 
+# Dean RSPC Begins ....................................................................................................
+"""
+DEAN RSPC BEGINS
+Table for Project Registration
+"""
+
+
 class Project_Registration(models.Model):
     PI_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
     project_title = models.CharField(max_length=200)
     sponsored_agency = models.CharField(max_length=100)
-    CO_PI = models.CharField(max_length=100 ,null=True)
-    start_date = models.DateField(null=True,blank=True)
-    duration = models.CharField(default='0', max_length=100)
+    CO_PI = models.CharField(max_length=100, null=True)
+    start_date = models.DateField(null=True, blank=True)
+
+    duration = models.IntegerField(default=0)
     agreement = models.CharField(choices=Constants.TICK_TYPE,
-                                      max_length=10, default='NO')
+                                 max_length=10, default='NO')
     amount_sanctioned = models.IntegerField(default=0)
     project_type = models.CharField(choices=Constants.PROJECT_TYPE,
-                                 max_length=25)
+                                    max_length=25)
     project_operated = models.CharField(choices=Constants.PROJECT_OPERATED,
-                                    max_length=50,default='me')
+                                        max_length=50, default='me')
     remarks = models.CharField(max_length=200)
-    fund_recieved_date = models.DateField(null=True,blank=True)
+    fund_recieved_date = models.DateField(null=True, blank=True)
     HOD_response = models.CharField(choices=Constants.RESPONSE_TYPE1,
-                                 max_length=10, default='Pending')
+                                    max_length=10, default='Pending')
     DRSPC_response = models.CharField(choices=Constants.RESPONSE_TYPE,
-                                 max_length=10, default='Pending')
-    applied_date=models.DateField(null=True,blank=True)
-    description=models.CharField(max_length=200,null=True)
-
+                                      max_length=10, default='Pending')
+    applied_date = models.DateField(null=True, blank=True)
+    description = models.CharField(max_length=200, null=True)
+    file = models.FileField(upload_to='documents/', blank=True, null=True)
 
     def __str__(self):
         return self.project_title
 
 
+"""
+DEAN RSPC
+Table for Project Extension
+"""
+
 
 class Project_Extension(models.Model):
     project_id = models.ForeignKey(Project_Registration, on_delete=models.CASCADE)
-    date = models.DateField()
-    extended_duration = models.CharField(max_length=300)
+    date = models.DateField(null=True, blank=True)
+    extended_duration = models.IntegerField(default=0)
     extension_details = models.CharField(max_length=300)
     HOD_response = models.CharField(choices=Constants.RESPONSE_TYPE1,
                                     max_length=10, default='Pending')
     DRSPC_response = models.CharField(choices=Constants.RESPONSE_TYPE,
                                       max_length=10, default='Pending')
+    file = models.FileField(upload_to='documents/', blank=True, null=True)
 
     def __str__(self):
         return str(self.project_id)
 
 
+"""
+DEAN RSPC
+Table for Project Closure
+"""
+
 
 class Project_Closure(models.Model):
     project_id = models.ForeignKey(Project_Registration, on_delete=models.CASCADE)
-    completion_date = models.DateField()
-   # extended_duration = models.CharField(max_length=200, blank=True, null=True)
+    completion_date = models.DateField(null=True, blank=True)
+    # extended_duration = models.CharField(max_length=200, blank=True, null=True)
+    date = models.DateField(null=True, blank=True)
+
     expenses_dues = models.CharField(choices=Constants.TICK_TYPE,
-                                    max_length=10, default='Pending')
-    expenses_dues_description = models.CharField(max_length=200,blank=True, null=True)
-    payment_dues = models.CharField(choices=Constants.TICK_TYPE,
                                      max_length=10, default='Pending')
+    expenses_dues_description = models.CharField(max_length=200, blank=True, null=True)
+    payment_dues = models.CharField(choices=Constants.TICK_TYPE,
+                                    max_length=10, default='Pending')
     payment_dues_description = models.CharField(max_length=200, blank=True, null=True)
     salary_dues = models.CharField(choices=Constants.TICK_TYPE,
-                                     max_length=10, default='Pending')
+                                   max_length=10, default='Pending')
     salary_dues_description = models.CharField(max_length=200, blank=True, null=True)
     advances_dues = models.CharField(choices=Constants.TICK_TYPE,
                                      max_length=10, default='Pending')
     advances_description = models.CharField(max_length=200, blank=True, null=True)
     others_dues = models.CharField(choices=Constants.TICK_TYPE,
-                                     max_length=10, default='Pending')
+                                   max_length=10, default='Pending')
     other_dues_description = models.CharField(max_length=200, blank=True, null=True)
     overhead_deducted = models.CharField(choices=Constants.TICK_TYPE,
-                                     max_length=10, default='Pending')
+                                         max_length=10, default='Pending')
     overhead_description = models.CharField(max_length=200, blank=True, null=True)
     HOD_response = models.CharField(choices=Constants.RESPONSE_TYPE1,
                                     max_length=10, default='Pending')
     DRSPC_response = models.CharField(choices=Constants.RESPONSE_TYPE,
                                       max_length=10, default='Pending')
-    remarks=models.CharField(max_length=300,null=True)
-    extended_duration=models.CharField(default='0', max_length=100,null=True)
-
+    remarks = models.CharField(max_length=300, null=True)
+    extended_duration = models.CharField(default='0', max_length=100, null=True)
 
     def __str__(self):
         return str(self.project_id)
 
+
+"""
+DEAN RSPC
+Table for Project Reallocation
+"""
+
+
 class Project_Reallocation(models.Model):
     project_id = models.ForeignKey(Project_Registration, on_delete=models.CASCADE)
-    date = models.DateField()
+    date = models.DateField(null=True, blank=True)
     previous_budget_head = models.CharField(max_length=300)
     previous_amount = models.IntegerField(default=0)
-    pf_no = models.CharField(max_length=100,null=True)
+    pf_no = models.CharField(max_length=100, null=True)
     new_budget_head = models.CharField(max_length=300)
     new_amount = models.IntegerField(default=0)
     transfer_reason = models.CharField(max_length=300)
@@ -272,11 +299,11 @@ class Project_Reallocation(models.Model):
     DRSPC_response = models.CharField(choices=Constants.RESPONSE_TYPE,
                                       max_length=10, default='Pending')
 
-
     def __str__(self):
         return str(self.project_id)
 
 
+# Dean RSPC ends ....................................................................................................
 
 
 class Member(models.Model):

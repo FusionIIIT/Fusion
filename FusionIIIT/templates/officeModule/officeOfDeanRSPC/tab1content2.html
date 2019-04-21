@@ -1,5 +1,5 @@
  {% block tab1content1 %}
-<form action="{%url 'office:p_extension' %}" method ="POST">
+<form action="{%url 'office:p_extension' %}" method ="POST" enctype="multipart/form-data">
     {% comment %}The add a new skill Accordian starts here!{% endcomment %}
     <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
          {% csrf_token %}
@@ -7,17 +7,17 @@
         <div class="three fields">
             <div class="six wide field">
                 <label>Project No</label>
-                <input value="" class="ui large input" name="project_id">
+                <input value="" class="ui large input" name="project_id" type="number" min="0" required>
             </div>
 
             <div class="six wide field">
                 <label>Previous Duration</label>
-                <input value="" class="ui large input" name="">
+                <input value="" class="ui large input" name="" type="number" min="0" required>
             </div>
             
              <div class="six wide field">
-                <label>Current Duration(Extended in Years)</label>
-                <input value="" class="ui large input" name="extended_duration">
+                <label>Current Duration</label>
+                <input value="" class="ui large input" name="extended_duration" placeholder="Current duration in weeks" type="number" min="0" required>
             </div>
         </div>
         
@@ -35,11 +35,16 @@
         </div> -->
 
         <div class="two fields">
-            
+
             <div class="six wide field">
-                <label>Extension Sactioned and Required up to(Enclose sanction letter) </label>
-                <input value="" class="ui large input" name="details">
+            <label>Extension Sanctioned and Required up to(Enclose sanction letter)</label>
+            <input class="ui input" type="file" name='extension_file' required>
             </div>
+
+            <!--<div class="six wide field">
+                <label>Extension Sanctioned and Required up to(Enclose sanction letter) </label>
+                <input value="" class="ui large input" name="details">
+            </div>-->
 
             <div class="six wide field">
                 <label>Any relevant additional details on extension sought/sanctioned.

@@ -8,18 +8,18 @@
         <div class="three fields">
             <div class="six wide field">
                 <label>Project No.</label>
-                <input value="" class="ui large input"  name="project_id">
+                <input value="" class="ui large input"  name="project_id" type="number" required>
             </div>
 
-            <div class="six wide field">
-                <label>Date</label>
-                <input value="" class="ui large input" type="date" name="date">
-            </div>
-            
-            <div class="four wide field">
-                <label>Principal Investigator</label>
-                <input value="" class="ui large input"  name="principal_investigator">
-            </div>
+<!--            <div class="six wide field">-->
+<!--                <label>Date</label>-->
+<!--                <input value="" class="ui large input" type="date" name="date" required>-->
+<!--            </div>-->
+<!--            -->
+            <!--<div class="four wide field">-->
+                <!--<label>Principal Investigator</label>-->
+                <!--<input value="" class="ui large input"  name="principal_investigator">-->
+            <!--</div>-->
         </div>
        
         <h4>Committed Expenses,if any</h4>
@@ -28,10 +28,10 @@
             
         <div class="six wide field">
                 <label>Please specify whether any dues outstanding</label>
-                <select class="ui search fluid dropdown" name="committed">
-                    <option value="">Select</option>
-                    <option value="fest1">Yes</option>
-                    <option value="fest2">No</option>
+                <select class="ui search fluid dropdown" name="committed" required>
+                   <option value="-">Select</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
                 </select>
         </div>  
         <div class="ten wide field field">
@@ -47,10 +47,10 @@
             
         <div class="six wide field">
                 <label>Please specify whether any dues outstanding</label>
-                <select class="ui search fluid dropdown" name="payment">
-                    <option value="">Select</option>
-                    <option value="fest1">Yes</option>
-                    <option value="fest2">No</option>
+                <select class="ui search fluid dropdown" name="payment" required>
+                    <option value="-">Select</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
                 </select>
         </div>  
         <div class="ten wide field field" >
@@ -66,10 +66,10 @@
             
         <div class="six wide field">
                 <label>Please specify whether any dues outstanding</label>
-                <select class="ui search fluid dropdown" name="salary">
-                    <option value="">Select</option>
-                    <option value="fest1">Yes</option>
-                    <option value="fest2">No</option>
+                <select class="ui search fluid dropdown" name="salary" required>
+                    <option value="-">Select</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
                 </select>
         </div>  
         <div class="ten wide field field">
@@ -85,10 +85,10 @@
             
         <div class="six wide field">
                 <label>Please specify whether any dues outstanding</label>
-                <select class="ui search fluid dropdown" name="advance">
-                    <option value="">Select</option>
-                    <option value="fest1">Yes</option>
-                    <option value="fest2">No</option>
+                <select class="ui search fluid dropdown" name="advance" required>
+                    <option value="-">Select</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
                 </select>
         </div>  
         <div class="ten wide field field">
@@ -105,9 +105,9 @@
         <div class="six wide field">
                 <label>Please specify whether any dues outstanding</label>
                 <select class="ui search fluid dropdown" name="other">
-                    <option value="">Select</option>
-                    <option value="fest1">Yes</option>
-                    <option value="fest2">No</option>
+                    <option value="-">Select</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
                 </select>
         </div>  
         <div class="ten wide field field">
@@ -123,10 +123,10 @@
             
         <div class="six wide field">
                 <label>Please specify whether any dues outstanding</label>
-                <select class="ui search fluid dropdown" name="overhead">
-                    <option value="">Select</option>
-                    <option value="fest1">Yes</option>
-                    <option value="fest2">No</option>
+                <select class="ui search fluid dropdown" name="overhead" required>
+                    <option value="-">Select</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
                 </select>
         </div>  
         <div class="ten wide field field">
@@ -136,10 +136,10 @@
             
         </div>
         
-        <div class="field">
-            <label>Attach Application</label>
-            <input class="ui input" type="file"></input>
-        </div>
+        <!--<div class="field">-->
+            <!--<label>Attach Application</label>-->
+            <!--<input class="ui input" type="file"></input>-->
+        <!--</div>-->
         
         <div class="field">
             <button class="ui primary button right floated" type="submit">
