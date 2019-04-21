@@ -35,6 +35,18 @@ def delete_sessions(request):
 		print("An error was encountered")
 		return HttpResponse("error")
 
+def delete_memberform(request):
+	selectedIds = request.POST['ids']
+	selectedIds = json.loads(selectedIds)
+	try:
+		for i in selectedIds:
+			delMemberform = Club_member.objects.get(id=i)
+			delMemberform.delete()
+		return HttpResponse("success")
+	except e:
+		print("An error was encountered")
+		return HttpResponse("error")
+
 def facultyData(request):
 	current_value = request.POST['current_value']
 	try:
@@ -190,8 +202,8 @@ def retrun_content(roll, name, desig , club__ ):
 
 	venue_type = []
 	id =0
-
 	venue = []
+
 
 	for i in Constants.venue:
 		for j in i[1]:
@@ -216,7 +228,8 @@ def retrun_content(roll, name, desig , club__ ):
 		'Curr_club' : b,
 		'venue' : venue,
 		'Curr_desig' : desig,
-		'club_details':club__
+		'club_details':club__,
+		'roll' : str(roll)
 	}
 	return content
 
