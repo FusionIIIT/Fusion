@@ -1,6 +1,6 @@
 {% load static %}
 {% block lodgecomplaint %}
-
+<!-- this page is for adding worker and removing -->
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="add">
@@ -9,8 +9,8 @@
         <a class="item" data-tab="remove">
             WORKERS
         </a>
-    </div>
-
+    </div> 
+    <!-- this section is for adding worker -->
     <div class="ui active tab" data-tab="add">
         <div class="ui vertical segment">
             <form class="ui form" style="padding-left: 24px; padding-right: 24px;" method="POST" enctype="multipart/form-data" 
@@ -26,6 +26,7 @@
 
                     <div class="eight wide field">
                         <label>Workers Type<sup><i class="small red asterisk icon"></i></sup></label>
+                        <!-- selection drop down list -->
                         <div class="ui selection dropdown">
                             <input name="complaint_type" type="hidden" required="True">
                             <i class="dropdown icon"></i>
@@ -106,7 +107,7 @@
 
 
 
-
+<!-- this section is for removing worker -->
 
 
 

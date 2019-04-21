@@ -14,15 +14,34 @@ class Constants:
     )
 
     HALL_NO = (
-        ('HALL-1','hall-1'),
-        ('HALL-3','hall-3'),
-        ('HALL-4','hall-4'),
+        ('HALL-1-BOYS', 'hall-1-boys'),
+        ('HALL-1-GIRLS', 'hall-1-girls'),
+        ('HALL-3', 'hall-3'),
+        ('HALL-4', 'hall-4'),
     )
 
     CLUB_TYPE = (
         ('TECHNICAL', 'technical'),
         ('CULTURAL', 'cultural'),
         ('SPORTS', 'sports'),
+    )
+
+    PROGRAM = (
+        ('BTECH','btech'),
+        ('BDES','bdes'),
+        ('MTECH','mtech'),
+        ('MDES','mdes'),
+        ('PHD','phd')
+    )
+    YEARS = (
+        ('FIRST-YEAR', 'first-year'),
+        ('SECOND-YEAR', 'second-year'),
+        ('THIRD-YEAR', 'third-year'),
+        ('FOURTH-YEAR', 'fourth-year')
+    )
+    GENDER = (
+        ('MALE', 'male'),
+        ('FEMALE', 'female')
     )
 
 
@@ -51,12 +70,24 @@ class hostel_guestroom_approval(models.Model):
 
 class hostel_allotment(models.Model):
     id = models.AutoField(primary_key=True)
-    hall_no=models.CharField(max_length=5, choices=Constants.HALL_NO ,default='')
-    allotment_file=models.FileField(upload_to='uploads/')
-    description=models.CharField(max_length=200)
-    
-    def __str__(self):
-        return '{} - {}'.format(self.hall_no, self.allotment_file)
+    program = models.CharField(max_length=30, choices=Constants.PROGRAM, default='')
+    year = models.CharField(max_length=30, choices=Constants.YEARS, default='')
+    gender = models.CharField(max_length=10, choices=Constants.GENDER, default='')
+    hall_no = models.CharField(max_length=15, choices=Constants.HALL_NO, default='')
+    number_students = models.PositiveIntegerField(default=0)
+    remark = models.CharField(max_length=200)
+
+    class Meta:
+        db_table = "hostel_allotment"
+
+class hostel_capacity(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=15, choices=Constants.HALL_NO, default='')
+    current_capacity = models.PositiveIntegerField(default=0)
+    total_capacity = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        db_table = "hostel_capacity"
 
 class Budget(models.Model):
     id=models.AutoField(primary_key=True)

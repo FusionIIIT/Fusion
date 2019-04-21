@@ -4,9 +4,28 @@
 <h3>Club Budget Allotment</h3>
 
 
+    {% if success_msg != 'none' and page == 10 %}
+    <div class="ui message success">
+        <i class="close icon"></i>
+        <div class="header">
+          {{ success_msg }}
+        </div>
+    </div>
+    {% endif %}
+    {% if err_msg != 'none' and page == 10 %}
+    <div class="ui message error">
+            <i class="close icon"></i>
+            <div class="header">
+              There were some errors with your submission
+            </div>
+            <p>{{ err_msg }}</p>
+    </div>
+    {% endif %}
+
+
 <div class="ui pointing secondary menu">
         <a class=" active item" data-tab="allot_budget">
-            Allotment
+            New Allotments
         </a>
 
         <a class="item" data-tab="alloted_budget">
@@ -33,13 +52,15 @@
                 </thead>
 
         <tbody>
+
+        <!--backend the values off entries is being fetched from the budget_allotment table-->
         	{% for i in budget_allotment %}
 
         		<tr > 
         				<td>{{ i.club_name }}</td>
         				<td> {{ i.category }}</td>
         				<td> <div class="ui animated button" tabindex="0" onclick="modalAllot('{{ i.club_name }}')">
-  							<div class="visible content">Set</div>
+  							<div class="visible content">Allot</div>
   							<div class="hidden content">
     						<i class="right arrow icon"></i>
   							</div>
@@ -54,12 +75,13 @@
 </table>
 </div>
 
+
 </div>
 <div class="ui tab segment" data-tab="alloted_budget">
 	<div class="ui vertical segment">
-		<table class="ui  table">
+		<table class="ui very basic celled table">
                 <thead>
-                <tr onclick="">
+                <tr>
                     <th class="four wide column">
                         Club
                     </th>
@@ -76,6 +98,8 @@
                 </thead>
 
         <tbody>
+
+        <!--backend the values off entries is being fetched from the budget_allotment table-->
         	{% for i in budget_alloted %}
 
         		<tr> 

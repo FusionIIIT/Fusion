@@ -211,7 +211,7 @@ Complaint
                                 {% else %}
                                 <label>Choose particular caretaker from a drop down box :</label>
                                 <select name="assign_caretaker">
-                                    {% for i in total_caretaker %}
+                                    {% for i in total_caretakers_in_area %}
                                     <option value="{{ i.id }}">{{ i.id }}-{{ i.staff_id }}-{{ i.area }}</option>
                                     {% endfor %}
                                 </select>

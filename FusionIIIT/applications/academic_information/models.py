@@ -87,7 +87,7 @@ class Meeting(models.Model):
         db_table = 'Meeting'
 
     def __str__(self):
-        return self.date
+        return (str(self.date) + self.agenda)
 
 
 class Calendar(models.Model):

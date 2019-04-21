@@ -22,7 +22,7 @@ $(document).ready(function(){
         var complaint_type =  $('input[name="complaint_type"]').val() ;
         var details =$('input[name="details"]').val() ;
         var myfile = $('input[name="myfile"]').val();
-        if(specific_location=="" || location=="" || details=="" || complaint_type=="")
+        if(specific_location=="" || Location=="" || details=="" || complaint_type=="")
         {
             alert("Please fill all the details!");
             return;
@@ -88,11 +88,15 @@ function addwork(event) {
    var str_phone_no = $('input[name="phone_no"]').val();
    var age = $('input[name="age"]').val();
    var intage = parseInt(age);
+   var intpn= parseInt(str_phone_no);
 
     if (complaint_type == "" || name == "" || str_phone_no == "" || age == "")
     {
       alert('Please fill all the details');
       return;
+    }
+    else if(intpn<1999999999){
+      alert('invalid phone number!');
     }
 
     else if (str_phone_no.length != 10){
