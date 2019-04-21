@@ -728,13 +728,9 @@ def project_extension(request):
     project_id = request.POST.get('project_id')
     # ob = get_object_or_404(Project_Registration, pk=project_id)
     try:
-        print("1")
         ob = Project_Registration.objects.get(pk=project_id)
-        print("2")
     except:
-        print("3")
         messages.error(request, 'Project ID not found! Try again')
-        print("4")
         return HttpResponseRedirect('/profile')
 
     user = request.user
