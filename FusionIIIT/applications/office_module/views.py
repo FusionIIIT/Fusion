@@ -602,27 +602,27 @@ def project_register(request):
 
     """Validations for project Registration MOU and Co PI name"""
     if len(sponsored_agency) is 0 and amount_sanctioned > '0':
-        messages.error(request, 'Amount cannot be sanctioned without Agency')
+        messages.error(request, 'Error in Project Registration form: Amount cannot be sanctioned without Agency')
         return HttpResponseRedirect('/profile/')
 
     if project_operated == "PI and Co_pi" and CO_PI == "":
-        messages.error(request, 'Enter CO_PI name')
+        messages.error(request, 'Error in Project Registration form: Enter CO_PI name')
         return HttpResponseRedirect('/profile/')
 
     if project_operated == "Only By PI" and len(CO_PI) > 0:
-        messages.error(request, 'Select PI and Co_PI in option')
+        messages.error(request, 'Error in Project Registration form: Select PI and Co_PI in option')
         return HttpResponseRedirect('/profile/')
 
     if mou == "Yes" and not file:
-        messages.error(request, 'Attach the MOU')
+        messages.error(request, 'Error in Project Registration form: Attach the MOU')
         return HttpResponseRedirect('/profile/')
 
     if len(sponsored_agency) is 0 and file:
-        messages.error(request, 'Enter agency name mentioned on MOU')
+        messages.error(request, 'Error in Project Registration form: Enter agency name mentioned on MOU')
         return HttpResponseRedirect('/profile/')
 
     if fund_recieved_date is not None and start_date < fund_recieved_date:
-        messages.error(request, 'Project cannot be started before receiving fund')
+        messages.error(request, 'Error in Project Registration form: Project cannot be started before receiving fund')
         return HttpResponseRedirect('/profile/')
 
     """Save the Details to Project_Registration Table"""
