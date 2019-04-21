@@ -684,6 +684,14 @@ def dashboard(request):
     context={
         'notifications':notifs
     }
+    #For redirecting to direcor dashboard ...................
+    holds_designations = HoldsDesignation.objects.filter(user=user)
+    desig = holds_designations
+    for d in desig:
+        if d.designation.name == 'Director':
+            print("director matched \n\n\n")
+            return render(request, "dashboard/director_dashboard.html", context )
+    # end 
     return render(request, "dashboard/dashboard.html", context)
 
 @login_required(login_url=LOGIN_URL)

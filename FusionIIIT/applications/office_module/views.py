@@ -1408,97 +1408,475 @@ def edit1(request):
     d.save()
     return HttpResponseRedirect('/office/officeOfPurchaseOfficer')
 
+# DIRECOR OFFICE MODULE .........................................
 
 def directorOffice(request):
+     if request.user.is_authenticated:
+        user_name=get_object_or_404(User,username=request.user.username)
+        user=ExtraInfo.objects.all().filter(user=user_name).first()
+        holds=HoldsDesignation.objects.filter(user=user.user)
+        deslist1=['Director']
+        if user.user_type == 'faculty': 
+            context={ }
+            return render(request, "officeModule/directorOffice/directorOffice.html", context)
+
+#function gets the count of faculties department wise and top scoring students yearwise and department wise
+def viewProfile(request):
     faculty = Faculty.objects.all()
     student = Student.objects.all()
-    facultysearch = " "
-    if 'search' in request.POST:
-        facult = request.POST.get('faculty')
-        facultysearch = Faculty.objects.get(id=facult)
+    staff = Staff.objects.all()
+
+    cs = Faculty.objects.all().filter(id__department__name = 'CSE').count()
+    ec = Faculty.objects.all().filter(id__department__name = 'ECE').count()
+    me = Faculty.objects.all().filter(id__department__name = 'ME').count()
+    des = Faculty.objects.all().filter(id__department__name = 'DESIGN').count()
+    ns = Faculty.objects.all().filter(id__department__name = 'NATURAL SCIENCE').count()
+    #Top students of each year
+    top_2017_cse = Student.objects.filter(id__id__startswith = '2017', id__department__name = 'CSE').order_by('-cpi')[:3]
+    
+
+    top_2016_cse = Student.objects.filter(id__id__startswith = '2016', id__department__name = 'CSE').order_by('-cpi')[:3]
+    
+
+    top_2015_cse = Student.objects.filter(id__id__startswith = '2015', id__department__name = 'CSE').order_by('-cpi')[:3]
+    
+    top_2017_me = Student.objects.filter(id__id__startswith = '2017', id__department__name = 'ME').order_by('-cpi')[:3]
+    
+    top_2016_me = Student.objects.filter(id__id__startswith = '2016', id__department__name = 'ME').order_by('-cpi')[:3]
+    
+    top_2015_me = Student.objects.filter(id__id__startswith = '2015', id__department__name = 'ME').order_by('-cpi')[:3]
+    
+    top_2017_ece = Student.objects.filter(id__id__startswith = '2017', id__department__name = 'ECE').order_by('-cpi')[:3]
+   
+    top_2016_ece = Student.objects.filter(id__id__startswith = '2016', id__department__name = 'ECE').order_by('-cpi')[:3]
+    
+    top_2015_ece = Student.objects.filter(id__id__startswith = '2015', id__department__name = 'ECE').order_by('-cpi')[:3]
+    
+    top_2017_design = Student.objects.filter(id__id__startswith = '2017', id__department__name = 'DESIGN').order_by('-cpi')[:3]
+    
+    top_2016_design = Student.objects.filter(id__id__startswith = '2016', id__department__name = 'DESIGN').order_by('-cpi')[:3]
+    
+    top_2015_design = Student.objects.filter(id__id__startswith = '2015', id__department__name = 'DESIGN').order_by('-cpi')[:3]
+    
+    all_counts = [cs,ec,me,des,ns]
+    
+    top_17_cse = []
+    for x in top_2017_cse:
+        top_17_cse.append(x.id.user.first_name + ' ' + x.id.user.last_name)
+        top_17_cse.append(x.cpi)
+
+    top_17_ece = []
+    for x in top_2017_ece:
+        top_17_ece.append(x.id.user.first_name + ' ' + x.id.user.last_name)
+        top_17_ece.append(x.cpi)
+
+    
+    top_17_me = []
+    for x in top_2017_me:
+        top_17_me.append(x.id.user.first_name + ' ' + x.id.user.last_name)
+        top_17_me.append(x.cpi)
+
+    top_17_design = []
+    for x in top_2017_design:
+        top_17_design.append(x.id.user.first_name + ' ' + x.id.user.last_name)
+        top_17_design.append(x.cpi)
+
+    top_16_cse = []
+    for x in top_2016_cse:
+        top_16_cse.append(x.id.user.first_name + ' ' + x.id.user.last_name)
+        top_16_cse.append(x.cpi)
+
+    top_16_ece = []
+    for x in top_2016_ece:
+        top_16_ece.append(x.id.user.first_name + ' ' + x.id.user.last_name)
+        top_16_ece.append(x.cpi)
+
+    top_16_me = []
+    for x in top_2016_me:
+        top_16_me.append(x.id.user.first_name + ' ' + x.id.user.last_name)
+        top_16_me.append(x.cpi)
+
+        top_16_design = []
+    for x in top_2016_design:
+        top_16_design.append(x.id.user.first_name + ' ' + x.id.user.last_name)  
+        top_16_design.append(x.cpi)
+
+    top_15_cse = []
+    for x in top_2015_cse:
+        top_15_cse.append(x.id.user.first_name + ' ' + x.id.user.last_name)
+        top_15_cse.append(x.cpi)
+
+    top_15_ece = []
+    for x in top_2015_ece:
+        top_15_ece.append(x.id.user.first_name + ' ' + x.id.user.last_name)
+        top_15_ece.append(x.cpi)
+
+    top_15_me = []
+    for x in top_2015_me:
+        top_15_me.append(x.id.user.first_name + ' ' + x.id.user.last_name)
+        top_15_me.append(x.cpi)
+
+    top_15_design = []
+    for x in top_2015_design:
+        top_15_design.append(x.id.user.first_name + ' ' + x.id.user.last_name)
+        top_15_design.append(x.cpi)
+
+    context={'all_counts':all_counts, 'top_17_cse': top_17_cse, 'top_16_cse': top_16_cse ,'top_15_cse': top_15_cse ,'top_17_ece': top_17_ece, 'top_16_ece': top_16_ece ,'top_15_ece': top_15_ece ,'top_17_me': top_17_me, 'top_16_me': top_16_me ,'top_15_me': top_15_me, 'top_17_design': top_17_design, 'top_16_design': top_16_design, 'top_15_design': top_15_design}
+    #data = serializers.serialize('json', context)
+    return JsonResponse(context)
+
+
+# function for displaying projects under office module
+def viewOngoingProjects(request):
+
+    project = Project_Registration.objects.all()
+    #title + type
+    project_details = []
+
+    for p in project:
+        project_details.append(p.project_title)
+        project_details.append(p.project_type)
+        project_details.append(p.duration)
+        project_details.append(p.sponsored_agency)
+        project_details.append(p.HOD_response)
+
+    print(project_details)
+
+    context = {'project_details' : project_details} 
+    return JsonResponse(context)     
+
+
+# function for displaying Gymkhana office bearers
+def viewOfficeBearers(request):
+    club_info = Club_info.objects.all()
+    club_details = []
+    print(club_info)
+
+    for c in club_info:
+        club_details.append(c.club_name)
+        club_details.append(c.co_ordinator.id.user.first_name + ' ' + c.co_ordinator.id.user.last_name)
+        club_details.append(c.co_coordinator.id.user.first_name + ' ' + c.co_coordinator.id.user.last_name)
+        club_details.append(c.faculty_incharge.id.user.first_name + ' ' + c.faculty_incharge.id.user.last_name)
+
+    print(club_details)
+
+    context = {'club_details': club_details}
+    return JsonResponse(context)
+
+
+#function for viewing the scheduled meetings
+def viewMeetings(request):
+    meeting_info=Meeting.objects.all()
+    
+    meeting = []
+    
+
+    for x in meeting_info:
+        meeting.append(x.agenda)
+        meeting.append(x.date)
+        meeting.append(x.time)
+        meeting.append(x.venue)
+        #meeting.append(x.member)
+
+    print(meeting)
+
+    context = {
+        'meeting':meeting 
+    }    
+
+    return JsonResponse(context)
+
+
+# function for faculty information department wise 
+def viewFacProfile(request):
+
+    faculty = Faculty.objects.all()
+
+    csfaculty = Faculty.objects.all().filter(id__department__name = 'CSE')
+    ecefaculty = Faculty.objects.all().filter(id__department__name = 'ECE')
+    mefaculty = Faculty.objects.all().filter(id__department__name = 'ME')
+    desfaculty = Faculty.objects.all().filter(id__department__name = 'DESIGN')
+    nsfaculty = Faculty.objects.all().filter(id__department__name = 'NATURAL SCIENCE')
+
+    cse_faculty = []
+    for x in csfaculty:
+        cse_faculty.append(x.id.id)
+        cse_faculty.append(x.id.user.first_name + ' ' + x.id.user.last_name)
+        cse_faculty.append(x.id.department.name)
+
+
+    ece_faculty = []
+    for x in ecefaculty:
+        ece_faculty.append(x.id.id)
+        ece_faculty.append(x.id.user.first_name + ' ' + x.id.user.last_name)
+        ece_faculty.append(x.id.department.name)
+
+
+    me_faculty = []
+    for x in mefaculty:
+        me_faculty.append(x.id.id)
+        me_faculty.append(x.id.user.first_name + ' ' + x.id.user.last_name)
+        me_faculty.append(x.id.department.name)
+
+
+    ns_faculty = []
+    for x in nsfaculty:
+        ns_faculty.append(x.id.id)
+        ns_faculty.append(x.id.user.first_name + ' ' + x.id.user.last_name)
+        ns_faculty.append(x.id.department.name)
+
+
+    des_faculty = []
+    for x in desfaculty:
+        des_faculty.append(x.id.id)
+        des_faculty.append(x.id.user.first_name + ' ' + x.id.user.last_name)
+        des_faculty.append(x.id.department.name)
+
+
+    print(cse_faculty)
+
+    context = {"cse_faculty": cse_faculty , "ece_faculty": ece_faculty , "me_faculty": me_faculty , "des_faculty": des_faculty , "ns_faculty": ns_faculty }
+
+    return JsonResponse(context)
+
+
+# function for staff information department wise 
+def viewStaffProfile(request):
+
+    staff_detail = Staff.objects.all()
+
+    staff = []
+
+    for x in staff_detail:
+        staff.append(x.id.id)
+        staff.append(x.id.user.first_name + ' ' + x.id.user.last_name)
+        staff.append(x.id.department.name)
+
+    acad=Staff.objects.all().filter(Q(id__department__name='Academics') | Q(id__department__name='NATURAL SCIENCE') | Q(id__department__name='CSE')| Q(id__department__name='ECE')| Q(id__department__name='ME') | Q(id__department__name='DESIGN') | Q(id__department__name='MECHATRONICS') | Q(id__department__name='Workshop') | Q (id__department__name='Computer Centre') )
+
+    academic = []
+    for x in acad:
+        academic.append(x.id.id)
+        academic.append(x.id.user.first_name + ' ' + x.id.user.last_name)
+        academic.append(x.id.department.name)        
+
+
+    admin = Staff.objects.all().filter(Q(id__department__name='General Administration') | Q(id__department__name='Finance and Accounts') |  Q(id__department__name='Purchase and Store') | Q(id__department__name='Registrar Office') | Q(id__department__name='Security and Central Mess') )
+
+    administration = []
+
+    for x in admin:
+        administration.append(x.id.id)
+        administration.append(x.id.user.first_name + ' ' + x.id.user.last_name)
+        administration.append(x.id.department.name)
+
+
+    place =  Staff.objects.all().filter(Q(id__department__name='Placement Cell') )    
+    placement = []
+    for x in place:
+        placement.append(x.id.id)
+        placement.append(x.id.user.first_name + ' ' + x.id.user.last_name)
+        placement.append(x.id.department.name)  
+
+
+    offc=Staff.objects.all().filter(Q(id__department__name='Student Affairs') | Q(id__department__name='Office of The Dean P&D') | Q(id__department__name='Directorate') | Q(id__department__name='Office of The Dean R&D')  )
+    office =[] 
+    for x in offc:
+        office.append(x.id.id)
+        office.append(x.id.user.first_name + ' ' + x.id.user.last_name)
+        office.append(x.id.department.name)  
+
+    other=Staff.objects.all().filter(Q(id__department__name='Establishment & P&S') | Q(id__department__name='IWD') | Q(id__department__name='F&A & GA') | Q(id__department__name='Establishment, RTI and Rajbhasha') | Q(id__department__name='Establishment')  )
+    others =[]
+    for x in other:
+        others.append(x.id.id)
+        others.append(x.id.user.first_name + ' ' + x.id.user.last_name)
+        others.append(x.id.department.name)  
+
+
+    context = {"staff": staff, "academic":academic,"administration":administration , "placement": placement , "office": office , "others":others }
+
+    return JsonResponse(context)
+
+
+# function for student information based on entered programme, batch and department
+def viewStudentProfile(request):
+
+    print("in the function")
+
+    student = Student.objects.all()
+
+    student_detail=[]
 
     studentsearch = " "
 
-    if 'search_std' in request.POST:
-        stud = request.POST.get('student')
-        studentsearch = Student.objects.get(id=stud)
+    if request.is_ajax():
+        year = request.GET.get('year')
+        programme = request.GET.get('programme')
+        department = request.GET.get('department')
+        #studentsearch = Student.objects.all().filter(id__id__startswith).(programme=prog , id__department__name=dep )
+        #print("in here we are")
+        print(year)
+        print(programme)
+        print(department)
+        #last two letters of 'year' variable
+        yr = year[2:4]
+        print(yr)
+        if programme in ('M.Tech','M.Des','PhD'):
+            studentsearch = Student.objects.all().filter(id__id__startswith = yr, id__department__name = department ).filter(programme=programme)
+        else:
+            studentsearch = Student.objects.all().filter(id__id__startswith = year, programme = programme, id__department__name = department)
+            
+        print(studentsearch)
+        
+        for x in studentsearch:
+            student_detail.append(x.id.id)
+            student_detail.append(x.id.user.first_name + ' ' + x.id.user.last_name)
+            student_detail.append(x.id.department.name)
+            student_detail.append(x.cpi)
 
-    context = {"faculty": faculty, "fsearch": facultysearch, "student": student, "ssearch": studentsearch}
-
-    return render(request, "officeModule/directorOffice/directorOffice.html", context)
-
-
-def appoint(request):
-    print('there')
-    purpose = request.POST.get('purpose')
-    venue = request.POST.get('venue')
-    adate = request.POST.get('adate')
-    adate = adate.replace(",", "")
-    print(adate)
-    adate = str(datetime.datetime.strptime(adate, '%B %d %Y'))[:10]
-    print(adate)
-    # if (adate==""):
-    #     adate = None
-    # print(datetime.date.today())
-    member = request.POST.get('member')
-    print(purpose, venue, adate, member)
-    print('here 1')
-    meetobj = Meeting(venue=venue, agenda=purpose, date=adate)
-    meetobj.save()
-    print('here 2')
-    user = User.objects.get(username=member)
-    info = ExtraInfo.objects.get(user=user)
-    mem = Faculty.objects.get(id=info)
-    print('here 3')
-    print(mem)
-    # meeting = Meeting.objects.get(id=meetobj.id)
-    # print(meeting)
-    appointobj = Member(member_id=mem, meeting_id=meetobj)
-    print(appointobj)
-    appointobj.save()
-
-    return HttpResponseRedirect("/office/directorOffice/")
+        info =[]
+        info.append(programme) 
+        info.append(year) 
+        info.append(department)  
+                
+     
+        context = { "student_detail":student_detail , "info":info} #, 'year':year, 'prog': prog, 'dep': dep}
+        return JsonResponse(context)
 
 
+#function for scheduling a meeting with faculties
 def meeting(request):
-    print("hi")
-    agenda = request.POST.get('agenda')
-    venue = request.POST.get('venue')
-    adate = request.POST.get('adate')
-    adate = adate.replace(",", "")
-    print(adate)
-    adate = str(datetime.datetime.strptime(adate, '%B %d %Y'))[:10]
-    print(adate)
-    member = request.POST.get('member')
-    print(agenda, venue, adate, member)
-    meetobj = Meeting(venue=venue, agenda=agenda, date=adate)
-    meetobj.save()
-    print('here 4')
-    user = User.objects.get(username=member)
-    info = ExtraInfo.objects.get(user=user)
-    mem = Faculty.objects.get(id=info)
-    print('here 5')
-    print(mem)
-    meetingobj = Member(member_id=mem, meeting_id=meetobj)
-    print(meetingobj)
-    meetingobj.save()
+    agenda = request.POST['agenda']
+    venue = request.POST['venue']
+    adate = request.POST['adate']
+    meeting_time = request.POST['meeting_time']
+    fetched_members = request.POST.getlist('member')
 
-    return HttpResponseRedirect("/office/directorOffice/")
+    members = [] 
+    for i in fetched_members: 
+        if i not in members: 
+            members.append(i)
+
+    print(len(members))
+    print(len(fetched_members))
+
+    if(len(members) != len(fetched_members)):
+        print("in if")
+        return HttpResponse('Error handler content', status=400)
+    
+    else:
+        print("inside else")
+        Meeting.objects.create(
+            agenda=agenda,
+            time = meeting_time,
+            date = adate,
+            venue = venue
+        )
+
+        meeting_id = Meeting.objects.get(agenda=agenda,time= meeting_time,venue=venue,date=adate)    
+        for x in members:
+            splitted_name = str(x).split(' ')
+            u = User.objects.get(first_name = splitted_name[0], last_name = splitted_name[1])
+            e = ExtraInfo.objects.get(user = u.id)
+            f = Faculty.objects.get(id = e.id)
+            Member.objects.create(
+                meeting_id=meeting_id,
+                member_id=f
+            ) 
+        
+
+    return HttpResponse("success")
+
+#function to fill the dropdown choices of faculty in meeting form
+def meeting_dropdown(request):
+    if request.is_ajax():
+        fac = Faculty.objects.all();
+        faculty =[]
+        for x in fac:
+            faculty.append(x.id.user.first_name + ' ' + x.id.user.last_name)
+
+        context = {'faculty':faculty}
+        return JsonResponse(context)
 
 
-def profile(request):
-    facult = request.POST.get('faculty')
-    faculty = Faculty.objects.get(id=facult)
-    # Id=request.POST.get('id')
-    #    member=request.POST.get('member')
-    #    Designation=request.POST.get('designation')
-    #    Department=request.POST.get('dept')
-    #    print(Id,member,Designation,Department)
-    #    user = User.objects.get(username=member)
-    #    info = ExtraInfo.objects.get(user=user)
-    #    mem = Faculty.objects.get(id = info)
+#function for viewing and canceling the scheduled meetings
+def planMeetings(request):
+    meeting_id = request.POST.getlist('list')
+    print("inside delete")
+    print(meeting_id)
+    for z in meeting_id:
+        Meeting.objects.filter(id=z).delete()
+        Member.objects.filter(meeting_id=z).delete()
 
-    return HttpResponseRedirect("/office/directorOffice/")
+    meeting_info=Meeting.objects.all()
+
+    meeting = []
+
+    for x in meeting_info:
+        meeting.append(x.id)
+        meeting.append(x.agenda)
+        meeting.append(x.date)
+        meeting.append(x.time)
+        meeting.append(x.venue)
+        Members = Member.objects.all().filter(meeting_id=x.id)
+        members = []
+        for y in Members:
+            members.append(y.member_id.id.user.first_name + ' ' + y.member_id.id.user.last_name)
+        meeting.append(members)
+    
+    print(meeting)
+
+    context = {
+        'meeting':meeting 
+    }    
+
+    return JsonResponse(context)
+
+
+#function for displaying HODs of different departments
+def viewHOD(request):
+    #designation name has been used as is stored in database
+    cse_hod = HoldsDesignation.objects.all().filter(designation__name="CSE HOD")
+    ece_hod = HoldsDesignation.objects.all().filter(designation__name="HOD (ECE)")
+    me_hod = HoldsDesignation.objects.all().filter(designation__name="HOD (ME)")
+    ns_hod = HoldsDesignation.objects.all().filter(designation__name="HOD (NS)")
+    des_hod = HoldsDesignation.objects.all().filter(designation__name="HOD (DESIGN)")
+
+    print("inside hod")
+
+    csehod=[]
+
+    for c in cse_hod:
+        csehod.append(c.user.first_name + ' ' + c.user.last_name)
+
+    ecehod=[]
+
+    for e in ece_hod:
+        ecehod.append(e.user.first_name + ' ' + e.user.last_name)
+
+    mehod=[]
+
+    for m in me_hod:
+        mehod.append(m.user.first_name + ' ' + m.user.last_name)
+
+    nshod=[]
+
+    for n in ns_hod:
+        nshod.append(n.user.first_name + ' ' + n.user.last_name)
+
+
+    deshod=[]
+
+    for d in des_hod:
+        deshod.append(d.user.first_name + ' ' + d.user.last_name)
+
+    context = {'csehod':csehod, 'ecehod':ecehod, 'mehod':mehod, 'nshod': nshod, 'deshod':deshod}
+    #data=serializers.serialize('json', context)
+
+    return JsonResponse(context)
+
+#END OF DIRECTOR MODULE ............................
 
 
 def officeOfDeanAcademics(request):

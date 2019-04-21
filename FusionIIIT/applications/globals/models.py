@@ -81,7 +81,7 @@ class DepartmentInfo(models.Model):
     name = models.CharField(max_length=30, unique=True)
 
     def __str__(self):
-        return 'department: {}'.format(self.name)
+        return self.name
 
 
 class ExtraInfo(models.Model):

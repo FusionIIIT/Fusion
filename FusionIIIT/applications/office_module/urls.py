@@ -53,7 +53,6 @@ urlpatterns = [
 
 
 
-
     url(r'^deleteitem/',views.delete_item, name='delete_item'),
     url(r'^deletevendor/(?P<id>[0-9]+)',views.delete_vendor, name='delete_vendor'),
     url(r'^editvendor/(?P<id>[0-9]+)',views.edit_vendor, name='edit_vendor'),
@@ -62,8 +61,17 @@ urlpatterns = [
     url(r'^edititem/office/officeOfPurchaseOfficer/edit1/',views.edit1,name='edit'),
     url(r'^genericModule/', views.genericModule, name='genericModule'),
     url(r'^directorOffice/$', views.directorOffice, name='directorOffice'),
-    url(r'^directorOffice/appoint', views.appoint, name='appoint'),
+    url(r'^directorOffice/viewProfile', views.viewProfile, name='viewProfile'),
+    url(r'^directorOffice/viewFacProfile', views.viewFacProfile, name='viewFacProfile'),
+    url(r'^directorOffice/viewStaffProfile', views.viewStaffProfile, name='viewStaffProfile'),
+    url(r'^directorOffice/viewStudentProfile', views.viewStudentProfile, name='viewStudentProfile'),
+    url(r'^directorOffice/viewOngoingProjects', views.viewOngoingProjects, name='viewOngoingProjects'),
+    url(r'^directorOffice/viewOfficeBearers', views.viewOfficeBearers, name='viewOfficeBearers'),
+    url(r'^directorOffice/meeting_dropdown', views.meeting_dropdown, name='meeting_dropdown'),
+    url(r'^directorOffice/viewMeetings', views.viewMeetings, name='viewMeetings'),
+    url(r'^directorOffice/viewHOD', views.viewHOD, name='viewHOD'),
     url(r'^directorOffice/meeting', views.meeting, name='meeting'),
+    url(r'^directorOffice/planMeetings', views.planMeetings, name='planMeetings'),
     url(r'^officeOfRegistrar/view/(?P<id>[0-9]+)', views.officeOfRegistrar_view_file, name='registrar_view_file'),
     url(r'^officeOfRegistrar/upload/$', views.upload, name='upload'),
     url(r'^officeOfRegistrar/generalAdminForm/reject/$', csrf_exempt(views.admin_reject), name='admin_reject'),
