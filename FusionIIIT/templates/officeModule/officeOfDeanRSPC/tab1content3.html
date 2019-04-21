@@ -6,7 +6,7 @@
         <div class="three fields">
             <div class="six wide field">
                 <label>Project ID</label>
-                <input value="" class="ui large input" type="text" name="project_id">
+                <input value="" class="ui large input" type="number" min="0" name="project_id" required>
             </div>
 
             <!-- <div class="four wide field">
@@ -16,24 +16,24 @@
 
             <div class="six wide field">
                 <label>PF No.</label>
-                <input value="" class="ui large input" type="text" name="pfno">
+                <input value="" class="ui large input" name="pfno" required>
             </div>
 
              <div class="four wide field">
                 <label>Date</label>
-                <input value="" class="ui large input" type="date" name="date">
+                <input value="" class="ui large input" type="date" name="applied_date" required>
             </div>
         </div>
         <p><b>Project Head from which expenditure is to be transferred </b></p>
         <div class="three fields">
            <div class="six wide field">
                 <label>Budget Head</label>
-                <input value="" class="ui large input" type="text" type="text" name="p_budget_head">
+                <input value="" class="ui large input" type="text" type="text" name="p_budget_head" required>
             </div>
             
             <div class="four wide field">
                 <label>Amount </label>
-                <input value="" class="ui large input" type="text" name="p_amount">
+                <input value="" class="ui large input" type="number" min="0" name="p_amount" required>
             </div>
             
         </div>
@@ -41,12 +41,12 @@
         <div class="three fields">
            <div class="six wide field">
                 <label>Budget Head</label>
-                <input value="" class="ui large input" type="text" name="n_budget_head">
+                <input value="" class="ui large input" type="text" name="n_budget_head" required>
             </div>
             
             <div class="four wide field">
                 <label>Amount </label>
-                <input value="" class="ui large input" type="text" name="n_amount">
+                <input value="" class="ui large input" type="number" min="0" name="n_amount" required>
             </div>
         </div>
         

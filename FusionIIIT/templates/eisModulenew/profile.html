@@ -85,14 +85,14 @@
                     Administrative Responsibilities
                     <i class="right floated chevron right icon"></i>
                 </a> -->
-                <!--  {% if request.user.extrainfo.user_type == "faculty" and request.user == user %}
+                {% if request.user.extrainfo.user_type == "faculty" and request.user == user %}
                      <a class="item" data-tab="ninth">
                         Project Management Forms
                         <i class="right floated chevron right icon"></i>
                     </a>
                 {% endif %}
 
-                 {% if "HOD" in desig and request.user == user %}
+                 <!--{% if "HOD" in desig and request.user == user %}
                  <a class="item" data-tab="ten">
                     HOD_TAB
                     <i class="right floated chevron right icon"></i>
@@ -192,11 +192,14 @@
             </div>
             {% comment %}The others ends here!{% endcomment %}
 
-
-            <!-- <div class="ui tab segment" data-tab="ninth">
-                <h1>Work in Progress</h1>
+            {% comment %}The Project management form starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="ninth">
+                <!-- <div class="ui active tab segment" data-tab="first"> -->
+                {% block form1 %}
+                    {% include 'officeModule/officeOfDeanRSPC/tab1.html' %}
+                {% endblock %}
+                <!-- </div> -->
             </div>
- -->
 
             <!-- <div class="ui tab segment" data-tab="ten">
                 
@@ -206,6 +209,27 @@
             </div> -->
 
             {% comment %}The Publications ends here!{% endcomment %}
+
+            {% comment %}Block for Displaying Messages{% endcomment %}
+            {% if messages %}
+                {% for message in messages %}
+                    {% if message.tags == "success" %}
+                    <div class="ui positive message">
+                        <i class="close icon"></i>
+                        <div class="header">
+                            Successful!
+                        </div>
+                    {% else %}
+                    <div class="ui negative message">
+                        <i class="close icon"></i>
+                        <div class="header">
+                            Alert!
+                        </div>
+                    {% endif %}
+                        <p>{{message}}</p>
+                </div>
+                {% endfor %}
+            {% endif %}
 
         </div>
         {% comment %}The central-rail segment ends here!{% endcomment %}
@@ -254,11 +278,20 @@
 
 {% block javascript %}
 {% csrf_token %}
+      <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
     <script type="text/javascript">
         var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
         </script>
 
         <script type="text/javascript">
+         $('.message .close')
+  .on('click', function() {
+    $(this)
+      .closest('.message')
+      .transition('fade')
+    ;
+  })
+;
 
         function csrfSafeMethod(method) {
             return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));

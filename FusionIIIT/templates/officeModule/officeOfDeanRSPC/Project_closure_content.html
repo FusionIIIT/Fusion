@@ -40,19 +40,22 @@
     <form action="{% url 'office:closure' %}" method="POST">
         {% csrf_token %}
          {% for pr in project2 %}
-    {% if pr.HOD_response == 'Forwarded'%}
+    {% comment %} if pr.HOD_response == 'Forwarded' {% endcomment %}
     <tr>
 
         <td class="collapsing">
             <div class="ui fitted checkbox">
-                <input type="checkbox" value={{pr.id}} name="id"> <label></label>
+                {% if "Dean (R&D)" in desig %}
+                <input type="checkbox" value={{pr.id}} name="id[]"><label></label>
+                {% endif %}
+                <!--<input type="checkbox" value={{pr.id}} name="id"> <label></label>-->
             </div>
         </td>
 
         <td>
             {% for pr1 in project %}
                 {%if pr1 == pr.project_id %}
-                    {{pr1.PI_id}}
+                    {{pr1.PI_id.user.first_name}} {{pr1.PI_id.user.last_name}}
                 {%endif%}
             {%endfor%}
         </td>
@@ -76,25 +79,32 @@
         </td>
 
         <td>
-            <i class="large red crossmark icon">{{pr.DRSPC_response}}</i>
+            {% if pr.DRSPC_response == "Approve" %}
+            <i class="large green checkmark icon">{{pr.DRSPC_response}}</i>
+            {% elif pr.DRSPC_response == "Pending" %}
+            <i class="large orange warning icon">{{pr.DRSPC_response}}</i>
+            {% elif pr.DRSPC_response == "Disapprove" %}
+            <i class="large red x icon">{{pr.DRSPC_response}}</i>
+            {% elif pr.DRSPC_response == "Forward" %}
+            <i class="large orange warning icon">{{pr.DRSPC_response}}</i>
+            {% endif %}
         </td>
 
         <td>
             {% for pr1 in project %}
                 {%if pr1 == pr.project_id %}
-                    {{pr1.start_date}}
+                    {{pr.date}}
                 {%endif%}
             {%endfor%}
 
 
         </td>
         <td>
-           <a href="/office/officeOfDeanRSPC/{{pr.id}}/" target="_blank">Details</a>
+           <a href="/office/officeOfDeanRSPC/closure_details/{{pr.id}}/" target="_blank">Details</a>
         </td>
 
     </tr>
-    {% endif %}
-
+  {% comment %} endif  {% endcomment %}
  {% endfor%}
 
   <!-- {% for pr in project2 %}
@@ -146,9 +156,10 @@
 
 <!-- <div class="ui primary right floated button"><a href="" target="_blank" style="color:white;">View Details</a></div> -->
 <!-- <a href="/officeOfDeanRSPC/app/"><div class="ui primary right floated button">Approve Selected</div></a> -->
-{% if "Dean (RSPC)" in desig %}
-<button class="ui primary right floated button" type="submit" name="approve" value="approve">Approve</button>
-<button class="ui primary right floated button" type="submit" name="reject" value="reject">Reject</button>
+{% if "Dean (R&D)" in desig %}
+<button class="ui primary right floated button" type="submit"  name="approve" value="approve" >Approve</button>
+<button class="ui primary right floated button" type="submit"  name="reject" value="reject">Reject</button>
+<button class="ui primary right floated button" type="submit"  name="forward" value="approve" >Forward</button>
 <!-- <button class="ui primary right floated button" type="submit" name="forward" value="forward">Forward Selected</button>
  -->{% endif %}
 

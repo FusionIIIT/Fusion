@@ -1,0 +1,269 @@
+
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Module
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}
+            The left-rail segment starts here!
+        {% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+
+                {% comment %}
+                TODO: Instead of Name write the position like "Office Of Dean Students!"
+                {% endcomment %}
+
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu starts here!{% endcomment %}
+            <div class="ui huge fluid vertical pointing menu"
+                 style="max-width: 320px;">
+
+                <a class="active item" data-tab="first">
+                    Applications
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+<!--                 <a class="item" href="http://www.sciencepub.net/nature/0403/13-0186-mahongbao-ns.pdf" target="_blank">-->
+<!--                    Generate Report-->
+<!--                    <i class="right floated chevron right icon"></i>-->
+<!--                </a>-->
+
+                 <a class="active item" data-tab="second">
+                    Projects
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+            </div>
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+
+        {% comment %}
+            The central-rail segment starts here!
+        {% endcomment %}
+        <div class="eight wide column">
+          
+
+
+        <h1 align="center"> Project Details </h1><br><br>
+
+            {% block tab1content1 %}
+<form>
+    {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+       <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+        <div class="three fields">
+            <div class="six wide field">
+                <label>Project No.</label>
+                <input value="{{obj.id}}" class="ui large input"  name="project_id" readonly>
+            </div>
+
+            <div class="six wide field">
+                <label>Date</label>
+                <input value="{{pr.completion_date}}" class="ui large input"  name="date" readonly>
+            </div>
+
+        </div>
+
+        <h4>Committed Expenses,if any</h4>
+
+        <div class="two fields">
+
+        <div class="six wide field">
+                <label>Please specify whether any dues outstanding</label>
+                <input value="{{pr.expenses_dues}}" class="ui large input"  name="committed" readonly>
+        </div>
+        <div class="ten wide field field">
+            <label>Remarks & Description</label>
+            <textarea rows="2" name ="remark1" readonly>{{pr.expenses_dues_description}}</textarea>
+        </div>
+
+        </div>
+
+                <h4>Other direct payments under processing</h4>
+
+        <div class="two fields">
+
+        <div class="six wide field">
+                <label>Please specify whether any dues outstanding</label>
+                <input value="{{pr.payment_dues}}" class="ui large input"  name="payment" readonly>
+        </div>
+        <div class="ten wide field field" >
+            <label>Remarks & Description</label>
+            <textarea rows="2" name="remark2" readonly>{{pr.payment_dues_description}}</textarea>
+        </div>
+
+        </div>
+
+                <h4>Salary/ Honorarium dues like last payment of employees etc. under processing</h4>
+
+        <div class="two fields">
+
+        <div class="six wide field">
+                <label>Please specify whether any dues outstanding</label>
+                <input value="{{pr.salary_dues}}" class="ui large input"  name="salary" readonly>
+        </div>
+        <div class="ten wide field field">
+            <label>Remarks & Description</label>
+            <textarea rows="2" name="remark3" readonly>{{pr.salary_dues_description}}</textarea>
+        </div>
+
+        </div>
+
+                <h4>Advances outstanding</h4>
+
+        <div class="two fields">
+
+        <div class="six wide field">
+                <label>Please specify whether any dues outstanding</label>
+                <input value="{{pr.advances_dues}}" class="ui large input" name="advance" readonly>
+        </div>
+        <div class="ten wide field field">
+            <label>Remarks & Description</label>
+            <textarea rows="2" name="remark4" readonly>{{pr.advances_description}}</textarea>
+        </div>
+
+        </div>
+
+                <h4>Others (If any)</h4>
+
+        <div class="two fields">
+
+        <div class="six wide field">
+                <label>Please specify whether any dues outstanding</label>
+                <input value="{{pr.others_dues}}" class="ui large input"  name="other" readonly>
+        </div>
+        <div class="ten wide field field">
+            <label>Remarks & Description</label>
+            <textarea rows="2" name="remark5" readonly>{{pr.other_dues_description}}</textarea>
+        </div>
+
+        </div>
+
+                <h4>Full Overhead deducted</h4>
+
+        <div class="two fields">
+
+        <div class="six wide field">
+                <label>Please specify whether any dues outstanding</label>
+                <input value="{{pr.overhead_deducted}}" class="ui large input"  name="overhead" readonly>
+        </div>
+        <div class="ten wide field field">
+            <label>Remarks & Description</label>
+            <textarea rows="2" name="remark6" readonly>{{pr.overhead_description}}</textarea>
+        </div>
+
+        </div>
+
+        <!--<div class="field">-->
+            <!--<label>Attachments (if any)</label>-->
+            <!--{% if pr.file.size is not 0 %}-->
+            <!--<a href="{{pr.file.url}}">Attached File</a>-->
+            <!--{% else %}-->
+            <!--<input value="No attached file" class="ui large input" name="file" readonly>-->
+            <!--{% endif %}-->
+        <!--</div>-->
+    </div>
+</form>
+
+<br>
+<br>
+<div class="ui divider"></div>
+  {% endblock %}
+
+
+
+           
+        </div>
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            <div class="row">
+                <div class="ui row">
+                    <h3 class="ui header" style="padding-left: 16px;">
+                        Office Of Dean RSPC
+                    </h3>
+                </div>
+            </div>
+
+        <div class="ui divider"></div>
+
+            <div class="row">
+                <div class="ui row">
+                    <div id="textSegmentDiv">
+                        <div class="ui active large text loader"
+                             id="loader">
+                            Loading ...
+                        </div>
+
+                        <div id="textLoader" style="max-height: 87.5vh; overflow-y: auto; overflow-x: hidden;">
+                            {% block alerts %}
+                                {% include 'officeModule/officeOfDeanRSPC/alerts.html' %}
+                            {% endblock %}
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+    </div>
+    {% comment %}The grid ends here!{% endcomment %}
+
+
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+
+    <script>
+        $(document).ready(function(){
+            $("#textLoader").toggle();
+            $("#replacement-card").toggle();
+            setTimeout(loader, 1750);
+        });
+
+        function loader() {
+            $("#textLoader").toggle();
+            $("#replacement-card").toggle();
+            $("#loader").removeClass("active");
+            $("#loader").addClass("disabled");
+        }
+    </script>
+
+{% endblock %}
+ 

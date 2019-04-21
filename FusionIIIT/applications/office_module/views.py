@@ -1,5 +1,5 @@
 import datetime
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
@@ -15,7 +15,7 @@ from applications.globals.models import (Designation, ExtraInfo,
                                          HoldsDesignation, User)
 from applications.scholarships.models import Mcm
 from applications.filetracking.models import (File, Tracking)
-
+from applications.eis.models import emp_research_projects, emp_patents, emp_consultancy_projects
 
 from notification.views import office_dean_PnD_notif
 
@@ -557,128 +557,477 @@ def officeOfHOD(request):
     return render(request, "officeModule/officeOfHOD/officeOfHOD.html", context)
 
 
+# DEAN RSPC MODULE STARTS............................................................................................
+
+# Project Registration Starts.................................................................................
 @login_required
 def project_register(request):
+    """
+    called from officeOfDeanRSPC/submit in office_module/urls.py
+    usage: To fill details in the database when faculty registers the project from project management form
+    model used: Project_Registration
+    """
+
+    """Project Fields added"""
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
     project_title = request.POST.get('project_title')
-    sponsored_agency=request.POST.get('sponsored_agency')
+    sponsored_agency = ""
+    sponsored_agency = request.POST.get('sponsored_agency')
     CO_PI = request.POST.get('copi_name')
-   # start_date = datetime.strptime(request.POST.get('start_date'), "%Y-%m-%d")
-    start_date = request.POST.get('start_date')
+    try:
+        start_date = request.POST.get('start_date')
+    except:
+        messages.error(request, ' Date not entered')
+        return HttpResponseRedirect('/profile')
+
     duration = request.POST.get('duration')
-    #duration = datetime.timedelta('duration')
-    agreement=request.POST.get('agreement')
+    agreement = request.POST.get('agreement')
     amount_sanctioned = request.POST.get('amount_sanctioned')
     project_type = request.POST.get('project_type')
-    remarks=request.POST.get('remarks')
-    #fund_recieved_date=datetime.strptime(request.POST.get('fund_recieved_date'), "%Y-%m-%d")
     project_operated = request.POST.get('project_operated')
-    fund_recieved_date = request.POST.get('fund_recieved_date')
+    fund_recieved_date = None
 
+    try:
+        fund_recieved_date = request.POST.get('fund_recieved_date')
+    except:
+        messages.error(request, 'Date not entered')
+        return HttpResponseRedirect('/profile')
+
+    file = request.FILES.get('p_register')
+    description = request.POST.get('remarks')
+    applied_date = datetime.date.today()
+    project_operated = request.POST.get('project_operated')
+    mou = request.POST.get('agreement')
+
+    """Validations for project Registration MOU and Co PI name"""
+    if len(sponsored_agency) is 0 and amount_sanctioned > '0':
+        messages.error(request, 'Error in Project Registration form: Amount cannot be sanctioned without Agency')
+        return HttpResponseRedirect('/profile/')
+
+    if project_operated == "PI and Co_pi" and CO_PI == "":
+        messages.error(request, 'Error in Project Registration form: Enter CO_PI name')
+        return HttpResponseRedirect('/profile/')
+
+    if project_operated == "Only By PI" and len(CO_PI) > 0:
+        messages.error(request, 'Error in Project Registration form: Select PI and Co_PI in option')
+        return HttpResponseRedirect('/profile/')
+
+    if mou == "Yes" and not file:
+        messages.error(request, 'Error in Project Registration form: Attach the MOU')
+        return HttpResponseRedirect('/profile/')
+
+    if len(sponsored_agency) is 0 and file:
+        messages.error(request, 'Error in Project Registration form: Enter agency name mentioned on MOU')
+        return HttpResponseRedirect('/profile/')
+
+    if fund_recieved_date is not None and start_date < fund_recieved_date:
+        messages.error(request, 'Error in Project Registration form: Project cannot be started before receiving fund')
+        return HttpResponseRedirect('/profile/')
+
+    """Save the Details to Project_Registration Table"""
     request_obj = Project_Registration(PI_id=extrainfo, project_title=project_title,
-                               sponsored_agency=sponsored_agency, CO_PI=CO_PI, agreement=agreement,
-                               amount_sanctioned=amount_sanctioned, project_type=project_type,
-                               remarks=remarks,duration=duration,fund_recieved_date=fund_recieved_date,start_date=start_date)
+                                       sponsored_agency=sponsored_agency, CO_PI=CO_PI, agreement=agreement,
+                                       amount_sanctioned=amount_sanctioned, project_type=project_type,
+                                       duration=duration, fund_recieved_date=fund_recieved_date, start_date=start_date,
+                                       file=file, description=description, applied_date=applied_date)
     request_obj.save()
-    context={}
-    return render(request,"eisModulenew/profile.html",context)
+
+    context = {}
+    messages.success(request, 'Application Sent.')
+    return render(request, "eisModulenew/profile.html", context)
+
 
 # Project Registration Table End.................................................................................
 
+
 def project_registration_permission(request):
-    if 'approve' in request.POST:
-        id=request.POST.get('id')
-        obj=Project_Registration.objects.get(pk=id)
-        if obj.DRSPC_response == 'Pending':
-            obj.DRSPC_response='Approve'
-            obj.save()
-    elif 'forward' in request.POST:
-        id=request.POST.get('id')
-        obj=Project_Registration.objects.get(pk=id)
-        if obj.DRSPC_response == 'Pending':
-            obj.DRSPC_response='Forward'
-            obj.save()
-    elif 'reject' in request.POST:
-        id=request.POST.get('id')
-        obj=Project_Registration.objects.get(pk=id)
-        print(obj.DRSPC_response)
-        if obj.DRSPC_response == 'Pending':
-            obj.DRSPC_response='Disapprove'
-            obj.save()
+    """
+    called from officeOfDeanRSPC/action {name: registration} in office_module /urls.py
+    usage: Save details of Dean RSPC response. He can either approve reject or forward the registration application.
+    model used: Project_Registration, emp_research_projects
+    """
+
+    """on approving project should be displayed in projects tab of Dean RSPC Dashboard"""
+    if 'approve' in request.POST or (request.method == 'GET' and request.GET['a'] == "approve"):
+        """id list works if multiple projects are selected at a time"""
+        id_list = []
+        id_list = request.POST.getlist('id[]')
+        if len(id_list) == 0:
+            id_list.append(int(request.GET['pk']))
+        for id in id_list:
+            # obj = Project_Registration.objects.get(pk=id)
+            obj = get_object_or_404(Project_Registration, pk=id)
+            if "Pending" in obj.DRSPC_response or "Disapprove" in obj.DRSPC_response:
+
+                # approved project should be registered in project displayed to Dean RSPC
+
+                pf_no = obj.PI_id.id
+                pi = obj.PI_id.user.first_name + " " + obj.PI_id.user.last_name
+                co_pi = obj.CO_PI
+                title = obj.project_title
+                funding_agency = obj.sponsored_agency
+                start_date = obj.start_date
+                days = obj.duration * 7
+                finish_date = start_date + timedelta(days=days)
+                financial_outlay = obj.amount_sanctioned
+                ptype = obj.project_type
+                print(ptype)
+                date_entry = obj.applied_date
+                status = "Ongoing"
+
+                """On approving project by Dean, it should be saved in emp_research_projects model"""
+                if ptype == "sponsoered research":
+                    emp_projects = emp_research_projects(pi=pi, co_pi=co_pi, title=title, funding_agency=funding_agency,
+                                                         start_date=start_date, finish_date=finish_date,
+                                                         date_entry=date_entry,
+                                                         financial_outlay=financial_outlay, status=status, pf_no=pf_no,
+                                                         ptype=ptype)
+                    emp_projects.save()
+                elif ptype == "consultancy":
+                    emp_projects = emp_consultancy_projects(consultants=pi, title=title, client=funding_agency,
+                                                            start_date=start_date, end_date=finish_date,
+                                                            duration=str(obj.duration) + " " + "weeks",
+                                                            financial_outlay=financial_outlay,
+                                                            pf_no=pf_no, date_entry=date_entry)
+                    emp_projects.save()
+                obj.DRSPC_response = "Approve"
+                obj.save()
+
+    elif "forward" in request.POST:
+        id_list = request.POST.getlist('id[]')
+        for id in id_list:
+            obj = get_object_or_404(Project_Registration, pk=id)
+            if obj.DRSPC_response == 'Pending':
+                obj.DRSPC_response = "Forward"
+                obj.save()
+    elif "reject" in request.POST or request.GET['a'] == "reject":
+        id_list = request.POST.getlist('id[]')
+        if len(id_list) == 0:
+            id_list.append(int(request.GET['pk']))
+        for id in id_list:
+            obj = get_object_or_404(Project_Registration, pk=id)
+            # print(obj.DRSPC_response)
+            if obj.DRSPC_response == 'Pending':
+                obj.DRSPC_response = "Disapprove"
+                obj.save()
     return HttpResponseRedirect('/office/officeOfDeanRSPC/')
+
+
+# PROJECT EXTENSION TABLE START .....................................................................................
+
+def project_extension(request):
+    """
+    called from officeOfDeanRSPC/extention {name:p_extension} from office_module/urls.py
+    usage: To fill details in the database when faculty wants to extend date of the project from project management form
+    model used: Project_Registration, Project_Extension
+    """
+    print("entered1")
+
+    """Project extension details added"""
+    project_id = request.POST.get('project_id')
+    # ob = get_object_or_404(Project_Registration, pk=project_id)
+    try:
+        ob = Project_Registration.objects.get(pk=project_id)
+    except:
+        messages.error(request, 'Project ID not found! Try again')
+        return HttpResponseRedirect('/profile')
+
+    user = request.user
+    extrainfo = ExtraInfo.objects.get(user=user)
+    """Validating the user in each form, if not then generating error message"""
+    if extrainfo.id == ob.PI_id.id:
+        # date = ob.start_date
+        date = datetime.date.today()
+        sponser = ob.sponsored_agency
+        extended_duration = request.POST.get('extended_duration')
+        extension_detail = request.POST.get('extension_details')
+
+        if ob.DRSPC_response == 'Approve':
+            file = request.FILES.get('extension_file')
+            request_obj2 = Project_Extension(project_id=ob, date=date, extended_duration=extended_duration,
+                                             extension_details=extension_detail, file=file)
+            request_obj2.save()
+            messages.success(request, 'Application Sent')
+        else:
+            messages.error(request, 'Project is not accepted by Dean RSPC')
+
+    else:
+        messages.error(request, 'Invalid User for entered Project ID')
+    context = {}
+    return render(request, "eisModulenew/profile.html", context)
+
+
+# PROJECT EXTENSION TABLE END .......................................................................................
 
 
 def project_extension_permission(request):
+    """
+    called from officeOfDeanRSPC/extension {name: extension} in office_module /urls.py
+    usage: Save details of Dean RSPC response. He can either approve reject or forward the extended application.
+    model used: Project_Extension, emp_research_projects
+    """
+
+    """Project extension conditions added"""
     if 'approve' in request.POST:
-        id=request.POST.get('id')
-        obj=Project_Extension.objects.get(pk=id)
-        if obj.DRSPC_response == 'Pending':
-            obj.DRSPC_response='Approve'
-            obj.save()
+        id_list = request.POST.getlist('id[]')
+        for id in id_list:
+            obj = get_object_or_404(Project_Extension, pk=id)
+            if "Pending" in obj.DRSPC_response or "Disapprove" in obj.DRSPC_response:
+                ob = get_object_or_404(Project_Registration, pk=obj.project_id.id)
+                pf = int(ob.PI_id.id)
+                title = ob.project_title
+                ptype = ob.project_type
+
+                if ptype == "sponsoered research":
+                    pr = emp_research_projects.objects.get(pf_no=pf, title=title)
+                    days = obj.extended_duration * 7
+                    pr.finish_date = pr.finish_date + timedelta(days=days)
+                    pr.save()
+
+                elif ptype == "consultancy":
+                    pr = emp_consultancy_projects.objects.get(pf_no=pf, title=title)
+                    days = obj.extended_duration * 7
+                    pr.end_date = pr.end_date + timedelta(days=days)
+                    pr.save()
+
+                obj.DRSPC_response = 'Approve'
+                obj.save()
     elif 'forward' in request.POST:
-        id=request.POST.get('id')
-        obj=Project_Extension.objects.get(pk=id)
-        if obj.DRSPC_response == 'Pending':
-            obj.DRSPC_response='Forward'
-            obj.save()
+        id_list = request.POST.getlist('id[]')
+        for id in id_list:
+            obj = get_object_or_404(Project_Extension, pk=id)
+            if obj.DRSPC_response == 'Pending':
+                obj.DRSPC_response = 'Forward'
+                obj.save()
     elif 'reject' in request.POST:
-        id=request.POST.get('id')
-        obj=Project_Extension.objects.get(pk=id)
-        print(obj.DRSPC_response)
-        if obj.DRSPC_response == 'Pending':
-            obj.DRSPC_response='Disapprove'
-            obj.save()
+        id_list = request.POST.getlist('id[]')
+        for id in id_list:
+            obj = get_object_or_404(Project_Extension, pk=id)
+            if obj.DRSPC_response == 'Pending':
+                obj.DRSPC_response = 'Disapprove'
+                obj.save()
     return HttpResponseRedirect('/office/officeOfDeanRSPC/')
+
+
+# PROJECT CLOSURE TABLE START .......................................................................................
+
+def project_closure(request):
+    """
+    called from officeOfDeanRSPC/close {name:p_close} in office_module/urls.py
+    usage: To fill details in the database when faculty wants to close the project from project management form
+    model used: Project_Registration, Project_Closure
+    """
+    print("entered2")
+    """Project closure conditions added"""
+    project_id = request.POST.get('project_id')
+    try:
+        extrainfo1 = Project_Registration.objects.get(pk=project_id)
+    except:
+        messages.error(request, 'Project ID not found! Try again')
+        return HttpResponseRedirect('/profile')
+
+    user = request.user
+    extrainfo = ExtraInfo.objects.get(user=user)
+    """Validating the user in each form, if not then generating error message"""
+    if extrainfo.id == extrainfo1.PI_id.id:
+        completion_date = request.POST.get('date')
+        # extended_duration = ob.duration
+        date = datetime.date.today()
+        expenses_dues = request.POST.get('committed')
+        expenses_dues_description = request.POST.get('remark1')
+        payment_dues = request.POST.get('payment')
+        payment_dues_description = request.POST.get('remark2')
+        salary_dues = request.POST.get('salary')
+        salary_dues_description = request.POST.get('remark3')
+        advances_dues = request.POST.get('advance')
+        advances_description = request.POST.get('remark4')
+        others_dues = request.POST.get('other')
+        other_dues_description = request.POST.get('remark5')
+        overhead_deducted = request.POST.get('overhead')
+        overhead_description = request.POST.get('remark6')
+
+        if extrainfo1.DRSPC_response == 'Approve':
+            request_obj1 = Project_Closure(project_id=extrainfo1, completion_date=completion_date,
+                                           expenses_dues=expenses_dues,
+                                           expenses_dues_description=expenses_dues_description,
+                                           payment_dues=payment_dues, payment_dues_description=payment_dues_description,
+                                           salary_dues=salary_dues,
+                                           salary_dues_description=salary_dues_description, advances_dues=advances_dues,
+                                           advances_description=advances_description,
+                                           others_dues=others_dues, other_dues_description=other_dues_description,
+                                           overhead_deducted=overhead_deducted, date=date,
+                                           overhead_description=overhead_description)
+            request_obj1.save()
+
+            messages.success(request, 'Application Sent')
+        else:
+            messages.error(request, 'Project is not accepted by Dean RSPC')
+    else:
+        messages.error(request, 'Invalid User for entered Project ID')
+    context = {}
+    return render(request, "eisModulenew/profile.html", context)
+
+
+# PROJECT CLOSURE TABLE END HERE ....................................................................................
 
 
 def project_closure_permission(request):
+    """
+    called from officeOfDeanRSPC/closure {name: closure} in office_module /urls.py
+    usage: Save details of Dean RSPC response. He can either approve reject or forward the closure application.
+    model used: Project_Closure, emp_research_projects
+    """
+
+    """Project closure conditions added"""
     if 'approve' in request.POST:
-        id=request.POST.get('id')
-        obj=Project_Closure.objects.get(pk=id)
-        if obj.DRSPC_response == 'Pending':
-            print("bb")
-            obj.DRSPC_response='Approve'
-            obj.save()
+        id_list = request.POST.getlist('id[]')
+        for id in id_list:
+            obj = get_object_or_404(Project_Closure, pk=id)
+            if obj.DRSPC_response == 'Pending':
+                print("bb")
+                obj.DRSPC_response = 'Approve'
+                obj.save()
     elif 'forward' in request.POST:
-        id=request.POST.get('id')
-        obj=Project_Closure.objects.get(pk=id)
-        if obj.DRSPC_response == 'Pending':
-            obj.DRSPC_response='Forward'
-            obj.save()
+        id_list = request.POST.getlist('id[]')
+        for id in id_list:
+            obj = get_object_or_404(Project_Closure, pk=id)
+            if obj.DRSPC_response == 'Pending':
+                obj.DRSPC_response = 'Forward'
+                obj.save()
     elif 'reject' in request.POST:
-        id=request.POST.get('id')
-        obj=Project_Closure.objects.get(pk=id)
-        print(obj.DRSPC_response)
-        if obj.DRSPC_response == 'Pending':
-            obj.DRSPC_response='Disapprove'
-            obj.save()
+        id_list = request.POST.getlist('id[]')
+        for id in id_list:
+            obj = get_object_or_404(Project_Closure, pk=id)
+            print(obj.DRSPC_response)
+            if obj.DRSPC_response == 'Pending':
+                obj.DRSPC_response = 'Disapprove'
+                obj.save()
     return HttpResponseRedirect('/office/officeOfDeanRSPC/')
 
+
+#  PROJECT REALLOCATION TABLE STARTS HERE .............................................................................
+def project_reallocation(request):
+    """
+    called from officeOfDeanRSPC/extention {name:project_reallocation} from office_module/urls.py
+    usage: To fill details in the database when faculty wants to reallocate fund of the project
+    model used: Project_Registration, Project_Reallocation
+    """
+
+    """Project reallocation details added"""
+    project_id = request.POST.get('project_id')
+    try:
+        ob1 = Project_Registration.objects.get(pk=project_id)
+    except:
+        messages.error(request, 'Project ID not found! Try again')
+        return HttpResponseRedirect('/profile')
+    user = request.user
+    extrainfo = ExtraInfo.objects.get(user=user)
+    """Validating the user in each form, if not then generating error message"""
+    if extrainfo.id == ob1.PI_id.id:
+        # applied_date = request.POST.get('applied_date')
+        applied_date = datetime.date.today()
+        pfno = request.POST.get('pfno')
+        pbh = request.POST.get('p_budget_head')
+        p_amount = request.POST.get('p_amount')
+        nbh = request.POST.get('n_budget_head')
+        n_amount = request.POST.get('n_amount')
+        reason = request.POST.get('reason')
+
+        if ob1.DRSPC_response == 'Approve':
+            request_obj3 = Project_Reallocation(project_id=ob1, date=applied_date, previous_budget_head=pbh,
+                                                previous_amount=p_amount, new_budget_head=nbh, new_amount=n_amount,
+                                                transfer_reason=reason, pf_no=pfno)
+            request_obj3.save()
+            messages.success(request, 'Application Sent')
+
+        else:
+            messages.error(request, 'Project is not accepted by Dean RSPC')
+    else:
+        messages.error(request, 'Invalid User for entered Project ID')
+    context = {}
+    return render(request, "eisModulenew/profile.html", context)
+
+
+# PROJECT REALLOCATION TABLE END HERE .................................................................................
 
 
 def project_reallocation_permission(request):
+    """
+    called from officeOfDeanRSPC/officeOfDeanRSPC/reallocation {name: reallocation} in office_module /urls.py
+    usage: Save details of Dean RSPC response. He can either approve reject or forward the reallocated application.
+    model used: Project_Reallocation, emp_research_projects
+    """
+
+    """Project reallocation conditions added"""
     if 'approve' in request.POST:
-        id=request.POST.get('id')
-        obj=Project_Reallocation.objects.get(pk=id)
-        if obj.DRSPC_response == 'Pending':
-            print("aa")
-            obj.DRSPC_response='Approve'
-            obj.save()
+        id_list = request.POST.getlist('id[]')
+        for id in id_list:
+            obj = get_object_or_404(Project_Reallocation, pk=id)
+            if "Pending" in obj.DRSPC_response or "Disapprove" in obj.DRSPC_response:
+                ob = Project_Registration.objects.get(pk=obj.project_id.id)
+                pf = int(ob.PI_id.id)
+                title = ob.project_title
+                ptype = ob.project_type
+
+                if ptype == "sponsoered research":
+                    pr = emp_research_projects.objects.get(pf_no=pf, title=title)
+                    pr.financial_outlay = obj.new_amount
+                    pr.save()
+
+                elif ptype == "consultancy":
+                    pr = emp_consultancy_projects.objects.get(pf_no=pf, title=title)
+                    pr.financial_outlay = obj.new_amount
+                    pr.save()
+                obj.DRSPC_response = 'Approve'
+                obj.save()
     elif 'forward' in request.POST:
-        id=request.POST.get('id')
-        obj=Project_Reallocation.objects.get(pk=id)
-        if obj.DRSPC_response == 'Pending':
-            obj.DRSPC_response='Forward'
-            obj.save()
+        id_list = request.POST.getlist('id[]')
+        for id in id_list:
+            obj = get_object_or_404(Project_Reallocation, pk=id)
+            if obj.DRSPC_response == 'Pending':
+                obj.DRSPC_response = 'Forward'
+                obj.save()
     elif 'reject' in request.POST:
-        id=request.POST.get('id')
-        obj=Project_Reallocation.objects.get(pk=id)
-        print(obj.DRSPC_response)
-        if obj.DRSPC_response == 'Pending':
-            obj.DRSPC_response='Disapprove'
-            obj.save()
+        id_list = request.POST.getlist('id[]')
+        for id in id_list:
+            obj = get_object_or_404(Project_Reallocation, pk=id)
+            print(obj.DRSPC_response)
+            if obj.DRSPC_response == 'Pending':
+                obj.DRSPC_response = 'Disapprove'
+                obj.save()
     return HttpResponseRedirect('/office/officeOfDeanRSPC/')
+
+
+"""
+views for details page for Project Registration, Extension, Fund Reallocation, Closure
+"""
+
+
+def reg_details(request, pr_id):
+    obj = get_object_or_404(Project_Registration, pk=pr_id)
+    return render(request, "officeModule/officeOfDeanRSPC/view_details.html", {"obj": obj})
+
+
+def ext_details(request, pr_id):
+    pr = get_object_or_404(Project_Extension, pk=pr_id)
+    obj = get_object_or_404(Project_Registration, pk=pr.project_id.id)
+    return render(request, "officeModule/officeOfDeanRSPC/extension_details.html", {"obj": obj, 'pr': pr})
+
+
+def reallocate_details(request, pr_id):
+    pr = get_object_or_404(Project_Reallocation, pk=pr_id)
+    obj = get_object_or_404(Project_Registration, pk=pr.project_id.id)
+    return render(request, "officeModule/officeOfDeanRSPC/reallocation_details.html", {"obj": obj, 'pr': pr})
+
+
+def closure_details(request, pr_id):
+    pr = get_object_or_404(Project_Closure, pk=pr_id)
+    obj = get_object_or_404(Project_Registration, pk=pr.project_id.id)
+    return render(request, "officeModule/officeOfDeanRSPC/closure_details.html", {"obj": obj, 'pr': pr})
+
+
+# DEAN RSPC MODULE ENDS HERE ..........................................................................................
 
 
 
@@ -743,85 +1092,6 @@ def genericModule(request):
 
 
 
-# Project Closure Table Start .......................................................................................
-
-
-def project_closure(request):
-    project_id = request.POST.get('project_id')
-    extrainfo1 = Project_Registration.objects.get(id=project_id)
-   # ob = Project_Registration.objects.filter(id = extrainfo1)
-    completion_date = request.POST.get('date')
-   # extended_duration = ob.duration
-    expenses_dues = request.POST.get('committed')
-    expenses_dues_description = request.POST.get('remark1')
-    payment_dues = request.POST.get('payment')
-    payment_dues_description = request.POST.get('remark2')
-    salary_dues = request.POST.get('salary')
-    salary_dues_description = request.POST.get('remark3')
-    advances_dues = request.POST.get('advance')
-    advances_description = request.POST.get('remark4')
-    others_dues = request.POST.get('other')
-    other_dues_description = request.POST.get('remark5')
-    overhead_deducted = request.POST.get('overhead')
-    overhead_description = request.POST.get('remark6')
-
-    request_obj1 = Project_Closure(project_id=extrainfo1, completion_date=completion_date,
-                                    expenses_dues=expenses_dues,expenses_dues_description=expenses_dues_description,
-                                    payment_dues=payment_dues,payment_dues_description=payment_dues_description,salary_dues=salary_dues,
-                                    salary_dues_description=salary_dues_description,advances_dues=advances_dues,advances_description=advances_description,
-                                    others_dues=others_dues,other_dues_description=other_dues_description,overhead_deducted=overhead_deducted,
-                                    overhead_description=overhead_description)
-    request_obj1.save()
-    context={}
-    return render(request,"eisModulenew/profile.html",context)
-
-
-
-# PROJECT CLOSURE TABLE END HERE .......................................................................................
-
-
-
-
-
-
-#PROJECT EXTENSION TABLE START ...........................................................................................
-
-
-
-def project_extension(request):
-    project_id = request.POST.get('project_id')
-    ob = Project_Registration.objects.get(id=project_id)
-    date = ob.start_date
-    sponser = ob.sponsored_agency
-    extended_duration =  request.POST.get('extended_duration')
-    extension_detail = request.POST.get('extension_details')
-
-    request_obj2 = Project_Extension(project_id=ob, date=date, extended_duration=extended_duration, extension_details= extension_detail)
-    request_obj2.save()
-    context={}
-    return render(request,"eisModulenew/profile.html",context)
-
-
-#PROJECT EXTENSION TABLE END ...........................................................................................
-
-
-def project_reallocation(request):
-    project_id = request.POST.get('project_id')
-    ob1 = Project_Registration.objects.get(id=project_id)
-    date =  request.POST.get('date')
-    pfno =  request.POST.get('pfno')
-    pbh =   request.POST.get('p_budget_head')
-    p_amount =  request.POST.get('p_amount')
-    nbh =  request.POST.get('n_budget_head')
-    n_amount =  request.POST.get('n_amount')
-    reason =  request.POST.get('reason')
-
-    request_obj3 = Project_Reallocation(project_id=ob1, date=date, previous_budget_head=pbh,previous_amount=p_amount,
-                                        new_budget_head=nbh,new_amount=n_amount,transfer_reason=reason,pf_no=pfno)
-    request_obj3.save()
-    print("sbhaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbhaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-    context={}
-    return render(request,"eisModulenew/profile.html",context)
 
 
 

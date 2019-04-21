@@ -1,5 +1,7 @@
 {% load static %}
 
+<form action="{% url 'office:registration' %}" method="POST" id="application">{% csrf_token %}</form>
+
 <table class="ui very basic collapsing celled sortable table"
        style="padding-left: 2.5%;
                                                           padding-right: 2.5%;
@@ -9,6 +11,7 @@
     <thead>
     <tr>
         <th class="one wide column">
+
         </th>
 
         <th class="one wide column">
@@ -31,51 +34,59 @@
             Date
         </th>
          <th class="four wide column">
-            view Details
+            View Details
         </th>
     </tr>
     </thead>
 
     <tbody>
-    <form action="{% url 'office:registration' %}" method="POST">
-        {% csrf_token %}
-         {% for pr in project %}
-    {% if pr.HOD_response == 'Forwarded'%}
+
+
+    {% for pr in project %}
+
+    {% comment %} if pr.HOD_response == 'Forwarded' {% endcomment %}
     <tr>
-
         <td class="collapsing">
-            <div class="ui fitted checkbox">
-                <input type="checkbox" value={{pr.id}} name="id"> <label></label>
-            </div>
+                {% if "Dean (R&D)" in desig %}
+                <input type="checkbox" form="application" value={{pr.id}} name="id[]">
+                {% endif %}
         </td>
 
-        <td>
-             {{pr.PI_id}}
+        <td class="one wide column">
+            {{pr.PI_id.user.first_name}} {{pr.PI_id.user.last_name}}
         </td>
 
-        <td>
+        <td class="one wide column">
              {{pr.project_title}}
         </td>
 
-        <td>
+        <td class="four wide column">
              {{pr.project_type}}
         </td>
 
-        <td>
-            <i class="large red crossmark icon">{{pr.DRSPC_response}}</i>
+        <td class="four wide column">
+            {% if pr.DRSPC_response == "Approve" %}
+            <i class="large green checkmark icon">{{pr.DRSPC_response}}</i>
+            {% elif pr.DRSPC_response == "Pending" %}
+            <i class="large orange warning icon">{{pr.DRSPC_response}}</i>
+            {% elif pr.DRSPC_response == "Disapprove" %}
+            <i class="large red x icon">{{pr.DRSPC_response}}</i>
+            {% elif pr.DRSPC_response == "Forward" %}
+            <i class="large orange warning icon">{{pr.DRSPC_response}}</i>
+            {% endif %}
         </td>
 
-        <td>
+        <td class="four wide column">
 
-            {{pr.start_date}}
+            {{pr.applied_date}}
 
         </td>
-        <td>
-           <a href="/office/officeOfDeanRSPC/{{pr.id}}/" target="_blank">Details</a>
+        <td class="four wide column">
+           <a href="/office/officeOfDeanRSPC/registration_details/{{pr.id}}/" target="_blank">Details</a>
         </td>
 
     </tr>
-    {% endif %}
+    {% comment %} endif  {% endcomment %}
 
  {% endfor%}
 
@@ -123,13 +134,13 @@
     </tbody>
 </table>
 
-
 <br>
 
 <!-- <div class="ui primary right floated button"><a href="" target="_blank" style="color:white;">View Details</a></div> -->
 <!-- <a href="/officeOfDeanRSPC/app/"><div class="ui primary right floated button">Approve Selected</div></a> -->
-{% if "Dean (RSPC)" in desig %}<button class="ui primary right floated button" type="submit" name="approve" value="approve">Approve</button>
-<button class="ui primary right floated button" type="submit" name="reject" value="reject">Reject</button>
+{% if "Dean (R&D)" in desig %}<button class="ui primary right floated button" type="submit" form="application" name="approve" value="approve" >Approve</button>
+<button class="ui primary right floated button" type="submit" form="application" name="reject" value="reject">Reject</button>
+<button class="ui primary right floated button" type="submit" form="application" name="forward" value="approve" >Forward</button>
 <!-- <button class="ui primary right floated button" type="submit" name="forward" value="forward">Forward Selected</button>
  -->{% endif %}
 
@@ -137,7 +148,6 @@
 <button class="ui primary right floated button" type="submit" name="hodforward" value="hodforward">Forward Selected</button>
 {% endif %} -->
 
-</form>
 <br>
 <br>
 <div class="ui divider"></div>
