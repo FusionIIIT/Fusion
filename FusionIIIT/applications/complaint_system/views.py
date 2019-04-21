@@ -1,3 +1,4 @@
+import datetime
 from datetime import date, datetime, timedelta
 
 from django.contrib import messages
@@ -8,10 +9,11 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404, render, render_to_response
 
-from applications.globals.models import ExtraInfo, User
+from applications.globals.models import User , ExtraInfo, HoldsDesignation
 
 from .models import Caretaker, StudentComplain, Supervisor, Workers
-
+from notification.views import  complaint_system_notif
+#function for reassign to another worker
 @login_required
 def complaint_reassign(request,wid,iid):
     current_user = get_object_or_404(User, username=request.user.username)
@@ -30,15 +32,19 @@ def complaint_reassign(request,wid,iid):
             StudentComplain.objects.select_for_update().filter(id=iid).\
                 update(worker_id=w, status=1)
             url = '/complaint/caretaker/worker_id_know_more/'+wid;
+            complainer_details = StudentComplain.objects.get(id=iid)
+            complaint_system_notif(request.user, complainer_details.complainer.user ,'reassign_worker_alert')
             return HttpResponseRedirect(url)
         elif type == 'redirect':
             assign_caretaker = request.POST.get('assign_caretaker', '')
             c = Caretaker.objects.get(id=assign_caretaker)
             c1 = Caretaker.objects.get(id=iid)
             remark = 'Redirect complaint from ' + c1.area
-            StudentComplain.objects.select_for_update().filter(id=comp_id1).\
+            StudentComplain.objects.select_for_update().filter(id=iid).\
                 update(location=c.area, remarks=remark)
             url = '/complaint/caretaker/worker_id_know_more/'+wid;
+            complainer_details = StudentComplain.objects.get(id=iid)
+            complaint_system_notif(request.user, complainer_details.complainer.user ,'comp_redirect_alert')
             return HttpResponseRedirect(url)
         
     else:
@@ -49,6 +55,7 @@ def complaint_reassign(request,wid,iid):
         try:
             detail = StudentComplain.objects.filter(id=iid).first()
             total_caretaker = Caretaker.objects.all()
+            total_caretakers_in_area = Caretaker.objects.filter(area=b)
             worker = []
             workertemp = []
             flag = ''
@@ -73,7 +80,7 @@ def complaint_reassign(request,wid,iid):
             return HttpResponse("<H1>Not a valid complaint </H1>")
         return render(request, "complaintModule/reassignworker.html",
                       {'detail': detail, 'worker': worker, 'flag':
-                          flag, 'total_caretaker': total_caretaker,'a':a, 'wid':wid})
+                          flag, 'total_caretaker': total_caretaker,'a':a, 'wid':wid, 'total_caretakers_in_area':total_caretakers_in_area})
 
 @login_required
 def complaint_reassign_super(request,caretaker_id,iid):
@@ -112,16 +119,14 @@ def assign_worker(request, comp_id1):
         y = ExtraInfo.objects.all().filter(user=a).first()
         comp_id = y.id
         if type == 'assign':
-
             complaint_finish = request.POST.get('complaint_finish', '')
             worker_id = request.POST.get('assign_worker', '')
             w = Workers.objects.get(id=worker_id)
-
-
-            # StudentComplain.objects.get(id=comp_id).update
-            # (complaint_finish='complaint_finish', worker_id='worker_id')
             StudentComplain.objects.select_for_update().filter(id=comp_id1).\
                 update(worker_id=w, status=1)
+            complainer_details = StudentComplain.objects.get(id=comp_id1)
+            complaint_system_notif(request.user, complainer_details.complainer.user ,'assign_worker_alert')
+
             return HttpResponseRedirect('/complaint/caretaker/')
         elif type == 'redirect':
             assign_caretaker = request.POST.get('assign_caretaker', '')
@@ -130,6 +135,8 @@ def assign_worker(request, comp_id1):
             remark = 'Redirect complaint from ' + c1.area
             StudentComplain.objects.select_for_update().filter(id=comp_id1).\
                 update(location=c.area, remarks=remark)
+            complainer_details = StudentComplain.objects.get(id=comp_id1)
+            complaint_system_notif(request.user, complainer_details.complainer.user ,'comp_redirect_alert')
             return HttpResponseRedirect('/complaint/caretaker/')
     else:
         y = ExtraInfo.objects.get(id=y.id)
@@ -139,6 +146,7 @@ def assign_worker(request, comp_id1):
         try:
             detail = StudentComplain.objects.filter(id=comp_id1).first()
             total_caretaker = Caretaker.objects.all()
+            total_caretakers_in_area = Caretaker.objects.filter(area=b)
             workertemp = []
             worker = []
             flag = ''
@@ -163,7 +171,7 @@ def assign_worker(request, comp_id1):
             return HttpResponse("<H1>Not a valid complaint </H1>")
         return render(request, "complaintModule/assignworker.html",
                       {'detail': detail, 'worker': worker, 'flag':
-                          flag, 'total_caretaker': total_caretaker,'a':a})
+                          flag, 'total_caretaker': total_caretaker,'a':a, 'total_caretakers_in_area':total_caretakers_in_area})
 
 @login_required
 def discharge_worker(request,wid,cid):
@@ -219,6 +227,9 @@ def caretaker_feedback(request):
 
 @login_required
 def worker_id_know_more(request, work_id):
+    """
+    function to know pending complaints assigned to the worker
+    """
     this_worker = Workers.objects.get(id=work_id)
     num = StudentComplain.objects.filter(worker_id=this_worker).count();
     complaints_list = StudentComplain.objects.filter(worker_id=this_worker);
@@ -290,11 +301,12 @@ def user(request):
         location = request.POST.get('Location', '')
         specific_location = request.POST.get('specific_location', '')
         comp_file = request.FILES.get('myfile')
-       
-           
+        
+        print("ooooeee")    
         print("Attachment : ",comp_file)
         details = request.POST.get('details', '')
         status = 0
+        # finish time is according to complaint type
         complaint_finish = datetime.now() + timedelta(days=2)
         if comp_type == 'Electricity':
             complaint_finish = datetime.now() + timedelta(days=2)
@@ -311,17 +323,22 @@ def user(request):
         elif comp_type == 'other':
             complaint_finish = datetime.now() + timedelta(days=3)
         y = ExtraInfo.objects.get(id=comp_id)
+        #check if location given
+        print(location)
+        if location!="":
+            print("huaaaaa")
+            x = StudentComplain(complainer=y,
+                                complaint_type=comp_type,
+                                location=location,
+                                specific_location=specific_location,
+                                details=details,
+                                status=status,
+                                complaint_finish=complaint_finish,
+                                upload_complaint=comp_file)
+                            
+                                    
 
-        x = StudentComplain(complainer=y,
-                            complaint_type=comp_type,
-                            location=location,
-                            specific_location=specific_location,
-                            details=details,
-                            status=status,
-                            complaint_finish=complaint_finish,
-                            upload_complaint=comp_file)
-
-        x.save()
+            x.save()
         historytemp = StudentComplain.objects.filter(complainer=y).order_by('-id')
         history = []
         j = 1
@@ -335,26 +352,82 @@ def user(request):
         for h in history:
             h.serial_no = k
             k = k+1
+        # if location == "hall1":
+        #     dsgn = "hall1caretaker"
+        # elif location == "hall3":
+        #     dsgn = "hall3caretaker"
+        # else :
+        #     dsgn = "hall4caretaker"
+        if location == "hall-1":
+          dsgn ="hall1caretaker"
+        elif location =="hall-3":
+          dsgn ="hall3caretaker"
+        elif location =="hall-4":
+          dsgn ="hall4caretaker"
+        elif location =="CC1":
+          dsgn ="cc1convener"
+        elif location =="CC2":
+          dsgn ="CC2 convener"
+        elif location == "core_lab":
+          dsgn = "corelabcaretaker"
+        elif location =="LHTC":
+          dsgn ="lhtccaretaker"
+        elif location =="NR2":
+          dsgn ="nr2caretaker"
+        else:
+          dsgn = "rewacaretaker"
+        caretaker_name = HoldsDesignation.objects.get(designation__name = dsgn)
+        
+        complaint_system_notif(request.user, caretaker_name.user,'lodge_comp_alert')
 
-        return render(request, "complaintModule/complaint_user.html",
-                      {'history': history, 'comp_id': comp_id })
-        next = request.POST.get('next', '/')
-        return HttpResponseRedirect(next)
+        # return render(request, "complaintModule/complaint_user.html",
+        #               {'history': history, 'comp_id': comp_id })
+        # next = request.POST.get('next', '/')
+        return HttpResponseRedirect('/complaint/user')
 
     else:
+        print("oooo!!!")
         a = get_object_or_404(User, username=request.user.username)
         y = ExtraInfo.objects.all().filter(user=a).first()
-        # y = ExtraInfo.objects.get(id=comp_id)
-        history = StudentComplain.objects.filter(complainer=y).order_by('-id')
+        historytemp = StudentComplain.objects.filter(complainer=y).order_by('-id')
+        history=[]
+
         j = 1
+        for i in historytemp:
+            if j%2 != 0:
+                history.append(i)
+            j = j+1
 
         for i in history:
             i.serial_no = j
             j = j+1
+
+        # if location == "hall-1":
+        #   dsgn ="hall1caretaker"
+        # elif location =="hall-3":
+        #   dsgn ="hall3caretaker"
+        # elif location =="hall-4":
+        #   dsgn ="hall4caretaker"
+        # elif location =="CC1":
+        #   dsgn ="CC convenor"
+        # elif location =="CC2":
+        #   dsgn ="CC2 convener"
+        # elif location == "core_lab":
+        #   dsgn = "corelabcaretaker"
+        # elif location =="LHTC":
+        #   dsgn ="lhtccaretaker"
+        # elif location =="NR2":
+        #   dsgn ="nr2caretaker"
+        # else:
+        #   dsgn = "rewacaretaker"
+        # caretaker_name = HoldsDesignation.objects.get(designation__name = dsgn)
+        
+        # complaint_system_notif(request.user, caretaker_name.user,'lodge_comp_alert')
         return render(request, "complaintModule/complaint_user.html",
                       {'history': history, 'comp_id': y.id})
 
-
+    return render(request, "complaintModule/complaint_user.html",
+                      {'history': history, 'comp_id': comp_id })
 @login_required
 def save_comp(request):
     """
@@ -437,7 +510,8 @@ def caretaker(request):
             a = None
             y = None
         intage = int(age)
-        if len(phone) == 10 and intage > 20 and intage < 50:
+        intphone = int(phone)
+        if len(phone) == 10 and intage > 20 and intage < 50 and intphone > 1999999999:
             x = Workers(caretaker_id=a,
                         name=name,
                         age=age,
@@ -509,8 +583,8 @@ def caretaker(request):
             if j%2 != 0:
                 history.append(i)
             j=j+1
-        for h in history:
-            h.serial_no = k
+        for i in history:
+            i.serial_no = k
             k = k + 1
 
             if i.status != 2 and i.status !=3:
@@ -626,6 +700,9 @@ def submitfeedback(request, complaint_id):
 
 @login_required
 def deletecomplaint(request, comp_id1):
+    """
+    function to delete complaint
+    """
     StudentComplain.objects.get(id=comp_id1).delete()
     return HttpResponseRedirect('/complaint/caretaker/')
 
@@ -734,9 +811,12 @@ def resolvepending(request, cid):
             intstatus = 3
         StudentComplain.objects.filter(id=cid).\
         update(status=intstatus)
-
+        complainer_details = StudentComplain.objects.get(id=cid)
+        complaint_system_notif(request.user, complainer_details.complainer.user ,'comp_resolved_alert')
         return HttpResponseRedirect("/complaint/caretaker/")
     else:
+        # complainer_details = StudentComplain.objects.get(id=cid)
+        # complaint_system_notif(request.user, complainer_details.complainer.user ,'comp_resolved_alert')
         return render(request,"complaintModule/resolve_pending.html",{"a" : a,"thiscomplaint" : thiscomplaint})
 
 
@@ -783,6 +863,9 @@ def feedback_care(request, feedcomp_id):
 
 @login_required
 def detail(request, detailcomp_id1):
+    """
+    function that shows detail about complaint
+    """
     detail = StudentComplain.objects.get(id=detailcomp_id1)
     a=User.objects.get(username=detail.complainer.user.username)           
     y=ExtraInfo.objects.get(user=a)

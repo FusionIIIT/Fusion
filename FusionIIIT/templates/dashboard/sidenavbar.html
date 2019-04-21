@@ -160,10 +160,12 @@
 <!--The email Item ends here!-->
 
 <!--The Profile Item starts here!-->
+{% if 'Civil_JE' in all_designation or 'Civil_AE' in all_designation or 'Electrical_JE' in all_designation or 'Electrical_AE' in all_designation or 'EE' in all_designation or 'DeanPnD' in all_designation or 'Director' in all_designation %}
 <a class="centered raised item" href="{% url 'office:officeOfDeanPnD'%}">
     <span class="inverted header">Office Of P & D</span>
     <i class="large inverted briefcase icon right floated"></i>
 </a>
+{% endif %}
 <!--The email Item ends here!-->
 
 

@@ -1,22 +1,15 @@
 {% include 'officeModule/officeOfDeanStudents/technicalBudgetsModal.html' %}
-<form>
-    {% comment %}The add a new skill Accordian starts here!{% endcomment %}
-    
-</form>
+
 
 <div class="ui divider"></div>
-
 <table class="ui very basic collapsing celled sortable table"
        style="padding-left: 2.5%;
                                                           padding-right: 2.5%;
                                                           padding-top: 1%;
                                                           padding-bottom: 1.5%;
                                                           margin: auto;">
-     <thead>
+    <thead>
     <tr>
-
-  
-
         <th class="four wide column">
             Club Name
         </th>
@@ -28,26 +21,33 @@
         </th>
         <th class="four wide column">
             Budget available
-        </th>        
+        </th>
+
+        <th>More</th>
 
     </tr>
     </thead>
 
     <tbody>
         {% for details in budgets%}
+    <tr onclick="modalsshow('{{ details.pk }}')">
+
         {% if details.category == 'Cultural' %}
-    <tr onclick="modals('{{ details.pk }}')">
+
         <td>{{  details.club_name }}</td>
         <td>{{  details.alloted_budget }}</td>
         <td>{{  details.spent_budget }}</td>
         <td>{{  details.avail_budget }}</td>
+        <td> <button class="ui compact icon button" onclick="modalsshow('{{ details.pk }}')">
+                            <i class="expand icon"></i>
+                                </button></td>
         </tr>
         {% else %}
-        
+
         {% endif %}
 
     {% endfor %}
-    
+
     </tbody>
 </table>
 
@@ -60,4 +60,3 @@
 <br>
 
 <div class="ui divider"></div>
-

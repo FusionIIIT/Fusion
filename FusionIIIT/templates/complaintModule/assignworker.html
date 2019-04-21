@@ -161,7 +161,7 @@ Complaint
 
             </div>
 
-
+<!-- redirect complaint -->
             <div class="ui tab large" data-tab="redirect">
                 <div class="ui vertical segment" style="padding:40px">
                     <h4>If you think that this complaint does not belong to you .</br>
@@ -206,7 +206,7 @@ Complaint
                                 {% else %}
                                 <label>Choose particular caretaker from a drop down box :</label>
                                 <select name="assign_caretaker">
-                                    {% for i in total_caretaker %}
+                                    {% for i in total_caretakers_in_area %}
                                     <option value="{{ i.id }}">{{ i.id }}-{{ i.staff_id }}-{{ i.area }}</option>
                                     {% endfor %}
                                 </select>
