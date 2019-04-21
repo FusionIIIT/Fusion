@@ -26,7 +26,7 @@
                       </select>
                   </div>
                         <div class="field">
-                            <label>Date Of Appointment</label>
+                            <label>Date Of Appointment</label><p id="app_dte"></p>
                             <select id="date" class="ui search fluid dropdown" name="date">
                               <option >--SELECT--</option>
                             </select>
@@ -34,10 +34,9 @@
                         </div>
                 </div>
                 <div class="field">
-                    <label>Issues/Symptoms</label>
+                    <label>Issues/Symptoms</label><p id="desc"></p>
                     <div class="ui fluid input">
                         <textarea id="description" class="ui textarea" rows="2" name="description" required="true"></textarea>
-                        <p id="desc"></p>
                     </div>
                 </div>
 
@@ -53,6 +52,8 @@
           <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
           <script type="text/javascript">
 
+
+
              function trimfield(str)
                                        {
                                          return str.replace(/^\s+|\s+$/g,'');
@@ -60,6 +61,8 @@
 				 
                   $('#doc').change(function()
                   {
+
+
                       $.ajax({
                       type:'post',
                       url:'/healthcenter/student/',
@@ -68,12 +71,10 @@
                       doctor:$("#doc").val(),
                       },
                       success: function(JSON){
-                        $("#date").empty();						
+                        $("#date").empty();
                         $.each(JSON, function(key, value) {
                        $("#date").append("<option value="+value.pk +">" + value.fields.date+"-------"+value.fields.from_time+"-"+value.fields.to_time+"</option>");
-					  
 	                   });
-
                     }
                    });
                  });
@@ -83,14 +84,18 @@
 					
                 $('#appo').on('click',function(e){
                      e.preventDefault();
-									
+
+                     var tod = new Date(new Date().setHours(0, 0, 0, 0));
+                     var today = new Date(new Date());
+                     var now = today.getHours();
+
                      if(trimfield(document.getElementById("description").value) == '')
                        {
                        $('#desc').html('*Please fill out the Description!');
                        document.getElementById("description").focus();
                         }
 																										
-									 
+
                      else{
                      $.ajax({
                      type:'post',
@@ -103,18 +108,20 @@
                      appointment:$("#appo").val(),
                      },
                      success: function(data){
-                       if (data.status == 1){
+                        var dte = new Date(data.dt);
+                        dte.setHours(0, 0, 0, 0);
+
                          alert("Appointment requested.Check history for the status of appointment. ")
                          document.getElementById("doc").value=""
                          document.getElementById("date").value=""
                          document.getElementById("description").value=" "
                          $('#desc').html('');
                          window.location.reload();
+                         $('#app_dte').html('');
 
-                       }
                    }
                   });
-                     }
+                    }
                 });
 
               </script>

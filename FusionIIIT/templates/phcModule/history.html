@@ -21,13 +21,15 @@
     </div>
 
     <div class="ui active tab" data-tab="prescriptionhistory">
-        <div class="ui vertical segment" >
+        <div id="presc_print" class="ui vertical segment" >
+            <h4 align="center">D - No.of days, &nbsp;&nbsp; T - No.of times per day</h4>
+
             <table  border=1 class="ui very basic collapsing celled large sortable table"
                   style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;" >
                 <thead>
                 <tr>
-                    <td style="font-weight:bold;color:black;">
-                        Treated<br> By
+                    <td style="font-weight:bold;color:black; ">
+                        Treated By
                     </td>
 
                     <td style="font-weight:bold;color:black;" >
@@ -56,9 +58,9 @@
                 {% for pre in prescription %}
                 <tr>
 
-                    <td>
+                    <td style="font-weight:bold;color:black;">
                         <h4 class="ui image header">
-                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                             <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
                         </h4>
                               {{pre.doctor_id}}
 
@@ -86,8 +88,8 @@
                       </table>
                     </td>
                 </tr>
-                {% endfor %}
 
+                {% endfor %}
                 </tbody>
             </table>
 
@@ -136,16 +138,16 @@
                         {{ambulance.date_request}}
                     </td>
 
-                    <td>
+                    <td style="white-space:nowrap;">
                         {{ambulance.start_date}}
                     </td>
 
-                    <td>
+                    <td style="white-space:nowrap;">
                         {{ambulance.end_date}}
                     </td>
 					<td>
 
-                        <input type="button" onclick="rem({{ambulance.pk}})" id="{{ambulance.pk}}" name="cancel" value="Cancel"class="ui large right floated primary button" />
+                        <input type="button" onclick="rem({{ambulance.pk}})" id="{{ambulance.pk}}" name="cancel" value="Cancel"class="ui red button" />
 
                     </td> 
                 </tr>
@@ -220,7 +222,7 @@
                 {% for hospital in hospitals %}
                 <tr>
 
-                    <td>
+                    <td style="white-space:nowrap;">
                         <h4 class="ui image header">
                             <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
                             <div class="content">
@@ -294,7 +296,7 @@
                 <tbody>
                   {% for appointment in appointments %}
                 <tr>
-                    <td>
+                    <td style="white-space:nowrap;">
                         <h4 class="ui image header">
                             <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
                             <div class="content">
@@ -303,13 +305,13 @@
                         </h4>
                     </td>
 
-                    <td>
+                    <td >
                       {{appointment.description}}
                     </td>
-                    <td>
+                    <td style="white-space:nowrap;">
                       {{appointment.date}}
                     </td>
-                    <td>
+                    <td >
                       {{appointment.schedule.from_time}}
                     </td>
 
@@ -318,7 +320,7 @@
                     </td>
 					<td>
 
-                        <input type="button" onclick="rm({{appointment.pk}})" id="{{appointment.pk}}" name="cancel" value="Cancel"class="ui large right floated primary button" />
+                        <input type="button" onclick="rm({{appointment.pk}})" id="{{appointment.pk}}" name="cancel" value="Cancel"class="ui red button" />
 
                     </td> 
                 </tr>

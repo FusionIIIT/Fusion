@@ -1,7 +1,7 @@
 {% block newsession %}
 
     {% comment %}The tab menu starts here!{% endcomment %}
-    <script>
+  <!--   <script>
       var color;
         $(document).ready(function () {
             $("#venue_type").change(function () {
@@ -10,7 +10,7 @@
         });
         console.log(color)
 
-    </script>
+    </script> -->
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="newsession">
             New Session
@@ -31,22 +31,24 @@
                         <label>Venue </label>
                         {{ choice }}
                     </div>
-                    <div class="Two fields">
-                        <div class="field">
-                            <select  class="ui search dropdown" name="venue_type" id="venue_type" onchange="display_club_session()" required>
-                                <option   value="">Select</option>
-                                      {% for i in venue_type  %}
-
-                                            <option id="selected_value" value="{{ i }}">{{ i }} </option>
-                                    {% endfor %}
-                            </select>
+                    <div class="field venueType">
+                        <div class="ui selection dropdown">
+                            <input type="hidden" name="venue_type" id="venue_type">
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Select</div>
+                            <div class="menu">
+                                {% for i in venue %}
+                                    <div class="item" data-value="{{i}}">{{i}}</div>
+                                {% endfor %}
+                            </div>
                         </div>
-                        <div class="field">
-                            <select id="set_choices" att="" class="ui search dropdown" name="venue_details" id="venue_details" onchange="display_club_session()" required>
-                                <option value="">Select</option>
+                        <!-- <select  class="ui search dropdown" name="venue_type" id="venue_type" onchange="display_club_session()" required>
+                            <option value="">Select</option>
+                                  {% for i in venue_type  %}
 
-                            </select>
-                        </div>
+                                        <option id="selected_value" value="{{ i }}">{{ i }} </option>
+                                {% endfor %}
+                        </select> -->
                     </div>
                     <div class="Two fields">
                       <div class="field">
@@ -94,8 +96,10 @@
         <div class="extra content"></div>
     </div>
 
+
     
     <script>
+
             function getDifference(a, b)
                 {
                     var i = 0;
@@ -113,33 +117,31 @@
                     return result;
                 }
         $('#venue_type').change(function(){
-             var choice = $('#venue_type option:selected').text();
-             $('#set_choices').empty();
-             choice = choice.toString();
-             var item=[];
-               {% for key, values in venue_details.items %}
-                  var choice_key = "{{ key }}";
-                  console.log(choice_key);
-                  console.log(choice)
-                if(getDifference(choice,choice_key)=="")
-                    {   
-                         
-                        {% for j in values %}
-                        item.push("{{ j }}")
-                        {% endfor %}
-                    }          
-                {% endfor %}
-            $.each(item, function (i, item) {
-                  $('#set_choices').append($('<option>', { 
-                      value: item,
-                      text : item 
-                  }));
-            });  
-                 
-                console.log(item);
+            $("#venue_details").val('') ;
+            $("div.venueDetails").find("div.dropdown").find("div.text").html('');
+            var venueType = $('#venue_type option:selected').text() ;
+            $.ajax({
+                url: "/gymkhana/get_venue/",
+                type: "post",
+                data: {'venueType':venueType},
+                success: function(response){
+                    // console.log("Hii")
+                    response = JSON.parse(response);
+                    var i ;
+                    $('#set_choices').empty();
+                    for(i=0 ; i<response.length ; i++){
+                        console.log(response[i])
+                        $('#set_choices').append($('<option>', {
+                            value: response[i],
+                            text: response[i]
+                        }));
+                    }
+                }
+            });
         });
 
     </script>
+
 
 
 

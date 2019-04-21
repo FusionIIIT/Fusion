@@ -3,10 +3,12 @@
 
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="inviteapplications">
+        <a class="{% if last_clicked == 'Submit' or last_clicked == '' or last_clicked == 'Submit_previous_winner'%} active item {% else %} item {% endif %}" data-tab="inviteapplications">
             Invite Applications
         </a>
-
+        <a class="{% if last_clicked == 'Enddate_updated' %} active item {% else %} item {% endif %}" data-tab="recent_app">
+              Recent Invite Applications
+        </a>
         <a class="item" data-tab="aa">
                 Announce Award
         </a>
@@ -33,7 +35,7 @@
         </div>
     </div>-->
 
-    <div class="ui active tab" data-tab="inviteapplications">
+    <div class="{% if last_clicked == 'Submit' or last_clicked == ''  or last_clicked == 'Submit_previous_winner' %} ui active tab {% else %} ui tab {% endif %}" data-tab="inviteapplications">
         <div class="ui vertical segment">
             <form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;">
                 {% csrf_token %}
@@ -117,7 +119,82 @@
         </div>
     </div>
 
+    <div class="{% if last_clicked == 'Enddate_updated' %} ui active tab {% else %} ui tab {% endif %}" data-tab="recent_app">
+        <div class="ui vertical segment">
+
+          <table class="ui celled table">
+              <thead>
+              <tr>
+                  <th >Award Name</th>
+                  <th >Start Date </th>
+                  <th >End Date</th>
+                  <th >Invited On</th>
+                  <th> Batch <th>
+                  <th> </th>
+              </tr>
+              </thead>
+
+              <tbody>
+                    {% for i in release %}
+                  <tr>
+                      <td>{{ i.award }}</td>
+                      <td>{{ i.startdate }}</td>
+                      <td>{{ i.enddate }}</td>
+                      <td>{{ i.date_time }}</td>
+                      <td>{{ i.programme}} - {{ i.batch }}</td>
+                      <td> <button class="ui primary button" id = 'update_release_btn' value='{{ i.id}}'>Update</button> </td>
+                  </tr>
+                      {% endfor %}
+              </tbody>
+          </table>
+    </div>
+
+    <div class="ui modal">
+      <div class="header">Extend End-date Of Application </div>
+      <div class="content">
+        <input type='date' name = 'updated_enddate' id= "enddate_up" required>
+        <input type="hidden" name="update_release_id" id= "update_release_id" value="">
+      </div>
+      <div class="actions">
+        <div class="ui approve button" id = "update_enddate_modal_btn">Update</div>
+        <div class="ui cancel button">Cancel</div>
+      </div>
+    </div>
+  </div>
+
+
 <script>
+
+  $(document).on('click','#update_release_btn',function (event) {
+          var s = $(this).val();
+          $('#update_release_id').val(s);
+          $('.ui.modal')
+            .modal('show');
+      });
+  $(document).on('click','#update_enddate_modal_btn',function (event) {
+          event.preventDefault();
+          var x = $('#update_release_id').val();
+          var y = $('#enddate_up').val();
+          $.ajax({
+              url: '/spacs/update_enddate/',
+              type: 'GET',
+              data:{
+                  up_id:x,
+                  up_d:y,
+                },
+              success: function (response) {
+                  if(response.result==='Success'){
+                    location.reload();
+                      console.log(response.result)
+                  }
+                  else{
+                      console.log(response.result);
+                  }
+
+              }
+          });
+      });
+
 function date_check(){
     var from=document.getElementById("frm").value;
     var to=document.getElementById("to").value;

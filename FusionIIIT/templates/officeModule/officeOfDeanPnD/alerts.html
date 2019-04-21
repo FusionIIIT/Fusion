@@ -6,7 +6,12 @@
         {% comment %}A single card starts here!{% endcomment %}
         <div class="ui card">
             <div class="content">
-                <img class="right floated circular ui image" src="{% static 'globals/img/zlatan.jpg' %}" style="width: 50px; height: auto;">
+                <img class="right floated circular ui image" src="
+                {% if user.extrainfo.profile_picture %}
+                    {{ user.extrainfo.profile_picture.url }}
+                {% else %}
+                    {% static 'globals/img/zlatan.jpg' %}
+                {% endif %}" style="width: 50px; height: auto;">
                 <div class="header">
                     Pending Actions
                 </div>

@@ -67,6 +67,7 @@ def libraryModule(request):
         print("Technically Processed Items")
 
 
+
 # Extracting the required detailes(Book name, ISBN number, Date of Isuue, Return date ..) from the resultant soup
         for div in soup.find_all("div",{'id':'print13'}):
             if div.find_all("tr",{'class':['GridItem', 'GridAltItem']}):
@@ -109,9 +110,11 @@ def libraryModule(request):
         soup2 = BeautifulSoup(r3.content,"html5lib")
 
 #Extracting the required detailes(Book name, Date issued, Date returned, no of days delayed, Due amount) from the resultant soup
-        for td in soup2.find_all("div", {'id':'print13'}):
 
+        for td in soup2.find_all("div", {'id':'print13'}):
             due = td.text
+        if not due.strip():
+            due = str(0.00)
         for div in soup2.find_all("div",{'id':'print16'}):
             if div.find_all("tr",{'class':['GridItem','GridAltItem']}):
                 for tr in div.find_all("tr",{'class':['GridItem','GridAltItem']}):
@@ -191,8 +194,6 @@ def libraryModule(request):
                 textb = (text.split(start))[1].split(end)[0]
                 textb=textb.replace("Copies Information Reserve Add Keyword(s) Add To Cart Content Author Info Book Info","\n")
                 textb=textb.split("\n")
-
-
 
 
 

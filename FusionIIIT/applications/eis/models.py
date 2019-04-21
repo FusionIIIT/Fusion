@@ -94,11 +94,11 @@ class emp_research_papers(models.Model):
     )
     is_sci = models.CharField(max_length=3, choices=IS_SCI_TYPE_CHOICES, null=True, blank=True)
     isbn_no = models.CharField(max_length=250, null=True, blank=True)
-    doi = models.DateTimeField(max_length=400, null=True, blank=True)
+    doi = models.DateField(null=True, blank=True)
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
     date_acceptance = models.DateField(null=True, blank=True)
-    date_publication = models.DateTimeField(null=True, blank=True)
+    date_publication = models.DateField(null=True, blank=True)
     YEAR_CHOICES = []
     for r in range(1995, (datetime.datetime.now().year + 1)):
         YEAR_CHOICES.append((r, r))

@@ -1,18 +1,17 @@
-{% block tab5 %}
+{% block tab1 %}
 
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="tab5content1">
-            Finance & Accounts Section
+        <a class="active item" data-tab="tab1content1">
+            Finance and accounts Section
         </a>
     </div>
 
-    <div class="ui active tab" data-tab="tab5content1">
+    <div class="ui active tab" data-tab="tab1content1">
         <div class="ui vertical segment">
-            {% block tab5content1 %}
-                {% include 'officeModule/officeOfRegistrar/financeAndAccountSection_content1.html' %}
+            {% block tab1content1 %}
+                {% include 'officeModule/officeOfRegistrar/directorSection_content1.html' %}
             {% endblock %}
         </div>
     </div>
-{% endblock tab5%}
-
+{% endblock tab1%}

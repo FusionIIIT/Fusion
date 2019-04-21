@@ -3,7 +3,7 @@
 {% block viewstatus %}
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
-        <a class="{% if last_clicked == 'Accept_mcm' or last_clicked == 'Reject_mcm' or last_clicked == ''%} active item {% else %} item {% endif %}" data-tab="mcm">
+        <a class="{% if last_clicked == 'Accept_mcm' or last_clicked == 'Reject_mcm' or last_clicked == '' or last_clicked == 'Submit_previous_winner' or last_clicked == 'Enddate_updated' or last_clicked == 'Submit' %} active item {% else %} item {% endif %}" data-tab="mcm">
             Mcm Scholarship
         </a>
 
@@ -11,7 +11,7 @@
             Convocation Medals
         </a>
     </div>
-<div class="{% if last_clicked == 'Accept_mcm' or last_clicked == 'Reject_mcm' or last_clicked == '' %} ui active tab {% else %} ui tab {% endif %}" data-tab="mcm">
+<div class="{% if last_clicked == 'Accept_mcm' or last_clicked == 'Reject_mcm' or last_clicked == '' or last_clicked == 'Submit_previous_winner' or last_clicked == 'Enddate_updated' or last_clicked == 'Submit'  %} ui active tab {% else %} ui tab {% endif %}" data-tab="mcm">
         <div class="ui vertical segment">
             <div class="ui header">
                 Mcm ScholarShip

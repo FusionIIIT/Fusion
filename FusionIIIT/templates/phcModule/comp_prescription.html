@@ -12,9 +12,6 @@
         <a class="item" data-tab="hospitaladmit">
             Hospital Admission
         </a>
-        <a class="item" data-tab="prescriptionhistory">
-            Prescription History
-        </a>
     </div>
     {% comment %}the prescribe tab starts here {% endcomment %}
     <div class="ui active tab" data-tab="prescribe_app">
@@ -187,7 +184,7 @@
                                                       prescribe:$("#prescribe").val()
                                                     },
                                                       success: function(data){
-                                                        if (data.status == 1){
+                                                        if (data.status == 1 ){
                                                           alert("prescribed medicine");
                                                           document.getElementById("details").value="";
                                                           document.getElementById("tests").value="";
@@ -195,7 +192,8 @@
                                                           window.location.reload();
                                                         }
                                                         else {
-                                                            alert("Prescription failed, please add some medicine");
+                                                            if(data.status == 0)
+                                                            alert("Prescription failed!, not enough medicine available in stock");
                                                             }
                                                     },
                                                   });
@@ -390,6 +388,11 @@
                                                           $('#sched_b').empty();
                                                           window.location.reload();
                                                         }
+
+                                                        else {
+                                                            if(data.status == 0)
+                                                            alert("Prescription failed!, not enough medicine available in stock");
+                                                            }
                                                     },
                                                   });
                                                   });
@@ -529,119 +532,5 @@
   <br>
   <div class="extra segment"></div>
 
-<div class="ui tab" data-tab="prescriptionhistory">
-        <div class="ui vertical segment" >
-            <table  border=1 class="ui very basic collapsing celled large sortable table"
-                  style="padding-left: 2.5%;padding-right: 2.5%;margin: auto;" >
-                <thead>
-                <tr>
-                    <td style="font-weight:bold;color:black;" >
-                        Patient ID
-                    </td>
-
-                    <td style="font-weight:bold;color:black;">
-                        Treated<br> By
-                    </td>
-
-                    <td style="font-weight:bold;color:black;" >
-                        Date
-                    </td>
-                    <td style="font-weight:bold;color:black;">
-                          Details
-                    </td>
-                    <td style="font-weight:bold;color:black;">
-                          Test
-                    </td>
-
-                    <td style="font-weight:bold;color:black;">
-
-                      <table>
-
-                        <tr><td style="font-weight:bold;color:black;">Medicine</td><td>D</td><td>T</td></tr>
-
-                      </table>
-                    </td>
-
-                </tr>
-                </thead>
-
-                <tbody>
-                {% for pre in presc_hist %}
-                <tr>
-
-                    <td>
-                        {{pre.user_id}}
-                    </td>
-
-                    <td>
-                        <h4 class="ui image header">
-                            <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
-                        </h4>
-                              {{pre.doctor_id}}
-
-
-                    </td>
-
-                    <td>
-                        {{pre.date}}
-                    </td>
-
-                    <td>
-                        {{pre.details}}
-                    </td>
-                    <td>
-                        {{pre.test}}
-                    </td>
-
-                    <td>
-                      <table>
-                        {% for medicine in medicines_presc %}
-                            {% if medicine.prescription_id.id == pre.id %}
-                                  <tr><td>{{medicine.medicine_id}}</td><td>{{medicine.days}}</td><td>{{medicine.times}}</td></tr>
-                            {% endif %}
-                        {% endfor%}
-                      </table>
-                    </td>
-                    <td>
-
-                        <input type="button" onclick="rem({{pre.pk}})" id="{{pre.pk}}" name="cancel" value="Cancel"class="ui large right floated primary button" />
-
-                    </td>
-
-                </tr>
-                {% endfor %}
-
-                </tbody>
-            </table>
-
-            <script>
-            function rem(id){
-
-			var dis = this;
-            var d = window.confirm('Are you sure, you want to cancel the prescription?');
-            if(d == false){
-                return;
-            }
-			     $('#'+id).parent().parent().remove();
-                                                      alert("prescription cancelled");
-
-					$.ajax({
-                             type:'post',
-                             url:'/healthcenter/compounder/',
-                            data: {'cancel_presc':id,},
-
-                            beforeSend: function(xhr) {
-               xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
-            },
-                            success: function(data){
-                                                    }
-                                                  });
-
-
-      }
-      </script>
-
-          </div>
-        </div>
 
 {% endblock %}

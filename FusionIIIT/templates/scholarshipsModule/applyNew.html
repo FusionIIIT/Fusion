@@ -3,7 +3,7 @@
     {% comment %}The tab menu starts here!{% endcomment %}
     <body>
     <div class="ui pointing secondary menu">
-        <a class="{% if last_clicked == 'get_mcm_flag' or last_clicked == ''  or last_clicked == 'Submit_mcm' or last_clicked == 'studentapprovesubmit_mcm' %} active item {% else %} item {% endif %}" data-tab="mcm">
+        <a class="{% if last_clicked == 'get_mcm_flag' or last_clicked == ''  or last_clicked == 'Submit_mcm' or last_clicked == 'studentapprovesubmit_mcm' or  last_clicked == 'Submit_previous_winner'%} active item {% else %} item {% endif %}" data-tab="mcm">
             Mcm Scholarship
         </a>
 
@@ -24,7 +24,7 @@
           </div>
      </div>
 
-    <div class="{% if last_clicked == 'get_mcm_flag' or last_clicked == ''  or last_clicked == 'Submit_mcm' or last_clicked == 'studentapprovesubmit_mcm'%} ui active tab {% else %} ui tab {% endif %}" data-tab="mcm" id="mcm_a">
+    <div class="{% if last_clicked == 'get_mcm_flag' or last_clicked == ''  or last_clicked == 'Submit_mcm' or last_clicked == 'studentapprovesubmit_mcm' or  last_clicked == 'Submit_previous_winner'%} ui active tab {% else %} ui tab {% endif %}" data-tab="mcm" id="mcm_a">
         <div class="ui vertical segment">
 <!-- Arihant: Notification feature for Mcm awards-->
           {% if show_mcm_flag == True %}
@@ -285,7 +285,7 @@
                 <div class=" two fields">
 
                     <div class=" field">
-                        <label>Required Attachments</label>
+                        <label>Required Attachments (upload ZIP only)</label>
                         <div class="ui large input">
                             <input placeholder="Income" type="file" name="income_certificate" required>
                         </div>
@@ -306,10 +306,16 @@
                 </div>
             </div>
             {% else %}
-            {% if notif_mcm_flag == True %}
-            <div class="ui button" id="apply_mcm_btn">
-              Apply
-            </div>
+            {% if x_notif_mcm_flag == True %}
+              {% if update_mcm_flag == True %}
+                <div class="ui button" id="update_mcm_btn">
+                  Update
+                </div>
+              {% else %}
+                <div class="ui button" id="apply_mcm_btn">
+                  Apply
+                </div>
+              {% endif %}
             {% else %}
             <div class="ui disabled button">
               Apply
@@ -321,7 +327,7 @@
 
 
 
-    <div class="{% if last_clicked == 'get_convocation_flag'  or last_clicked == 'Submit_silver' or last_clicked == 'Submit_gold' or last_clicked == 'Submit_dm' or last_clicked == 'studentapprovesubmit_con' %} ui active tab {% else %} ui tab {% endif %}" data-tab="medals">
+    <div class="{% if last_clicked == 'get_convocation_flag'  or last_clicked == 'Submit_silver' or last_clicked == 'Submit_gold' or last_clicked == 'Submit_dm' or last_clicked == 'studentapprovesubmit_con'%} ui active tab {% else %} ui tab {% endif %}" data-tab="medals">
             <div class="ui vertical segment" id="form_part1">
 <!-- Arihant: Notification feature for Convocation awards-->
               {%  if show_convocation_flag == True %}
@@ -350,10 +356,16 @@
                     <button type="button" class="ui primary large right floated button" onclick="java_script_:dis(1)" >Proceed</button>
                <br><br>
                {% else %}
-               {% if notif_convocation_flag == True %}
-               <div class="ui button" id="apply_convocation_btn">
-                 Apply
-               </div>
+               {% if x_notif_con_flag == True %}
+               {% if update_con_flag == True %}
+                 <div class="ui button" id="update_convocation_btn">
+                   Update
+                 </div>
+               {% else %}
+                 <div class="ui button" id="apply_convocation_btn">
+                   Apply
+                 </div>
+               {% endif %}
                {% else %}
                <div class="ui disabled button">
                  Apply
@@ -587,7 +599,7 @@
                                 <a class="right floated item">
                                <label><br></label>
                                <div class="seven wide field">
-                                   <label>Upload file</label>
+                                   <label>Upload file (Zip only)</label>
                                    <div class="ui fluid input">
                                        <input type="file" name="myfile" required>
                                    </div>
@@ -796,7 +808,7 @@
                                            <a class="right floated item">
                                           <label><br></label>
                                           <div class="seven wide field">
-                                              <label>Upload files</label>
+                                              <label>Upload files(Zip only)</label>
                                               <div class="ui fluid input">
                                                   <input type="file" name="myfile" required>
                                               </div>
@@ -932,7 +944,7 @@
                                         <a class="right floated item">
                                        <label><br></label>
                                        <div class="seven wide field">
-                                           <label>Upload file</label>
+                                           <label>Upload file (Zip only)</label>
                                            <div class="ui fluid input">
                                                <input type="file" name="myfile" required>
                                            </div>
@@ -1022,6 +1034,25 @@
                         }
                     });
                 });
+
+                $(document).on('click','#update_mcm_btn',function (event) {
+                        event.preventDefault();
+                        $.ajax({
+                            url: '/spacs/get_mcm_flag/',
+                            type: 'GET',
+                            success: function (response) {
+                                if(response.result==='Success'){
+                                location.reload();
+                                    console.log(response.result)
+                                }
+                                else{
+                                    console.log(response.result);
+                                }
+
+                            }
+                        });
+                    });
+
 //Arihant: after user presses accepts button for convocation notification
                 $(document).on('click','#apply_convocation_btn',function (event) {
                         event.preventDefault();
@@ -1040,6 +1071,24 @@
                             }
                         });
                     });
+
+                    $(document).on('click','#update_convocation_btn',function (event) {
+                            event.preventDefault();
+                            $.ajax({
+                                url: '/spacs/get_convocation_flag/',
+                                type: 'GET',
+                                success: function (response) {
+                                    if(response.result==='Success'){
+                                      location.reload();
+                                        console.log(response.result)
+                                    }
+                                    else{
+                                        console.log(response.result);
+                                    }
+
+                                }
+                            });
+                        });
         </script>
     <script>
     function dis(aval) {

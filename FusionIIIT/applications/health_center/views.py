@@ -8,6 +8,7 @@ from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 
 from applications.globals.models import ExtraInfo
+from notification.views import  healthcare_center_notif
 #from notification_channels.models import Notification
 
 from .models import (Ambulance_request, Appointment, Complaint, Constants,
@@ -75,7 +76,7 @@ def compounder_view(request):                                                   
                 a=User.objects.all()
 #                for user in a:
 #                    Notification.objects.create(notif_type='healthcenter',recipient=user,action_verb='appoiinted',display_text='New Doctor has been appointed : Dr.'+doctor)
-                data={'status':1}
+                data={'status':1, 'doctor':doctor, 'specialization':specialization, 'phone':phone}
                 return JsonResponse(data)
             elif 'remove_doctor' in request.POST:                              # remove doctor by changing active status
                 doctor=request.POST.get('doctor_active')
@@ -84,7 +85,7 @@ def compounder_view(request):                                                   
                 a=User.objects.all()
 #                for user in a:
 #                    Notification.objects.create(notif_type='healthcenter',recipient=user,action_verb='removed',display_text='Dr.'+doc+'will not be available from now')
-                data={'status':1}
+                data={'status':1, 'id':doctor, 'doc':doc}
                 return JsonResponse(data)
             elif 'discharge' in request.POST:                                        #
                 pk = request.POST.get('discharge')
@@ -135,6 +136,18 @@ def compounder_view(request):                                                   
 #                    Notification.objects.create(notif_type='healthcenter',recipient=user,action_verb='changed',display_text='Doctor Schedule has been changed')
                 data={'status':1}
                 return JsonResponse(data)
+            elif 'rmv' in request.POST:  # remove schedule for a doctor
+                doctor = request.POST.get('doctor')
+                day = request.POST.get('day')
+                Schedule.objects.filter(doctor_id=doctor, day=day).delete()
+                #doctor_id = Doctor.objects.get(id=doctor)
+
+                a = User.objects.all()
+                #                for user in a:
+                #                    Notification.objects.create(notif_type='healthcenter',recipient=user,action_verb='changed',display_text='Doctor Schedule has been changed')
+                data = {'status': 1}
+                return JsonResponse(data)
+
             elif 'add_medicine' in request.POST:
                 medicine = request.POST.get('new_medicine')
                 quantity = request.POST.get('new_quantity')
@@ -319,7 +332,9 @@ def compounder_view(request):                                                   
                     else:
                         status = 0
                     Medicine.objects.all().delete()
-#                    Notification.objects.create(notif_type='healthcenter',recipient=user.user,action_verb='prescribed',display_text='You have been prescribed for '+details)
+
+                healthcare_center_notif(request.user, user.user, 'presc')
+#                   Notification.objects.create(notif_type='healthcenter',recipient=user.user,action_verb='prescribed',display_text='You have been prescribed for '+details)
                 data = {'status': status, 'stock': stock}
                 return JsonResponse(data)
             elif 'prescribe_b' in request.POST:
@@ -381,9 +396,12 @@ def compounder_view(request):                                                   
                                 Stock.objects.filter(medicine_name=medicine_id).update(quantity=qty)
                                 quantity=quantity-quan
                         status = 1
+
                     else:
                         status = 0
                     Medicine.objects.all().delete()
+
+                healthcare_center_notif(request.user, user.user, 'presc')
 #                    Notification.objects.create(notif_type='healthcenter',recipient=user.user,action_verb='prescribed',display_text='You have been prescribed for '+details)
                 data = {'status': status}
                 return JsonResponse(data)
@@ -441,6 +459,7 @@ def student_view(request):                                                      
         if request.method == 'POST':
             if 'amb_submit' in request.POST:
                 user_id = ExtraInfo.objects.get(user=request.user)
+                comp_id = ExtraInfo.objects.filter(user_type='compounder')
                 reason = request.POST.get('reason')
                 start_date = request.POST.get('start_date')
                 end_date = request.POST.get('end_date')
@@ -454,15 +473,20 @@ def student_view(request):                                                      
                      reason=reason
                  )
                 data = {'status': 1}
+                healthcare_center_notif(request.user, request.user, 'amb_request')
+                for cmp in comp_id:
+                     healthcare_center_notif(request.user, cmp.user, 'amb_req')
 
                 return JsonResponse(data)
             elif "appointment" in request.POST:
                 user_id = ExtraInfo.objects.get(user=request.user)
+                comp_id = ExtraInfo.objects.filter(user_type='compounder')
                 doctor_id = request.POST.get('doctor')
                 doctor = Doctor.objects.get(id=doctor_id)
                 date = request.POST.get('date')
                 schedule = Schedule.objects.get(id=date)
                 datei = schedule.date
+                app_time = schedule.to_time
                 description = request.POST.get('description')
                 Appointment.objects.create(
                     user_id=user_id,
@@ -472,14 +496,20 @@ def student_view(request):                                                      
                     date=datei
                 )
                 data = {
-                        'status': 1
+                        'app_time': app_time, 'dt': datei
                         }
+                healthcare_center_notif(request.user, request.user, 'appoint')
+                for cmp in comp_id:
+                     healthcare_center_notif(request.user, cmp.user, 'appoint_req')
 
                 return JsonResponse(data)
             elif 'doctor' in request.POST:
                 doctor_id = request.POST.get('doctor')
-                schedule = Schedule.objects.filter(doctor_id=doctor_id)
+                #app_time = Schedule.objects.get(doctor_id=doctor_id)
                 days = Schedule.objects.filter(doctor_id=doctor_id).values('day')
+                today = datetime.today()
+                time = datetime.today().time()
+                sch = Schedule.objects.filter(date__gte=today)
 
                 for day in days:
                     for i in range(0, 7):
@@ -490,7 +520,8 @@ def student_view(request):                                                      
 
                             Schedule.objects.filter(doctor_id=doctor_id, day=dayi).update(date=date)
 
-                schedule = Schedule.objects.filter(doctor_id=doctor_id)
+                sch.filter(date=today, to_time__lt=time).delete()
+                schedule = sch.filter(doctor_id=doctor_id).order_by('date')
                 schedules = serializers.serialize('json', schedule)
                 return HttpResponse(schedules, content_type='json')
             elif 'feed_submit' in request.POST:

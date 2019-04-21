@@ -25,6 +25,10 @@ def leave_module_notif(sender, recipient, type, date=None):
         verb = "Your offline leave has been updated "
     elif type=='replacement_request':
         verb = "You have a replacement request "
+    elif type=='leave_request':
+        verb = "You have a leave request from "
+    elif type=='leave_withdrawn':
+        verb = "The leave has been withdrawn for " + date
     elif type=='replacement_cancel':
         verb = "Your replacement has been cancelled for "+date
 
@@ -45,20 +49,40 @@ def academics_module_notif(sender, recipient, type):
     module="Academic's Module"
     sender = sender
     recipient = recipient
-    verb = ''
+    verb = type
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
-def central_mess_notif(sender, recipient, type):
-    url='mess:mess'
-    module='Central Mess'
+def office_module_notif(sender, recipient):
+    url='office:officeOfRegistrar'
+    module="Academic's Module"
+    sender = sender
+    recipient = recipient
+    verb = "New file received"
+
+    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
+
+
+def central_mess_notif(sender, recipient, type, message=None):
+    url = 'mess:mess'
+    module = 'Central Mess'
     sender = sender
     recipient = recipient
     verb = ''
-    if type=='feedback_submitted':
-        verb='Your feedback has been successfully submitted.'
-    elif type=='menu_change_accepted':
-        verb='Menu request has been approved'
+    if type == 'feedback_submitted':
+        verb = 'Your feedback has been successfully submitted.'
+    elif type == 'menu_change_accepted':
+        verb = 'Menu request has been approved'
+    elif type == 'leave_request':
+        verb = message
+    elif type == 'vacation_request':
+        verb = 'Your vacation request has been' + message
+    elif type == 'meeting_invitation':
+        verb = message
+    elif type =='special_request':
+        verb = "Your special food request has been " + message
+    elif type == 'added_committee':
+        verb = "You have been added to the mess committee. "
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
@@ -78,18 +102,30 @@ def visitors_hostel_notif(sender, recipient, type):
     elif type =='cancellation_request_placed':
         verb='New Booking Cancellation Request '
     elif type =='booking_forwarded':
-        verb='New Forwarded Booking Request '     
+        verb='New Forwarded Booking Request '
     elif type =='booking_rejected':
         verb='Your Booking Request has been rejected '
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
 def healthcare_center_notif(sender, recipient, type):
-    url=''
+    url='healthcenter:healthcenter'
     module='Healthcare Center'
     sender = sender
     recipient = recipient
     verb = ''
+    if type == 'appoint':
+        verb = "Your Appointment has been booked"
+    if type == 'amb_request':
+        verb = "Your Ambulance request has been placed"
+    if type == 'Presc':
+        verb = "You have been prescribed some medicine"
+    if type == 'appoint_req':
+        verb = "You have a new appointment request"
+    if type == 'amb_req':
+        verb = "You have a new ambulance request"
+
+
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
@@ -103,7 +139,7 @@ def file_tracking_notif(sender, recipient, type):
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
 def scholarship_portal_notif(sender, recipient, type):
-    url='spacs:convener_view'
+    url='spacs:spacs'
     module='Scholarship Portal'
     sender = sender
     recipient = recipient
@@ -130,6 +166,9 @@ def scholarship_portal_notif(sender, recipient, type):
         verb = "Your Covocation form for D&M Proficiency Gold Medal has been rejected "
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
+
+
+
 def complaint_system_notif(sender, recipient, type):
     url=''
     module='Complaint System'
@@ -137,4 +176,28 @@ def complaint_system_notif(sender, recipient, type):
     recipient = recipient
     verb = ''
 
+    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
+
+def office_dean_PnD_notif(sender, recipient, type):
+    url = 'office:officeOfDeanPnD'
+    module = 'Office of Dean PnD Module'
+    sender=sender
+    recipient=recipient
+    verb=''
+    if type=='requisition_filed':
+        verb = "Your requisition has been successfully submitted."
+    elif type=='request_accepted':
+        verb = "Your requisition has been accepted."
+    elif type=='request_rejected':
+        verb = "Your requisition has been rejected."
+    elif type=='assignment_created':
+        verb = "Assignment has been created."
+    elif type=='assignment_received':
+        verb = "You have received an assignment."
+    elif type=='assignment_reverted':
+        verb = "Assignment has been reverted."
+    elif type=='assignment_approved':
+        verb = "Assignment has been approved."
+    elif type=='assignment_rejected':
+        verb = "Assignment has been rejected."
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)

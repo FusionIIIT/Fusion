@@ -1,0 +1,177 @@
+<html>
+<style>
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+  color: #4a4a4d;
+  font: 14px/1.4 "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+th,
+td {
+  padding: 10px 15px;
+  vertical-align: middle;
+}
+thead {
+  background: #395870;
+  background: black;
+  color: #fff;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+th:first-child {
+  border-top-left-radius: 5px;
+  text-align: left;
+}
+th:last-child {
+  border-top-right-radius: 5px;
+}
+tbody tr:nth-child(even) {
+  background: #f0f0f2;
+}
+td {
+  border-bottom: 1px solid #cecfd5;
+  border-right: 1px solid #cecfd5;
+}
+td:first-child {
+  border-left: 1px solid #cecfd5;
+}
+.book-title {
+  color: #395870;
+  display: block;
+}
+.text-offset {
+  color: #7c7c80;
+  font-size: 12px;
+}
+.item-stock,
+.item-qty {
+  text-align: center;
+}
+.item-price {
+  text-align: right;
+}
+.item-multiple {
+  display: block;
+}
+tfoot {
+  text-align: right;
+}
+tfoot tr:last-child {
+  background: #f0f0f2;
+  color: #395870;
+  font-weight: bold;
+}
+tfoot tr:last-child td:first-child {
+  border-bottom-left-radius: 5px;
+}
+tfoot tr:last-child td:last-child {
+  border-bottom-right-radius: 5px;
+}
+</style>
+<div class="eight wide row">
+
+          <div style="overflow:auto;">
+<table>
+  <tbody>
+   {% csrf_token %}
+
+    <tr>
+     <th>
+              id
+             </th>
+		<td>
+           {{ data.id}}
+         </td>
+    </tr>
+    <tr>
+
+             <th>
+                Indentor name
+             </th>
+			 <td>
+           {{data.indentor_name}}
+         </td>
+	</tr>
+	<tr>
+             <th>
+                Item name
+             </th>
+			 <td>
+             {{data.item_name}}
+          </td>
+	</tr>
+	<tr>
+             <th>
+                Expected cost
+             </th>
+			 <td>
+              {{data.expected_cost}}
+          </td>
+	</tr>
+	<tr>
+             <th>
+                 quantity
+             </th>
+			 <td>
+              {{data.quantity}}
+          </td>
+	</tr>
+	<tr>
+             <th>
+                  Purpose
+             </th>
+			 <td>
+              {{data.purpose}}
+          </td>
+	</tr>
+	<tr>
+             <th>
+                  Intended purchase date
+             </th>
+			 <td>
+              {{data.nature_of_item1}}
+          </td>
+	</tr>
+
+	<tr>
+
+             <th class="two wide row">
+                Expected date
+             </th>
+			 <td>
+              {{data.purchase_date}}
+          </td>
+	</tr>
+		<tr>
+             <th class="three wide row">
+                Amount
+             </th>
+			 <td>
+              {{data.amount}}
+          </td>
+		</tr>
+
+		<tr>
+             <th class="three wide row">
+                Nature
+             </th>
+			 <td>
+              {{data.registrar_approve_tag}}
+          </td>
+	</tr>
+
+	<tr>
+             <th class="four wide row">
+                Approval
+             </th>
+			 <td>
+             <button  class="approveme" m_id="{{data.id}}" >approve</button>
+          </td>
+    </tr>
+
+ </tbody>
+
+</table>
+</div>
+          </div>
+</html>
