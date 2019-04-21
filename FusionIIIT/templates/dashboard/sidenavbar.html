@@ -50,10 +50,10 @@
 			        <h4> Academics Module </h4>
 			    </a>
 			    {% endif %}
-
+-->
           <a class = "item" href="/gymkhana">
               <h4> Gymkhana Module </h4>
-          </a>-->
+          </a>
 
 
     			    <a class="item" href="{% url 'spacs:spacs' %}">
@@ -87,10 +87,10 @@
                             <a class="item" href="/library/library">
                                 <h4>Library Module</h4>
                             </a>
-<!--			    <a class="item" href="{% url 'filetracking:filetracking' %}">
+			    <a class="item" href="{% url 'filetracking:filetracking' %}">
 				<h4> File Tracking </h4>
 		            </a>
-		           -->
+		           
                         </div>
                     </div>
                 </div>
@@ -103,7 +103,7 @@
                 <i class="large inverted user icon right floated"></i>
             </a>
             <!--The Profile Item starts here!-->
-{% if "Dean_s" in all_designation %}
+{% if "Junior Superintendent" in all_designation or "Dean_s" in all_designation %}
 <a class="centered raised item" href="{% url 'office:officeOfDeanStudents'%}">
     <span class="inverted header">Office Of Dean Students</span>
     <i class="large inverted briefcase icon right floated"></i>

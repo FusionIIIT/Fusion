@@ -45,6 +45,75 @@
                     View Profile
                     <i class="right floated chevron right icon"></i>
                 </a>
+                {% if "Junior Superintendent" in all_designation or "Dean_s" in all_designation %}
+                <a class="item" href="{% url 'office:officeOfDeanStudents' %}">
+                    Office Of Dean Students
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+                <!--The email Item ends here!-->
+                {% if "Dean (RSPC)" in all_designation %}
+                <!--The Profile Item starts here!-->
+                <a class="item" href="{% url 'office:officeOfDeanRSPC'%}">
+                    Office Of Dean RSPC
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                {% endif %}
+                {% if "dracad" in all_designation %}
+                <a class="item" href="{% url 'office:officeOfDeanAcademics'%}">
+                    Office Of Dean Academics
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+                <!--The email Item ends here!-->
+
+                <!--The Profile Item starts here!-->
+                {% if "Director" in all_designation %}
+                <a class="item" href="{% url 'office:directorOffice'%}">
+                    Director Office
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+                <!--The email Item ends here!-->
+
+                <!--The Profile Item starts here!-->
+                {% if "PurchaseOfficer" in all_designation %}
+                <a class="item" href="{% url 'office:officeOfPurchaseOfficer'%}">
+                    Office Of Purchase Officer
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+                <!--The email Item ends here!-->
+
+                
+                <!--The Profile Item starts here!-->
+                {% if "Registrar" in all_designation %}
+                <a class="item" href="{% url 'office:officeOfRegistrar'%}">
+                    Office Of Registrar
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+                <!--The email Item ends here!-->
+
+                <!--The Profile Item starts here!-->
+                {% if 'Civil_JE' in all_designation or 'Civil_AE' in all_designation or 'Electrical_JE' in all_designation or 'Electrical_AE' in all_designation or 'EE' in all_designation or 'DeanPnD' in all_designation or 'Director' in all_designation %}
+                <a class="item" href="{% url 'office:officeOfDeanPnD'%}">
+                    Office Of P & D
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+                <!--The email Item ends here!-->
+
+
+                <!--The Profile Item starts here!-->
+                {% if "HOD (ME)" in all_designation or "HOD (NS)" in all_designation or "HOD (ECE)" in all_designation or "HOD (Design)" in all_designation or "HOD" in all_designation %}
+                <a class="citem" href="{% url 'office:officeOfHOD'%}">
+                    Office Of HOD
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                {% endif %}
+               
 
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}

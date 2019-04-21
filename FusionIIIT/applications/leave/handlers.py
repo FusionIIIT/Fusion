@@ -17,6 +17,7 @@ from .models import (Leave, LeaveRequest, LeaveSegment,
 from applications.globals.models import HoldsDesignation
 from notification.views import leave_module_notif
 import datetime
+from django.utils import timezone
 
 LeaveFormSet = formset_factory(LeaveSegmentForm, extra=0, max_num=3, min_num=1,
                                formset=BaseLeaveFormSet)
@@ -566,8 +567,9 @@ def process_student_application(request):
 def delete_leave_application(request):
     leave_id = request.POST.get('id')
     leave = request.user.all_leaves.filter(id=leave_id).first()
+    leave_start_date = LeaveSegment.objects.filter(leave=leave).first().start_date
     print(leave.status)
-    if leave and leave.applicant == request.user and leave.status != 'rejected':
+    if leave and leave.applicant == request.user and leave.status != 'rejected' and timezone.now().date() <= leave_start_date:
         rep_requests = ReplacementSegment.objects.filter(leave = leave)
         leave_requests = LeaveRequest.objects.filter(leave = leave)
         for i in rep_requests:
