@@ -66,6 +66,37 @@
                     <i class="right floated chevron right icon"></i>
                 </div>
 
+                <a class="item" data-tab="tab1content1" onclick="pnd()">
+                   Office of Dean P & D 
+                   <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="tab1content2" onclick="rspc()">
+                   Office of Dean RSPC
+                   <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="tab1content3" onclick="stud()">
+                    Office of Dean Students
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="tab1content4" onclick="acad()">
+                    Office of Dean Acad
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="tab1content5" onclick="purchase()">
+                    Puchase Office
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="tab1content6" onclick="registrar()">
+                    Registrar Office
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+
         </div>            
 
             <br/><br/><br/>
@@ -83,16 +114,64 @@
             The central-rail segment starts here!
         {% endcomment %}
 
-
-
-
-
-
-
+      
 
 
 
         <div class="ten wide column">
+             
+            <div class="ui tab" data-tab="tab1content1" id="pnd">
+                <div class="ui vertical segment">
+                    {% block tab1content1 %}
+                        {% include 'officeModule/directorOffice/deanP&D.html' %}
+                    {% endblock %}
+                </div>
+            </div>
+
+
+            <div class="ui tab" data-tab="tab1content2" id="rspc">
+                <div class="ui vertical segment">
+                    {% block tab1content2 %}
+                        {% include 'officeModule/directorOffice/deanRSPC.html' %}
+                    {% endblock %}
+                </div>
+            </div>
+
+
+            <div class="ui tab" data-tab="tab1content3" id="stud">
+                <div class="ui vertical segment">
+                    {% block tab1content3 %}
+                        {% include 'officeModule/directorOffice/deanStudents.html' %}
+                    {% endblock %}
+                </div>
+            </div>
+
+            <div class="ui tab" data-tab="tab1content4" id="acad">
+                <div class="ui vertical segment">
+                    {% block tab1content4 %}
+                        {% include 'officeModule/directorOffice/deanAcademics.html' %}
+                    {% endblock %}
+                </div>
+            </div>
+
+            <div class="ui tab" data-tab="tab1content5" id="purchase">
+                <div class="ui vertical segment">
+                    {% block tab1content5 %}
+                        {% include 'officeModule/directorOffice/purchaseOffice.html' %}
+                    {% endblock %}
+                </div>
+            </div>
+
+            <div class="ui tab" data-tab="tab1content6" id="registrar">
+                <div class="ui vertical segment">
+                    {% block tab1content6 %}
+                        {% include 'officeModule/directorOffice/registrar.html' %}
+                    {% endblock %}
+                </div>
+            </div>
+
+    
+
         <!-- Div for important links -->
         <div id="imp_links">
            <h3>IMPORTANT LINKS:</h3> <br>
@@ -395,7 +474,7 @@
         <div class="ui active tab" data-tab="tab9content1">
             <div class="ui vertical segment">
                 {% block tab9content1 %}
-                <table id="acad" class="ui very basic collapsing celled sortable table"
+                <table id="academic" class="ui very basic collapsing celled sortable table"
                 style='border: 1px solid lightgray'
                 style="padding-left: 5%;
                                                            padding-right: 5%;
@@ -861,6 +940,135 @@
         }
     </script>
 
+    <script type="text/javascript">
+        function pnd(){
+            $("#faculty").css("display","none");
+            $("#imp_links").css("display", "none");
+            $("#student_form").css("display","none");
+            $("#meeting_form").css("display","none");
+            $("#student").css("display", "none");
+            $("#error_div").css("display", "none");
+            $("#staff2").css("display","none");
+            $("#allmeetings").css("display", "none");
+
+             $("#pnd").css("display", "block");
+            $("#rspc").css("display", "none");
+            $("#acad").css("display", "none");
+            $("#stud").css("display", "none");
+            $("#purchase").css("display", "none");
+            $("#registrar").css("display", "none");
+        
+        }
+    </script>
+
+<script type="text/javascript">
+    function rspc(){
+        $("#faculty").css("display","none");
+        $("#imp_links").css("display", "none");
+        $("#student_form").css("display","none");
+        $("#meeting_form").css("display","none");
+        $("#student").css("display", "none");
+        $("#error_div").css("display", "none");
+        $("#staff2").css("display","none");
+        $("#allmeetings").css("display", "none");
+
+         $("#pnd").css("display", "none");
+        $("#rspc").css("display", "block");
+        $("#acad").css("display", "none");
+        $("#stud").css("display", "none");
+        $("#purchase").css("display", "none");
+        $("#registrar").css("display", "none");
+    
+    }
+</script>
+
+
+
+<script type="text/javascript">
+    function acad(){
+        $("#faculty").css("display","none");
+        $("#imp_links").css("display", "none");
+        $("#student_form").css("display","none");
+        $("#meeting_form").css("display","none");
+        $("#student").css("display", "none");
+        $("#error_div").css("display", "none");
+        $("#staff2").css("display","none");
+        $("#allmeetings").css("display", "none");
+
+         $("#pnd").css("display", "none");
+        $("#rspc").css("display", "none");
+        $("#acad").css("display", "block");
+        $("#stud").css("display", "none");
+        $("#purchase").css("display", "none");
+        $("#registrar").css("display", "none");
+    
+    }
+</script>
+    <script type="text/javascript">
+        function stud(){
+            $("#faculty").css("display","none");
+            $("#imp_links").css("display", "none");
+            $("#student_form").css("display","none");
+            $("#meeting_form").css("display","none");
+            $("#student").css("display", "none");
+            $("#error_div").css("display", "none");
+            $("#staff2").css("display","none");
+            $("#allmeetings").css("display", "none");
+
+             $("#pnd").css("display", "none");
+            $("#rspc").css("display", "none");
+            $("#acad").css("display", "none");
+            $("#stud").css("display", "block");
+            $("#purchase").css("display", "none");
+            $("#registrar").css("display", "none");
+        
+        }
+    </script>
+
+
+<script type="text/javascript">
+    function purchase(){
+        $("#faculty").css("display","none");
+        $("#imp_links").css("display", "none");
+        $("#student_form").css("display","none");
+        $("#meeting_form").css("display","none");
+        $("#student").css("display", "none");
+        $("#error_div").css("display", "none");
+        $("#staff2").css("display","none");
+        $("#allmeetings").css("display", "none");
+
+         $("#pnd").css("display", "none");
+        $("#rspc").css("display", "none");
+        $("#acad").css("display", "none");
+        $("#stud").css("display", "none");
+        $("#purchase").css("display", "block");
+        $("#registrar").css("display", "none");
+    
+    }
+</script>
+
+
+<script type="text/javascript">
+    function registrar(){
+        $("#faculty").css("display","none");
+        $("#imp_links").css("display", "none");
+        $("#student_form").css("display","none");
+        $("#meeting_form").css("display","none");
+        $("#student").css("display", "none");
+        $("#error_div").css("display", "none");
+        $("#staff2").css("display","none");
+        $("#allmeetings").css("display", "none");
+
+         $("#pnd").css("display", "none");
+        $("#rspc").css("display", "none");
+        $("#acad").css("display", "none");
+        $("#stud").css("display", "none");
+        $("#purchase").css("display", "none");
+        $("#registrar").css("display", "block");
+    
+    }
+</script>
+
     <!-- Script for faculty information -->
     <script type="text/javascript">
 
@@ -868,11 +1076,20 @@
             //$('#particular_stats').html('');
             $("#faculty").css("display","block");
             $("#imp_links").css("display", "none");
+            $("#staff2").css("display","none");
             $("#student_form").css("display","none");
             $("#meeting_form").css("display","none");
             $("#student").css("display", "none");
             $("#error_div").css("display", "none");
             $("#allmeetings").css("display", "none");
+            $("#pnd").css("display", "none");
+            $("#rspc").css("display", "none");
+            $("#acad").css("display", "none");
+            $("#stud").css("display", "none");
+            $("#purchase").css("display", "none");
+            $("#registrar").css("display", "none");
+
+        
             
             //alert("hey")
             $.ajax({
@@ -976,6 +1193,13 @@
             $("#student").css("display", "none");
             $("#error_div").css("display", "none");
             $("#allmeetings").css("display", "none");
+            $("#pnd").css("display", "none");
+            $("#rspc").css("display", "none");
+            $("#acad").css("display", "none");
+            $("#stud").css("display", "none");
+            $("#purchase").css("display", "none");
+            $("#registrar").css("display", "none");
+           
             
             
             $.ajax({
@@ -990,13 +1214,14 @@
                     //tr open
                     //$('#faculty_stats_table > tbody').html('')
                     //alert("inside success")
-                    $('#acad').children('tbody').html('')
+                    console.log(response.academic)
+                    $('#academic').children('tbody').html('')
                     //$('#particular_stats').html('');
                     //$('#cse_table').children('tbody').append('<tr>');
                     for(var i=0;i<response.academic.length;i=i+3){
-                        $('#acad').children('tbody').append('<tr>');
-                        $('#acad').children('tbody').append('<td>' + response.academic[i] + '</td> <td>' + response.academic[i+1] + '</td> <td>' + response.academic[i+2] + '</td>');
-                        $('#acad').children('tbody').append('</tr>');
+                        $('#academic').children('tbody').append('<tr>');
+                        $('#academic').children('tbody').append('<td>' + response.academic[i] + '</td> <td>' + response.academic[i+1] + '</td> <td>' + response.academic[i+2] + '</td>');
+                        $('#academic').children('tbody').append('</tr>');
                   
                     }
                     
@@ -1078,7 +1303,13 @@
             $("#student_form").css("display","block");
             $("#student").css("display","none");
             $("#allmeetings").css("display", "none");
-
+            $("#pnd").css("display", "none");
+            $("#rspc").css("display", "none");
+            $("#acad").css("display", "none");
+            $("#stud").css("display", "none");
+            $("#purchase").css("display", "none");
+            $("#registrar").css("display", "none");
+       
             
         });
 
@@ -1102,6 +1333,13 @@
             //$("#student_form").css("display","none");
             $("#meeting_form").css("display","none");
             $("#student").css("display","block");
+            $("#pnd").css("display", "none");
+            $("#rspc").css("display", "none");
+            $("#acad").css("display", "none");
+            $("#stud").css("display", "none");
+            $("#purchase").css("display", "none");
+            $("#registrar").css("display", "none");
+         
             
             $.ajax({
                 type: 'GET',
@@ -1165,6 +1403,13 @@
             $("#student").css("display","none");
             $("#meeting_form").css("display","block");
             $("#error_div").css("display", "none");
+            $("#pnd").css("display", "none");
+            $("#rspc").css("display", "none");
+            $("#acad").css("display", "none");
+            $("#stud").css("display", "none");
+            $("#purchase").css("display", "none");
+            $("#registrar").css("display", "none");
+         
             $.ajax({
                 type: 'GET',
                 url: '/office/directorOffice/meeting_dropdown',
@@ -1284,6 +1529,13 @@
             $("#meeting_form").css("display","none");
             $("#student").css("display", "none");
             $("#error_div").css("display", "none");
+            $("#pnd").css("display", "none");
+            $("#rspc").css("display", "none");
+            $("#acad").css("display", "none");
+            $("#stud").css("display", "none");
+            $("#purchase").css("display", "none");
+            $("#registrar").css("display", "none");
+        
             
 
             $.ajax({
