@@ -178,7 +178,7 @@
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
 
-                {% if "Junior Superintendent" not in Curr_desig and "Dean_s" not in Curr_desig %}
+                {% if "student" in Curr_desig %}
 
                     <a class="item" data-tab="first">
                         Apply
@@ -190,13 +190,13 @@
                     </a>
                 {% endif %}
 
-                <a class="item" data-tab="twelth">
+                <a class="active item" data-tab="twelth">
                     View Club Details
                     <i class="right floated chevron right icon"></i>
                 </a>
 
                 {% if "co-ordinator" in Curr_desig or "co co-ordinator" in Curr_desig %}
-                    <a class="item" data-tab="fifth">
+                    <a class=" item" data-tab="fifth">
                         New Session
                         <i class="right floated chevron right icon"></i>
                     </a>
@@ -349,7 +349,7 @@
             </div>
             {% comment %}The Publications ends here!{% endcomment %}
 
-            <div class="ui tab segment" data-tab="twelth">
+            <div class="ui active  tab segment" data-tab="twelth">
                 {% block view_budget %}
                     {% include 'gymkhanaModule/club_details.html' %}
                 {% endblock %}

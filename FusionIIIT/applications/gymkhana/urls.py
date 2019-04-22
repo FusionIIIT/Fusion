@@ -24,4 +24,5 @@ urlpatterns = [
     url(r'^faculty_data/$', views.facultyData, name='faculty_data'),
     url(r'^students_data/$', views.studentsData, name='students_data'),
     url(r'^delete_sessions/$', views.delete_sessions, name='delete_sessions'),
+    url(r'^delete_memberform/$', views.delete_memberform, name='delete_memberform'),
 ]
