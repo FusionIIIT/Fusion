@@ -32,7 +32,7 @@ class AcademicTimetableForm(forms.ModelForm):
     """
     class Meta:
         model = Timetable
-        fields = ('year', 'programme', 'time_table',)
+        fields = ('year', 'programme',)
 
 
 class ExamTimetableForm(forms.ModelForm):

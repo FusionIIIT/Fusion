@@ -54,10 +54,11 @@ urlpatterns = [
     url(r'^officeOfHOD/$', views.officeOfHOD, name='officeOfHOD'),
     url(r'^officeOfHOD/submit/$',views.teaching_form,name='teaching_form'),
     url(r'^officeOfHOD/work/$',views.hod_work,name='hod_work'),
+    url(r'^officeOfHOD/ta_assign/$',views.ta_assign,name='ta_assign'),
+    url(r'^officeOfHOD/hod_action/$',views.hod_action,name='hod_action'),
+
+
     url(r'^genericModule/', views.genericModule, name='genericModule'),
-
-
-
     url(r'^deleteitem/',views.delete_item, name='delete_item'),
     url(r'^deletevendor/(?P<id>[0-9]+)',views.delete_vendor, name='delete_vendor'),
     url(r'^editvendor/(?P<id>[0-9]+)',views.edit_vendor, name='edit_vendor'),
@@ -109,4 +110,5 @@ urlpatterns = [
     url(r'^officeOfDeanAcademics/scholarship', views.scholarship, name='scholarship'),
     url(r'^officeOfDeanAcademics/semresults', views.semresults, name='semresults'),
     url(r'^officeOfDeanAcademics/thesis', views.thesis, name='thesis'),
+
 ]

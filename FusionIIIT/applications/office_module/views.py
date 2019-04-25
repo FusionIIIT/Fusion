@@ -13,6 +13,9 @@ from django.db import IntegrityError
 from applications.academic_procedures.models import Thesis
 from applications.globals.models import (Designation, ExtraInfo,
                                          HoldsDesignation, User)
+from applications.academic_information.models import (Course, Grades,
+                                                      Instructor, Meeting, Spi,
+                                                      Student,Timetable)
 from applications.scholarships.models import Mcm
 from applications.filetracking.models import (File, Tracking)
 from applications.eis.models import emp_research_projects, emp_patents, emp_consultancy_projects
@@ -552,8 +555,24 @@ def upload(request):
 def officeOfHOD(request):
     pro = Teaching_credits1.objects.filter(tag=0)
     pro1 = Assigned_Teaching_credits.objects.all()
+    inst_list = Instructor.objects.all()[1:20]
+    mtech_list = Student.objects.filter(programme='M.TECH')[1:30]
+    course_tt =  Timetable.objects.all()
+    project=Project_Registration.objects.filter(project_type='SRes')
+    proj_con=Project_Registration.objects.filter(project_type='Consultancy')
+    testing=Project_Registration.objects.filter(project_type='Testing')
+    ta_details = TA_assign.objects.all()
 
-    context = {'pro':pro,'pro1':pro1}
+
+    context = {'pro':pro,'pro1':pro1,
+                'inst_list':inst_list,
+                'mtech_list':mtech_list,
+                'course_tt':course_tt,
+                'project':project,
+                'testing':testing,
+                'proj_con':proj_con,
+                'ta_details':ta_details
+                }
     return render(request, "officeModule/officeOfHOD/officeOfHOD.html", context)
 
 
@@ -1029,18 +1048,21 @@ def closure_details(request, pr_id):
 
 # DEAN RSPC MODULE ENDS HERE ..........................................................................................
 
-
+# This view is used to forward the request to DEAN RSPV
+# HOD just reviews the form forwarded to him/her and could only forward the form to the dean rspv
 
 def hod_action(request):
     if 'forward' in request.POST:
-        id=request.POST.get('id')
-        obj=Project_Registration.objects.get(pk=id)
+        id=request.POST.get('title')
+        print(id)
+        obj=Project_Registration.objects.get(project_title=id)
         print(obj.HOD_response)
         if obj.HOD_response == 'Pending' or obj.HOD_response == 'pending' :
             obj.HOD_response='Forwarded'
             obj.save()
+    context ={}
 
-    return HttpResponseRedirect('/office/eisModulenew/profile/')
+    return HttpResponseRedirect('/office/officeOfHOD/')
 
 def hod_closure(request):
     if 'forward' in request.POST:
@@ -1088,47 +1110,177 @@ def genericModule(request):
     context = {}
     return render(request, "officeModule/genericModule/genericModule.html", context)
 
-
-
-
-
-
-
-
-
+# This function is used to submit the form request filled by the TAs for their respective course
+# assignment , Ta selects few courses form the m.tech/ph.d course list and forward their choice to
+# hod , HOD assigns one of these courses to the m.tech/phd student
 
 @login_required
 def teaching_form(request):
-    roll_no=request.POST.get('roll_no')
-    name=request.POST.get('name')
-    programme=request.POST.get('programme')
-    branch=request.POST.get('branch')
-    course1=request.POST.get('course1')
-    course2=request.POST.get('course2')
-    course3=request.POST.get('course3')
+    form = TeachingCreditsform()
+    if request.method == "POST":
+        form = Teaching_credits1(request.POST)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.roll_no = request.roll_no
+            post.name = request.name
+            post.programme=request.programme
+            post.branch=request.branch
+            post.course1=request.course1
+            post.course2=request.course2
+            post.course3=request.course3
+            post.save()
+            return render(request, "officeModule/officeOfHOD/officeOfHOD.html")
+    else:
+        return render(request, "officeModule/officeOfHOD/officeOfHOD1.html")
 
-    request_obj = Teaching_credits1(roll_no=roll_no,name=name, programme=programme, branch=branch,
-                                     course1=course1, course2=course2, course3=course3)
-    print("===================================================================")
-    request_obj.save()
-    context={}
-    return render(request,"officeModule/officeOfHOD/tab4content4.html",context)
+# Function to Display assigned Teaching credits list to user
+# IT sets tag of element to 1
+# this function assigns courses to the TAs
+# one of the n (here 3) courses is assigned to the TAs by the HOD
 
 @login_required
 def hod_work(request):
     roll_no=request.POST.get('roll_no')
     tc = Teaching_credits1.objects.get(roll_no=roll_no)
     assigned_course=request.POST.get('assigned_course')
+    print(assigned_course)
     request_obj1 = Assigned_Teaching_credits(roll_no=tc,assigned_course=assigned_course)
     request_obj1.save()
     tc.tag=1
     tc.save()
     context={}
-    return render(request,"officeModule/officeOfHOD/tab4content4.html",context)
-    """return HttpResponseRedirect('')"""
-    """return render(request,"officeModule/officeOfHOD/tab4content1.html",context)"""
+    return HttpResponseRedirect('/office/officeOfHOD/')
+
+# A function to check if the current TA has any other Teaching Assistant duties in the given time
+# bracket. If he/she already has any assigned duty, then current request will be discarded with a
+# suitable alert message
+@login_required
+def check_ta_duty(request ,day,s_time,e_time):
+    ta_details = TA_assign.objects.all()
+    roll_no=str(request.POST.get('roll'))
+
+    print('roll number check duty is ',roll_no)
+    s_time=s_time
+    e_time=e_time
+    day=day
+    roll_number = roll_no
+
+# To check if there exist a TA in database , if not then he/she has balance = 2 else balance is what saved in
+# the database
+    ta_existing = TA_assign.objects.filter(roll_no = roll_number)
+    if not ta_existing:
+        balance = 2
+    else:
+        balance = ta_existing[0].balance
+
+    message = "Checking"
+    if balance == 0:
+        message = "TA is booked"
+        return message
+
+# check for day and time clashes of assigned duty and current duty in hand, if clash then show suitable alert
+# message
+    for instance in ta_existing:
+        if instance.day == day:
+            if ((s_time<=instance.s_time and (e_time>=instance.s_time and e_time<=instance.e_time))
+             or (s_time>=instance.s_time and (e_time>=instance.s_time and e_time<=instance.e_time)) 
+             or (s_time<=instance.s_time and e_time>=instance.e_time) 
+             or ((s_time>=instance.s_time and s_time<=instance.e_time) and e_time>=instance.e_time)):     
+                message = 'Already Booked for that time' 
+                return message
+            
+    return message
 
 
+
+# To assign teaching duties to TAs - this function retrives various field of TA_assign model
+# and submit the form request to the database
+@login_required
+def ta_assign(request):
+
+    roll_no=str(request.POST.get('roll'))
+    inst=request.POST.get('inst')
+    instructor_obj = Instructor.objects.get(pk = inst)
+    course=request.POST.get('course')
+    role=str(request.POST.get('role'))
+
+    #print(inst)
+    #print(instructor_obj)
+
+    course_name_is = instructor_obj.course_id
+    course_id_is = instructor_obj.course_id.id
+
+    print(instructor_obj.course_id, instructor_obj.course_id.id)
+
+# if there is no such course in timetable model table please add it from the admin page
+# timetable model links to courses via foreign key relationship
+# timetable has one-to-many relationship with course
+# for a single course in course table there can be multiple courses in time-table table with
+# different day and time pairs
+
+    tt_obj = Timetable.objects.filter(course_id = instructor_obj.course_id.id)
+
+# Check if there is no such in timetable model show a suitable warning explaining what to be done
+# This redirects to the home page with a message context
+
+    if not tt_obj:
+        warning = 'Academic Information team please ',course_name_is,' to the time-table table. Course in Course table but not in TT table'
+        messages.add_message(request, messages.WARNING, warning)
+        return HttpResponseRedirect('/office/officeOfHOD/')
+
+    #course_per_week = tt_obj.count()
+    #print(course_per_week)
+
+# Assign TA duties for each course in time table field i.e for all the classes/lab assigned to that course
+# in that week at different times
+
+    for items in tt_obj:
+        s_time = items.s_time
+        e_time = items.e_time
+        day = items.day
+
+        #print(s_time,e_time)
+
+        obj = TA_assign(roll_no=roll_no,
+            instructor=instructor_obj,
+            course=course,
+            day=day,
+            s_time=s_time,
+            e_time=e_time,
+            role=role, 
+            )
+
+# Call check function to resolve the clashes, if clash show suitable warning
+
+        message = check_ta_duty(request ,day,s_time,e_time)
+        print(message)    
+        
+        if message == 'Checking':
+            print("new ta assigned")
+            obj.save()
+        else:
+            print("message")
+
+            messages.add_message(request, messages.INFO, message)
+            return HttpResponseRedirect('/office/officeOfHOD/')
+
+# Function to decrement the balance of a ta once a course is assigned to him/her
+# currently only 2 courses is assumed i.e default balance = 2
+# balance 2 means 2 courses regardless of any number of times of occurance of that course
+# throughout the week
+
+    ta_existing = TA_assign.objects.filter(roll_no = roll_no)
+    if ta_existing:
+        balance_was = ta_existing[0].balance
+        for items in ta_existing:
+            items.balance = balance_was-1
+            items.save()
+
+    context={'roll_no':roll_no}
+
+# Conclude the assignment process by sucess message
+    messages.add_message(request, messages.SUCCESS, 'TA Assigned successfully.')
+    return HttpResponseRedirect('/office/officeOfHOD/')
 
 def genericModule(request):
     context = {}

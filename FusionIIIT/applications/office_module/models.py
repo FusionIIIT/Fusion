@@ -7,6 +7,7 @@ from applications.academic_information.models import (Course, Grades,
                                                       Student)
 from applications.academic_procedures.models import Thesis
 from applications.filetracking.models import Tracking
+from applications.academic_procedures.models import CoursesMtech
 from applications.globals.models import (DepartmentInfo, Designation,
                                          ExtraInfo, Faculty, HoldsDesignation,
                                          Staff)
@@ -31,6 +32,11 @@ class Constants:
         ('accept', 'accept'),
         ('reject', 'reject')
 
+    )
+
+    TA_ROLE = (
+        ('Head TA', 'Head TA'),
+        ('Course TA', 'Course TA')
     )
     STATUS = (
         ('0', 'unseen'),
@@ -88,7 +94,7 @@ class Constants:
         ('Pending' , 'Pending')
     )
 
-    TICK_TYPE = (
+    TICK_TYPE1 = (
         ('NO', 'YES'),
         ('NO', 'NO')
     )
@@ -132,7 +138,6 @@ APPROVE_TAG = (
 
     ('0', "Pending"),
     ('1', "Approve"),
-    ('-1',"Rejected"),
 )
 
 
@@ -164,6 +169,7 @@ ITEM_TYPE = (
     ('1', "Consumable"),
 
 )
+
 
 
 
@@ -519,16 +525,14 @@ class Auto_fair_claim(models.Model):
 
 
 class Teaching_credits1(models.Model):
-    roll_no = models.CharField(max_length=100,primary_key=True)
+    roll_no = models.CharField(max_length=100 ,primary_key=True)
     name = models.CharField(max_length=100)
-    programme = models.CharField(max_length=100)
-    branch = models.CharField(max_length=100)
-    course1 = models.CharField(choices=Constants.TICK_TYPE,
-                                      max_length=100, default='NO')
-    course2 = models.CharField(choices=Constants.TICK_TYPE,
-                                      max_length=100, default='NO')
-    course3 = models.CharField(choices=Constants.TICK_TYPE,
-                                      max_length=100, default='NO')
+    programme = models.CharField(max_length=100,default = 'M.TECH')
+    branch = models.CharField(max_length=100,default='CSE')
+    course1 = models.ForeignKey(CoursesMtech, null = True, related_name='course1', on_delete=models.SET_NULL)
+    course2 = models.ForeignKey(CoursesMtech, null = True, related_name='course2', on_delete=models.SET_NULL)
+    course3 = models.ForeignKey(CoursesMtech, null = True, related_name='course3', on_delete=models.SET_NULL)
+
     tag = models.IntegerField(default=0)
     class Meta:
         db_table = 'Teaching_credits1'
@@ -538,9 +542,14 @@ class Teaching_credits1(models.Model):
 
 class Assigned_Teaching_credits(models.Model):
     roll_no = models.ForeignKey(Teaching_credits1, on_delete=models.CASCADE)
-    assigned_course = models.CharField(max_length=100,default='NO')
+    #assigned_course = models.ForeignKey(CoursesMtech,null = True, related_name='mtechcourse4', on_delete=models.SET_NULL)
+    assigned_course = models.CharField(max_length=100,null = True)
+    branch = models.CharField(max_length=100,default='CSE')
+    programme = models.CharField(max_length=100,default='M.TECH')
     class Meta:
         db_table = 'Assigned_Teaching_credits'
+    def __str__(self):
+        return '{} - {}'.format(self.roll_no, self.assigned_course)
 
 
 class Lab(models.Model):
@@ -556,14 +565,24 @@ class Lab(models.Model):
         return str(self.lab)
 
 class TA_assign(models.Model):
-    roll_no = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE, related_name='TA_id')
-    lab = models.ForeignKey(Lab, on_delete=models.CASCADE)
+    instructor = models.ForeignKey(Instructor, on_delete=models.CASCADE)
+    #roll_no = models.ForeignKey(Assigned_Teaching_credits, on_delete=models.CASCADE, related_name='TA_id')
+    #roll_no = models.CharField(max_length=10,choices = [(x) for x in mtechlist], null=True)
+    roll_no = models.CharField(max_length=10,default=2016192)
+    #lab = models.ForeignKey(Lab, on_delete=models.CASCADE)
+    course = models.CharField(max_length=100 ,null=True,default='Data structure and Algorithm')
+    day = models.CharField(max_length=10,choices=Constants.DAY_CHOICES, default='Monday')
+    s_time = models.TimeField(null=False)
+    e_time = models.TimeField(null=False)
+
+
+    role = models.CharField(max_length=10,choices=Constants.TA_ROLE, default='Head_TA')
     balance = models.IntegerField(default=2)
     class Meta:
         db_table = 'TA_assign'
 
     def __str__(self):
-        return str(self.id)
+        return '{} - {} - {} - {}'.format(self.roll_no, self.instructor,self.day, self.s_time)
 
 class Registrar_response(models.Model):
     track_id = models.ForeignKey(Tracking, on_delete=models.CASCADE, related_name='t_id')

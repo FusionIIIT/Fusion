@@ -1,54 +1,41 @@
-<form>
-
+<form action="{%url 'office:ta_assign' %}" method ="POST">
+    {% csrf_token %}
     {% comment %}The add a new skill Accordian starts here!{% endcomment %}
-	
-    <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
-        
-            <div class="field">
-                <label>Lab</label>
-                <select class="ui search fluid dropdown">
-                    <option value="">lab</option>
-                    <option value="fest1">lab #1</option>
-                    <option value="fest2">lab #2</option>
-                    <option value="fest3">lab #3</option>
-                    <option value="Others">lab #4</option>
+    <div class="ui form" style="padding-left: 24px; padding-right: 24px;">
+        <div class="field">
+            <label>Course - Faculty</label>
+            <select class="ui selection dropdown" name="inst">
+                <option value="">lab</option>
+                {% for obj in inst_list %}
+                <option value='{{obj.pk}}'>{{obj.course_id.course_name }} - {{obj.instructor_id.user}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="three fields">
+            <div class="eight wide field">
+                <label>Teaching Assistants</label>
+                <select class="ui selection dropdown" name="roll" id='roll'>
+                    <option value="">TA</option>
+                    {% for obj in mtech_list %}
+                    <option value='{{obj.id.id}}'>{{obj.id.id}}</option>
+                    {% endfor %}
                 </select>
             </div>
-			
-			
-        <div class="ui header">
-           Date and Time
+            <div class="eight wide field">
+                <label>Role</label>
+                <select class="ui selection dropdown" name="role">
+                    <option value="">Role</option>
+                    <option value='Head TA'>Head TA</option>
+                    <option value='Course TA'>Course TA</option>
+                    <option value='Course TA'>Lab TA</option>
+                </select>
+            </div>
         </div>
-		<div class="two fields">
-                    <div class="field">
-                        <label>From</label>
-                        <div class="ui calendar" id="rangestart">
-                            <div class="ui input left icon">
-                                <i class="calendar icon"></i>
-                                <input type="datetime-local" placeholder="from">
-                            </div>
-                        </div>
-                    </div>
-					
-					<div class="field">
-                        <label>To</label>
-                        <div class="ui calendar" id="rangeend">
-                            <div class="ui input left icon">
-                                <i class="calendar icon"></i>
-                                <input type="datetime-local" placeholder="to">
-                            </div>
-                        </div>
-                    </div>
-		</div>
-
         <div class="field">
-            <button class="ui primary button right floated" type="submit">
-                Submit
+            <button class="ui primary button right floated" type="submit" onclick="myFunction()">
+            Submit
             </button>
         </div>
     </div>
 </form>
-
 <br>
-<br>
-<div class="ui divider"></div>

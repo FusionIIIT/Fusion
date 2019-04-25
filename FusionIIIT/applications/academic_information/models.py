@@ -10,6 +10,14 @@ class Constants:
         ('vacation', 'vacation')
     )
 
+    DAY_CHOICES = (
+        ('Monday', 'Monday'),
+        ('Tuesday', 'Tuesday'),
+        ('Wednesday', 'Wednesday'),
+        ('Thursday', 'Thursday'),
+        ('Friday', 'Friday'),
+    )
+
     ATTEND_CHOICES = (
         ('present', 'present'),
         ('absent', 'absent')
@@ -148,7 +156,7 @@ class Instructor(models.Model):
         db_table = 'Instructor'
         unique_together = ('course_id', 'instructor_id')
 
-    def __self__(self):
+    def __str__(self):
         return '{} - {}'.format(self.course_id, self.instructor_id)
 
 
@@ -165,14 +173,25 @@ class Spi(models.Model):
         return self.sem
 
 
+# time table extends the course table via foreign key
+# time table can have multipole occurance of the same course with different day-time 
 class Timetable(models.Model):
     upload_date = models.DateTimeField(auto_now_add=True)
-    time_table = models.FileField(upload_to='Administrator/academic_information/')
-    year = models.IntegerField(default="2015")
-    programme = models.CharField(max_length=30, default="B.Tech")
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    Schedule = models.FileField(upload_to='Administrator/academic_information/',blank=True,null=True)
+    year = models.IntegerField(default="2019")
+    programme = models.CharField(max_length=20,
+                                      choices=Constants.PROGRAMME, null=True)
+    day = models.CharField(max_length=10,choices=Constants.DAY_CHOICES, default='Monday')
+    s_time = models.TimeField(null=False)
+    e_time = models.TimeField(null=False)
+
 
     class Meta:
         db_table = 'Timetable'
+    def __str__(self):
+        return '{} - {} - {} - {}'.format(self.course_id, self.day, self.s_time, self.e_time)
+
 
 
 class Exam_timetable(models.Model):

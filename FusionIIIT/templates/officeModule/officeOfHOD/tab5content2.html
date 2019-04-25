@@ -1,0 +1,30 @@
+<form action="{%url 'office:hod_action' %}" method ="POST">
+    {% csrf_token %}
+    {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+    <div class="ui form" style="padding-left: 24px; padding-right: 24px;">
+        <table class="ui celled table">
+            <thead>
+                <tr>
+                    <th class="three wide">Mentor</th>
+                    <th class="five wide">Project Title</th>
+                    <th class="three wide">Sponsored agency</th>
+                    <th class="one wide">Duration</th>
+                    <th class="two wide">Status</th>
+                    <th class="four wide">HOD Response</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for obj1 in proj_con %}
+                <tr>
+                        <td> <input value="{{obj1.PI_id.user}}" class="ui large input" name="roll_no" readonly style="border: 0;"> </td>
+                        <td> <input value="{{obj1.project_title}}" class="ui large input" name="title" readonly style="border: 0;"> </td>
+                        <td> <input value="{{obj1.sponsored_agency}}" class="ui large input" name="programme" readonly style="border: 0;"> </td>
+                        <td> <input value="{{obj1.duration}}" class="ui large input" name="assigned_course" readonly style="border: 0;"></td>
+                        <td> <input value="{{obj1.HOD_response}}" class="ui large input" name="assigned_course" readonly style="border: 0;"></td>
+                        <td> <button class="ui primary button" type="Submit" name="Forward">Forward</button></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</form>

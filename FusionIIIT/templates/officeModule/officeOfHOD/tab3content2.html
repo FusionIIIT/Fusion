@@ -1,37 +1,31 @@
 <form>
-
     {% comment %}The add a new skill Accordian starts here!{% endcomment %}
-	 
-    <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
-        <div class="ui vertical segment">
-           <table class="ui fixed single line celled table" style="padding: 8px; font-size:12px; padding-left: 24px; padding-right: 24px;">
-			
-             <thead>
-                <tr><th>Roll No</th>
-                <th>Name</th>
-				<th>Programme</th>
-				<th>Lab</th>
-                <th>Lab Instructor</th>
-				<th>Date</th>
-				<th>Time</th>
-			</tr></thead>
-			
-			<tbody>
-				<tr>
-				<td></td>
-				<td></td>
-				<td></td>
-				<td></td>
-				<td></td>
-				<td></td>
-	            <td></td>
-			    </tr>
-              
-			</tbody>
-		</table>
-		<br>
-		
-            <div class="ui divider"></div>
-	</div>
-</div>
+    <div class="ui form" style="padding-left: 24px; padding-right: 24px;">
+        <table class="ui celled table">
+            <thead>
+                <tr>
+                    <th class="three wide">Roll No</th>
+                    <th class="one wide">Name</th>
+                    <th class="two wide">Programme</th>
+                    <th class="five wide">Course - Faculty</th>
+                    <th class="two wide">Day</th>
+                    <th class="four wide">Time</th>
+                </tr>
+            </thead>
+            
+            <tbody>
+                {% for obj1 in ta_details %}
+                <tr>
+                    <td><input value="{{obj1.roll_no}}" class="ui large input" name="roll_no" readonly style="border: 0;"></td>
+                    <td><input value=" - " class="ui large input" name="name" readonly style="border: 0;"></td>
+                    <td><input value="M.TECH" class="ui large input" name="programme" readonly style="border: 0;"></td>
+                    <td><input value="{{obj1.instructor.course_id}} - {{obj1.instructor.instructor_id.user}}" class="ui large input" name="course" readonly style="border: 0;"></td>
+                    <td><input value="{{obj1.day}}" class="ui large input" name="day" readonly style="border: 0;"></td>
+                    <td><input value="{{obj1.s_time}} - {{obj1.e_time}}" class="ui large input" name="time" readonly style="border: 0;"></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            
+        </table>
+    </div>
 </form>
