@@ -14,3 +14,4 @@ admin.site.register(Student_attendance)
 admin.site.register(Grades)
 admin.site.register(Calendar)
 admin.site.register(Holiday)
+#Hello!
