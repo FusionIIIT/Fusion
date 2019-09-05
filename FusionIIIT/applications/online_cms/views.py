@@ -14,7 +14,7 @@ from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
 
-from applications.academic_information.models import (Course, Instructor,
+from applications.academic_information.models import (Course, Curriculum_Instructor,
                                                       Student)
 from applications.academic_procedures.models import Register
 from applications.globals.models import ExtraInfo
@@ -40,13 +40,13 @@ def viewcourses(request):
         register = Register.objects.filter(student_id=student, semester=semester(roll))
         courses = collections.OrderedDict()
         for reg in register:
-            instructor = Instructor.objects.get(course_id=reg.course_id)
+            instructor = Curriculum_Instructor.objects.get(course_id=reg.course_id)
             courses[reg] = instructor
         return render(request, 'coursemanagement/coursemanagement1.html',
                       {'courses': courses,
                        'extrainfo': extrainfo})
     else:
-        instructor = Instructor.objects.filter(instructor_id=extrainfo)
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
         return render(request, 'coursemanagement/coursemanagement1.html',
                       {'instructor': instructor,
                        'extrainfo': extrainfo})
@@ -63,7 +63,7 @@ def course(request, course_code):
         student = Student.objects.get(id=extrainfo)
         roll = student.id.id[:4]
         course = Course.objects.filter(course_id=course_code, sem=semester(roll))
-        instructor = Instructor.objects.get(course_id=course[0])
+        instructor = Curriculum_Instructor.objects.get(course_id=course[0])
         videos = CourseVideo.objects.filter(course_id=course[0])
         slides = CourseDocuments.objects.filter(course_id=course[0])
         quiz = Quiz.objects.filter(course_id=course)
@@ -114,7 +114,7 @@ def course(request, course_code):
                        'Lecturer': lec})
 
     else:
-        instructor = Instructor.objects.filter(instructor_id=extrainfo)
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.course_id.course_id == course_code:
                 course = ins.course_id
@@ -199,7 +199,7 @@ def upload_assignment(request, course_code):
 def add_document(request, course_code):
     extrainfo = ExtraInfo.objects.get(user=request.user)
     if extrainfo.user_type == "faculty":
-        instructor = Instructor.objects.filter(instructor_id=extrainfo)
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.course_id.course_id == course_code:
                 course = ins.course_id
@@ -264,7 +264,7 @@ def add_videos(request, course_code):
     extrainfo = ExtraInfo.objects.get(user=request.user)
 
     if extrainfo.user_type == "faculty":
-        instructor = Instructor.objects.filter(instructor_id=extrainfo)
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.course_id.course_id == course_code:
                 course = ins.course_id
@@ -308,12 +308,12 @@ def forum(request, course_code):
         roll = student.id.id[:4]
         course = Course.objects.get(course_id=course_code, sem=semester(roll))
     else:
-        instructor = Instructor.objects.filter(instructor_id=extrainfo)
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.course_id.course_id == course_code:
                 course = ins.course_id
     comments = Forum.objects.filter(course_id=course).order_by('comment_time')
-    instructor = Instructor.objects.get(course_id=course)
+    instructor = Curriculum_Instructor.objects.get(course_id=course)
     if instructor.instructor_id.user.pk == request.user.pk:
         lec = 1
     else:
@@ -336,7 +336,7 @@ def ajax_reply(request, course_code):
         roll = student.id.id[:4]
         course = Course.objects.get(course_id=course_code, sem=semester(roll))
     else:
-        instructor = Instructor.objects.filter(instructor_id=extrainfo)
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.course_id.course_id == course_code:
                 course = ins.course_id
@@ -367,7 +367,7 @@ def ajax_new(request, course_code):
         roll = student.id.id[:4]
         course = Course.objects.get(course_id=course_code, sem=semester(roll))
     else:
-        instructor = Instructor.objects.filter(instructor_id=extrainfo)
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.course_id.course_id == course_code:
                 course = ins.course_id
@@ -414,7 +414,7 @@ def ajax_remove(request, course_code):
 def add_assignment(request, course_code):
     extrainfo = ExtraInfo.objects.get(user=request.user)
     if extrainfo.user_type == "faculty":
-        instructor = Instructor.objects.filter(instructor_id=extrainfo)
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.course_id.course_id == course_code:
                 course = ins.course_id
@@ -454,7 +454,7 @@ def edit_bank(request, course_code, qb_code):
     extrainfo = ExtraInfo.objects.get(user=user)
     lec = 1
     if extrainfo.user_type == "faculty":
-        instructor = Instructor.objects.filter(instructor_id=extrainfo)
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.course_id.course_id == course_code:
                 course = ins.course_id
@@ -485,7 +485,7 @@ def create_bank(request, course_code):
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
     if extrainfo.user_type == "faculty":
-        instructor = Instructor.objects.filter(instructor_id=extrainfo)
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.course_id.course_id == course_code:
                 course = ins.course_id
@@ -499,7 +499,7 @@ def remove_bank(request, course_code):
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
     if extrainfo.user_type == "faculty":
-        instructor = Instructor.objects.filter(instructor_id=extrainfo)
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.course_id.course_id == course_code:
                 course = ins.course_id
@@ -568,7 +568,7 @@ def edit_qb_topics(request, course_code, qb_code, topic_id):
     extrainfo = ExtraInfo.objects.get(user=user)
     lec = 1
     if extrainfo.user_type == "faculty":
-        instructor = Instructor.objects.filter(instructor_id=extrainfo)
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.course_id.course_id == course_code:
                 course = ins.course_id
@@ -670,7 +670,7 @@ def create_quiz(request, course_code):
     extrainfo = ExtraInfo.objects.get(user=request.user)
 
     if extrainfo.user_type == 'faculty':
-        instructor = Instructor.objects.filter(instructor_id=extrainfo)
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.course_id.course_id == course_code:
                 course = ins.course_id
@@ -762,7 +762,7 @@ def edit_quiz(request, course_code, quiz_code):
     extrainfo = ExtraInfo.objects.get(user=request.user)
     if extrainfo.user_type == 'faculty':
         lec = 1
-        instructor = Instructor.objects.filter(instructor_id=extrainfo)
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.course_id.course_id == course_code:
                 course = ins.course_id
@@ -796,7 +796,7 @@ def edit_quiz_topic(request, course_code, quiz_code, topic_id):
     extrainfo = ExtraInfo.objects.get(user=user)
     lec = 1
     if extrainfo.user_type == "faculty":
-        instructor = Instructor.objects.filter(instructor_id=extrainfo)
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.course_id.course_id == course_code:
                 course = ins.course_id
@@ -829,7 +829,7 @@ def remove_quiz_question(request, course_code, quiz_code, topic_id):
 def add_question_topicwise(request, course_code, quiz_id):
     extrainfo = ExtraInfo.objects.get(user=request.user)
     if extrainfo.user_type == 'faculty':
-        instructor = Instructor.objects.filter(instructor_id=extrainfo)
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.course_id.course_id == course_code:
                 course = ins.course_id
@@ -875,7 +875,7 @@ def add_questions_to_quiz(request, course_code, quiz_id):
 def preview_quiz(request, course_code, quiz_code):
     extrainfo = ExtraInfo.objects.get(user=request.user)
     if extrainfo.user_type == 'faculty':
-        instructor = Instructor.objects.filter(instructor_id=extrainfo)
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.course_id.course_id == course_code:
                 course = ins.course_id
