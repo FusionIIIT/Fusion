@@ -3,7 +3,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from . import views
 
-app_name = 'office'
+app_name = 'office_module'
 
 urlpatterns = [
 

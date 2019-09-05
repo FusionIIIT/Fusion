@@ -33,7 +33,7 @@ from django.views.decorators.csrf import csrf_protect
     5.    HoldsDesignation  |  designation     |  Designation of the active user
 """
 Dean = HoldsDesignation.objects.get(designation=Designation.objects.filter(name='Dean_s')).working
-Superintendent = HoldsDesignation.objects.get(designation=Designation.objects.filter(name='Junior Superintendent')).working
+Superintendent = HoldsDesignation.objects.filter(designation=Designation.objects.filter(name='Junior Superintendent')).first()
 
 def getUniversalContext(request, page, err_msg = 'none', success_msg = 'none', flag_dean_s=False, flag_superintendent=False ):
     budget_app = Club_budget.objects.all().filter(status='open')
