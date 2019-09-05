@@ -1,6 +1,6 @@
  {% block tab4content3 %}
  <h3 align="center"> Teaching Credits Application Form </h3><br><br>
-<form action="{%url 'office:teaching_form' %}" method ="POST">
+<form action="{%url 'office_module:teaching_form' %}" method ="POST">
     {% comment %}The add a new skill Accordian starts here!{% endcomment %}
     <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
          {% csrf_token %}

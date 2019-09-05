@@ -1,6 +1,6 @@
 {% block tab4content1 %}
 {% for obj in pro %}
-<form action="{%url 'office:hod_work' %}" method ="POST">
+<form action="{%url 'office_module:hod_work' %}" method ="POST">
     {% comment %}The add a new skill Accordian starts here!{% endcomment %}
     <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
          {% csrf_token %}   
