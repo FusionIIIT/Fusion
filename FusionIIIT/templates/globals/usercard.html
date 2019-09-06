@@ -10,13 +10,7 @@
          style="max-width: 320px;">
 
         <div class="image">
-		{% if user.extrainfo.profile_picture %}
-			<img src="{{ user.extrainfo.profile_picture.url }}">
-		{% elif user.extrainfo.user_type == "student" or user.extrainfo.user_type == "staff" %}
-			<img src="{% static 'globals/img/zlatan.jpg' %}">
-		{% else %}
-			<img src="{% static 'globals/img/zlatan.jpg' %}">
-		{% endif %}
+            <img src="{% static 'globals/img/zlatan.jpg' %}">
         </div>
 
         <div class="content">
