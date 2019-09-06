@@ -2,9 +2,7 @@
 {% load static %}
 
 
-{% block title %}
-    Academic
-{% endblock %}
+
 
 
 {% block body %}
@@ -28,40 +26,16 @@
             <div class="ui divider"></div>
 
             {% comment %}The Tab-Menu starts here!{% endcomment %}
-            <div class="ui huge fluid vertical pointing menu" 
+            <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
-                    <a class="active item" data-tab="register">
+                
+               <a class="active item" data-tab="register">
                         <B>Verify Registered Courses</B>
                         <i class="right floated chevron right icon"></i>
                     </a>
                     <a class="item" data-tab="result">Results
                         <i class="right floated chevron right icon"></i>
                     </a>
-                    <a class="item" href="/aims/" >
-                    Generate Student List
-                    <i class="right floated chevron right icon"></i>
-                    </a>
-                    <a class="item" href="/aims/add_new_profile">
-                    Manage Students Profile
-                    <i class="right floated chevron right icon"></i>
-                    </a>
-                    <a class="item" href="/aims/update_calendar">
-                   Academic Calendar
-                   <i class="right floated chevron right icon"></i>
-                    </a>
-                    <a class="item" href="/aims/add_timetable">
-                    Time Tables
-                    <i class="right floated chevron right icon"></i>
-                </a>
-                    <a class="item" href="/aims/float_course">
-                    Float Courses for Next Sem
-                    <i class="right floated chevron right icon"></i>
-                </a>
-                
-                <a class="item" href="/aims/view_curriculum">
-                    Curriculum
-                    <i class="right floated chevron right icon"></i>
-                </a>
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
         </div>
@@ -74,6 +48,10 @@
         {% endcomment %}
         <div class="eight wide column">
 
+        {% comment %}
+            Kartik
+        {% endcomment %}
+
 
 
             <div class="ui active tab segment" data-tab="register" >
@@ -83,7 +61,6 @@
             <div class="ui tab segment" data-tab="result">
                 {%  include 'academic_procedures/result.html' %}
             </div>
-            
         </div>
         {% comment %}The central-rail segment ends here!{% endcomment %}
 
@@ -109,5 +86,4 @@
     <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
     <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
     <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
-</script>
 {% endblock %}
