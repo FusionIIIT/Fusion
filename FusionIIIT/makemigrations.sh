@@ -19,7 +19,3 @@ python manage.py makemigrations visitor_hostel
 python manage.py makemigrations allauth
 python manage.py makemigrations pagedown
 python manage.py makemigrations markdown_deux
-python manage.py makemigrations allauth.account
-python manage.py makemigrations allauth.socialaccount
-python manage.py makemigrations allauth.socialaccount.providers.google
-
