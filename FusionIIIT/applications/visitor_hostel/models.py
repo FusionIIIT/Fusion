@@ -64,11 +64,11 @@ class VisitorDetail(models.Model):
 
 
 class RoomDetail(models.Model):
+    visitor = models.ManyToManyField(VisitorDetail, blank=True)
     room_number  = models.CharField(max_length=4, unique=True)
     room_type = models.CharField(max_length=12, choices=ROOM_TYPE)
     room_floor = models.CharField(max_length=12, choices=ROOM_FLOOR)
     room_status  = models.CharField(max_length=20, choices=ROOM_STATUS, default='Available')
-    visitor = models.ManyToManyField(VisitorDetail, blank=True)
 
     def __str__(self):
         return self.room_number
@@ -126,8 +126,8 @@ class Bill(models.Model):
     room_bill = models.IntegerField(default=0)
     payment_status = models.BooleanField(default=False)
 
-    # def __str__(self):
-    #     return '%s ----> %s - %s id is %s' % (self.booking.id, self.meal_bill, self.room_bill, self.payment_status)
+    def __str__(self):
+        return '%s ----> %s - %s id is %s' % (self.booking.id, self.meal_bill, self.room_bill, self.payment_status)
 
 
 class Inventory(models.Model):
