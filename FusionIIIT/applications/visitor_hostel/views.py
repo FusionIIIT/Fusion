@@ -124,12 +124,11 @@ def visitorhostel(request):
     # completed booking bills
 
     completed_booking_bills = {}
-    all_bills = Bill.objects.all()
+    all_bills = Bill.objects.select_related()
 
     current_balance = 0
     for bill in all_bills:
-        #completed_booking_bills[bill.id] = {'intender': str(bill.booking.intender), 'booking_from': str(bill.booking.booking_from),
-                                           # 'booking_to': str(bill.booking.booking_to), 'total_bill': str(bill.meal_bill + bill.room_bill)}
+        completed_booking_bills[bill.id] = {'intender': str(bill.booking.intender), 'booking_from': str(bill.booking.booking_from), 'booking_to': str(bill.booking.booking_to), 'total_bill': str(bill.meal_bill + bill.room_bill)}
         current_balance = current_balance+bill.meal_bill + bill.room_bill
 
     for inv_bill in inventory_bill:
@@ -244,7 +243,7 @@ def visitorhostel(request):
                    # 'num_rooms' : list(range(1, booking.number_of_rooms_alloted+1)),
                    # 'num_rooms' :list(range(1, booking.number_of_rooms_alloted+1)),
                    'previous_visitors': previous_visitors,
-                   #'completed_booking_bills': completed_booking_bills,
+                   'completed_booking_bills': completed_booking_bills,
                    'current_balance': current_balance,
                    'rejected_bookings': rejected_bookings,
                    'cancel_booking_request': cancel_booking_request,
