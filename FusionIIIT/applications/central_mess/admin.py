@@ -3,7 +3,7 @@ from django.contrib import admin
 from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
                      Mess_minutes, Mess_reg, Messinfo, Monthly_bill,
                      Nonveg_data, Nonveg_menu, Payments, Rebate,
-                     Special_request, Vacation_food)
+                     Special_request, Vacation_food,MessBillBase)
 
 # Register your models here.
 
@@ -177,6 +177,14 @@ class FeedbackAdmin(admin.ModelAdmin):
     list_display = ('student_id', 'fdate', 'description', 'feedback_type')
 
 
+class MessBillBaseAdmin(admin.ModelAdmin):
+    model = MessBillBase
+    fieldsets = [
+        ('bill_amount', {'fields': ['bill_amount']})
+        ]
+    list_display = ('bill_amount', 'timestamp')
+
+
 admin.site.register(Mess_minutes, Mess_minutesAdmin),
 admin.site.register(Messinfo, MessinfoAdmin),
 admin.site.register(Menu, MenuAdmin),
@@ -190,4 +198,5 @@ admin.site.register(Nonveg_menu, Nonveg_menuAdmin),
 admin.site.register(Nonveg_data, Nonveg_dataAdmin),
 admin.site.register(Mess_meeting, Mess_meetingAdmin),
 admin.site.register(Feedback, FeedbackAdmin),
+admin.site.register(MessBillBase,MessBillBaseAdmin),
 admin.site.register(Menu_change_request, Menu_change_requestAdmin)
