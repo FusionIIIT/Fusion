@@ -64,6 +64,7 @@ instance/
 .webassets-cache
 
 # Django stuff:
+migrations
 db.sqlite3
 
 # PyBuilder
