@@ -101,8 +101,8 @@ class BookingDetail(models.Model):
     booking_date = models.DateField(auto_now_add=False, auto_now=False, default=timezone.now)
     bill_to_be_settled_by = models.CharField(max_length=15, choices=BILL_TO_BE_SETTLED_BY ,default ="Intender")
     
-    def __unicode__(self):
-        return '%s ----> %s - %s id is %s and category is %s' % (self.intender, self.visitor, self.status, self.id, self.visitor_category)
+    def __str__(self):
+        return '%s ----> %s - %s id is %s and category is %s' % (self.id, self.visitor, self.status, self.id, self.visitor_category)
 
 
 class MealRecord(models.Model):
