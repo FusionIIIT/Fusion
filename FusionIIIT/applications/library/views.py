@@ -36,7 +36,7 @@ def libraryModule(request):
         j=0
         import requests
         from bs4 import BeautifulSoup
-        url1 = "http://172.27.20.250/webopac/"
+        url1 = "http://softgranth.iiitdmj.ac.in/webopac/"
         url2 ="frmissuesofuser.aspx?title=Issue%20Details%20of%20The%20%20Members"
         #r2 = requests.get(url1+url2)
         r1 = requests.get(url1)
