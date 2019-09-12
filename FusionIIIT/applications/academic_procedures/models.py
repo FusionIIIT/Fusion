@@ -68,6 +68,9 @@ class Register(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     semester = models.IntegerField()
 
+    class Meta:
+        db_table = 'Register'
+
     def __str__(self):
         return str(self.curr_id)
 
@@ -112,6 +115,9 @@ class StudentRegistrationCheck(models.Model):
     pre_registration_flag = models.BooleanField(default = False)
     final_registration_flag = models.BooleanField(default = False)
     semester = models.IntegerField(default=1)
+
+    class Meta:
+        db_table = 'StudentRegistrationCheck'
         
 
 class InitialRegistrations(models.Model):
@@ -119,6 +125,9 @@ class InitialRegistrations(models.Model):
     semester = models.IntegerField()
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     batch = models.IntegerField(default =datetime.datetime.now().year )
+
+    class Meta:
+        db_table = 'InitialRegistrations'
 
 
 class FinalRegistrations(models.Model):
@@ -128,12 +137,18 @@ class FinalRegistrations(models.Model):
     batch = models.IntegerField(default =datetime.datetime.now().year )
     verified = models.BooleanField(default=False)
 
+    class Meta:
+        db_table = 'FinalRegistrations'
+
 
 class Thesis(models.Model):
     reg_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     supervisor_id = models.ForeignKey(Faculty, on_delete=models.CASCADE)
     topic = models.CharField(max_length=1000)
+
+    class Meta:
+        db_table = 'Thesis'
 
     def __str__(self):
         return str(self.topic) + " " + str(self.student_id)
@@ -156,6 +171,9 @@ class ThesisTopicProcess(models.Model):
     approval_by_hod = models.BooleanField(default = False)
     date = models.DateField(default=datetime.datetime.now)
 
+    class Meta:
+        db_table = 'ThesisTopicProcess'
+
     def __str__(self):
         return str(self.thesis_topic) + " " + str(self.student_id)
 
@@ -177,6 +195,8 @@ class TeachingCreditRegistration(models.Model):
     approved_course = models.ForeignKey(Curriculum, on_delete = models.CASCADE, related_name='%(class)s_approved_course', null = True)
     course_completion = models.BooleanField(default=False)
     supervisor_id = models.ForeignKey(Faculty, on_delete=models.CASCADE, related_name='%(class)s_supervisor_id',null = True)
+    class Meta:
+        db_table = 'TeachingCreditRegistration'
 
 
 class SemesterMarks(models.Model):
@@ -189,9 +209,15 @@ class SemesterMarks(models.Model):
     grade = models.CharField(max_length=5, choices=Constants.GRADE, null=True)
     curr_id = models.ForeignKey(Curriculum, on_delete=models.CASCADE)
 
+    class Meta:
+        db_table = 'SemesterMarks'
+
 
 class MarkSubmissionCheck(models.Model):
     curr_id = models.ForeignKey(Curriculum)
     verified = models.BooleanField(default = False)
     submitted = models.BooleanField(default = False)
     announced = models.BooleanField(default = False)
+
+    class Meta:
+        db_table = 'MarkSubmissionCheck'

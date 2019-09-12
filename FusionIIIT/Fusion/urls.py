@@ -46,6 +46,7 @@ urlpatterns = [
                                           namespace='procedures')),
     url(r'^aims/', include('applications.academic_information.urls')),
     url(r'^notifications/', include(notifications.urls, namespace='notifications')),
+
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL,
