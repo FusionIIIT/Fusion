@@ -66,9 +66,6 @@ class Club_info(models.Model):
     def __str__(self):
         return str(self.club_name)
 
-    class Meta:
-        db_table = 'Club_info'
-
 
 class Club_member(models.Model):
     id = models.AutoField(max_length=20, primary_key=True)
@@ -82,9 +79,6 @@ class Club_member(models.Model):
 
     def __str__(self):
         return str(self.member.id)
-
-    class Meta:
-        db_table = 'Club_member'
 
 
 class Core_team(models.Model):
@@ -101,9 +95,6 @@ class Core_team(models.Model):
     def __str__(self):
         return str(self.student_id)
 
-    class Meta:
-        db_table = 'Core_team'
-
 
 class Club_budget(models.Model):
     id = models.AutoField(max_length=20, primary_key=True)
@@ -118,9 +109,6 @@ class Club_budget(models.Model):
 
     def __str__(self):
         return str(self.id)
-
-    class Meta:
-        db_table = 'Club_budget'
 
 
 class Session_info(models.Model):
@@ -139,9 +127,6 @@ class Session_info(models.Model):
     def __str__(self):
         return str(self.id)
 
-    class Meta:
-        db_table = 'Session_info'
-
 
 class Club_report(models.Model):
     id = models.AutoField(max_length=20, primary_key=True)
@@ -155,9 +140,6 @@ class Club_report(models.Model):
 
     def __str__(self):
         return str(self.id)
-
-    class Meta:
-        db_table = 'Club_report'
 
 
 class Fest_budget(models.Model):
@@ -174,9 +156,6 @@ class Fest_budget(models.Model):
     def __str__(self):
         return str(self.id)
 
-    class Meta:
-        db_table = 'Fest_budget'
-
 
 class Other_report(models.Model):
     id = models.AutoField(max_length=20, primary_key=True)
@@ -189,9 +168,6 @@ class Other_report(models.Model):
 
     def __str__(self):
         return str(self.id)
-
-    class Meta:
-        db_table = 'Other_report'
 
 
 class Change_office(models.Model):
@@ -209,6 +185,3 @@ class Change_office(models.Model):
 
     def __str__(self):
         return self.id
-
-    class Meta:
-        db_table = 'Change_office'

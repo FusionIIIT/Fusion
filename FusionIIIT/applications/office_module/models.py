@@ -174,7 +174,6 @@ class Assistantship(models.Model):
     action = models.IntegerField(default=0)
     comments = models.CharField(null=True,blank=True,max_length=150);
     class Meta:
-        db_table = 'Assistantship'
         unique_together = ('student_id','instructor_id')
     def __str__(self):
         return '{} - {}'.format(self.student_id, self.instructor_id)
@@ -311,7 +310,6 @@ class Member(models.Model):
 	meeting_id = models.ForeignKey(Meeting)
 
 	class Meta:
-		db_table = 'Member'
 		unique_together = (('member_id', 'meeting_id'))
 
 	def __str__(self):
@@ -352,9 +350,6 @@ class vendor(models.Model):
     vendor_address = models.CharField(max_length=200)
     vendor_item = models.CharField(max_length=200)
 
-    class Meta:
-        db_table = 'vendor'
-
 
 class apply_for_purchase(models.Model):
     indentor_name = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE,related_name='indentor_name')
@@ -386,17 +381,11 @@ class apply_for_purchase(models.Model):
     expected_cost = models.IntegerField(default=0)
     quantity = models.IntegerField(default=0)
 
-    class Meta:
-        db_table = 'apply_for_purchase'
-
 class stock(models.Model):
     item_name = models.CharField(max_length=100)
     quantity = models.IntegerField(default='0')
 
     item_type = models.IntegerField(choices=ITEM_TYPE, default='0')
-
-    class Meta:
-        db_table = 'stock'
 
 
 class purchase_commitee(models.Model) :
@@ -407,17 +396,11 @@ class purchase_commitee(models.Model) :
     approve_mem2 = models.IntegerField(choices=APPROVE_TAG, default ='0')
     approve_mem3 = models.IntegerField(choices=APPROVE_TAG, default ='0')
 
-    class Meta:
-        db_table = 'purchase_commitee'
-
 
 class quotations(models.Model) :
     quotation1 = models.FileField()
     quotation2 = models.FileField()
     quotation3 = models.FileField()
-
-    class Meta:
-        db_table = 'quotations'
 
 
 class Registrar_File(models.Model):
@@ -486,9 +469,6 @@ class LTC(models.Model):
     advance = models.IntegerField(default=0)
     family_details = models.TextField(max_length=500)
 
-    class Meta:
-        db_table = 'LTC'
-
     def __str__(self):
         return str(self.id)
 
@@ -499,8 +479,6 @@ class CPDA(models.Model):
     PF_no = models.CharField(max_length=100)
     purpose = models.CharField(max_length=100)
     amoutn = models.IntegerField(default=0)
-    class Meta:
-        db_table = 'CPDA'
 
     def __str__(self):
         return str(self.id)
@@ -514,8 +492,6 @@ class Auto_fair_claim(models.Model):
     auto_contact = models.IntegerField(default=0)
     bill =  models.FileField(upload_to='hod/')
     date = models.DateField();
-    class Meta:
-        db_table = 'auto_fair_claim'
 
 
 class Teaching_credits1(models.Model):
@@ -530,8 +506,6 @@ class Teaching_credits1(models.Model):
     course3 = models.CharField(choices=Constants.TICK_TYPE,
                                       max_length=100, default='NO')
     tag = models.IntegerField(default=0)
-    class Meta:
-        db_table = 'Teaching_credits1'
     def __str__(self):
         return str(self.roll_no)
 
@@ -539,8 +513,7 @@ class Teaching_credits1(models.Model):
 class Assigned_Teaching_credits(models.Model):
     roll_no = models.ForeignKey(Teaching_credits1, on_delete=models.CASCADE)
     assigned_course = models.CharField(max_length=100,default='NO')
-    class Meta:
-        db_table = 'Assigned_Teaching_credits'
+
 
 
 class Lab(models.Model):
@@ -549,8 +522,6 @@ class Lab(models.Model):
     day = models.CharField(max_length=10,choices=Constants.DAY_CHOICES, default='Monday')
     s_time = models.CharField(max_length=6, default='0:00')
     e_time = models.CharField(max_length=6, default='0:00')
-    class Meta:
-        db_table = 'Lab'
 
     def __str__(self):
         return str(self.lab)
@@ -559,8 +530,6 @@ class TA_assign(models.Model):
     roll_no = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE, related_name='TA_id')
     lab = models.ForeignKey(Lab, on_delete=models.CASCADE)
     balance = models.IntegerField(default=2)
-    class Meta:
-        db_table = 'TA_assign'
 
     def __str__(self):
         return str(self.id)
@@ -569,8 +538,6 @@ class Registrar_response(models.Model):
     track_id = models.ForeignKey(Tracking, on_delete=models.CASCADE, related_name='t_id')
     remark = models.CharField(max_length=50, default='')
     status = models.CharField(max_length=20, default='')
-    class Meta:
-        db_table = 'Registrar_response'
 
     def __str__(self):
         return str(self.id)+" "+str(track_id)+status

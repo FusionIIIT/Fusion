@@ -72,9 +72,6 @@ class Award_and_scholarship(models.Model):
     award_name = models.CharField(max_length=100, default='')
     catalog = models.TextField(max_length=5000)
 
-    class Meta:
-        db_table = 'Award_and_scholarship'
-
     def __str__(self):
         return self.award_name
 
@@ -117,10 +114,6 @@ class Mcm(models.Model):
     date = models.DateField(default=datetime.date.today)
     award_id = models.ForeignKey(Award_and_scholarship, default=4)
 
-
-    class Meta:
-        db_table = 'Mcm'
-
     def __str__(self):
         return str(self.student)
 
@@ -131,19 +124,12 @@ class Notional_prize(models.Model):
     year = models.CharField(max_length=10, choices=Constants.batch)
     award_id = models.ForeignKey(Award_and_scholarship, default=4)
 
-
-    class Meta:
-        db_table = 'Notional_prize'
-
 #Addition: a column programme added
 class Previous_winner(models.Model):
     student = models.ForeignKey(Student)
     programme = models.CharField(max_length=10,default='B.Tech')
     year = models.IntegerField(default=datetime.datetime.now().year)
     award_id = models.ForeignKey(Award_and_scholarship)
-
-    class Meta:
-        db_table = 'Previous_winner'
 
 
 #To Do:to reduce the last unused column
@@ -158,9 +144,6 @@ class Release(models.Model):
     notif_visible = models.IntegerField(default=1)
     award_form_visible = models.IntegerField(default=0)
 
-    class Meta:
-        db_table = 'Release'
-
 #Abhilash: new class added for keeping track of notifications and applied application by students
 class Notification(models.Model):
     release_id = models.ForeignKey(Release,default=None)
@@ -172,9 +155,6 @@ class Notification(models.Model):
     def __str__(self):
         return str(self.student_id)
 
-    class Meta:
-        db_table = 'Notification'
-
 class Application(models.Model):
     application_id = models.CharField(max_length = 100, primary_key=True)
     student_id = models.ForeignKey(ExtraInfo, on_delete = models.CASCADE)
@@ -183,9 +163,6 @@ class Application(models.Model):
 
     def __str__(self):
         return str(self.application_id)
-
-    class Meta:
-        db_table = 'Application'
 
 class Director_silver(models.Model):
     nearest_policestation = models.TextField(max_length=30, default='station')
@@ -206,10 +183,6 @@ class Director_silver(models.Model):
     grand_total = models.IntegerField(null=True)
     nearest_policestation = models.CharField(max_length=25, null=True)
     nearest_railwaystation = models.CharField(max_length=25, null=True)
-
-
-    class Meta:
-        db_table = 'Director_silver'
 
 
 class Proficiency_dm(models.Model):
@@ -247,10 +220,6 @@ class Proficiency_dm(models.Model):
     nearest_railwaystation = models.CharField(max_length=25, null=True)
 
 
-    class Meta:
-        db_table = 'Proficiency_dm'
-
-
 class Director_gold(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     status = models.CharField(max_length=10,choices=Constants.STATUS_CHOICES, default='INCOMPLETE')
@@ -282,6 +251,3 @@ class Director_gold(models.Model):
     grand_total = models.IntegerField(null=True)
     nearest_policestation = models.CharField(max_length=25, null=True)
     nearest_railwaystation = models.CharField(max_length=25, null=True)
-
-    class Meta:
-        db_table = 'Director_gold'

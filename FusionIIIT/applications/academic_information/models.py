@@ -85,9 +85,6 @@ class Course(models.Model):
     course_name = models.CharField(max_length=100)
     course_details = models.TextField(max_length=200)
 
-    class Meta:
-        db_table = 'Course'
-
     def __str__(self):
         return self.course_name
 
@@ -95,7 +92,7 @@ class Course(models.Model):
 class Curriculum(models.Model):
     curriculum_id = models.AutoField(primary_key=True)
     course_code = models.CharField(max_length = 20)
-    course_id = models.ForeignKey(Course)
+    course_id = models.ForeignKey(Course,on_delete=models.CASCADE)
     credits = models.IntegerField()
     course_type = models.CharField(choices=Constants.COURSE_TYPE, max_length=25)
     programme = models.CharField(choices=Constants.PROGRAMME, max_length=10)
@@ -106,7 +103,6 @@ class Curriculum(models.Model):
     floated = models.BooleanField(default=False)
 
     class Meta:
-        db_table = 'Curriculum'
         unique_together = ('course_code', 'batch', 'programme')
 
     def __str__(self):
@@ -119,7 +115,6 @@ class Curriculum_Instructor(models.Model):
     chief_inst = models.BooleanField(default=False)
 
     class Meta:
-        db_table = 'Curriculum_Instructor'
         unique_together = ('curriculum_id', 'instructor_id')
 
     def __self__(self):
@@ -135,9 +130,6 @@ class Student_attendance(models.Model):
     date = models.DateField()
     present = models.BooleanField(default=False)
 
-    class Meta:
-        db_table = 'Student_attendance'
-
     def __self__(self):
         return self.course_id
 
@@ -149,9 +141,6 @@ class Meeting(models.Model):
     agenda = models.TextField()
     minutes_file = models.CharField(max_length=40)
 
-    class Meta:
-        db_table = 'Meeting'
-
     def __str__(self):
         return self.date
 
@@ -160,9 +149,6 @@ class Calendar(models.Model):
     from_date = models.DateField()
     to_date = models.DateField()
     description = models.CharField(max_length=40)
-
-    class Meta:
-        db_table = 'Calendar'
 
     def __str__(self):
         return self.description
@@ -174,9 +160,6 @@ class Holiday(models.Model):
     holiday_type = models.CharField(default='restricted', max_length=30,
                                     choices=Constants.HOLIDAY_TYPE)
 
-    class Meta:
-        db_table = 'Holiday'
-
     def __str__(self):
         return self.holiday_name
 
@@ -187,9 +170,6 @@ class Grades(models.Model):
     grade = models.CharField(max_length=4)
     verify =models.BooleanField(default=False)
 
-    class Meta:
-        db_table = 'Grades'
-
 
 class Spi(models.Model):
     sem = models.IntegerField()
@@ -197,7 +177,6 @@ class Spi(models.Model):
     spi = models.FloatField(default=0)
 
     class Meta:
-        db_table = 'Spi'
         unique_together = ('student_id', 'sem')
 
     def __self__(self):
@@ -210,8 +189,6 @@ class Timetable(models.Model):
     batch = models.IntegerField(default="2016")
     programme = models.CharField(max_length=10, choices=Constants.PROGRAMME)
     branch = models.CharField(max_length=10, choices=Constants.BRANCH, default="Common")
-    class Meta:
-        db_table = 'Timetable'
 
 
 class Exam_timetable(models.Model):
@@ -219,6 +196,3 @@ class Exam_timetable(models.Model):
     exam_time_table = models.FileField(upload_to='Administrator/academic_information/')
     batch = models.IntegerField(default="2016")
     programme = models.CharField(max_length=10, choices=Constants.PROGRAMME)
-
-    class Meta:
-        db_table = 'Exam_Timetable'

@@ -13,10 +13,6 @@ class File(models.Model):
     upload_file = models.FileField(blank=True)
     is_read = models.BooleanField(default = False)
 
-
-    class Meta:
-        db_table = 'File'
-
     #def __str__(self):
         #return str(self.ref_id)
 
@@ -35,6 +31,3 @@ class Tracking(models.Model):
     remarks = models.CharField(max_length=250, null=True, blank=True)
     upload_file = models.FileField(blank=True)
     is_read = models.BooleanField(default = False)
-
-    class Meta:
-        db_table = 'Tracking'
