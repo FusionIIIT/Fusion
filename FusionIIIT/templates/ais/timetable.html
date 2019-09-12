@@ -97,7 +97,7 @@
 
           <div style="width:100%;height:100%" id='pdf_modal_{{forloop.counter}}' class="ui sixteen wide column fullscreen modal">
             <i class="close  icon"></i>
-            <iframe style="width:100%;height:100%;align-self:center;" src="../media/{{c.time_table}}"></iframe>
+            <object style="width:100%;height:100%;align-self:center;" data="../media/{{c.time_table}}" type="application/pdf">
           </div>
 
 
@@ -185,7 +185,7 @@
 
           <div style="width:100%;height:100%" id='pdf_modale_{{forloop.counter}}' class="ui sixteen wide column fullscreen modal">
             <i class="close  icon"></i>
-            <iframe style="width:100%;height:100%;align-self:center;" src="../media/{{c.exam_time_table}}"></iframe>
+            <object style="width:100%;height:100%;align-self:center;" data="../media/{{c.exam_time_table}}" type="application/pdf">
           </div>
 
           <script type="text/javascript">
