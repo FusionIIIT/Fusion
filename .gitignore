@@ -123,3 +123,7 @@ tcl
 
 >>>>>>> central_mess_main2
 .vscode/settings.json
+
+#.sh files
+*.sh
+FusionIIIT/migrations.sh
