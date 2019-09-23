@@ -43,7 +43,7 @@ pytz==2017.2
 pywin32==224
 redis==2.10.6
 reportlab==3.4.0
-requests==2.18.4
+requests==2.20.0
 requests-oauthlib==0.8.0
 six==1.11.0
 sqlparse==0.2.4
