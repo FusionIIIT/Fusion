@@ -1,0 +1,2 @@
+# <module> is the path to the folder that contains wsgi.py
+gunicorn --bind=0.0.0.0 --timeout 600 /FusionIIT/Fusion/wsgi.py
