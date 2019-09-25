@@ -26,9 +26,7 @@ CLIENT_SECRET = 'enHu3RD0yBvCM_9C0HQmEp0z'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [
-    'fusioniiit.azurewebsites.net'
-]
+ALLOWED_HOSTS = []
 
 # Google authentication
 SOCIALACCOUNT_PROVIDERS = {
@@ -173,6 +171,8 @@ WSGI_APPLICATION = 'Fusion.wsgi.application'
 
 PROJECT_DIR = os.path.abspath(os.path.dirname(__file__))
 
+# Database template for mysql
+
 # DATABASES = {
 #     'default':
 #         {
@@ -183,6 +183,19 @@ PROJECT_DIR = os.path.abspath(os.path.dirname(__file__))
 #             'HOST': 'localhost',
 #             'PORT': '3306',
 #         },
+# }
+
+
+# Database template for postgre
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'fusion',
+#         'HOST': 'localhost',
+#         'USER': 'acadadmin',
+#         'PASSWORD': 'hello123'
+#     }
 # }
 
 DATABASES = {
