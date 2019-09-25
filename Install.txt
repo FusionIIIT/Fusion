@@ -1,2 +1,0 @@
-Run the command ./requirements.sh to install the python virtual environment and all the requirements for the project.
-Read the README.md file for furhter instructions.

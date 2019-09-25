@@ -26,7 +26,9 @@ CLIENT_SECRET = 'enHu3RD0yBvCM_9C0HQmEp0z'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'fusioniiit.azurewebsites.net'
+]
 
 # Google authentication
 SOCIALACCOUNT_PROVIDERS = {
@@ -238,7 +240,7 @@ SITE_ID = 1
 
 # os.path.join(BASE_DIR, 'static/')
 STATIC_URL = '/static/'
-STATIC_ROOT = '/static'
+STATIC_ROOT = 'static'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
