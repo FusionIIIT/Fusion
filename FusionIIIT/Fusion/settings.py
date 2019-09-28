@@ -26,7 +26,7 @@ CLIENT_SECRET = 'enHu3RD0yBvCM_9C0HQmEp0z'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['fusioniit.azurewebsites.net', '127.0.0.1', 'localhost']
 
 # Google authentication
 SOCIALACCOUNT_PROVIDERS = {
@@ -146,6 +146,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'Fusion.urls'
@@ -186,7 +187,7 @@ PROJECT_DIR = os.path.abspath(os.path.dirname(__file__))
 # }
 
 
-# Database template for postgre
+# Database template for postgres
 
 # DATABASES = {
 #     'default': {
@@ -253,7 +254,8 @@ SITE_ID = 1
 
 # os.path.join(BASE_DIR, 'static/')
 STATIC_URL = '/static/'
-STATIC_ROOT = 'static'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
