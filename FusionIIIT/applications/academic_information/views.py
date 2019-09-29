@@ -840,10 +840,11 @@ def generatexlsheet(request):
     print(request.POST)
     try:
         batch = request.POST['batch']
-        course = Course.objects.get(course_name=request.POST['course'])
-        curr_key = Curriculum.objects.filter(course_id = course).filter(batch=batch).first()
+        curr_key = Curriculum.objects.get(course_code = request.POST['course'])
+        course = curr_key.course_id
         obj = Register.objects.all().filter(curr_id = curr_key).filter(year=batch)
-    except:
+    except Exception as e:
+        print(e)
         batch=""
         course=""
         curr_key=""
