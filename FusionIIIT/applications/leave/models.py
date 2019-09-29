@@ -194,7 +194,7 @@ class VacationHoliday(models.Model):
 class LeaveOffline(models.Model):
     applicant = models.ForeignKey(User, related_name='all_leaves_offline',
                                   on_delete=models.CASCADE)
-    leave_user_select = models.ForeignKey(User, null=True)
+    leave_user_select = models.ForeignKey(User, on_delete=models.CASCADE,null=True)
     purpose = models.CharField(max_length=500, default='', blank=True)
     timestamp = models.DateTimeField(auto_now=True, null=True)
     application_date = models.DateField()

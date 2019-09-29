@@ -1,5 +1,9 @@
 import datetime
 from datetime import date
+import xlrd
+import os
+from applications.visitor_hostel.models import RoomDetail
+from django.contrib.auth.models import User
 
 from django.contrib import messages
 from django.contrib.auth import logout
@@ -925,5 +929,3 @@ def forward_booking(request):
         return HttpResponseRedirect('/visitorhostel/')
     else:
         return HttpResponseRedirect('/visitorhostel/')
-
-

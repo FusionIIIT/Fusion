@@ -62,7 +62,7 @@ class Constants:
 
 
 class Register(models.Model):
-    r_id = models.IntegerField(primary_key=True)
+    r_id = models.AutoField(primary_key=True)
     curr_id = models.ForeignKey(Curriculum, on_delete=models.CASCADE)
     year = models.IntegerField(default=datetime.datetime.now().year)
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
@@ -214,7 +214,7 @@ class SemesterMarks(models.Model):
 
 
 class MarkSubmissionCheck(models.Model):
-    curr_id = models.ForeignKey(Curriculum)
+    curr_id = models.ForeignKey(Curriculum,on_delete=models.CASCADE)
     verified = models.BooleanField(default = False)
     submitted = models.BooleanField(default = False)
     announced = models.BooleanField(default = False)

@@ -26,6 +26,7 @@ from .models import (Calendar, Course, Exam_timetable, Grades, Curriculum_Instru
 
 from applications.academic_procedures.views import acad_proced_global_context
 
+
 @login_required
 def user_check(request):
     """
@@ -1937,3 +1938,5 @@ def confirm_grades(request):
     #     print("confirm hone wala hai")
     #     print(request.POST)
     return HttpResponseRedirect('/aims/')
+
+
