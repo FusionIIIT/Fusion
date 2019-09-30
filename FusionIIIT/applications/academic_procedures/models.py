@@ -70,6 +70,7 @@ class Register(models.Model):
 
     class Meta:
         db_table = 'Register'
+        unique_together = ['curr_id','student_id']
 
     def __str__(self):
         return str(self.curr_id)

@@ -1,5 +1,3 @@
-echo -----------------------------------------Making migrations--------------------------------------------------
-
 python3 manage.py makemigrations globals
 python3 manage.py migrate globals
 python3 manage.py makemigrations leave
@@ -27,4 +25,3 @@ python3 manage.py makemigrations visitor_hostel
 echo -----------------------------------------Applying the changes-------------------------------------------------
 
 python3 manage.py migrate
-

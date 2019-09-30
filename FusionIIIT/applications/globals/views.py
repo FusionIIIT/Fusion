@@ -750,6 +750,7 @@ def profile(request, username=None):
                     try:
                         skill_id = Skill.objects.get(skill=skill)
                     except Exception as e:
+                        print(e)
                         skill_id = Skill.objects.create(skill=skill)
                         skill_id.save()
                     has_obj = Has.objects.create(unique_id=student,
@@ -926,7 +927,8 @@ def feedback(request):
     if request.method == "POST":
         try:
             feedback = Feedback.objects.get(user=request.user)
-        except:
+        except Exception as e:
+            print(e)
             feedback = None
         if feedback:
             form = WebFeedbackForm(request.POST or None, instance=feedback)
@@ -964,7 +966,8 @@ def feedback(request):
     try:
         feedback = Feedback.objects.get(user=request.user)
         form = WebFeedbackForm(instance=feedback)
-    except:
+    except Exception as e:
+        print(e)
         form = WebFeedbackForm()
         context = {"form": form, "rating": rating, "feeds": feeds}
         return render(request, "globals/feedback.html", context)
@@ -996,6 +999,7 @@ def issue(request):
                     image = IssueImage.objects.create(image=image, user=request.user)
                     issue.images.add(image)
                 except Exception as e:
+                    print(e)
                     pass
             issue.save()
             openissue = Issue.objects.filter(closed=False)
@@ -1032,6 +1036,7 @@ def view_issue(request, id):
                     image = IssueImage.objects.create(image=image, user=request.user)
                     issue.images.add(image)
                 except Exception as e:
+                    print(e)
                     pass
             issue.save()
             form = IssueForm(instance=issue)

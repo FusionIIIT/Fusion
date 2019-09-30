@@ -10,7 +10,7 @@ django.setup()
 from django.contrib.auth.models import User
 from applications.academic_information.models import Student,Course, Curriculum
 from applications.academic_procedures.models import Register
-from applications.globals.models import DepartmentInfo, Designation, ExtraInfo
+from applications.globals.models import DepartmentInfo, Designation, ExtraInfo, HoldsDesignation
 
 excel = xlrd.open_workbook(
         os.path.join(
@@ -72,6 +72,14 @@ for i in range(10, 130):
             user.save()
         print(user)
         try:
+            holds_desg = HoldsDesignation.objects.get(user = user)
+        except:
+            holds_desg = HoldsDesignation(
+                user = user,
+                working = user,
+                designation = Designation.objects.get(name = "student")
+            )
+        try:
             ext = ExtraInfo.objects.get(user = user)
         except:
             ext = ExtraInfo(
@@ -79,6 +87,7 @@ for i in range(10, 130):
             user = user,
             sex = 'M',
             user_type = 'student',
+            department = DepartmentInfo.objects.get(name = branch)
             )
             ext.save()
         try:

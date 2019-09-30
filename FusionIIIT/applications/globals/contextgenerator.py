@@ -77,6 +77,7 @@ def contextstudentmanage(current,profile,request,user,editable):
                   skill_id = Skill.objects.get(skill=skill)
                   skill_id = None
               except Exception as e:
+                  print(e)
                   skill_id = Skill.objects.create(skill=skill)
                   skill_id.save()
 
