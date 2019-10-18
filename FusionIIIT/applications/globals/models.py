@@ -127,6 +127,9 @@ class HoldsDesignation(models.Model):
     designation = models.ForeignKey(Designation, related_name='designees', on_delete=models.CASCADE)
     held_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        unique_together = [['user', 'designation'], ['working','designation']]
+
     def __str__(self):
         return '{} - {}'.format(self.user.username, self.designation)
 

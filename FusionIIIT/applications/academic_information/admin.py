@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from .models import (Calendar, Course, Exam_timetable, Grades, Holiday,
-                     Curriculum_Instructor, Meeting, Student, Student_attendance,
+                     Curriculum_Instructor, Meeting, Student, Student_attendance,Curriculum,
                      Timetable)
 
 admin.site.register(Student)
@@ -14,4 +14,6 @@ admin.site.register(Student_attendance)
 admin.site.register(Grades)
 admin.site.register(Calendar)
 admin.site.register(Holiday)
+admin.site.register(Curriculum)
+
 #Hello!

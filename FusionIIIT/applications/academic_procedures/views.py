@@ -264,7 +264,8 @@ def academic_procedures_student(request):
         try:
             pre_registered_courses = InitialRegistrations.objects.all().filter(student_id = obj,semester = user_sem)
             pre_registered_courses_show = InitialRegistrations.objects.all().filter(student_id = obj,semester = user_sem+1)
-        except:
+        except Exception as e:
+            print(e)
             pre_registered_courses =  None
         try:
             final_registered_courses = FinalRegistrations.objects.all().filter(student_id = obj,semester = user_sem)
@@ -275,7 +276,8 @@ def academic_procedures_student(request):
             drop_courses_options = currently_registered_courses
             dropped_courses_count = get_dropped_courses_count(currently_registered_courses, final_registered_courses)
             print(dropped_courses_count)
-        except:
+        except Exception as e:
+            print(e)
             final_registered_courses = None
             dropped_courses_count = 0
             drop_courses_options = None
@@ -294,7 +296,8 @@ def academic_procedures_student(request):
         for i in currently_registered_courses:
             try:
                 performance_obj = SemesterMarks.objects.all().filter(student_id = obj, curr_id = i).first()
-            except:
+            except Exception as e:
+                print(e)
                 performance_obj = None
             performance_list.append(performance_obj)
         for i in currently_registered_courses:
@@ -306,7 +309,8 @@ def academic_procedures_student(request):
                         result_announced = result_announced_obj.announced
                 else:
                     continue
-            except:
+            except Exception as e:
+                print(e)
                 continue
         print("result")
         print(result_announced)
@@ -967,7 +971,8 @@ def get_pre_registration_eligibility(current_date):
             return True
         else :
             return False
-    except:
+    except Exception as e:
+        print(e)
         return False
 
 def get_final_registration_eligibility(current_date):
@@ -979,7 +984,8 @@ def get_final_registration_eligibility(current_date):
             return True
         else :
             return False
-    except:
+    except Exception as e:
+        print(e)
         return False
 
 def get_add_or_drop_course_date_eligibility(current_date):
@@ -991,7 +997,8 @@ def get_add_or_drop_course_date_eligibility(current_date):
             return True
         else :
             return False
-    except:
+    except Exception as e:
+        print(e)
         return False
 
 def get_course_verification_date_eligibilty(current_date):
@@ -1003,7 +1010,8 @@ def get_course_verification_date_eligibilty(current_date):
             return True
         else :
             return False
-    except:
+    except Exception as e:
+        print(e)
         return False
 
 def get_user_branch(user_details):
@@ -1048,11 +1056,13 @@ def pre_registration(request):
                         )
                 check.save()
                 messages.info(request, 'Pre-Registration Successful')
-            except:
+            except Exception as e:
+                print(e)
                 return HttpResponseRedirect('/academic-procedures/main')
 
             return HttpResponseRedirect('/academic-procedures/main')
-        except:
+        except Exception as e:
+            print(e)
             return HttpResponseRedirect('/academic-procedures/main')
     else:
         return HttpResponseRedirect('/academic-procedures/main')
@@ -1107,10 +1117,12 @@ def final_registration(request):
                 try:
                     StudentRegistrationCheck.objects.filter(student = current_user, semester = sem).update(final_registration_flag = True)
                     messages.info(request, 'Final-Registration Successful')
-                except:
+                except Exception as e:
+                    print(e)
                     return HttpResponseRedirect('/academic-procedures/main')
                 return HttpResponseRedirect('/academic-procedures/main')
-            except:
+            except Exception as e:
+                print(e)
                 return HttpResponseRedirect('/academic-procedures/main')
 
         elif request.POST.get('type_reg') == "change_register" :
@@ -1141,11 +1153,13 @@ def final_registration(request):
                 try:
                     StudentRegistrationCheck.objects.filter(student = current_user, semester = sem).update(final_registration_flag = True)
                     messages.info(request, 'registered course change Successful')
-                except:
+                except Exception as e:
+                    print(e)
                     return HttpResponseRedirect('/academic-procedures/main')
 
                 return HttpResponseRedirect('/academic-procedures/main')
-            except:
+            except Exception as e:
+                print(e)
                 return HttpResponseRedirect('/academic-procedures/main')
     else:
         return HttpResponseRedirect('/academic-procedures/main')
@@ -1173,7 +1187,8 @@ def register(request):
                         try:
                             last_id = Register.objects.all().aggregate(Max('r_id'))
                             last_id = last_id['r_id__max']+1
-                        except:
+                        except Exception as e:
+                            print(e)
                             last_id = 1
                         curr_id = get_object_or_404(Curriculum, curriculum_id=values[x])
                         p = Register(
@@ -1188,7 +1203,8 @@ def register(request):
                         continue
             messages.info(request, 'Pre-Registration Successful')
             return HttpResponseRedirect('/academic-procedures/main')
-        except:
+        except Exception as e:
+            print(e)
             return HttpResponseRedirect('/academic-procedures/main')
     else:
         return HttpResponseRedirect('/academic-procedures/main')
@@ -1215,7 +1231,8 @@ def drop_course(request):
                         continue
             messages.info(request, 'Course Successfully Dropped')
             return HttpResponseRedirect('/academic-procedures/main')
-        except:
+        except Exception as e:
+            print(e)
             return HttpResponseRedirect('/academic-procedures/main')
     else:
         return HttpResponseRedirect('/academic-procedures/main')
@@ -1236,7 +1253,8 @@ def add_thesis(request):
                     co_supervisor_faculty = get_object_or_404(User, username = request.POST.get('co_supervisor'))
                     co_supervisor_faculty = ExtraInfo.objects.get(user = co_supervisor_faculty)
                     co_supervisor_faculty = Faculty.objects.get(id = co_supervisor_faculty) 
-                except:
+                except Exception as e:
+                    print(e)
                     co_supervisor_faculty = None
 
                 current_user = get_object_or_404(User, username=request.POST.get('user'))
@@ -1246,7 +1264,8 @@ def add_thesis(request):
                 try:
                     curr_id = request.POST.get('curr_id')
                     curr_id = Curriculum.objects.get(curriculum_id = curr_id)
-                except:
+                except Exception as e:
+                    print(e)
                     curr_id = None
 
 
@@ -1281,7 +1300,8 @@ def add_thesis(request):
                     member3 = get_object_or_404(User, username = request.POST.get('member3'))
                     member3 = ExtraInfo.objects.get(user = member3)
                     member3 = Faculty.objects.get(id = member3)
-                except:
+                except Exception as e:
+                    print(e)
                     member3 = None
                 if(str(request.POST.get('approval'))=="yes"):
                     obj.pending_supervisor = False
@@ -1306,7 +1326,8 @@ def add_thesis(request):
                 else:
                     print("approval hi nhi aaya")
                 return HttpResponseRedirect('/academic-procedures/main')
-        except:
+        except Exception as e:
+            print(e)
             return HttpResponseRedirect('/academic-procedures/main')
     else:
         return HttpResponseRedirect('/academic-procedures/main/')
@@ -1644,7 +1665,8 @@ def announce_results(request):
             o = MarkSubmissionCheck.objects.get(curr_id = obj)
             o.announced = True
             o.save()
-        except:
+        except Exception as e:
+            print(e)
             continue
 
     return JsonResponse({'status': 'success', 'message': 'Successfully Accepted'})
@@ -1690,7 +1712,8 @@ def get_batch_grade_verification_data(list):
                 semester_marks.append(obj_sem)
             else:
                 continue
-        except:
+        except Exception as e:
+            print(e)
             continue
     print(c)
 
@@ -1711,7 +1734,8 @@ def get_batch_grade_verification_data(list):
                 semester_marks.append(obj_sem)
             else:
                 continue
-        except:
+        except Exception as e:
+            print(e) 
             continue
     print(c)
 
@@ -1732,7 +1756,8 @@ def get_batch_grade_verification_data(list):
                 semester_marks.append(obj_sem)
             else:
                 continue
-        except:
+        except Exception as e:
+            print(e)
             continue
     print(c)
 
@@ -1753,7 +1778,8 @@ def get_batch_grade_verification_data(list):
                 semester_marks.append(obj_sem)
             else:
                 continue
-        except:
+        except Exception as e:
+            print(e)
             continue
     print(c)
     print(semester_marks)
@@ -1844,7 +1870,8 @@ def student_list(request):
                 reg = StudentRegistrationCheck.objects.all().filter(student = obj, semester = sem).first()
                 pay = FeePayment.objects.all().filter(student_id = obj, semester = sem).first()
                 final = FinalRegistrations.objects.all().filter(student_id = obj, semester = sem,verified = False)
-            except:
+            except Exception as e:
+                print(e)
                 reg = None
                 pay = None
                 final = None
@@ -1885,7 +1912,8 @@ def verify_registration(request):
         try:
             last_id = Register.objects.all().aggregate(Max('r_id'))
             last_id = last_id['r_id__max']+1
-        except:
+        except Exception as e:
+            print(e)
             last_id = 1
 
         student_id = Student.objects.get(id = str(roll_no))
@@ -1909,7 +1937,8 @@ def verify_registration(request):
                 try:
                     last_id = Register.objects.all().aggregate(Max('r_id'))
                     last_id = last_id['r_id__max']+1
-                except:
+                except Exception as e:
+                    print(e)
                     last_id = 1
                 p = Register(
                     r_id=last_id,
@@ -2005,7 +2034,8 @@ def teaching_credit_register(request) :
 
             messages.info(request, ' Successful')
             return HttpResponseRedirect('/academic-procedures/main')
-        except:
+        except Exception as e:
+            print(e)
             return HttpResponseRedirect('/academic-procedures/main')
     else:
         return HttpResponseRedirect('/academic-procedures/main')
@@ -2044,7 +2074,8 @@ def course_marks_data(request):
             d = Calendar.objects.get(description = "grade submission date")
             if demo_date.date() >= d.from_date and demo_date.date() <= d.to_date :
                 grade_submission_date_eligibility = True
-        except:
+        except Exception as e:
+            print(e)
             grade_submission_date_eligibility = False
         data = render_to_string('academic_procedures/course_marks_data.html',
                                 {'enrolled_student_list' : enrolled_student_list,
@@ -2052,7 +2083,8 @@ def course_marks_data(request):
                                 'grade_submission_date_eligibility' : grade_submission_date_eligibility}, request)
         obj = json.dumps({'data' : data})
         return HttpResponse(obj, content_type = 'application/json')
-    except:
+    except Exception as e:
+        print(e)
         return HttpResponseRedirect('/academic-procedures/main')
 
 
@@ -2069,7 +2101,8 @@ def submit_marks(request):
         other = request.POST.getlist('other_marks')
         try:
             grade = request.POST.getlist('grade')
-        except:
+        except Exception as e:
+            print(e)
             grade = None
         messages.info(request, ' Successful')
 
@@ -2122,7 +2155,8 @@ def submit_marks(request):
             if request.POST.get('final_submit') == "True":
                 try:
                     o_sub = MarkSubmissionCheck.objects.get(curr_id = curr_id)
-                except:
+                except Exception as e:
+                    print(e)
                     o_sub = None
                 if o_sub:
                     o_sub.submitted = True
@@ -2137,7 +2171,8 @@ def submit_marks(request):
             if request.POST.get('final_submit') == "False":
                 try:
                     sub_obj = MarkSubmissionCheck.objects.get(curr_id = curr_id)
-                except:
+                except Exception as e:
+                    print(e)
                     sub_obj = None
                 if sub_obj:
                     continue
@@ -2151,7 +2186,8 @@ def submit_marks(request):
                 print("nahi chala")
         print("khatam")
         return HttpResponseRedirect('/academic-procedures/main')
-    except:
+    except Exception as e:
+        print(e)
         return HttpResponseRedirect('/academic-procedures/main')
 
 
@@ -2170,7 +2206,8 @@ def verify_course_marks_data(request):
             d = Calendar.objects.get(description = "grade verification date")
             if demo_date.date() >= d.from_date and demo_date.date() <= d.to_date :
                 grade_verification_date_eligibility = True
-        except:
+        except Exception as e:
+            print(e)
             grade_verification_date_eligibility = False
 
         data = render_to_string('academic_procedures/verify_course_marks_data.html',
@@ -2179,7 +2216,8 @@ def verify_course_marks_data(request):
                                 'grade_verification_date_eligibility' : grade_verification_date_eligibility}, request)
         obj = json.dumps({'data' : data})
         return HttpResponse(obj, content_type = 'application/json')
-    except:
+    except Exception as e:
+        print(e)
         return HttpResponseRedirect('/academic-procedures/main')
 
 
@@ -2226,7 +2264,8 @@ def verify_marks(request):
         obj.verified = True
         obj.save()
         return HttpResponseRedirect('/aims/')
-    except:
+    except Exception as e:
+        print(e)
         return HttpResponseRedirect('/aims/')
 
 
@@ -2572,7 +2611,8 @@ def manual_grade_submission(request):
                 try:
                     last_id = Register.objects.all().aggregate(Max('r_id'))
                     last_id = last_id['r_id__max']+1
-                except:
+                except Exception as e:
+                    print(e)
                     last_id = 1
                 register_obj_create = Register(
                     r_id = last_id,
@@ -2652,7 +2692,8 @@ def test_ret(request):
                                 {}, request)
         obj = json.dumps({'d' : data})
         return HttpResponse(obj, content_type = 'application/json')
-    except:
+    except Exception as e:
+        print(e)
         return HttpResponseRedirect('/academic-procedures/main')
 
 

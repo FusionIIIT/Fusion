@@ -95,7 +95,7 @@ class Course(models.Model):
 class Curriculum(models.Model):
     curriculum_id = models.AutoField(primary_key=True)
     course_code = models.CharField(max_length = 20)
-    course_id = models.ForeignKey(Course)
+    course_id = models.ForeignKey(Course,on_delete= models.CASCADE)
     credits = models.IntegerField()
     course_type = models.CharField(choices=Constants.COURSE_TYPE, max_length=25)
     programme = models.CharField(choices=Constants.PROGRAMME, max_length=10)
@@ -127,7 +127,7 @@ class Curriculum_Instructor(models.Model):
 
 
 class Student_attendance(models.Model):
-    student_id = models.ForeignKey(Student)
+    student_id = models.ForeignKey(Student,on_delete=models.CASCADE)
 #    course_id = models.ForeignKey(Course)
 #    attend = models.CharField(max_length=6, choices=Constants.ATTEND_CHOICES)
     instructor_id = models.ForeignKey(Curriculum_Instructor, on_delete=models.CASCADE)
@@ -182,8 +182,8 @@ class Holiday(models.Model):
 
 
 class Grades(models.Model):
-    student_id = models.ForeignKey(Student)
-    curriculum_id = models.ForeignKey(Curriculum)
+    student_id = models.ForeignKey(Student,on_delete=models.CASCADE)
+    curriculum_id = models.ForeignKey(Curriculum,on_delete=models.CASCADE)
     grade = models.CharField(max_length=4)
     verify =models.BooleanField(default=False)
 

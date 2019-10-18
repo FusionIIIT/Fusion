@@ -26,6 +26,7 @@ from .models import (Calendar, Course, Exam_timetable, Grades, Curriculum_Instru
 
 from applications.academic_procedures.views import acad_proced_global_context
 
+
 @login_required
 def user_check(request):
     """
@@ -51,7 +52,8 @@ def user_check(request):
         acadadmin = temp.working
         k = str(user_details).split()
         final_user = k[2]
-    except:
+    except Exception as e:
+        print(e)
         acadadmin=""
         final_user=""
         pass
@@ -114,7 +116,8 @@ def get_context(request):
         course_type = Constants.COURSE_TYPE
         timetable = Timetable.objects.all()
         exam_t = Exam_timetable.objects.all()
-    except:
+    except Exception as e:
+        print(e)
         examTtForm = ""
         acadTtForm = ""
         calendar = ""
@@ -231,7 +234,8 @@ def curriculum(request):
             request_branch = request.POST['branch']
             request_programme = request.POST['programme']
             request_sem = request.POST['sem']
-        except:
+        except Exception as e:
+            print(e)
             request_batch = ""
             request_branch = ""
             request_programme = ""
@@ -317,7 +321,8 @@ def add_curriculum(request):
                     else:
                         optional=False
                     course_type=request.POST["course_type_"+str(i)]
-                except:
+                except Exception as e:
+                    print(e)
                     programme=""
                     batch=""
                     branch=""
@@ -408,7 +413,8 @@ def edit_curriculum(request):
             else:
                 optional=False
             course_type=request.POST["course_type"]
-        except:
+        except Exception as e:
+            print(e)
             id=""
             programme=""
             batch=""
@@ -720,7 +726,8 @@ def add_calendar(request):
             to_date = to_date[0].split('-')
             to_date = [int(i) for i in to_date]
             to_date = datetime.datetime(*to_date).date()
-        except:
+        except Exception as e:
+            print(e)
             from_date=""
             to_date=""
             desc=""
@@ -780,7 +787,8 @@ def update_calendar(request):
             get_calendar_details.from_date = from_date
             get_calendar_details.to_date = to_date
             get_calendar_details.save()
-        except:
+        except Exception as e:
+            print(e)
             from_date=""
             to_date=""
             desc=""
@@ -839,10 +847,11 @@ def generatexlsheet(request):
     print(request.POST)
     try:
         batch = request.POST['batch']
-        course = Course.objects.get(course_name=request.POST['course'])
-        curr_key = Curriculum.objects.filter(course_id = course).filter(batch=batch).first()
+        curr_key = Curriculum.objects.get(course_code = request.POST['course'])
+        course = curr_key.course_id
         obj = Register.objects.all().filter(curr_id = curr_key).filter(year=batch)
-    except:
+    except Exception as e:
+        print(e)
         batch=""
         course=""
         curr_key=""
@@ -1208,7 +1217,8 @@ def get_faculty_list():
         f1 = HoldsDesignation.objects.filter(designation=Designation.objects.get(name = "Assistant Professor"))
         f2 = HoldsDesignation.objects.filter(designation=Designation.objects.get(name = "Professor"))
         f3 = HoldsDesignation.objects.filter(designation=Designation.objects.get(name = "Associate Professor"))
-    except:
+    except Exception as e:
+        print(e)
         f1=f2=f3=""
         pass
     faculty = list(chain(f1,f2,f3))
@@ -1246,7 +1256,8 @@ def float_course(request):
             request_batch = request.POST['batch']
             request_branch = request.POST['branch']
             request_programme = request.POST['programme']
-        except:
+        except Exception as e:
+            print(e)
             request_batch = ""
             request_branch = ""
             request_programme = ""
@@ -1937,3 +1948,5 @@ def confirm_grades(request):
     #     print("confirm hone wala hai")
     #     print(request.POST)
     return HttpResponseRedirect('/aims/')
+
+
