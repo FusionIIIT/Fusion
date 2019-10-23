@@ -2,7 +2,7 @@ import xlrd
 import sys
 import os
 import django
-sys.path.append(r'/mnt/g/Documents/django-projects/Fusion/FusionIIIT/')
+sys.path.append(r'/home/fusion/Fusion/FusionIIIT/')
 os.environ['DJANGO_SETTINGS_MODULE'] = 'Fusion.settings'
 django.setup()
 
