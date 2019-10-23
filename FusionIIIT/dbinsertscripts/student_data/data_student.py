@@ -107,7 +107,9 @@ for i in range(10, 130):
         if batch == 2018 :
             print (curriculum_obj)
             print (st)
+            count = Register.objects.all().count()
             register_obj_create = Register(
+                register_id = count + 1,
                 curr_id = curriculum_obj,
                 year = batch,
                 student_id = st,
