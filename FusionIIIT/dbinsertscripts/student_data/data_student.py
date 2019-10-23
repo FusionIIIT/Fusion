@@ -12,7 +12,7 @@ from applications.academic_information.models import Student,Course, Curriculum
 from applications.academic_procedures.models import Register
 from applications.globals.models import DepartmentInfo, Designation, ExtraInfo, HoldsDesignation
 
-filenames = print (os.listdir('/home/fusion/Fusion/FusionIIIT/dbinsertscripts/student_data/btech'))
+filenames = os.listdir('/home/fusion/Fusion/FusionIIIT/dbinsertscripts/student_data/btech')
 for filename in filenames:
 
     excel = xlrd.open_workbook(
@@ -23,9 +23,9 @@ for filename in filenames:
 
     not_inserted_index = []
 
-    course_name = str(z.cell(7, 2).value)
-    course_code = str(z.cell(6, 2).value)
-    instructor = str(z.cell(8, 2).value)
+    course_name = str(z.cell(7, 2).value).strip()
+    course_code = str(z.cell(6, 2).value).strip()
+    instructor = str(z.cell(8, 2).value).strip()
 
 
     #Extracting branch from filename
@@ -34,7 +34,7 @@ for filename in filenames:
         branch = "CSE"
     elif(first == "EC"):
         branch = "ECE"
-    elif(first = "ME"):
+    elif(first == "ME"):
         branch = "ME"
     else:
         branch = "Common"
@@ -86,17 +86,28 @@ for filename in filenames:
         try:
             print(i)
             roll_no = int(z.cell(i, 1).value)
-            username = str(roll_no)
+            name = str(z.cell(i,2).value)
+            name = name.split()
+            first_name = name[0]
+            if (len(name)==1):
+                last_name = name[0]
+            else:
+                last_name  = name[1]
+            username = str(roll_no).strip()
+            email = username + '@iiitdmj.ac.in'
             print(username)
-
-            dep = str(z.cell(i, 3).value)
+            dep = str(z.cell(i, 3).value).strip()
             password= "hello123"
             try:
                 user = User.objects.get(username = username)
-                print(1)
             except:
-                print(2)
-                user = User.objects.create_user(username,password=password)
+                user = User.objects.create_user(
+                    username = username,
+                    password = 'hello123',
+                    first_name = first_name,
+                    last_name = last_name,
+                    email = email
+                )
                 user.save()
             print(user)
             try:
@@ -107,6 +118,7 @@ for filename in filenames:
                     working = user,
                     designation = Designation.objects.get(name = "student")
                 )
+                holds_desg.save()
             try:
                 ext = ExtraInfo.objects.get(user = user)
             except:
@@ -115,7 +127,7 @@ for filename in filenames:
                 user = user,
                 sex = 'M',
                 user_type = 'student',
-                department = DepartmentInfo.objects.get(name = branch)
+                department = DepartmentInfo.objects.get(name = dep)
                 )
                 ext.save()
             try:
@@ -124,30 +136,29 @@ for filename in filenames:
                 st = Student(
                     id = ext,
                     programme = programme,
-                    batch = batch,
+                    batch = username[0:4],
                     cpi = 9.5,
                     category = "GEN",
                     specialization = None,
                     room_no = "A-302",
                     hall_no = "4",
                 )
-                st.save()
-            if batch == 2018 :
-                print (curriculum_obj)
-                print (st)
-                count = Register.objects.all().count()
-                register_obj_create = Register(
-                    register_id = count + 1,
-                    curr_id = curriculum_obj,
-                    year = batch,
-                    student_id = st,
-                    semester = sem)
-                register_obj_create.save()
-            else :
-                continue
+            st.save()
+            print (curriculum_obj)
+            print (st)
+            count = Register.objects.all().count()
+            register_obj_create = Register(
+                register_id = count + 1,
+                curr_id = curriculum_obj,
+                year = batch,
+                student_id = st,
+                semester = sem)
+            register_obj_create.save()
             print(str(i) + "done")
         except Exception as e:
             print(e)
             print(i)
+            print (filename)
+            print (dep)
             not_inserted_index.append(i)
     print(not_inserted_index)
