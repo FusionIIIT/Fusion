@@ -5,10 +5,9 @@ from django.forms import ValidationError as VE
 from django.forms.formsets import BaseFormSet
 from django.utils import timezone
 
-from applications.leave.models import LeavesCount, LeaveSegment, LeaveType, LeaveSegmentOffline
+from .models import LeavesCount, LeaveSegment, LeaveType, LeaveSegmentOffline
 
 from .helpers import get_leave_days, get_special_leave_count, get_user_choices, get_vacation_leave_count
-
 
 class StudentApplicationForm(forms.Form):
 
@@ -83,19 +82,28 @@ class EmployeeCommonForm(forms.Form):
 
 
 class LeaveSegmentForm(forms.Form):
-
-    try:
-        LEAVE_TYPES = list((leave_type.id, leave_type.name)
-                           for leave_type in LeaveType.objects.all())
-    except:
-        LEAVE_TYPES = []
-
     #Changed by Abhay Gupta
-    l_type_fac=list((leave_type.id, leave_type.name) for leave_type in LeaveType.objects.all())
-    l_type_staff=list((leave_type.id, leave_type.name) for leave_type in LeaveType.objects.filter(for_staff=1))
     #l_type=list(leave_type.name for leave_type in LeaveType.objects.all())
+    l_type_fac=[
+        (1,'Casual'),
+        (2,'Restricted'),
+        (3,'Project Leave'),
+        (4,'Special Casual'),
+        (5,'Commuted'),
+        (6,'Vacation'),
+        (7,'Earned'),
+        (8,'Station')
+    ]
+    l_type_staff=[
+        (1,'Casual'),
+        (2,'Restricted'),
+        (4,'Special Casual'),
+        (5,'Commuted'),
+        (7,'Earned'),
+        (8,'Station')
+    ]
 
-    leave_type = forms.ChoiceField(label='Leave Type', choices=LEAVE_TYPES)
+    leave_type = forms.ChoiceField(choices=l_type_fac,label="Leave Type")
     start_date = forms.DateField(label='Leave From', required=True)
     end_date = forms.DateField(label='Leave To', required=True)
     document = forms.FileField(label='Related Document', required=False)
@@ -200,10 +208,10 @@ class AdminReplacementForm(forms.Form):
 
         super(AdminReplacementForm, self).__init__(*args, **kwargs)
 
-        USER_CHOICES = get_user_choices(self.user)
+        USER_CHOICES1 = get_user_choices(self.user)
         # print(USER_CHOICES)
         self.fields['admin_rep'] = forms.ChoiceField(label='Administrative Responsibility To: ',
-                                                     choices=USER_CHOICES)
+                                                     choices=USER_CHOICES1)
 
     def clean(self):
         super(AdminReplacementForm, self).clean()
@@ -256,10 +264,10 @@ class AcademicReplacementForm(forms.Form):
 
         super(AcademicReplacementForm, self).__init__(*args, **kwargs)
 
-        USER_CHOICES = get_user_choices(self.user)
+        USER_CHOICES1 = get_user_choices(self.user)
 
         self.fields['acad_rep'] = forms.ChoiceField(label='Academic Responsibility To: ',
-                                                    choices=USER_CHOICES)
+                                                    choices=USER_CHOICES1)
 
     def clean(self):
         super(AcademicReplacementForm, self).clean()
@@ -353,19 +361,28 @@ class BaseCommonFormSet(BaseFormSet):
 
 
 class LeaveSegmentFormOffline(forms.Form):
-
-    try:
-        LEAVE_TYPES = list((leave_type.id, leave_type.name)
-                           for leave_type in LeaveType.objects.all())
-    except:
-        LEAVE_TYPES = []
-
     #Changed by Abhay Gupta
-    l_type_fac=list((leave_type.id, leave_type.name) for leave_type in LeaveType.objects.all())
-    l_type_staff=list((leave_type.id, leave_type.name) for leave_type in LeaveType.objects.filter(for_staff=1))
+    l_type_fac=[
+        (1,'Casual'),
+        (2,'Restricted'),
+        (3,'Project Leave'),
+        (4,'Special Casual'),
+        (5,'Commuted'),
+        (6,'Vacation'),
+        (7,'Earned'),
+        (8,'Station')
+    ]
+    l_type_staff=[
+        (1,'Casual'),
+        (2,'Restricted'),
+        (4,'Special Casual'),
+        (5,'Commuted'),
+        (7,'Earned'),
+        (8,'Station')
+    ]
     #l_type=list(leave_type.name for leave_type in LeaveType.objects.all())
     
-    leave_type = forms.ChoiceField(label='Leave Type', choices=LEAVE_TYPES)
+    leave_type = forms.ChoiceField(choices=l_type_fac,label="Leave Type")
     start_date = forms.DateField(label='Leave From', required=True)
     end_date = forms.DateField(label='Leave To', required=True)
     document = forms.FileField(label='Related Document', required=False)
@@ -441,13 +458,9 @@ class LeaveSegmentFormOffline(forms.Form):
         return self.cleaned_data
 
 class EmployeeCommonFormOffline(forms.Form):
-
     purpose = forms.CharField(widget=forms.Textarea)
     application_date = forms.DateField(label='Application Date')
-    USER_CHOICES = [(usr.username, "{} {}".format(usr.first_name, usr.last_name))
-                        for usr in User.objects.filter(extrainfo__user_type__in=["faculty","staff"]) ]
-
-    leave_user_select = forms.ChoiceField(label='Choose Employee',choices=USER_CHOICES)
+    leave_user_select = forms.ModelChoiceField(queryset=User.objects.filter(extrainfo__user_type__in=["faculty","staff"]))
 
     #is_station = forms.BooleanField(initial=False, required=False)
     
@@ -464,12 +477,8 @@ class EmployeeCommonFormOffline(forms.Form):
 class AdminReplacementFormOffline(forms.Form):
     admin_start_date = forms.DateField(label='From')
     admin_end_date = forms.DateField(label='To')
-
-    USER_CHOICES = [(usr.username, "{} {}".format(usr.first_name, usr.last_name))
-                        for usr in User.objects.filter(extrainfo__user_type__in=["faculty","staff"]) ]
         # print(USER_CHOICES)
-    admin_rep = forms.ChoiceField(label='Administrative Responsibility To: ',
-                                                     choices=USER_CHOICES)
+    admin_rep = forms.ModelChoiceField(queryset=User.objects.filter(extrainfo__user_type__in=["faculty","staff"]))
 
     def clean(self):
         super(AdminReplacementFormOffline, self).clean()
@@ -518,12 +527,7 @@ class AdminReplacementFormOffline(forms.Form):
 class AcademicReplacementFormOffline(forms.Form):
     acad_start_date = forms.DateField(label='From')
     acad_end_date = forms.DateField(label='To')
-
-    USER_CHOICES = [(usr.username, "{} {}".format(usr.first_name, usr.last_name))
-                        for usr in User.objects.filter(extrainfo__user_type="faculty") ]
-
-    acad_rep = forms.ChoiceField(label='Academic Responsibility To: ',
-                                                    choices=USER_CHOICES)
+    acad_rep = forms.ModelChoiceField(queryset=User.objects.filter(extrainfo__user_type__in=["faculty","staff"]))
 
     def clean(self):
         super(AcademicReplacementFormOffline, self).clean()

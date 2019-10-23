@@ -307,8 +307,8 @@ class Project_Reallocation(models.Model):
 
 
 class Member(models.Model):
-	member_id = models.ForeignKey(Faculty)
-	meeting_id = models.ForeignKey(Meeting)
+	member_id = models.ForeignKey(Faculty,on_delete=models.CASCADE)
+	meeting_id = models.ForeignKey(Meeting,on_delete=models.CASCADE)
 
 	class Meta:
 		db_table = 'Member'

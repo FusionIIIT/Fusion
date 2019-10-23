@@ -24,7 +24,7 @@
             <label>This Semester Courses</label>
             <select name="course" required>
                 {% for i in this_sem_course %}
-                <option value="{{ i.course_id }}">{{i.course_code}} - {{i.course_id}}</option>
+                <option value="{{ i.course_code }}">{{i.course_code}} - {{i.course_id}}</option>
                 {% endfor%}
             </select>
         </div>
@@ -49,7 +49,7 @@
             <label>Next Semester Courses</label>
             <select name="course_next" required>
                 {% for i in next_sem_course %}
-                <option value="{{ i.course_id }}">{{i.course_code}} - {{i.course_id}}</option>
+                <option value="{{ i.course_code }}">{{i.course_code}} - {{i.course_id}}</option>
                 {% endfor%}
             </select>
         </div>
