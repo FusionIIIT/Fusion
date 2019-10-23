@@ -12,20 +12,13 @@ from applications.academic_information.models import Student,Course, Curriculum
 from applications.academic_procedures.models import Register
 from applications.globals.models import DepartmentInfo, Designation, ExtraInfo, HoldsDesignation
 
-excel_courses = xlrd.open_workbook(
-    os.path.join(
-        os.path.dirname(__file__),
-        'Cousres Information.xlsx'
-    )
-)
-
-y = excel_courses.sheet_by_index(1)
-
-for i in range()
+filename = 'CS202'
+extension = '.xlsx'
+filef = filename + extension
 excel = xlrd.open_workbook(
         os.path.join(
             os.path.dirname(__file__),
-            'btech',))
+            'btech', filef))
 z = excel.sheet_by_index(0)
 
 
@@ -35,9 +28,36 @@ not_inserted_index = []
 course_name = str(z.cell(7, 2).value)
 course_code = str(z.cell(6, 2).value)
 instructor = str(z.cell(8, 2).value)
-sem = 3
-branch = 'CSE'
-batch =  2018
+
+
+#Extracting branch from filename
+first = filename[0:3]
+if(first == "CS"):
+    branch = "CSE"
+elif(first == "EC"):
+    branch = "ECE"
+elif(first = "ME"):
+    branch = "ME"
+else:
+    branch = "common"
+
+
+#Extracting branch and sem from filename
+second = filename[2:3]
+if(second == '1'):
+    sem = 1
+    batch = 2019
+elif(second == '2'):
+    sem = 3
+    batch = 2018
+elif(second == '3'):
+    sem = 5
+    batch = 2017
+else:
+    sem = 7
+    batch = 2016
+
+
 programme = 'B.Tech'
 credits = 2
 

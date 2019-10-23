@@ -11,7 +11,7 @@ from django.contrib.auth.models import User
 from applications.globals.models import ExtraInfo, Faculty, HoldsDesignation, Designation, DepartmentInfo
 
 
-excel = xlrd.open_workbook(os.path.join(os.getcwd(), 'Faculty-List.xlsx'))
+excel = xlrd.open_workbook(os.path.join(os.getcwd(), '.xlsx'))
 z = excel.sheet_by_index(1)
 nahihua = []
 for i in range(1, 63):

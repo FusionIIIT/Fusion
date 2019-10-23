@@ -1,18 +1,18 @@
 import xlrd
 import os
 import django
+import sys
 
-sys.path.append(r'/mnt/g/Documents/django-projects/Fusion/FusionIIIT/')
+sys.path.append(r'/home/fusion/Fusion/FusionIIIT/')
 os.environ['DJANGO_SETTINGS_MODULE'] = 'Fusion.settings'
 django.setup()
-from applications.academic_information.models import Course, Student
-from applications.academic_procedures.models import Register
+
 from django.contrib.auth.models import User
-from applications.globals.models import ExtraInfo,Staff, Faculty, HoldsDesignation, Designation, DepartmentInfo
+from applications.globals.models import ExtraInfo,Staff, HoldsDesignation, Designation, DepartmentInfo
 from datetime import date
 from applications.leave.models import LeaveAdministrators
 
-excel = xlrd.open_workbook(os.path.join(os.getcwd(), 'Faculty-List.xlsx'))
+excel = xlrd.open_workbook(os.path.join(os.getcwd(), 'Staff-List.xlsx'))
 z = excel.sheet_by_index(0)
 nahihua = []
 for i in range(1, 52):
@@ -34,8 +34,11 @@ for i in range(1, 52):
         print(username)
         dd = 0
         try:
+            print(2)
             dd = DepartmentInfo.objects.get(name = dep)
+            print(3)
         except:
+            print(1)
             dd = DepartmentInfo.objects.create(name = dep)
         dess = 0
         try:
@@ -49,36 +52,56 @@ for i in range(1, 52):
         for iz in range(0,len(name)-1):
             first_name += name[iz] + " ";
         print(first_name, last_name)
-        u = User.objects.create_user(
-                    username = username,
-                    password = 'hello123',
-                    first_name = first_name,
-                    last_name = last_name,
-                    email = email,
-        )
+        try:
+            u = User.objects.get(
+                        username = username
+            )
+        except:
+            u = User.objects.create_user(
+                        username = username,
+                        password = 'hello123',
+                        first_name = first_name,
+                        last_name = last_name,
+                        email = email,
+            )
         sex = "M"
         print(str(i) + " user creation done")
         datee = date(1985,2,22)
-        f = ExtraInfo.objects.create(
-            sex = sex,
-            user = u,
-            id = pfid,
-            department = dd,
-            date_of_birth = datee,
-            about_me = 'Hello I am ' + first_name + last_name,
-            user_type = 'staff',
-            phone_no = 9999999999
-        )
+        try:
+            f = ExtraInfo.objects.get(
+                user = u,
+            )
+        except:
+             f = ExtraInfo.objects.create(
+                sex = sex,
+                user = u,
+                id = pfid,
+                department = dd,
+                date_of_birth = datee,
+                about_me = 'Hello I am ' + first_name + last_name,
+                user_type = 'staff',
+                phone_no = 9999999999
+            )
         print("extraInfoCreation done -> "+str(i))
-        q = Staff.objects.create(
-            id = f
-        )
+        try:
+            q = Staff.objects.get(
+                id = f
+            )
+        except:
+            q = Staff.objects.create(
+                id = f
+            )
         print("Faculty bhi ho gaya"+  str(i))
-        qz = HoldsDesignation.objects.create(
-            user = u,
-            working = u,
-            designation = dess,
-        )
+        try:
+            qz = HoldsDesignation.objects.get(
+                user = u
+            )
+        except:
+            qz = HoldsDesignation.objects.create(
+                user = u,
+                working = u,
+                designation = dess,
+            )
         print("Globals done -> " + str(i))
         print(sanc_aut)
         print(sanc_officer)
@@ -92,9 +115,12 @@ for i in range(1, 52):
             so = Designation.objects.get(name = str(sanc_officer))
         except:
             so = Designation.objects.create(name = str(sanc_officer))
-        k = LeaveAdministrators.objects.create(user=u,
-                                                authority=sa,
-                                                officer=so)
+        try:
+            k = LeaveAdministrators.objects.get(user=u)
+        except:
+            k = LeaveAdministrators.objects.create(user=u,
+                                                    authority=sa,
+                                                    officer=so)
         print("Leave bhi ho gaya!" + str(i))
 
     except Exception as e:
