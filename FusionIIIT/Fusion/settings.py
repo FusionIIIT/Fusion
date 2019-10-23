@@ -26,7 +26,7 @@ CLIENT_SECRET = 'enHu3RD0yBvCM_9C0HQmEp0z'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['fusioniiit.azurewebsites.net', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['fusioniiit.azurewebsites.net', '127.0.0.1', 'localhost', '172.27.16.216']
 
 # Google authentication
 SOCIALACCOUNT_PROVIDERS = {
@@ -193,8 +193,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'fusion',
-        'HOST': 'fusionpql.postgres.database.azure.com',
-        'USER': 'admin@fusionpql',
+        'HOST': 'localhost',
+        'USER': 'admin',
         'PASSWORD': 'hello123'
     }
 }
