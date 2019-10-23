@@ -39,7 +39,7 @@ elif(first == "EC"):
 elif(first = "ME"):
     branch = "ME"
 else:
-    branch = "common"
+    branch = "Common"
 
 
 #Extracting branch and sem from filename
