@@ -96,7 +96,7 @@ class Migration(migrations.Migration):
             name='Monthly_bill',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('month', models.CharField(default=9, max_length=20)),
+                ('month', models.CharField(default=10, max_length=20)),
                 ('year', models.IntegerField(default=2019)),
                 ('amount', models.IntegerField(default=0)),
                 ('rebate_count', models.IntegerField(default=0)),

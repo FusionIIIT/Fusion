@@ -26,7 +26,7 @@ CLIENT_SECRET = 'enHu3RD0yBvCM_9C0HQmEp0z'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['fusioniit.azurewebsites.net', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['fusioniiit.azurewebsites.net', '127.0.0.1', 'localhost', '172.27.16.216']
 
 # Google authentication
 SOCIALACCOUNT_PROVIDERS = {
@@ -189,22 +189,22 @@ PROJECT_DIR = os.path.abspath(os.path.dirname(__file__))
 
 # Database template for postgres
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'fusion',
-#         'HOST': 'localhost',
-#         'USER': 'acadadmin',
-#         'PASSWORD': 'hello123'
-#     }
-# }
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(PROJECT_DIR, 'fusion.db'),
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'fusion',
+        'HOST': 'localhost',
+        'USER': 'admin',
+        'PASSWORD': 'hello123'
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': os.path.join(PROJECT_DIR, 'fusion.db'),
+#     }
+# }
 
 
 # Password validation

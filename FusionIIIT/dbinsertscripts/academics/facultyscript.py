@@ -1,8 +1,8 @@
 import xlrd
 import os
 import django
-
-sys.path.append(r'/mnt/g/Documents/django-projects/Fusion/FusionIIIT/')
+import sys
+sys.path.append(r'/home/fusion/Fusion/FusionIIIT/')
 os.environ['DJANGO_SETTINGS_MODULE'] = 'Fusion.settings'
 django.setup()
 from applications.academic_information.models import Course, Student
@@ -45,35 +45,55 @@ for i in range(1, 63):
         for iz in range(0,len(name)-1):
             first_name += name[iz]
         print(first_name,last_name)
-        u = User.objects.create_user(
-                    username = username,
-                    password = 'hello123',
-                    first_name = first_name,
-                    last_name = last_name,
-                    email = email,
-        )
+        try:
+            u = User.objects.get(username = username)
+        except:
+            u = User.objects.create_user(
+                        username = username,
+                        password = 'hello123',
+                        first_name = first_name,
+                        last_name = last_name,
+                        email = email,
+            )
         sex = "M"
         print(str(iz)+" user creation done")
-        f = ExtraInfo.objects.create(
-            sex = sex,
-            user = u,
-            id = pfid,
-            department = dd,
-            age = 38,
-            about_me = 'Hello I am ' + first_name + last_name,
-            user_type = 'faculty',
-            phone_no = 9999999999
-        )
+        try:     
+            f = ExtraInfo.objects.get(
+                user = u,                
+            )
+        except:
+                f = ExtraInfo.objects.create(
+                sex = sex,
+                user = u,
+                id = pfid,
+                department = dd,
+                # age = 38,
+                about_me = 'Hello I am ' + first_name + last_name,
+                user_type = 'faculty',
+                phone_no = 9999999999
+            )
         print("extraInfoCreation done -> "+str(i))
-        q = Faculty.objects.create(
+        try:
+            q = Faculty.objects.get(
+                id = f
+            )
+        except:
+            q = Faculty.objects.create(
             id = f
-        )
+            )
         print("Faculty bhi ho gaya")
-        qz = HoldsDesignation.objects.create(
-            user = u,
-            working = u,
-            designation = dess,
-        )
+        try:
+            qz = HoldsDesignation.objects.get(
+                user = u,
+                working = u,
+                designation = dess,
+            )
+        except:
+            qz = HoldsDesignation.objects.create(
+                user = u,
+                working = u,
+                designation = dess,
+            )
         print("All done yippe -> " + str(iz))
     except Exception as e:
         print(e)
