@@ -12,10 +12,20 @@ from applications.academic_information.models import Student,Course, Curriculum
 from applications.academic_procedures.models import Register
 from applications.globals.models import DepartmentInfo, Designation, ExtraInfo, HoldsDesignation
 
+excel_courses = xlrd.open_workbook(
+    os.path.join(
+        os.path.dirname(__file__),
+        'Cousres Information.xlsx'
+    )
+)
+
+y = excel_courses.sheet_by_index(1)
+
+for i in range()
 excel = xlrd.open_workbook(
         os.path.join(
             os.path.dirname(__file__),
-            'courses/done/CS202.xlsx'))
+            'btech',))
 z = excel.sheet_by_index(0)
 
 
