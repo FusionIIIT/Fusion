@@ -29,14 +29,14 @@ Ubuntu 18.04 (or newer)
 * Create a virtual environment  
     - on Ubuntu: `virtualenv env -p python3.6`  
     - on Windows Powershell: `virtualenv env`
-* Activate the env:
+* Activate the env
     - on Ubuntu: `source env/bin/activate`  
     - on Windows Powershell: `. .\env\scripts\activate`  
 * Install the requirements: `pip install -r requirements.txt`
-* Replace the two files in 
+* Replace the files
     - on Ubuntu: `env/lib/python3.6/site-packages/notifications`
     - on Windows: `env/lib/site-packages/notifications`
-    with the files in `notif_package_mod` folder inside the current directory
+        - with the files in `notif_package_mod` folder inside the current directory
 * Change directory to FusionIIIT `cd FusionIIIT`
 * Make migrations `python manage.py makemigrations`  
 * Migrate the changes to the database `$ python manage.py migrate`  
