@@ -4,7 +4,9 @@
 
 ## System Requirements
 
-Ubuntu 18.04 (or newer)
+* Ubuntu 18.04 (or newer) OR
+* WSL for Windows 10 \(Follow the guide below\) :
+  * [Windows Subsystem for Linux Installation Guide for Windows 10](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
 
 ## Software Requirements
 
@@ -14,7 +16,7 @@ Ubuntu 18.04 (or newer)
 
 ## How to get started
 
-* Install the required packages using the following command : 
+* Install the required packages using the following command :
 `sudo apt install PostgreSQL PostgreSQL-contrib python3.6-dev python-virtualenv build-essential git`
 
 ### Downloading the Code
