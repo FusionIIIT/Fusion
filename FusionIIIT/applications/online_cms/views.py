@@ -116,8 +116,8 @@ def course(request, course_code):
     else:
         instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
-            if ins.course_id.course_id == course_code:
-                course = ins.course_id
+            if ins.curriculum_id.course_id.course_code == course_code:
+                course = ins.curriculum_id.course_id
         lec = 1
         videos = CourseVideo.objects.filter(course_id=course)
         slides = CourseDocuments.objects.filter(course_id=course)
