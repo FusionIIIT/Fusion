@@ -6,7 +6,6 @@
 Ubuntu 18.04 (or newer)
 
 ## Software Requirements
-
 * Python 3.6
 * PostgreSQL 10.10
 * Git
@@ -40,9 +39,9 @@ Ubuntu 18.04 (or newer)
   with the files in 
 	`notif_package_mod` folder inside the current directory
 * Change directory to FusionIIIT `cd FusionIIIT`
-* Make migrations `$ python manage.py makemigrations`  
+* Make migrations `python manage.py makemigrations`  
 * Migrate the changes to the database `$ python manage.py migrate`  
-* Run the server `$ python manage.py runserver`
+* Run the server `python manage.py runserver`
 
 ### Setting upstream
 * `git remote add upstream https://github.com/salarx/Fusion`
@@ -69,13 +68,13 @@ Ubuntu 18.04 (or newer)
 #### Pushing
 * `git push -u origin <module-name>`
     - Push the changes to your repository \(First time only\). Using `git push` is sufficient later on. 
-* Go to (https://github.com/<your_user_name>/Fusion/tree/<module-name>) and create pull request.
+* Go to `https://github.com/<your_user_name>/Fusion/tree/<module-name>` and create pull request.
 
 ## Working with Code \(Alternative\)
 * **(Recommanded)** Use [Visual Studio Code](https://code.visualstudio.com/) as a text editor. Go through the [Tutorial](https://code.visualstudio.com/docs/python/python-tutorial) for getting started with **Visual Studio Code for Python**.
 * Use the inbuilt **Source Control** feature for checking out, committing, pushing, pulling changes. You can also use [Github Desktop](https://desktop.github.com/) \(Windows/Mac only\).
-        Refer to below link for best practices regarding commit messages
-        Follow: (https://gist.github.com/robertpainsi/b632364184e70900af4ab688decf6f53)
+    Refer to below link for best practices regarding commit messages
+    - (https://gist.github.com/robertpainsi/b632364184e70900af4ab688decf6f53)
 
 
 ## Different modules included
