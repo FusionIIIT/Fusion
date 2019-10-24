@@ -4,7 +4,7 @@
 
 ## System Requirements
 
-* **Ubuntu 18.04** (or newer) *OR*
+* **Ubuntu `18.04`** (or newer) *OR*
 * **WSL** for **Windows 10** \(Follow the guide below\) :  
     [Windows Subsystem for Linux Installation Guide for Windows 10](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
 
@@ -22,9 +22,9 @@
 ### Downloading the Code
 
 * Go to (<https://github.com/salarx/Fusion)> and click on **Fork**
-* You will be redirected to *your* fork, `https://github.com/<*your_user_name*>/Fusion`
+* You will be redirected to *your* fork, `https://github.com/<your_user_name>/Fusion`
 * Open the terminal, change to the directory where you want to clone the **Fusion** repository
-* Clone your repository using `git clone https://github.com/<*your_user_name*>/Fusion`
+* Clone your repository using `git clone https://github.com/<your_user_name>/Fusion`
 * Enter the cloned directory using `cd Fusion/`
 
 ### Run
