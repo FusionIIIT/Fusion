@@ -140,9 +140,9 @@ for filename in filenames:
             register_obj_create = Register(
                 r_id = count + 1,
                 curr_id = curriculum_obj,
-                year = batch,#
+                year = batch,
                 student_id = st,
-                semester = sem)#
+                semester = sem)
             register_obj_create.save()
             print(str(i) + "done")
         except Exception as e:
@@ -152,5 +152,3 @@ for filename in filenames:
             print (dep)
             not_inserted_index.append(i)
     print(not_inserted_index)
-
-#Doubt
