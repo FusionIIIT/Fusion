@@ -1,6 +1,6 @@
 # FusionIIIT
 
-**FusionIIIT** is the automation of various functionalities, modules and tasks of/for **PDPM Indian Institute of Information Technology, Design and Manufacturing, Jabalpur** being developed in `python3.6` and using `Django` Webframework version *1.11*
+**FusionIIIT** is the automation of various functionalities, modules and tasks of/for **PDPM Indian Institute of Information Technology, Design and Manufacturing, Jabalpur** being developed in `python3.6` and using `Django` Webframework version `1.11`
 
 ## System Requirements
 
@@ -10,8 +10,8 @@
 
 ## Software Requirements
 
-* Python *3.6*
-* PostgreSQL *10.10*
+* Python `3.6`
+* PostgreSQL `10.10`
 * Git
 
 ## How to get started
@@ -23,7 +23,7 @@
 
 * Go to (<https://github.com/salarx/Fusion)> and click on **Fork**
 * You will be redirected to *your* fork, `https://github.com/<*your_user_name*>/Fusion`
-* Open the terminal, enter into the directory where you want to clone the **Fusion** repository using `cd <*path_of_choice*>/`
+* Open the terminal, change to the directory where you want to clone the **Fusion** repository
 * Clone your repository using `git clone https://github.com/<*your_user_name*>/Fusion`
 * Enter the cloned directory using `cd Fusion/`
 
