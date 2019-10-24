@@ -7,18 +7,18 @@ Ubuntu 18.04 (or newer)
 
 ## Software Requirements
 
-Python 3.6
-PostgreSQL 10.10
-Git
+* Python 3.6
+* PostgreSQL 10.10
+* Git
 
 ## How to get started
 
-* Install the required packages using the following command -
+* Install the required packages using the following command : 
 `sudo apt install PostgreSQL PostgreSQL-contrib python3.6-dev python-virtualenv build-essential git`
 
 ### Downloading the Code
 * Go to (https://github.com/salarx/Fusion) and click on **Fork**
-* You will be redirected to *your* fork, (https://github.com/<yourname>/Fusion)
+* You will be redirected to *your* fork, `https://github.com/<yourname>/Fusion`
 * Open the terminal on your linux machine, enter the directory where you want to clone the Fusion repository using `cd <path_of_choice>/`
 * Clone your repository using `git clone https://github.com/<your_user_name>/Fusion`
 * Enter the cloned directory using `cd Fusion/`
