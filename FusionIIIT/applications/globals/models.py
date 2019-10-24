@@ -78,7 +78,7 @@ class Designation(models.Model):
 
 
 class DepartmentInfo(models.Model):
-    name = models.CharField(max_length=30, unique=True)
+    name = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
         return 'department: {}'.format(self.name)

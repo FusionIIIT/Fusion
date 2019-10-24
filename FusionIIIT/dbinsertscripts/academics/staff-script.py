@@ -34,11 +34,8 @@ for i in range(1, 52):
         print(username)
         dd = 0
         try:
-            print(2)
             dd = DepartmentInfo.objects.get(name = dep)
-            print(3)
         except:
-            print(1)
             dd = DepartmentInfo.objects.create(name = dep)
         dess = 0
         try:
@@ -132,4 +129,3 @@ for i in range(1, 52):
         nahihua.append(z)
 
 print(nahihua)
-#exec(open("dbinsertscripts/academics/staff-script.py").read())

@@ -29,7 +29,7 @@ for filename in filenames:
 
 
     #Extracting branch from filename
-    first = filename[0:3]
+    first = filename[0:2]
     if(first == "CS"):
         branch = "CSE"
     elif(first == "EC"):
@@ -42,18 +42,8 @@ for filename in filenames:
 
     #Extracting branch and sem from filename
     second = filename[2:3]
-    if(second == '1'):
-        sem = 1
-        batch = 2019
-    elif(second == '2'):
-        sem = 3
-        batch = 2018
-    elif(second == '3'):
-        sem = 5
-        batch = 2017
-    else:
-        sem = 7
-        batch = 2016
+    sem = 2*second-1
+    batch = 2020-second
 
 
     programme = 'B.Tech'
@@ -148,11 +138,11 @@ for filename in filenames:
             print (st)
             count = Register.objects.all().count()
             register_obj_create = Register(
-                register_id = count + 1,
+                r_id = count + 1,
                 curr_id = curriculum_obj,
-                year = batch,
+                year = batch,#
                 student_id = st,
-                semester = sem)
+                semester = sem)#
             register_obj_create.save()
             print(str(i) + "done")
         except Exception as e:
@@ -162,3 +152,5 @@ for filename in filenames:
             print (dep)
             not_inserted_index.append(i)
     print(not_inserted_index)
+
+#Doubt
