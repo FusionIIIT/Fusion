@@ -85,6 +85,7 @@
 ## Working with Code \(Alternative\)
 
 * **(Recommended)** Use [Visual Studio Code](https://code.visualstudio.com/) as a text editor. Go through the [Tutorial](https://code.visualstudio.com/docs/python/python-tutorial) for getting started with **Visual Studio Code for Python**.
+  * Note : Use the following guide if using WSL for Development (<https://code.visualstudio.com/docs/remote/wsl).>
 * Use the inbuilt **Source Control** feature for checking out, committing, pushing, pulling changes. You can also use [Github Desktop](https://desktop.github.com/) \(Windows/Mac only\).
     Refer to below link for best practices regarding commit messages
   * (<https://gist.github.com/robertpainsi/b632364184e70900af4ab688decf6f53)>
