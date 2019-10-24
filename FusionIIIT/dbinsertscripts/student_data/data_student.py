@@ -41,7 +41,7 @@ for filename in filenames:
 
 
     #Extracting branch and sem from filename
-    second = filename[2:3]
+    second = int(filename[2:3])
     sem = 2*second-1
     batch = 2020-second
 
