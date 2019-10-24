@@ -18,7 +18,7 @@ Ubuntu 18.04 (or newer)
 ### Downloading the Code
 * Go to (https://github.com/salarx/Fusion) and click on **Fork**
 * You will be redirected to *your* fork, `https://github.com/<yourname>/Fusion`
-* Open the terminal on your linux machine, enter the directory where you want to clone the Fusion repository using `cd <path_of_choice>/`
+* Open the terminal, enter into the directory where you want to clone the Fusion repository using `cd <path_of_choice>/`
 * Clone your repository using `git clone https://github.com/<your_user_name>/Fusion`
 * Enter the cloned directory using `cd Fusion/`
 
