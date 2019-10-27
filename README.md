@@ -17,7 +17,7 @@
 ## How to get started
 
 * Install the required packages using the following command :  
-    `sudo apt install PostgreSQL PostgreSQL-contrib python3.6-dev python-virtualenv build-essential git`
+    `sudo apt install postgresql postgresql-contrib python3.6-dev python-virtualenv build-essential git`
 
 ### Downloading the Code
 
@@ -29,9 +29,6 @@
 
 ### Run
 
-* Install *virtualenv*  
-  * on **Ubuntu**: `sudo apt install python-virtualenv`  
-  * on **Windows Powershell**: `pip install virtualenv`  
 * Create a virtual environment  
   * on **Ubuntu**: `virtualenv env -p python3.6`  
   * on **Windows Powershell**: `virtualenv env`
