@@ -27,7 +27,7 @@
 * Clone your repository using `git clone https://github.com/<your_user_name>/Fusion`
 * Enter the cloned directory using `cd Fusion/`
 
-### Run
+### Setting up environment
 
 * Create a virtual environment  
   * on **Ubuntu**: `virtualenv env -p python3.6`  
@@ -40,19 +40,22 @@
   * on **Ubuntu**: `env/lib/python3.6/site-packages/notifications`
   * on **Windows**: `env/lib/site-packages/notifications`  
 with the files in **notif_package_mod** folder inside the current directory
+
+### Running server
+
 * Change directory to **FusionIIIT** `cd FusionIIIT`
 * Make *migrations* `python manage.py makemigrations`  
 * Migrate the changes to the database `$ python manage.py migrate`  
 * Run the server `python manage.py runserver`
+
+## Working with Code \(Method 1\)
 
 ### Setting upstream
 
 * `git remote add upstream https://github.com/salarx/Fusion`
   * Adds the remote repository (the repository you forked from) so that changes can be pulled from/pushed to it
 
-## Working with Code \(Method 1\)
-
-### Checking out
+### Switching branch
 
 * `git checkout -b <module-name>`
   * Creates a new branch `<module-name>` in your repository
