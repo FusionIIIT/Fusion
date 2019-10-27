@@ -3,15 +3,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-
-# C extensions
-*.so
-
-
-# db file
-
-
-
 # Distribution / packaging
 .Python
 env/
@@ -33,12 +24,6 @@ var/
 # Swap files
 *.swp
 
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
-*.manifest
-*.spec
-
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
@@ -54,17 +39,8 @@ coverage.xml
 *,cover
 .hypothesis/
 
-# Translations
-*.mo
-*.pot
-
-
 # Flask stuff:
-instance/
-.webassets-cache
-
-# Django stuff:
-db.sqlite3
+instance/.webassets-cache
 
 # PyBuilder
 target/
@@ -88,37 +64,5 @@ ENV/
 # Ignore idea files
 .idea
 
-
-# DS
-.DS_Store
-._.DS_Store
-
-# docs
-docs/_build
-docs/_templates
-
-.tox
-
-# media
-# FusionIIIT/media
-# ignoring settings.py
-# FusionIIIT/Fusion/settings.py
-
-
-# dbinsertscripts
-
-#folders
-FusionIIIT/Include
-FusionIIIT/Scripts
-FusionIIIT/tcl
-
-#folders
-<<<<<<< HEAD
-Include
-Scripts
-tcl
-
-=======
-
->>>>>>> central_mess_main2
+# VSCode Settings
 .vscode/settings.json
