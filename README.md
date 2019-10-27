@@ -24,6 +24,7 @@
   * Get Python 3.6.8 from [here](https://www.python.org/ftp/python/3.6.8/python-3.6.8-amd64.exe) for AMD64/x64 or [here](https://www.python.org/ftp/python/3.6.8/python-3.6.8.exe) for x86
   * Git from [here](https://git-scm.com/download/win)
   * Install both using the downloaded `exe` files.  
+  
   **Important:** Make sure to check the box that says **Add Python 3.x to PATH** to ensure that the interpreter will be placed in your execution path.
 
 ### Downloading the Code
