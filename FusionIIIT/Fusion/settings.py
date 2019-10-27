@@ -193,7 +193,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'fusion',
-        'HOST': 'localhost',
+        'HOST': '172.27.16.216',
         'USER': 'admin',
         'PASSWORD': 'hello123'
     }
