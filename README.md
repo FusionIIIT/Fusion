@@ -4,9 +4,9 @@
 
 ## System Requirements
 
-* **Ubuntu `18.04`** (or newer) *OR*
-* **WSL** for **Windows 10** \(Follow the guide below\) :  
+* **Ubuntu `18.04`** (or newer) *OR* **WSL** for **Windows 10** \(Follow the guide below\) :  
     [Windows Subsystem for Linux Installation Guide for Windows 10](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
+* **Windows `7/8/8.1/10`**
 
 ## Software Requirements
 
@@ -16,12 +16,19 @@
 
 ## How to get started
 
-* Install the required packages using the following command :  
+* on **Ubuntu**:
+  * Install the required packages using the following command :  
     `sudo apt install postgresql postgresql-contrib python3.6-dev python-virtualenv build-essential git`
+
+* on **Windows**:
+  * Get Python 3.6.8 from [here](https://www.python.org/ftp/python/3.6.8/python-3.6.8-amd64.exe) for AMD64/x64 or [here](https://www.python.org/ftp/python/3.6.8/python-3.6.8.exe) for x86
+  * Git from [here](https://git-scm.com/download/win)
+  * Install both using the downloaded `exe` files.  
+  **Important:** Make sure to check the box that says **Add Python 3.x to PATH** to ensure that the interpreter will be placed in your execution path.
 
 ### Downloading the Code
 
-* Go to (<https://github.com/salarx/Fusion)> and click on **Fork**
+* Go to (<https://github.com/salarx/Fusion>) and click on **Fork**
 * You will be redirected to *your* fork, `https://github.com/<your_user_name>/Fusion`
 * Open the terminal, change to the directory where you want to clone the **Fusion** repository
 * Clone your repository using `git clone https://github.com/<your_user_name>/Fusion`
@@ -86,10 +93,10 @@ with the files in **notif_package_mod** folder inside the current directory
 
 * **(Recommended)** Use [Visual Studio Code](https://code.visualstudio.com/) as a text editor. Go through the [Tutorial](https://code.visualstudio.com/docs/python/python-tutorial) for getting started with **Visual Studio Code for Python**.  
 **Note** : Use the following guide if using **WSL** for Development  
-    (<https://code.visualstudio.com/docs/remote/wsl)>
+    (<https://code.visualstudio.com/docs/remote/wsl>)
 * Use the inbuilt **Source Control** feature for checking out, committing, pushing, pulling changes. You can also use [Github Desktop](https://desktop.github.com/) **_\(Windows/Mac only\)_**.  
 * Refer to below link for best practices regarding commit messages :  
-    (<https://gist.github.com/robertpainsi/b632364184e70900af4ab688decf6f53)>
+    (<https://gist.github.com/robertpainsi/b632364184e70900af4ab688decf6f53>)
 
 ## Different modules included
 
