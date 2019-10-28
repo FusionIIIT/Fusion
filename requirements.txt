@@ -15,10 +15,10 @@ daphne==1.4.2
 defusedxml==0.5.0
 Django==1.11.25
 django-allauth==0.32.0
-django-debug-toolbar==1.8
-django-markdown-deux==1.0.5
+django-debug-toolbar==2.0
+django-markdown-deux
 django-notifications-hq==1.5.0
-django-pagedown==1.0.5
+django-pagedown==1.0.6
 django-semanticui-forms==1.6.5
 flake8==3.4.1
 html5lib==1.0b10
@@ -56,7 +56,6 @@ xlrd==1.1.0
 XlsxWriter==1.0.2
 xlwt==1.3.0
 zope.interface==4.6.0
-django-notifications-hq==1.5.0
 html_text
 numpy
 psycopg2-binary
