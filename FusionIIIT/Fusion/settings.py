@@ -191,7 +191,7 @@ PROJECT_DIR = os.path.abspath(os.path.dirname(__file__))
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'fusion',
         'HOST': '172.27.16.216',
         'USER': 'admin',

@@ -2,11 +2,12 @@
 
 **FusionIIIT** is the automation of various functionalities, modules and tasks of/for **PDPM Indian Institute of Information Technology, Design and Manufacturing, Jabalpur** being developed in `python3.6` and using `Django` Webframework version `1.11`
 
-## System Requirements
+## System Configuration
 
-* **Ubuntu `18.04`** (or newer) *OR* **WSL** for **Windows 10** \(Follow the guide below\) :  
+* Ubuntu `18.04` **(Recommended)**
+* *OR* WSL for Windows `10` \(Follow the guide below\) :  
     [Windows Subsystem for Linux Installation Guide for Windows 10](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
-* **Windows `7/8/8.1/10`**
+* *OR* Windows `7/8/8.1/10`
 
 ## Software Requirements
 
@@ -23,9 +24,9 @@
 * on **Windows**:
   * Get Python 3.6.8 from [here](https://www.python.org/ftp/python/3.6.8/python-3.6.8-amd64.exe) for AMD64/x64 or [here](https://www.python.org/ftp/python/3.6.8/python-3.6.8.exe) for x86
   * Git from [here](https://git-scm.com/download/win)
-  * Install both using the downloaded `exe` files.  
-  
-  **Important:** Make sure to check the box that says **Add Python 3.x to PATH** to ensure that the interpreter will be placed in your execution path.
+  * Install both using the downloaded `exe` files  
+
+  **Important:** Make sure to check the box that says **Add Python 3.x to PATH** to ensure that the interpreter will be placed in your execution path
 
 ### Downloading the Code
 
