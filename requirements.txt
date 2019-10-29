@@ -59,4 +59,5 @@ zope.interface==4.6.0
 html_text
 numpy
 psycopg2-binary
-whitenoise
+whitenoise[brotli]
+gunicorn

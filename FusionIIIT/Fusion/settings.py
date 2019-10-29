@@ -117,7 +117,6 @@ INSTALLED_APPS = [
     'applications.academic_information',
     'applications.leave',
     'applications.library',
-
     'applications.gymkhana',
     'applications.office_module',
     'applications.central_mess',
@@ -129,9 +128,9 @@ INSTALLED_APPS = [
     'applications.placement_cell',
     'applications.scholarships',
     'applications.visitor_hostel',
+    'allauth',
     'allauth.account',
     'allauth.socialaccount',
-    'allauth',
     'allauth.socialaccount.providers.google',
     'semanticuiforms',
     'applications.feeds.apps.FeedsConfig',
@@ -261,8 +260,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_EMAIL_VERIFICATION = "none"
-SOCIALACCOUNT_QUERY_EMAIL = True
+ACCOUNT_EMAIL_REQUIRED = True
 LOGIN_REDIRECT_URL = "/"
 
 if DEBUG:
