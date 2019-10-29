@@ -136,6 +136,8 @@ INSTALLED_APPS = [
     'applications.feeds.apps.FeedsConfig',
     'pagedown',
     'markdown_deux',
+    "crispy_forms",
+
 ]
 
 MIDDLEWARE = [
@@ -278,3 +280,5 @@ if DEBUG:
 DJANGO_NOTIFICATIONS_CONFIG = {
 'USE_JSONFIELD':True,
 }
+
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
