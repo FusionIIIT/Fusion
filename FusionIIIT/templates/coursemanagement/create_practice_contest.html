@@ -24,32 +24,41 @@ Create Contest
 
 
         <div class="ui huge fluid disabled vertical pointing menu" style="max-width: 320px;">
+                <h3> {{course.course_name}}  </h3>
+                <a class="active item sidetab" href="/ocms/{{course.course_id}}/">
+                     Back To Course
+                     <i class="right floated chevron right icon"></i>
+                </a>
 
-            <a class="item sidetab disabled" data-tab="first" data-num="11">
-              View Courses
-              <i class="right floated chevron right icon"></i>
-            </a>
+                <!-- <a class="active item sidetab" data-tab="first" data-num="11">
+                  View Courses
+                  <i class="right floated chevron right icon"></i>
+                </a>
 
-            <a class="item sidetab disabled" data-tab="second" data-num="12">
-              Assignments
-              <i class="right floated chevron right icon"></i>
-            </a>
+                <a class="item sidetab" data-tab="second" data-num="12">
+                  Assignments
+                  <i class="right floated chevron right icon"></i>
+                </a>
 
-            <a class="item sidetab disabled" data-tab="third" data-num="13">
-              View Performance
-              <i class="right floated chevron right icon"></i>
-            </a>
-            {% if Lecturer == 1 %}
-            <a class="item sidetab disabled" data-tab="fourth" data-num="14">
-              Add Content
-              <i class="right floated chevron right icon"></i>
-            </a>
+                <a class="item sidetab disabled" data-tab="third" data-num="13">
+                  View Performance
+                  <i class="right floated chevron right icon"></i>
+                </a>
+                {% if lecturer == 1 %}
+                <a class="item sidetab disabled" data-tab="fourth" data-num="14">
+                  Add Content
+                  <i class="right floated chevron right icon"></i>
+                </a>
 
-            <a class="item sidetab disabled" data-tab="fifth" data-num="15">
-              Assessment
-              <i class="right floated chevron right icon"></i>
-          </a>
-          {% endif %}
+                <a class="item sidetab disabled" data-tab="fifth" data-num="15">
+                  Assessment
+                  <i class="right floated chevron right icon"></i>
+                </a>
+                <a class="item sidetab disabled" data-tab="sixth" data-num="16">
+                  Question Bank
+                  <i class="right floated chevron right icon"></i>
+                </a>
+              {% endif %} -->
         </div>
     </div>
     <div class="ui eight wide column "style="margin-bottom:5em">
@@ -57,9 +66,9 @@ Create Contest
             <form class="ui large form" method="post">
             {% csrf_token %} {% if errors %} {{errors}} {% endif %}
             <br/>
-            <h4 class="ui dividing header">Contest Details</h4>
+            <h4 class="ui dividing header">Practice Objective Questions Details</h4>
             <div class="field">
-                <label>Contest Name</label>
+                <label>Practice Contest Name</label>
                 <div class="field">
                     <div class="ui input left icon">
                         <i class="id card outline icon"></i> {{ form.name }}
@@ -74,7 +83,7 @@ Create Contest
                     <i class="comments icon"></i> {{ form.description }}
                 </div>
             </div>
-            
+
             <div class="ui field">
                 <label>Number Of Questions</label>
                 <div class="ui input">
@@ -82,9 +91,9 @@ Create Contest
                 </div>
             </div>
             <div class="ui field">
-                <label>Marks per Question</label>
+                <label>Total Score</label>
                 <div class="ui input">
-                    {{ form.per_question_score }}
+                    {{ form.total_score }}
                 </div>
             </div>
             <div class="ui field">
@@ -96,7 +105,7 @@ Create Contest
             <input type="submit" class="ui primary button" value="Submit" />
         </form>
         </div>
-        
+
     </div>
 
     <div class="column"></div>
@@ -107,6 +116,7 @@ Create Contest
 
 <script type="text/javascript">
     $(document).ready(function() {
+        console.log("Create contest");
         $('.ui.accordion').accordion('refresh');
     });
     $('.ui.sidebar')

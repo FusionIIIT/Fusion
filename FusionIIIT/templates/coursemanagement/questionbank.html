@@ -20,7 +20,7 @@
             <td>{{forloop.counter}}</td>
             <td>{{qb.name}}</td>
             <td>
-               <a href="/ocms/{{course.course_id}}/edit_bank/{{qb.pk}}"class="ui blue button">
+               <a href="/ocms/{{curriculum.course_code}}/edit_bank/{{qb.pk}}"class="ui blue button">
                  Open Question Bank
                </a>
             </td>
@@ -38,12 +38,12 @@
     <div class="ui blue button" id="create_qbank">
       Create a New Question Bank
     </div>
-    <form class="ui large form" style="display:none" id="qbank" method="post" action="/ocms/{{course.course_id}}/create_bank">
+    <form class="ui large form" style="display:none" id="qbank" method="post" action="/ocms/{{curriculum.course_code}}/create_bank">
       {% csrf_token %} {% if errors %} {{errors}} {% endif %}
       <br/>
       <div class="field">
-        <label>Question Bank Name</label>
-        <input type="text" name="qbname" placeholder="Name">
+        <label>Question Bank Name <font color="red" size="4.5">*</font></label>
+        <input type="text" name="qbname" placeholder="Name" required="true"/>
       </div>
       <input type="submit" class="ui primary button" value="Create" />
     </form>
