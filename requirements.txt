@@ -61,3 +61,4 @@ numpy
 psycopg2-binary
 whitenoise[brotli]
 gunicorn
+django-crispy-forms
