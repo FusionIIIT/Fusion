@@ -2,7 +2,7 @@
 {%block content%}
 {% load i18n %}
 {% load account socialaccount %}
-{% load static %}
+{% load static semanticui %}
 <div class="content">
   <img class="ui rounded centered small image"
     src="{% static 'globals/img/user.png' %}"
@@ -16,14 +16,15 @@
 <div class="content">
   <form method="POST" class="ui form" style="margin-top: 2.5%;margin-bottom: 2.5%;" action="{% url 'account_login' %}">
     {% csrf_token %}
-    {{ form.as_p }}
-    <a class="button secondaryAction" style="display: inline; float: right; margin-top: -30px;" href="{% url 'account_reset_password' %}">{% trans "Forgot Password?" %}</a>
+    {% render_form form %}
     {% if redirect_field_value %}
     <input type="hidden"  name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
-    {% endif %} 
-
+    {% endif %}
     <div class="field">
-        <button class="ui fluid large primary button" type="submit">Login</button>
+      <button class="ui fluid large primary button" type="submit">Login</button>
+    </div>
+    <div class="center aligned">
+      <a href="{% url 'account_reset_password' %}">{% trans "Forgot Password?" %}</a>
     </div>
   </form>
 

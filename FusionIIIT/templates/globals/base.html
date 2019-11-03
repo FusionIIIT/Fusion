@@ -7,19 +7,19 @@
     </title>
 
     {% load staticfiles %}
-    <link rel="stylesheet" type="text/css" href="{% static 'globals/semantic-ui/components/reset.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'globals/semantic-ui/components/icon.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'globals/css/components/reset.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'globals/css/components/icon.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'globals/css/semantic.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'globals/css/mediaquery.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'globals/css/semantic-notify.css' %}">
+    {% block css %}
+    {% endblock %}
 
     <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"> </script>
     <script type="text/javascript" src="{% static 'globals/js/jquery.formset.js' %}"> </script>
     <script type="text/javascript" src="{% static 'globals/js/semantic-notify.js' %}"> </script>
     <script type="text/javascript" src="{% static 'globals/js/ajax-post.js' %}"></script>
     <script type="text/javascript" src="{% static 'globals/js/notify.js' %}" type="text/javascript"></script>
-    {% block css %}
-    {% endblock %}
 
 </head>
 
