@@ -31,6 +31,7 @@ from notification.views import academics_module_notif
 
 demo_date = datetime.datetime.now()
 # demo_date = demo_date - datetime.timedelta(days = 180)
+# demo_date = demo_date + datetime.timedelta(days = 180)
 # demo_date = demo_date + datetime.timedelta(days = 3)
 # demo_date = demo_date - datetime.timedelta(days = 5)
 

@@ -136,8 +136,6 @@ INSTALLED_APPS = [
     'applications.feeds.apps.FeedsConfig',
     'pagedown',
     'markdown_deux',
-    "crispy_forms",
-
 ]
 
 MIDDLEWARE = [
@@ -272,13 +270,14 @@ if DEBUG:
     INSTALLED_APPS += (
         'debug_toolbar',
         )
-    INTERNAL_IPS = ('127.0.0.1',)
+    INTERNAL_IPS = ('172.27.16.216',)
+    def custom_show_toolbar(self):
+        return True
     DEBUG_TOOLBAR_CONFIG = {
         'INTERCEPT_REDIRECTS': False,
+        'SHOW_TOOLBAR_CALLBACK': custom_show_toolbar,
     }
 
 DJANGO_NOTIFICATIONS_CONFIG = {
 'USE_JSONFIELD':True,
 }
-
-CRISPY_TEMPLATE_PACK = 'bootstrap4'
