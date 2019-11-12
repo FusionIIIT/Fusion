@@ -682,7 +682,7 @@ def dashboard(request):
         'notifications':notifs
     }
     if(request.user.get_username() == 'director'):
-        return render(request, "dashboard/director_dashboard.html", context)
+        return render(request, "dashboard/director_dashboard2.html", context)
     else:
         return render(request, "dashboard/dashboard.html", context)
 
