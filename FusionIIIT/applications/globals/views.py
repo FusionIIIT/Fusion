@@ -681,7 +681,10 @@ def dashboard(request):
     context={
         'notifications':notifs
     }
-    return render(request, "dashboard/dashboard.html", context)
+    if(request.user.get_username() == 'director'):
+        return render(request, "dashboard/director_dashboard.html", context)
+    else:
+        return render(request, "dashboard/dashboard.html", context)
 
 @login_required(login_url=LOGIN_URL)
 def profile(request, username=None):
