@@ -24,12 +24,15 @@
         {% comment %}The left-margin segment!{% endcomment %}
         <div class="column"></div>
 
-        {% comment %}
+        <!-- {% comment %}
             The left-rail segment starts here!
         {% endcomment %}
         <div class="three wide column">
 
             {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
             {% comment %}The user image card ends here!{% endcomment %}
 
             <div class="ui divider"></div>
@@ -49,12 +52,97 @@
                 </a>
 
             </div>
+
             {% comment %}The Tab-Menu ends here!{% endcomment %}
 
         </div>
         {% comment %}
             The left-rail segment ends here!
+        {% endcomment %} -->
+
+
+
+
+        {% comment %}
+            The left-rail segment starts here!
         {% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}The Tab-Menu starts here!{% endcomment %}
+            <div class="ui huge fluid vertical pointing menu"
+                 style="max-width: 320px;">
+             
+                <div class="item" id="faculty_profile" >
+                   View Faculty Details
+                    <i class="right floated chevron right icon"></i>
+                </div>
+                <div id="staff_profile2" class="item"  >
+                    View Staff Department Wise 
+                     <i class="right floated chevron right icon"></i>
+                </div>
+                
+
+                 <div  id="student_profile" class="item">
+                    View Student Details
+                     <i class="right floated chevron right icon"></i>
+                </div>
+
+
+                <div  id="meeting" class="item" >
+                    Schedule Meeting
+                    <i class="right floated chevron right icon"></i>
+                </div>
+
+                <div  id="view_meetings" class="item" >
+                    Cancel Meetings
+                    <i class="right floated chevron right icon"></i>
+                </div>
+
+                <a class="item" data-tab="tab1content1" onclick="pnd()">
+                   Office of Dean P & D 
+                   <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="tab1content2" onclick="rspc()">
+                   Office of Dean RSPC
+                   <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="tab1content3" onclick="stud()">
+                    Office of Dean Students
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="tab1content4" onclick="acad()">
+                    Office of Dean Acad
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="tab1content5" onclick="purchase()">
+                    Puchase Office
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+                <a class="item" data-tab="tab1content6" onclick="registrar()">
+                    Registrar Office
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+
+        </div>            
+
+            <br/><br/><br/>
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+    </div>
+
+
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+
+
 
 
 
