@@ -30,9 +30,6 @@
         <div class="three wide column">
 
             {% comment %}The user image card starts here!{% endcomment %}
-            {% block usercard %}
-                {% include 'globals/usercard.html' %}
-            {% endblock %}
             {% comment %}The user image card ends here!{% endcomment %}
 
             <div class="ui divider"></div>
@@ -46,7 +43,7 @@
                     <i class="right floated chevron right icon"></i>
                 </a>
 
-                <a class="item" href="{% url 'office:directorOffice' %}">
+                <a class="item" href="{% url 'office_module:directorOffice' %}">
                     Director Office
                     <i class="right floated chevron right icon"></i>
                 </a>
@@ -571,7 +568,7 @@
             //alert("hey")
             $.ajax({
                 type: 'POST',
-                url: '/office/directorOffice/viewProfile',
+                url: '/office_module/directorOffice/viewProfile',
                 data: {},
                 contentType: "application/json; charset=utf-8",
                 dataType: 'json',
@@ -632,7 +629,7 @@
 
         $.ajax({
                 type: 'POST',
-                url: '/office/directorOffice/viewProfile',
+                url: '/office_module/directorOffice/viewProfile',
                 data: {},
                 contentType: "application/json; charset=utf-8",
                 dataType: 'json',
@@ -695,7 +692,7 @@
             
             $.ajax({
                 type: 'POST',
-                url: '/office/directorOffice/viewOngoingProjects',
+                url: '/office_module/directorOffice/viewOngoingProjects',
                 data: {},
                 contentType: "application/json; charset=utf-8",
                 dataType: 'json',
@@ -739,7 +736,7 @@
             //alert("hey")
             $.ajax({
                 type: 'POST',
-                url: '/office/directorOffice/viewOfficeBearers',
+                url: '/office_module/directorOffice/viewOfficeBearers',
                 data: {},
                 contentType: "application/json; charset=utf-8",
                 dataType: 'json',
@@ -776,7 +773,7 @@
 
             $.ajax({
                 type: 'POST',
-                url: '/office/directorOffice/viewMeetings',
+                url: '/office_module/directorOffice/viewMeetings',
                 data: {},
                 contentType: "application/json; charset=utf-8",
                 dataType: 'json',
@@ -814,7 +811,7 @@
         
         $.ajax({
                 type: 'POST',
-                url: '/office/directorOffice/viewHOD',
+                url: '/office_module/directorOffice/viewHOD',
                 data: {},
                 contentType: "application/json; charset=utf-8",
                 dataType: 'json',
