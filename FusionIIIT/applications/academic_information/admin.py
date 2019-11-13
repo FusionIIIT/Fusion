@@ -8,9 +8,16 @@ class CurriculumAdmin(admin.ModelAdmin):
     model = Curriculum
     search_fields = ('course_id__course_name',)
 
+class CourseAdmin(admin.ModelAdmin):
+    model = Course
+    search_fields = ('course_name',)
+
+class StudentAdmin(admin.ModelAdmin):
+    model = Student
+    search_fields = ('id__user__username',)
 
 admin.site.register(Student)
-admin.site.register(Course)
+admin.site.register(Course,CourseAdmin)
 admin.site.register(Curriculum_Instructor)
 admin.site.register(Meeting)
 admin.site.register(Exam_timetable)
