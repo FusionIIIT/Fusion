@@ -74,16 +74,12 @@ class Student(models.Model):
     mother_name = models.CharField(max_length=40, default='')
     hall_no = models.IntegerField(default=1)
     room_no = models.CharField(max_length=10, blank=True, null=True)
-    specialization = models.CharField(max_length=20,
-                                      choices=Constants.MTechSpecialization, null=True)
-
-    def __str__(self):
-        return str(self.id)
+    specialization = models.CharField(max_length=20,choices=Constants.MTechSpecialization, null=True, default='')
 
 
 class Course(models.Model):
-    course_name = models.CharField(max_length=100)
-    course_details = models.TextField(max_length=200)
+    course_name = models.CharField(max_length=600)
+    course_details = models.TextField(max_length=500)
 
     class Meta:
         db_table = 'Course'

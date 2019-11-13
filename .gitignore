@@ -66,3 +66,6 @@ ENV/
 
 # VSCode Settings
 .vscode/settings.json
+
+# Node Modules
+FusionIIIT/applications/globals/static/globals/node_modules

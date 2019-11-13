@@ -129,6 +129,9 @@ class InitialRegistrations(models.Model):
 
     class Meta:
         db_table = 'InitialRegistrations'
+    
+    def __str__(self):
+        return str(self.curr_id) + " " + str(self.student_id)
 
 
 class FinalRegistrations(models.Model):

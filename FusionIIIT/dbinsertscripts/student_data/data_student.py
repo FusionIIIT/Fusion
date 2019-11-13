@@ -71,8 +71,9 @@ for filename in filenames:
             floated = True)
         curriculum_obj.save()
 
-
-    for i in range(10, 130):
+    number_rows = z.nrows
+    number_cols = z.ncols
+    for i in range(10, number_rows):
         try:
             print(i)
             roll_no = int(z.cell(i, 1).value)
@@ -86,8 +87,8 @@ for filename in filenames:
             username = str(roll_no).strip()
             email = username + '@iiitdmj.ac.in'
             print(username)
-            dep = str(z.cell(i, 3).value).strip()
             password= "hello123"
+            dep = str(z.cell(i, 3).value).strip()
             try:
                 user = User.objects.get(username = username)
             except:
@@ -112,6 +113,9 @@ for filename in filenames:
             try:
                 ext = ExtraInfo.objects.get(user = user)
             except:
+                department_list = ["CSE","ECE","ME"]
+                if(dep not in department_list):
+                    dep = "Design"
                 ext = ExtraInfo(
                 id = roll_no,
                 user = user,
