@@ -378,17 +378,17 @@ def mess(request):
 
             elif f.feedback_type == 'Others' and mess_opt.mess_option == 'mess2':
                 count8 += 1
-            context = {
-                 'info': extrainfo,
-                 'menu': y,
-                 'meeting': meeting,
-                 'minutes': minutes,
-                 'count1': count1,
-                 'count2': count2, 'count3': count3, 'feed': feed,
-                 'count4': count4, 'form': form, 'count5': count5,
-                 'count6': count6, 'count7': count7, 'count8': count8, 'desig': desig
-            }
-            return render(request, 'messModule/mess.html', context)
+        context = {
+             'info': extrainfo,
+             'menu': y,
+             'meeting': meeting,
+             'minutes': minutes,
+             'count1': count1,
+             'count2': count2, 'count3': count3, 'feed': feed,
+             'count4': count4, 'form': form, 'count5': count5,
+             'count6': count6, 'count7': count7, 'count8': count8, 'desig': desig
+        }
+        return render(request, 'messModule/mess.html', context)
 
 
 @login_required
