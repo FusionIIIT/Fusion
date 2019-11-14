@@ -117,6 +117,7 @@ INSTALLED_APPS = [
     'applications.academic_information',
     'applications.leave',
     'applications.library',
+    'applications.notifications_extension',
     'applications.gymkhana',
     'applications.office_module',
     'applications.central_mess',
