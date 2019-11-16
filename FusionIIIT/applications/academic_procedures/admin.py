@@ -8,7 +8,7 @@ from .models import (BranchChange, CoursesMtech, InitialRegistrations,
 
 class RegisterAdmin(admin.ModelAdmin):
     model = Register
-    search_fields = ('curr_id__curriculum_id',)
+    search_fields = ('curr_id__course_code',)
 
 admin.site.register(Thesis)
 admin.site.register(Register,RegisterAdmin)

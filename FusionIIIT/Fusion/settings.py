@@ -132,7 +132,7 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
-    'allauth.socialaccount.providers.google',
+    # 'allauth.socialaccount.providers.google',
     'semanticuiforms',
     'applications.feeds.apps.FeedsConfig',
     'pagedown',
@@ -285,3 +285,4 @@ DJANGO_NOTIFICATIONS_CONFIG = {
 
 CRISPY_TEMPLATE_PACK = 'semantic-ui'
 CRISPY_ALLOWED_TEMPLATE_PACKS = ('semantic-ui')
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240
