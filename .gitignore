@@ -68,3 +68,5 @@ ENV/
 
 # Node Modules
 node_modules/
+
+FusionIIIT/static/
