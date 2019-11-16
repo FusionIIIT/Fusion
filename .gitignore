@@ -68,4 +68,4 @@ ENV/
 .vscode/settings.json
 
 # Node Modules
-FusionIIIT/applications/globals/static/globals/node_modules
+node_modules/
