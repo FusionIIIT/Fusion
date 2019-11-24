@@ -76,6 +76,11 @@ class Student(models.Model):
     room_no = models.CharField(max_length=10, blank=True, null=True)
     specialization = models.CharField(max_length=20,choices=Constants.MTechSpecialization, null=True, default='')
 
+    def __str__(self):
+        username = str(self.id.user.username)
+        return username
+        
+
 
 class Course(models.Model):
     course_name = models.CharField(max_length=600)
@@ -106,7 +111,7 @@ class Curriculum(models.Model):
         unique_together = ('course_code', 'batch', 'programme')
 
     def __str__(self):
-        return str(self.curriculum_id)
+        return '{} - {}'.format(self.course_code,self.course_id.course_name)
 
 
 class Curriculum_Instructor(models.Model):

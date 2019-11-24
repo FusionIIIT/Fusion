@@ -73,7 +73,7 @@ class Register(models.Model):
         unique_together = ['curr_id','student_id']
 
     def __str__(self):
-        return str(self.curr_id)
+        return '{} - {}'.format(self.student_id.id.user.username,self.curr_id.course_code)
 
 
 
@@ -131,7 +131,7 @@ class InitialRegistrations(models.Model):
         db_table = 'InitialRegistrations'
     
     def __str__(self):
-        return str(self.curr_id) + " " + str(self.student_id)
+        return str(self.curr_id) + "-" + str(self.student_id)
 
 
 class FinalRegistrations(models.Model):

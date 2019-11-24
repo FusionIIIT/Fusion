@@ -10,9 +10,13 @@ class RegisterAdmin(admin.ModelAdmin):
     model = Register
     search_fields = ('curr_id__course_code',)
 
+class InitialRegistrationsAdmin(admin.ModelAdmin):
+    model = InitialRegistrations
+    search_fields = ('student_id__id__id',)
+
 admin.site.register(Thesis)
 admin.site.register(Register,RegisterAdmin)
-admin.site.register(InitialRegistrations)
+admin.site.register(InitialRegistrationsAdmin)
 admin.site.register(BranchChange)
 admin.site.register(CoursesMtech)
 admin.site.register(MinimumCredits)
