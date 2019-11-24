@@ -15,7 +15,7 @@ from applications.academic_procedures.models import InitialRegistrations,Student
 excel = xlrd.open_workbook(
         os.path.join(
             os.path.dirname(__file__),
-            'pre_registration','UG2016.xlsx'))
+            'UG2016','UG2016.xlsx'))
 
 
 programme = 'B.Tech'

@@ -16,7 +16,7 @@ class InitialRegistrationsAdmin(admin.ModelAdmin):
 
 admin.site.register(Thesis)
 admin.site.register(Register,RegisterAdmin)
-admin.site.register(InitialRegistrationsAdmin)
+admin.site.register(InitialRegistrations,InitialRegistrationsAdmin)
 admin.site.register(BranchChange)
 admin.site.register(CoursesMtech)
 admin.site.register(MinimumCredits)
