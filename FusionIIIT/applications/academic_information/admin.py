@@ -14,6 +14,7 @@ class CourseAdmin(admin.ModelAdmin):
 
 class StudentAdmin(admin.ModelAdmin):
     model = Student
+    raw_id_fields = ("student",)
     search_fields = ('id__user__username',)
 
 admin.site.register(Student)

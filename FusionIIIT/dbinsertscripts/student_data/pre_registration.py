@@ -77,7 +77,7 @@ for filename in filenames:
                         floated = True)
                     curriculum_obj.save()
                 try:
-                    p = InitialRegistrations.objects.get(student_id__id = ext)
+                    p = InitialRegistrations.objects.filter(student_id__id = ext).get(curr_id = curriculum_obj)
                 except:
                     p = InitialRegistrations(
                         curr_id = curriculum_obj,
