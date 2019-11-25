@@ -255,29 +255,29 @@ SITE_ID = 1
 
 # os.path.join(BASE_DIR, 'static/')
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 MEDIA_URL = '/media/'
 
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_EMAIL_REQUIRED = True
 LOGIN_REDIRECT_URL = "/"
 
-if DEBUG:
-    MIDDLEWARE += (
-        'debug_toolbar.middleware.DebugToolbarMiddleware',
-    )
-    INSTALLED_APPS += (
-        'debug_toolbar',
-        )
-    INTERNAL_IPS = ('172.27.16.216',)
-    def custom_show_toolbar(self):
-        return True
-    DEBUG_TOOLBAR_CONFIG = {
-        'INTERCEPT_REDIRECTS': False,
-        'SHOW_TOOLBAR_CALLBACK': custom_show_toolbar,
-    }
+# if DEBUG:
+#     MIDDLEWARE += (
+#         'debug_toolbar.middleware.DebugToolbarMiddleware',
+#     )
+#     INSTALLED_APPS += (
+#         'debug_toolbar',
+#         )
+#     INTERNAL_IPS = ('172.27.16.216',)
+#     def custom_show_toolbar(self):
+#         return True
+#     DEBUG_TOOLBAR_CONFIG = {
+#         'INTERCEPT_REDIRECTS': False,
+#         'SHOW_TOOLBAR_CALLBACK': custom_show_toolbar,
+#     }
 
 DJANGO_NOTIFICATIONS_CONFIG = {
 'USE_JSONFIELD':True,
@@ -286,3 +286,4 @@ DJANGO_NOTIFICATIONS_CONFIG = {
 CRISPY_TEMPLATE_PACK = 'semantic-ui'
 CRISPY_ALLOWED_TEMPLATE_PACKS = ('semantic-ui')
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240
+
