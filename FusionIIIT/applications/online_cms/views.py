@@ -147,7 +147,7 @@ def course(request, course_code):
 
 
                 for x in registered_students:
-                     students[x.student_id.id.id] = (x.student_id.id.user.first_name + " " + x.student_id.id.user.last_name, x.r_id)
+                     students[x.student_id.id.id] = (x.student_id.id.user.first_name + " " + x.student_id.id.user.last_name, x.id)
                 #     stored_marks = StoreMarks.objects.filter(mid = x.r_id)
                 #     for x in stored_marks:
                 #         test_marks[x.id] = (x.mid.r_id,x.exam_type,x.marks)

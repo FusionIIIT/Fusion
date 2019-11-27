@@ -2592,12 +2592,18 @@ def manual_grade_submission(request):
             marks_check_obj_create = MarkSubmissionCheck(
                 curr_id = curriculum_obj,
                 submitted = True,
-                verified = True,
+                verified = False,
                 announced = False)
             marks_check_obj_create.save()
 
         for i in range(11,sheet.nrows):
             roll = str(int(sheet.cell(i,0).value))
+            q1 = float(sheet.cell(i,2).value)
+            mid = float(sheet.cell(i,3).value)
+            q2 = float(sheet.cell(i,4).value)
+            end = float(sheet.cell(i,5).value)
+            others = float(sheet.cell(i,6).value)
+            grade = str(sheet.cell(i,8).value).strip()
             user = get_object_or_404(User, username = roll)
             extrainfo = ExtraInfo.objects.get(user = user)
             dep_objects = DepartmentInfo.objects.get(name = str(branch))
@@ -2615,14 +2621,7 @@ def manual_grade_submission(request):
             student_obj = Student.objects.get(id = extrainfo)
             register_obj = Register.objects.all().filter(curr_id = curriculum_obj, student_id = student_obj).first()
             if not register_obj:
-                try:
-                    last_id = Register.objects.all().aggregate(Max('r_id'))
-                    last_id = last_id['r_id__max']+1
-                except Exception as e:
-                    print(e)
-                    last_id = 1
                 register_obj_create = Register(
-                    r_id = last_id,
                     curr_id = curriculum_obj,
                     year = batch,
                     student_id = student_obj,
@@ -2632,22 +2631,22 @@ def manual_grade_submission(request):
 
             st_existing = SemesterMarks.objects.all().filter(student_id = student_obj).filter(curr_id = curriculum_obj).first()
             if st_existing :
-                st_existing.grade = str(sheet.cell(i,2).value)
+                st_existing.grade = str(sheet.cell(i,8).value)
                 st_existing.save()
             else :
                 p = SemesterMarks(
                         student_id = student_obj,
-                        q1 = 0.0,
-                        mid_term = 0.0,
-                        q2 = 0.0,
-                        end_term = 0.0,
-                        other = 0.0,
-                        grade = str(sheet.cell(i,2).value),
+                        q1 = q1,
+                        mid_term = mid,
+                        q2 = q2,
+                        end_term = end,
+                        other = others,
+                        grade = grade,
                         curr_id = curriculum_obj
                      )
                 p.save()
 
-    return HttpResponseRedirect('/aims/')
+    return HttpResponseRedirect('/academic-procedures/')
 #
 #
 #
