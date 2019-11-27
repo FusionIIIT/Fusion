@@ -111,7 +111,7 @@ def academic_procedures_faculty(request):
     elif str(request.user) == "acadadmin" :
         return HttpResponseRedirect('/academic-procedures/main/')
 
-    elif str(des.designation) == "Associate Professor" :
+    elif str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor":
         object_faculty = Faculty.objects.get(id = user_details)
 
         student_flag = False
@@ -1612,7 +1612,8 @@ def acad_proced_global_context():
         if int(i.curr_id.batch)+int(i.curr_id.sem)/2 == int(demo_date.year):
             submitted_course_list.append(i.curr_id)
         else:
-            continue
+            submitted_course_list.append(i.curr_id)
+            #continue
     print(submitted_course_list)
     # submitted_course_list = SemesterMarks.objects.all().filter(curr_id__in = submitted_course_list)
     # print(submitted_course_list)

@@ -62,7 +62,6 @@ class Constants:
 
 
 class Register(models.Model):
-    r_id = models.AutoField(primary_key=True)
     curr_id = models.ForeignKey(Curriculum, on_delete=models.CASCADE)
     year = models.IntegerField(default=datetime.datetime.now().year)
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
