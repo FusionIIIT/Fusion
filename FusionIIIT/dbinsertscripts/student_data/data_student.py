@@ -1,4 +1,5 @@
 import xlrd
+import datetime
 import sys
 import os
 import django
@@ -7,10 +8,15 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'Fusion.settings'
 django.setup()
 
 
+demo_date = datetime.datetime.now()
+
 from django.contrib.auth.models import User
 from applications.academic_information.models import Student,Course, Curriculum
 from applications.academic_procedures.models import Register
 from applications.globals.models import DepartmentInfo, Designation, ExtraInfo, HoldsDesignation
+
+log = open("myprog.log", "a")
+sys.stdout = log
 
 filenames = os.listdir('/home/fusion/Fusion/FusionIIIT/dbinsertscripts/student_data/btech')
 for filename in filenames:
@@ -57,7 +63,7 @@ for filename in filenames:
             course_details = instructor)
         course_obj.save()
     try:
-        curriculum_obj = Curriculum.objects.filter(course_code = course_code).filter(batch = batch).filter(programme = programme).get(branch=branch)
+        curriculum_obj = Curriculum.objects.filter(course_code = course_code).get(programme = programme)
     except:
         curriculum_obj = Curriculum(
             course_code = course_code,
@@ -84,6 +90,16 @@ for filename in filenames:
         else:
             last_name  = name[1]
         username = str(roll_no).strip()
+        year, month = demo_date.year, int(demo_date.month)
+        user_year = year - username[:4]
+        if month >= 7 and month<=12:
+            sem_odd_even = 'odd'
+        else:
+            sem_odd_even = 'even'
+        if sem_odd_even == 'odd':
+            sem  = user_year* 2 + 1
+        else:
+            sem = user_year * 2
         email = username + '@iiitdmj.ac.in'
         print(username)
         password= "hello123"
@@ -139,13 +155,10 @@ for filename in filenames:
         st.save()
         print (curriculum_obj)
         print (st)
-        count = Register.objects.latest('r_id')
-        count = Register.r_id
         try:
             register_obj = Register.objects.filter(curr_id = curriculum_obj).get(student_id = st)
         except:
             register_obj = Register(
-                r_id = count + 1,
                 curr_id = curriculum_obj,
                 year = batch,
                 student_id = st,
