@@ -113,7 +113,12 @@ def academic_procedures_faculty(request):
 
     elif str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor":
         object_faculty = Faculty.objects.get(id = user_details)
-
+        month = int(demo_date.month)
+        sem = []
+        if month>=7 and month<=12:
+            sem = [1,3,5,7]
+        else:
+            sem = [2,4,6,8]
         student_flag = False
         fac_flag = True
 
@@ -125,7 +130,7 @@ def academic_procedures_faculty(request):
         approved_thesis_request_list = thesis_supervision_request_list.filter(approval_supervisor = True)
         pending_thesis_request_list = thesis_supervision_request_list.filter(pending_supervisor = True)
         faculty_list = get_faculty_list()
-        courses_list = Curriculum_Instructor.objects.filter(instructor_id=user_details)
+        courses_list = Curriculum_Instructor.objects.filter(instructor_id=user_details).filter(curriculum_id__sem__in = sem)
         return render(
                         request,
                          '../templates/academic_procedures/academicfac.html' ,

@@ -91,7 +91,7 @@ for filename in filenames:
             last_name  = name[1]
         username = str(roll_no).strip()
         year, month = demo_date.year, int(demo_date.month)
-        user_year = year - username[:4]
+        user_year = year - int(username[:4])
         if month >= 7 and month<=12:
             sem_odd_even = 'odd'
         else:
