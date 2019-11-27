@@ -125,6 +125,9 @@ class Curriculum_Instructor(models.Model):
 
     def __self__(self):
         return '{} - {}'.format(self.curriculum_id, self.instructor_id)
+    
+    def __str__(self):
+        return '{} - {}'.format(self.curriculum_id.course_code,self.instructor_id.user.username)
 
 
 class Student_attendance(models.Model):
