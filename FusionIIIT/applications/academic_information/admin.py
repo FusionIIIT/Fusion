@@ -6,12 +6,24 @@ from .models import (Calendar, Course, Exam_timetable, Grades, Holiday,
 
 class CurriculumAdmin(admin.ModelAdmin):
     model = Curriculum
-    search_fields = ('course_id__course_name',)
+    search_fields = ('course_code',)
 
+class CourseAdmin(admin.ModelAdmin):
+    model = Course
+    search_fields = ('course_name',)
 
-admin.site.register(Student)
-admin.site.register(Course)
-admin.site.register(Curriculum_Instructor)
+class StudentAdmin(admin.ModelAdmin):
+    model = Student
+    raw_id_fields = ("student",)
+    search_fields = ('id__user__username',)
+
+class Curriculum_InstructorAdmin(admin.ModelAdmin):
+    model = Curriculum_Instructor
+    search_fields = ('curriculum_id__course_code',)
+
+admin.site.register(Student,StudentAdmin)
+admin.site.register(Course,CourseAdmin)
+admin.site.register(Curriculum_Instructor,Curriculum_InstructorAdmin)
 admin.site.register(Meeting)
 admin.site.register(Exam_timetable)
 admin.site.register(Timetable)

@@ -11,7 +11,7 @@ var x = setInterval(function() {
     // Output the result in an element with id="demo"
     document.getElementById("demo").innerHTML = hours + "h "
     + minutes + "m " + seconds + "s ";
-		duration-=1
+		duration=duration-1
     // If the count down is over, write some text
     if (duration < 0) {
         clearInterval(x);

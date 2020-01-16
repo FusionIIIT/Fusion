@@ -22,4 +22,3 @@ for z in k:
             print('hogaya')
         except:
             print('nahihua')
-#exec(open("dbinsertscripts/academics/facultyscript.py").read())

@@ -31,6 +31,7 @@ from notification.views import academics_module_notif
 
 demo_date = datetime.datetime.now()
 # demo_date = demo_date - datetime.timedelta(days = 180)
+# demo_date = demo_date + datetime.timedelta(days = 180)
 # demo_date = demo_date + datetime.timedelta(days = 3)
 # demo_date = demo_date - datetime.timedelta(days = 5)
 
@@ -110,9 +111,14 @@ def academic_procedures_faculty(request):
     elif str(request.user) == "acadadmin" :
         return HttpResponseRedirect('/academic-procedures/main/')
 
-    elif str(des.designation) == "Associate Professor" :
+    elif str(des.designation) == "Associate Professor" or str(des.designation) == "Professor" or str(des.designation) == "Assistant Professor":
         object_faculty = Faculty.objects.get(id = user_details)
-
+        month = int(demo_date.month)
+        sem = []
+        if month>=7 and month<=12:
+            sem = [1,3,5,7]
+        else:
+            sem = [2,4,6,8]
         student_flag = False
         fac_flag = True
 
@@ -124,7 +130,7 @@ def academic_procedures_faculty(request):
         approved_thesis_request_list = thesis_supervision_request_list.filter(approval_supervisor = True)
         pending_thesis_request_list = thesis_supervision_request_list.filter(pending_supervisor = True)
         faculty_list = get_faculty_list()
-        courses_list = Curriculum_Instructor.objects.filter(instructor_id=user_details)
+        courses_list = Curriculum_Instructor.objects.filter(instructor_id=user_details).filter(curriculum_id__sem__in = sem)
         return render(
                         request,
                          '../templates/academic_procedures/academicfac.html' ,
@@ -1611,7 +1617,8 @@ def acad_proced_global_context():
         if int(i.curr_id.batch)+int(i.curr_id.sem)/2 == int(demo_date.year):
             submitted_course_list.append(i.curr_id)
         else:
-            continue
+            submitted_course_list.append(i.curr_id)
+            #continue
     print(submitted_course_list)
     # submitted_course_list = SemesterMarks.objects.all().filter(curr_id__in = submitted_course_list)
     # print(submitted_course_list)
@@ -2585,12 +2592,18 @@ def manual_grade_submission(request):
             marks_check_obj_create = MarkSubmissionCheck(
                 curr_id = curriculum_obj,
                 submitted = True,
-                verified = True,
+                verified = False,
                 announced = False)
             marks_check_obj_create.save()
 
         for i in range(11,sheet.nrows):
             roll = str(int(sheet.cell(i,0).value))
+            q1 = float(sheet.cell(i,2).value)
+            mid = float(sheet.cell(i,3).value)
+            q2 = float(sheet.cell(i,4).value)
+            end = float(sheet.cell(i,5).value)
+            others = float(sheet.cell(i,6).value)
+            grade = str(sheet.cell(i,8).value).strip()
             user = get_object_or_404(User, username = roll)
             extrainfo = ExtraInfo.objects.get(user = user)
             dep_objects = DepartmentInfo.objects.get(name = str(branch))
@@ -2608,14 +2621,7 @@ def manual_grade_submission(request):
             student_obj = Student.objects.get(id = extrainfo)
             register_obj = Register.objects.all().filter(curr_id = curriculum_obj, student_id = student_obj).first()
             if not register_obj:
-                try:
-                    last_id = Register.objects.all().aggregate(Max('r_id'))
-                    last_id = last_id['r_id__max']+1
-                except Exception as e:
-                    print(e)
-                    last_id = 1
                 register_obj_create = Register(
-                    r_id = last_id,
                     curr_id = curriculum_obj,
                     year = batch,
                     student_id = student_obj,
@@ -2625,22 +2631,22 @@ def manual_grade_submission(request):
 
             st_existing = SemesterMarks.objects.all().filter(student_id = student_obj).filter(curr_id = curriculum_obj).first()
             if st_existing :
-                st_existing.grade = str(sheet.cell(i,2).value)
+                st_existing.grade = str(sheet.cell(i,8).value)
                 st_existing.save()
             else :
                 p = SemesterMarks(
                         student_id = student_obj,
-                        q1 = 0.0,
-                        mid_term = 0.0,
-                        q2 = 0.0,
-                        end_term = 0.0,
-                        other = 0.0,
-                        grade = str(sheet.cell(i,2).value),
+                        q1 = q1,
+                        mid_term = mid,
+                        q2 = q2,
+                        end_term = end,
+                        other = others,
+                        grade = grade,
                         curr_id = curriculum_obj
                      )
                 p.save()
 
-    return HttpResponseRedirect('/aims/')
+    return HttpResponseRedirect('/academic-procedures/')
 #
 #
 #

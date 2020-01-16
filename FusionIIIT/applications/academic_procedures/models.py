@@ -62,7 +62,6 @@ class Constants:
 
 
 class Register(models.Model):
-    r_id = models.AutoField(primary_key=True)
     curr_id = models.ForeignKey(Curriculum, on_delete=models.CASCADE)
     year = models.IntegerField(default=datetime.datetime.now().year)
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
@@ -73,7 +72,7 @@ class Register(models.Model):
         unique_together = ['curr_id','student_id']
 
     def __str__(self):
-        return str(self.curr_id)
+        return '{} - {}'.format(self.student_id.id.user.username,self.curr_id.course_code)
 
 
 
@@ -129,6 +128,9 @@ class InitialRegistrations(models.Model):
 
     class Meta:
         db_table = 'InitialRegistrations'
+    
+    def __str__(self):
+        return str(self.curr_id) + "-" + str(self.student_id)
 
 
 class FinalRegistrations(models.Model):

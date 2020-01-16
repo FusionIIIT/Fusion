@@ -54,10 +54,10 @@ EMAIL_HOST = 'smtp.gmail.com'
 
 # email of sender
 
-EMAIL_HOST_USER = 'erp@iiitdmj.ac.in'
+EMAIL_HOST_USER = 'fusion20172020@gmail.com'
 
 # password of sender
-EMAIL_HOST_PASSWORD = ''
+EMAIL_HOST_PASSWORD = 'Fus20ion!0'
 
 EMAIL_PORT = 587
 ACCOUNT_EMAIL_REQUIRED = True
@@ -75,9 +75,9 @@ ACCOUNT_EMAIL_VERIFICATION = 'optional'
 
 ACCOUNT_EMAIL_SUBJECT_PREFIX = 'Fusion: '
 
-DEFAULT_FROM_EMAIL = 'erp@iiitdmj.ac.in'
+DEFAULT_FROM_EMAIL = 'fusion20172020@gmail.com'
 
-SERVER_EMAIL = 'erp@iiitdmj.ac.in'
+SERVER_EMAIL = 'fusion20172020@gmail.com'
 
 ACCOUNT_LOGOUT_REDIRECT_URL = '/accounts/login/'
 ACCOUNT_USERNAME_MIN_LENGTH = 3
@@ -117,6 +117,7 @@ INSTALLED_APPS = [
     'applications.academic_information',
     'applications.leave',
     'applications.library',
+    'applications.notifications_extension',
     'applications.gymkhana',
     'applications.office_module',
     'applications.central_mess',
@@ -131,13 +132,11 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
-    'allauth.socialaccount.providers.google',
+    # 'allauth.socialaccount.providers.google',
     'semanticuiforms',
     'applications.feeds.apps.FeedsConfig',
     'pagedown',
     'markdown_deux',
-    "crispy_forms",
-
 ]
 
 MIDDLEWARE = [
@@ -256,29 +255,35 @@ SITE_ID = 1
 
 # os.path.join(BASE_DIR, 'static/')
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 MEDIA_URL = '/media/'
 
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_EMAIL_REQUIRED = True
 LOGIN_REDIRECT_URL = "/"
 
-if DEBUG:
-    MIDDLEWARE += (
-        'debug_toolbar.middleware.DebugToolbarMiddleware',
-    )
-    INSTALLED_APPS += (
-        'debug_toolbar',
-        )
-    INTERNAL_IPS = ('127.0.0.1',)
-    DEBUG_TOOLBAR_CONFIG = {
-        'INTERCEPT_REDIRECTS': False,
-    }
+# if DEBUG:
+#     MIDDLEWARE += (
+#         'debug_toolbar.middleware.DebugToolbarMiddleware',
+#     )
+#     INSTALLED_APPS += (
+#         'debug_toolbar',
+#         )
+#     INTERNAL_IPS = ('172.27.16.216',)
+#     def custom_show_toolbar(self):
+#         return True
+#     DEBUG_TOOLBAR_CONFIG = {
+#         'INTERCEPT_REDIRECTS': False,
+#         'SHOW_TOOLBAR_CALLBACK': custom_show_toolbar,
+#     }
 
 DJANGO_NOTIFICATIONS_CONFIG = {
 'USE_JSONFIELD':True,
 }
 
-CRISPY_TEMPLATE_PACK = 'bootstrap4'
+CRISPY_TEMPLATE_PACK = 'semantic-ui'
+CRISPY_ALLOWED_TEMPLATE_PACKS = ('semantic-ui')
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240
+

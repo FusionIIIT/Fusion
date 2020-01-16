@@ -24,32 +24,41 @@ Create Contest
 
 
         <div class="ui huge fluid disabled vertical pointing menu" style="max-width: 320px;">
+            <h3> {{course.course_name}}  </h3>
+                <a class="active item sidetab" href="/ocms/{{course.course_id}}/">
+                     Back To Course
+                     <i class="right floated chevron right icon"></i>
+                </a>
 
-            <a class="item sidetab disabled" data-tab="first" data-num="11">
-              View Courses
-              <i class="right floated chevron right icon"></i>
-            </a>
+                <!-- <a class="active item sidetab" data-tab="first" data-num="11">
+                  View Courses
+                  <i class="right floated chevron right icon"></i>
+                </a>
 
-            <a class="item sidetab disabled" data-tab="second" data-num="12">
-              Assignments
-              <i class="right floated chevron right icon"></i>
-            </a>
+                <a class="item sidetab" data-tab="second" data-num="12">
+                  Assignments
+                  <i class="right floated chevron right icon"></i>
+                </a>
 
-            <a class="item sidetab disabled" data-tab="third" data-num="13">
-              View Performance
-              <i class="right floated chevron right icon"></i>
-            </a>
-            {% if Lecturer == 1 %}
-            <a class="item sidetab disabled" data-tab="fourth" data-num="14">
-              Add Content
-              <i class="right floated chevron right icon"></i>
-            </a>
+                <a class="item sidetab disabled" data-tab="third" data-num="13">
+                  View Performance
+                  <i class="right floated chevron right icon"></i>
+                </a>
+                {% if lecturer == 1 %}
+                <a class="item sidetab disabled" data-tab="fourth" data-num="14">
+                  Add Content
+                  <i class="right floated chevron right icon"></i>
+                </a>
 
-            <a class="item sidetab disabled" data-tab="fifth" data-num="15">
-              Assessment
-              <i class="right floated chevron right icon"></i>
-          </a>
-          {% endif %}
+                <a class="item sidetab disabled" data-tab="fifth" data-num="15">
+                  Assessment
+                  <i class="right floated chevron right icon"></i>
+                </a>
+                <a class="item sidetab disabled" data-tab="sixth" data-num="16">
+                  Question Bank
+                  <i class="right floated chevron right icon"></i>
+                </a>
+              {% endif %} -->
         </div>
     </div>
     <div class="ui eight wide column "style="margin-bottom:5em">
@@ -90,6 +99,34 @@ Create Contest
         </div>
 
     </div>
+
+              <div class="ui tab segment" id="12" data-tab="second" style="display:none">
+                {% block submitassignments %} {% include 'coursemanagement/submitassignments.html' %} {% endblock %}
+            </div>
+            <div class="ui tab segment" id="13" data-tab="third" style="display:none">
+                {% block viewperformance %} {% include 'coursemanagement/viewperformance.html' %} {% endblock %}
+            </div>
+
+
+            <div class="ui tab segment" id="15" data-tab="fifth" style="display:none">
+                {% block assessment %} {% include 'coursemanagement/assessment.html' %} {% endblock %}
+            </div>
+
+
+            <div class="ui tab segment" id="14" data-tab="fourth" style="display:none">
+                {% block addcontent %} {% include 'coursemanagement/addcontent.html' %} {% endblock %}
+            </div>
+
+            <div class="ui tab segment" id="16" data-tab="sixth" style="display:none">
+                {% block questionbank %} {% include 'coursemanagement/questionbank.html' %} {% endblock %}
+        </div>
+      </div>
+        <div class="three wide column">
+            <div class="row" style="margin-top:1em;">
+                {% block comments %} {% include 'coursemanagement/comments.html' %} {% endblock %}
+            </div>
+
+        </div>
 
     <div class="column"></div>
 

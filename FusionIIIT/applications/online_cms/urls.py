@@ -6,6 +6,8 @@ urlpatterns = [
 
     url(r'^$', views.viewcourses, name='viewcourses'),
     url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/$', views.course, name='course'),
+    # url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/edit_marks$', views.edit_marks, name='edit_marks'),
+    url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/get_exam_data$', views.get_exam_data, name='get_exam_data'),
     url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/forum$', views.forum,
         name='forum'),
     url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/ajax_reply$', views.ajax_reply,
@@ -60,4 +62,6 @@ urlpatterns = [
     url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/(?P<qb_code>[0-9]+)/(?P<topic_id>[0-9]+)/remove_question$',
         views.remove_question, name='remove_question'),
     url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/edit_bank/(?P<qb_code>[0-9]+)$',
-        views.edit_bank, name='edit_bank')]
+        views.edit_bank, name='edit_bank'),
+    url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/attendance$', views.submit_attendance,
+        name='submit_attendance')]

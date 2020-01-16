@@ -74,16 +74,17 @@ class Student(models.Model):
     mother_name = models.CharField(max_length=40, default='')
     hall_no = models.IntegerField(default=1)
     room_no = models.CharField(max_length=10, blank=True, null=True)
-    specialization = models.CharField(max_length=20,
-                                      choices=Constants.MTechSpecialization, null=True)
+    specialization = models.CharField(max_length=20,choices=Constants.MTechSpecialization, null=True, default='')
 
     def __str__(self):
-        return str(self.id)
+        username = str(self.id.user.username)
+        return username
+        
 
 
 class Course(models.Model):
-    course_name = models.CharField(max_length=100)
-    course_details = models.TextField(max_length=200)
+    course_name = models.CharField(max_length=600)
+    course_details = models.TextField(max_length=500)
 
     class Meta:
         db_table = 'Course'
@@ -110,7 +111,7 @@ class Curriculum(models.Model):
         unique_together = ('course_code', 'batch', 'programme')
 
     def __str__(self):
-        return str(self.curriculum_id)
+        return '{} - {}'.format(self.course_code,self.course_id.course_name)
 
 
 class Curriculum_Instructor(models.Model):
@@ -124,6 +125,9 @@ class Curriculum_Instructor(models.Model):
 
     def __self__(self):
         return '{} - {}'.format(self.curriculum_id, self.instructor_id)
+    
+    def __str__(self):
+        return '{} - {}'.format(self.curriculum_id.course_code,self.instructor_id.user.username)
 
 
 class Student_attendance(models.Model):

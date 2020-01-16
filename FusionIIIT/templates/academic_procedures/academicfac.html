@@ -83,8 +83,21 @@
             <div class="ui  tab segment" data-tab="two">
                 {%  include 'academic_procedures/thesissupervise.html' %}
             </div>
-            <div class="ui  tab segment" data-tab="three">
-                {%  include 'academic_procedures/grade_submission.html' %}
+            <div class="ui tab segment" data-tab="three" style="width: 100%;">
+                <div class="ui pointing secondary menu">
+                    <a class="active item" data-tab="three_one" style="width: 50%;">
+                        <center>Marks Submission</center>
+                    </a>
+                    <a class=" item" data-tab="three_two" style="width: 50%;" >
+                        <center>Submit Marks Manuaaly</center>
+                    </a>
+                </div>
+                <div class="ui active tab segment" data-tab="three_one">
+                    {%  include 'academic_procedures/grade_submission.html' %}
+                </div>
+                <div class="ui  tab segment" data-tab="three_two">
+                    {%  include 'academic_procedures/manual_grade_submission.html' %}
+                </div>
             </div>
         </div>
         {% comment %}The central-rail segment ends here!{% endcomment %}

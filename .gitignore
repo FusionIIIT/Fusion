@@ -8,7 +8,6 @@ __pycache__/
 env/
 build/
 develop-eggs/
-dist/
 downloads/
 eggs/
 .eggs/
@@ -66,3 +65,8 @@ ENV/
 
 # VSCode Settings
 .vscode/settings.json
+
+# Node Modules
+node_modules/
+
+FusionIIIT/static/
