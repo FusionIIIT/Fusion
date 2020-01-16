@@ -54,10 +54,10 @@ EMAIL_HOST = 'smtp.gmail.com'
 
 # email of sender
 
-EMAIL_HOST_USER = 'fusion20172020@gmail.com'
+EMAIL_HOST_USER = 'fusion.iiitdmj@gmail.com'
 
 # password of sender
-EMAIL_HOST_PASSWORD = 'Fus20ion!0'
+EMAIL_HOST_PASSWORD = os.environ['MAIL_PASSWORD']
 
 EMAIL_PORT = 587
 ACCOUNT_EMAIL_REQUIRED = True
@@ -75,9 +75,9 @@ ACCOUNT_EMAIL_VERIFICATION = 'optional'
 
 ACCOUNT_EMAIL_SUBJECT_PREFIX = 'Fusion: '
 
-DEFAULT_FROM_EMAIL = 'fusion20172020@gmail.com'
+DEFAULT_FROM_EMAIL = 'fusion.iiitdmj@gmail.com'
 
-SERVER_EMAIL = 'fusion20172020@gmail.com'
+SERVER_EMAIL = 'fusion.iiitdmj@gmail.com'
 
 ACCOUNT_LOGOUT_REDIRECT_URL = '/accounts/login/'
 ACCOUNT_USERNAME_MIN_LENGTH = 3
@@ -193,10 +193,10 @@ PROJECT_DIR = os.path.abspath(os.path.dirname(__file__))
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'fusion',
+        'NAME': 'fusion_lab',
         'HOST': '172.27.16.216',
         'USER': 'admin',
-        'PASSWORD': 'hello123'
+        'PASSWORD': os.environ['DBPASS'],
     }
 }
 
@@ -264,20 +264,21 @@ ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_EMAIL_REQUIRED = True
 LOGIN_REDIRECT_URL = "/"
 
-# if DEBUG:
-#     MIDDLEWARE += (
-#         'debug_toolbar.middleware.DebugToolbarMiddleware',
-#     )
-#     INSTALLED_APPS += (
-#         'debug_toolbar',
-#         )
-#     INTERNAL_IPS = ('172.27.16.216',)
-#     def custom_show_toolbar(self):
-#         return True
-#     DEBUG_TOOLBAR_CONFIG = {
-#         'INTERCEPT_REDIRECTS': False,
-#         'SHOW_TOOLBAR_CALLBACK': custom_show_toolbar,
-#     }
+if DEBUG:
+    MIDDLEWARE += (
+        'debug_toolbar.middleware.DebugToolbarMiddleware',
+    )
+    INSTALLED_APPS += (
+        'debug_toolbar',
+        )
+    INTERNAL_IPS = ('127.0.0.1',)
+    DEBUG_TOOLBAR_CONFIG = {
+        'INTERCEPT_REDIRECTS': False,
+    }
+
+DJANGO_NOTIFICATIONS_CONFIG = {
+'USE_JSONFIELD':True,
+}
 
 DJANGO_NOTIFICATIONS_CONFIG = {
 'USE_JSONFIELD':True,
