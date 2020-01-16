@@ -195,8 +195,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'fusion_lab',
         'HOST': '172.27.16.216',
-        'USER': 'admin',
-        'PASSWORD': os.environ['DBPASS'],
+        'USER': 'lab',
+        'PASSWORD': fusion123,
     }
 }
 
