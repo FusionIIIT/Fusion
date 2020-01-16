@@ -19,7 +19,7 @@
 
 * on **Ubuntu**:
   * Install the required packages using the following command :  
-    `sudo apt install postgresql postgresql-contrib python3.6-dev python-virtualenv build-essential git`
+    `sudo apt install python3.6-dev python-virtualenv build-essential git`
 
 * on **Windows**:
   * Get Python 3.6.8 from [here](https://www.python.org/ftp/python/3.6.8/python-3.6.8-amd64.exe) for AMD64/x64 or [here](https://www.python.org/ftp/python/3.6.8/python-3.6.8.exe) for x86
@@ -30,7 +30,7 @@
 
 ### Downloading the Code
 
-* Go to (<https://github.com/salarx/Fusion>) and click on **Fork**
+* Go to (<https://github.com/FusionIIIT/Fusion>) and click on **Fork**
 * You will be redirected to *your* fork, `https://github.com/<your_user_name>/Fusion`
 * Open the terminal, change to the directory where you want to clone the **Fusion** repository
 * Clone your repository using `git clone https://github.com/<your_user_name>/Fusion`
@@ -45,23 +45,19 @@
   * on **Ubuntu**: `source env/bin/activate`  
   * on **Windows Powershell**: `. .\env\scripts\activate`  
 * Install the requirements: `pip install -r requirements.txt`
-* Replace the files
-  * on **Ubuntu**: `env/lib/python3.6/site-packages/notifications`
-  * on **Windows**: `env/lib/site-packages/notifications`  
-with the files in **notif_package_mod** folder inside the current directory
 
 ### Running server
 
 * Change directory to **FusionIIIT** `cd FusionIIIT`
-* Make *migrations* `python manage.py makemigrations`  
-* Migrate the changes to the database `$ python manage.py migrate`  
+~~ * Make *migrations* `python manage.py makemigrations` ~~
+~~ * Migrate the changes to the database `$ python manage.py migrate`~~  
 * Run the server `python manage.py runserver`
 
 ## Working with Code \(Method 1\)
 
 ### Setting upstream
 
-* `git remote add upstream https://github.com/salarx/Fusion`
+* `git remote add upstream https://github.com/FusionIIIT/Fusion`
   * Adds the remote repository (the repository you forked from) so that changes can be pulled from/pushed to it
 
 ### Switching branch
