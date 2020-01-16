@@ -54,10 +54,10 @@ EMAIL_HOST = 'smtp.gmail.com'
 
 # email of sender
 
-EMAIL_HOST_USER = 'erp@iiitdmj.ac.in'
+EMAIL_HOST_USER = 'fusion20172020@gmail.com'
 
 # password of sender
-EMAIL_HOST_PASSWORD = ''
+EMAIL_HOST_PASSWORD = 'Fus20ion!0'
 
 EMAIL_PORT = 587
 ACCOUNT_EMAIL_REQUIRED = True
@@ -75,9 +75,9 @@ ACCOUNT_EMAIL_VERIFICATION = 'optional'
 
 ACCOUNT_EMAIL_SUBJECT_PREFIX = 'Fusion: '
 
-DEFAULT_FROM_EMAIL = 'erp@iiitdmj.ac.in'
+DEFAULT_FROM_EMAIL = 'fusion20172020@gmail.com'
 
-SERVER_EMAIL = 'erp@iiitdmj.ac.in'
+SERVER_EMAIL = 'fusion20172020@gmail.com'
 
 ACCOUNT_LOGOUT_REDIRECT_URL = '/accounts/login/'
 ACCOUNT_USERNAME_MIN_LENGTH = 3
