@@ -49,8 +49,8 @@
 ### Running server
 
 * Change directory to **FusionIIIT** `cd FusionIIIT`
-~~* Make *migrations* `python manage.py makemigrations`
-* Migrate the changes to the database `$ python manage.py migrate`~~
+* Make *migrations* `python manage.py makemigrations`
+* Migrate the changes to the database `$ python manage.py migrate`
 * Run the server `python manage.py runserver`
 
 ## Working with Code \(Method 1\)
