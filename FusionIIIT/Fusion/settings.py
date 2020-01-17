@@ -57,7 +57,7 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = 'fusion.iiitdmj@gmail.com'
 
 # password of sender
-EMAIL_HOST_PASSWORD = os.environ['MAIL_PASSWORD']
+# EMAIL_HOST_PASSWORD = os.environ['MAIL_PASSWORD']
 
 EMAIL_PORT = 587
 ACCOUNT_EMAIL_REQUIRED = True
