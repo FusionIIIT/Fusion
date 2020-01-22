@@ -196,7 +196,7 @@ DATABASES = {
         'NAME': 'fusion',
         'HOST': '172.27.16.216',
         'USER': 'admin',
-        'PASSWORD': 'asd123asd',
+        'PASSWORD': os.environ['DBPASS'],
     }
 }
 
