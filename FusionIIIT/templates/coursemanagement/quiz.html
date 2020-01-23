@@ -261,7 +261,7 @@
       });
       //for timer
       var duration= {{days}}*86400+{{hours}}*3600+{{minutes}}*60+{{seconds}};
-      // alert(duration);
+      //alert(duration);
       // var duration= {{contest.d_day}}*86400+{{contest.d_hour}}*3600+{{contest.d_minute}}*60;
     </script>
     {% include "coursemanagement/timer.html" %}
@@ -307,8 +307,9 @@
           success: function(data){
             alert(data.message+"\nYour Score = "+data.score);
             localStorage.setItem("Finished", "1");
-            window.close();
-
+            
+            window.close(); 
+           $("#1").load(" #1 > *");                  //refresh the quiz div(in tabs) that is in viewcourse.html
           },
           error: function(data,err){
             alert(err);

@@ -26,7 +26,7 @@ CLIENT_SECRET = 'enHu3RD0yBvCM_9C0HQmEp0z'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['fusioniiit.azurewebsites.net', '127.0.0.1', 'localhost', '172.27.16.216']
 
 # Google authentication
 SOCIALACCOUNT_PROVIDERS = {
@@ -54,10 +54,10 @@ EMAIL_HOST = 'smtp.gmail.com'
 
 # email of sender
 
-EMAIL_HOST_USER = 'erp@iiitdmj.ac.in'
+EMAIL_HOST_USER = 'fusion.iiitdmj@gmail.com'
 
 # password of sender
-EMAIL_HOST_PASSWORD = ''
+# EMAIL_HOST_PASSWORD = os.environ['MAIL_PASSWORD']
 
 EMAIL_PORT = 587
 ACCOUNT_EMAIL_REQUIRED = True
@@ -75,9 +75,9 @@ ACCOUNT_EMAIL_VERIFICATION = 'optional'
 
 ACCOUNT_EMAIL_SUBJECT_PREFIX = 'Fusion: '
 
-DEFAULT_FROM_EMAIL = 'erp@iiitdmj.ac.in'
+DEFAULT_FROM_EMAIL = 'fusion.iiitdmj@gmail.com'
 
-SERVER_EMAIL = 'erp@iiitdmj.ac.in'
+SERVER_EMAIL = 'fusion.iiitdmj@gmail.com'
 
 ACCOUNT_LOGOUT_REDIRECT_URL = '/accounts/login/'
 ACCOUNT_USERNAME_MIN_LENGTH = 3
@@ -102,6 +102,7 @@ CELERY_BEAT_SCHEDULE = {
 # Application definition
 
 INSTALLED_APPS = [
+    'whitenoise.runserver_nostatic',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -116,7 +117,7 @@ INSTALLED_APPS = [
     'applications.academic_information',
     'applications.leave',
     'applications.library',
-
+    'applications.notifications_extension',
     'applications.gymkhana',
     'applications.office_module',
     'applications.central_mess',
@@ -128,19 +129,19 @@ INSTALLED_APPS = [
     'applications.placement_cell',
     'applications.scholarships',
     'applications.visitor_hostel',
+    'allauth',
     'allauth.account',
     'allauth.socialaccount',
-    'allauth',
-    'allauth.socialaccount.providers.google',
+    # 'allauth.socialaccount.providers.google',
     'semanticuiforms',
     'applications.feeds.apps.FeedsConfig',
     'pagedown',
     'markdown_deux',
-
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -162,7 +163,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'applications.globals.context_processor.designation',
             ],
         },
     },
@@ -172,6 +172,8 @@ WSGI_APPLICATION = 'Fusion.wsgi.application'
 
 
 PROJECT_DIR = os.path.abspath(os.path.dirname(__file__))
+
+# Database template for mysql
 
 # DATABASES = {
 #     'default':
@@ -185,12 +187,25 @@ PROJECT_DIR = os.path.abspath(os.path.dirname(__file__))
 #         },
 # }
 
+
+# Database template for postgres
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(PROJECT_DIR, 'fusion.db'),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'fusionlab',
+        'HOST': '172.27.16.216',
+        'USER': 'fusion_admin',
+        'PASSWORD': 'hello123',
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': os.path.join(PROJECT_DIR, 'fusion.db'),
+#     }
+# }
 
 
 # Password validation
@@ -240,14 +255,13 @@ SITE_ID = 1
 
 # os.path.join(BASE_DIR, 'static/')
 STATIC_URL = '/static/'
-
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 MEDIA_URL = '/media/'
 
 ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_EMAIL_VERIFICATION = "none"
-SOCIALACCOUNT_QUERY_EMAIL = True
+ACCOUNT_EMAIL_REQUIRED = True
 LOGIN_REDIRECT_URL = "/"
 
 if DEBUG:
@@ -265,3 +279,12 @@ if DEBUG:
 DJANGO_NOTIFICATIONS_CONFIG = {
 'USE_JSONFIELD':True,
 }
+
+DJANGO_NOTIFICATIONS_CONFIG = {
+'USE_JSONFIELD':True,
+}
+
+CRISPY_TEMPLATE_PACK = 'semantic-ui'
+CRISPY_ALLOWED_TEMPLATE_PACKS = ('semantic-ui')
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240
+

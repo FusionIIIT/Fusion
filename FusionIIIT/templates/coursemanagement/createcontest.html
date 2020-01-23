@@ -12,6 +12,7 @@ Create Contest
     {% include 'dashboard/navbar.html' %}
 {% endblock %}
 
+<button class="ui primary button" onclick="history.back(-1)">Back</button>
 
 <div class="ui stackable doubling grid">
 
@@ -22,35 +23,41 @@ Create Contest
 
         <div class="ui divider"></div>
 
+<!-- 
+        <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;"> -->
+             <h3> {{course.course_name}}  </h3>
 
-        <div class="ui huge fluid disabled vertical pointing menu" style="max-width: 320px;">
+                <!-- <a class="active item sidetab" data-tab="first" data-num="11">
+                  View Courses
+                  <i class="right floated chevron right icon"></i>
+                </a>
 
-            <a class="item sidetab disabled" data-tab="first" data-num="11">
-              View Courses
-              <i class="right floated chevron right icon"></i>
-            </a>
+                <a class="item sidetab" data-tab="second" data-num="12">
+                  Assignments
+                  <i class="right floated chevron right icon"></i>
+                </a>
 
-            <a class="item sidetab disabled" data-tab="second" data-num="12">
-              Assignments
-              <i class="right floated chevron right icon"></i>
-            </a>
+                <a class="item sidetab disabled" data-tab="third" data-num="13">
+                  View Performance
+                  <i class="right floated chevron right icon"></i>
+                </a>
+                {% if lecturer == 1 %}
+                <a class="item sidetab disabled" data-tab="fourth" data-num="14">
+                  Add Content
+                  <i class="right floated chevron right icon"></i>
+                </a>
 
-            <a class="item sidetab disabled" data-tab="third" data-num="13">
-              View Performance
-              <i class="right floated chevron right icon"></i>
-            </a>
-            {% if Lecturer == 1 %}
-            <a class="item sidetab disabled" data-tab="fourth" data-num="14">
-              Add Content
-              <i class="right floated chevron right icon"></i>
-            </a>
+                <a class="item sidetab disabled" data-tab="fifth" data-num="15">
+                  Assessment
+                  <i class="right floated chevron right icon"></i>
+                </a>
+                <a class="item sidetab disabled" data-tab="sixth" data-num="16">
+                  Question Bank
+                  <i class="right floated chevron right icon"></i>
+                </a>
+              {% endif %} -->
+        <!-- </div> -->
 
-            <a class="item sidetab disabled" data-tab="fifth" data-num="15">
-              Assessment
-              <i class="right floated chevron right icon"></i>
-          </a>
-          {% endif %}
-        </div>
     </div>
     <div class="ui eight wide column "style="margin-bottom:5em">
         <div class=" ui segment" >
@@ -59,7 +66,7 @@ Create Contest
             <br/>
             <h4 class="ui dividing header">Contest Details</h4>
             <div class="field">
-                <label>Contest Name</label>
+                <label>Contest Name <font color="red" size="4.5">*</font></label>
                 <div class="field">
                     <div class="ui input left icon">
                         <i class="id card outline icon"></i> {{ form.name }}
@@ -75,7 +82,7 @@ Create Contest
                 </div>
               </div>
               <div class="ui calendar field" id='example6'>
-                <label>Start Time</label>
+                <label>Start Time <font color="red" size="4.5">*</font> (Format- hh:mm)</label>
                 <div class="ui input left icon">
                   <i class="hourglass empty icon"></i>
                   {{ form.starttime}}
@@ -91,7 +98,7 @@ Create Contest
               </div>
 
               <div class="ui calendar field"  id='example7'>
-                <label>End Time</label>
+                <label>End Time <font color="red" size="4.5">*</font> (Format- hh:mm)</label>
                 <div class="ui input left icon">
                   <i class="hourglass full icon"></i>
                   {{ form.endtime}}
@@ -99,27 +106,28 @@ Create Contest
               </div>
             </div>
             <div class="ui calendar field">
-                <label>Description</label>
+                <label>Description <font color="red" size="4.5">*</font></label>
                 <div class="ui input left icon">
                     <i class="comments icon"></i> {{ form.description }}
                 </div>
             </div>
             <div class="ui calendar field">
-                <label>Rules And Regulations</label>
+                <label>Rules And Regulations <font color="red" size="4.5">*</font></label>
                 <div class="ui input left icon">
                     {{ form.rules }}
                 </div>
             </div>
             <div class="ui field">
-                <label>Number Of Questions</label>
+                <label>Number Of Questions <font color="red" size="4.5">*</font></label>
                 <div class="ui input">
                     {{ form.number_of_questions }}
                 </div>
             </div>
             <div class="ui field">
 
-                <label>Enable Penalty</label>
-                {{form.negative_marks}}
+                <label>Enable Penalty  <font color="red" size="4.5">*</font></label>
+                  {{form.negative_marks}}
+
             </div>
             <br>
             <input type="submit" class="ui primary button" value="Submit" />

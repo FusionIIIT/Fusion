@@ -1943,7 +1943,8 @@ def placement_statistics(request):
                 try:
                     first_name = stuname.split(" ")[0]
                     last_name = stuname.split(" ")[1]
-                except:
+                except Exception as e:
+                    print(e)
                     first_name = stuname
                     last_name = ''
             else:
@@ -1987,12 +1988,10 @@ def placement_statistics(request):
                     Q(user__in=User.objects.filter(
                         first_name__icontains=first_name,
                         last_name__icontains=last_name),
-                       id__icontains=rollno))
+                        id__icontains=rollno))
                     )))
 
-                p = PlacementRecord.objects.filter(
-                    Q(placement_type="PLACEMENT", name__icontains=cname, ctc__gte=ctc))
-
+                p = PlacementRecord.objects.filter(Q(placement_type="PLACEMENT", name__icontains=cname, ctc__gte=ctc))
                 placementrecord = StudentRecord.objects.filter(
                     Q(record_id__in=PlacementRecord.objects.filter(
                     Q(placement_type="PLACEMENT", name__icontains=cname, ctc__gte=ctc)),
@@ -2096,8 +2095,8 @@ def placement_statistics(request):
                         Q(first_name__icontains=request.session['first_name'],
                         last_name__icontains=request.session['last_name'])),
                         id__icontains=request.session['rollno'])))))))
-            except:
-                print('except')
+            except Exception as e:
+                print(e)
                 placementrecord = ''
 
             if placementrecord != '':
@@ -2454,7 +2453,7 @@ def placement_statistics(request):
 
 
     context = {
-        'form2': form2,
+        'form2'             :            form2,
         'form3'             :            form3,
         'form4'             :            form4,
         'current'           :          current,

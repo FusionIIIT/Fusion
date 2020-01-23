@@ -1,4 +1,0 @@
-rabbitmq-server
-python3.6-dev
-supervisor
-libmysqlclient-dev

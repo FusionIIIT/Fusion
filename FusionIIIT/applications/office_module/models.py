@@ -3,7 +3,7 @@ import datetime
 from django.db import models
 
 from applications.academic_information.models import (Course, Grades,
-                                                      Instructor, Meeting, Spi,
+                                                      Curriculum_Instructor, Meeting, Spi,
                                                       Student)
 from applications.academic_procedures.models import Thesis
 from applications.filetracking.models import Tracking
@@ -169,7 +169,7 @@ ITEM_TYPE = (
 
 class Assistantship(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
-    instructor_id = models.ForeignKey(Instructor, on_delete=models.CASCADE)
+    instructor_id = models.ForeignKey(Curriculum_Instructor, on_delete=models.CASCADE)
     file = models.FileField(upload_to='documents/',blank=True,null=True)
     action = models.IntegerField(default=0)
     comments = models.CharField(null=True,blank=True,max_length=150);
@@ -307,8 +307,8 @@ class Project_Reallocation(models.Model):
 
 
 class Member(models.Model):
-	member_id = models.ForeignKey(Faculty)
-	meeting_id = models.ForeignKey(Meeting)
+	member_id = models.ForeignKey(Faculty,on_delete=models.CASCADE)
+	meeting_id = models.ForeignKey(Meeting,on_delete=models.CASCADE)
 
 	class Meta:
 		db_table = 'Member'

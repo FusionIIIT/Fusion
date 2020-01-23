@@ -1,5 +1,5 @@
  {% block tab1content1 %}
-<form action="{%url 'office:p_extension' %}" method ="POST" enctype="multipart/form-data">
+<form action="{%url 'office_module:p_extension' %}" method ="POST" enctype="multipart/form-data">
     {% comment %}The add a new skill Accordian starts here!{% endcomment %}
     <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
          {% csrf_token %}

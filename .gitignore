@@ -3,21 +3,11 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-
-# C extensions
-*.so
-
-
-# db file
-
-
-
 # Distribution / packaging
 .Python
 env/
 build/
 develop-eggs/
-dist/
 downloads/
 eggs/
 .eggs/
@@ -32,12 +22,6 @@ var/
 
 # Swap files
 *.swp
-
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
-*.manifest
-*.spec
 
 # Installer logs
 pip-log.txt
@@ -54,18 +38,8 @@ coverage.xml
 *,cover
 .hypothesis/
 
-# Translations
-*.mo
-*.pot
-
-
 # Flask stuff:
-instance/
-.webassets-cache
-
-# Django stuff:
-migrations
-db.sqlite3
+instance/.webassets-cache
 
 # PyBuilder
 target/
@@ -89,37 +63,13 @@ ENV/
 # Ignore idea files
 .idea
 
+# VSCode Settings
+.vscode/settings.json
 
-# DS
-.DS_Store
-._.DS_Store
+# Node Modules
+node_modules/
 
-# docs
-docs/_build
-docs/_templates
+FusionIIIT/static/
+package-lock.json
 
-.tox
-
-# media
-# FusionIIIT/media
-# ignoring settings.py
-# FusionIIIT/Fusion/settings.py
-
-
-# dbinsertscripts
-FusionIIIT/dbinsertscripts
-
-#folders
-FusionIIIT/Include
-FusionIIIT/Scripts
-FusionIIIT/tcl
-
-#folders
-Include
-Scripts
-tcl
-
-*/media/*
-
-#db file
-fusion.db
+!.idea

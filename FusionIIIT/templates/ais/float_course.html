@@ -1,0 +1,159 @@
+{% load static %}
+{% block float_course %}
+
+<h4 class="ui dividing header">Choose courses for next Semester</h4>
+
+<form class="ui form" action="{% url 'academic_information:float_course' %}" method="POST" id="float">{% csrf_token %}
+  <div class="field">
+    <label>Programme</label>
+    <select name="programme" id="programme">
+      <option value="B.Tech">B.Tech</option>
+      <option value="B.Des">B.Des</option>
+      <option value="M.Des">M.Des</option>
+      <option value="M.Tech">M.Tech</option>
+      <option value="Phd">PhD</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label>Batch</label>
+    <input type="number" name="batch" required>
+  </div>
+
+  <div class="field">
+    <label>Branch</label>
+    <select name="branch" id="branch">
+      <option value="CSE">CSE</option>
+      <option value="ECE">ECE</option>
+      <option value="ME">ME</option>
+      <option value="Design">Design</option>
+      <option value="Common">Common</option>
+    </select>
+  </div>
+
+
+  <div class="field">
+    <input type="submit" value="View" class="ui primary button" />
+  </div>
+</form>
+
+{% if curriculum %}
+<h3 class="ui center aligned header">Choose courses to float for next sem</h3>
+<h4 class="ui center aligned header">Programme : {{curriculum.0.programme}} | Batch : {{curriculum.0.batch}} | Branch
+  : {{curriculum.0.branch}} </h4>
+<p style="color:red;"> In case of more than one instructors first instructor will be Head Instructor</p>
+<form class="ui form" method="POST" action="{% url 'academic_information:float_course_submit' %}"
+  id="float_course_submit" onsubmit="return validateForm()">
+  {% csrf_token %}
+  <table class="ui celled table" id="table">
+    <thead>
+      <tr>
+        <th>Course Name</th>
+        <th>Course Type</th>
+        <th>Float</th>
+        <th>Faculty</th>
+
+      </tr>
+    </thead>
+    {% for curriculum_ in curriculum %}
+    <tr>
+      <td>{{curriculum_.course_code}} - {{curriculum_.course_id}} </td>
+      <td>{{curriculum_.course_type}}</td>
+      <input type="text" name="{{forloop.counter}}_ccode" value="{{curriculum_.curriculum_id}}" hidden>
+      <td>{% if curriculum_.optional %}
+        <input type="checkbox" name="{{ forloop.counter }}_cb" id="{{forloop.counter}}_cb">
+        {% else %}
+        <p style="color:red;"> Compulsory</p>
+        {% endif %}
+      <td id="{{forloop.counter}}_faculty"> {% if curriculum_.optional %}
+        <select class="ui dropdown" name="{{ forloop.counter }}_fac" id="{{ forloop.counter }}_fac" disabled>
+          {% else %}
+          <select class="ui dropdown" name="{{ forloop.counter }}_fac" id="{{ forloop.counter }}_fac">
+            {% endif %}
+            <option></option>
+            {% for i in faculty_list %}
+            <option value="{{ i.user.username }}">{{i.user.first_name}} {{i.user.last_name}}</option>
+            {% endfor %}
+          </select>
+          {% if curriculum_.optional %}
+          <h1 style="margin-top: 0px;" id="{{forloop.counter}}_h" hidden>
+          {% else %}
+          <h1 style="margin-top: 0px;" id="{{forloop.counter}}_h">
+            {% endif %}
+          <a onClick="add({{forloop.counter}})" style="cursor: pointer; cursor: hand;">+</a>&nbsp;
+          <a onClick="del({{forloop.counter}})" style="cursor: pointer; cursor: hand;">-</a></h1>
+      </td>
+      <script type="text/javascript">
+        $("#{{forloop.counter}}_cb").click(function () {
+          console.log('{{forloop.counter}}_cb');
+          if (document.getElementById('{{forloop.counter}}_cb').checked == true) {
+            console.log("true")
+            $("#{{forloop.counter}}_fac").prop('disabled', false);
+            $("#{{forloop.counter}}_h").prop('hidden', false);
+            document.getElementById('{{forloop.counter}}_fac').parentNode.setAttribute("class",
+              "ui dropdown selection");
+          } else {
+            console.log("false")
+            $("#{{forloop.counter}}_fac").prop('disabled', true);
+            $("#{{forloop.counter}}_h").prop('hidden', true);
+            document.getElementById('{{forloop.counter}}_fac').parentNode.setAttribute("class",
+              "ui dropdown selection disabled");
+          }
+        });
+      </script>
+      {% endfor %}
+  </table>
+  <div class="field">
+    <button class="ui primary button" type="submit" value="submit">Submit</button>
+  </div>
+  {% comment %} <script>
+    function validateForm() {
+      console.log("validation");
+
+      var x = getval()
+      if (x == "") {
+        alert("Enter all instructors for course");
+        return false;
+      }
+    }
+  </script> {% endcomment %}
+</form>
+{% endif %}
+{% endblock %}
+
+{% block javascript %}
+
+<script type="text/javascript">
+  fac_arr = new Array();
+  f_arr = new Array();
+  m = new Map();
+  {% for i in faculty_list %}
+    f_arr = ["{{i.user.username}}","{{i.user.first_name}} {{i.user.last_name}}"];
+    fac_arr.push(f_arr);
+  {% endfor %}
+  function add(c) {
+    if (c in m) {
+      m[c]=m[c]+1;
+    }
+    else {
+      m[c]=1;
+    }
+    console.log("add"+m[c])
+    var a = $('<select class="ui dropdown" name="'+c+'_fac" id="'+c+'_fac_'+m[c]+'" style="margin-top: 10px;"><option></option></select>');
+    $('#'+c+'_faculty').append(a);
+    var drop = document.getElementById(c+'_fac_'+m[c]);
+    fac_arr.forEach(fac =>
+        drop.add(
+          new Option(fac[1],fac[0])
+        )
+    );
+  }
+  function del(c) {
+    if (c in m) {
+      $('#'+c+'_fac_'+m[c]).remove();
+      console.log("delete"+m[c]);
+      m[c]=m[c]-1 ;
+    }
+  }
+</script>
+{% endblock %}

@@ -506,7 +506,8 @@ def caretaker(request):
         try:
             y = ExtraInfo.objects.get(id=y.id)
             a = Caretaker.objects.get(staff_id=y)
-        except:
+        except Exception as e:
+            print(e)
             a = None
             y = None
         intage = int(age)
@@ -727,7 +728,8 @@ def supervisor(request):
         try:
             y = ExtraInfo.objects.get(id=y.id)
             a = Supervisor.objects.get(sup_id=y)
-        except:
+        except Exception as e:
+            print(e)
             a = None
             y = None
         all_caretaker = Caretaker.objects.filter(area=a.area).order_by('-id')

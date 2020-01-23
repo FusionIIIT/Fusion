@@ -37,7 +37,7 @@
     </thead>
 
     <tbody>
-    <form action="{% url 'office:closure' %}" method="POST">
+    <form action="{% url 'office_module:closure' %}" method="POST">
         {% csrf_token %}
          {% for pr in project2 %}
     {% comment %} if pr.HOD_response == 'Forwarded' {% endcomment %}

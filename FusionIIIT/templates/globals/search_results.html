@@ -9,8 +9,9 @@
                 <li>Try again with a query longer than 2 letters</li>
             </ul>
         </p>
+
     {% endif %}
-	
+
 	<div class="ui cards" style="padding: 2px">
         {% for user in sresults %}
 		<a class="ui card" href="{% url 'globals:profile' %}{{user.username}}">

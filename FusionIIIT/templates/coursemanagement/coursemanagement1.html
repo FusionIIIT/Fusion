@@ -77,8 +77,8 @@
                 <table class="ui orange table">
                     <thead>
                         <tr>
-                            <th>Name Of the Courses</th>
                             <th>Course Code</th>
+                            <th>Name Of the Course</th>
                             {% ifequal extrainfo.designation|stringformat:"s" "student" %}
                             <th>Instructor</th> {% endifequal %}
                         </tr>
@@ -90,22 +90,17 @@
                             <td>{{course.course_id.course_id}}</td>
                             <td>{{instructor.instructor_id.user.username}}</td>
                         </tr>
-                        {% endfor %} {% else %} {% for ins in instructor %}
+                        {% endfor %} {% else %} 
+                        {% for curriculum in curriculum_list %}
                         <tr>
-                            <td><a href="{{ins.course_id.course_id}}">{{ins.course_id.course_name}}</a></td>
-                            <td>{{ins.course_id.course_id}}</td>
+                            <!-- <td><a href="{{ins.course_id.course_id}}">{{ins.course_id.course_name}}</a></td> -->
+                            <td><a href={{curriculum.course_code}}>{{curriculum.course_code}}</a></td>
+                            <td>{{curriculum.course_id}}</td>
+
                         </tr>
-                        {% endfor %} {% endifequal %}
-                        <!-- <tr>
-                                      <td><a href="#">Computer Networks</a></td>
-                                      <td>CS-305</td>
-                                      <td>Vinod Kumar Jain</td>
-                                    </tr>
-                                    <tr>
-                                      <td><a href="#">Operating Systems</a></td>
-                                      <td>CS-306</td>
-                                      <td>Manish Kumar Bajpai</td>
-                                    </tr> -->
+                        {% endfor %}
+                        {% endifequal %}
+                       
                     </tbody>
                 </table>
 
@@ -571,6 +566,12 @@
             {% block addcontent %} {% include 'coursemanagement/addcontent.html' %} {% endblock %}
         </div>
         {% endcomment %} {% comment %}The add content ends here!{% endcomment %}
+
+        {% comment %}The Attendance starts here!{% endcomment %} {% comment %}
+        <div class="ui tab segment" data-tab="sixth">
+            {% block attendance %} {% include 'coursemanagement/attendance.html' %} {% endblock %}
+        </div>
+        {% endcomment %} {% comment %}The Attendance ends here!{% endcomment %}
 
 
 

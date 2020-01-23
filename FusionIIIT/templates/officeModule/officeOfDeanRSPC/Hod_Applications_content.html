@@ -38,7 +38,7 @@
 
     <tbody>
     <h2> Project Registration Form </h2>
-    <form action="{% url 'office:hod_action' %}" method="POST">
+    <form action="{% url 'office_module:hod_action' %}" method="POST">
         {% csrf_token %}
          {% for pr in project %}
         
@@ -125,7 +125,7 @@
 
     <tbody>
    
-    <form action="{% url 'office:hod_closure' %}" method="POST">
+    <form action="{% url 'office_module:hod_closure' %}" method="POST">
         {% csrf_token %}
        {% for pr in project2 %}
         <tr>
@@ -229,7 +229,7 @@
     </thead>
 
     <tbody>
-    <form action="{% url 'office:hod_extension' %}" method="POST">
+    <form action="{% url 'office_module:hod_extension' %}" method="POST">
         {% csrf_token %}
        {% for pr in project1 %}
         <tr>
@@ -335,7 +335,7 @@
 
     <tbody>
         <h2> Project Reallocation Form </h2>
-    <form action="{% url 'office:hod_allocation' %}" method="POST">
+    <form action="{% url 'office_module:hod_allocation' %}" method="POST">
         {% csrf_token %}
      {% for pr in project3 %}
         <tr>

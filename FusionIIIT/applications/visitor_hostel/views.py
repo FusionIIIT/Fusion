@@ -1,5 +1,9 @@
 import datetime
 from datetime import date
+import xlrd
+import os
+from applications.visitor_hostel.models import RoomDetail
+from django.contrib.auth.models import User
 
 from django.contrib import messages
 from django.contrib.auth import logout
@@ -124,12 +128,11 @@ def visitorhostel(request):
     # completed booking bills
 
     completed_booking_bills = {}
-    all_bills = Bill.objects.all()
+    all_bills = Bill.objects.select_related()
 
     current_balance = 0
     for bill in all_bills:
-        completed_booking_bills[bill.id] = {'intender': str(bill.booking.intender), 'booking_from': str(bill.booking.booking_from),
-                                            'booking_to': str(bill.booking.booking_to), 'total_bill': str(bill.meal_bill + bill.room_bill)}
+        completed_booking_bills[bill.id] = {'intender': str(bill.booking.intender), 'booking_from': str(bill.booking.booking_from), 'booking_to': str(bill.booking.booking_to), 'total_bill': str(bill.meal_bill + bill.room_bill)}
         current_balance = current_balance+bill.meal_bill + bill.room_bill
 
     for inv_bill in inventory_bill:
@@ -926,5 +929,3 @@ def forward_booking(request):
         return HttpResponseRedirect('/visitorhostel/')
     else:
         return HttpResponseRedirect('/visitorhostel/')
-
-
