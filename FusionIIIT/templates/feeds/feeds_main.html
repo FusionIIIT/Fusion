@@ -22,9 +22,9 @@
 
 	<!-- Search Bar Section -->
 	<div class="ui clearing center aligned segment container">
-		<a href="{% url 'eis:profile' %}" style="font-size: 15px; text-decoration: none; float: left; padding-top: 5px;">
+		<a href="" style="font-size: 15px; text-decoration: none; float: left; padding-top: 5px;">
 			<i class="ui big user icon" style="color: teal;"></i>
-			<span style="color: teal;"> Atul Gupta</span>
+			<span style="color: teal;"> {{request.user.first_name}}</span>
 		</a>
 		<div class="ui large left icon input">
 			<form method="post" action="{% url 'feeds:feeds' %}">
