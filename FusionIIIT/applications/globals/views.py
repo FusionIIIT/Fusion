@@ -21,7 +21,7 @@ from applications.placement_cell.forms import (AddAchievement, AddCourse,
                                                AddSkill)
 from applications.placement_cell.models import (Achievement, Course, Education,
                                                 Experience, Has, Patent,
-                                                Project, Publication, Skill)
+                                                Project, Publication, Skill, PlacementStatus)
 from Fusion.settings import LOGIN_URL
 from notifications.models import Notification
 

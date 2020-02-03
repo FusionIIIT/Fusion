@@ -19,17 +19,12 @@ from applications.academic_information.models import (Course, Curriculum_Instruc
                                                       Student,Student_attendance)
 from applications.academic_procedures.models import Register
 from applications.globals.models import ExtraInfo
+from applications.globals.models import *
 
-# from .forms import *
+from .forms import *
 # from .helpers import create_thumbnail, semester
-# from .models import *
-
-from .forms import QuizForm, MarksForm, AttendanceForm
+from .models import *
 from .helpers import create_thumbnail, semester
-from .models import (Assignment, CourseDocuments, CourseVideo, Forum,
-                     ForumReply, Question, QuestionBank, Quiz, QuizQuestion,
-                     QuizResult, StudentAnswer, StudentAssignment, Topics,)
-
 
 @login_required
 def viewcourses(request):
