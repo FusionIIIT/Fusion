@@ -1,6 +1,6 @@
 bs4
 celery
-django==2.2.9
+django~=2.2
 django-allauth
 django-debug-toolbar
 django-markdown-deux
