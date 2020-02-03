@@ -601,6 +601,10 @@ def reject(request):
 		user = user.split(',')
 		info = user[0].split(' - ')
 
+		user_name = get_object_or_404(User, username=info[1])
+        extra1 = get_object_or_404(ExtraInfo, id=info[0], user=user_name)
+        student = get_object_or_404(Student, id=extra1)
+
         club_member = get_object_or_404(Club_member, club=user[1], member=student)
         club_member.status = "rejected"
         club_member.remarks = remarks[0]
