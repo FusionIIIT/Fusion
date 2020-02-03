@@ -81,7 +81,7 @@ class DepartmentInfo(models.Model):
     name = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
-        return 'department: {}'.format(self.name)
+        return format(self.name)
 
 
 class ExtraInfo(models.Model):
@@ -103,11 +103,6 @@ class ExtraInfo(models.Model):
     @property
     def age(self):
         timedelta = timezone.now().date() - self.date_of_birth
-        return int(timedelta.days / 365)
-
-    @property
-    def age(self):
-        timedelta = timezone.localtime(timezone.now()).date() - self.date_of_birth
         return int(timedelta.days / 365)
 
     def __str__(self):

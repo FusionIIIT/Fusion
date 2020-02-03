@@ -1,7 +1,7 @@
 {% load static %}
 
 {% block sidenav %}
-    <div class="ui sidebar inverted vertical menu">
+    <div class="ui sidebar inverted vertical menu" style="overflow-y:scroll;">
         <div class="ui doubling stackable grid container">
 
             <div class="ui inverted centered raised item"></div>
@@ -145,7 +145,7 @@
 
 {% comment %}The Profile Item starts here!{% endcomment %}
 <a class="centered raised item" href="{% url 'office_module:officeOfHOD'%}">
-    <span class="inverted header">Office Of HOD {Branch}</span>
+    <span class="inverted header">Office Of HOD {{request.user.extrainfo.department}}</span>
     <i class="large inverted briefcase icon right floated"></i>
 </a>
 <a class="centered raised item" href="/finance/finance">
