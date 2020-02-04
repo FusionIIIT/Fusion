@@ -20,16 +20,11 @@ from applications.academic_information.models import (Course, Curriculum_Instruc
 from applications.academic_procedures.models import Register
 from applications.globals.models import ExtraInfo
 
-# from .forms import *
-# from .helpers import create_thumbnail, semester
-# from .models import *
-
 from .forms import QuizForm, MarksForm, AttendanceForm
 from .helpers import create_thumbnail, semester
 from .models import (Assignment, CourseDocuments, CourseVideo, Forum,
                      ForumReply, Question, QuestionBank, Quiz, QuizQuestion,
                      QuizResult, StudentAnswer, StudentAssignment, Topics,)
-
 
 @login_required
 def viewcourses(request):
@@ -66,6 +61,7 @@ def viewcourses(request):
                        'curriculum_list': curriculum_list})
 
 
+
 @login_required
 def course(request, course_code):
     '''
@@ -73,7 +69,7 @@ def course(request, course_code):
     '''
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
-    if extrainfo.user_type == 'student':   #if the user is student .. funtionality used by him
+    if extrainfo.user_type == 'student':   #if the user is student .. funtionality used by him/her
         student = Student.objects.get(id=extrainfo)
         roll = student.id.id[:4]
 
@@ -144,8 +140,6 @@ def course(request, course_code):
                 registered_students = Register.objects.filter(curr_id = ins.curriculum_id.curriculum_id)
                 students = {}
                 test_marks = {}
-
-
                 for x in registered_students:
                      students[x.student_id.id.id] = (x.student_id.id.user.first_name + " " + x.student_id.id.user.last_name, x.id)
                 #     stored_marks = StoreMarks.objects.filter(mid = x.r_id)
@@ -160,6 +154,11 @@ def course(request, course_code):
 
                 curriculum = ins.curriculum_id
                 course = ins.curriculum_id.course_id
+                result_topics = Topics.objects.filter(course_id = course)
+                if (len(list(result_topics))!=0):
+                    topics = result_topics
+                else:
+                    topics = None
                 print(curriculum)
                 present_attendance = {}
         total_attendance=None
@@ -210,6 +209,7 @@ def course(request, course_code):
                        'quizs': marks,
                        'videos': videos,
                        'slides': slides,
+                       'topics':topics,
                        'course': course,
                        'answers': answers,
                        'assignment': assignment,
@@ -593,6 +593,19 @@ def create_bank(request, course_code):
                                          course_id=course, name=request.POST.get('qbname'))
         return redirect('/ocms/' + course_code + '/edit_bank/'+str(qb.id))
 
+@login_required
+def create_topic(request, course_code):
+    user = request.user
+    extrainfo = ExtraInfo.objects.get(user=user)
+    if extrainfo.user_type == "faculty":
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
+        for ins in instructor:
+            if ins.curriculum_id.course_code == course_code:
+                course = ins.curriculum_id.course_id
+        topic = Topics.objects.create(course_id=course, topic_name=request.POST.get('topic_name'))
+        return redirect('/ocms/' + course_code)
+
+
 
 @login_required
 def remove_bank(request, course_code):
@@ -606,13 +619,31 @@ def remove_bank(request, course_code):
         qb = QuestionBank.objects.get(id=request.POST.get('pk'))
         qb.delete()
         qb = QuestionBank.objects.filter(instructor_id=extrainfo, course_id=course)
-        data = {'message': "Removed", 'qb': len(qb)}
+        data = {'message': "Removed", 'numberof_qbs': len(qb)}
+        return HttpResponse(json.dumps(data), content_type='application/json')
+
+@login_required
+def remove_topic(request, course_code):
+    user = request.user
+    extrainfo = ExtraInfo.objects.get(user=user)
+    if extrainfo.user_type == "faculty":
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
+        for ins in instructor:
+            if ins.curriculum_id.course_code == course_code:
+                course = ins.curriculum_id.course_id
+        topic = Topics.objects.get(id=request.POST.get('pk'))
+        topic.delete()
+        n_topics = Topics.objects.filter(course_id=course)
+        data = {'message': "Removed", 'numberof_topics': len(n_topics)}
         return HttpResponse(json.dumps(data), content_type='application/json')
 
 
 @login_required
-def add_question(request, course_code, qb_code, topic_id):
+def add_question(request, course_id, qb_code, topic_id):
     user = request.user
+    course = Course.objects.get(pk=course_id)
+    curriculum = Curriculum.objects.get(course_id=course)
+    course_code = curriculum.course_code
     extrainfo = ExtraInfo.objects.get(user=user)
     if extrainfo.user_type == "faculty":
         qb = QuestionBank.objects.filter(pk=qb_code)
