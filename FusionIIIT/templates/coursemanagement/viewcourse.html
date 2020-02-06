@@ -66,13 +66,17 @@
                   Topics
                   <i class="right floated chevron right icon"></i>
                 </a>
+                <a class="item sidetab" data-tab="eighth" data-num="19">
+                  Comments
+                  <i class="right floated chevron right icon"></i>
+                </a>
 
               {% endif %}
             </div>
             
         </div>
 
-        <div class="eight wide column" >
+        <div class="ten wide column" >
             <div class="ui active tab segment" id="11" data-tab="first" style="display:block">
                 <style>
                     #pdf_modal iframe {
@@ -113,8 +117,6 @@
                     .block {
                         display: inline-block;
                         width: 16%;
-                        margin: 1px;
-                        padding: 5px;
                         font-size: 20px;
                         text-align: center;
                         background-color: orange;
@@ -298,17 +300,6 @@
 
                   </div>
                   {% else %}
-        <!--    <div class="ui pointing secondary menu">
-
-                    <a class="active item assitabs" data-number="21" data-tab="practice">
-                     Practice
-                   </a>
-
-                    <a class="active item assitabs"  data-number="21" data-tab="submitassignment">
-                     Submit
-                   </a>
-                   
-                 </div>-->
                  
                  <div class="ui active tab segment box" id="21" data-tab="submitassignment">
                   
@@ -337,17 +328,6 @@
                             {% endfor %}
                         </tbody>
                     </table>
-<!--                     {% if Lecturer is 1 %}
-                    
-                      <a class="ui blue button" href="/ocms/{{course.course_id}}/upload_assignment/">
-                         Create New Assignment
-                      </a>
-                    
-                      <a class="ui blue button" data-num="12">
-                        Add a new assignment
-                      </a>
-                    {% endif %} -->
-
                 </div>
                 {% endif%}
               </div>
@@ -477,16 +457,11 @@
             </div>
             <div class="ui tab segment" id="18" data-tab="fourth" style="display:none">
               {% block topics %} {% include 'coursemanagement/topics.html' %} {% endblock %}
-          </div>
-          </div>
-        <div class="three wide column">
-            <div class="row" style="margin-top:1em;">
-                {% block comments %} {% include 'coursemanagement/comments.html' %} {% endblock %}
             </div>
-
+            <div class="ui tab segment" id="19" data-tab="eighth" style="display:none">
+              {% block comments %} {% include 'coursemanagement/comments.html' %} {% endblock %}
+            </div>
         </div>
-
-        <div class="column"></div>
 
     </div>
 
