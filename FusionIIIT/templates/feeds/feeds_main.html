@@ -2,7 +2,6 @@
 {% extends 'globals/base.html' %}
 {% load static %}
 
-
 {% block title %}
 	Feeds
 {% endblock %}
@@ -22,7 +21,7 @@
 
 	<!-- Search Bar Section -->
 	<div class="ui clearing center aligned segment container">
-		<a href="" style="font-size: 15px; text-decoration: none; float: left; padding-top: 5px;">
+		<a href="/feeds/profile" style="font-size: 15px; text-decoration: none; float: left; padding-top: 5px;">
 			<i class="ui big user icon" style="color: teal;"></i>
 			<span style="color: teal;"> {{request.user.first_name}}</span>
 		</a>

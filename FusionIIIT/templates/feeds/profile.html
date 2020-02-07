@@ -1,0 +1,196 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+	{{request.user}}
+{% endblock %}
+
+{% comment %} {% block extra %}
+	{{form_answer.media}}
+{% endblock %} {% endcomment %}
+
+{% block body %}
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.1.7/semantic.min.js"></script>
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.1.7/semantic.min.css" rel="stylesheet"/>
+
+    {% block navBar %}
+		{% include 'dashboard/navbar.html' %}
+	{% endblock %}
+
+    {% block stylesheet%}
+        <style>
+            .ui.segment:first-child {
+                margin-top: 1rem;
+            }
+            
+            .bio{
+                display: flex;
+                justify-content: center;
+            }
+        </style>
+        
+    {% endblock %}
+
+    {% comment %} Main Tabs for navigation {% endcomment %}
+    <div class="ui grid page" style="margin-bottom:25px;">
+        <div class="column">
+            <div class="ui segment">
+                <div class="ui pointing secondary demo menu">
+                    <a class="active red item" data-tab="profile"><i class="icon user sign"></i>Profile</a>
+                    <a class="blue item" data-tab="activity"><i class="icon chart bar outline"></i>Activity</a>
+                    <a class="green item" data-tab="editProfile"><i class="icon edit sign"></i>Edit Profile</a>
+                </div>
+
+                {% comment %} Profile start {% endcomment %}
+                <div class="ui center active tab" data-tab="profile">
+                    {% comment %} Profile Card {% endcomment %}
+                    <div class="ui centered special cards">
+                        <div class="card">
+                            <div class="blurring dimmable image">
+                                <div class="ui dimmer">
+                                    <div class="content">
+                                        <div class="center">
+                                            <div class="ui inverted button"><i class="icon edit sign"></i>Edit</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <img style="padding:20px; border:0 solid red;" src="https://www.semantic-ui.com/images/avatar/large/elliot.jpg">
+                                <div style="margin:-20px auto 0 auto;" class="center aligned"><h5 class="ui header">Tag Line</h5></div>
+                            </div>
+                            <div class="content center aligned">
+                                <a class="header mr-auto">{{request.user.first_name}}</a>
+                                <div class="meta">
+                                    <span class="date">Student at IIITDM Jabalpur</span>
+                                </div>
+                            </div>
+                            <div class="extra content">
+                                <div class="left floated"><i class="icon marker"></i>Madhya Pradesh</div> <div class="right floated"><i class="icon github"></i>thesid01</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% comment %}  Profile card end{% endcomment %}
+
+                    {% comment %} Bio start {% endcomment %}
+                    <div class="ui divider"></div>
+                    <div class="ui placeholder segment">
+                        <div class="ui two column very relaxed stackable grid">
+                            <div class="column">
+                                <h3 class="ui header">Bio</h3>
+                                <div class="bio description">
+                                    Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+                                    Lorem Ipsum has been the industry's standard dummy text ever since the
+                                    1500s, when an unknown printer took a galley of type and scrambled it to
+                                    make a type specimen book. It has survived not only five centuries,
+                                    but also the leap into electronic typesetting, remaining essentially 
+                                    unchanged. It was popularised in the 1960s with the release of Letraset
+                                    sheets containing Lorem Ipsum passages, and more recently with desktop
+                                    publishing software like Aldus PageMaker including versions of Lorem
+                                    Ipsum
+                                </div>
+                            </div>
+                            <div class="middle aligned column">
+                                <h3 class="ui header">Stats</h3>
+                                {% comment %} <div class="description"> {% endcomment %}
+                                <div class="ui grid">
+                                    <div class="eight wide column">
+                                        <div style="margin-left:15px;">5</div>
+                                        <div><i class="icon write"></i> answers</div>
+                                    </div>
+                                    <div class="eight wide column">
+                                        <div style="margin-left:15px;">5</div>
+                                        <div><i class="icon list ul"></i> questions</div>
+                                    </div>
+                                </div>
+                                <div class"ui divider"></div>
+                                <div class="teal" style="margin:15px 0;">
+                                    <i class="icon marker teal"></i> Jabalpur, Madhya Pradesh
+                                    <div class="divider"></div>
+                                    <i class="icon eye teal"></i> 50 profile views
+                                    <div class="divider"></div>
+                                    <i class="icon sign in teal"></i> Last Login {{date}}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ui vertical divider">
+                            <i class="icon heart"></i>
+                        </div>
+                    </div>
+
+                    {% comment %} Bio end {% endcomment %}
+
+                    {% comment %} Personal Display {% endcomment %}
+                    <div class="ui divider"></div>
+                    <h3 class="ui header">Tags</h3>
+                    <div class="ui image label">
+                        Politics
+                    </div>
+                    <div class="ui image label">
+                        Social
+                    </div>
+                    <div class="ui image label">
+                        Technology
+                    </div>
+                    {% comment %} Personal Display end {% endcomment %}
+
+                    {% comment %} Top stats {% endcomment %}
+                    <div class="ui divider"></div>
+                    <h3 class="ui header">Top Answer</h3>
+                    <p>This is your top rated answer</p>
+
+                    <h3 class="ui header">Top Question</h3>
+                    <p>This is your top rated question</p>
+                    {% comment %} Top stats end {% endcomment %}
+                </div>
+                {% comment %} Profile start {% endcomment %}
+
+                {% comment %} Activity start {% endcomment %}
+                <div class="ui tab" data-tab="activity">
+                    <div class="ui grid">
+                        <div class="four wide column">
+                            <div class="ui secondary vertical vdemo pointing menu">
+                                <a class="active red item" data-tab="summary"><i class="icon user sign"></i>Summary</a>
+                                <a class="blue item" data-tab="answer"><i class="icon user sign"></i>Answers</a>
+                                <a class="red item" data-tab="questions"><i class="icon user sign"></i>Questions</a>
+                            </div>
+                        </div>
+                        <div class="twelve wide column">
+                            <div class="ui tab" data-tab="summary">
+                                TODO: Summary
+                            </div>
+
+                            <div class="ui tab" data-tab="answer">
+                                TODO: Answers
+                            </div>
+
+                            <div class="ui tab" data-tab="questions">
+                                TODO: Questions
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% comment %} Activity end {% endcomment %}
+
+
+                <div class="ui tab segment" data-tab="editProfile">
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block javascript %}
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $('.special.cards .image').dimmer({
+                on: 'hover'
+            });
+        
+           
+            console.log("sid")
+            $('.ui.vdemo.menu .item').tab({history:false});
+        });
+    </script>
+{% endblock%}

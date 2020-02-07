@@ -18,10 +18,10 @@ def feeds(request):
     query = AskaQuestion.objects.order_by('-uploaded_at')
 
     if request.method == 'POST':
+
         if request.POST.get('add_qus') and request.FILES or None:
-            print('file')
-            question = AskaQuestion.objects.create()
-            question.user = request.user
+            print("Post a Question request received")
+            question = AskaQuestion.objects.create(user=request.user)
             question.subject = request.POST.get('subject')
             question.description = request.POST.get('description')
             question.file = request.FILES['file']
@@ -64,9 +64,6 @@ def feeds(request):
 
     all_tags = AllTags.objects.values('tag').distinct()
     askqus_subtags = AllTags.objects.all()
-    print('asd')
-    for i in askqus_subtags:
-        print('0')
 
     user_tags = tags.objects.filter(Q(user__username=request.user.username))
     u_tags = user_tags.values_list('my_subtag')
@@ -107,7 +104,7 @@ def feeds(request):
 def Request(request):
     question = get_object_or_404(AskaQuestion, id=request.POST.get('id'))
     print('Python')
-    question.is_requested = False;
+    question.is_requested = False
 
     if question.requests.filter(id=request.user.id).exists():
         question.requests.remove(request.user)
@@ -129,7 +126,6 @@ def Request(request):
     if request.is_ajax():
         html = render_to_string('feeds/question_request_count.html', context, request=request)
         return JsonResponse({'form': html})
-
 
 # Ajax called for comments to saved and display them
 def Comment_Text(request):
@@ -187,7 +183,6 @@ def Reply_Text(request):
         if request.is_ajax():
             html = render_to_string('feeds/comment_text.html', context, request=request)
             return JsonResponse({'form': html})
-
 
 @login_required
 def LikeComment(request):
@@ -304,7 +299,6 @@ def RemoveTag(request):
 
     return render(request, 'feeds/feeds_main.html', context)
 
-
 def ParticularQuestion(request, id):
     result = AskaQuestion.objects.get(id=id)
     print(id)
@@ -372,3 +366,10 @@ def ParticularQuestion(request, id):
     }
 
     return render(request, 'feeds/single_question.html', context)
+
+def profile(request):
+    print("siddharth")
+    context = {
+
+    }
+    return render(request, 'feeds/profile.html',context)
