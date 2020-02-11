@@ -1,0 +1,22 @@
+1.MongoDB: A document-based open source database
+2.Express: A Fast, unopinionated, minimalist web framework for Node.js
+3.React: A JavaScript front-end library for building user interfaces
+3.Node.js: Node.js is a JavaScript runtime built on Chrome’s V8 JavaScript engine. Node.js brings JavaScript to the server
+
+
+
+1.Used react because react is good for smaller to medium sized projects.
+2.React is fast as compared to Angular and it gives a lot of control.
+3.React uses the concept of virtual dom. This optimizes DOM manipulation 
+  leading to reduced performance overhead.
+
+1.used Express because it make routing simple and its easy to add middleware with express.
+2.error handling is easy with express.
+
+1.Nodejs uses an event-driven, non-blocking I/O model that makes it lightweight and efficient,
+  perfect for data-intensive real-time applications.
+
+Mongo is document oriented making it easy to structe the data in form of JSON objects.
+Moongoose makes casting, validation, query building for MongoDB.
+
+Its easy to work in JS on client as well as server side making development fast.

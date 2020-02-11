@@ -29,6 +29,9 @@
                 display: flex;
                 justify-content: center;
             }
+            .ui.action.input input[type="file"] {
+                display: none;
+            }
         </style>
         
     {% endblock %}
@@ -41,6 +44,7 @@
                     <a class="active red item" data-tab="profile"><i class="icon user sign"></i>Profile</a>
                     <a class="blue item" data-tab="activity"><i class="icon chart bar outline"></i>Activity</a>
                     <a class="green item" data-tab="editProfile"><i class="icon edit sign"></i>Edit Profile</a>
+                    <a class="green item floated right" href="{% url 'feeds:feeds' %}"><i class="icon arrow left"></i>Back</a>
                 </div>
 
                 {% comment %} Profile start {% endcomment %}
@@ -56,8 +60,9 @@
                                         </div>
                                     </div>
                                 </div>
-                                <img style="padding:20px; border:0 solid red;" src="https://www.semantic-ui.com/images/avatar/large/elliot.jpg">
-                                <div style="margin:-20px auto 0 auto;" class="center aligned"><h5 class="ui header">Tag Line</h5></div>
+                                {% comment %} <img style="padding:20px; border:0 solid red;" src="https://www.semantic-ui.com/images/avatar/large/elliot.jpg"> {% endcomment %}
+                                <img style="padding:20px; border:0 solid red; height:{{profile_image.width}};" src="{{profile_image.url}}">
+                                <div style="margin:-20px auto 0 auto;" class="center aligned"><h5 class="ui header">thesid01</h5></div>
                             </div>
                             <div class="content center aligned">
                                 <a class="header mr-auto">{{request.user.first_name}}</a>
@@ -79,15 +84,7 @@
                             <div class="column">
                                 <h3 class="ui header">Bio</h3>
                                 <div class="bio description">
-                                    Lorem Ipsum is simply dummy text of the printing and typesetting industry.
-                                    Lorem Ipsum has been the industry's standard dummy text ever since the
-                                    1500s, when an unknown printer took a galley of type and scrambled it to
-                                    make a type specimen book. It has survived not only five centuries,
-                                    but also the leap into electronic typesetting, remaining essentially 
-                                    unchanged. It was popularised in the 1960s with the release of Letraset
-                                    sheets containing Lorem Ipsum passages, and more recently with desktop
-                                    publishing software like Aldus PageMaker including versions of Lorem
-                                    Ipsum
+                                    {{bio}}
                                 </div>
                             </div>
                             <div class="middle aligned column">
@@ -95,21 +92,21 @@
                                 {% comment %} <div class="description"> {% endcomment %}
                                 <div class="ui grid">
                                     <div class="eight wide column">
-                                        <div style="margin-left:15px;">5</div>
+                                        <div style="margin-left:15px;">{{answer_given}}</div>
                                         <div><i class="icon write"></i> answers</div>
                                     </div>
                                     <div class="eight wide column">
-                                        <div style="margin-left:15px;">5</div>
+                                        <div style="margin-left:15px;">{{question_asked}}</div>
                                         <div><i class="icon list ul"></i> questions</div>
                                     </div>
                                 </div>
                                 <div class"ui divider"></div>
                                 <div class="teal" style="margin:15px 0;">
-                                    <i class="icon marker teal"></i> Jabalpur, Madhya Pradesh
+                                    <i class="icon marker teal"></i> {{extra.address}}
                                     <div class="divider"></div>
-                                    <i class="icon eye teal"></i> 50 profile views
+                                    <i class="icon eye teal"></i> {{views}} profile views
                                     <div class="divider"></div>
-                                    <i class="icon sign in teal"></i> Last Login {{date}}
+                                    <i class="icon sign in teal"></i> <b>Last Login:</b> {{last_login}}
                                 </div>
                             </div>
                         </div>
@@ -123,24 +120,33 @@
                     {% comment %} Personal Display {% endcomment %}
                     <div class="ui divider"></div>
                     <h3 class="ui header">Tags</h3>
-                    <div class="ui image label">
-                        Politics
-                    </div>
-                    <div class="ui image label">
-                        Social
-                    </div>
-                    <div class="ui image label">
-                        Technology
-                    </div>
+                    {% for i in tags %}
+                        <div class="ui image label" style="margin:5px 0;">
+                            {{i}}
+                        </div>
+                    {% endfor %}
                     {% comment %} Personal Display end {% endcomment %}
 
                     {% comment %} Top stats {% endcomment %}
                     <div class="ui divider"></div>
                     <h3 class="ui header">Top Answer</h3>
-                    <p>This is your top rated answer</p>
+                    <p style="margin-left:15px;">
+                        {% if top_ans_len is 0 %}
+                            You have not given any answer till Now.
+                        {% else %}
+                            {{top_ans_len.0.subject}} - {{top_ans_len.0.description}}
+                        {% endif %}
+                    </p>
 
                     <h3 class="ui header">Top Question</h3>
-                    <p>This is your top rated question</p>
+
+                    <p style="margin-left:15px;">
+                        {% if top_ques_len is 0 %}
+                            You have not asked any Question till Now.
+                        {% else %}
+                            {{top_ques.0.subject}} - {{top_ques.0.description}}
+                        {% endif %}
+                    </p>
                     {% comment %} Top stats end {% endcomment %}
                 </div>
                 {% comment %} Profile start {% endcomment %}
@@ -161,11 +167,34 @@
                             </div>
 
                             <div class="ui tab" data-tab="answer">
-                                TODO: Answers
+                                <div class="ui relaxed divided list">
+                                    {% for q in top_ans %}
+                                    <div class="item">
+                                        <i class="large check circle middle aligned icon"></i>
+                                        <div class="content">
+                                        <a class="header">{{q.question.subject}}</a>
+                                        <div class="description">{{q.content}}</div>
+                                        <p>{{q.uploaded_at}}</p>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
                             </div>
 
                             <div class="ui tab" data-tab="questions">
-                                TODO: Questions
+                                
+                                <div class="ui relaxed divided list">
+                                    {% for q in top_ques %}
+                                    <div class="item">
+                                        <i class="large check circle middle aligned icon"></i>
+                                        <div class="content">
+                                        <a class="header">{{q.subject}}</a>
+                                        <div class="description">{{q.description}}</div>
+                                        <p class="floated right">{{q.uploaded_at}}</p>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -174,6 +203,39 @@
 
 
                 <div class="ui tab segment" data-tab="editProfile">
+
+                    <form class="ui center floated form">
+                    
+                        {% comment %} <div class="ui form">
+                            <div class="field">
+                                <label>Upload Profile Picture
+                                <div class="ui left labeled button" tabindex="0">
+                                    <a class="ui basic right pointing label">
+                                        2,048
+                                    </a>
+                                    <div class="ui button">
+                                        <i class="heart icon"></i> Like
+                                    </div>
+                                </div>
+                                <input type="file"/></label>
+                            </div>
+                        </div> {% endcomment %}
+<div class="ui action input">
+  <input type="text" placeholder="File 2" readonly>
+  <input type="file">
+  <div class="ui icon button">
+    <i class="attach icon"></i>
+  </div>
+</div>
+
+                        
+                        <div class="ui form">
+                            <div class="field">
+                                <label>Bio</label>
+                                <textarea></textarea>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -187,9 +249,23 @@
             $('.special.cards .image').dimmer({
                 on: 'hover'
             });
-        
-           
-            console.log("sid")
+
+            $("input:text").click(function() {
+                $(this).parent().find("input:file").click();
+            });
+
+            $('input:file', '.ui.action.input')
+            .on('change', function(e) {
+                var name = e.target.files[0].name;
+                var ext =name.split('.').pop().toLowerCase();
+                if($.inArray(ext, ['gif','png','jpg','jpeg']) == -1) {
+                    alert('invalid extension!');
+                }else{
+                    $('input:text', $(e.target).parent()).val(name);
+                }
+            });
+
+
             $('.ui.vdemo.menu .item').tab({history:false});
         });
     </script>

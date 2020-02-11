@@ -217,7 +217,6 @@ class AnsweraQuestion(models.Model):
 	def total_answers(self):
 		return self.answers.count()
 
-
 class Comments(models.Model):
 	user = models.ForeignKey(User, default=1, on_delete=models.CASCADE)
 	question = models.ForeignKey(AskaQuestion, default=1 , on_delete = models.CASCADE)
@@ -248,7 +247,6 @@ class Reply(models.Model):
 	def total_replies(self):
 		return self.replies.count()
 
-
 class report(models.Model):
 	user = models.ForeignKey(User, default=1, on_delete=models.CASCADE)
 	question = models.ForeignKey(AskaQuestion, default=1, on_delete = models.CASCADE)
@@ -256,8 +254,6 @@ class report(models.Model):
 
 	# class Meta:
 	# 	unique_together = ('user', 'question')
-
-
 
 class hidden(models.Model):
 	user = models.ForeignKey(User, default=1, on_delete=models.CASCADE)
@@ -270,7 +266,6 @@ class hidden(models.Model):
 	def __str__(self):
 		return '{} - hide - {}'.format(self.user, self.question)
 
-
 class tags(models.Model):
 	user = models.ForeignKey(User, default=1, on_delete=models.CASCADE)
 	my_tag = models.CharField(max_length=100, default=1, choices=Constants.TAG_LIST)
@@ -281,3 +276,11 @@ class tags(models.Model):
 
 	def __str__(self):
 		return '%s is interested in ----> %s - %s' % (self.user, self.my_tag, self.my_subtag.subtag)
+
+class Profile(models.Model):
+	user = models.ForeignKey(User, default=1, on_delete=models.CASCADE)
+	bio = models.CharField(max_length=250,blank=True)
+	profile_picture = models.ImageField(null=True, blank=True, upload_to='feeds/profile_pictures')
+	profile_view = models.IntegerField(default=0)
+	def __str__(self):
+		return '%s\'s Bio is  ----> %s' % (self.user, self.bio)

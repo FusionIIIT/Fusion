@@ -9,7 +9,8 @@ from django.template.loader import render_to_string
 
 from .forms import AnswerForm
 from .models import (AllTags, AnsweraQuestion, AskaQuestion, Comments, Reply,
-                     hidden, report, tags)
+                     hidden, report, tags, Profile)
+from applications.globals.models import ExtraInfo
 
 
 # Create your views here.
@@ -368,8 +369,32 @@ def ParticularQuestion(request, id):
     return render(request, 'feeds/single_question.html', context)
 
 def profile(request):
-    print("siddharth")
+    print("Profile Loading ......")
+    profile = Profile.objects.all().filter(user=request.user)
+    ques = AskaQuestion.objects.all().filter(user=request.user)
+    ans = AnsweraQuestion.objects.all().filter(user=request.user)
+    extra = ExtraInfo.objects.all().filter(user=request.user)
+    tags = set()
+    top_ques = ""
+    top_ans = ans
+    for q in ques:
+        if top_ques == "":
+            top_ques = q;
+        for t in q.select_tag.all():
+            tags.add(t)
+    print(ans[0].question)
     context = {
-
+        'bio' : profile[0].bio,
+        'profile_image' : profile[0].profile_picture,
+        'question_asked' : len(ques),
+        'answer_given' : len(ans),
+        'last_login' : request.user.last_login,
+        'extra' : extra[0],
+        'views' : profile[0].profile_view,
+        'tags' : tags,
+        'top_ques' : ques,
+        'top_ques_len' : len(ques),
+        'top_ans' : ans,
+        'top_ans_len' : len(ans)
     }
     return render(request, 'feeds/profile.html',context)
