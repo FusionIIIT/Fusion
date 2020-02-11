@@ -70,6 +70,7 @@ def feeds(request):
     u_tags = user_tags.values_list('my_subtag')
     a_tags = tags.objects.values('my_subtag').filter(Q(user__username=request.user.username))
 
+#break 
     #query = question.filter(select_tag__in=list(u_tags))
 
     # # if len(u_tags) == 0:
