@@ -287,8 +287,7 @@ def add_document(request, course_code):
             subprocess.call(cmd, shell=True)
         fs = FileSystemStorage(full_path, url)
         fs.save(filename + file_extenstion, doc)
-        uploaded_file_url = "/media/online_cms/" + course_code + "/doc/" + filename
-        uploaded_file_url = uploaded_file_url + file_extenstion
+        uploaded_file_url = full_path + filename + file_extenstion
         #save the info/details in the database
         CourseDocuments.objects.create(
             course_id=course,
@@ -324,24 +323,24 @@ def delete(request, course_code):
     #to delete videos
     if data_type == 'video':
         video = CourseVideo.objects.get(pk=pk, course_id=course)
-        url = video.video_url
+        path = video.video_url
         video.delete()
     #to delete slides/documents
     elif data_type == 'slide':
         slide = CourseDocuments.objects.get(pk=pk, course_id=course)
-        url = slide.document_url
+        path = slide.document_url
         slide.delete()
     #to delete the submitted assignment
     elif data_type == 'stuassignment':
         stu_assi = StudentAssignment.objects.get(pk=pk)
-        url = stu_assi.upload_url
+        path = stu_assi.upload_url
         stu_assi.delete()
     #to delete the assignment uploaded by faculty
     elif data_type == 'lecassignment':
         lec_assi = Assignment.objects.get(pk=pk)
-        url = lec_assi.assignment_url
+        path = lec_assi.assignment_url
         lec_assi.delete()
-    cmd = "rm "+url
+    cmd = "rm "+path
     subprocess.call(cmd, shell=True)
     data = { 'msg': 'Data Deleted successfully'}   
     return HttpResponse(json.dumps(data), content_type='application/json')
@@ -372,14 +371,13 @@ def add_videos(request, course_code):
             subprocess.call(cmd, shell=True)
         fs = FileSystemStorage(full_path, url)
         fs.save(filename+file_extenstion, vid)
-        uploaded_file_url = "/media/online_cms/" + course_code + "/vid/" + filename
-        uploaded_file_url = uploaded_file_url + file_extenstion
+        uploaded_file_url = full_path + filename + file_extenstion 
         #saving in the 
         video = CourseVideo.objects.create(
             course_id=course,
             upload_time=datetime.now(),
             description=description,
-            video_url=uploaded_file_url[:-4],
+            video_url=uploaded_file_url,
             video_name=name
         )
         create_thumbnail(course_code,course, video, name, file_extenstion, 'Big', 1, '700:500')
@@ -533,9 +531,7 @@ def add_assignment(request, course_code):                 #from faculty side
         fs = FileSystemStorage(full_path, url)
         fs.save(filename+file_extenstion, assi)
         print(request.POST.get('myDate'))
-        uploaded_file_url = "/media/online_cms/" + course_code + "/assi/"
-        uploaded_file_url = uploaded_file_url + name + "/" + name + file_extenstion
-        name = request.POST.get('name')
+        uploaded_file_url = full_path + filename + file_extenstion
         assign = Assignment(
             course_id=course,
             submit_date=request.POST.get('myDate'),
@@ -974,10 +970,10 @@ def remove_quiz_question(request, course_code, quiz_code, topic_id):
 def add_question_topicwise(request, course_code, quiz_id):
     extrainfo = ExtraInfo.objects.get(user=request.user)
     if extrainfo.user_type == 'faculty':
-        instructor = ICurriculum_Instructor.objects.filter(instructor_id=extrainfo)
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
-            if ins.course_id.course_id == course_code:
-                course = ins.course_id
+            if ins.curriculum_id.course_code == course_code:
+                course = ins.curriculum_id.course_id
         ques_bank = request.POST.get('qbank')
         quiz = Quiz.objects.get(pk=quiz_id)
         topic = request.POST.get('topic')
@@ -1002,7 +998,10 @@ def add_question_topicwise(request, course_code, quiz_id):
 
 
 @login_required
-def add_questions_to_quiz(request, course_code, quiz_id):
+def add_questions_to_quiz(request, course_id, quiz_id):
+    course = Course.objects.get(pk=course_id)
+    curriculum = Curriculum.objects.get(course_id = course)
+    course_code = curriculum.course_code
     extrainfo = ExtraInfo.objects.get(user=request.user)
     if extrainfo.user_type == 'faculty':
         questions_selected = request.POST.getlist('questions_selected')

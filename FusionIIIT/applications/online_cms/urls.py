@@ -38,7 +38,7 @@ urlpatterns = [
         views.edit_quiz_topic, name='edit_quiz_topic'),
     url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/(?P<quiz_id>[0-9]+)/add_question_topic$',
         views.add_question_topicwise, name='add_question_topicwise'),
-    url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/(?P<quiz_id>[0-9]+)/add_questions_to_quiz$',
+    url(r'^(?P<course_id>[0-9]+?)/(?P<quiz_id>[0-9]+)/add_questions_to_quiz$',
         views.add_questions_to_quiz, name='add_questions_to_quiz'),
     url(
         r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/(?P<quiz_code>[0-9]+)/(?P<topic_id>[0-9]+)/remove_quiz_question$',

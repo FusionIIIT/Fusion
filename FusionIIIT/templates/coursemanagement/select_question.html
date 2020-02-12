@@ -69,7 +69,7 @@ Create Contest
         {% if questions|length == 0 %}
           <h4 class="ui header">No questions of this topic in the current question bank!</h4>
         {% else %}
-        <form class="ui form" id="question_form" style="margin-top:5em" action="/ocms/{{course.course_id}}/{{details.pk}}/add_questions_to_quiz" method="post">
+        <form class="ui form" id="question_form" style="margin-top:5em" action="/ocms/{{course.id}}/{{details.pk}}/add_questions_to_quiz" method="post">
           {% csrf_token %}
           {% for question in questions %}
           <div class="inline field">
