@@ -24,7 +24,8 @@ def feeds(request):
             print("Post a Question request received")
             question = AskaQuestion.objects.create(user=request.user)
             question.subject = request.POST.get('subject')
-            question.description = request.POST.get('description')
+            question.description = request.POST.get('content')
+            print(request.POST)
             question.file = request.FILES['file']
             tag = request.POST.get('Add_Tag')
             tag = tag[8:]
@@ -70,20 +71,21 @@ def feeds(request):
     u_tags = user_tags.values_list('my_subtag')
     a_tags = tags.objects.values('my_subtag').filter(Q(user__username=request.user.username))
 
-#break 
-    #query = question.filter(select_tag__in=list(u_tags))
+    ques = []
+    for q in query:
+        temp = {
+            'profile':Profile.objects.all().filter(user=q.user),
+            'ques' : q  
+        }
+        ques.append(temp)
 
-    # # if len(u_tags) == 0:
-    # query = AskaQuestion.objects.order_by('-uploaded_at')
-
-    # items in add tag menu
     add_tag_list = AllTags.objects.all()
     add_tag_list = add_tag_list.exclude(pk__in=a_tags)
 
     context ={
         'form_answer': AnswerForm(),
         'my_tags': all_tags,
-        'questions': query,
+        'questions': ques,
         'username': request.user.username,
         'subtags': askqus_subtags,
         'add_tag_list' : add_tag_list,
@@ -134,8 +136,7 @@ def Comment_Text(request):
     if request.method == 'POST':
         print('Ajax called')
         question = get_object_or_404(AskaQuestion, id=request.POST.get('id'))
-        comment = Comments.objects.create()
-        comment.question = question
+        comment = Comments.objects.create(user=request.user,question=question)
         comment.comment_text = request.POST.get('comment_box')
         comment.save()
         print(comment.id)
@@ -303,14 +304,13 @@ def RemoveTag(request):
 
 def ParticularQuestion(request, id):
     result = AskaQuestion.objects.get(id=id)
-    print(id)
-    print(result.subject)
     user_tags = tags.objects.filter(Q(user__username=request.user.username))
     a_tags = tags.objects.values('my_subtag').filter(Q(user__username=request.user.username))
     all_tags_list = AllTags.objects.all()
     all_tags_list= all_tags_list.exclude(pk__in=a_tags)
     all_tags = AllTags.objects.values('tag').distinct()
-
+    askqus_subtags = AllTags.objects.all()
+    profile = Profile.objects.all().filter(user=result.user)
     if request.method == 'POST':
         if request.POST.get("answer_button"):
             print('coming')
@@ -318,6 +318,7 @@ def ParticularQuestion(request, id):
             if form_answer.is_valid():
                 instance = form_answer.save(commit=False)
                 instance.question = result
+                instance.user = request.user
                 instance.save()
 
                 context = {
@@ -325,8 +326,9 @@ def ParticularQuestion(request, id):
                     'instance': instance,        
                     'question': result,
                     'my_tags': all_tags,
+                    'subtags': askqus_subtags,
                     'all_tags_list': all_tags_list,
-
+                    'profile' : profile,
                     'a': user_tags.filter(Q(my_tag__icontains='CSE')),
                     'b' : user_tags.filter(Q(my_tag__icontains='ECE')),
                     'c' : user_tags.filter(Q(my_tag__icontains='Mechanical')),
@@ -353,7 +355,8 @@ def ParticularQuestion(request, id):
         'question': result,
         'my_tags': all_tags,
         'all_tags_list': all_tags_list,
-
+        'profile' : profile,
+        'subtags': askqus_subtags,
         'a': user_tags.filter(Q(my_tag__icontains='CSE')),
         'b' : user_tags.filter(Q(my_tag__icontains='ECE')),
         'c' : user_tags.filter(Q(my_tag__icontains='Mechanical')),
@@ -383,7 +386,6 @@ def profile(request):
             top_ques = q;
         for t in q.select_tag.all():
             tags.add(t)
-    print(ans[0].question)
     context = {
         'bio' : profile[0].bio,
         'profile_image' : profile[0].profile_picture,

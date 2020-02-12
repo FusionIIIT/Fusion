@@ -259,13 +259,11 @@
                 var name = e.target.files[0].name;
                 var ext =name.split('.').pop().toLowerCase();
                 if($.inArray(ext, ['gif','png','jpg','jpeg']) == -1) {
-                    alert('invalid extension!');
+                    alert('Only gif, png, jpg, jpeg');
                 }else{
                     $('input:text', $(e.target).parent()).val(name);
                 }
             });
-
-
             $('.ui.vdemo.menu .item').tab({history:false});
         });
     </script>

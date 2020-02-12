@@ -20,95 +20,8 @@
 	{% endblock %}
 
 	<!-- Search Bar Section -->
-	<div class="ui clearing center aligned container">
-		<a href="{% url 'feeds:profile' %}" style="font-size: 15px; text-decoration: none; float: left; padding-top: 5px;">
-			<i class="ui big user icon" style="color: teal;"></i>
-			<span style="color: teal;"> {{request.user.first_name}}</span>
-		</a>
-		<div class="ui large left icon input">
-			<form method="post" action="{% url 'feeds:feeds' %}">
-				{% csrf_token %}
-			<input type="search" name="keyword" style="width: 500px;"  placeholder="Search...">
-			<button type="submit" name="search" value="search" class="ui search button">
-			<i class="ui search icon"></i></button>
-
-			</form>
-		</div>
-		<button class="ui inverted right floated red button" id="modal-script" style="font-size: 16px;">
-			Ask a Question?
-		</button>
-	</div>
+	{% include 'feeds/search_section.html' %}
 	<!-- Search Bar Section ends here-->
-
-
-	<!-- Modal Starts here...... -->
-	<div class="ui modal" id="post_modal">
-		<i class="close icon"></i>
-		<div class="ui header"><i class="ui user icon"></i>{{ username }}</div>
-		<div class="scrolling content">
-			<div class="ui message">
-				<div class="header">
-					Check these things
-				</div>
-				<ul class="list">
-					<li>Please try to add How, What, Why in subject.</li>
-					<li>Be specific to your problem.</li>
-				</ul>
-			</div>
-
-			<form method="post" action="{% url 'feeds:feeds' %}" enctype="multipart/form-data">{% csrf_token %}
-				<div class="ui large form">
-					<div class="field">
-						<label>Subject</label>
-						<input id="subject" type="text" name="subject" placeholder="Subject for your problem..." required>
-					</div>
-
-					<div class="field">
-						<label>Description</label>
-						<!-- <input type="text" id="description" name="description" rows="2"> -->
-						{{ form_answer }}
-					</div>
-
-					<div class="field">
-						<label>Add Tag</label>
-		    				<div class='ui multiple search selection dropdown seasons'>
-		      					<input name="Add_Tag" id="Add_Tag" value="Add_Tag" type="hidden">
-		      					<i class="dropdown icon"></i>
-		      					<div class="default text"><i class="tags icon"></i>Select</div>
-	      						<div class="menu">
-	      							{% for allowed_subtag in subtags %}
-	        						<div class="item" data-value="{{ allowed_subtag.id }}">{{ allowed_subtag.subtag }}</div>
-	        						{% endfor %}
-	      						</div>
-
-		    				</div>
-		  			</div>
-
-		  			<div class="field">
-		  				<label>Upload File</label>
-		  				<input type="file" id="file" name="file" style="border-radius: 3px;">
-		  			</div>
-
-					<div class="ui hidden divider"></div>
-					<div class="field">
-						<div class="ui black checkbox">
-  							<input type="checkbox" id="anonymous" name="anonymous">
- 							<label>Ask Anonymously</label>
-						</div>
-					</div>
-					<div class="ui hidden divider"></div>
-
-					<div class="actions">
-						<button type="submit" name="add_qus" value="add_qus" class="ui submit positive button" style="float: right;">
-							Post
-						</button><br>
-						<div class="ui hidden divider"></div>
-					</div>
-				</div>
-			</form>
-		</div>
-	</div>
-	<!-- Modal ends here -->
 
 	<div class="ui divider"></div>
 	<br>
@@ -142,143 +55,142 @@
 		</form>
 
 	    {% comment %}The Tab-Menu starts here!{% endcomment %}
-	        <div class="ui fluid vertical pointing menu"
-	                 style="max-width: 320px;">
-	                <a class="active item" data-tab="life" id="Top-Stories" onclick="tags_based(id);">
-	                    Top Stories
-	                    <i class="right floated chevron right icon"></i>
-	                </a>
-	                {% for my_tag in my_tags %}
-	                	<div class="ui dropdown item" data-tab="first" id= {{ my_tag.tag }}>
-	                	{{ my_tag.tag }}
-	                	<i class="dropdown icon"></i>
+	        <div class="ui fluid vertical pointing menu" style="max-width: 320px;">
+				<a class="active item" data-tab="life" id="Top-Stories" onclick="tags_based(id);">
+					Top Stories
+					<i class="right floated chevron right icon"></i>
+				</a>
+				{% for my_tag in my_tags %}
+					<div class="ui dropdown item" data-tab="first" id= {{ my_tag.tag }}>
+					{{ my_tag.tag }}
+					<i class="dropdown icon"></i>
 
-	                	{% if my_tag.tag == 'CSE' %}
-	                	<div class="menu">
-	                		{% for a in a %}
-	                			<div class="item">
-	                				<a style="color: inherit;" id={{ a.my_subtag.subtag }} onclick="tags_based(id);">
-	                					{{ a.my_subtag.subtag }}
-	                				</a>
-	                				<a id={{ a.my_subtag.subtag }} style="color: inherit;" onclick="removeTag(id);">
-	                					<i class="close icon" style="float: right;"></i>
-	                				</a>
-	                			</div>
-	     					{% endfor %}
-	    				</div>
-	    				{% endif %}
+					{% if my_tag.tag == 'CSE' %}
+						<div class="menu">
+							{% for cse in a %}
+								<div class="item">
+									<a style="color: inherit;" id={{ cse.my_subtag.subtag }} onclick="tags_based(id);">
+										{{ cse.my_subtag.subtag }}
+									</a>
+									<a id={{ cse.my_subtag.subtag }} style="color: inherit;" onclick="removeTag(id);">
+										<i class="close icon" style="float: right;"></i>
+									</a>
+								</div>
+							{% endfor %}
+						</div>
+					{% endif %}
 
-	    				{% if my_tag.tag == 'ECE' %}
-	                	<div class="menu">
-	                		{% for b in b %}
-	                			<div class="item">
-		                			<a style="color: inherit;" id={{ b.my_subtag.subtag }} onclick="tags_based(id);">{{ b.my_subtag.subtag }}</a>
-		                			<i class="close icon" style="float: right;"></i>
-		                		</div>
-	     					{% endfor %}
-	    				</div>
-	    				{% endif %}
+					{% if my_tag.tag == 'ECE' %}
+						<div class="menu">
+							{% for b in b %}
+								<div class="item">
+									<a style="color: inherit;" id={{ b.my_subtag.subtag }} onclick="tags_based(id);">{{ b.my_subtag.subtag }}</a>
+									<i class="close icon" style="float: right;"></i>
+								</div>
+							{% endfor %}
+						</div>
+					{% endif %}
 
-	    				{% if my_tag.tag == 'Mechanical' %}
-	                	<div class="menu">
-	                		{% for c in c %}
-	                			<div class="item">
-		                			<a style="color: inherit;" id={{ c.my_subtag.subtag }} onclick="tags_based(id);">{{ c.my_subtag.subtag }}</a>
-		                			<i class="close icon" style="float: right;"></i>
-		                		</div>
-	     					{% endfor %}
-	    				</div>
-	    				{% endif %}
+					{% if my_tag.tag == 'Mechanical' %}
+						<div class="menu">
+							{% for c in c %}
+								<div class="item">
+									<a style="color: inherit;" id={{ c.my_subtag.subtag }} onclick="tags_based(id);">{{ c.my_subtag.subtag }}</a>
+									<i class="close icon" style="float: right;"></i>
+								</div>
+							{% endfor %}
+						</div>
+					{% endif %}
 
-	    				{% if my_tag.tag == 'Design' %}
-	                	<div class="menu">
-	                		{% for d in d %}
-	                			<div class="item">
-		                			<a style="color: inherit;" id={{ d.my_subtag.subtag }} onclick="tags_based(id);">{{ d.my_subtag.subtag }}</a>
-		                			<i class="close icon" style="float: right;"></i>
-		                		</div>	    
-		                	{% endfor %}
-	    				</div>
-	    				{% endif %}
+					{% if my_tag.tag == 'Design' %}
+						<div class="menu">
+							{% for d in d %}
+								<div class="item">
+									<a style="color: inherit;" id={{ d.my_subtag.subtag }} onclick="tags_based(id);">{{ d.my_subtag.subtag }}</a>
+									<i class="close icon" style="float: right;"></i>
+								</div>	    
+							{% endfor %}
+						</div>
+					{% endif %}
 
-	    				{% if my_tag.tag == 'Business-and-Career' %}
-	                	<div class="menu">
-	                		{% for e in cse_e %}
-	                			<<div class="item">
-		                			<a style="color: inherit;" id={{ e.my_subtag.subtag }} onclick="tags_based(id);">{{ e.my_subtag.subtag }}</a>
-		                			<i class="close icon" style="float: right;"></i>
-		                		</div>
-	     					{% endfor %}
-	    				</div>
-	    				{% endif %}
+					{% if my_tag.tag == 'Business-and-Career' %}
+						<div class="menu">
+							{% for e in cse_e %}
+								<<div class="item">
+									<a style="color: inherit;" id={{ e.my_subtag.subtag }} onclick="tags_based(id);">{{ e.my_subtag.subtag }}</a>
+									<i class="close icon" style="float: right;"></i>
+								</div>
+							{% endfor %}
+						</div>
+					{% endif %}
 
-	    				{% if my_tag.tag == 'Entertainment' %}
-	                	<div class="menu">
-	                		{% for f in f %}
-	                			<div class="item">
-		                			<a style="color: inherit;" id={{ f.my_subtag.subtag }} onclick="tags_based(id);">{{ f.my_subtag.subtag }}</a>
-		                			<i class="close icon" style="float: right;"></i>
-		                		</div>
-	     					{% endfor %}
-	    				</div>
-	    				{% endif %}
+					{% if my_tag.tag == 'Entertainment' %}
+						<div class="menu">
+							{% for f in f %}
+								<div class="item">
+									<a style="color: inherit;" id={{ f.my_subtag.subtag }} onclick="tags_based(id);">{{ f.my_subtag.subtag }}</a>
+									<i class="close icon" style="float: right;"></i>
+								</div>
+							{% endfor %}
+						</div>
+					{% endif %}
 
-	    				{% if my_tag.tag == 'Jabalpur-city' %}
-	                	<div class="menu">
-	                		{% for g in g %}
-	                			<div class="item">
-		                			<a style="color: inherit;" id={{ g.my_subtag.subtag }} onclick="tags_based(id);">{{ g.my_subtag.subtag }}</a>
-		                			<i class="close icon" style="float: right;"></i>
-		                		</div>
-	     					{% endfor %}
-	    				</div>
-	    				{% endif %}
+					{% if my_tag.tag == 'Jabalpur-city' %}
+						<div class="menu">
+							{% for g in g %}
+								<div class="item">
+									<a style="color: inherit;" id={{ g.my_subtag.subtag }} onclick="tags_based(id);">{{ g.my_subtag.subtag }}</a>
+									<i class="close icon" style="float: right;"></i>
+								</div>
+							{% endfor %}
+						</div>
+					{% endif %}
 
-	    				{% if my_tag.tag == 'IIITDMJ-Rules-and-Regulations' %}
-	                	<div class="menu">
-	                		{% for h in h %}
-	                			<div class="item">
-		                			<a style="color: inherit;" id={{ h.my_subtag.subtag }} onclick="tags_based(id);">{{ h.my_subtag.subtag }}</a>
-		                			<i class="close icon" style="float: right;"></i>
-		                		</div>
-	     					{% endfor %}
-	    				</div>
-	    				{% endif %}
+					{% if my_tag.tag == 'IIITDMJ-Rules-and-Regulations' %}
+						<div class="menu">
+							{% for h in h %}
+								<div class="item">
+									<a style="color: inherit;" id={{ h.my_subtag.subtag }} onclick="tags_based(id);">{{ h.my_subtag.subtag }}</a>
+									<i class="close icon" style="float: right;"></i>
+								</div>
+							{% endfor %}
+						</div>
+					{% endif %}
 
-	    				{% if my_tag.tag == 'Life-Relationship-and-Self' %}
-	                	<div class="menu">
-	                		{% for i in i %}
-	                			<div class="item">
-		                			<a style="color: inherit;" id={{ i.my_subtag.subtag }} onclick="tags_based(id);">{{ i.my_subtag.subtag }}</a>
-		                			<i class="close icon" style="float: right;"></i>
-	                			</div>
-	     					{% endfor %}
-	    				</div>
-	    				{% endif %}
+					{% if my_tag.tag == 'Life-Relationship-and-Self' %}
+						<div class="menu">
+							{% for i in i %}
+								<div class="item">
+									<a style="color: inherit;" id={{ i.my_subtag.subtag }} onclick="tags_based(id);">{{ i.my_subtag.subtag }}</a>
+									<i class="close icon" style="float: right;"></i>
+								</div>
+							{% endfor %}
+						</div>
+					{% endif %}
 
-	    				{% if my_tag.tag == 'IIITDMJ-Campus' %}
-	                	<div class="menu">
-	                		{% for j in j %}
-	                			<div class="item">
-		                			<a style="color: inherit;" id={{ j.my_subtag.subtag }} onclick="tags_based(id);">{{ j.my_subtag.subtag }}</a>
-		                			<i class="close icon" style="float: right;"></i>
-	                			</div>
-	     					{% endfor %}
-	    				</div>
-	    				{% endif %}
+					{% if my_tag.tag == 'IIITDMJ-Campus' %}
+						<div class="menu">
+							{% for j in j %}
+								<div class="item">
+									<a style="color: inherit;" id={{ j.my_subtag.subtag }} onclick="tags_based(id);">{{ j.my_subtag.subtag }}</a>
+									<i class="close icon" style="float: right;"></i>
+								</div>
+							{% endfor %}
+						</div>
+					{% endif %}
 
-	    				{% if my_tag.tag == 'Programmes' %}
-	                	<div class="menu">
-	                		{% for k in k %}
-	                			<div class="item">
-		                			<a style="color: inherit;" id={{ k.my_subtag.subtag }} onclick="tags_based(id);">{{ k.my_subtag.subtag }}</a>
-		                			<i class="close icon" style="float: right;"></i>
-	                			</div>
-	     					{% endfor %}
-	    				</div>
-	    				{% endif %}
-	    				</div>
-	                {% endfor %}
+					{% if my_tag.tag == 'Programmes' %}
+						<div class="menu">
+							{% for k in k %}
+								<div class="item">
+									<a style="color: inherit;" id={{ k.my_subtag.subtag }} onclick="tags_based(id);">{{ k.my_subtag.subtag }}</a>
+									<i class="close icon" style="float: right;"></i>
+								</div>
+							{% endfor %}
+						</div>
+					{% endif %}
+					</div>
+				{% endfor %}
 			</div>
 	</div>
 	<!-- First section of the page ends here -->
@@ -287,36 +199,15 @@
 	<!-- Middle section of the page -->
 	<div class="ten wide column container" style="padding-left: 60px; padding-right: 60px;">
 		
-		{% for question in questions %}		
-
-		<!-- Are You sure Modal for Delete button -->
-		<div class="ui modal" id="delete_modal">
-			<i class="close icon"></i>
-			<div class="ui header">
-				<i class="ui user icon"></i>
-				{{ username }}
-			</div>
-
-			<div class="ui message">
-				<p> Are you sure you want to delete this question? </p>
-			</div>
-
-			<form method="post" action="{% url 'feeds:delete_post' question.id %}">
-			{% csrf_token %}
-				<a class="ui item">
-					<button class="ui button" type="submit" name="delete" value="delete" id="delete_post">
-				<i class="trash icon" id="delete">Delete Post</i> 
-					</button>
-				</a>
-			</form>
-		</div> 
+		{% for question in questions %}
 
 		<div class="ui segment">
 			<h3 class="ui header">
-				<img class="ui avatar image" src="{% static 'globals/img/zlatan.jpg' %}">
+				{% comment %} <img class="ui avatar image" src="{% static 'globals/img/zlatan.jpg' %}"> {% endcomment %}
+				<img class="ui avatar image" style="height: 40px; width: 40px ;" src="{{question.profile.0.profile_picture.url}}">
 				<a href="" style="color: rgba(0,0,0,.6); font-size: 15px;">
-					{% for result in question.select_tag.all %}
-						| {{ result }} |
+				|{% for result in question.ques.select_tag.all %}
+						{{ result }} |
 					{% endfor %}
 				</a>
 
@@ -324,71 +215,95 @@
 				<div class="ui simple dropdown item" style="float: right;">
 					<i class="ui ellipsis horizontal icon" style="color: grey;"></i>
 					<div class="ui menu">
-						{% if question.user == request.user %}
+						{% if question.ques.user == request.user %}
 							<div class="ui item">
-								<button class="ui button" style="background-color: transparent;" type="submit" name="delete" value="delete" id="delete_post">
+								<button class="ui button" style="background-color: transparent;" type="submit" name="delete" value="{{question.ques.id}}" id="delete_post">
 								<i class="trash alternate icon"></i> Delete Post
 								</button>
 							</div>
 
 							<div class="ui item">
-								<button class="ui button" style="background-color: transparent;" type="submit" name="update" value="{{question.id}}" id="update_post">
+								<button class="ui button" style="background-color: transparent;" type="submit" name="update" value="{{question.ques.id}}" id="update_post">
 									<i class="undo icon"></i> Update Post
-								</button> 
+								</button>
+							</div>
 
-								 <!-- Update Modal Starts here...... -->
-								<div class="ui modal" id="update_modal{{question.id}}">
-									<i class="close icon"></i>
-									<div class="ui header"><i class="ui user icon"></i>{{ username }} Edited</div>
-									<div class="scrolling content">
-										<div class="ui message">
-											<div class="header">
-												Check these things
-											</div>
-											<ul class="list">
-												<li>Please try to add How, What, Why in subject.</li>
-												<li>Be specific to your problem.</li>
-											</ul>
-										</div>
-
-										<form method="post" action="{% url 'feeds:update_post' question.id %}">{% csrf_token %}
-											<div class="ui large form">
-												<div class="field">
-													<label>Subject</label>
-													<input id="subject" type="text" name="subject" value="{{question.subject}}" required>
-												</div>
-
-												<div class="field">
-													<label>Description</label>
-													<input type="text" id="description" name="description" rows="2" value="{{question.description}}">
-												</div>
-
-												<div class="ui hidden divider"></div>
-												<div class="field">
-													<div class="ui black checkbox">
-														{% if question.anonymous_ask %}
-							  							<input type="checkbox" id="anonymous_update" name="anonymous_update" checked="checked"> 
-							 							<label>Ask Anonymously</label>
-							 							{% else %}
-							 							<input type="checkbox" id="anonymous_update" name="anonymous_update" > 
-							 							<label>Ask Anonymously</label>
-							 							{% endif %}
-													</div>
-												</div>
-												<div class="ui hidden divider"></div>
-
-												<div class="actions">
-													<button type="submit" name="update" value="update_qus" class="ui submit positive button" style="float: right;">
-														Update
-													</button><br>
-													<div class="ui hidden divider"></div>
-												</div>
-											</div>
-										</form>
-									</div>
+							<!-- Are You sure Modal for Delete button -->
+							<div class="ui modal" id="delete_modal{{question.ques.id}}">
+								<i class="close icon"></i>
+								<div class="ui header">
+									<i class="ui user icon"></i>
+									{{ username }}
 								</div>
 
+								<div class="content">
+									<div class="ui warning message segment">
+										<p> Are you sure you want to delete this question? </p>
+									</div>
+
+									<form method="post" action="{% url 'feeds:delete_post' question.ques.id %}">
+									{% csrf_token %}
+										<a class="ui item">
+											<button class="ui button" type="submit" name="delete" value="delete">
+											<i class="trash icon" id="delete"></i>Delete Post 
+											</button>
+										</a>
+									</form>
+								</div>
+							</div> 
+
+								<!-- Update Modal Starts here...... -->
+							<div class="ui modal" id="update_modal{{question.ques.id}}">
+								<i class="close icon"></i>
+								<div class="ui header"><i class="ui user icon"></i>{{ username }}</div>
+								<div class="scrolling content">
+									<div class="ui message">
+										<div class="header">
+											Check these things
+										</div>
+										<ul class="list">
+											<li>Please try to add How, What, Why in subject.</li>
+											<li>Be specific to your problem.</li>
+										</ul>
+									</div>
+
+									<form method="post" action="{% url 'feeds:update_post' question.ques.id %}">{% csrf_token %}
+										<div class="ui large form">
+											<div class="field">
+												<label>Subject</label>
+												<input id="subject" type="text" name="subject" value="{{question.ques.subject}}" required>
+											</div>
+
+											<div class="field">
+												<label>Description</label>
+												<input type="text" id="description" name="description" rows="2" value="{{question.ques.description}}">
+											</div>
+
+											<div class="ui hidden divider"></div>
+											<div class="field">
+												<div class="ui black checkbox">
+													{% if question.ques.anonymous_ask %}
+													<input type="checkbox" id="anonymous_update" name="anonymous_update" checked="checked"> 
+													<label>Ask Anonymously</label>
+													{% else %}
+													<input type="checkbox" id="anonymous_update" name="anonymous_update" > 
+													<label>Ask Anonymously</label>
+													{% endif %}
+												</div>
+											</div>
+											<div class="ui hidden divider"></div>
+
+											<div class="actions">
+												<button type="submit" name="update" value="update_qus" class="ui submit positive button" style="float: right;">
+													Update
+												</button><br>
+												<div class="ui hidden divider"></div>
+											</div>
+										</div>
+									</form>
+								</div>
 							</div>
+							
 						{% endif %}
 
 						<div class="ui item">
@@ -402,21 +317,20 @@
 			</h3>
 			<div class="ui divider" style="line-height: 0.5;"></div>
 			<h2 class="ui header">
-				<span style="padding-left: 8px;">{{ question.subject }}</span>
+				<span style="padding-left: 8px;">{{ question.ques.subject }}</span>
 				<a href="" class="ui basic huge red circular label" style="float: right; margin-right: 15px;">0</a>
 				<div class="sub header">
 					<div class="ui grid container">
 						<div class="two wide column" style="width: 8%!important; padding-top: 5px; padding-right: 1px;">
-							<a href=""><img class="ui avatar image" src="{% static 'globals/img/zlatan.jpg' %}"></a> 
 						</div>
 						<div class="fourteen wide column" style="padding: 0px;">
 							<span style="font-size: 13px;"> 
-								{% if question.anonymous_ask is True %}
+								{% if question.ques.anonymous_ask is True %}
 									<a href="" style="color: rgba(0,0,0,.6);">Anonymous</a><br>
 								{% else %}
 									<a href="" style="color: rgba(0,0,0,.6);">{{ username }} | Second Year | CSE</a><br>
 								{% endif %}
-								{{ question.uploaded_at }}
+								{{ question.ques.uploaded_at }}
 							</span>
 						</div>
 					</div>
@@ -424,8 +338,8 @@
 			</h2>
 
 			<div style="font-size: 16px; padding-left: 30px; font-family: Georgia; line-height: 24px;">
-				{{ question.get_markdown|truncatechars:150 }}
-				<a href="{% url 'feeds:single_question' question.id %}">See more....</a>
+				{{ question.ques.get_markdown|truncatechars:150 }}
+				<a href="{% url 'feeds:single_question' question.ques.id %}">See more....</a>
 			</div>
 			<br><br>
 
@@ -515,37 +429,6 @@
     	}
     </script>
 
-    <!-- Modal for Ask a Question? -->
-    <script type="text/javascript">
-    	$('#modal-script').on('click', function(){
-    		$('#post_modal')
-  			.modal('show');
-    	});
-
-    	$('#delete_post').on('click', function(){
-    		$('#delete_modal')
-  			.modal('show');
-    	});
-
-    	$('#report').on('click', function(){
-    		$('#report_modal')
-  			.modal('show');
-    	});
-
-    	$(document).ready(function(){
-  			$(document).on("click","#update_post",function(){
-    			// alert(this.id);
-    			$('#update_modal'+ $(this).attr('value'))
-  				.modal('show');
-  			});
-		});
-
-		$('#answer').on('click', function(){
-    		$('#answer_modal')
-  			.modal('show');
-    	});
-    </script>
-    <!-- Modal ends here -->
 
     <!-- Remove Tag -- >
     <script type="text/javascript">
