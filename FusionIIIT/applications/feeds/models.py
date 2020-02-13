@@ -166,7 +166,7 @@ class AskaQuestion(models.Model):
 	subject = models.CharField(max_length=100, blank=False)
 	description = models.CharField(max_length=500, null=True, blank=True, default="")
 	select_tag = models.ManyToManyField(AllTags)
-	file = models.FileField(null=True, blank=True)
+	file = models.FileField(null=True, blank=True,upload_to='feeds/files')
 	uploaded_at = models.DateTimeField(auto_now_add=False, auto_now=False, default=timezone.now)
 	#like = models.IntegerField(default=0)
 	likes = models.ManyToManyField(User, default=1,related_name='likes', blank=True)

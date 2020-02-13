@@ -608,67 +608,6 @@
  	</script>
 
 
- 	<!-- Reply Section Ajax -->
-    <script type="text/javascript">
-    	$(document).on('submit','.reply-form', function(event){
-    		console.log("Hey there");
-    		event.preventDefault();
-    		var pk = $(this).attr('id');
-    		var string = $('#reply_text'+pk).val();
-    		console.log(string);
-    		ques_id = document.getElementById('unique_'+pk).innerHTML;
-    		console.log(ques_id);
-    		console.log($(this).serialize());
-
-    		$.ajax({
-    			type: 'POST',
-    			url: '/feeds/reply_text/',
-    			data: {
-    				ques_id: ques_id,
-    				id: pk,
-    				comment_box: string,
-    				'csrfmiddlewaretoken': '{{csrf_token}}',
-    			},
-
-    			success:function(result){
-    				console.log("yup");
-    				$('#main_comments'+ques_id).html(result['form']);
-    				var div = document.getElementById('reply'+pk);
-
-		    		if (div.style.display !== "none") {
-		    			div.style.display = "none";
-					}
-					else {
-		    			div.style.display = "block";
-					}
-    				document.getElementById('reply_text'+pk).value = ''
-    				// $('chat-msg'+pk).val('');
-    				// $('#1').append('<br>'+ result['status'] + '<br>');
-    				// document.getElementById('12'+pk).innerHTML = document.getElementById('comment-text' + pk).innerHTML + result['form'] + '<br>' + document.getElementById('like_button_div').innerHTML;
-    				// $('#comment-text' + pk).append(result['form']);
-    				// console.log(result['form']);
-    			}
-    			
-    		});
-    	});
-    </script>
-    <!-- Reply Section Ajax ends here -->
-
-
-    <script type="text/javascript">
-    	function reply_btn(id){
-    		var div = document.getElementById('reply'+id);
-
-    		if (div.style.display !== "none") {
-    			div.style.display = "none";
-			}
-			else {
-    			div.style.display = "block";
-			}
-    	}
-    </script>
-
-
     <!-- Comments Section Ajax -->
     <script type="text/javascript">
     	$(document).on('submit','.comment-form', function(event){

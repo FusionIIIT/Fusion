@@ -163,8 +163,7 @@ def Reply_Text(request):
         question = get_object_or_404(AskaQuestion, id=request.POST.get('ques_id'))
         print(request.POST.get('ques_id'))
         comment = get_object_or_404(Comments, id=request.POST.get('id'))
-        reply = Reply.objects.create()
-        reply.comment = comment
+        reply = Reply.objects.create(user=request.user, comment=comment)
         reply.content = request.POST.get('comment_box')
 
         reply.save()
