@@ -1,6 +1,6 @@
 
 <div class="ui vertical segment">
-        <form class= "ui form" method = "POST" id = "after_purchase" action="{% url 'office:after_purchase' %}">
+        <form class= "ui form" method = "POST" id = "after_purchase" action="{% url 'office_module:after_purchase' %}">
             {% comment %}The add a new skill Accordian starts here!{% endcomment %}
             <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
                     {% csrf_token %}

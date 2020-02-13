@@ -1,13 +1,5 @@
 @import url('demo.css');
 
-@font-face {
-	font-family: 'fontawesome-selected';
-	src: url("../font/fontawesome-selected.eot");
-	src: url("../font/fontawesome-selected.eot?#iefix") format('embedded-opentype'), url("../font/fontawesome-selected.woff") format('woff'), url("../font/fontawesome-selected.ttf") format('truetype'), url("../font/fontawesome-selected.svg#fontawesome-selected") format('svg');
-	font-weight: normal;
-	font-style: normal;
-}
-
 .fc-calendar-container {
 	position: relative;
 	height: 200px;

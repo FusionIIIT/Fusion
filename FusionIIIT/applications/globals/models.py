@@ -78,10 +78,10 @@ class Designation(models.Model):
 
 
 class DepartmentInfo(models.Model):
-    name = models.CharField(max_length=30, unique=True)
+    name = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
-        return self.name
+        return 'department: {}'.format(self.name)
 
 
 class ExtraInfo(models.Model):
@@ -126,6 +126,9 @@ class HoldsDesignation(models.Model):
     working = models.ForeignKey(User, related_name='current_designation', on_delete=models.CASCADE)
     designation = models.ForeignKey(Designation, related_name='designees', on_delete=models.CASCADE)
     held_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = [['user', 'designation'], ['working','designation']]
 
     def __str__(self):
         return '{} - {}'.format(self.user.username, self.designation)

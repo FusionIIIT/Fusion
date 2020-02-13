@@ -1,0 +1,417 @@
+{% load static %}
+{% block Curriculum %}
+<div class="ui pointing secondary menu">
+    {% if tab_id.1 == '1' %}
+    <a class="active item" data-tab="view_curriculum">
+    {% else %}
+    <a class="item" data-tab="view_curriculum">
+    {% endif %}
+        View Curriculum
+    </a>
+    {% if tab_id.1 == '2' %}
+    <a class="active item" data-tab="add_curriculum">
+    {% else %}
+    <a class="item" data-tab="add_curriculum">
+    {% endif %}
+        Add Curriculum
+    </a>
+    {% if tab_id.1 == '3' %}
+    <a class="active item" data-tab="next_curriculum">
+    {% else %}
+    <a class="item" data-tab="next_curriculum">
+    {% endif %}
+        Curriculum For Next Batch
+    </a>
+</div>
+
+
+{% if tab_id.1 == '1'%}
+<div class="ui active tab segment" data-tab="view_curriculum">
+{% else %}
+<div class="ui tab segment" data-tab="view_curriculum">
+{% endif %}
+    <h4 class="ui dividing header">View Curriculum</h4>
+
+
+    <form class="ui form" method="POST" id="curriculum_id" action="{% url 'academic_information:view_curriculum'  %}">
+        {% csrf_token %}
+        <div class="field">
+            <label>Programme</label>
+            <select name="programme" id="programme_curr">
+                <option value="B.Tech">B.Tech</option>
+                <option value="B.Des">B.Des</option>
+                <option value="M.Des">M.Des</option>
+                <option value="M.Tech">M.Tech</option>
+                <option value="Phd">PhD</option>
+            </select>
+
+        </div>
+
+        <div class="field">
+            <label>Batch</label>    
+            <input placeholder="Batch" type="number" name="batch" id="batch_curr" required>
+        </div>
+
+        <div class="field">
+            <label>Branch</label>
+            <select name="branch" id="branch_curr">
+                <option value="CSE">CSE</option>
+                <option value="ECE">ECE</option>
+                <option value="ME">ME</option>
+                <option value="Design">Design</option>
+                <option value="Common">Common</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label>Semester</label>
+            <select name="sem" id="sem_curr" required>
+                <option value="0">All</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <div class="one wide field">
+                <input type="submit" value="View" class="ui primary button" />
+            </div>
+        </div>
+    </form>
+    <script type="text/javascript">
+        $("#curriculum_id").submit(function(event) {
+            event.preventDefault();
+            var friendForm = $(this);
+            var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
+            // if success:
+            posting.done(function(data) {
+                alert('Success');
+                $('#st_list').html(data.html);
+            });
+            // if failure
+            posting.fail(function(data) {
+                alert('Error');
+                
+            });
+        });
+    </script>
+
+    <div id="st_list">
+    
+    </div>
+</div>
+
+
+{% if tab_id.1 == '2' %}
+<div class="ui active tab segment" data-tab="add_curriculum">
+{% else %}
+<div class="ui tab segment" data-tab="add_curriculum">
+{% endif %}
+    <h4 class="ui dividing header">Add Curriculum</h4>
+
+    {% comment %} {% if add_programme == "" or add_batch == "" or add_branch == "" or cancel == "Cancel" %} {% endcomment %}
+    <form name="myForm" class="ui form" method="POST" id="curriculum_add"
+        action="{% url 'academic_information:add_curriculum' %}">
+        {% csrf_token %}
+        <div class="field">
+            <label>Programme</label>
+            <select name="AddProgramme" id="addprogramme">
+                <option value="B.Tech">B.Tech</option>
+                <option value="B.Des">B.Des</option>
+                <option value="M.Des">M.Des</option>
+                <option value="M.Tech">M.Tech</option>
+                <option value="Phd">PhD</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label>Batch</label>
+            <input placeholder="Batch" type="number" name="AddBatch" id="addbatch" required>
+        </div>
+
+        <div class="field">
+            <label>Branch</label>
+            <select name="AddBranch" id="addbranch">
+                <option value="CSE">CSE</option>
+                <option value="ECE">ECE</option>
+                <option value="ME">ME</option>
+                <option value="Design">Design</option>
+                <option value="Common">Common</option>
+            </select>
+        </div>
+
+        <table class="ui celled table">
+            <thead>
+                <tr>
+                    <th>Semester</th>
+                    <th>Course Code</th>
+                    <th>Course Name</th>
+                    <th>Course Type</th>
+                    <th>Credits</th>
+                    <th>Optional</th>
+                </tr>
+            </thead>
+
+
+            <tbody>
+                <tr>
+                    <td><input type="number" name="semester_0" required></td>
+                    <td><input name="course_code_0" required></td>
+                    <td><select name="course_name_0" required>
+                            <option value=""></option>
+                            {% for i in courses %}
+                            <option value="{{ i.course_name }}">{{i.course_name}}</option>
+                            {% endfor%}
+                        </select>
+                    </td>
+                    <td><select name="course_type_0" required>
+                            <option value=""></option>
+                            {% for i in course_type %}
+                            <option value="{{ i.0 }}">{{i.0}}</option>>
+                            {% endfor%}
+                        </select>
+                    </td>
+                    <td><input type="number" name="credits_0" required></td>
+                    <td><input type="radio" name="optional_0" class="ui radio checkbox"></td>
+                </tr>
+
+            </tbody>
+
+        </table>
+        <div class="field">
+            <div class="one wide field">
+                <input type="button" value="Add Subject" class="ui primary button" id="add" />
+            </div>
+        </div>
+        <div class="field">
+            <div class="one wide field">
+                <input type="submit" value="Submit" class="ui primary button" />
+            </div>
+        </div>
+        <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+        <script type="text/javascript">
+            $(function () {
+            $("#curriculum_add").submit(function (event) {
+                event.preventDefault();
+                var friendForm = $(this);
+                var posting = $.post(friendForm.attr('action'), friendForm.serialize());
+                posting.done(function (data) {
+                    alert('Curriculum Entry Updated');
+                    window.location = "/aims/";
+                });
+                posting.fail(function (data) {
+                    alert('Failed to update');
+                    window.location = "/aims/";
+                });
+            });
+            });
+        </script>
+    </form>
+</div>
+
+{% if tab_id.1 == '3' %}
+<div class="ui active tab segment" data-tab="next_curriculum">
+{% else %}
+<div class="ui tab segment" data-tab="next_curriculum">
+{% endif %}
+    <h3> Set Curriculum for Batch: {{batch}}</h3>
+    <form class="ui form" method="POST" id="curriculum_id" action="{% url 'academic_information:next_curriculum'  %}">
+        {% csrf_token %}
+        <div class="field">
+            <label>Programme</label>
+            <select name="programme" id="programme">
+                <option value="B.Tech">B.Tech</option>
+                <option value="B.Des">B.Des</option>
+                <option value="M.Des">M.Des</option>
+                <option value="M.Tech">M.Tech</option>
+                <option value="Phd">PhD</option>
+            </select>
+
+        </div>
+        <div class="field">
+            <select name="option" id="option">
+                <option value="1">Set same as for last Batch</option>
+                <option value="2">Set same with few changes</option>
+                <option value="3">Create a completely new Curriculum</option>
+            </select>
+
+        </div>
+        <div class="field">
+            <div class="one wide field">
+                <input type="submit" value="View" class="ui primary button" />
+            </div>
+        </div>
+    </form>
+    <div>
+    {% if curriculumm %}
+    <h4 class="ui red header"> Do the required changes in the course</h4>
+        <h3 class="ui center aligned header"> {{curriculumm.0.programme}} Curriculum</h3>
+        <h4 class="ui center aligned header"> Batch : {{curriculumm.0.batch}} | Branch : {{curriculumm.0.branch}} </h4>
+        <table class="ui celled table" id="table">
+            <thead>
+                <tr>
+                    <th id="sem">Semester</th>
+                    <th>Course Name</th>
+                    <th>Course Type</th>
+                    <th>Credits</th>
+                    <th>Edit</th>
+
+                </tr>
+            </thead>
+
+
+            <tbody>
+
+                {% for curriculum_ in curriculumm %}
+                <tr>
+                    <td>{{ curriculum_.sem }} </td>
+                    <td>{{curriculum_.course_code}} - {{curriculum_.course_id}} </td>
+                    <td>{{curriculum_.course_type}}</td>
+                    <td>{{curriculum_.credits}}</td>
+                    <td><button class="ui icon button red" id="{{ forloop.counter }}"><i class="edit icon"></i></button>
+                        <div class="ui modal {{forloop.counter}}">
+                            <i class="close icon"></i>
+                            <div class="header">
+                                Edit Curriculum Entry
+                            </div>
+                            <div class="image content">
+                                <form class="ui form" id='edit_curriculum'
+                                    action="{% url 'academic_information:edit_curriculum'  %}">
+                                    {% csrf_token %}
+                                    <div class="field">
+                                        <input type="text" name="id" value="{{curriculum_.curriculum_id}}" hidden="true">
+                                        <label>Programme :</label>
+                                        <select name="programme" id="programme">
+                                            <option value="{{curriculum_.programme}}">{{curriculum_.programme}}</option>
+                                            <option value="B.Tech">B.Tech</option>
+                                            <option value="B.Des">B.Des</option>
+                                            <option value="M.Des">M.Des</option>
+                                            <option value="M.Tech">M.Tech</option>
+                                            <option value="Phd">PhD</option>
+                                        </select>
+                                    </div>
+                                    <div class="field">
+                                        <label>Batch :</label><br>
+                                        <input type="number" name="batch" value="{{curriculum_.batch}}">
+                                    </div>
+                                    <div class="field">
+                                        <label>Branch :</label>
+                                        <select name="branch" id="branch">
+                                            <option value="{{curriculum_.branch}}">{{curriculum_.branch}}</option>
+                                            <option value="CSE">CSE</option>
+                                            <option value="ECE">ECE</option>
+                                            <option value="ME">ME</option>
+                                            <option value="Design">Design</option>
+                                            <option value="Common">Common</option>
+                                        </select>
+                                    </div>
+                                    <table class="ui celled table">
+                                        <thead>
+                                            <tr>
+                                                <th>Semester</th>
+                                                <th>Course Code</th>
+                                                <th>Course Name</th>
+                                                <th>Course Type</th>
+                                                <th>Credits</th>
+                                                <th>Optional</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td><input type="number" name="semester" required value={{curriculum_.sem}}>
+                                                </td>
+                                                <td><input name="course_code" required value={{curriculum_.course_code}}></td>
+                                                <td><select name="course_name" required>
+                                                        <option value="{{curriculum_.course_id}}">{{curriculum_.course_id}}
+                                                        </option>
+                                                        {% for i in courses %}
+                                                        <option value="{{ i.course_name }}">{{i.course_name}}</option>
+                                                        {% endfor%}
+                                                    </select>
+                                                </td>
+                                                <td><select name="course_type" required>
+                                                        <option value="{{curriculum_.course_type}}">{{curriculum_.course_type}}
+                                                        </option>
+                                                        {% for i in course_type %}
+                                                        <option value="{{ i.0 }}">{{i.0}}</option>>
+                                                        {% endfor%}
+                                                    </select>
+                                                </td>
+                                                <td><input type="number" name="credits" required value={{curriculum_.credits}}>
+                                                </td>
+                                                <td><input type="radio" name="optional" class="ui radio checkbox"
+                                                        {% if curriculum_.optional is True %}checked{% endif %}></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <hr>
+                                    <button class="ui button black create_btn" type="submit">Submit</button>
+                                    <button class="ui button red create_btn" type="submit" formaction="{% url 'academic_information:delete_curriculum'  %}">Delete</button>
+                                    <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+                                    <script type="text/javascript">
+                                        $(function () {
+                                            $("#edit_curriculum").submit(function (event) {
+                                                event.preventDefault();
+                                                var friendForm = $(this);
+                                                var posting = $.post(friendForm.attr('action'), friendForm
+                                                    .serialize());
+                                                posting.done(function (data) {
+                                                    alert('Curriculum Entry Updated');
+                                                    window.location = "/aims/";
+                                                });
+                                                posting.fail(function (data) {
+                                                    alert('Failed to update');
+                                                    window.location = "/aims/";
+                                                });
+                                            });
+                                        });
+                                    </script>
+                                </form>
+                            </div>
+                        </div>
+                        <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+                        <script type="text/javascript">
+                            $(function () {
+                                $("#{{forloop.counter}}").click(function () {
+                                    console.log("asas");
+                                    $(".{{forloop.counter}}").modal('show');
+                                });
+                                $(".{{forloop.counter}}").modal({
+                                    closable: true
+                                });
+                            });
+                        </script>
+                    </td>
+                </tr>
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+    {% endif %}
+    </div>
+</div>
+
+
+{% endblock %}
+
+
+{% block javascript%}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"> </script>
+<script type="text/javascript">
+var i=1;
+var a = $('<tr> <td><input type="number" name="semester_'+i+'" required></td> <td><input name="course_code_'+i+'" required></td> <td><select name="course_name_'+i+'" required><option value=""></option>{% for i in courses %} <option value="{{ i.course_name }}">{{i.course_name}}</option> {% endfor%} </select> </td> <td><select name="course_type_'+i+'" required> <option value=""></option> {% for i in course_type %} <option value="{{ i.0 }}">{{i.0}}</option>> {% endfor %}</select> </td> <td><input type="number" name="credits_'+i+'" required></td> <td><input type="radio" name="optional_'+i+'" class="ui radio checkbox"></td></tr>');
+$(document).ready(function(){
+  $("#add").click(function(){   
+    $("tbody").append(a);
+    i++;
+  });
+}); 
+</script>
+{% endblock %}

@@ -37,7 +37,7 @@
     </thead>
 
     <tbody>
-    <form action="{% url 'office:reallocation' %}" method="POST">
+    <form action="{% url 'office_module:reallocation' %}" method="POST">
         {% csrf_token %}
          {% for pr in project3 %}
     {% comment %} if pr.HOD_response == 'Forwarded' {% endcomment %}

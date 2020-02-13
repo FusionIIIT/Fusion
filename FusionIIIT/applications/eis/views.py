@@ -305,8 +305,10 @@ def profile(request, username=None):
     y=[]
     for r in range(1995, (datetime.datetime.now().year + 1)):
         y.append(r)
-
-    pers = get_object_or_404(faculty_about, user = user)
+    try:
+        pers = get_object_or_404(faculty_about, user = user)
+    except:
+        pers = None
     # edited 26March
     a1 = HoldsDesignation.objects.filter(working = user)
     flag_rspc = 0

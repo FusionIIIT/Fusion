@@ -202,7 +202,7 @@
                     </a>
                 {% endif %}
 
-                <!-- {% if "co-ordinator" in Curr_desig or request.user.username == "root" %}
+                {% if "co-ordinator" in Curr_desig or request.user.username == "2017222" %}
                     <a class="item" data-tab="sixth">
                         Member Requests
                         <i class="right floated chevron right icon"></i>
@@ -220,21 +220,20 @@
                         <i class="right floated chevron right icon"></i>
                     </a>
                 {% endif %}
- -->
-                <!-- <a class="item" data-tab="third">
+                <a class="item" data-tab="third">
                     Member Records
                     <i class="right floated chevron right icon"></i>
-                </a> -->
-
-                <!-- {% with '"dean(S)"' as list %}
-                {% if request.user.holdsdesignation.designation.name in list %}
-                <a class="item" data-tab="seventh">
-                    Approval Requests
-                    <i class="right floated chevron right icon"></i>
                 </a>
+
+{#                {% with '"dean(S)"' as list %}#}
+{#                {% if request.user.holdsdesignation.designation.name in list %}#}
+                {% if request.user.username == "pkjain" %}
+                    <a class="item" data-tab="seventh">
+                        Approval Requests
+                        <i class="right floated chevron right icon"></i>
+                    </a>
                 {% endif %}
-                {% endwith %} -->
-                <!-- {% if "Junior Superintendent" in Curr_desig or request.user.username == "root" %}
+                {% if "Junior Superintendent" in Curr_desig or request.user.username == "root" %}
 
                     <a class="item" data-tab="fourth">
                         Fest Budget
@@ -248,7 +247,7 @@
                         Submit Event report
                         <i class="right floated chevron right icon"></i>
                     </a>
-                {% endif %} -->
+                {% endif %}
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
 

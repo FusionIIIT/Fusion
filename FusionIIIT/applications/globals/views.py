@@ -4,10 +4,8 @@ from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.files.storage import FileSystemStorage
-from django.core import serializers
 from django.db.models import Q
-from django.core.paginator import Paginator
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from PIL import Image
@@ -24,13 +22,12 @@ from applications.placement_cell.forms import (AddAchievement, AddCourse,
 from applications.placement_cell.models import (Achievement, Course, Education,
                                                 Experience, Has, Patent,
                                                 Project, Publication, Skill)
-from applications.eis.models import faculty_about,emp_research_papers, emp_published_books
 from Fusion.settings import LOGIN_URL
 from notifications.models import Notification
-from .contextgenerator import *
 
 def index(request):
     context = {}
+    print(request.user)
     if(str(request.user)!="AnonymousUser"):
         return HttpResponseRedirect('/dashboard/')
     else:
@@ -684,25 +681,20 @@ def dashboard(request):
     context={
         'notifications':notifs
     }
-    #For redirecting to direcor dashboard ...................
-    holds_designations = HoldsDesignation.objects.filter(user=user)
-    desig = holds_designations
-    for d in desig:
-        if d.designation.name == 'Director':
-            print("director matched \n\n\n")
-            return render(request, "dashboard/director_dashboard.html", context )
-    # end 
-    return render(request, "dashboard/dashboard.html", context)
+    if(request.user.get_username() == 'director'):
+        return render(request, "dashboard/director_dashboard2.html", context)
+    else:
+        return render(request, "dashboard/dashboard.html", context)
 
 @login_required(login_url=LOGIN_URL)
 def profile(request, username=None):
-
     """
     Generic endpoint for views.
     If it's a faculty, redirects to /eis/profile/*
     If it's a student, displays the profile.
     If the department is 'department: Academics:, redirects to /aims/
     Otherwise, redirects to root
+
     Args:
         username: Username of the user. If None,
             displays the profile of currently logged-in user
@@ -711,29 +703,211 @@ def profile(request, username=None):
 
     editable = request.user == user
     profile = get_object_or_404(ExtraInfo, Q(user=user))
-    
-    
-#user is faculty 
     if(str(user.extrainfo.user_type)=='faculty'):
-      context = contextfacultymanage(request,user,profile)
-      return render(request,"eisModulenew/profile.html",context)
-    
-#user is academic
+        return HttpResponseRedirect('/eis/profile/' + (username if username else ''))
     if(str(user.extrainfo.department)=='department: Academics'):
-        return HttpResponseRedirect('/ais')
-
-
-
-#user is student
+        return HttpResponseRedirect('/aims')
     current = HoldsDesignation.objects.filter(Q(working=user, designation__name="student"))
     if current:
-      context = contextstudentmanage(current,profile,request,user,editable)
-      return render(request, "globals/student_profile.html", context)
+        student = get_object_or_404(Student, Q(id=profile.id))
+        if editable and request.method == 'POST':
+            if 'studentapprovesubmit' in request.POST:
+                status = PlacementStatus.objects.filter(pk=request.POST['studentapprovesubmit']).update(invitation='ACCEPTED', timestamp=timezone.now())
+            if 'studentdeclinesubmit' in request.POST:
+                status = PlacementStatus.objects.filter(Q(pk=request.POST['studentdeclinesubmit'])).update(invitation='REJECTED', timestamp=timezone.now())
+            if 'educationsubmit' in request.POST:
+                form = AddEducation(request.POST)
+                if form.is_valid():
+                    institute = form.cleaned_data['institute']
+                    degree = form.cleaned_data['degree']
+                    grade = form.cleaned_data['grade']
+                    stream = form.cleaned_data['stream']
+                    sdate = form.cleaned_data['sdate']
+                    edate = form.cleaned_data['edate']
+                    education_obj = Education.objects.create(unique_id=student, degree=degree,
+                                                             grade=grade, institute=institute,
+                                                             stream=stream, sdate=sdate, edate=edate)
+                    education_obj.save()
+            if 'profilesubmit' in request.POST:
+                about_me = request.POST.get('about')
+                age = request.POST.get('age')
+                address = request.POST.get('address')
+                contact = request.POST.get('contact')
+                extrainfo_obj = ExtraInfo.objects.get(user=user)
+                extrainfo_obj.about_me = about_me
+                extrainfo_obj.date_of_birth = age
+                extrainfo_obj.address = address
+                extrainfo_obj.phone_no = contact
+                extrainfo_obj.save()
+                profile = get_object_or_404(ExtraInfo, Q(user=user))
+            if 'picsubmit' in request.POST:
+                form = AddProfile(request.POST, request.FILES)
+                extrainfo_obj = ExtraInfo.objects.get(user=user)
+                extrainfo_obj.profile_picture = form.cleaned_data["pic"]
+                extrainfo_obj.save()
+            if 'skillsubmit' in request.POST:
+                form = AddSkill(request.POST)
+                if form.is_valid():
+                    skill = form.cleaned_data['skill']
+                    skill_rating = form.cleaned_data['skill_rating']
+                    try:
+                        skill_id = Skill.objects.get(skill=skill)
+                    except Exception as e:
+                        print(e)
+                        skill_id = Skill.objects.create(skill=skill)
+                        skill_id.save()
+                    has_obj = Has.objects.create(unique_id=student,
+                                                 skill_id=skill_id,
+                                                 skill_rating = skill_rating)
+                    has_obj.save()
+            if 'achievementsubmit' in request.POST:
+                form = AddAchievement(request.POST)
+                if form.is_valid():
+                    achievement = form.cleaned_data['achievement']
+                    achievement_type = form.cleaned_data['achievement_type']
+                    description = form.cleaned_data['description']
+                    issuer = form.cleaned_data['issuer']
+                    date_earned = form.cleaned_data['date_earned']
+                    achievement_obj = Achievement.objects.create(unique_id=student,
+                                                                 achievement=achievement,
+                                                                 achievement_type=achievement_type,
+                                                                 description=description,
+                                                                 issuer=issuer,
+                                                                 date_earned=date_earned)
+                    achievement_obj.save()
+            if 'publicationsubmit' in request.POST:
+                form = AddPublication(request.POST)
+                if form.is_valid():
+                    publication_title = form.cleaned_data['publication_title']
+                    description = form.cleaned_data['description']
+                    publisher = form.cleaned_data['publisher']
+                    publication_date = form.cleaned_data['publication_date']
+                    publication_obj = Publication.objects.create(unique_id=student,
+                                                                 publication_title=
+                                                                 publication_title,
+                                                                 publisher=publisher,
+                                                                 description=description,
+                                                                 publication_date=publication_date)
+                    publication_obj.save()
+            if 'patentsubmit' in request.POST:
+                form = AddPatent(request.POST)
+                if form.is_valid():
+                    patent_name = form.cleaned_data['patent_name']
+                    description = form.cleaned_data['description']
+                    patent_office = form.cleaned_data['patent_office']
+                    patent_date = form.cleaned_data['patent_date']
+                    patent_obj = Patent.objects.create(unique_id=student, patent_name=patent_name,
+                                                       patent_office=patent_office,
+                                                       description=description,
+                                                       patent_date=patent_date)
+                    patent_obj.save()
+            if 'coursesubmit' in request.POST:
+                form = AddCourse(request.POST)
+                if form.is_valid():
+                    course_name = form.cleaned_data['course_name']
+                    description = form.cleaned_data['description']
+                    license_no = form.cleaned_data['license_no']
+                    sdate = form.cleaned_data['sdate']
+                    edate = form.cleaned_data['edate']
+                    course_obj = Course.objects.create(unique_id=student, course_name=course_name,
+                                                       license_no=license_no,
+                                                       description=description,
+                                                       sdate=sdate, edate=edate)
+                    course_obj.save()
+            if 'projectsubmit' in request.POST:
+                form = AddProject(request.POST)
+                if form.is_valid():
+                    project_name = form.cleaned_data['project_name']
+                    project_status = form.cleaned_data['project_status']
+                    summary = form.cleaned_data['summary']
+                    project_link = form.cleaned_data['project_link']
+                    sdate = form.cleaned_data['sdate']
+                    edate = form.cleaned_data['edate']
+                    project_obj = Project.objects.create(unique_id=student, summary=summary,
+                                                         project_name=project_name,
+                                                         project_status=project_status,
+                                                         project_link=project_link,
+                                                         sdate=sdate, edate=edate)
+                    project_obj.save()
+            if 'experiencesubmit' in request.POST:
+                form = AddExperience(request.POST)
+                if form.is_valid():
+                    title = form.cleaned_data['title']
+                    status = form.cleaned_data['status']
+                    company = form.cleaned_data['company']
+                    location = form.cleaned_data['location']
+                    description = form.cleaned_data['description']
+                    sdate = form.cleaned_data['sdate']
+                    edate = form.cleaned_data['edate']
+                    experience_obj = Experience.objects.create(unique_id=student, title=title,
+                                                               company=company, location=location,
+                                                               status=status,
+                                                               description=description,
+                                                               sdate=sdate, edate=edate)
+                    experience_obj.save()
+            if 'deleteskill' in request.POST:
+                hid = request.POST['deleteskill']
+                hs = Has.objects.get(Q(pk=hid))
+                hs.delete()
+            if 'deleteedu' in request.POST:
+                hid = request.POST['deleteedu']
+                hs = Education.objects.get(Q(pk=hid))
+                hs.delete()
+            if 'deletecourse' in request.POST:
+                hid = request.POST['deletecourse']
+                hs = Course.objects.get(Q(pk=hid))
+                hs.delete()
+            if 'deleteexp' in request.POST:
+                hid = request.POST['deleteexp']
+                hs = Experience.objects.get(Q(pk=hid))
+                hs.delete()
+            if 'deletepro' in request.POST:
+                hid = request.POST['deletepro']
+                hs = Project.objects.get(Q(pk=hid))
+                hs.delete()
+            if 'deleteach' in request.POST:
+                hid = request.POST['deleteach']
+                hs = Achievement.objects.get(Q(pk=hid))
+                hs.delete()
+            if 'deletepub' in request.POST:
+                hid = request.POST['deletepub']
+                hs = Publication.objects.get(Q(pk=hid))
+                hs.delete()
+            if 'deletepat' in request.POST:
+                hid = request.POST['deletepat']
+                hs = Patent.objects.get(Q(pk=hid))
+                hs.delete()
+
+        print('profile age----\n\n\n', profile.date_of_birth)
+        form = AddEducation(initial={})
+        form1 = AddProfile(initial={})
+        form10 = AddSkill(initial={})
+        form11 = AddCourse(initial={})
+        form12 = AddAchievement(initial={})
+        form5 = AddPublication(initial={})
+        form6 = AddProject(initial={})
+        form7 = AddPatent(initial={})
+        form8 = AddExperience(initial={})
+        form14 = AddProfile()
+        skills = Has.objects.filter(Q(unique_id=student))
+        education = Education.objects.filter(Q(unique_id=student))
+        course = Course.objects.filter(Q(unique_id=student))
+        experience = Experience.objects.filter(Q(unique_id=student))
+        project = Project.objects.filter(Q(unique_id=student))
+        achievement = Achievement.objects.filter(Q(unique_id=student))
+        publication = Publication.objects.filter(Q(unique_id=student))
+        patent = Patent.objects.filter(Q(unique_id=student))
+        context = {'user': user, 'profile': profile, 'skills': skills,
+                   'educations': education, 'courses': course, 'experiences': experience,
+                   'projects': project, 'achievements': achievement, 'publications': publication,
+                   'patent': patent, 'form': form, 'form1': form1, 'form14': form14,
+                   'form5': form5, 'form6': form6, 'form7': form7, 'form8': form8,
+                   'form10':form10, 'form11':form11, 'form12':form12, 'current':current,
+                   'editable': editable
+                   }
+        return render(request, "globals/student_profile.html", context)
     else:
-      return redirect("/")
-   
-
-
+        return redirect("/")
 
 @login_required(login_url=LOGIN_URL)
 def logout_view(request):
@@ -756,7 +930,8 @@ def feedback(request):
     if request.method == "POST":
         try:
             feedback = Feedback.objects.get(user=request.user)
-        except:
+        except Exception as e:
+            print(e)
             feedback = None
         if feedback:
             form = WebFeedbackForm(request.POST or None, instance=feedback)
@@ -794,7 +969,8 @@ def feedback(request):
     try:
         feedback = Feedback.objects.get(user=request.user)
         form = WebFeedbackForm(instance=feedback)
-    except:
+    except Exception as e:
+        print(e)
         form = WebFeedbackForm()
         context = {"form": form, "rating": rating, "feeds": feeds}
         return render(request, "globals/feedback.html", context)
@@ -826,6 +1002,7 @@ def issue(request):
                     image = IssueImage.objects.create(image=image, user=request.user)
                     issue.images.add(image)
                 except Exception as e:
+                    print(e)
                     pass
             issue.save()
             openissue = Issue.objects.filter(closed=False)
@@ -862,6 +1039,7 @@ def view_issue(request, id):
                     image = IssueImage.objects.create(image=image, user=request.user)
                     issue.images.add(image)
                 except Exception as e:
+                    print(e)
                     pass
             issue.save()
             form = IssueForm(instance=issue)
@@ -912,6 +1090,7 @@ def search(request):
     helpful message instead.
     Algorithm: Includes the first 15 users whose first/last name starts with the query words.
                Thus, searching 'Atu Gu' will return 'Atul Gupta' as one result.
+
                Note: All the words in the query must be matched.
                While, searching 'Atul Kumar', the word 'Kumar' won't match either 'Atul' or 'Gupta'
                and thus it won't be included in the search results.

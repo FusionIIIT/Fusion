@@ -15,6 +15,7 @@ Including another URLconf
 """
 
 import notifications.urls
+import debug_toolbar
 from django.conf import settings
 from django.conf.urls import include, url
 from django.conf.urls.static import static
@@ -38,23 +39,14 @@ urlpatterns = [
     url(r'^finance/', include('applications.finance_accounts.urls')),
     url(r'^gymkhana/', include('applications.gymkhana.urls')),
     url(r'^library/', include('applications.library.urls')),
-    url(r'^accounts/', include('allauth.urls')),
+    # url(r'^accounts/', include('allauth.urls')),
     url(r'^ocms/', include('applications.online_cms.urls')),
-    url(r'^login/', auth_views.login, name='login'),
-    url(r'^logout/', auth_views.logout, name='logout'),
-    url(r'^academic-procedures/', include('applications.academic_procedures.urls',
-                                          namespace='procedures')),
+    # url(r'^login/', auth_views.login, name='login'),
+    # url(r'^logout/', auth_views.logout, name='logout'),
+    url(r'^academic-procedures/', include('applications.academic_procedures.urls', namespace='procedures')),
     url(r'^aims/', include('applications.academic_information.urls')),
-    url(r'^notifications/', include(notifications.urls, namespace='notifications')),
-
-]
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL,
-                          document_root=settings.MEDIA_ROOT)
-    urlpatterns += static(settings.STATIC_URL,
-                          document_root=settings.STATIC_ROOT)
-
-    import debug_toolbar
-    urlpatterns = [
-        url(r'^__debug__/', include(debug_toolbar.urls)),
-    ] + urlpatterns
+    # url(r'^notifications/', include(notifications.urls, namespace='notifications')),
+    url(r'^notifications/', include('applications.notifications_extension.urls', namespace='notifications')),
+    url(r'^accounts/', include('allauth.urls')),
+    url(r'^__debug__/', include(debug_toolbar.urls)),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,116 +1,71 @@
 {% load static %}
 {% block complainthistory %}
 
-    {% comment %}The tab menu starts here!{% endcomment %}
-    <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="complainthistory">
-            Drop Course(s)
-        </a>
-    </div>
+<center><b>Drop Couse(s)</b></center>
 
-    <div class="ui active tab" data-tab="complainthistory">
-        <div class="ui vertical segment">
-        {% if adc_flag %}
-        {% if pre_register %}
-        {% if final_r %}
-        {% if courses_list %}
-        <form id='drop_courses' action='/academic-procedures/dropCourse/' method='POST'>
-        {% csrf_token %}
-
-            <table class="ui very basic collapsing celled sortable table"
-                   style="padding-left: 2.5%;
-                                                          padding-right: 2.5%;
-                                                          padding-top: 1%;
-                                                          padding-bottom: 1.5%;
-                                                          margin: auto;">
-                <thead>
-                <tr>
-                    <th>
-                        #
-                    </th>
-
-                    <th>
-                        Course ID
-                    </th>
-
-                    <th>
-                        Course Name
-                    </th>
-
-                    <th>
-                        Credits
-                    </th>
-                    <th>
-                        Semester
-                    </th>
-                    <th>
-                        Select Course
-                    </th>
-                </tr>
-                </thead>
-
-                <tbody>
-
-                    {% for items in courses_list %}
-                        {% for x in final_register %}
-
-                            {% if items.course_id == x.course_id.course_id %}
-                                <tr id="{{ items.course_id}}">
-                                    <td>
-                                    </td>
-                                    <td>
-                                        {{ items.course_id }}
-                                        {% if items.optional %}
-                                      <B>     <div style="color:green;">    (optional)</B> </div>
-
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {{ items.course_name}}
-                                    </td>
-                                    <td>
-                                        {{ items.credits }}
-                                     </td>
-                                     <td>
-                                        {{items.sem}}
-                                     </td>
-                                    <td>
-                                    <B>    {% if items.optional %}
-                                            <input name="course_id" type="checkbox" value="{{ items.course_id }}">
-                                        {% else %}
-                                            <input name="course_id" type="checkbox" value="{{ items.course_id }}" onclick="return false;" hidden="True">
-                                             <div style="color:red;"> (Compulsory) </div>
-                                        {% endif %}</B>
-                                        <input name="user" type="text" value="{{ x.student_id }}" hidden="True">
-                                    </td>
+<div class="ui active tab" data-tab="complainthistory">
+    <div class="ui vertical segment">
+        {% if adc_date_flag %}
+                {% if final_registration_flag %}
+                    {% if drop_courses_options %}
+                        <form id='drop_courses' action='/academic-procedures/drop_course/'>
+                        {% csrf_token %}
+                                <input type="text" hidden="true" id="c_count" value="{{dropped_courses_count}}">
+                                <input type="text" hidden="true" id="cr_count" value="{{current_credits}}">
+                            <table  class="ui very basic collapsing celled sortable table"               
+                                    style= "padding-left: 2.5%;
+                                            padding-right: 2.5%;
+                                            padding-top: 1%;
+                                            padding-bottom: 1.5%;
+                                            margin: auto;">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Course ID</th>
+                                    <th>Course Name</th>
+                                    <th>Credits</th>
+                                    <th>Semester</th>
+                                    <th>Select Course</th>
                                 </tr>
-                            {% else %}
+                            </thead>
 
-                            {% endif %}
-                        {% endfor %}
-                    {% endfor %}
+                            <tbody>
+                                {% for items in drop_courses_options %}
+                                            <tr>
+                                                <td>{{forloop.counter}}</td>
+                                                <td>{{ items.course_code }}
+                                                    {% if items.optional %}
+                                                    <B><div style="color:green;">(optional)</B></div>
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ items.course_id.course_name}}</td>
+                                                <td>{{ items.credits }}</td>
+                                                <td>{{items.sem}}
+                                                    <input type="text" name='semester' value='{{ items.sem}}' hidden="True">
+                                                </td>
+                                                <td>
+                                                    <input name="choice" id="mycheck" type="checkbox" value="{{ items.curriculum_id }}" data-valuetwo="{{items.credits}}">
+                                                    <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
+                                                </td>
+                                            </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
 
-                 </tbody>
-            </table>
-
-            <br>
-            <div class="ui divider"></div>
-             <center><button class="ui negative basic button">Drop Course(s)</button></center>
-        </form>
-        {% else %}
-          <B> YOU HAVE NOT REGISTERED YET</B>
-        {% endif %}
-        {% else %}
-            <B><center>You need to Register to add Course</center></B>
-        {% endif %}
-        {% else %}
-            <B><center>You need to Register to add Course</center></B>
-        {% endif %}
+                        <br>
+                        <div class="ui divider"></div>
+                        <center><button class="ui negative basic button">Drop Course(s)</button></center></form>
+                    {% else %}
+                        <B> YOU HAVE NOT REGISTERED YET</B>
+                    {% endif %}
+                {% else %}
+                    <B><center>You need to complete Registration process first</center></B>
+                {% endif %}
         {% else %}
             <b><center>You have to wait for the date</center></b>
         {% endif %}
-        </div>
     </div>
+</div>
 
 {% endblock %}
 
@@ -118,6 +73,29 @@
 <script type="text/javascript">
 $(function() {
     $("#drop_courses").submit(function(event) {
+
+        var credits = parseInt(document.getElementById("cr_count").value);
+        var count = parseInt(document.getElementById("c_count").value);
+        var checkboxing = document.getElementById("mycheck");
+        var test =0;
+        for(var i=0; i<mycheck.length;i++){
+            if(mycheck[i].checked==true){
+                credits = credits - parseInt(mycheck[i].getAttribute("data-valuetwo"));
+                count =count+1;
+                test =test+1;
+            }
+        }
+
+        if (count >= 3){
+            alert("You Can't drop more than 2 courses in one semester");
+            window.location = "/academic-procedures/main/" ;  
+        }else if(credits <= 11 ){
+            alert("You need to earn at least 12 credits in one semester");
+            window.location = "/academic-procedures/main/" ;           
+        }else if(test ==0 ){
+            alert("please Select a course");
+            window.location = "/academic-procedures/main/" ;           
+        }else{
         event.preventDefault();
         var friendForm = $(this);
         var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
@@ -130,6 +108,7 @@ $(function() {
             alert('Failed to drop a course');
             window.location = "/academic-procedures/main/";
         });
+    }
     });
 });
 </script>

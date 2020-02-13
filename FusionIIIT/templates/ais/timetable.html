@@ -1,231 +1,211 @@
 {% load static %}
 {% block timetable %}
 
- <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="academic">
-            Academic Time-Table
+<div class="ui pointing secondary menu">
+  {% if tab_id.1 == '1' %}
+    <a class="active item" data-tab="academic">
+    {% else %}
+    <a class="item" data-tab="academic">
+    {% endif %}
+        Academic Time Table
+    </a>
+    {% if tab_id.1 == '2' %}
+    <a class="active item" data-tab="exam">
+    {% else %}
+    <a class="item" data-tab="exam">
+    {% endif %}
+        Exam Time Table
+    </a>
+</div>
+
+{% if tab_id.1 == '1'%}
+<div class="ui active tab segment" data-tab="academic">
+{% else %}
+<div class="ui tab segment" data-tab="academic">
+{% endif %}
+  <h4 class="ui dividing header">Add Time Table</h4>
+
+  <form class="ui form" action="{% url 'academic_information:add_timetable' %}" method="POST" id="form7" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div class="field">
+      <label>Programme</label>
+      <select name="programme" id="programme" required>
+        <option value="B.Tech">B.Tech</option>
+        <option value="B.Des">B.Des</option>
+        <option value="M.Des">M.Des</option>
+        <option value="M.Tech">M.Tech</option>
+        <option value="Phd">PhD</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Batch</label>
+      <input type="number" name="batch" required>
+    </div>
+
+    <div class="field">
+        <label>Branch</label>
+        <select name="branch" id="branch" required>
+            <option value="CSE">CSE</option>
+            <option value="ECE">ECE</option>
+            <option value="ME">ME</option>
+            <option value="Design">Design</option>
+            <option value="Common">Common</option>
+        </select>
+    </div>
+
+    <div class="field">
+      <label>Upload Time Table</label>
+      <input placeholder="Upload Time Table" type="file" name="time_table" required>
+    </div>
+
+    <div class="field">
+      {%comment%}
+        <a href="#" onclick="document.getElementById('form7').submit();">
+          <div class="ui primary button"><i class="save icon"></i> Save</div>
         </a>
-        <a class=" item" data-tab="exam">
-            Exam Time-Table
-        </a>
-
-       
+        {%endcomment%}
+        <button class="ui primary button" type="submit"><i class="upload icon"></i> Upload</button>
     </div>
 
- <div class="ui active tab segment" data-tab="academic">
+  </form>
+  {% if timetable %}
+  <form class="ui form" method="post" enctype="multipart/form-data" action="{% url 'academic_information:delete_timetable' %}">
+    {% csrf_token %}
+    <table class="ui fixed sortable celled table">
+      <thead>
+        <tr>
+          <th style="width: 20%;">Upload Time</th>
+          <th style="width: 17%;">Programme</th>
+          <th style="width: 12%;">Batch</th>
+          <th style="width: 15%;">Branch</th>
+          <th style="width: 46%;"> Timetable File</th>
+          <th style="width:12%">Action</th>
 
-       <h4 class="ui dividing header">Edit Time Table</h4>
+        </tr>
+      </thead>
+      <tbody>
 
-       <form class="ui form" action="{% url 'academic_information:add_timetable' %}" method="post" id="form7">
-            {% csrf_token %}
-            <div class="field">
-                 <div class="three fields">
-                    <div class="field">
-                        <label>Day</label>
-                           <div class="ui fluid search selection dropdown">
-                                    <input type="hidden" name="year">
-                                    <i class="dropdown icon"></i>
-                                    <div class="default text">Year</div>
-                                    <div class="menu">
-                                        <div class="item" data-value="1st Year">1st Year</div>
-                                          <div class="item" data-value="2nd Year">2nd Year</div>
-                                          <div class="item" data-value="3rd Year">3rd Year</div>
-                                          <div class="item" data-value="4th Year">4th Year</div>
-                                          <div class="item" data-value="5th Year">5th Year</div>
-                                          <div class="item" data-value="6th Year">6th Year</div>
-                                          
-                                        
-                                  </div>
-                                      
-                                        
-                                    </div>
-                                </div>
+        {% for c in timetable %}
+        <tr id="visualize_{{forloop.counter}}">
+          <td>{{ c.upload_date }}</td>
+          <td>{{c.programme}}</td>
+          <td>{{ c.batch }}</td>
+          <td>{{ c.branch }}</td>
+          <td>{{c.time_table}}</td>
 
-                                  <div class="field">
-                                    <label>Programme</label>
-                                        <div class="ui fluid search selection dropdown">
-                                    <input type="hidden" name="programme">
-                                    <i class="dropdown icon"></i>
-                                    <div class="default text">Programme</div>
-                                    <div class="menu">
-                                        <div class="item" data-value="B.Tech">B.Tech</div>
-                                        <div class="item" data-value="B.Des ">B.Des </div>
-                                        <div class="item" data-value="M.Tech">M.Tech</div>
-                                        <div class="item" data-value="M.Des">M.Des </div>
-                                    </div>
-                                </div>
-                               </div>
-                                 <div class="field">
-                                  <label>Upload Time Table</label>
-                                  <input placeholder="Upload Time Table" type="file" name="file">
-                                </div>
+          <div style="width:100%;height:100%" id='pdf_modal_{{forloop.counter}}' class="ui sixteen wide column fullscreen modal">
+            <i class="close  icon"></i>
+            <object style="width:100%;height:100%;align-self:center;" data="../media/{{c.time_table}}" type="application/pdf">
+          </div>
 
-                        </div>
 
-                  
-                
-               
-                    
-                </div>
-            
-             <div class="fields">
-                   
+          <script type="text/javascript">
+            $(document).ready(
+              function () {
+                $('#visualize_{{forloop.counter}}').click(function () {
+                  $('#pdf_modal_{{forloop.counter}}').modal('show');
+                });
+              })
+          </script>
 
-                    <div class="one wide field">
-                        <label><br></label>
-                       <a href="#" onclick="document.getElementById('form7').submit();">
-                        <div class="ui primary button">Save
-                            <i class="ui save icon right floated"></i>
-                        </div>
-                             </a>
-                    </div> 
-                </div>
-        </form>  
+          <td><button type="submit" value="{{ c.time_table }}" name="delete">
+          <i class="trash outline icon" style="font-size:1.3vw;color:red;"></i></button></td>
 
-          <table class="ui fixed sortable celled table table">
-                  <thead>
-                    <tr>
-                      <th style="width: 30%;">Upload Time</th>
-                      <th style="width: 30%;">Programme</th>
-                      <th style="width: 23%;"> Timetable File</th>
-                      <th style="width:10%">Action</th>
-                      
-                    </tr>
-                  </thead>
-                  <tbody>
-                  <form action="{% url 'academic_information:delete_timetable' %}">
-                   {% csrf_token %}
-                  {% for c in timetable %}
-                    <tr>
-                      <td>{{ c.upload_date }}</td>
-                      <td>B.Tech</td>
-                        <td>{{ c.time_table }}</td>
-                      <td><button type="submit" value="{{ c.time_table }}" name="delete"><i class="trash outline icon" style="font-size:1.3vw;color:red;"></i></button></td>
-                      
-                    </tr>
-                  {% endfor %}
-                  </form>
-                    <tr>
-                     
+        </tr>
+        {% endfor %}
 
-                    </tr>
-                    <tr>
-                     
 
-                    </tr>
-                  </tbody>
-                </table>
+      </tbody>
+    </table>
+  </form>
+  {% endif %}
+</div>
 
+{% if tab_id.1 == '2'%}
+<div class="ui active tab segment" data-tab="exam">
+{% else %}
+<div class="ui tab segment" data-tab="exam">
+{% endif %}
+  <h4 class="ui dividing header">Add Exam Time Table</h4>
+
+  <form class="ui form" action="{% url 'academic_information:add_exam_timetable' %}" method="POST" id="form8" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div class="field">
+      <label>Programme</label>
+      <select name="programme" id="programme" required>
+        <option value="B.Tech">B.Tech</option>
+        <option value="B.Des">B.Des</option>
+        <option value="M.Des">M.Des</option>
+        <option value="M.Tech">M.Tech</option>
+        <option value="Phd">PhD</option>
+      </select>
     </div>
 
-
-
-
-    <div class="ui  tab segment" data-tab="exam">
-
-       <h4 class="ui dividing header">Edit Time Table</h4>
-
-         <form class="ui form" method = "post" action="{% url 'academic_information:add_exam_timetable' %}" id="form8">
-             {% csrf_token %}
-            <div class="field">
-                 <div class="three fields">
-                    <div class="field">
-                        <label>Day</label>
-                           <div class="ui fluid search selection dropdown">
-                                    <input type="hidden" name="year">
-                                    <i class="dropdown icon"></i>
-                                    <div class="default text">Year</div>
-                                    <div class="menu">
-                                        <div class="item" data-value="1st Year">1st Year</div>
-                                          <div class="item" data-value="2nd Year">2nd Year</div>
-                                          <div class="item" data-value="3rd Year">3rd Year</div>
-                                          <div class="item" data-value="4th Year">4th Year</div>
-                                          <div class="item" data-value="5th Year">5th Year</div>
-                                          <div class="item" data-value="6th Year">6th Year</div>
-                                          
-                                        
-                                  </div>
-                                      
-                                        
-                                    </div>
-                                </div>
-
-                                  <div class="field">
-                                    <label>Programme</label>
-                                        <div class="ui fluid search selection dropdown">
-                                    <input type="hidden" name="programme">
-                                    <i class="dropdown icon"></i>
-                                    <div class="default text">Programme</div>
-                                    <div class="menu">
-                                        <div class="item" data-value="B.Tech">B.Tech</div>
-                                        <div class="item" data-value="B.Des ">B.Des </div>
-                                        <div class="item" data-value="M.Tech">M.Tech</div>
-                                        <div class="item" data-value="M.Des">M.Des </div>  
-                                    </div>
-                                </div>
-                               </div>
-                                 <div class="field">
-                                  <label>Upload Time Table</label>
-                                  <input placeholder="Upload Time Table" type="file" name="file">
-                                </div>
-
-                        </div>
-
-                  
-                
-               
-                    
-                </div>
-            
-             <div class="fields">
-                   
-
-                    <div class="one wide field">
-                        <label><br></label>
-                        <a href="#" onclick="document.getElementById('form8').submit();">
-                        <div class="ui primary button">Save
-                            <i class="ui save icon right floated"></i>
-                        </div>
-                             </a>
-                    </div> 
-                </div>
-        </form>  
-
-          <table class="ui fixed sortable celled table table">
-                  <thead>
-                    <tr>
-                      <th style="width: 30%;">Upload Time</th>
-                      <th style="width: 30%;">Programme</th>
-                      <th style="width: 23%;"> Timetable File</th>
-                      <th style="width:10%">Action</th>
-                      
-                    </tr>
-                  </thead>
-                  <tbody>
-                  {% for c in exam %}
-                    <tr>
-                      <td>{{ c.upload_date }}</td>
-                      <td>B.Tech</td>
-                      <td>{{ c.exam_time_table }}</td>
-                      <td><i class="edit icon" style="font-size:1.3vw;color:blue"></i><br><i class="trash outline icon" style="font-size:1.3vw;color:red;"></i></td>
-                      
-                    </tr>
-                  {% endfor %}
-                    <tr>
-                     
-
-                    </tr>
-                    <tr>
-                     
-
-                    </tr>
-                  </tbody>
-                </table>
-
+    <div class="field">
+      <label>Upload Time Table</label>
+      <input placeholder="Upload Time Table" type="file" name="exam_time_table" required>
     </div>
 
+    <div class="field">
+        {%comment%}<a href="#" onclick="document.getElementById('form8').submit();">
+          <div class="ui primary button">
+            <i class="ui save icon"></i> Save
+          </div>
+        </a>{%endcomment%}
+        <button class="ui primary button" type="submit"><i class="upload icon"></i> Upload</button>
+    </div>
 
+  </form>
+  {% if exam %}
+  <form class="ui form" method="post" enctype="multipart/form-data"
+    action="{% url 'academic_information:delete_exam_timetable' %}">
+    {% csrf_token %}
+    <table class="ui fixed sortable celled table table">
+      <thead>
+        <tr>
+          <th style="width: 20%;">Upload Time</th>
+          <th style="width: 15%;">Batch</th>
+          <th style="width: 15%;">Programme</th>
+          <th> Timetable File</th>
+          <th style="width:12%">Action</th>
 
+        </tr>
+      </thead>
+      <tbody>
 
+        {% for c in exam %}
+        <tr id="visualizee_{{forloop.counter}}">
+          <td>{{ c.upload_date }}</td>
+          <td>{{c.programme}}</td>
+          <td>{{ c.batch }}</td>
+          <td>{{c.exam_time_table}}</td>
 
-    {% endblock %}
+          <div style="width:100%;height:100%" id='pdf_modale_{{forloop.counter}}' class="ui sixteen wide column fullscreen modal">
+            <i class="close  icon"></i>
+            <object style="width:100%;height:100%;align-self:center;" data="../media/{{c.exam_time_table}}" type="application/pdf">
+          </div>
+
+          <script type="text/javascript">
+            $(document).ready(
+              function () {
+                $('#visualizee_{{forloop.counter}}').click(function () {
+                  $('#pdf_modale_{{forloop.counter}}').modal('show');
+                });
+              })
+          </script>
+          
+          <td><button type="submit" value="{{ c.exam_time_table }}" name="delete">
+          <i class="trash outline icon" style="font-size:1.3vw;color:red;"></i></button></td>
+        </tr>
+        {% endfor %}
+
+      </tbody>
+    </table>
+  </form>
+  {% endif %}
+</div>
+
+{% endblock %}
