@@ -539,28 +539,36 @@ def fest_budget(request):
 
 @login_required
 def approve(request):
+    lis = list(request.POST.getlist('check'))
+    print(lis)
+    for user in lis:
+        # pos = lis.index(user)
+        re = "remarks" + user
+        print(re)
+        remarks = request.POST.getlist(re)
+        print(remarks)
+        user = user.split(',')
+        print(user)
+        info = user[0].split(' - ')
+        print(info)
 
-	lis = list(request.POST.getlist('check'))
+        # getting queryset class objects
+        user_name = get_object_or_404(User, username=info[1])
+        print(user_name)
+        extra1 = get_object_or_404(ExtraInfo, id=info[0], user=user_name)
+        print(extra1)
+        student = get_object_or_404(Student, id=extra1)
+        print(student)
 
-	for user in lis :
-		#pos = lis.index(user)
-		re = "remarks"+user
-		remarks = request.POST.getlist(re)
-		user = user.split(',')
-		info = user[0].split(' - ')
+        club_member = get_object_or_404(Club_member, club=user[1], member=student)
+        print(club_member)
+        club_member.status = "confirmed"
+        club_member.remarks = remarks[0]
+        club_member.save()
+        messages.success(request, "Successfully Approved !!!")
 
-		#getting queryset class objects
-		user_name = get_object_or_404(User, username = info[1])
-		extra1 = get_object_or_404(ExtraInfo, id = info[0], user = user_name)
-		student = get_object_or_404(Student, id = extra1)
+    return redirect('/gymkhana/')
 
-		club_member = get_object_or_404(Club_member, club = user[1], member = student)
-		club_member.status = "confirmed"
-		club_member.remarks = remarks[0]
-		club_member.save()
-		messages.success(request,"Successfully Approved !!!")
-
-	return redirect ('/gymkhana/')
 
 @login_required
 def club_approve(request):
@@ -591,17 +599,17 @@ def club_reject(request):
 
 @login_required
 def reject(request):
+    lis = list(request.POST.getlist('check'))
 
-	lis = list(request.POST.getlist('check'))
+    for user in lis:
+        # pos = lis.index(user)
+        re = "remarks" + user
+        remarks = request.POST.getlist(re)
+        user = user.split(',')
+        info = user[0].split(' - ')
 
-	for user in lis :
-		#pos = lis.index(user)
-		re = "remarks"+user
-		remarks = request.POST.getlist(re)
-		user = user.split(',')
-		info = user[0].split(' - ')
-
-		user_name = get_object_or_404(User, username=info[1])
+        # getting queryset class objects
+        user_name = get_object_or_404(User, username=info[1])
         extra1 = get_object_or_404(ExtraInfo, id=info[0], user=user_name)
         student = get_object_or_404(Student, id=extra1)
 
@@ -611,7 +619,7 @@ def reject(request):
         club_member.save()
         messages.success(request, "Successfully Rejected !!!")
 
-	return redirect ('/gymkhana/')
+    return redirect('/gymkhana/')
 
 @login_required
 def cancel(request):
