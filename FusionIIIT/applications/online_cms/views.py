@@ -928,7 +928,7 @@ def edit_quiz(request, course_code, quiz_code):
                        'counter': counter, 'questions': questions, 'description': description,
                        'rules': rules, 'questions_left': questions_left, 'curriculum': curriculum})
     else:
-        return HttpResponse("unautherized Access!!It will be reported!!")
+        return HttpResponse("unauthorized Access!!It will be reported!!")
 
 
 @login_required

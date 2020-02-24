@@ -14,7 +14,6 @@
     {% block navBar %}
         {% include 'dashboard/navbar.html' %}
     {% endblock %}
-    <button class="ui primary button" onclick="history.back(-1)">Back</button>
     <div class="ui stackable doubling grid">
 
         <div class="column"></div>
@@ -213,7 +212,9 @@
                 </div>
                 <div class="ui tab segment" id="1" data-tab="quiz" style="display:none">
                   <h4 class="ui dividing header">Quizzes</h4>
-
+                  {% if Lecturer is 1 %}
+                    <a class="ui blue button" href="/ocms/{{curriculum.course_code}}/create_quiz/">Create a New Quiz</a>
+                  {% endif %}
                   <table class="ui very basic collapsing celled table">
                     <thead>
                       <tr>
@@ -281,13 +282,6 @@
                       {% endfor %}
                    </tbody>
                     </table>
-                    {% if Lecturer is 1 %}
-
-                    <!-- <a class="ui blue button" href="/ocms/{{curriculum.course_code}}/create_quiz/"> -->
-                    <a class="ui blue button" href="/ocms/{{curriculum.course_code}}/create_quiz/">
-                     Create a New Quiz
-                    </a>
-                    {% endif %}
 
                 </div>
 
