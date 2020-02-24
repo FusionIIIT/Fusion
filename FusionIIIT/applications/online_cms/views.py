@@ -848,8 +848,6 @@ def create_quiz(request, course_code):
                             )
             # print "Done"
             return redirect('/ocms/' + course_code + '/edit_quiz/' + str(obj.pk))
-            '''except:
-                return HttpResponse('Unexpected Error')'''
         if form.errors:
             errors = form.errors
         return render(request, 'coursemanagement/createcontest.html',
