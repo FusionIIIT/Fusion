@@ -1,8 +1,16 @@
-<div class="ui clearing center aligned container">
+{% block css %}
+    <style>
+        .search-margin{
+            margin-top : 15px;
+        }
+    </style>
+{% endblock css %}
+
+<div class="ui center aligned container search-margin">
     <a href="{% url 'feeds:feeds' %}" style="font-size: 15px; text-decoration: none; float: left; padding-top: 5px;">
         <i class="ui big home icon" style="color: teal;"></i>
     </a>
-    <a href="{% url 'feeds:profile' %}" style="font-size: 15px; text-decoration: none; float: left; padding-top: 5px;">
+    <a href="{% url 'feeds:profile' request.user.username %}" style="font-size: 15px; text-decoration: none; float: left; padding-top: 5px;">
         <i class="ui big user icon" style="color: teal;"></i>
         <span style="color: teal;"> {{request.user.first_name}}</span>
     </a>
@@ -91,37 +99,38 @@
 <!-- Modal ends here -->
 
 
-
-<!-- Modal for Ask a Question? -->
-<script type="text/javascript">
-    $('#modal-script').on('click', function(){
-        $('#post_modal')
-        .modal('show');
-    });
-
-    $('#report').on('click', function(){
-        $('#report_modal')
-        .modal('show');
-    });
-
-    $(document).ready(function(){
-        $(document).on("click","#update_post",function(){
-            alert($(this).attr('value'));
-            $('#update_modal'+ $(this).attr('value'))
+{% block javascript %}
+    <!-- Modal for Ask a Question? -->
+    <script type="text/javascript">
+        $('#modal-script').on('click', function(){
+            $('#post_modal')
             .modal('show');
         });
 
-        $(document).on("click","#delete_post",function(){
-            {% comment %} alert('#delete_post'+ $(this).attr('value')); {% endcomment %}
-            $('#delete_modal'+ $(this).attr('value'))
+        $('#report').on('click', function(){
+            $('#report_modal')
             .modal('show');
         });
-    });
 
-    $('#answer').on('click', function(){
-        console.log("give answer")
-        $('#answer_modal')
-        .modal('show');
-    });
-</script>
-<!-- Modal ends here -->
+        $(document).ready(function(){
+            $(document).on("click","#update_post",function(){
+                alert($(this).attr('value'));
+                $('#update_modal'+ $(this).attr('value'))
+                .modal('show');
+            });
+
+            $(document).on("click","#delete_post",function(){
+                {% comment %} alert('#delete_post'+ $(this).attr('value')); {% endcomment %}
+                $('#delete_modal'+ $(this).attr('value'))
+                .modal('show');
+            });
+        });
+
+        $('#answer').on('click', function(){
+            console.log("give answer")
+            $('#answer_modal')
+            .modal('show');
+        });
+    </script>
+    <!-- Modal ends here -->
+{% endblock javascript %}

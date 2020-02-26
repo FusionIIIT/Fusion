@@ -1,5 +1,5 @@
 import json
-
+import os
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import JsonResponse
@@ -11,6 +11,7 @@ from .forms import AnswerForm
 from .models import (AllTags, AnsweraQuestion, AskaQuestion, Comments, Reply,
                      hidden, report, tags, Profile)
 from applications.globals.models import ExtraInfo
+from django.contrib.auth.models import User
 
 
 # Create your views here.
@@ -220,6 +221,8 @@ def LikeComment(request):
 
 def delete_post(request, id):
     if request.method == 'POST' and request.POST.get("delete"):
+        # ques = AskaQuestion.objects.filter(pk=id)
+        # print(ques[0].file)
         AskaQuestion.objects.filter(pk=id).delete()
         return redirect ('/feeds/')
 
@@ -371,12 +374,13 @@ def ParticularQuestion(request, id):
 
     return render(request, 'feeds/single_question.html', context)
 
-def profile(request):
+def profile(request, string):
     print("Profile Loading ......")
-    profile = Profile.objects.all().filter(user=request.user)
-    ques = AskaQuestion.objects.all().filter(user=request.user)
-    ans = AnsweraQuestion.objects.all().filter(user=request.user)
-    extra = ExtraInfo.objects.all().filter(user=request.user)
+    usr = User.objects.get(username=string)
+    profile = Profile.objects.all().filter(user=usr)
+    ques = AskaQuestion.objects.all().filter(user=usr)
+    ans = AnsweraQuestion.objects.all().filter(user=usr)
+    extra = ExtraInfo.objects.all().filter(user=usr)
     tags = set()
     top_ques = ""
     top_ans = ans
@@ -386,17 +390,17 @@ def profile(request):
         for t in q.select_tag.all():
             tags.add(t)
     context = {
-        'bio' : profile[0].bio,
-        'profile_image' : profile[0].profile_picture,
+        'profile': profile[0],
+        # 'profile_image' : profile[0].profile_picture,
         'question_asked' : len(ques),
         'answer_given' : len(ans),
-        'last_login' : request.user.last_login,
+        'last_login' : usr.last_login,
         'extra' : extra[0],
-        'views' : profile[0].profile_view,
         'tags' : tags,
         'top_ques' : ques,
         'top_ques_len' : len(ques),
         'top_ans' : ans,
         'top_ans_len' : len(ans)
     }
+    print(context)
     return render(request, 'feeds/profile.html',context)

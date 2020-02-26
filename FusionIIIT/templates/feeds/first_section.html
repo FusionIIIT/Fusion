@@ -1,0 +1,205 @@
+<div class="three wide column" style="min-width:200px; padding:0 0 0 50px;">
+	<form action="{% url 'feeds:feeds' %}" method="POST" class="ui form">
+		{% csrf_token %}
+		<div class="field">
+			<div class='ui multiple search selection dropdown seasons'>
+				<input name="tag" id="tag" value="tag" type="hidden">
+				<i class="dropdown icon"></i>
+				<div class="default text"><i class="tags icon"></i>Select</div>
+				<div class="menu">
+					{% for allowed_subtag in add_tag_list %}
+						<div class="item" data-value="{{ allowed_subtag.id }}">
+							{{ allowed_subtag.subtag }}
+						</div>
+					{% endfor %}
+				</div>
+
+			</div>
+		</div>
+
+		<button type="submit" name="add_tag" id="add_tag" value="add_tag" class="ui button" type="button">
+			Add Tag
+		</button>
+	</form>
+
+	{% comment %}The Tab-Menu starts here!{% endcomment %}
+		<div class="ui fluid vertical pointing menu" style="max-width: 320px;">
+			<a class="active item" data-tab="life" id="Top-Stories" onclick="tags_based(id);">
+				Top Stories
+				<i class="right floated chevron right icon"></i>
+			</a>
+			{% for my_tag in my_tags %}
+				<div class="ui dropdown item" data-tab="first" id= {{ my_tag.tag }}>
+				{{ my_tag.tag }}
+				<i class="dropdown icon"></i>
+
+				{% if my_tag.tag == 'CSE' %}
+					<div class="menu">
+						{% for cse in a %}
+							<div class="item">
+								<a style="color: inherit;" id={{ cse.my_subtag.subtag }} onclick="tags_based(id);">
+									{{ cse.my_subtag.subtag }}
+								</a>
+								<a id={{ cse.my_subtag.subtag }} style="color: inherit;" onclick="removeTag(id);">
+									<i class="close icon" style="float: right;"></i>
+								</a>
+							</div>
+						{% endfor %}
+					</div>
+				{% endif %}
+
+				{% if my_tag.tag == 'ECE' %}
+					<div class="menu">
+						{% for b in b %}
+							<div class="item">
+								<a style="color: inherit;" id={{ b.my_subtag.subtag }} onclick="tags_based(id);">{{ b.my_subtag.subtag }}</a>
+								<i class="close icon" style="float: right;"></i>
+							</div>
+						{% endfor %}
+					</div>
+				{% endif %}
+
+				{% if my_tag.tag == 'Mechanical' %}
+					<div class="menu">
+						{% for c in c %}
+							<div class="item">
+								<a style="color: inherit;" id={{ c.my_subtag.subtag }} onclick="tags_based(id);">{{ c.my_subtag.subtag }}</a>
+								<i class="close icon" style="float: right;"></i>
+							</div>
+						{% endfor %}
+					</div>
+				{% endif %}
+
+				{% if my_tag.tag == 'Design' %}
+					<div class="menu">
+						{% for d in d %}
+							<div class="item">
+								<a style="color: inherit;" id={{ d.my_subtag.subtag }} onclick="tags_based(id);">{{ d.my_subtag.subtag }}</a>
+								<i class="close icon" style="float: right;"></i>
+							</div>	    
+						{% endfor %}
+					</div>
+				{% endif %}
+
+				{% if my_tag.tag == 'Business-and-Career' %}
+					<div class="menu">
+						{% for e in cse_e %}
+							<<div class="item">
+								<a style="color: inherit;" id={{ e.my_subtag.subtag }} onclick="tags_based(id);">{{ e.my_subtag.subtag }}</a>
+								<i class="close icon" style="float: right;"></i>
+							</div>
+						{% endfor %}
+					</div>
+				{% endif %}
+
+				{% if my_tag.tag == 'Entertainment' %}
+					<div class="menu">
+						{% for f in f %}
+							<div class="item">
+								<a style="color: inherit;" id={{ f.my_subtag.subtag }} onclick="tags_based(id);">{{ f.my_subtag.subtag }}</a>
+								<i class="close icon" style="float: right;"></i>
+							</div>
+						{% endfor %}
+					</div>
+				{% endif %}
+
+				{% if my_tag.tag == 'Jabalpur-city' %}
+					<div class="menu">
+						{% for g in g %}
+							<div class="item">
+								<a style="color: inherit;" id={{ g.my_subtag.subtag }} onclick="tags_based(id);">{{ g.my_subtag.subtag }}</a>
+								<i class="close icon" style="float: right;"></i>
+							</div>
+						{% endfor %}
+					</div>
+				{% endif %}
+
+				{% if my_tag.tag == 'IIITDMJ-Rules-and-Regulations' %}
+					<div class="menu">
+						{% for h in h %}
+							<div class="item">
+								<a style="color: inherit;" id={{ h.my_subtag.subtag }} onclick="tags_based(id);">{{ h.my_subtag.subtag }}</a>
+								<i class="close icon" style="float: right;"></i>
+							</div>
+						{% endfor %}
+					</div>
+				{% endif %}
+
+				{% if my_tag.tag == 'Life-Relationship-and-Self' %}
+					<div class="menu">
+						{% for i in i %}
+							<div class="item">
+								<a style="color: inherit;" id={{ i.my_subtag.subtag }} onclick="tags_based(id);">{{ i.my_subtag.subtag }}</a>
+								<i class="close icon" style="float: right;"></i>
+							</div>
+						{% endfor %}
+					</div>
+				{% endif %}
+
+				{% if my_tag.tag == 'IIITDMJ-Campus' %}
+					<div class="menu">
+						{% for j in j %}
+							<div class="item">
+								<a style="color: inherit;" id={{ j.my_subtag.subtag }} onclick="tags_based(id);">{{ j.my_subtag.subtag }}</a>
+								<i class="close icon" style="float: right;"></i>
+							</div>
+						{% endfor %}
+					</div>
+				{% endif %}
+
+				{% if my_tag.tag == 'Programmes' %}
+					<div class="menu">
+						{% for k in k %}
+							<div class="item">
+								<a style="color: inherit;" id={{ k.my_subtag.subtag }} onclick="tags_based(id);">{{ k.my_subtag.subtag }}</a>
+								<i class="close icon" style="float: right;"></i>
+							</div>
+						{% endfor %}
+					</div>
+				{% endif %}
+				</div>
+			{% endfor %}
+		</div>
+</div>
+
+{% block javascript %}
+
+<!-- Tags based question -->
+<script type="text/javascript">
+	function tags_based(id){
+		console.log('first');
+		$("a.active item").removeClass('active');
+		// $(this).addClass('active');
+		// var id = $(this).attr('id');
+		console.log(id);
+		if(id == 'Top-Stories'){
+			location.href = '/feeds/';
+		}
+		else{
+			console.log('script');
+			location.href = '/feeds/' + id + '/';
+		}
+		return false;
+	}
+	
+</script>
+
+<!-- Remove Tag -- >
+<script type="text/javascript">
+	function removeTag(id){
+		console.log('Remove Tag');
+		$.ajax({
+			type: 'POST',
+			url: 'feeds/remove_tag',
+			data:{
+				id: id,
+				'csrfmiddlewaretoken': '{{ csrf_token }}'
+			},
+			success: function(response){
+
+			}
+		});
+	}
+</script>
+
+{% endblock javascript %}

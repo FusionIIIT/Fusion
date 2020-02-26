@@ -61,8 +61,8 @@
                                     </div>
                                 </div>
                                 {% comment %} <img style="padding:20px; border:0 solid red;" src="https://www.semantic-ui.com/images/avatar/large/elliot.jpg"> {% endcomment %}
-                                <img style="padding:20px; border:0 solid red; height:{{profile_image.width}};" src="{{profile_image.url}}">
-                                <div style="margin:-20px auto 0 auto;" class="center aligned"><h5 class="ui header">thesid01</h5></div>
+                                <img style="padding:20px; border:0 solid red; height:{{profile.profile_picture.width}};" src="{{profile.profile_picture.url}}">
+                                <div style="margin:-20px auto 0 auto;" class="center aligned"><h5 class="ui header">{{profile.user.username}}</h5></div>
                             </div>
                             <div class="content center aligned">
                                 <a class="header mr-auto">{{request.user.first_name}}</a>
@@ -84,7 +84,7 @@
                             <div class="column">
                                 <h3 class="ui header">Bio</h3>
                                 <div class="bio description">
-                                    {{bio}}
+                                    {{profile.bio}}
                                 </div>
                             </div>
                             <div class="middle aligned column">
@@ -104,7 +104,7 @@
                                 <div class="teal" style="margin:15px 0;">
                                     <i class="icon marker teal"></i> {{extra.address}}
                                     <div class="divider"></div>
-                                    <i class="icon eye teal"></i> {{views}} profile views
+                                    <i class="icon eye teal"></i> {{profile.profile_view}} profile views
                                     <div class="divider"></div>
                                     <i class="icon sign in teal"></i> <b>Last Login:</b> {{last_login}}
                                 </div>
