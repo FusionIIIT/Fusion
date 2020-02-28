@@ -6,6 +6,8 @@ from django.http import JsonResponse
 from django.http.response import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
+from django.conf import settings
+from django.core.files.storage import default_storage
 
 from .forms import AnswerForm
 from .models import (AllTags, AnsweraQuestion, AskaQuestion, Comments, Reply,
@@ -26,7 +28,6 @@ def feeds(request):
             question = AskaQuestion.objects.create(user=request.user)
             question.subject = request.POST.get('subject')
             question.description = request.POST.get('content')
-            print(request.POST)
             question.file = request.FILES['file']
             tag = request.POST.get('Add_Tag')
             tag = tag[8:]
@@ -74,9 +75,19 @@ def feeds(request):
 
     ques = []
     for q in query:
+        isliked = 0
+        isdisliked = 0
+        profi = Profile.objects.all().filter(user=q.user)
+        if(q.likes.all().filter(username=request.user.username).count()==1):
+            isliked = 1
+        if(q.dislikes.all().filter(username=request.user.username).count()==1):
+            isdisliked = 1
         temp = {
-            'profile':Profile.objects.all().filter(user=q.user),
-            'ques' : q  
+            'profile':profi,
+            'ques' : q,
+            'isliked':isliked,
+            'disliked': isdisliked,
+            'votes':q.total_likes() - q.total_dislikes(),
         }
         ques.append(temp)
 
@@ -104,7 +115,6 @@ def feeds(request):
         'k' : user_tags.filter(Q(my_tag__icontains='Programmes')),
     }
     return render(request, 'feeds/feeds_main.html', context)
-
 
 def Request(request):
     question = get_object_or_404(AskaQuestion, id=request.POST.get('id'))
@@ -192,7 +202,7 @@ def LikeComment(request):
     # question = get_object_or_404(AskaQuestion, id=request.POST.get('id'))
     comment = Comments.objects.get(id=request.POST.get('id'))
     # comment.question = question
-    print('coming')
+    print('Liking comment')
     # print(comment.likes_comment.filter(id=request.user.id).exists())
 
     print(comment.is_liked)
@@ -221,9 +231,10 @@ def LikeComment(request):
 
 def delete_post(request, id):
     if request.method == 'POST' and request.POST.get("delete"):
-        # ques = AskaQuestion.objects.filter(pk=id)
-        # print(ques[0].file)
-        AskaQuestion.objects.filter(pk=id).delete()
+        ques = AskaQuestion.objects.filter(pk=id)[0]
+        print(settings.BASE_DIR+ques.file.url)
+        default_storage.delete(settings.BASE_DIR+ques.file.url)
+        ques.delete()
         return redirect ('/feeds/')
 
 def update_post(request, id):
@@ -244,7 +255,7 @@ def update_post(request, id):
         return redirect ('/feeds/')
 
 def TagsBasedView(request, string):
-    print('coming')
+    print('Tag based View')
     questions = AskaQuestion.objects.all()
     result = questions.filter(Q(select_tag__subtag__icontains=string))
     user_tags = tags.objects.filter(Q(user__username=request.user.username))
@@ -313,9 +324,16 @@ def ParticularQuestion(request, id):
     all_tags = AllTags.objects.values('tag').distinct()
     askqus_subtags = AllTags.objects.all()
     profile = Profile.objects.all().filter(user=result.user)
+    isliked = 0
+    isdisliked = 0
+    if(result.likes.all().filter(username=request.user.username).count()==1):
+            isliked = 1
+    if(result.dislikes.all().filter(username=request.user.username).count()==1):
+        isdisliked = 1
+
     if request.method == 'POST':
         if request.POST.get("answer_button"):
-            print('coming')
+            print('Particular Question')
             form_answer = AnswerForm(request.POST)
             if form_answer.is_valid():
                 instance = form_answer.save(commit=False)
@@ -324,6 +342,9 @@ def ParticularQuestion(request, id):
                 instance.save()
 
                 context = {
+                    'isliked':isliked,
+                    'disliked': isdisliked,
+                    'votes':result.total_likes() - result.total_dislikes(),
                     'form_answer': AnswerForm(),
                     'instance': instance,        
                     'question': result,
@@ -352,6 +373,9 @@ def ParticularQuestion(request, id):
         # print(instance.content)
 
     context = {
+        'isliked':isliked,
+        'disliked': isdisliked,
+        'votes':result.total_likes() - result.total_dislikes(),
         'question': result,
         'form_answer': form,
         'question': result,
@@ -404,3 +428,52 @@ def profile(request, string):
     }
     print(context)
     return render(request, 'feeds/profile.html',context)
+
+def printques(a):
+    print(a.can_delete)
+    print(a.can_update)
+    print(a.user)
+    print(a.subject)
+    print(a.description)
+    print(a.select_tag)
+    print(a.file)
+    print(a.uploaded_at)
+    print(a.likes)
+    print(a.requests)
+	#dislikes = models.ManyToManyField(User, related_name='dislikes', blank=True)
+    print(a.is_liked)
+    print(a.is_requested)
+    print(a.request)
+    print(a.anonymous_ask)
+    print(a.total_likes)
+    print(a.total_dislikes)
+
+def upvoteQuestion(request,id):
+    question = AskaQuestion.objects.get(id=request.POST.get('id'))
+    print('upvoting question')
+    print("-------------likes--------------")
+    print(question.likes.all())
+    print("-------------dislikes--------------")
+    print(question.dislikes.all())
+    question.dislikes.remove(request.user)
+    isupvoted = question.likes.all().filter(username=request.user.username).count()
+    if request.is_ajax() and isupvoted == 0:
+        question.likes.add(request.user)
+        return JsonResponse({'done': "1",'votes':question.total_likes() - question.total_dislikes(),})
+    else:
+        return JsonResponse({"done":"0",'votes':question.total_likes() - question.total_dislikes(),})
+
+def downvoteQuestion(request,id):
+    question = AskaQuestion.objects.get(id=request.POST.get('id'))
+    print('upvoting question')
+    print("-------------likes--------------")
+    print(question.likes.all())
+    print("-------------dislikes--------------")
+    print(question.dislikes.all())
+    question.likes.remove(request.user)
+    isdownvoted = question.dislikes.all().filter(username=request.user.username).count()
+    if request.is_ajax() and isdownvoted == 0:
+        question.dislikes.add(request.user)
+        return JsonResponse({'done': "1",'votes':question.total_likes() - question.total_dislikes(),})
+    else:
+        return JsonResponse({"done":"0",'votes':question.total_likes() - question.total_dislikes(),})

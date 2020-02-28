@@ -1,4 +1,3 @@
-
 {% block css %}
     <style>
         .no-margin{
@@ -11,6 +10,8 @@
 {% endblock css %}
 
 <div class="ten wide column" style="padding: 0 50px;">
+    {% include 'feeds/pagination.html' %}
+
     {% for question in questions %}
     
     <div class="ui clearing segment blue" style="margin-bottom: 30px;">
@@ -142,13 +143,17 @@
             <div class="row grid">
                 <div class="grid one wide column">
                     <div class="row">
-                        <i class="icon big ui caret up"></i>
+                        <i id="upcaret{{question.ques.id}}" class="icon big arrow alternate circle up {% if question.isliked == 1 %}{%else%}outline{% endif %}" 
+                            onclick='upvote_post({{question.ques.id}})' 
+                            style="cursor:pointer"></i>
                     </div>
-                    <div class="row center aligned container ui">
-                        <i style="margin-left: 10px;">0</i>
+                    <div class="row center aligned container ui" id="upvoteCount{{question.ques.id}}">
+                        <i style="margin-left: 10px;">{{question.votes}}</i>
                     </div>
                     <div class="row">
-                        <i class="icon big ui caret down"></i>
+                        <i id="downcaret{{question.ques.id}}" class="icon big arrow alternate circle down {% if question.disliked == 1 %}{%else%}outline{% endif %}"
+                            onclick='downvote_post({{question.ques.id}})' 
+                            style="cursor:pointer"></i>
                     </div>
                 </div>
 
@@ -182,4 +187,6 @@
         </div>
     </div>
     {% endfor %}
+    
+    {% include 'feeds/pagination.html' %}
 </div>
