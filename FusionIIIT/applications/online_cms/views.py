@@ -826,11 +826,10 @@ def create_quiz(request, course_code):
             days, seconds = duration.days, duration.seconds
             hours, remainder = divmod(duration.seconds, 3600)
             minutes, seconds = divmod(remainder, 60)
+
             # If you want to take into account fractions of a second
             seconds += duration.microseconds / 1e6
 
-            # hours = days * 24 + seconds // 3600
-            # minutes = (seconds % 3600) // 60
             description = form.cleaned_data['description'].replace('\r\n', '/')
             rules = form.cleaned_data['rules'].replace('\r\n', '/')
             obj = Quiz.objects.create(

@@ -107,7 +107,7 @@ Create Contest
             <div class="ui calendar field">
                 <label>Description <font color="red" size="4.5">*</font></label>
                 <div class="ui input left icon">
-                    <i class="comments icon"></i> {{ form.description }}
+                   {{ form.description }}
                 </div>
             </div>
             <div class="ui calendar field">
@@ -119,7 +119,7 @@ Create Contest
             <div class="ui field">
                 <label>Number Of Questions <font color="red" size="4.5">*</font></label>
                 <div class="ui input">
-                    {{ form.number_of_questions }}
+                    {{ form.number_of_questions }}    
                 </div>
             </div>
             <div class="ui field">
@@ -176,8 +176,8 @@ $('#example7').calendar({
     });
     $('.ui.sidebar')
         .sidebar('attach events', '#navbar #sidebartrigger')
-    // .sidebar('setting', 'transition', 'overlay')
-    // .sidebar('toggle')
+    .sidebar('setting', 'transition', 'overlay')
+    .sidebar('toggle')
     ;
     $('.special.cards .image').dimmer({
         on: 'hover'
