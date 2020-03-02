@@ -38,6 +38,9 @@
                     <a class="item" data-tab="two">Registration
                         <i class="right floated chevron right icon"></i>
                     </a>
+                     <a class="item" data-tab="check_dues">Check Dues
+                        <i class="right floated chevron right icon"></i>
+                    </a>
                     <a class="item" data-tab="three" style="display: none;">
                         Add/Drop Courses
                         <i class="right floated chevron right icon"></i>
@@ -117,6 +120,9 @@
                 <div class="ui tab segment" data-tab="final_registration">
                     {%  include 'academic_procedures/finalregister.html' %}
                 </div>
+            </div>
+            <div class="ui active tab segment" data-tab="check_dues" >
+                    {%  include 'academic_procedures/dues.html' %}
             </div>
             <div class="ui tab segment" data-tab="three" style="width: 100%">
                 <div class="ui pointing secondary menu">
