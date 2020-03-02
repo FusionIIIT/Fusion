@@ -24,7 +24,7 @@ from applications.globals.models import (DepartmentInfo, Designation,
 
 from .models import (BranchChange, CoursesMtech, InitialRegistrations, StudentRegistrationCheck,
                      MinimumCredits, Register, Thesis, FinalRegistrations, ThesisTopicProcess,
-                     Constants, FeePayment, TeachingCreditRegistration, SemesterMarks, MarkSubmissionCheck)
+                     Constants, FeePayment, TeachingCreditRegistration, SemesterMarks, MarkSubmissionCheck, Dues)
 
 from notification.views import academics_module_notif
 
@@ -332,6 +332,20 @@ def academic_procedures_student(request):
         if phd_flag == True:
             pre_existing_thesis_flag = get_thesis_flag(obj)
             teaching_credit_registration_course = Curriculum.objects.all().filter(batch = 2016, sem =6)
+
+        # Dues Check
+
+        lib_d, pc_d, hos_d, mess_d, acad_d = 0, 0, 0, 0, 0
+        if student_flag:
+            obj = Dues.objects.get(student_id=request.user.username)
+            if obj:
+                lib_d = obj.library_due
+                pc_d = obj.placement_cell_due
+                hos_d = obj.hostel_due
+                mess_d = obj.mess_due
+                acad_d = obj.academic_due
+
+
         return render(
                           request, '../templates/academic_procedures/academic.html',
                           {'details': details,
@@ -376,6 +390,12 @@ def academic_procedures_student(request):
                             'teaching_credit_registration_course' : teaching_credit_registration_course,
                             
                            # 'mincr': minimum_credit,
+                           'lib_d':lib_d,
+                           'acad_d':acad_d,
+                           'mess_d':mess_d,
+                           'pc_d':pc_d,
+                           'hos_d':hos_d,
+
                            }
                 )
 
