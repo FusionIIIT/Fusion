@@ -224,3 +224,16 @@ class MarkSubmissionCheck(models.Model):
 
     class Meta:
         db_table = 'MarkSubmissionCheck'
+
+
+class Dues(models.Model):
+    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+    mess_due = models.IntegerField()
+    hostel_due = models.IntegerField()
+    library_due = models.IntegerField()
+    placement_cell_due = models.IntegerField()
+    academic_due = models.IntegerField()
+
+    class Meta:
+        db_table = 'Dues'
+
