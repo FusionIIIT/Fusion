@@ -237,3 +237,14 @@ class Dues(models.Model):
     class Meta:
         db_table = 'Dues'
 
+class Bonafide(models.Model):
+    student_id = models.IntegerField()
+    student_name = models.CharField(max_length=50)
+    purpose = models.CharField(max_length=100)
+    academic_year = models.CharField(max_length=15)
+    enrolled_course = models.CharField(max_length=10)
+    fathers_name = models.CharField(max_length=50)
+    dob = models.DateField()
+
+    class Meta:
+        db_table = 'Bonafide'

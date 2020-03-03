@@ -1,6 +1,7 @@
 from django import forms
 
 from applications.academic_information.models import Course
+from .models import Bonafide
 
 
 class AddDropCourseForm(forms.ModelForm):
@@ -13,3 +14,7 @@ class AddDropCourseForm(forms.ModelForm):
     class Meta:
         model = Course
         fields = ('course_id', 'course_name', 'sem', 'credits', 'courses')
+
+class BonafideForm(forms.ModelForm):
+    def __init__(self):
+        
