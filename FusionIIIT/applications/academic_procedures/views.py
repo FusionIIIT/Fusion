@@ -16,7 +16,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
-
+from django.core.exceptions import ObjectDoesNotExist
 
 from applications.academic_information.models import Calendar, Course, Student,Curriculum_Instructor, Curriculum
 from applications.globals.models import (DepartmentInfo, Designation,
@@ -337,13 +337,18 @@ def academic_procedures_student(request):
 
         lib_d, pc_d, hos_d, mess_d, acad_d = 0, 0, 0, 0, 0
         if student_flag:
-            obj = Dues.objects.get(student_id=Student.objects.get(id=request.user.username))
-            if obj:
+            try:
+
+                obj = Dues.objects.get(student_id=Student.objects.get(id=request.user.username))
+
                 lib_d = obj.library_due
                 pc_d = obj.placement_cell_due
                 hos_d = obj.hostel_due
                 mess_d = obj.mess_due
                 acad_d = obj.academic_due
+            except ObjectDoesNotExist:
+                print("entry in DB not found for student")
+
         tot_d = lib_d + acad_d + pc_d + hos_d + mess_d
         return render(
                           request, '../templates/academic_procedures/academic.html',
