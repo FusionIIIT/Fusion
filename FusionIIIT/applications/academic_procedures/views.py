@@ -209,7 +209,6 @@ def academic_procedures_student(request):
         year = demo_date.year
         
         registers = get_student_register(user_details.id)
-        print(registers)
         user_sem = get_user_semester(request.user, ug_flag, masters_flag, phd_flag)
         user_branch = get_user_branch(user_details)
         student_registration_check_pre = get_student_registrtion_check(obj,user_sem+1)
