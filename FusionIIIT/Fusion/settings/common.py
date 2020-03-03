@@ -20,13 +20,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '=&w9due426k@l^ju1=s1)fj1rnpf0ok8xvjwx+62_nc-f12-8('
 CLIENT_ID = '187004491411-frc3j36n04o9k0imgnbl02qg42vkq36f.apps.googleusercontent.com'
 CLIENT_SECRET = 'enHu3RD0yBvCM_9C0HQmEp0z'
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = ['fusioniiit.azurewebsites.net', '127.0.0.1', 'localhost', '172.27.16.216']
 
 # Google authentication
 SOCIALACCOUNT_PROVIDERS = {
@@ -55,9 +51,6 @@ EMAIL_HOST = 'smtp.gmail.com'
 # email of sender
 
 EMAIL_HOST_USER = 'fusion.iiitdmj@gmail.com'
-
-# password of sender
-EMAIL_HOST_PASSWORD = os.environ['MAIL_PASSWORD']
 
 EMAIL_PORT = 587
 ACCOUNT_EMAIL_REQUIRED = True
@@ -155,7 +148,7 @@ ROOT_URLCONF = 'Fusion.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['/', os.path.join(BASE_DIR, 'templates')],
+        'DIRS': ['templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -186,19 +179,6 @@ PROJECT_DIR = os.path.abspath(os.path.dirname(__file__))
 #             'PORT': '3306',
 #         },
 # }
-
-
-# Database template for postgres
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'fusion',
-        'HOST': '172.27.16.216',
-        'USER': 'admin',
-        'PASSWORD': 'asd123asd',
-    }
-}
 
 # DATABASES = {
 #     'default': {
@@ -263,18 +243,6 @@ MEDIA_URL = '/media/'
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_EMAIL_REQUIRED = True
 LOGIN_REDIRECT_URL = "/"
-
-if DEBUG:
-    MIDDLEWARE += (
-        'debug_toolbar.middleware.DebugToolbarMiddleware',
-    )
-    INSTALLED_APPS += (
-        'debug_toolbar',
-        )
-    INTERNAL_IPS = ('127.0.0.1',)
-    DEBUG_TOOLBAR_CONFIG = {
-        'INTERCEPT_REDIRECTS': False,
-    }
 
 DJANGO_NOTIFICATIONS_CONFIG = {
 'USE_JSONFIELD':True,

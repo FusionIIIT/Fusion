@@ -22,7 +22,7 @@ from applications.placement_cell.forms import (AddAchievement, AddCourse,
 from applications.placement_cell.models import (Achievement, Course, Education,
                                                 Experience, Has, Patent,
                                                 Project, Publication, Skill)
-from Fusion.settings import LOGIN_URL
+from Fusion.settings.development import LOGIN_URL
 from notifications.models import Notification
 
 def index(request):
