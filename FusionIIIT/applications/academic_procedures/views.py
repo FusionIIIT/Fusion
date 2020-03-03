@@ -27,6 +27,8 @@ from .models import (BranchChange, CoursesMtech, InitialRegistrations, StudentRe
                      Constants, FeePayment, TeachingCreditRegistration, SemesterMarks, MarkSubmissionCheck, Dues)
 
 from notification.views import academics_module_notif
+#from .forms import BonafideForm
+
 
 
 demo_date = datetime.datetime.now()
@@ -2728,3 +2730,21 @@ def test_ret(request):
 
 
 
+# def bonafide(request):
+#     # if this is a POST request we need to process the form data
+#     if request.method == 'POST':
+#         # create a form instance and populate it with data from the request:
+#         form = BonafideForm(request.POST)
+#         # check whether it's valid:
+#         if form.is_valid():
+#             # process the data in form.cleaned_data as required
+#             # ...
+#             # redirect to a new URL:
+#             print("vaild")
+
+#     # if a GET (or any other method) we'll create a blank form
+#     else:
+#         form = BonafideForm()
+
+#     return render(request, 'bonafide.html', {'form': form})
+    

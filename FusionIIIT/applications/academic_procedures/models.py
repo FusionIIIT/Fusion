@@ -4,6 +4,7 @@ from django.db import models
 
 from applications.academic_information.models import Course, Student, Curriculum
 from applications.globals.models import DepartmentInfo, ExtraInfo, Faculty
+from django.utils import timezone
 
 
 class Constants:
@@ -238,13 +239,12 @@ class Dues(models.Model):
         db_table = 'Dues'
 
 class Bonafide(models.Model):
-    student_id = models.IntegerField()
+    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     student_name = models.CharField(max_length=50)
     purpose = models.CharField(max_length=100)
     academic_year = models.CharField(max_length=15)
     enrolled_course = models.CharField(max_length=10)
-    fathers_name = models.CharField(max_length=50)
-    dob = models.DateField()
+    complaint_date = models.DateTimeField(default=timezone.now)
 
     class Meta:
         db_table = 'Bonafide'
