@@ -9,7 +9,8 @@
 
     <div class="ui active tab" data-tab="complaint">
         <div class="ui vertical segment">
-            <form class="ui form" style="padding-left: 24px; padding-right: 24px;">
+            <form class="ui form" style="padding-left: 24px; padding-right: 24px;" method='post' action="/academic-procedures/bonafide_pdf/ ">
+                {%csrf_token%}
                 <div class="ui header">
                     Apply for Bonafide:
                 </div>
@@ -20,7 +21,7 @@
 
                 <div class="field">
                     <label>Purpose</label>
-                    <textarea rows="2"></textarea>
+                    <textarea rows="2" name='purpose'></textarea>
                 </div>
 
                 <br>
