@@ -336,6 +336,7 @@ def academic_procedures_student(request):
         # Dues Check
 
         lib_d, pc_d, hos_d, mess_d, acad_d = 0, 0, 0, 0, 0
+        cur_cpi = 0
         if student_flag:
             try:
 
@@ -346,10 +347,12 @@ def academic_procedures_student(request):
                 hos_d = obj.hostel_due
                 mess_d = obj.mess_due
                 acad_d = obj.academic_due
+                cur_cpi = get_cpi(request.user.username)
             except ObjectDoesNotExist:
                 print("entry in DB not found for student")
 
         tot_d = lib_d + acad_d + pc_d + hos_d + mess_d
+
         return render(
                           request, '../templates/academic_procedures/academic.html',
                           {'details': details,
@@ -400,6 +403,8 @@ def academic_procedures_student(request):
                            'pc_d':pc_d,
                            'hos_d':hos_d,
                             'tot_d':tot_d,
+                           #current cpi
+                           'cur_cpi':cur_cpi,
                            }
                 )
 
