@@ -168,10 +168,9 @@ class AskaQuestion(models.Model):
 	select_tag = models.ManyToManyField(AllTags)
 	file = models.FileField(null=True, blank=True,upload_to='feeds/files')
 	uploaded_at = models.DateTimeField(auto_now_add=False, auto_now=False, default=timezone.now)
-	#like = models.IntegerField(default=0)
 	likes = models.ManyToManyField(User, default=1,related_name='likes', blank=True)
+	dislikes = models.ManyToManyField(User, default=1,related_name='dislikes', blank=True)
 	requests = models.ManyToManyField(User, default=1,related_name='requests', blank=True)
-	#dislikes = models.ManyToManyField(User, related_name='dislikes', blank=True)
 	is_liked=models.BooleanField(default=False)
 	is_requested=models.BooleanField(default=False)
 	request = models.IntegerField(default=0)
@@ -184,6 +183,9 @@ class AskaQuestion(models.Model):
 
 	def total_likes(self):
 		return self.likes.count()
+	
+	def total_dislikes(self):
+		return self.dislikes.count()
 
 	def total_requests(self):
 		return self.requests.count()

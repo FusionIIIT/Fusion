@@ -43,24 +43,10 @@
 {% endblock %}
 
 {% block javascript %}
-    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
     <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
     <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
-	<!-- to toggle the view comments -->
-    <script type="text/javascript">
-    	function toggle_to_div(id){
-    		console.log('coming');
-    		var div = document.getElementById("main_comments"+id);
-    		console.log(id);
-
-    		if (div.style.display !== "none") {
-    			div.style.display = "none";
-			}
-			else {
-    			div.style.display = "block";
-			}
-    	}
-    </script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
 
     <script type="text/javascript">
     	function readURL(input){
@@ -103,68 +89,6 @@
  		});
  	</script>
 
-
- 	<!-- Reply Section Ajax -->
-    <script type="text/javascript">
-    	$(document).on('submit','.reply-form', function(event){
-    		console.log("Hey there");
-    		event.preventDefault();
-    		var pk = $(this).attr('id');
-    		var string = $('#reply_text'+pk).val();
-    		console.log(string);
-    		ques_id = document.getElementById('unique_'+pk).innerHTML;
-    		console.log(ques_id);
-    		console.log($(this).serialize());
-
-    		$.ajax({
-    			type: 'POST',
-    			url: '/feeds/reply_text/',
-    			data: {
-    				ques_id: ques_id,
-    				id: pk,
-    				comment_box: string,
-    				'csrfmiddlewaretoken': '{{csrf_token}}',
-    			},
-
-    			success:function(result){
-    				console.log("yup");
-    				$('#main_comments'+ques_id).html(result['form']);
-    				var div = document.getElementById('reply'+pk);
-
-		    		if (div.style.display !== "none") {
-		    			div.style.display = "none";
-					}
-					else {
-		    			div.style.display = "block";
-					}
-    				document.getElementById('reply_text'+pk).value = ''
-    				// $('chat-msg'+pk).val('');
-    				// $('#1').append('<br>'+ result['status'] + '<br>');
-    				// document.getElementById('12'+pk).innerHTML = document.getElementById('comment-text' + pk).innerHTML + result['form'] + '<br>' + document.getElementById('like_button_div').innerHTML;
-    				// $('#comment-text' + pk).append(result['form']);
-    				// console.log(result['form']);
-    			}
-    			
-    		});
-    	});
-    </script>
-    <!-- Reply Section Ajax ends here -->
-
-
-    <script type="text/javascript">
-    	function reply_btn(id){
-    		var div = document.getElementById('reply'+id);
-
-    		if (div.style.display !== "none") {
-    			div.style.display = "none";
-			}
-			else {
-    			div.style.display = "block";
-			}
-    	}
-    </script>
-
-
     <!-- Comments Section Ajax -->
     <script type="text/javascript">
     	$(document).on('submit','.comment-form', function(event){
@@ -201,34 +125,61 @@
     </script>
     <!-- Comments Section Ajax ends here -->
 
-
-    <!-- Ajax for Comment like button -->
- 	<script type="text/javascript">
- 		$(document).ready(function(event){
- 			$(document).on('click', '#like_comment_id', function(event){
- 				event.preventDefault();
- 				var pk = $(this).attr('value');
- 				console.log('yeah');
- 				console.log(pk);
- 				$.ajax({
- 					type: 'POST',
- 					url: '/feeds/like_comment/',
- 					data: {id:pk, 'csrfmiddlewaretoken': '{{ csrf_token }}'},
- 					dataType: 'json',
- 					success: function(response){
- 						// var qus = JSON.parse(response)
- 						// document.getElementById('like-section').innerHTML = response['form'];
- 						$('#like-section-comment' + pk).html(response['form']);
- 						console.log("ajax successful");
- 						console.log(pk)
- 					},
- 					error: function(rs, e){
- 						console.log("rs.responseText");
- 					},
- 				});
- 			});
- 		});
+	<!-- Question upvote Ajax-->
+	<script type="text/javascript">
+ 		upvote_post = (id)=>{
+			console.log("upvoting ques");
+			var pk = id;
+			$.ajax({
+				type: 'POST',
+				url: '/feeds/upvote_ques/'+pk,
+				data: {id:pk, 'csrfmiddlewaretoken': '{{ csrf_token }}'},
+				dataType: 'json',
+				success: function(response){
+					if(response.done==1){
+						$('#upvoteCount' + pk).text(response.votes);
+						$('#upcaret'+pk).removeClass("outline");
+						$('#downcaret'+pk).addClass("outline");
+					}
+					console.log("upvoted successful");
+				},
+				error: function(rs, e){
+					console.log(rs.responseText);
+				},
+			});
+		}
  	</script>
- 	<!-- Ajax for Comment like button -->
+	<!-- Question upvote Ajax-->
 
+	<!-- Question downvote Ajax-->
+	<script type="text/javascript">
+ 		downvote_post = (id)=>{
+			console.log("downvoting ques");
+			var pk = id;
+			$.ajax({
+				type: 'POST',
+				url: '/feeds/downvote_ques/'+pk,
+				data: {id:pk, 'csrfmiddlewaretoken': '{{ csrf_token }}'},
+				dataType: 'json',
+				success: function(response){
+					if(response.done==1){
+						$('#upvoteCount' + pk).text(response.votes);
+						$('#downcaret'+pk).removeClass("outline");
+						$('#upcaret'+pk).addClass("outline");
+					}
+					console.log("downvoted successful");
+				},
+				error: function(rs, e){
+					console.log(rs.responseText);
+				},
+			});
+		}
+ 	</script>
+	<!-- Question downvote Ajax-->
+
+	<script>
+		$(document).ready(()=>{
+			$(".paginationparent").css({"paddingLeft": ($(".paginationparent").width()- $("#pagination").width())/2})
+		})
+	</script>
 {% endblock %}
