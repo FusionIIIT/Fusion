@@ -367,7 +367,7 @@ def academic_procedures_student(request):
                 absents = Student_attendance.objects.filter(student_id=obj,instructor_id=j, present=False)
                 pr += len(presents)
                 ab += len(absents)
-            attendence.append((i,pr,ab))
+            attendence.append((i,pr,pr+ab))
         print(attendence)
         return render(
                           request, '../templates/academic_procedures/academic.html',
