@@ -28,6 +28,17 @@ class Constants:
         ('internet', 'internet'),
         ('other', 'other'),
     )
+    DESIGNATION = (
+        ('hall1caretaker','hall1caretaker'),
+        ('hall3caretaker','hall3caretaker'),
+        ('hall4caretaker','hall4caretaker'),
+        ('cc1convener','cc1convener'),
+        ('CC2 convener','CC2 convener'),
+        ('corelabcaretaker','corelabcaretaker'),
+        # ('lhtccaretaker','lhtccaretaker'),
+        # ('nr2caretaker','nr2caretaker'),
+        # ('rewacaretaker','rewacaretaker'),
+    )
 
 
 class Caretaker(models.Model):
@@ -39,6 +50,15 @@ class Caretaker(models.Model):
 
     def __str__(self):
         return str(self.id) + '-' + self.area
+
+class Hall(models.Model):
+    location = models.CharField(choices=Constants.AREA,max_length=20,default='hall-3')
+    designation_name = models.CharField(choices=Constants.DESIGNATION, max_length=20, default='hall3caretaker')
+    staff_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return (self.staff_id.user)
+
 
 
 class Workers(models.Model):

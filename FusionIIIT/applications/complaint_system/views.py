@@ -11,7 +11,7 @@ from django.shortcuts import get_object_or_404, render, render_to_response
 
 from applications.globals.models import User , ExtraInfo, HoldsDesignation
 
-from .models import Caretaker, StudentComplain, Supervisor, Workers
+from .models import Caretaker, StudentComplain, Supervisor, Workers,Hall
 from notification.views import  complaint_system_notif
 #function for reassign to another worker
 @login_required
@@ -376,9 +376,13 @@ def user(request):
           dsgn ="nr2caretaker"
         else:
           dsgn = "rewacaretaker"
-        caretaker_name = HoldsDesignation.objects.get(designation__name = dsgn)
+        caretaker_name = Hall.objects.get(designation_name = dsgn)
+        print('hello')
+        # print(caretaker_name)
+        #print(caretaker_name.user)
+        print ('hello2')
         
-        complaint_system_notif(request.user, caretaker_name.user,'lodge_comp_alert')
+        # complaint_system_notif(request.user, caretaker_name.user,'lodge_comp_alert')
 
         # return render(request, "complaintModule/complaint_user.html",
         #               {'history': history, 'comp_id': comp_id })
