@@ -7,6 +7,13 @@
     </div>
     <div class="ui active tab" data-tab="cpda_one">
         <div class="ui vertical segment"></div>
+
+        <form action="/your-name/" method="post">
+            {% csrf_token %}
+            {{ form }}
+            <input type="submit" value="Submit">
+        </form>
+
     </div>
 {% endblock %}
 {% block javascript %}{% endblock %}
