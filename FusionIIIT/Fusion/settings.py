@@ -129,6 +129,7 @@ INSTALLED_APPS = [
     'applications.placement_cell',
     'applications.scholarships',
     'applications.visitor_hostel',
+    'applications.establishment',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
