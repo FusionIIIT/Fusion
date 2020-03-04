@@ -2764,7 +2764,7 @@ def Bonafide_form(request):
         context = {
             'student_id' : request.user.username,
             'degree' : obj.programme.upper(),
-            'name' : name.first_name + name.last_name,
+            'name' : name.first_name +" "+ name.last_name,
             'branch' : get_user_branch(user_details),
             'purpose' : request.POST['purpose']
         }
