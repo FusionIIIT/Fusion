@@ -126,6 +126,8 @@ def assign_worker(request, comp_id1):
                 update(worker_id=w, status=1)
             complainer_details = StudentComplain.objects.get(id=comp_id1)
             complaint_system_notif(request.user, complainer_details.complainer.user ,'assign_worker_alert')
+            print ('lets see')
+            print (complainer_details.complainer.user)
 
             return HttpResponseRedirect('/complaint/caretaker/')
         elif type == 'redirect':
@@ -197,7 +199,7 @@ def discharge_worker(request,wid,cid):
 @login_required
 def caretaker_feedback(request):
     """
-    This function deals with submission of complaints for a particular type of caretaker 
+    This function deals with submission of complaints for a particular type of caretaker
 
     """
     a = get_object_or_404(User, username=request.user.username)
@@ -906,4 +908,16 @@ def detail3(request, detailcomp_id1):
     comp_id=temp.id 
     loc = detail3.location
     care = Caretaker.objects.filter(area=loc).first()
+    print (loc)
+    print (care)
+    print ('Caretaker alert2')
+    if(request.method=='POST'):
+        print (request.user)
+        print (care.staff_id)
+        print (care.staff_id.user)
+        complaint_system_notif(request.user, care.staff_id.user, 'alert caretaker')
+        print ('Carejhvbkn')
+
+
+
     return render(request, "complaintModule/complaint_supervisor_detail.html", {"detail3": detail3,"comp_id":comp_id,"care":care,"num":num})

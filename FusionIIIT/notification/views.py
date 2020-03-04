@@ -175,6 +175,8 @@ def complaint_system_notif(sender, recipient, type):
     sender = sender
     recipient = recipient
     verb = ''
+    if(type=='alert caretaker'):
+        verb = "Resolve the complaint as soon as possible"
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 

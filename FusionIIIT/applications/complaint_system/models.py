@@ -57,7 +57,7 @@ class Hall(models.Model):
     staff_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
 
     def __str__(self):
-        return (self.staff_id.user)
+        return (self.location)
 
 
 
