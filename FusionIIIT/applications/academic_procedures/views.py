@@ -211,7 +211,6 @@ def academic_procedures_student(request):
         year = demo_date.year
         
         registers = get_student_register(user_details.id)
-        print(registers)
         user_sem = get_user_semester(request.user, ug_flag, masters_flag, phd_flag)
         user_branch = get_user_branch(user_details)
         student_registration_check_pre = get_student_registrtion_check(obj,user_sem+1)
@@ -329,11 +328,11 @@ def academic_procedures_student(request):
         thesis_request_list = None
         pre_existing_thesis_flag = False
         teaching_credit_registration_course = None
-        if masters_flag == True :
+        if masters_flag:
             faculty_list = get_faculty_list()    
             thesis_request_list = ThesisTopicProcess.objects.all().filter(student_id = obj)
             pre_existing_thesis_flag = get_thesis_flag(obj)
-        if phd_flag == True:
+        if phd_flag:
             pre_existing_thesis_flag = get_thesis_flag(obj)
             teaching_credit_registration_course = Curriculum.objects.all().filter(batch = 2016, sem =6)
 
