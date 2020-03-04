@@ -4,6 +4,7 @@ from django.db import models
 
 from applications.academic_information.models import Course, Student, Curriculum
 from applications.globals.models import DepartmentInfo, ExtraInfo, Faculty
+from django.utils import timezone
 
 
 class Constants:
@@ -224,3 +225,26 @@ class MarkSubmissionCheck(models.Model):
 
     class Meta:
         db_table = 'MarkSubmissionCheck'
+
+
+class Dues(models.Model):
+    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+    mess_due = models.IntegerField()
+    hostel_due = models.IntegerField()
+    library_due = models.IntegerField()
+    placement_cell_due = models.IntegerField()
+    academic_due = models.IntegerField()
+
+    class Meta:
+        db_table = 'Dues'
+
+class Bonafide(models.Model):
+    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+    student_name = models.CharField(max_length=50)
+    purpose = models.CharField(max_length=100)
+    academic_year = models.CharField(max_length=15)
+    enrolled_course = models.CharField(max_length=10)
+    complaint_date = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        db_table = 'Bonafide'
