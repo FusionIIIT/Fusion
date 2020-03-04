@@ -8,7 +8,7 @@
 				<div class="default text"><i class="tags icon"></i>Select</div>
 				<div class="menu">
 					{% for allowed_subtag in add_tag_list %}
-						<div class="item" data-value="{{ allowed_subtag.id }}">
+						<div  class="item" data-value="{{ allowed_subtag.id }}">
 							{{ allowed_subtag.subtag }}
 						</div>
 					{% endfor %}
@@ -23,183 +23,274 @@
 	</form>
 
 	{% comment %}The Tab-Menu starts here!{% endcomment %}
-		<div class="ui fluid vertical pointing menu" style="max-width: 320px;">
-			<a class="active item" data-tab="life" id="Top-Stories" onclick="tags_based(id);">
-				Top Stories
-				<i class="right floated chevron right icon"></i>
-			</a>
-			{% for my_tag in my_tags %}
-				<div class="ui dropdown item" data-tab="first" id= {{ my_tag.tag }}>
-				{{ my_tag.tag }}
-				<i class="dropdown icon"></i>
+	<div class="ui fluid vertical pointing menu" style="max-width: 320px;">
+		<a href="" class="active item" data-tab="life" id="Top-Stories" onclick="tags_based(id);">
+			Top Stories
+			<i class="right floated chevron right icon"></i>
+		</a>
+		{% for Tag in Tags %}
+			<div class="ui dropdown item" data-tab="first" id= {{ Tag.my_tag }}>
+			{{ Tag.my_tag }}<i class="dropdown icon"></i>
 
-				{% if my_tag.tag == 'CSE' %}
-					<div class="menu">
-						{% for cse in a %}
-							<div class="item">
-								<a style="color: inherit;" id={{ cse.my_subtag.subtag }} onclick="tags_based(id);">
-									{{ cse.my_subtag.subtag }}
-								</a>
-								<a id={{ cse.my_subtag.subtag }} style="color: inherit;" onclick="removeTag(id);">
-									<i class="close icon" style="float: right;"></i>
-								</a>
-							</div>
-						{% endfor %}
-					</div>
-				{% endif %}
-
-				{% if my_tag.tag == 'ECE' %}
-					<div class="menu">
-						{% for b in b %}
-							<div class="item">
-								<a style="color: inherit;" id={{ b.my_subtag.subtag }} onclick="tags_based(id);">{{ b.my_subtag.subtag }}</a>
-								<i class="close icon" style="float: right;"></i>
-							</div>
-						{% endfor %}
-					</div>
-				{% endif %}
-
-				{% if my_tag.tag == 'Mechanical' %}
-					<div class="menu">
-						{% for c in c %}
-							<div class="item">
-								<a style="color: inherit;" id={{ c.my_subtag.subtag }} onclick="tags_based(id);">{{ c.my_subtag.subtag }}</a>
-								<i class="close icon" style="float: right;"></i>
-							</div>
-						{% endfor %}
-					</div>
-				{% endif %}
-
-				{% if my_tag.tag == 'Design' %}
-					<div class="menu">
-						{% for d in d %}
-							<div class="item">
-								<a style="color: inherit;" id={{ d.my_subtag.subtag }} onclick="tags_based(id);">{{ d.my_subtag.subtag }}</a>
-								<i class="close icon" style="float: right;"></i>
-							</div>	    
-						{% endfor %}
-					</div>
-				{% endif %}
-
-				{% if my_tag.tag == 'Business-and-Career' %}
-					<div class="menu">
-						{% for e in cse_e %}
-							<<div class="item">
-								<a style="color: inherit;" id={{ e.my_subtag.subtag }} onclick="tags_based(id);">{{ e.my_subtag.subtag }}</a>
-								<i class="close icon" style="float: right;"></i>
-							</div>
-						{% endfor %}
-					</div>
-				{% endif %}
-
-				{% if my_tag.tag == 'Entertainment' %}
-					<div class="menu">
-						{% for f in f %}
-							<div class="item">
-								<a style="color: inherit;" id={{ f.my_subtag.subtag }} onclick="tags_based(id);">{{ f.my_subtag.subtag }}</a>
-								<i class="close icon" style="float: right;"></i>
-							</div>
-						{% endfor %}
-					</div>
-				{% endif %}
-
-				{% if my_tag.tag == 'Jabalpur-city' %}
-					<div class="menu">
-						{% for g in g %}
-							<div class="item">
-								<a style="color: inherit;" id={{ g.my_subtag.subtag }} onclick="tags_based(id);">{{ g.my_subtag.subtag }}</a>
-								<i class="close icon" style="float: right;"></i>
-							</div>
-						{% endfor %}
-					</div>
-				{% endif %}
-
-				{% if my_tag.tag == 'IIITDMJ-Rules-and-Regulations' %}
-					<div class="menu">
-						{% for h in h %}
-							<div class="item">
-								<a style="color: inherit;" id={{ h.my_subtag.subtag }} onclick="tags_based(id);">{{ h.my_subtag.subtag }}</a>
-								<i class="close icon" style="float: right;"></i>
-							</div>
-						{% endfor %}
-					</div>
-				{% endif %}
-
-				{% if my_tag.tag == 'Life-Relationship-and-Self' %}
-					<div class="menu">
-						{% for i in i %}
-							<div class="item">
-								<a style="color: inherit;" id={{ i.my_subtag.subtag }} onclick="tags_based(id);">{{ i.my_subtag.subtag }}</a>
-								<i class="close icon" style="float: right;"></i>
-							</div>
-						{% endfor %}
-					</div>
-				{% endif %}
-
-				{% if my_tag.tag == 'IIITDMJ-Campus' %}
-					<div class="menu">
-						{% for j in j %}
-							<div class="item">
-								<a style="color: inherit;" id={{ j.my_subtag.subtag }} onclick="tags_based(id);">{{ j.my_subtag.subtag }}</a>
-								<i class="close icon" style="float: right;"></i>
-							</div>
-						{% endfor %}
-					</div>
-				{% endif %}
-
-				{% if my_tag.tag == 'Programmes' %}
-					<div class="menu">
-						{% for k in k %}
-							<div class="item">
-								<a style="color: inherit;" id={{ k.my_subtag.subtag }} onclick="tags_based(id);">{{ k.my_subtag.subtag }}</a>
-								<i class="close icon" style="float: right;"></i>
-							</div>
-						{% endfor %}
-					</div>
-				{% endif %}
+			{% if Tag.my_tag == 'CSE' %}
+				<div class="menu">
+					{% for cse in a %}
+						<div  class="item ui grid">
+							<a href="" style="color: inherit;" id={{ cse.my_subtag.subtag }} onclick="tags_based(id);" class="fourteen wide column">
+								{{ cse.my_subtag.subtag }}
+							</a>
+							<a href="" id={{ cse.my_subtag.subtag }} style="color: inherit;" onclick="removeTag(id);" class="two wide column">
+								<i class="close icon"></i>
+							</a>
+						</div>
+					{% endfor %}
 				</div>
-			{% endfor %}
-		</div>
+			{% endif %}
+
+			{% if Tag.my_tag == 'ECE' %}
+				<div class="menu">
+					{% for b in b %}
+						<div  class="item ui grid">
+							<a href="" style="color: inherit;" id={{ b.my_subtag.subtag }} onclick="tags_based(id);" class="fourteen wide column">
+								{{ b.my_subtag.subtag }}
+							</a>
+							<a href="" id={{ b.my_subtag.subtag }} style="color: inherit;" onclick="removeTag(id);" class="two wide column">
+								<i class="close icon"></i>
+							</a>
+						</div>
+					{% endfor %}
+				</div>
+			{% endif %}
+
+			{% if Tag.my_tag == 'Mechanical' %}
+				<div class="menu">
+					{% for c in c %}
+						<div  class="item ui grid">
+							<a href="" style="color: inherit;" id={{ c.my_subtag.subtag }} onclick="tags_based(id);" class="fourteen wide column">
+								{{ c.my_subtag.subtag }}
+							</a>
+							<a href="" id={{ c.my_subtag.subtag }} style="color: inherit;" onclick="removeTag(id);" class="two wide column">
+								<i class="close icon"></i>
+							</a>
+						</div>
+					{% endfor %}
+				</div>
+			{% endif %}
+
+			{% if Tag.my_tag == 'Technical-Clubs' %}
+				<div class="menu">
+					{% for d in d %}
+						<div  class="item ui grid">
+							<a href="" style="color: inherit;" id={{ d.my_subtag.subtag }} onclick="tags_based(id);" class="fourteen wide column">
+							{{ d.my_subtag.subtag }}</a>
+							<a href="" id={{ d.my_subtag.subtag }} style="color: inherit;" onclick="removeTag(id);" class="two wide column">
+								<i class="close icon"></i>
+							</a>
+						</div>
+					{% endfor %}
+				</div>
+			{% endif %}
+
+			{% if Tag.my_tag == 'Cultural-Clubs' %}
+				<div class="menu">
+					{% for e in e %}
+						<div  class="item ui grid">
+							<a href="" style="color: inherit;" id={{ e.my_subtag.subtag }} onclick="tags_based(id);" class="fourteen wide column">
+							{{ e.my_subtag.subtag }}</a>
+							<a href="" id={{ e.my_subtag.subtag }} style="color: inherit;" onclick="removeTag(id);" class="two wide column">
+								<i class="close icon"></i>
+							</a>
+						</div>
+					{% endfor %}
+				</div>
+			{% endif %}
+
+			{% if Tag.my_tag == 'Sports-Clubs' %}
+				<div class="menu">
+					{% for f in f %}
+						<div  class="item ui grid">
+							<a href="" style="color: inherit;" id={{ f.my_subtag.subtag }} onclick="tags_based(id);" class="fourteen wide column">
+							{{ f.my_subtag.subtag }}</a>
+							<a href="" id={{ f.my_subtag.subtag }} style="color: inherit;" onclick="removeTag(id);" class="two wide column">
+								<i class="close icon"></i>
+							</a>
+						</div>
+					{% endfor %}
+				</div>
+			{% endif %}
+
+			{% if Tag.my_tag == 'Business-and-Career' %}
+				<div class="menu">
+					{% for g in g %}
+						<div  class="item ui grid">
+							<a href="" style="color: inherit;" id={{ g.my_subtag.subtag }} onclick="tags_based(id);" class="fourteen wide column">
+							{{ g.my_subtag.subtag }}</a>
+							<a href="" id={{ g.my_subtag.subtag }} style="color: inherit;" onclick="removeTag(id);" class="two wide column">
+								<i class="close icon"></i>
+							</a>
+						</div>
+					{% endfor %}
+				</div>
+			{% endif %}
+			
+			{% if Tag.my_tag == 'Entertainment' %}
+				<div class="menu">
+					{% for h in h %}
+						<div  class="item ui grid">
+							<a href="" style="color: inherit;" id={{ h.my_subtag.subtag }} onclick="tags_based(id);" class="fourteen wide column">
+							{{ h.my_subtag.subtag }}</a>
+							<a href="" id={{ h.my_subtag.subtag }} style="color: inherit;" onclick="removeTag(id);" class="two wide column">
+								<i class="close icon"></i>
+							</a>
+						</div>
+					{% endfor %}
+				</div>
+			{% endif %}
+
+			{% if Tag.my_tag == 'IIITDMJ-Campus' %}
+				<div class="menu">
+					{% for i in i %}
+						<div  class="item ui grid">
+							<a href="" style="color: inherit;" id={{ i.my_subtag.subtag }} onclick="tags_based(id);" class="fourteen wide column">
+							{{ i.my_subtag.subtag }}</a>
+							<a href="" id={{ i.my_subtag.subtag }} style="color: inherit;" onclick="removeTag(id);" class="two wide column">
+								<i class="close icon"></i>
+							</a>
+						</div>
+					{% endfor %}
+				</div>
+			{% endif %}
+
+			{% if Tag.my_tag == 'Jabalpur-city' %}
+				<div class="menu">
+					{% for j in j %}
+						<div  class="item ui grid">
+							<a href="" style="color: inherit;" id={{ j.my_subtag.subtag }} onclick="tags_based(id);" class="fourteen wide column">
+							{{ j.my_subtag.subtag }}</a>
+							<a href="" id={{ j.my_subtag.subtag }} style="color: inherit;" onclick="removeTag(id);" class="two wide column">
+								<i class="close icon"></i>
+							</a>
+						</div>
+					{% endfor %}
+				</div>
+			{% endif %}
+
+			{% if Tag.my_tag == 'IIITDMJ-Rules-and-Regulations' %}
+				<div class="menu">
+					{% for k in k %}
+						<div  class="item ui grid">
+							<a href="" style="color: inherit;" id={{ k.my_subtag.subtag }} onclick="tags_based(id);" class="fourteen wide column">
+							{{ k.my_subtag.subtag }}</a>
+							<a href="" id={{ k.my_subtag.subtag }} style="color: inherit;" onclick="removeTag(id);" class="two wide column">
+								<i class="close icon"></i>
+							</a>
+						</div>
+					{% endfor %}
+				</div>
+			{% endif %}
+
+			{% if Tag.my_tag == 'Academics' %}
+				<div class="menu">
+					{% for l in l %}
+						<div  class="item ui grid">
+							<a href="" style="color: inherit;" id={{ l.my_subtag.subtag }} onclick="tags_based(id);" class="fourteen wide column">
+							{{ l.my_subtag.subtag }}</a>
+							<a href="" id={{ l.my_subtag.subtag }} style="color: inherit;" onclick="removeTag(id);" class="two wide column">
+								<i class="close icon"></i>
+							</a>
+						</div>
+					{% endfor %}
+				</div>
+			{% endif %}
+
+			{% if Tag.my_tag == 'IIITDMJ' %}
+				<div class="menu">
+					{% for m in m %}
+						<div  class="item ui grid">
+							<a href="" style="color: inherit;" id={{ m.my_subtag.subtag }} onclick="tags_based(id);" class="fourteen wide column">
+							{{ m.my_subtag.subtag }}</a>
+							<a href="" id={{ m.my_subtag.subtag }} style="color: inherit;" onclick="removeTag(id);" class="two wide column">
+								<i class="close icon"></i>
+							</a>
+						</div>
+					{% endfor %}
+				</div>
+			{% endif %}
+
+			{% if Tag.my_tag == 'Life-Relationship-and-Self' %}
+				<div class="menu">
+					{% for n in n %}
+						<div  class="item ui grid">
+							<a href="" style="color: inherit;" id={{ n.my_subtag.subtag }} onclick="tags_based(id);" class="fourteen wide column">
+							{{ n.my_subtag.subtag }}</a>
+							<a href="" id={{ n.my_subtag.subtag }} style="color: inherit;" onclick="removeTag(id);" class="two wide column">
+								<i class="close icon"></i>
+							</a>
+						</div>
+					{% endfor %}
+				</div>
+			{% endif %}
+
+			{% if Tag.my_tag == 'Technology-and-Education' %}
+				<div class="menu">
+					{% for o in o %}
+						<div  class="item ui grid">
+							<a href="" style="color: inherit;" id={{ o.my_subtag.subtag }} onclick="tags_based(id);" class="fourteen wide column">
+							{{ o.my_subtag.subtag }}</a>
+							<a href="" id={{ o.my_subtag.subtag }} style="color: inherit;" onclick="removeTag(id);" class="two wide column">
+								<i class="close icon"></i>
+							</a>
+						</div>
+					{% endfor %}
+				</div>
+			{% endif %}
+
+			{% if Tag.my_tag == 'Programmes' %}
+				<div class="menu">
+					{% for p in p %}
+						<div  class="item ui grid">
+							<a href="" style="color: inherit;" id={{ p.my_subtag.subtag }} onclick="tags_based(id);" class="fourteen wide column">
+							{{ p.my_subtag.subtag }}</a>
+							<a href="" id={{ p.my_subtag.subtag }} style="color: inherit;" onclick="removeTag(id);" class="two wide column">
+								<i class="close icon"></i>
+							</a>
+						</div>
+					{% endfor %}
+				</div>
+			{% endif %}
+
+			{% if Tag.my_tag == 'Others' %}
+				<div class="menu">
+					{% for q in q %}
+						<div  class="item ui grid">
+							<a href="" style="color: inherit;" id={{ q.my_subtag.subtag }} onclick="tags_based(id);" class="fourteen wide column">
+							{{ q.my_subtag.subtag }}</a>
+							<a href="" id={{ q.my_subtag.subtag }} style="color: inherit;" onclick="removeTag(id);" class="two wide column">
+								<i class="close icon"></i>
+							</a>
+						</div>
+					{% endfor %}
+				</div>
+			{% endif %}
+
+			{% if Tag.my_tag == 'Others' %}
+				<div class="menu">
+					{% for r in r %}
+						<div  class="item ui grid">
+							<a href="" style="color: inherit;" id={{ r.my_subtag.subtag }} onclick="tags_based(id);" class="fourteen wide column">
+							{{ r.my_subtag.subtag }}</a>
+							<a href="" id={{ r.my_subtag.subtag }} style="color: inherit;" onclick="removeTag(id);" class="two wide column">
+								<i class="close icon"></i>
+							</a>
+						</div>
+					{% endfor %}
+				</div>
+			{% endif %}
+			</div>
+		{% endfor %}
+	</div>
+
+	<div>
+		<b>Note : </b> You can add your favourite tags for fast shortlisting.
+	</div>
 </div>
-
-{% block javascript %}
-
-<!-- Tags based question -->
-<script type="text/javascript">
-	function tags_based(id){
-		console.log('first');
-		$("a.active item").removeClass('active');
-		// $(this).addClass('active');
-		// var id = $(this).attr('id');
-		console.log(id);
-		if(id == 'Top-Stories'){
-			location.href = '/feeds/';
-		}
-		else{
-			console.log('script');
-			location.href = '/feeds/' + id + '/';
-		}
-		return false;
-	}
-	
-</script>
-
-<!-- Remove Tag -- >
-<script type="text/javascript">
-	function removeTag(id){
-		console.log('Remove Tag');
-		$.ajax({
-			type: 'POST',
-			url: 'feeds/remove_tag',
-			data:{
-				id: id,
-				'csrfmiddlewaretoken': '{{ csrf_token }}'
-			},
-			success: function(response){
-
-			}
-		});
-	}
-</script>
-
-{% endblock javascript %}

@@ -12,6 +12,12 @@
 <div class="ten wide column" style="padding: 0 50px;">
     {% include 'feeds/pagination.html' %}
 
+    {% if not questions %}
+        <div class="ui clearing segment red center aligned" style="margin-bottom: 30px;">
+            Sorry!! No question available for this tag Try another tag
+        </div>
+    {% endif %}
+
     {% for question in questions %}
     
     <div class="ui clearing segment blue" style="margin-bottom: 30px;">
@@ -24,11 +30,11 @@
             </div>
 
             <div class="thirteen wide column no-padding no-margin">
-                <a href="" style="color: rgba(0,0,0,.6); font-size: 12px;">
-                |{% for result in question.ques.select_tag.all %}
-                        {{ result }} |
-                    {% endfor %}
-                </a>
+                {% for result in question.ques.select_tag.all %}
+                    <a href="{%url 'feeds:tag_based_view' result.subtag%}" style="color: rgba(0,0,0,.6); font-size: 12px;">
+                        {{ result }}
+                    </a>
+                {% endfor %}
             </div>
 
             <div class="one wide column no-padding no-margin">
