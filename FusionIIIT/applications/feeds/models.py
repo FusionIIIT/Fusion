@@ -27,6 +27,7 @@ class Constants:
 		('Technology-and-Education', 'Technology and Education'),       
 		('Programmes', 'Programmes'),
 		('Others', 'Others'),
+		('Design', 'Design'),
 	)
 
 	SUBTAG_LIST = (
@@ -273,8 +274,8 @@ class tags(models.Model):
 	my_tag = models.CharField(max_length=100, default=1, choices=Constants.TAG_LIST)
 	my_subtag = models.ForeignKey(AllTags, default=1, on_delete = models.CASCADE)
 
-	# class Meta:
-	# 	unique_together = ('user', 'my_subtag')
+	class Meta:
+		unique_together = ('user', 'my_subtag')
 
 	def __str__(self):
 		return '%s is interested in ----> %s - %s' % (self.user, self.my_tag, self.my_subtag.subtag)

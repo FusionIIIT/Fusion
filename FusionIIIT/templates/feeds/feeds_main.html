@@ -182,4 +182,46 @@
 			$(".paginationparent").css({"paddingLeft": ($(".paginationparent").width()- $("#pagination").width())/2})
 		})
 	</script>
-{% endblock %}
+
+
+	<!-- Tags based question -->
+	<script type="text/javascript">
+		function tags_based(id){
+			console.log('first');
+			$("a.active item").removeClass('active');
+			// $(this).addClass('active');
+			// var id = $(this).attr('id');
+			console.log(id);
+			if(id == 'Top-Stories'){
+				location.href = '/feeds/';
+			}
+			else{
+				console.log('script');
+				document.location.href = '/feeds/' + id + '/';
+			}
+			return false;
+		}
+
+		function removeTag(id){
+			console.log('Remove Tag');
+			$.ajax({
+				type: 'POST',
+				url: '/feeds/remove_tag/',
+				data:{
+					id: id,
+					'csrfmiddlewaretoken': '{{ csrf_token }}'
+				},
+				success: function(response){
+					$(`#${id}`).parent().hide();
+					if(response.done==1){
+						alert("tag removed successfully")
+					}else{
+						alert("Sorry tag not removed")
+					}
+				}
+			});
+			return false;
+		}
+	</script>
+
+{% endblock javascript %}

@@ -58,21 +58,21 @@ def feeds(request):
             a = []
             fav_tag = fav_tag[4:]
             a= [int(c) for c in fav_tag.split(",")]                             # listing queery objects
-
+            print(a)
             for i in range(0, len(a)):                       
-                new = tags.objects.create()
-                new.user = request.user
-                new.my_tag = AllTags.objects.values_list('tag').get(pk=a[i])
-                new.my_subtag = AllTags.objects.get(pk=a[i])
+                temp = AllTags.objects.get(pk=a[i])
+                new = tags.objects.create(user=request.user,my_subtag=temp)
+                new.my_tag = temp.tag
+                print(AllTags.objects.get(pk=a[i]))
                 new.save()
 
     all_tags = AllTags.objects.values('tag').distinct()
     askqus_subtags = AllTags.objects.all()
 
-    user_tags = tags.objects.filter(Q(user__username=request.user.username))
-    u_tags = user_tags.values_list('my_subtag')
+    user_tags = tags.objects.values("my_tag").distinct().filter(Q(user__username=request.user.username))
+    u_tags = tags.objects.all().filter(Q(user__username=request.user.username))
     a_tags = tags.objects.values('my_subtag').filter(Q(user__username=request.user.username))
-
+    # print(tags.objects.all().filter(Q(my_tag__icontains='CSE')))
     ques = []
     for q in query:
         isliked = 0
@@ -96,23 +96,30 @@ def feeds(request):
 
     context ={
         'form_answer': AnswerForm(),
-        'my_tags': all_tags,
+        'Tags': user_tags,
         'questions': ques,
         'username': request.user.username,
         'subtags': askqus_subtags,
         'add_tag_list' : add_tag_list,
 
-        'a': user_tags.filter(Q(my_tag__icontains='CSE')),
-        'b' : user_tags.filter(Q(my_tag__icontains='ECE')),
-        'c' : user_tags.filter(Q(my_tag__icontains='Mechanical')),
-        'd' : user_tags.filter(Q(my_tag__icontains='Design')),
-        'e' : user_tags.filter(Q(my_tag__icontains='Business-and-Career')),
-        'f' : user_tags.filter(Q(my_tag__icontains='Entertainment')),
-        'g' : user_tags.filter(Q(my_tag__icontains='Jabalpur-city')),
-        'h' : user_tags.filter(Q(my_tag__icontains='IIITDMJ-Rules-and-Regulations')),
-        'i' : user_tags.filter(Q(my_tag__icontains='Life-Relationship-and-Self')),
-        'j' : user_tags.filter(Q(my_tag__icontains='IIITDMJ-Campus')),
-        'k' : user_tags.filter(Q(my_tag__icontains='Programmes')),
+        'a': u_tags.filter(Q(my_tag__icontains='CSE')),
+        'b' : u_tags.filter(Q(my_tag__icontains='ECE')),
+        'c' : u_tags.filter(Q(my_tag__icontains='Mechanical')),
+        'd' : u_tags.filter(Q(my_tag__icontains='Technical-Clubs')),
+        'e' : u_tags.filter(Q(my_tag__icontains='Cultural-Clubs')),
+        'f' : u_tags.filter(Q(my_tag__icontains='Sports-Clubs')),
+        'g' : u_tags.filter(Q(my_tag__icontains='Business-and-Career')),
+        'h' : u_tags.filter(Q(my_tag__icontains='Entertainment')),
+        'i' : u_tags.filter(Q(my_tag__icontains='IIITDMJ-Campus')),
+        'j' : u_tags.filter(Q(my_tag__icontains='Jabalpur-city')),
+        'k' : u_tags.filter(Q(my_tag__icontains='IIITDMJ-Rules-and-Regulations')),
+        'l' : u_tags.filter(Q(my_tag__icontains='Academics')),
+        'm' : u_tags.filter(Q(my_tag__icontains='IIITDMJ')),
+        'n' : u_tags.filter(Q(my_tag__icontains='Life-Relationship-and-Self')),
+        'o' : u_tags.filter(Q(my_tag__icontains='Technology-and-Education')),
+        'p' : u_tags.filter(Q(my_tag__icontains='Programmes')),
+        'q' : u_tags.filter(Q(my_tag__icontains='Others')),
+        'r' : u_tags.filter(Q(my_tag__icontains='Design')),
     }
     return render(request, 'feeds/feeds_main.html', context)
 
@@ -258,62 +265,73 @@ def TagsBasedView(request, string):
     print('Tag based View')
     questions = AskaQuestion.objects.all()
     result = questions.filter(Q(select_tag__subtag__icontains=string))
-    user_tags = tags.objects.filter(Q(user__username=request.user.username))
+    
+    user_tags = tags.objects.values("my_tag").distinct().filter(Q(user__username=request.user.username))
+    u_tags = tags.objects.all().filter(Q(user__username=request.user.username))
     a_tags = tags.objects.values('my_subtag').filter(Q(user__username=request.user.username))
-    all_tags_list = AllTags.objects.all()
-    all_tags_list = all_tags_list.exclude(pk__in=a_tags)
-    all_tags = AllTags.objects.values('tag').distinct()
+    
+    add_tag_list = AllTags.objects.all()
+    add_tag_list = add_tag_list.exclude(pk__in=a_tags)
 
+    askqus_subtags = AllTags.objects.all()
+    ques = []
+    for q in result:
+        isliked = 0
+        isdisliked = 0
+        profi = Profile.objects.all().filter(user=q.user)
+        if(q.likes.all().filter(username=request.user.username).count()==1):
+            isliked = 1
+        if(q.dislikes.all().filter(username=request.user.username).count()==1):
+            isdisliked = 1
+        temp = {
+            'profile':profi,
+            'ques' : q,
+            'isliked':isliked,
+            'disliked': isdisliked,
+            'votes':q.total_likes() - q.total_dislikes(),
+        }
+        ques.append(temp)
+    
     context = {
         'form_answer': AnswerForm(),
-        'questions': result,
-        'my_tags': all_tags,
-        'all_tags_list': all_tags_list,
+        'Tags': user_tags,
+        'questions': ques,
+        'username': request.user.username,
+        'subtags': askqus_subtags,
+        'add_tag_list' : add_tag_list,
 
-        'a': user_tags.filter(Q(my_tag__icontains='CSE')),
-        'b' : user_tags.filter(Q(my_tag__icontains='ECE')),
-        'c' : user_tags.filter(Q(my_tag__icontains='Mechanical')),
-        'd' : user_tags.filter(Q(my_tag__icontains='Design')),
-        'e' : user_tags.filter(Q(my_tag__icontains='Business-and-Career')),
-        'f' : user_tags.filter(Q(my_tag__icontains='Entertainment')),
-        'g' : user_tags.filter(Q(my_tag__icontains='Jabalpur-city')),
-        'h' : user_tags.filter(Q(my_tag__icontains='IIITDMJ-Rules-and-Regulations')),
-        'i' : user_tags.filter(Q(my_tag__icontains='Life-Relationship-and-Self')),
-        'j' : user_tags.filter(Q(my_tag__icontains='IIITDMJ-Campus')),
-        'k' : user_tags.filter(Q(my_tag__icontains='Programmes')),
+        'a':   u_tags.filter(Q(my_tag__icontains='CSE')),
+        'b' :   u_tags.filter(Q(my_tag__icontains='ECE')),
+        'c' :   u_tags.filter(Q(my_tag__icontains='Mechanical')),
+        'd' :   u_tags.filter(Q(my_tag__icontains='Technical-Clubs')),
+        'e' :   u_tags.filter(Q(my_tag__icontains='Cultural-Clubs')),
+        'f' :   u_tags.filter(Q(my_tag__icontains='Sports-Clubs')),
+        'g' :   u_tags.filter(Q(my_tag__icontains='Business-and-Career')),
+        'h' :   u_tags.filter(Q(my_tag__icontains='Entertainment')),
+        'i' :   u_tags.filter(Q(my_tag__icontains='IIITDMJ-Campus')),
+        'j' :   u_tags.filter(Q(my_tag__icontains='Jabalpur-city')),
+        'k' :   u_tags.filter(Q(my_tag__icontains='IIITDMJ-Rules-and-Regulations')),
+        'l' :   u_tags.filter(Q(my_tag__icontains='Academics')),
+        'm' :   u_tags.filter(Q(my_tag__icontains='IIITDMJ')),
+        'n' :   u_tags.filter(Q(my_tag__icontains='Life-Relationship-and-Self')),
+        'o' :   u_tags.filter(Q(my_tag__icontains='Technology-and-Education')),
+        'p' :   u_tags.filter(Q(my_tag__icontains='Programmes')),
+        'q' :   u_tags.filter(Q(my_tag__icontains='Others')),
+        'r' :   u_tags.filter(Q(my_tag__icontains='Design')),
     }
 
     return render(request, 'feeds/feeds_main.html', context)
 
 def RemoveTag(request):
-    questions = AskaQuestion.objects.all()
-    user_tags = tags.objects.filter(Q(user__username=request.user.username))
-    user_tags.filter(Q(my_subtag__subtag__icontains=request.POST.get('id'))).delete()
-    a_tags = tags.objects.values('my_subtag').filter(Q(user__username=request.user.username))
-    all_tags_list = AllTags.objects.ALL()
-    all_tags_list= all_tags_list.exclude(pk__in=a_tags)
-    all_tags = AllTags.objects.values('tag').distinct()
-
-    context = {
-        'form_answer': AnswerForm(),
-        'questions': result,
-        'my_tags': all_tags,
-        'all_tags_list': all_tags_list,
-
-        'a': user_tags.filter(Q(my_tag__icontains='CSE')),
-        'b' : user_tags.filter(Q(my_tag__icontains='ECE')),
-        'c' : user_tags.filter(Q(my_tag__icontains='Mechanical')),
-        'd' : user_tags.filter(Q(my_tag__icontains='Design')),
-        'e' : user_tags.filter(Q(my_tag__icontains='Business-and-Career')),
-        'f' : user_tags.filter(Q(my_tag__icontains='Entertainment')),
-        'g' : user_tags.filter(Q(my_tag__icontains='Jabalpur-city')),
-        'h' : user_tags.filter(Q(my_tag__icontains='IIITDMJ-Rules-and-Regulations')),
-        'i' : user_tags.filter(Q(my_tag__icontains='Life-Relationship-and-Self')),
-        'j' : user_tags.filter(Q(my_tag__icontains='IIITDMJ-Campus')),
-        'k' : user_tags.filter(Q(my_tag__icontains='Programmes')),
-    }
-
-    return render(request, 'feeds/feeds_main.html', context)
+    if request.method == 'POST':
+        print(request.POST.get('id'))
+        userTags = tags.objects.all().filter(Q(user=request.user))
+        tagto_delete = AllTags.objects.all().filter(Q(subtag=request.POST.get('id')))
+        userTags.filter(Q(my_subtag=tagto_delete)).delete()
+        return JsonResponse({"done":"1"})
+    else:
+        return JsonResponse({"done":"0"})
+        
 
 def ParticularQuestion(request, id):
     result = AskaQuestion.objects.get(id=id)
@@ -322,6 +340,7 @@ def ParticularQuestion(request, id):
     all_tags_list = AllTags.objects.all()
     all_tags_list= all_tags_list.exclude(pk__in=a_tags)
     all_tags = AllTags.objects.values('tag').distinct()
+    u_tags = tags.objects.all().filter(Q(user__username=request.user.username))
     askqus_subtags = AllTags.objects.all()
     profile = Profile.objects.all().filter(user=result.user)
     isliked = 0
@@ -348,21 +367,28 @@ def ParticularQuestion(request, id):
                     'form_answer': AnswerForm(),
                     'instance': instance,        
                     'question': result,
-                    'my_tags': all_tags,
+                    'Tags': user_tags,
                     'subtags': askqus_subtags,
                     'all_tags_list': all_tags_list,
                     'profile' : profile,
-                    'a': user_tags.filter(Q(my_tag__icontains='CSE')),
-                    'b' : user_tags.filter(Q(my_tag__icontains='ECE')),
-                    'c' : user_tags.filter(Q(my_tag__icontains='Mechanical')),
-                    'd' : user_tags.filter(Q(my_tag__icontains='Design')),
-                    'e' : user_tags.filter(Q(my_tag__icontains='Business-and-Career')),
-                    'f' : user_tags.filter(Q(my_tag__icontains='Entertainment')),
-                    'g' : user_tags.filter(Q(my_tag__icontains='Jabalpur-city')),
-                    'h' : user_tags.filter(Q(my_tag__icontains='IIITDMJ-Rules-and-Regulations')),
-                    'i' : user_tags.filter(Q(my_tag__icontains='Life-Relationship-and-Self')),
-                    'j' : user_tags.filter(Q(my_tag__icontains='IIITDMJ-Campus')),
-                    'k' : user_tags.filter(Q(my_tag__icontains='Programmes')),
+                    'a':   u_tags.filter(Q(my_tag__icontains='CSE')),
+                    'b' :   u_tags.filter(Q(my_tag__icontains='ECE')),
+                    'c' :   u_tags.filter(Q(my_tag__icontains='Mechanical')),
+                    'd' :   u_tags.filter(Q(my_tag__icontains='Technical-Clubs')),
+                    'e' :   u_tags.filter(Q(my_tag__icontains='Cultural-Clubs')),
+                    'f' :   u_tags.filter(Q(my_tag__icontains='Sports-Clubs')),
+                    'g' :   u_tags.filter(Q(my_tag__icontains='Business-and-Career')),
+                    'h' :   u_tags.filter(Q(my_tag__icontains='Entertainment')),
+                    'i' :   u_tags.filter(Q(my_tag__icontains='IIITDMJ-Campus')),
+                    'j' :   u_tags.filter(Q(my_tag__icontains='Jabalpur-city')),
+                    'k' :   u_tags.filter(Q(my_tag__icontains='IIITDMJ-Rules-and-Regulations')),
+                    'l' :   u_tags.filter(Q(my_tag__icontains='Academics')),
+                    'm' :   u_tags.filter(Q(my_tag__icontains='IIITDMJ')),
+                    'n' :   u_tags.filter(Q(my_tag__icontains='Life-Relationship-and-Self')),
+                    'o' :   u_tags.filter(Q(my_tag__icontains='Technology-and-Education')),
+                    'p' :   u_tags.filter(Q(my_tag__icontains='Programmes')),
+                    'q' :   u_tags.filter(Q(my_tag__icontains='Others')),
+                    'r' :   u_tags.filter(Q(my_tag__icontains='Design')),
                 }
 
                 return render(request, 'feeds/single_question.html', context)
@@ -379,21 +405,28 @@ def ParticularQuestion(request, id):
         'question': result,
         'form_answer': form,
         'question': result,
-        'my_tags': all_tags,
+        'Tags': user_tags,
         'all_tags_list': all_tags_list,
         'profile' : profile,
         'subtags': askqus_subtags,
-        'a': user_tags.filter(Q(my_tag__icontains='CSE')),
-        'b' : user_tags.filter(Q(my_tag__icontains='ECE')),
-        'c' : user_tags.filter(Q(my_tag__icontains='Mechanical')),
-        'd' : user_tags.filter(Q(my_tag__icontains='Design')),
-        'e' : user_tags.filter(Q(my_tag__icontains='Business-and-Career')),
-        'f' : user_tags.filter(Q(my_tag__icontains='Entertainment')),
-        'g' : user_tags.filter(Q(my_tag__icontains='Jabalpur-city')),
-        'h' : user_tags.filter(Q(my_tag__icontains='IIITDMJ-Rules-and-Regulations')),
-        'i' : user_tags.filter(Q(my_tag__icontains='Life-Relationship-and-Self')),
-        'j' : user_tags.filter(Q(my_tag__icontains='IIITDMJ-Campus')),
-        'k' : user_tags.filter(Q(my_tag__icontains='Programmes')),
+        'a':   u_tags.filter(Q(my_tag__icontains='CSE')),
+        'b' :   u_tags.filter(Q(my_tag__icontains='ECE')),
+        'c' :   u_tags.filter(Q(my_tag__icontains='Mechanical')),
+        'd' :   u_tags.filter(Q(my_tag__icontains='Technical-Clubs')),
+        'e' :   u_tags.filter(Q(my_tag__icontains='Cultural-Clubs')),
+        'f' :   u_tags.filter(Q(my_tag__icontains='Sports-Clubs')),
+        'g' :   u_tags.filter(Q(my_tag__icontains='Business-and-Career')),
+        'h' :   u_tags.filter(Q(my_tag__icontains='Entertainment')),
+        'i' :   u_tags.filter(Q(my_tag__icontains='IIITDMJ-Campus')),
+        'j' :   u_tags.filter(Q(my_tag__icontains='Jabalpur-city')),
+        'k' :   u_tags.filter(Q(my_tag__icontains='IIITDMJ-Rules-and-Regulations')),
+        'l' :   u_tags.filter(Q(my_tag__icontains='Academics')),
+        'm' :   u_tags.filter(Q(my_tag__icontains='IIITDMJ')),
+        'n' :   u_tags.filter(Q(my_tag__icontains='Life-Relationship-and-Self')),
+        'o' :   u_tags.filter(Q(my_tag__icontains='Technology-and-Education')),
+        'p' :   u_tags.filter(Q(my_tag__icontains='Programmes')),
+        'q' :   u_tags.filter(Q(my_tag__icontains='Others')),
+        'r' :   u_tags.filter(Q(my_tag__icontains='Design')),
     }
 
     return render(request, 'feeds/single_question.html', context)
