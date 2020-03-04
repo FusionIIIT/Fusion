@@ -14,12 +14,22 @@ from .models import (AllTags, AnsweraQuestion, AskaQuestion, Comments, Reply,
                      hidden, report, tags, Profile)
 from applications.globals.models import ExtraInfo
 from django.contrib.auth.models import User
-
-
+from django.core.paginator import Paginator
+import math
+PAGE_SIZE = 2
 # Create your views here.
 @login_required
 def feeds(request):
     query = AskaQuestion.objects.order_by('-uploaded_at')
+    paginator = Paginator(query, PAGE_SIZE) # Show 25 contacts per page.
+    total_page = math.ceil(query.count()/2)
+    if request.GET.get("page_number") :
+        current_page = int(request.GET.get("page_number"))
+    else:
+        current_page = 1    
+    previous_page = current_page - 1
+    next_page = current_page + 1
+    # query = paginator.page(current_page)
 
     if request.method == 'POST':
 
@@ -51,6 +61,7 @@ def feeds(request):
             questions = AskaQuestion.objects.all()
             result = questions.filter(Q(subject__icontains=q) | Q(description__icontains=q)).order_by('-uploaded_at')
             query = result
+            paginator = Paginator(query, PAGE_SIZE)
 
         # adding user's favourite tags
         if request.POST.get("add_tag"):
@@ -74,6 +85,7 @@ def feeds(request):
     a_tags = tags.objects.values('my_subtag').filter(Q(user__username=request.user.username))
     # print(tags.objects.all().filter(Q(my_tag__icontains='CSE')))
     ques = []
+    query = paginator.page(current_page)
     for q in query:
         isliked = 0
         isdisliked = 0
@@ -101,7 +113,12 @@ def feeds(request):
         'username': request.user.username,
         'subtags': askqus_subtags,
         'add_tag_list' : add_tag_list,
-
+        'pages' : {
+            'current_page' : current_page,
+            'total_page' : total_page,
+            'previous_page' : previous_page,
+            'next_page' : next_page,
+        },
         'a': u_tags.filter(Q(my_tag__icontains='CSE')),
         'b' : u_tags.filter(Q(my_tag__icontains='ECE')),
         'c' : u_tags.filter(Q(my_tag__icontains='Mechanical')),
@@ -263,8 +280,19 @@ def update_post(request, id):
 
 def TagsBasedView(request, string):
     print('Tag based View')
-    questions = AskaQuestion.objects.all()
+    questions = AskaQuestion.objects.order_by('-uploaded_at')
+    
     result = questions.filter(Q(select_tag__subtag__icontains=string))
+    
+    paginator = Paginator(result, 2) # Show 25 contacts per page.
+    total_page = math.ceil(result.count()/2)
+    if request.GET.get("page_number") :
+        current_page = int(request.GET.get("page_number"))
+    else:
+        current_page = 1    
+    previous_page = current_page - 1
+    next_page = current_page + 1
+    # result = paginator.page(current_page)
     
     user_tags = tags.objects.values("my_tag").distinct().filter(Q(user__username=request.user.username))
     u_tags = tags.objects.all().filter(Q(user__username=request.user.username))
@@ -275,6 +303,7 @@ def TagsBasedView(request, string):
 
     askqus_subtags = AllTags.objects.all()
     ques = []
+    result = paginator.page(current_page)
     for q in result:
         isliked = 0
         isdisliked = 0
@@ -299,6 +328,12 @@ def TagsBasedView(request, string):
         'username': request.user.username,
         'subtags': askqus_subtags,
         'add_tag_list' : add_tag_list,
+        'pages' : {
+            'current_page' : current_page,
+            'total_page' : total_page,
+            'previous_page' : previous_page,
+            'next_page' : next_page,
+            },
 
         'a':   u_tags.filter(Q(my_tag__icontains='CSE')),
         'b' :   u_tags.filter(Q(my_tag__icontains='ECE')),
@@ -335,7 +370,6 @@ def RemoveTag(request):
 
 def ParticularQuestion(request, id):
     result = AskaQuestion.objects.get(id=id)
-    user_tags = tags.objects.filter(Q(user__username=request.user.username))
     a_tags = tags.objects.values('my_subtag').filter(Q(user__username=request.user.username))
     all_tags_list = AllTags.objects.all()
     all_tags_list= all_tags_list.exclude(pk__in=a_tags)
@@ -345,6 +379,7 @@ def ParticularQuestion(request, id):
     profile = Profile.objects.all().filter(user=result.user)
     isliked = 0
     isdisliked = 0
+    user_tags = tags.objects.values("my_tag").distinct().filter(Q(user__username=request.user.username))
     if(result.likes.all().filter(username=request.user.username).count()==1):
             isliked = 1
     if(result.dislikes.all().filter(username=request.user.username).count()==1):
@@ -510,3 +545,20 @@ def downvoteQuestion(request,id):
         return JsonResponse({'done': "1",'votes':question.total_likes() - question.total_dislikes(),})
     else:
         return JsonResponse({"done":"0",'votes':question.total_likes() - question.total_dislikes(),})
+
+def get_page_info(current_page, query):
+    paginator = Paginator(query, PAGE_SIZE) # Show 25 contacts per page.
+    total_page = math.ceil(query.count()/2)
+    if request.GET.get("page_number") :
+        current_page = int(request.GET.get("page_number"))
+    else:
+        current_page = 1    
+    previous_page = current_page - 1
+    next_page = current_page + 1
+    query = paginator.page(current_page)
+    return {
+            'current_page' : current_page,
+            'total_page' : total_page,
+            'previous_page' : previous_page,
+            'next_page' : next_page,
+        }

@@ -47,11 +47,11 @@
             </div>
 
             <div class="thirteen wide column no-padding no-margin">
-                <a href="" style="color: rgba(0,0,0,.6); font-size: 12px;">
-                |{% for result in question.select_tag.all %}
-                        {{ result }} |
-                    {% endfor %}
-                </a>
+                {% for result in question.select_tag.all %}
+                    <a href="{%url 'feeds:tag_based_view' result.subtag%}" style="color: rgba(0,0,0,.6); font-size: 12px;">
+                        {{ result }}
+                    </a>
+                {% endfor %}
             </div>
 
             <div class="one wide column no-padding no-margin">
