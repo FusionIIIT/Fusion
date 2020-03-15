@@ -191,22 +191,22 @@ PROJECT_DIR = os.path.abspath(os.path.dirname(__file__))
 
 # Database template for postgres
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'fusionlab',
-        'HOST': '172.27.16.216',
-        'USER': 'fusion_admin',
-        'PASSWORD': 'hello123',
-    }
-}
-
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(PROJECT_DIR, 'fusion.db'),
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': 'fusionlab',
+#         'HOST': '172.27.16.216',
+#         'USER': 'fusion_admin',
+#         'PASSWORD': 'hello123',
 #     }
 # }
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(PROJECT_DIR, 'fusion.db'),
+    }
+}
 
 
 # Password validation
