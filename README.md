@@ -111,6 +111,7 @@ Since Fusion is connected to the institute database, there may be problems when 
     ```
 - Grant user `admin` permissions: `GRANT ALL PRIVILEGES ON DATABASE fusion TO admin;`
 - Exit the SQL prompt: `\q`
+- Import the fusion database: `pgloader FusionIIIT/Fusion/pgmigrate.load`
 - Change [settings.py](./FusionIIIT/Fusion/settings.py) to access local database. Add the following codeblock to the file and comment out the existing `DATABASES` configuration.
     ```
     DATABASES = {
