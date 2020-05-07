@@ -97,6 +97,8 @@
     (<https://gist.github.com/robertpainsi/b632364184e70900af4ab688decf6f53>)
 
 ## Setup local PostgreSQL Server
+**Note**: It doesn't work 😕.
+
 Since Fusion is connected to the institute database, there may be problems when your localhost server isn't able to connect to it (eg, when you are working remotely). Here are the steps to create a local PostgreSQL database server on Linux.
 - Install PostgreSQL: `sudo apt-get install postgresql postgresql-contrib`
 - Install some dependencies for PostgreSQL to work with Python: `sudo apt-get install libpq-dev python3-dev`
