@@ -246,8 +246,7 @@ def upload_assignment(request, course_code):
             subprocess.call(cmd, shell=True)
         fs = FileSystemStorage(full_path, url)
         fs.save(name + file_extenstion, doc)  #saving the media files
-        uploaded_file_url = "/media/online_cms/" + course_code + "/assi/" + assign.assignment_name
-        uploaded_file_url = uploaded_file_url + "/" + student.id.id + "/" + name + file_extenstion
+        uploaded_file_url = full_path+ "/" + name + file_extenstion
         # to save the solution of assignment the database
         sa = StudentAssignment(
          student_id=student,
