@@ -28,7 +28,7 @@ class Doctor(models.Model):
 
 class Complaint(models.Model):
     user_id = models.ForeignKey(ExtraInfo,on_delete=models.CASCADE)
-    feedback = models.CharField(max_length=100, null=True, blank=False)                          #This is the feedback given by the compounder
+    feedback = models.CharField(max_length=100, null=True, blank=False)                          #This is the feedback given by compounder
     complaint = models.CharField(max_length=100, null=True, blank=False)                         #Here Complaint given by user cannot be NULL!
     date = models.DateField(auto_now=True)
 
