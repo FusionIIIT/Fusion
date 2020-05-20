@@ -61,7 +61,7 @@
                                     </div>
                                 </div>
                                 {% comment %} <img style="padding:20px; border:0 solid red;" src="https://www.semantic-ui.com/images/avatar/large/elliot.jpg"> {% endcomment %}
-                                <img style="padding:20px; border:0 solid red; height:{{profile.profile_picture.width}};" src="{{profile.profile_picture.url}}">
+                                <img style="padding:20px; border:0 solid red; min-height:200px; height:{{profile.profile_picture.width}};" src="{{profile.profile_picture.url}}">
                                 <div style="margin:-20px auto 0 auto;" class="center aligned"><h5 class="ui header">{{profile.user.username}}</h5></div>
                             </div>
                             <div class="content center aligned">
@@ -84,7 +84,7 @@
                             <div class="column">
                                 <h3 class="ui header">Bio</h3>
                                 <div class="bio description">
-                                    {{profile.bio}}
+                                    {% if profile == "" %}<b>Bio not available Go to Edit profile </b> {% else %}{{profile.bio}} {% endif %}
                                 </div>
                             </div>
                             <div class="middle aligned column">
@@ -202,40 +202,37 @@
                 {% comment %} Activity end {% endcomment %}
 
 
-                <div class="ui tab segment" data-tab="editProfile">
+                <div class="ui tab segment centered" data-tab="editProfile">
 
-                    <form class="ui center floated form">
-                    
-                        {% comment %} <div class="ui form">
-                            <div class="field">
-                                <label>Upload Profile Picture
-                                <div class="ui left labeled button" tabindex="0">
-                                    <a class="ui basic right pointing label">
-                                        2,048
-                                    </a>
-                                    <div class="ui button">
-                                        <i class="heart icon"></i> Like
-                                    </div>
-                                </div>
-                                <input type="file"/></label>
+                    <form method="POST" action="" class="ui center floated form" enctype='multipart/form-data' >
+                    {% csrf_token %}
+                        <div>
+                            <label>Choose Your Profile Pic</label>
+                        </div>
+                        <div class="ui action input">
+                            <input type="text" placeholder="File 2" readonly>
+                            <input type="file" name="profile_img">
+                            <div class="ui icon button">
+                                <i class="attach icon"></i>
                             </div>
-                        </div> {% endcomment %}
-<div class="ui action input">
-  <input type="text" placeholder="File 2" readonly>
-  <input type="file">
-  <div class="ui icon button">
-    <i class="attach icon"></i>
-  </div>
-</div>
+                        </div>
 
-                        
                         <div class="ui form">
                             <div class="field">
                                 <label>Bio</label>
-                                <textarea></textarea>
+                                <textarea name="bio"></textarea>
                             </div>
                         </div>
+
+                        <br>
+                        <div class="actions">
+                            <button type="submit" name="update" value="update_qus" class="ui submit positive button">
+                                Save
+                            </button><br>
+                            <div class="ui hidden divider"></div>
+                        </div>
                     </form>
+
                 </div>
             </div>
         </div>

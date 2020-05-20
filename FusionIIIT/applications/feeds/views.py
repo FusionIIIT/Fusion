@@ -9,7 +9,7 @@ from django.template.loader import render_to_string
 from django.conf import settings
 from django.core.files.storage import default_storage
 
-from .forms import AnswerForm
+from .forms import AnswerForm, ProfileForm
 from .models import (AllTags, AnsweraQuestion, AskaQuestion, Comments, Reply,
                      hidden, report, tags, Profile)
 from applications.globals.models import ExtraInfo
@@ -102,7 +102,6 @@ def feeds(request):
             'votes':q.total_likes() - q.total_dislikes(),
         }
         ques.append(temp)
-
     add_tag_list = AllTags.objects.all()
     add_tag_list = add_tag_list.exclude(pk__in=a_tags)
 
@@ -385,6 +384,10 @@ def ParticularQuestion(request, id):
     if(result.dislikes.all().filter(username=request.user.username).count()==1):
         isdisliked = 1
 
+    a_tags = tags.objects.values('my_subtag').filter(Q(user__username=request.user.username))
+    add_tag_list = AllTags.objects.all()
+    add_tag_list = add_tag_list.exclude(pk__in=a_tags)
+
     if request.method == 'POST':
         if request.POST.get("answer_button"):
             print('Particular Question')
@@ -404,7 +407,7 @@ def ParticularQuestion(request, id):
                     'question': result,
                     'Tags': user_tags,
                     'subtags': askqus_subtags,
-                    'all_tags_list': all_tags_list,
+                    'add_tag_list' : add_tag_list,
                     'profile' : profile,
                     'a':   u_tags.filter(Q(my_tag__icontains='CSE')),
                     'b' :   u_tags.filter(Q(my_tag__icontains='ECE')),
@@ -441,7 +444,7 @@ def ParticularQuestion(request, id):
         'form_answer': form,
         'question': result,
         'Tags': user_tags,
-        'all_tags_list': all_tags_list,
+        'add_tag_list' : add_tag_list,
         'profile' : profile,
         'subtags': askqus_subtags,
         'a':   u_tags.filter(Q(my_tag__icontains='CSE')),
@@ -467,7 +470,22 @@ def ParticularQuestion(request, id):
     return render(request, 'feeds/single_question.html', context)
 
 def profile(request, string):
+    if request.method == "POST":
+        profile = Profile.objects.all().filter(user=request.user)
+        Pr = None
+        if len(profile) == 0:
+            Pr = Profile(user = request.user)
+        else:
+            Pr = profile[0]
+        if request.POST.get("bio"):
+            Pr.bio = request.POST.get("bio")
+        if request.FILES:
+            if Pr.profile_picture :
+                default_storage.delete(settings.BASE_DIR+Pr.profile_picture.url)
+            Pr.profile_picture = request.FILES["profile_img"]
+        Pr.save()
     print("Profile Loading ......")
+
     usr = User.objects.get(username=string)
     profile = Profile.objects.all().filter(user=usr)
     ques = AskaQuestion.objects.all().filter(user=usr)
@@ -481,20 +499,34 @@ def profile(request, string):
             top_ques = q;
         for t in q.select_tag.all():
             tags.add(t)
+    prf = ""
+    ext = ""
+    no_img = True
+    if len(profile) == 0:
+        prf = ""
+    else:
+        prf = profile[0]
+        if os.path.exists(settings.BASE_DIR+prf.profile_picture.url):
+            no_img=False
+    
+    if len(extra) == 0:
+        ext = ""
+    else:
+        ext = extra[0]
     context = {
-        'profile': profile[0],
+        'profile': prf,
         # 'profile_image' : profile[0].profile_picture,
         'question_asked' : len(ques),
         'answer_given' : len(ans),
         'last_login' : usr.last_login,
-        'extra' : extra[0],
+        'extra' : ext,
         'tags' : tags,
         'top_ques' : ques,
         'top_ques_len' : len(ques),
         'top_ans' : ans,
-        'top_ans_len' : len(ans)
+        'top_ans_len' : len(ans),
+        'no_img' : no_img
     }
-    print(context)
     return render(request, 'feeds/profile.html',context)
 
 def printques(a):
@@ -572,7 +604,6 @@ def get_page_info(current_page, query):
     next_page = current_page + 1
     query = paginator.page(current_page)
     return {
-            'current_page' : current_page,
             'total_page' : total_page,
             'previous_page' : previous_page,
             'next_page' : next_page,

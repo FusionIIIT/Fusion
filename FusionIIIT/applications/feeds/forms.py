@@ -1,7 +1,7 @@
 from django import forms
 from pagedown.widgets import PagedownWidget
 
-from .models import AnsweraQuestion, AskaQuestion, Comments
+from .models import AnsweraQuestion, AskaQuestion, Comments, Profile
 
 
 class CommentForm(forms.ModelForm):
@@ -23,4 +23,14 @@ class QuestionForm(forms.ModelForm):
 		model = AskaQuestion
 		fields = [
 			'description',
+		]
+
+class ProfileForm(forms.ModelForm):
+	profile_picture = forms.ImageField()
+	bio = forms.CharField()
+	class Meta:
+		model = Profile
+		fields = [
+			'profile_picture',
+			"bio"
 		]
