@@ -21,7 +21,7 @@ django-pagedown==1.0.5
 django-semanticui-forms==1.6.5
 flake8==3.4.1
 html5lib==1.0b10
-httplib2==0.11.0
+httplib2==0.18.0
 hyperlink==18.0.0
 idna==2.6
 incremental==17.5.0
