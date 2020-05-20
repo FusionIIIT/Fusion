@@ -1,4 +1,13 @@
-{% extends 'globals/base.html' %} {% load static %} {% block title %} Course Management {% endblock %} {% block body %} {% block navBar %} {% include 'dashboard/navbar.html' %} {% endblock %} {% comment %}The grid starts here!{% endcomment %} {% comment %}The CSS starts here!{% endcomment %}
+{% extends 'globals/base.html' %} 
+{% load static %} 
+{% block title %} 
+    Course Management 
+{% endblock %} 
+{% block body %} 
+    {% block navBar %} 
+        {% include 'dashboard/navbar.html' %} 
+    {% endblock %} 
+    
 <style>
     #pdf_modal iframe {
         width: 100%;
@@ -164,61 +173,55 @@
     </div>
     {% comment %} The left-rail segment ends here! {% endcomment %} {% comment %} The central-rail segment starts here! {% endcomment %}
 
-    <div class="eight wide column">
         {% comment %}The view courses start here!{% endcomment %}
-        <div class="ui active tab segment" data-tab="first">
+        <!-- <div class="ui active tab segment" data-tab="quiz"> -->
 
             <div class="ui pointing secondary menu">
                 <a class="active item" data-tab="assignment">
-                 Assignment
-             </a>
-
+                    Assignment
+                </a>
                 <a class="item" data-tab="videos">
-                 Videos
-             </a>
+                    Videos
+                </a>
                 <a class="item" data-tab="slides">
-                 Slides
-             </a>
+                    Slides
+                </a>
                 <a class="item" data-tab="time-table">
-                 Time-Table/Quiz
-             </a>
+                    Time-Table/Quiz
+                </a>
                 <a class="item" data-tab="quiz">
-                 Quizzes
-             </a>
+                    Quizzes
+                </a>
             </div>
 
             {% comment %}The Basic Course details segment ends here!{% endcomment %} {% comment %}The Assignment segment starts here!{% endcomment %}
 
-            <div class="ui active tab" data-tab="assignment">
+            <div class="ui active tab segment" data-tab="assignment">
 
-                <p> </p>
-                <div class="ui form">
-
-                    <div class="grouped fields">
-                        <label for="fruit">1)   From the following which quality deals with maintaining the quality of the software product?</label>
-                        <div class="field">
-                            <div class="ui radio checkbox">
-                                <input type="radio" name="fruit" checked="" tabindex="0" class="hidden">
-                                <label>Apples</label>
-                            </div>
+                <div class="grouped fields">
+                    <label for="fruit">1)   From the following which quality deals with maintaining the quality of the software product?</label>
+                    <div class="field">
+                        <div class="ui radio checkbox">
+                            <input type="radio" name="fruit" checked="" tabindex="0" class="hidden">
+                            <label>Apples</label>
                         </div>
-                        <div class="field">
-                            <div class="ui radio checkbox">
-                                <input type="radio" name="fruit" tabindex="0" class="hidden">
-                                <label>Oranges</label>
-                            </div>
+                    </div>
+                    <div class="field">
+                        <div class="ui radio checkbox">
+                            <input type="radio" name="fruit" tabindex="0" class="hidden">
+                            <label>Oranges</label>
                         </div>
-                        <div class="field">
-                            <div class="ui radio checkbox">
-                                <input type="radio" name="fruit" tabindex="0" class="hidden">
-                                <label>Pears</label>
-                            </div>
+                    </div>
+                    <div class="field">
+                        <div class="ui radio checkbox">
+                            <input type="radio" name="fruit" tabindex="0" class="hidden">
+                            <label>Pears</label>
                         </div>
-                        <div class="field">
-                            <div class="ui radio checkbox">
-                                <input type="radio" name="fruit" tabindex="0" class="hidden">
-                                <label>Grapefruit</label>
-                            </div>
+                    </div>
+                    <div class="field">
+                        <div class="ui radio checkbox">
+                            <input type="radio" name="fruit" tabindex="0" class="hidden">
+                            <label>Grapefruit</label>
                         </div>
                     </div>
                 </div>
@@ -360,7 +363,7 @@
 
 
             {% comment %}The quiz segment ends here!{% endcomment %} {% comment %}The quiz segment ends here!{% endcomment %}
-        </div>
+        <!-- </div> -->
         {% comment %}The view courses end here!{% endcomment %} {% comment %}The submit assignment starts here!{% endcomment %}
 
         <div class="ui tab segment" data-tab="second">
@@ -384,7 +387,6 @@
             {% block addcontent %} {% include 'coursemanagement/addcontent.html' %} {% endblock %}
         </div>
         {% endcomment %} {% comment %}The add content ends here!{% endcomment %}
-    </div>
     <div class="three wide column">
         <div class="row">
 
