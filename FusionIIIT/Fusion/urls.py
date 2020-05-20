@@ -39,6 +39,7 @@ urlpatterns = [
     url(r'^finance/', include('applications.finance_accounts.urls')),
     url(r'^gymkhana/', include('applications.gymkhana.urls')),
     url(r'^library/', include('applications.library.urls')),
+    url(r'^establishment/', include('applications.establishment.urls')),
     url(r'^ocms/', include('applications.online_cms.urls')),
     url(r'^academic-procedures/', include('applications.academic_procedures.urls', namespace='procedures')),
     url(r'^aims/', include('applications.academic_information.urls')),
