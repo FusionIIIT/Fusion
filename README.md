@@ -96,38 +96,6 @@
 * Refer to below link for best practices regarding commit messages :  
     (<https://gist.github.com/robertpainsi/b632364184e70900af4ab688decf6f53>)
 
-## Setup local PostgreSQL Server
-**Note**: It doesn't work 😕.
-
-Since Fusion is connected to the institute database, there may be problems when your localhost server isn't able to connect to it (eg, when you are working remotely). Here are the steps to create a local PostgreSQL database server on Linux.
-- Install PostgreSQL: `sudo apt-get install postgresql postgresql-contrib`
-- Install some dependencies for PostgreSQL to work with Python: `sudo apt-get install libpq-dev python3-dev`
-- Install PostgreSQL database adapter for Python: `pip install psycopg2`
-- Enter admin console: `sudo -u postgres psql`
-- Create database: `CREATE DATABASE fusion;`
-- Create user: `CREATE USER admin WITH ENCRYPTED PASSWORD 'hello123';`
-- Modify connection parameters: 
-    ```
-    ALTER ROLE admin SET client_encoding TO 'utf8';
-    ALTER ROLE admin SET default_transaction_isolation TO 'read committed';
-    ```
-- Grant user `admin` permissions: `GRANT ALL PRIVILEGES ON DATABASE fusion TO admin;`
-- Exit the SQL prompt: `\q`
-- Import the fusion database: `pgloader FusionIIIT/Fusion/pgmigrate.load`
-- Change [settings.py](./FusionIIIT/Fusion/settings.py) to access local database. Add the following codeblock to the file and comment out the existing `DATABASES` configuration.
-    ```
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'fusion',
-            'HOST': 'localhost',
-            'USER': 'admin',
-            'PASSWORD': 'hello123',
-        }
-    }
-    ```
-- Test the new connection: `python manage.py makemigrations`
-
 ## Different modules included
 
 * Academic database management  
