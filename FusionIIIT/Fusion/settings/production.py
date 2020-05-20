@@ -4,7 +4,7 @@ DEBUG = True
 
 SECRET_KEY = os.environ['SECRET_KEY']
 
-ALLOWED_HOSTS = ['fusioniiit.azurewebsites.net', '127.0.0.1', 'localhost', '172.27.16.216']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '172.27.16.216']
 
 # password of sender
 EMAIL_HOST_PASSWORD = os.environ['MAIL_PASSWORD']
@@ -15,7 +15,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'fusion',
-        'HOST': '172.27.16.216',
+        'HOST': 'localhost',
         'USER': 'admin',
         'PASSWORD': os.environ['DBPASS'],
     }
