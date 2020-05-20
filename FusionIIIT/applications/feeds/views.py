@@ -546,6 +546,21 @@ def downvoteQuestion(request,id):
     else:
         return JsonResponse({"done":"0",'votes':question.total_likes() - question.total_dislikes(),})
 
+def update_answer(request):
+    try:
+        ques_id = request.POST.get("ques_id")
+        answer_id = request.POST.get("answer_id")
+        question = AskaQuestion.objects.get(pk=ques_id)
+        answer = AnsweraQuestion.objects.get(pk=answer_id)
+        new_answer = request.POST.get("comment_box")
+        answer.content = new_answer
+        answer.save()
+        if request.is_ajax():
+            return JsonResponse({'success': 1})
+    except:
+        if request.is_ajax():
+            return JsonResponse({'sucess': 0})
+
 def get_page_info(current_page, query):
     paginator = Paginator(query, PAGE_SIZE) # Show 25 contacts per page.
     total_page = math.ceil(query.count()/2)

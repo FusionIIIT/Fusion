@@ -239,6 +239,40 @@
 		});
 	 </script>
 
+	 <script>
+	 	const edit_answer =(id)=>{
+			console.log("edit answer"+id)
+			$('#edit_answer_modal'+id)
+			.modal('show');
+		}
+		
+	 	$(document).on('submit','.edit_answer_form', function(event){
+		event.preventDefault();
+		console.log("updating answer on post")
+		var pk = $(this).attr('id');
+		var string = $('#edit_id_content'+pk).val();
+		ids = pk.split("-");
+
+		$.ajax({
+			type: 'POST',
+			url: '/feeds/update_answer/',
+			data: {
+				ques_id: ids[0],
+				answer_id: ids[1],
+				comment_box: string,
+				'csrfmiddlewaretoken': '{{csrf_token}}',
+			},
+			success:function(result){
+				console.log("yup");
+				$('#answer'+pk).text(string)
+				$('#edit_answer_modal'+pk)
+				.modal('hide');
+			}
+			
+		});
+	});
+	 </script>
+
 	 
 
 <script type="text/javascript">

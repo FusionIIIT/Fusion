@@ -282,9 +282,33 @@
                                 {% comment %} <h2><a href=""><img class="ui avatar image" src="" alt="dp"></a></h2> {% endcomment %}
                             </div>
                             <div class="fourteen wide column" style="padding-left: 0px;">
-                                {{answer.get_markdown}}
+                                <div id="answer{{question.id}}-{{answer.id}}">{{answer.get_markdown}}</div>
                                 <footer>
-                                    <span style="margin-left:15px; font-size:12px;color: rgba(0,0,0,.6);">-<a href="{% url 'feeds:profile' answer.user.username%}">{{answer.user}}</a> | {{answer.uploaded_at|timesince}} ago</span>
+                                    <span style="margin-left:15px; font-size:12px;color: rgba(0,0,0,.6);">-
+                                        <a href="{% url 'feeds:profile' answer.user.username%}">
+                                            {{answer.user}}
+                                        </a>
+                                        | {{answer.uploaded_at|timesince}} ago
+                                        {% if request.user.username == answer.user.username %} 
+                                        | <span id="edit_answer{{question.id}}-{{answer.id}}" onclick='edit_answer("{{question.id}}-{{answer.id}}")'>-edit</span>
+                                        <!-- Modal for edit answer -->
+                                        <div class="ui modal" id="edit_answer_modal{{question.id}}-{{answer.id}}">
+                                            <i class="close icon"></i>
+                                            <div class="header">Edit Your Answer</div>
+                                            <div class="scrolling content">
+                                                <form class="edit_answer_form" id={{question.id}}-{{answer.id}}>
+                                                    <textarea class=" wmd-input" cols="40" id="edit_id_content{{question.id}}-{{answer.id}}" name="content" rows="10" required="">{{answer.content}}</textarea>
+                                                    <br><br>
+                                                    <div class="actions">
+                                                        <input style="float: right;" class="ui primary button" type="submit" name="edit_answer_button" id="edit_answer_button{{question.id}}-{{answer.id}}">
+                                                    </div>
+                                                </form>
+                                                <br><br>
+                                            </div>
+                                        </div>
+                                        <!-- Modal ends here -->
+                                        {% endif %} 
+                                    </span>
                                 </footer>
                             </div>
                         </div>
