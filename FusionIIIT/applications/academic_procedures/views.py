@@ -16,17 +16,20 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
+from django.core.exceptions import ObjectDoesNotExist
 
-
-from applications.academic_information.models import Calendar, Course, Student,Curriculum_Instructor, Curriculum
+from applications.academic_information.models import (Calendar, Course, Student,Curriculum_Instructor, Curriculum,
+                                                      Student_attendance )
 from applications.globals.models import (DepartmentInfo, Designation,
                                          ExtraInfo, Faculty, HoldsDesignation)
 
 from .models import (BranchChange, CoursesMtech, InitialRegistrations, StudentRegistrationCheck,
                      MinimumCredits, Register, Thesis, FinalRegistrations, ThesisTopicProcess,
-                     Constants, FeePayment, TeachingCreditRegistration, SemesterMarks, MarkSubmissionCheck)
+                     Constants, FeePayment, TeachingCreditRegistration, SemesterMarks, MarkSubmissionCheck, Dues)
 
 from notification.views import academics_module_notif
+#from .forms import BonafideForm
+
 
 
 demo_date = datetime.datetime.now()
@@ -207,8 +210,8 @@ def academic_procedures_student(request):
         current_date = demo_date.date()
         year = demo_date.year
         
-        registers = get_student_register(user_details.id)   
-        user_sem = get_user_semester(request.user, ug_flag, masters_flag, phd_flag)      
+        registers = get_student_register(user_details.id)
+        user_sem = get_user_semester(request.user, ug_flag, masters_flag, phd_flag)
         user_branch = get_user_branch(user_details)
         student_registration_check_pre = get_student_registrtion_check(obj,user_sem+1)
         student_registration_check_final = get_student_registrtion_check(obj,user_sem)
@@ -325,13 +328,48 @@ def academic_procedures_student(request):
         thesis_request_list = None
         pre_existing_thesis_flag = False
         teaching_credit_registration_course = None
-        if masters_flag == True :
+        if masters_flag:
             faculty_list = get_faculty_list()    
             thesis_request_list = ThesisTopicProcess.objects.all().filter(student_id = obj)
             pre_existing_thesis_flag = get_thesis_flag(obj)
-        if phd_flag == True:
+        if phd_flag:
             pre_existing_thesis_flag = get_thesis_flag(obj)
             teaching_credit_registration_course = Curriculum.objects.all().filter(batch = 2016, sem =6)
+
+        # Dues Check
+
+        lib_d, pc_d, hos_d, mess_d, acad_d = 0, 0, 0, 0, 0
+        if student_flag:
+            try:
+
+                obj = Dues.objects.get(student_id=Student.objects.get(id=request.user.username))
+
+                lib_d = obj.library_due
+                pc_d = obj.placement_cell_due
+                hos_d = obj.hostel_due
+                mess_d = obj.mess_due
+                acad_d = obj.academic_due
+            except ObjectDoesNotExist:
+                print("entry in DB not found for student")
+
+        tot_d = lib_d + acad_d + pc_d + hos_d + mess_d
+        obj = Student.objects.get(id=request.user.username)
+        course_list = []
+        for i in registers:
+            course_list.append(i.curr_id)
+        attendence = []
+        for i in course_list:
+
+            instructors = Curriculum_Instructor.objects.filter(curriculum_id=i)
+            pr,ab=0,0
+            for j in list(instructors):
+
+                presents = Student_attendance.objects.filter(student_id=obj,instructor_id=j, present=True)
+                absents = Student_attendance.objects.filter(student_id=obj,instructor_id=j, present=False)
+                pr += len(presents)
+                ab += len(absents)
+            attendence.append((i,pr,pr+ab))
+        print(attendence)
         return render(
                           request, '../templates/academic_procedures/academic.html',
                           {'details': details,
@@ -376,6 +414,13 @@ def academic_procedures_student(request):
                             'teaching_credit_registration_course' : teaching_credit_registration_course,
                             
                            # 'mincr': minimum_credit,
+                           'lib_d':lib_d,
+                           'acad_d':acad_d,
+                           'mess_d':mess_d,
+                           'pc_d':pc_d,
+                           'hos_d':hos_d,
+                            'tot_d':tot_d,
+                           'attendence':attendence,
                            }
                 )
 
@@ -2703,4 +2748,48 @@ def test_ret(request):
         return HttpResponseRedirect('/academic-procedures/main')
 
 
+def Bonafide_form(request):
+    template = get_template('academic_procedures/bonafide_pdf.html')
+    current_user = get_object_or_404(User, username=request.user.username)
 
+    user_details = ExtraInfo.objects.get(id = request.user)
+    des = HoldsDesignation.objects.all().filter(user = request.user).first()
+
+    name = ExtraInfo.objects.all().filter(id=request.user.username)[0].user
+
+    if str(des.designation) == "student":
+        obj = Student.objects.get(id = user_details.id)
+    
+        context = {
+            'student_id' : request.user.username,
+            'degree' : obj.programme.upper(),
+            'name' : name.first_name +" "+ name.last_name,
+            'branch' : get_user_branch(user_details),
+            'purpose' : request.POST['purpose']
+        }
+        pdf = render_to_pdf('academic_procedures/bonafide_pdf.html',context)
+        if pdf:
+            response = HttpResponse(pdf, content_type='application/pdf')
+            response['Content-Disposition'] = 'attachment; filename=Bonafide.pdf' 
+            return response
+        return HttpResponse("PDF could not be generated")
+
+
+# def bonafide(request):
+#     # if this is a POST request we need to process the form data
+#     if request.method == 'POST':
+#         # create a form instance and populate it with data from the request:
+#         form = BonafideForm(request.POST)
+#         # check whether it's valid:
+#         if form.is_valid():
+#             # process the data in form.cleaned_data as required
+#             # ...
+#             # redirect to a new URL:
+#             print("vaild")
+
+#     # if a GET (or any other method) we'll create a blank form
+#     else:
+#         form = BonafideForm()
+
+#     return render(request, 'bonafide.html', {'form': form})
+    
