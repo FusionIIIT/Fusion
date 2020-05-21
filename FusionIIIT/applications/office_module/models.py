@@ -573,4 +573,4 @@ class Registrar_response(models.Model):
         db_table = 'Registrar_response'
 
     def __str__(self):
-        return str(self.id)+" "+str(track_id)+status
+        return str(self.id)

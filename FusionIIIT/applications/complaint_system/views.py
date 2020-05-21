@@ -6,9 +6,7 @@ from django import forms
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
-from django.core.urlresolvers import reverse
-from django.shortcuts import get_object_or_404, render, render_to_response
-
+from django.shortcuts import get_object_or_404, render
 from applications.globals.models import User , ExtraInfo, HoldsDesignation
 
 from .models import Caretaker, StudentComplain, Supervisor, Workers
