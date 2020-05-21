@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 # from django.http import HttpResponse
 # from django.contrib.auth import authenticate
-from django.shortcuts import redirect, render_to_response
+from django.shortcuts import redirect, render
 
 
 class MySocialAccountAdapter(DefaultSocialAccountAdapter):
@@ -14,7 +14,7 @@ class MySocialAccountAdapter(DefaultSocialAccountAdapter):
         email = user.email
         if not email.split('@')[1] == 'iiitdmj.ac.in':
             messages.error(request, 'Use iiitdmj mail to sign in to this account !')
-            raise ImmediateHttpResponse(render_to_response('account/exception.html'))
+            raise ImmediateHttpResponse(render('account/exception.html'))
 
         else:
             if user.id:
@@ -30,4 +30,4 @@ class MySocialAccountAdapter(DefaultSocialAccountAdapter):
                 exception_string = "Seems Like you don't \
                                     have an account here! Contact CC admin for your account."
                 messages.error(request, exception_string)
-                raise ImmediateHttpResponse(render_to_response('account/exception_no_account.html'))
+                raise ImmediateHttpResponse(render('account/exception_no_account.html'))

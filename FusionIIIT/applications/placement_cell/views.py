@@ -5,7 +5,7 @@ import decimal
 import zipfile
 import xlwt
 
-from cgi import escape
+from html import escape
 from datetime import date
 from io import BytesIO
 from wsgiref.util import FileWrapper
@@ -533,7 +533,7 @@ def delete_invitation_status(request):
         'mnplacement_post': mnplacement_post,
         'mnpbi_tab': mnpbi_tab,
         'placementstatus': placementstatus,
-        'current':current,
+        # 'current':current,
         'current1': current1,
         'current2': current2,
         'strecord_tab': strecord_tab,

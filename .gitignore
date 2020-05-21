@@ -60,9 +60,6 @@ ENV/
 # Rope project settings
 .ropeproject
 
-# Ignore idea files
-.idea
-
 # VSCode Settings
 .vscode/settings.json
 
@@ -71,5 +68,3 @@ node_modules/
 
 FusionIIIT/static/
 package-lock.json
-
-!.idea
