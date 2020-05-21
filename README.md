@@ -12,7 +12,6 @@
 ## Software Requirements
 
 * Python `3.6`
-* PostgreSQL `10.10`
 * Git
 
 ## How to get started

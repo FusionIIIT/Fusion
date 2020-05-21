@@ -33,6 +33,7 @@ urlpatterns = [
     url(r'^generate_result_pdf/$', views.generate_result_pdf),
     url(r'^generate_grade_sheet_pdf/$', views.generate_grade_sheet_pdf),
     url(r'^test/$', views.test),
+    url(r'^bonafide_pdf/$',views.Bonafide_form),
     url(r'^test_ret/$', views.test_ret),
     
     
