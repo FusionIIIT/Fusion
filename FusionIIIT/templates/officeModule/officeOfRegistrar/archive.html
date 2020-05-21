@@ -1,6 +1,4 @@
 {% load static %}
-<form method="POST" action="">
-      {% csrf_token %}
 <table class="ui very basic collapsing celled sortable table"
        style="padding-left: 2.5%;
                                                           padding-right: 2.5%;
@@ -9,79 +7,65 @@
                                                           margin: auto;">
     <thead>
     <tr>
-        <th class="one wide column">
+        <th class="three wide column">
+            Subject
         </th>
 
         <th class="three wide column">
-            File Number
-        </th>
-
-        <th class="three wide column">
-            Date
+            Date received
         </th>
 
         <th class="seven wide column">
-            Purpose
+            Description
         </th>
-
-
 
         <th class="one wide column">
-            Attachment
+            Remark
         </th>
+
+        <th class="one wide column">
+            Status
+        </th>
+
     </tr>
     </thead>
 
     <tbody>
-    {% for views in view %}
-    <tr>
+    {% for resp, file in archive_view.items %}
+    <tr id = "row{{ forloop.counter0 }}">
 
-        <td class="collapsing">
-            <div class="ui fitted checkbox">
-                <input type="checkbox" name="checked[]" value="{{views}}" > <label></label>
+        <td>
+            {{ file.subject }}
+            <br>
+            <a href="#">View</a>
+        </td>
+
+        <td>
+            {{ file.upload_date }}
+        </td>
+
+        <td>
+            {{ file.description }}
+        </td>
+
+        <td>
+            <div class="ui fitted textbox">
+                <span>{{ resp.remark }}</span>
             </div>
         </td>
-
         <td>
-            {{views.id}}
-        </td>
-
-        <td>
-            {{current_date}}
-        </td>
-
-        <td>
-            {{views.purpose}}
-        </td>
-
-        <td>
-            {% comment %}
-                TODO: Add the attachment here!
-            {% endcomment %}
-            <a class="ui inverted circular icon button" style="margin: auto;" target="_blank" href="/media/{{ views.file }}">
-                <i class="large attach black icon"></i>
-            </a>
+            <div class="ui fitted textbox">
+                <span>{{ resp.status }}</span>
+            </div>
+        </td> 
+            
         </td>
     </tr>
 
-{% endfor %}
-
-
+    {% endfor %}
     </tbody>
 </table>
 
-
-<br>
-
-<button class="ui primary right floated button" type="submit" name="GA">GA</button>
-<button class="ui green right floated button" type="submit" name="PS">PS</button>
-<button class="ui red right floated button" type="submit">FA</button>
-<button class="ui red right floated button" type="submit">ES</button>
-
-</form>
-<br>
-<br>
-<div class="ui divider"></div>
 
 
 

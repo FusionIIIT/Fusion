@@ -1,13 +1,15 @@
+from django.contrib import messages
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import File, Tracking
+from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
+from django.template.defaulttags import csrf_token
+from django.http import HttpResponse,HttpResponseRedirect,JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import get_object_or_404, redirect, render
-from django.template.defaulttags import csrf_token
-
-from applications.globals.models import (Designation, ExtraInfo,
-                                         HoldsDesignation)
-
-from .models import File, Tracking
+from django.core import serializers
+from django.contrib.auth.models import User
+from timeit import default_timer as time
+from notification.views import office_module_notif
 
 
 @login_required(login_url = "/accounts/login/")
@@ -35,12 +37,14 @@ def filetracking(request):
     if request.method =="POST":
         try:
             if 'save' in request.POST:
+                print("********************")
                 uploader = request.user.extrainfo
+                print(uploader)
                 #ref_id = request.POST.get('fileid')
                 subject = request.POST.get('title')
                 description = request.POST.get('desc')
                 design = request.POST.get('design')
-                designation = Designation.objects.get(name=design)
+                designation = Designation.objects.get(id=design)
                 upload_file = request.FILES.get('myfile')
 
                 File.objects.create(
@@ -51,12 +55,68 @@ def filetracking(request):
                     designation=designation,
                     upload_file=upload_file
                 )
+
+            if 'send' in request.POST:
+
+
+                uploader = request.user.extrainfo
+                print(uploader)
+                #ref_id = request.POST.get('fileid')
+                subject = request.POST.get('title')
+                description = request.POST.get('desc')
+                design = request.POST.get('design')
+                print("designation is ", design)
+                designation = Designation.objects.get(id = HoldsDesignation.objects.get(id = design).designation_id)
+
+                upload_file = request.FILES.get('myfile')
+
+                file = File.objects.create(
+                    uploader=uploader,
+                    #ref_id=ref_id,
+                    description=description,
+                    subject=subject,
+                    designation=designation,
+                    upload_file=upload_file
+                )
+
+
+                current_id = request.user.extrainfo
+                remarks = request.POST.get('remarks')
+
+                sender = request.POST.get('design')
+                current_design = HoldsDesignation.objects.get(id=sender)
+
+                receiver = request.POST.get('receiver')
+                receiver_id = User.objects.get(username=receiver)
+                print("Receiver_id = ")
+                print(receiver_id)
+                receive = request.POST.get('recieve')
+                print("recieve = ")
+                print(receive)
+                receive_designation = Designation.objects.filter(name=receive)
+                print("receive_designation = ")
+                print(receive_designation)
+                receive_design = receive_designation[0]
+                upload_file = request.FILES.get('myfile')
+                # return HttpResponse ("success")
+                Tracking.objects.create(
+                    file_id=file,
+                    current_id=current_id,
+                    current_design=current_design,
+                    receive_design=receive_design,
+                    receiver_id=receiver_id,
+                    remarks=remarks,
+                    upload_file=upload_file,
+                )
+                office_module_notif(request.user, receiver_id)
+                messages.success(request,'File sent successfully')
+
         except IntegrityError:
             message = "FileID Already Taken.!!"
             return HttpResponse(message)
 
-    else:
-        print("")
+
+
     file = File.objects.all()
     extrainfo = ExtraInfo.objects.all()
     holdsdesignations = HoldsDesignation.objects.all()
@@ -88,7 +148,10 @@ def drafts(request):
                 context - Holds data needed to make necessary changes in the template.
     """
 
-    draft = File.objects.filter(uploader=request.user.extrainfo)
+    # draft = File.objects.filter(uploader=request.user.extrainfo)
+    draft = File.objects.filter(uploader=request.user.extrainfo).order_by('-upload_date')
+
+    # print(File.objects)
     extrainfo = ExtraInfo.objects.all()
 
     context = {
@@ -137,7 +200,7 @@ def inward(request):
                     context - Holds data needed to make necessary changes in the template.
     """
 
-    in_file = Tracking.objects.filter(receiver_id=request.user.extrainfo)
+    in_file = Tracking.objects.filter(receiver_id=request.user)
 
     context = {
         'in_file': in_file,
@@ -172,9 +235,17 @@ def forward(request, id):
                     holdsdesignations = HoldsDesignation objects.
                     context - Holds data needed to make necessary changes in the template.
     """
-
+    # start = timer()
     file = get_object_or_404(File, id=id)
+    # end = timer()
+    # print (end-start)
+
+    # start = timer()
     track = Tracking.objects.filter(file_id=file)
+    # end = timer()
+    # print (end-start)
+
+
 
     if request.method == "POST":
             if 'finish' in request.POST:
@@ -184,14 +255,23 @@ def forward(request, id):
             if 'send' in request.POST:
                 current_id = request.user.extrainfo
                 remarks = request.POST.get('remarks')
+
                 sender = request.POST.get('sender')
                 current_design = HoldsDesignation.objects.get(id=sender)
-                receiver = request.POST.get('receiver')
-                receiver_id = ExtraInfo.objects.get(id=receiver)
-                receive = request.POST.get('receive')
-                receive_design = HoldsDesignation.objects.get(id=receive)
-                upload_file = request.FILES.get('myfile')
 
+                receiver = request.POST.get('receiver')
+                receiver_id = User.objects.get(username=receiver)
+                print("Receiver_id = ")
+                print(receiver_id)
+                receive = request.POST.get('recieve')
+                print("recieve = ")
+                print(receive)
+                receive_designation = Designation.objects.filter(name=receive)
+                print("receive_designation = ")
+                print(receive_designation)
+                receive_design = receive_designation[0]
+                upload_file = request.FILES.get('myfile')
+                # return HttpResponse ("success")
                 Tracking.objects.create(
                     file_id=file,
                     current_id=current_id,
@@ -201,14 +281,14 @@ def forward(request, id):
                     remarks=remarks,
                     upload_file=upload_file,
                 )
-
+    # start = timer()
     extrainfo = ExtraInfo.objects.all()
     holdsdesignations = HoldsDesignation.objects.all()
     designations = HoldsDesignation.objects.filter(user=request.user)
 
     context = {
-        'extrainfo': extrainfo,
-        'holdsdesignations': holdsdesignations,
+        # 'extrainfo': extrainfo,
+        # 'holdsdesignations': holdsdesignations,
         'designations':designations,
         'file': file,
         'track': track,
@@ -227,3 +307,80 @@ def finish(request, id):
     track = Tracking.objects.filter(file_id=file)
 
     return render(request, 'filetracking/finish.html', {'file': file, 'track': track})
+
+def AjaxDropdown1(request):
+    print('brefore post')
+    if request.method == 'POST':
+        value = request.POST.get('value')
+        # print(value)
+
+        hold = Designation.objects.filter(name__startswith=value)
+        # for h in hold:
+        #     print(h)
+        print('secnod method')
+        holds = serializers.serialize('json', list(hold))
+        context = {
+        'holds' : holds
+        }
+
+        return HttpResponse(JsonResponse(context), content_type='application/json')
+
+
+def AjaxDropdown(request):
+    print('asdasdasdasdasdasdasdas---------------\n\n')
+    # Name = ['student','co-ordinator','co co-ordinator']
+    # design = Designation.objects.filter(~Q(name__in=(Name)))
+    # hold = HoldsDesignation.objects.filter(Q(designation__in=(design)))
+
+    # arr = []
+
+    # for h in hold:
+    #     arr.append(ExtraInfo.objects.filter(user=h.user))
+
+    if request.method == 'POST':
+        value = request.POST.get('value')
+        # print(value)
+
+        users = User.objects.filter(username__startswith=value)
+        users = serializers.serialize('json', list(users))
+
+        context = {
+            'users': users
+        }
+        return HttpResponse(JsonResponse(context), content_type='application/json')
+
+def test(request):
+    return HttpResponse('success')
+
+@login_required(login_url = "/accounts/login")
+def delete(request,id):
+    file = File.objects.get(pk = id)
+    file.delete()
+    draft = File.objects.filter(uploader=request.user.extrainfo)
+    extrainfo = ExtraInfo.objects.all()
+
+    context = {
+        'draft': draft,
+        'extrainfo': extrainfo,
+    }
+    return render(request, 'filetracking/drafts.html', context)
+
+def forward_inward(request,id):
+    file = get_object_or_404(File, id=id)
+    file.is_read = True
+    track = Tracking.objects.filter(file_id=file)
+    extrainfo = ExtraInfo.objects.all()
+    holdsdesignations = HoldsDesignation.objects.all()
+    designations = HoldsDesignation.objects.filter(user=request.user)
+
+    context = {
+        # 'extrainfo': extrainfo,
+        # 'holdsdesignations': holdsdesignations,
+        'designations':designations,
+        'file': file,
+        'track': track,
+    }
+    print(file.is_read)
+    return render(request, 'filetracking/forward.html', context)
+
+

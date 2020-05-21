@@ -1,26 +1,29 @@
 {% load static %}
+<head>
+    <script type="text/javascript" src="jspdf.debug.js"></script>
+</head>
 {% block stock %}
     {% comment %}the main tab starts here {% endcomment %}
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="addstock">
-          Add Stock
+          Add Stock/Threshold
         </a>
 
         <a class="item" data-tab="addmedicine">
-          Add New Medicine
+          Add Medicine
         </a>
         <a class="item" data-tab="viewexpiredstock">
           Expired Medicine
         </a>
         <a class="item" data-tab="viewlivestock">
-          Live Medicine
+          View Stock
         </a>
         <a class="item" data-tab="thresholdstock">
-          Threshold Stock
+          Required Medicine
         </a>
     </div>
 
-    {% comment %}the add stock tab starts here {% endcomment %}
+    {% comment %}the add stock tab starts here{% endcomment %}
     <div class="ui active tab" data-tab="addstock">
       <p id="medicine_add"></p>
         <div class="ui vertical segment">
@@ -47,6 +50,12 @@
                         </div>
                     </div>
                     <div class="field">
+                        <label>Threshold</label> <p id="thr"></p>
+                        <div class="ui fluid large input">
+                            <input placeholder="Threshold" id="thresh_a" name="thresh_a" type="number">
+                        </div>
+                    </div>
+                    <div class="field">
                         <label>Expiry Date</label>
                         <div class="ui fluid large input">
                             <input id="expiry_date" name="expiry_date" type="date">
@@ -56,18 +65,49 @@
                     <label><br></label>
 
                     <div >
-                      <input type="button" id="add_stock" name="add_stock" value="Submit"class="ui large right floated primary button" />
+                      <input type="button" id="add_stock" name="add_stock"  value="Submit"class="ui large right floated primary button" />
                     </div>
 
                    </div>
             </form>
             <script type="text/javascript">
+
+            $('#medicine_a').change(function()
+                  {
+                      document.getElementById("thr").innerHTML = "";
+                      $.ajax({
+                      type:'post',
+                      url:'/healthcenter/compounder/',
+                      data: {
+                      csrfmiddlewaretoken: '{{ csrf_token }}',
+                      medicine:$("#medicine_a").val(),
+                      },
+                      success: function(data){
+                        $('#thr').append("Current Threshold: "+data.thresh);
+
+                                              }
+                   });
+                 });
+
+
               $('#add_stock').click(function(e)
                                                   {
                                                     var medicine = document.getElementById('medicine_a').value;
                                                     var qty = document.getElementById('quantity_a').value;
+                                                    var thresh = document.getElementById('thresh_a').value;
                                                     var supplier = document.getElementById('supplier').value;
                                                     var expiry_date = document.getElementById('expiry_date').value;
+													
+													var today = new Date(new Date().setHours(0, 0, 0, 0));
+
+													var N_expired_med1 = new Date(expiry_date);
+                                                   
+                                                    if ( +N_expired_med1 < +today ) {
+                                                        $('#medicine_add').html('You cannot enter expiry date before today!.');
+                                                        return false;
+                                                    }
+													
+													
                                                     if ( medicine==""||supplier==""||expiry_date==""||qty==""||qty<=0) {
                                                         $('#medicine_add').html('Enter valid details');
                                                         return false;
@@ -80,6 +120,7 @@
                                                       csrfmiddlewaretoken: '{{ csrf_token }}',
                                                       medicine_id:$("#medicine_a").val(),
                                                       quantity:$("#quantity_a").val(),
+                                                      threshold_a:$("#thresh_a").val(),
                                                       supplier:$("#supplier").val(),
                                                       expiry_date:$("#expiry_date").val(),
                                                       add_stock:$("#add_stock").val()
@@ -87,8 +128,15 @@
                                                     },
                                                       success: function(data){
                                                       alert("added stock ");
+
+                                           {% comment %}           $('#live_stock').find('tbody');
+                        $('#live_stock tbody').append("<tr><td>" + data.medicine + "</td><td>" + data.new_supplier + "</td><td>" + data.new_expiry_date  + "</td><td>" + data.quantity + "</td></tr>"); {% endcomment %}
                                                       document.getElementById("medicine_a").value="";
                                                       document.getElementById("quantity").value="";
+                                                      $('#medicine_add').html('');
+                                                      document.getElementById("thr").innerHTML = "";
+                                                      window.location.reload();
+
                                                     }
                                                   });
                                                 });
@@ -101,6 +149,7 @@
         <div class="extra segment"></div>
     </div>
     {% comment %}the add stock tab ends here {% endcomment %}
+
 
     {% comment %}the add medicine tab starts here {% endcomment %}
     <div class="ui tab" data-tab="addmedicine">
@@ -141,7 +190,7 @@
                 <label><br></label>
 
                 <div >
-                  <input type="button" id="add_medicine" name="add_medicine" value="Submit"class="ui large right floated primary button" />
+                  <input type="button" id="add_medicine" name="add_medicine"  value="Submit"class="ui large right floated primary button" />
                 </div>
 
                </div>
@@ -154,6 +203,17 @@
                                                     var new_quantity = document.getElementById('new_quantity').value;
                                                     var new_supplier = document.getElementById('new_supplier').value;
                                                     var new_expiry_date = document.getElementById('new_expiry_date').value;
+													
+													var today = new Date(new Date().setHours(0, 0, 0, 0));
+
+													var N_expired_med= new Date(new_expiry_date);
+                                                   
+                                                    if ( +N_expired_med < +today ) {
+                                                        $('#med_add').html('You cannot enter expiry date before today!.');
+                                                        return false;
+                                                    }
+													
+
                                                     if ( new_medicine==""||new_expiry_date==""||new_supplier==""||new_quantity==""||new_quantity<=0||threshold==""||threshold<0) {
                                                         $('#med_add').html('Enter valid details');
                                                         return false;
@@ -173,11 +233,19 @@
                                                     },
                                                       success: function(data){
                                                       alert("added new medicine");
+
+                                           $('#live_stock').find('tbody');
+                        $('#live_stock tbody').append("<tr><td>" + data.medicine + "</td><td>" + data.new_supplier + "</td><td>" + data.new_expiry_date  + "</td><td>" + data.quantity + "</td></tr>");
+                                                     {% comment %}  {% endcomment %}
+
+
                                                       document.getElementById("new_medicine").value="";
                                                       document.getElementById("threshold").value="";
                                                       document.getElementById("new_quantity").value="";
                                                       document.getElementById("new_supplier").value="";
                                                       document.getElementById("new_expiry_date").value="";
+                                                      $('#med_add').html('');
+
                                                     }
                                                   });
                                                 });
@@ -194,13 +262,54 @@
 
     {% comment %}the view stock tab starts here {% endcomment %}
     <div class="ui tab" data-tab="viewlivestock">
-        <div class="ui vertical segment" >
-            <table class="ui very basic collapsing celled large fluid sortable table"
+        <div id="meds_print" class="ui vertical segment" >
+            <button type="button"  id="pr_meds" name="PDF" value="PDF" class="ui primary button right floated">
+                    <!-- Download -->
+                    <i class="ui download icon right floated"></i>
+                </button>
+
+                <script>
+    $('#pr_meds').click(function(e){
+        var sTable = document.getElementById('meds_print').innerHTML;
+
+        var style = "<style>";
+        style = style + "table {width: 100%;font: 17px Calibri;}";
+        style = style + "table, th, td {border: solid 1px #DDD; border-collapse: collapse;";
+        style = style + "padding: 2px 3px;text-align: center;}";
+        style = style + "</style>";
+
+        // CREATE A WINDOW OBJECT.
+        var win = window.open('', '', 'height=700,width=700');
+
+        win.document.write('<html><head>');
+        win.document.write('<title>Current Stock</title>');   // <title> FOR PDF HEADER.
+        win.document.write(style);          // ADD STYLE INSIDE THE HEAD TAG.
+        win.document.write('</head>');
+        win.document.write('<body>');
+        win.document.write(sTable);         // THE TABLE CONTENTS INSIDE THE BODY TAG.
+        win.document.write('</body></html>');
+
+        win.document.close(); 	// CLOSE THE CURRENT WINDOW.
+
+        win.print();    // PRINT THE CONTENTS.
+    });
+
+</script>
+
+            <table class="ui very basic collapsing celled large fluid sortable table" id="live_stock"
                    style="padding-left: 2.5%;padding-right: 2.5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
                 <thead>
                 <tr>
                     <th class="two wide">
                         Medicine
+                    </th>
+
+                     <th class="two wide" >
+                        Supplier
+                    </th>
+
+                    <th class="two wide" >
+                        Expiry Date
                     </th>
 
                     <th class="two wide" >
@@ -211,16 +320,25 @@
                 </thead>
 
                 <tbody>
-                {% for view in stocks %}
+                {% for view in live_meds %}
                 <tr>
 
                     <td>
-                       {{view.medicine_name}}
+                       {{view.medicine_id}}
+                    </td>
+
+                    <td>
+                       {{view.supplier}}
+                    </td>
+
+                    <td>
+                       {{view.expiry_date}}
                     </td>
 
                     <td>
                         {{view.quantity}}
                     </td>
+
                 </tr>
                 {% endfor %}
                 </tbody>
@@ -228,9 +346,12 @@
         </div>
     </div>
     {% comment %}the view stock tab ends here {% endcomment %}
+
     {% comment %}the view stock tab starts here {% endcomment %}
     <div class="ui tab" data-tab="viewexpiredstock">
-        <div class="ui vertical segment" >
+        <div  id="exmeds_print" class="ui vertical segment" >
+
+
             <table class="ui very basic collapsing celled large fluid sortable table"
                    style="padding-left: 2.5%;padding-right: 2.5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
                 <thead>
@@ -242,12 +363,15 @@
                     <th class="two wide" >
                         Quantity
                     </th>
+
                     <th class="two wide" >
                         Expiry Date
                     </th>
+
                     <th class="two wide" >
                         Supplier
                     </th>
+
                     <th class="two wide" >
                         Return
                     </th>
@@ -259,19 +383,22 @@
                 {% for view in expired %}
                 <tr>
 
-                    <td>
+                    <td style="white-space:nowrap;">
                        {{view.medicine_id}}
                     </td>
 
                     <td>
                         {{view.quantity}}
                     </td>
+
                     <td>
                         {{view.expiry_date}}
                     </td>
-                    <td>
+
+                    <td style="white-space:nowrap;">
                         {{view.supplier}}
                     </td>
+
                     {% if view.returned == False %}
                     <td>
                         <input type="hidden" id="return_id" name="id" value={{view.id}} />
@@ -295,7 +422,9 @@
                                                           returned:$("#returned").val()
                                                         },
                                                           success: function(data){
+                                                            $('#'+id).parent().parent().remove();
                                                             alert("returned medicine to supplier");
+
                                                           }
                                                       });
                                                     });
@@ -305,9 +434,43 @@
     {% comment %}the view stock tab ends here {% endcomment %}
     
         {% comment %}the threshold stock tab starts here {% endcomment %}
-        <div class="ui tab" data-tab="thresholdstock">
-            <div class="ui vertical segment" >
-                <table class="ui very basic collapsing celled large fluid sortable table"
+        <div  class="ui tab" data-tab="thresholdstock">
+            <div id="med_print" class="ui vertical segment" >
+                <button type="button"  id="pr_med" name="PDF" value="PDF" class="ui primary button right floated">
+                    <!-- Download -->
+                    <i class="ui download icon right floated"></i>
+                </button>
+
+                <script>
+    $('#pr_med').click(function(e){
+        var sTable = document.getElementById('med_print').innerHTML;
+
+        var style = "<style>";
+        style = style + "table {width: 100%;font: 17px Calibri;}";
+        style = style + "table, th, td {border: solid 1px #DDD; border-collapse: collapse;";
+        style = style + "padding: 2px 3px;text-align: center;}";
+        style = style + "</style>";
+
+        // CREATE A WINDOW OBJECT.
+        var win = window.open('', '', 'height=700,width=700');
+
+        win.document.write('<html><head>');
+        win.document.write('<title >Required Medicines</title>');   // <title> FOR PDF HEADER.
+        win.document.write(style);          // ADD STYLE INSIDE THE HEAD TAG.
+        win.document.write('</head>');
+        win.document.write('<body>');
+        win.document.write(sTable);         // THE TABLE CONTENTS INSIDE THE BODY TAG.
+        win.document.write('</body></html>');
+
+        win.document.close(); 	// CLOSE THE CURRENT WINDOW.
+
+        win.print();    // PRINT THE CONTENTS.
+    });
+
+</script>
+
+
+                <table id="tblmeds" class="ui very basic collapsing celled large fluid sortable table"
                        style="padding-left: 2.5%;padding-right: 2.5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
                     <thead>
                     <tr>
@@ -325,7 +488,7 @@
                     </tr>
                     </thead>
 
-                    <tbody>
+                    <tbody id="req_med">
                     {% for stock in stocks %}
                     {% if stock.quantity < stock.threshold %}
                     <tr>
@@ -348,4 +511,5 @@
             </div>
         </div>
         {% comment %}the view inventory tab ends here {% endcomment %}
+
 {% endblock %}

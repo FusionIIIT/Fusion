@@ -3,16 +3,16 @@
 
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="clubbudget">
+        <!-- <a class="item" data-tab="clubbudget">
             Club Budget
-        </a>
+        </a> -->
 
-        <a class="item" data-tab="newclub">
+        <a class="active item" data-tab="newclub">
             New Club Formation
         </a>
     </div>
 
-    <div class="ui active tab" data-tab="clubbudget">
+    <div class="ui tab" data-tab="clubbudget">
         <div class="ui vertical segment">
             <table class="ui very basic collapsing celled sortable table"
                    style="padding-left: 2.5%;
@@ -104,8 +104,10 @@
         </div>
     </div>
 
-    <div class="ui tab" data-tab="newclub">
+    <div class="ui active tab" data-tab="newclub">
         <div class="ui vertical segment">
+        <form method="post" action="" id="clubrequest">
+        {% csrf_token %}
             <table class="ui very basic collapsing celled sortable table"
                    style="padding-top: 1%;
                                                           padding-bottom: 1.5%;
@@ -113,6 +115,7 @@
                 <thead>
                 <tr>
                     <th>
+                        Select
                     </th>
 
                     <th class="three wide column">
@@ -127,9 +130,9 @@
                         Co-Coordinator
                     </th>
 
-                    <th class="one wide column">
-                        PFA
-                    </th>
+{#                    <th class="one wide column">#}
+{#                        PFA#}
+{#                    </th>#}
                 </tr>
                 </thead>
 
@@ -139,7 +142,7 @@
                         <tr>
                             <td class="collapsing">
                                 <div class="ui fitted checkbox">
-                                    <input type="checkbox" id="{{ i.club_name }}" name="{{ i.club_name }}"><label></label>
+                                    <input type="checkbox" id="{{ i.club_name }}" value="{{ i.club_name }}" name="check"><label></label>
                                 </div>
                             </td>
 
@@ -156,7 +159,7 @@
 
                             <td>
                                 <h4 class="ui image header">
-                                    <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+{#                                    <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">#}
                                     <div class="content">
                                         {{ i.co_ordinator.id.id }}
                                         <div class="sub header">
@@ -168,7 +171,7 @@
 
                             <td>
                                 <h4 class="ui image header">
-                                    <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+{#                                    <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">#}
                                     <div class="content">
                                         {{ i.co_coordinator.id.id }}
                                         <div class="sub header">
@@ -178,14 +181,16 @@
                                 </h4>
                             </td>
 
-                            <td>
+{#                            <td>#}
                                 {% comment %}
                                     TODO: Add the attachment here!
                                 {% endcomment %}
-                                <a class="ui inverted circular icon button" style="margin: auto;" target="_blank" href="{{ i.club_file.url }}">
-                                    <i class="large attach black icon"></i>
-                                </a>
-                            </td>
+{#                                {% if i.club_file %}#}
+{#                                <a class="ui inverted circular icon button" style="margin: auto;" target="_blank" href="{{ i.club_file.url }}">#}
+{#                                    <i class="large attach black icon"></i>#}
+{#                                </a>#}
+{#                                {% endif %}#}
+{#                            </td>#}
                         </tr>
                     {% endif %}
                 {% endfor %}
@@ -194,14 +199,22 @@
 
             <br>
 
-            <div class="ui primary right floated button">Approve Selected</div>
-            <div class="ui red right floated button">Reject Selected</div>
+            <div class="field">
+                <button class="ui primary button right floated" type="submit" formaction="/gymkhana/club_approve/">
+                    Approve Selected
+                </button>
+            </div>
+            <div class="field">
+                <button class="ui red button right floated" type="submit" formaction="/gymkhana/club_reject/">
+                    Reject Selected
+                </button>
+            </div>
 
             <br>
             <br>
 
             <div class="ui divider"></div>
-
+        </form>
         </div>
     </div>
 {% endblock %}

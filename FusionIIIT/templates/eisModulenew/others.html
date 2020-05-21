@@ -3,60 +3,58 @@
 {% block others %}
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="research projects">
+        <a class="{% if mark15 != 1 %}active item {% else %} item {% endif %}" data-tab="other1">
             Achievements
         </a>
 
-        <a class="item" data-tab="Consultancy project">
+        <a class="{% if mark15 == 1 %}active item {% else %} item {% endif %}" data-tab="other2">
             Experts Lectures/Invited Talks
         </a>
 
-        <a class="item" data-tab="patents">
-            Session Chaired
-        </a>
-        <a class="item" data-tab="technology transfer">
+       
+        <!-- <a class="item" data-tab="other3">
             Keynote/Planery Address
         </a>
+
+        <a class="item" data-tab="other4">
+            Session Chaired
+        </a> -->
     </div>
 
 
     {% comment %}The  Achievement segment starts here!{% endcomment %}
-    <div class="ui active tab segment" data-tab="research projects">
-        <h4 class="ui dividing header">Add a Research Project</h4>
-        <form class="ui form">
+    <div class="{% if mark15 != 1 %}ui active tab segment {% else %} ui tab segment {% endif %}" data-tab="other1">
+        <h4 class="ui dividing header" id="changes12">Add an Achievement</h4>
+            <form class="ui form"  method="post" action="{% url 'eis:award_insert' %}" onsubmit="return validateaward()">
+            {% csrf_token %}
            
-
+            <div style="display: none;"> <input type="text" id="achZ" name="ach_id"></div>
             <div class="field">
                 <label>Year/Month/Day</label>
                 <div class=" four fields">
                     <div class=" field">
                         <!-- <input placeholder="Year/Month/Day" type="text"> -->
                              <div class="ui fluid search selection dropdown">
-                            <input type="hidden">
+                            <input type="hidden" name="a_day"  id="achC"  >
                             <i class="dropdown icon"></i>
                             <div class="default text">Select Day</div>
                             <div class="menu">
-                                <div class="item" data-value="1">1</div>
-                                <div class="item" data-value="2">2</div>
-                                <div class="item" data-value="3">3</div>
-                                <div class="item" data-value="30">30</div>
-                                <div class="item" data-value="31">32</div>
-                              
+                                {% for i in "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" %}
+                                <div class="item" data-value="{{ forloop.counter }}">{{ forloop.counter }}</div>
+                              {% endfor %}
                             </div>
                         </div>
                     </div>
                      <div class=" field">
                         <!-- <input placeholder="Year/Month/Day" type="text"> -->
                              <div class="ui fluid search selection dropdown">
-                            <input type="hidden">
+                            <input type="hidden" name="a_month" id="achF">
                             <i class="dropdown icon"></i>
                             <div class="default text">Month</div>
                             <div class="menu">
-                                <div class="item" data-value="1">1</div>
-                                <div class="item" data-value="2">2</div>
-                                <div class="item" data-value="3">3</div>
-                                <div class="item" data-value="4">4</div>
-                                <div class="item" data-value="5">5</div>
+                                {% for i in "xxxxxxxxxxxx" %}
+                                <div class="item" data-value="{{ forloop.counter }}">{{ forloop.counter }}</div>
+                                {% endfor %}
                             </div>
                         </div>
 
@@ -64,35 +62,20 @@
                      <div class=" field">
                         <!-- <input placeholder="Year/Month/Day" type="text"> -->
                         <div class="ui fluid search selection dropdown">
-                            <input type="hidden">
+                            <input type="hidden" name="a_year" id="achE" required>
                             <i class="dropdown icon"></i>
                             <div class="default text">Select Year</div>
                             <div class="menu">
-                                <div class="item" data-value="2009">2009</div>
-                                <div class="item" data-value="2008">2008</div>
-                                <div class="item" data-value="2007">2007</div>
-                                <div class="item" data-value="2006">2006</div>
-                                <div class="item" data-value="2005">2005</div>
-                                <div class="item" data-value="2004">2004</div>
-                                <div class="item" data-value="2003">2003</div>
-                                <div class="item" data-value="2002">2002</div>
-                                <div class="item" data-value="2001">2001</div>
-                                <div class="item" data-value="2000">2000</div>
-                                <div class="item" data-value="2010">2010</div>
-                                <div class="item" data-value="2011">2011</div>
-                                <div class="item" data-value="2012">2012</div>
-                                <div class="item" data-value="2013">2013</div>
-                                <div class="item" data-value="2014">2014</div>
-                                <div class="item" data-value="2015">2015</div>
-                                <div class="item" data-value="2016">2016</div>
-                                <div class="item" data-value="2017">2017</div>
+                                {% for i in year_range %}
+                                <div class="item" data-value="{{ i }}">{{ i }}</div>
+                                {% endfor %}
                             </div>
                         </div>
                     </div>   
 
                     <div class=" field">
                         <div class="ui fluid search selection dropdown">
-                            <input type="hidden">
+                            <input type="hidden" name="type"  id="achA" required>
                             <i class="dropdown icon"></i>
                             <div class="default text">Achievement Type</div>
                             <div class="menu">
@@ -114,16 +97,15 @@
                     <div class="fourteen wide field">
                         <div class="field">
                             <label>Details</label>
-                            <input placeholder="Title" type="text">
+                            <input placeholder="Title" type="text"   id="achB" name="details" required>
                         </div>
                     </div>
 
                     <div class="two wide field">
                         <label><br></label>
-                        <div class="ui primary button">
-                            Save
-                            <i class="ui save icon right floated"></i>
-                        </div>
+                        <button class="ui primary button" type="submit">
+                            Save<i class="ui save icon right floated"></i>
+                        </button>
                     </div>
                 </div>
 
@@ -132,48 +114,36 @@
         </form>
         <br>
         <h4 class="ui dividing header">Report:</h4>
-
-        <table class="ui fixed single line sortable celled table">
+        
+        
+            
+        <table class="ui fixed sortable celled table" id="ach">
             <thead>
             <tr>
-                <th class="sorted ascending">Sr.</th>
-                <th class="">Achievement</th>
-                <th class="" colspan="3">Details</th>
-                                <th class="">Year/Month/Day</th>
-                <th class="">Action</th>
+
+                  <th class="sorted ascending" style="width: 7%;">Sr.</th>
+                <th class="" style="width: 15%;" >Achievement</th>
+                <th class="" style="width: 53%;">Title </th>
+                <th class="" style="width: 15%;">Day/Month/Year</th>
+
+                <th style="width:10%">Action</th>
             </tr>
             </thead>
 
             <tbody>
+            {% for award in awards %}
             <tr>
-                
-            </tr>
+                <td id="ach{{ forloop.counter }}Z"><div style="display: none;">{{ award.id }}</div>{{ forloop.counter }}.</td>
+                <td id="ach{{ forloop.counter }}A">{{ award.a_type }}</td>
+                <td id="ach{{ forloop.counter }}B">{{ award.details }}</td>
+                <td id="ach{{ forloop.counter }}C">{% if award.a_day %}{{ award.a_day }} / {% endif %}{% if award.a_month %}{{ award.a_month }} / {% endif %}{% if award.a_year %}{{ award.a_year }}{% endif %}</td>
+                <td><a  class="ui button left floated" onclick="updateACH({{ forloop.counter }})"><i id="bt" class="edit icon" ></i> </a><a class="ui blue button left floated" href="{% url 'eis:achievement_delete' award.id %}"><i id="bt" class="ui red delete icon" ></i></a></td>
 
-            <tr>
-                          </tr>
-
-            <tr>
-               
             </tr>
+            {% endfor %}
             </tbody>
 
-            <tfoot>
-            <tr>
-                <th colspan="7">
-                    <div class="ui right floated pagination menu">
-                        <a class="icon item">
-                            <i class="left chevron icon"></i>
-                        </a>
-                        <a class="item">1</a>
-                        <a class="item">2</a>
-                        <a class="item">3</a>
-                        <a class="item">4</a>
-                        <a class="icon item">
-                            <i class="right chevron icon"></i>
-                        </a>
-                    </div>
-                </th>
-            </tr></tfoot>
+
         </table>
     </div>
 
@@ -182,17 +152,19 @@
 
 
     {% comment %}The Expert Lectures segment starts here!{% endcomment %}
-    <div class="ui tab segment" data-tab="Consultancy project">
-        <h4 class="ui dividing header">Add a Expert Lecture/Invited Talks</h4>
-        <form class="ui form">
+    <div class="{% if mark15 == 1 %}ui active tab segment {% else %} ui tab segment {% endif %}" data-tab="other2">
+        <h4 class="ui dividing header"  id="changes13">Add a Expert Lecture/Invited Talks</h4>
+           <form class="ui form"  method="post" action="{% url 'eis:talk_insert' %}"  onsubmit="return validateexp()">
+                           <div style="display: none;"> <input type="text" id="lecZ" name="lec_id"></div>
+            {% csrf_token %}
             <div class="field">
                 <div class="three fields">
                 <!-- code change starts -->
                     <div class="field">
                         <label>Presentation Type</label>
-                         <!-- <input placeholder="Presentation Type" type="text"> -->
+                        
                           <div class="ui fluid search selection dropdown">
-                            <input type="hidden">
+                            <input type="hidden" name="type"  id="lecA" required>
                             <i class="dropdown icon"></i>
                             <div class="default text">Presentation Type</div>
                             <div class="menu">
@@ -209,16 +181,16 @@
 
                     <div class="field">
                         <label>Place</label>
-                        <input placeholder="Place" type="text">
+                        <input placeholder="Place" type="text" name="place" id="lecC" required>
                     </div>
                       <div class="field">
                         <label>Date</label>
                         <!-- <input placeholder="Client" type="text"> -->
                         <!-- code change starts -->
-                             <div class="ui calendar" id="example1g">
+                             <div class="ui calendar" id="example2g">
                                 <div class="ui input left icon">
                                   <i class="calendar icon"></i>
-                                  <input type="text" placeholder="Date/Time">
+                                  <input type="text" placeholder="Date/Time" name="l_date" id="lecD" required>
                                 </div>
                               </div>
                           <!-- code change ends -->
@@ -234,16 +206,15 @@
                     <div class="fourteen wide field">
                         <div class="field">
                             <label>Title</label>
-                            <input placeholder="Title" type="text">
+                            <input placeholder="Title" type="text" name="title"  id="lecB" required>
                         </div>
                     </div>
 
                     <div class="two wide field">
                         <label><br></label>
-                        <div class="ui primary button">
-                            Save
-                            <i class="ui save icon right floated"></i>
-                        </div>
+                        <button class="ui primary button" type="submit">
+                            Save<i class="ui save icon right floated"></i>
+                        </button>
                     </div>
                 </div>
 
@@ -251,304 +222,46 @@
         </form>
         <br>
         <h4 class="ui dividing header">Report:</h4>
-
-        <table class="ui fixed single line sortable celled table">
-            <thead>
-            <tr>
-                <th class="sorted ascending">Sr.</th>
-                <th class="">Presentation Type</th>
-                <th class="">Title</th>
-                <th class="">Place</th>
-                <th class="">Date</th>
-                <th class="">Year</th>
-                <th class="">Action</th>
-            </tr>
-            </thead>
-
-            <tbody>
-            <tr>
-                 
-            </tr>
-
-            <tr>
-                  
-            </tr>
-
-            <tr>
-              
-            </tr>
-            </tbody>
-
-            <tfoot>
-            <tr>
-                <th colspan="7">
-                    <div class="ui right floated pagination menu">
-                        <a class="icon item">
-                            <i class="left chevron icon"></i>
-                        </a>
-                        <a class="item">1</a>
-                        <a class="item">2</a>
-                        <a class="item">3</a>
-                        <a class="item">4</a>
-                        <a class="icon item">
-                            <i class="right chevron icon"></i>
-                        </a>
-                    </div>
-                </th>
-            </tr></tfoot>
-        </table>
-    </div>
-    {% comment %}The Expert Lecture ends here!{% endcomment %}
-
-
-    {% comment %}The Session chaired starts here!{% endcomment %}
-    <div class="ui tab segment" data-tab="patents">
-        <h4 class="ui dividing header">Add a  Session Chaired</h4>
-        <form class="ui form">
-            <div class="field">
-                <div class="two fields">
-                    
-
-                    <div class="field">
-                           </label>
-                    </div>
-                </div>
-            </div>
-
-            <div class="field">
-                <label>Event</label>
-                <div class=" three fields">
-                    <div class=" field">
-                        <input placeholder="Event" type="text">
-                    </div>
-                  <!-- code change starts -->  
-                    <div class=" field">
-                        <!-- <input placeholder="Date" type="text">--> 
-                         <!--  <label>Start Date</label>  -->
-                           <div class="ui calendar" id="rangestart6">
-                                          <div class="ui input left icon">
-                                            <i class="calendar icon"></i>
-                                            <input type="text" placeholder="Start">
-                                          </div>
-                                </div>                  
-                    </div>
-
-                    <div class=" field">
-                         <!-- <label>End Date</label> -->
-                         <div class="ui calendar" id="rangeend6">
-                                      <div class="ui input left icon">
-                                        <i class="calendar icon"></i>
-                                        <input type="text" placeholder="End">
-                                      </div>
-                                    </div>
-                    </div>
-                     <!-- code change ends--> 
-                </div>
-
-                <div class="fields">
-                    <div class="fourteen wide field">
-                        <div class="field">
-                            <label>Name</label>
-                            <input placeholder="Name" type="text">
-                        </div>
-                    </div>
-
-                    <div class="two wide field">
-                        <label><br></label>
-                        <div class="ui primary button">
-                            Save
-                            <i class="ui save icon right floated"></i>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </form>
-        <br>
-        <h4 class="ui dividing header">Report:</h4>
-
-        <table class="ui fixed single line sortable celled table">
-            <thead>
-            <tr>
-                <th class="sorted ascending">Sr.</th>
-                <th class="">Name</th>
-                <th class="" colspan=3>Event</th>
-                <th class="">Date</th>
-                <th class="">Year</th>
-              
-                <th class="">Action</th>
-            </tr>
-            </thead>
-
-            <tbody>
-            <tr>
-              
-            </tr>
-
-            <tr>
-                           </tr>
-
-            <tr>
-                           </tr>
-            </tbody>
-
-            <tfoot>
-            <tr>
-                <th colspan="7">
-                    <div class="ui right floated pagination menu">
-                        <a class="icon item">
-                            <i class="left chevron icon"></i>
-                        </a>
-                        <a class="item">1</a>
-                        <a class="item">2</a>
-                        <a class="item">3</a>
-                        <a class="item">4</a>
-                        <a class="icon item">
-                            <i class="right chevron icon"></i>
-                        </a>
-                    </div>
-                </th>
-            </tr></tfoot>
-        </table>
-    </div>
-
-    {% comment %}The Session chaired segment ends here!{% endcomment %}
-
-
-    {% comment %}The Keynote/Planery Address segment starts here!{% endcomment %}
-
-    <div class="ui tab segment" data-tab="technology transfer">
-        <h4 class="ui dividing header">Add a Keynote/Planery Address</h4>
-        <form class="ui form">
-            <div class="field">
-                <div class="two fields">
-                    
-
-                    <div class="field">
-                           </label>
-                    </div>
-                </div>
-            </div>
-
-            <div class="field">
-                <label>Presentation Type</label>
-                <div class=" two fields">
-                    <div class=" field">
-                      <!--   <input placeholder="Event" type="text"> -->
-                           <div class="ui fluid search selection dropdown">
-                            <input type="hidden">
-                            <i class="dropdown icon"></i>
-                            <div class="default text"> Presentation Type</div>
-                            <div class="menu">
-                                <div class="item" data-value="Keynotes">Keynotes</div>
-                                <div class="item" data-value="Planery Address">Planery Address</div>
-                               
-                            </div>
-                        </div>
-                    </div>
-                    <div class=" field">
-                        <!-- <input placeholder="Date" type="text"> -->
-                        <!-- code change starts -->
-                              <div class="ui calendar" id="example1h">
-                                    <div class="ui input left icon">
-                                      <i class="calendar icon"></i>
-                                      <input type="text" placeholder="Date/Time">
-                                    </div>
-                                  </div>
-                        <!-- code change ends -->
-                    </div>
-
-                
-                </div>
-                     <div class=" two fields">
-                    <div class=" field">
-                      <!--   <input placeholder="Event" type="text"> -->
-                      <label>Page No.</label>
-                            <input placeholder="Page No." type="text">
-                          
-                    </div>
-                    <div class=" field">
-                        <!-- <input placeholder="Date" type="text"> -->
-                        <!-- code change starts -->
-                        <label>ISBN No.</label>
-                            <input placeholder="ISBN No." type="text">
-                             
-                        <!-- code change ends -->
-                    </div>
-
-                
-                </div>
-
-                <div class="fields">
-                    <div class="fourteen wide field">
-                        <div class="field">
-                            <label>Title</label>
-                            <input placeholder="Title" type="text">
-                        </div>
-                    </div>
-
-                    <div class="two wide field">
-                        <label><br></label>
-                        <div class="ui primary button">
-                            Save
-                            <i class="ui save icon right floated"></i>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </form>
         
-        <br>
-
-         <h4 class="ui dividing header">Report:</h4>
-
-        <table class="ui fixed single line sortable celled table">
+        <table class="ui fixed sortable celled table" id="talk">
             <thead>
             <tr>
-                <th class="sorted ascending">Sr.</th>
-                <th class="" >Name</th>
-                <th class="" colspan="2">Details</th>
-                <th class="" colspan="2">Conference Details</th>
-                <th class="" >Year</th>
-                <th class="" >Date Of Submission</th>
-                
-                <th class="">Action</th>
+              
+
+                <th class="sorted ascending" style="width: 7%;">Sr.</th>
+                <th class="" style="width: 15%;" >Presented</th>
+                <th class="" style="width: 30%;">Title </th>
+                <th class="" style="width: 20%;">Place</th>
+                  <th style="width:18%">Date</th>
+                <th style="width:10%">Action</th>
             </tr>
             </thead>
 
             <tbody>
-            <tr>
-                  
-            </tr>
 
-            <tr>
-                   
-            </tr>
+            {% for talk in talks %}
+            <tr id="r1">
+                <td id="lec{{ forloop.counter }}Z"><div style="display: none;">{{ talk.id }}</div>{{ forloop.counter }}.</td>
+                <td id="lec{{ forloop.counter }}A">{{ talk.l_type }}</td>
+                <td id="lec{{ forloop.counter }}B">{{ talk.title }}</td>
+                <td id="lec{{ forloop.counter }}C">{{ talk.place }}</td>
+                <td id="lec{{ forloop.counter }}D">{{ talk.l_date }}</td>
+                <td><a class="ui button left floated " onclick="updateLEC({{ forloop.counter }})"><i id="bt" class="edit icon" ></i></a><br><a class="ui blue button left floated" href="{% url 'eis:emp_expert_lecturesDelete' talk.id %}"><i id="bt" class="ui red delete icon" ></i></a></td>
 
-            <tr>
-              
             </tr>
+            {% endfor %}
             </tbody>
 
-            <tfoot>
-            <tr>
-                <th colspan="7">
-                    <div class="ui right floated pagination menu">
-                        <a class="icon item">
-                            <i class="left chevron icon"></i>
-                        </a>
-                        <a class="item">1</a>
-                        <a class="item">2</a>
-                        <a class="item">3</a>
-                        <a class="item">4</a>
-                        <a class="icon item">
-                            <i class="right chevron icon"></i>
-                        </a>
-                    </div>
-                </th>
-            </tr></tfoot>
+
         </table>
+        
     </div>
-    {% comment %}The Technology segment ends here!{% endcomment %}
+
+    <!-- {% comment %}The Keynote/Planery Address segment starts here!{% endcomment %}
+
+    <div class="ui tab segment" data-tab="other3">
+       eofere
+
+    </div>
+    {% comment %}The Technology segment ends here!{% endcomment %} -->
 {% endblock %}

@@ -1,9 +1,9 @@
-
 {% load static %}
+{% load staticfiles %}
 
 {% block profile %}
 
-    <div hidden id="editModal" class="ui modal" ">
+    <div hidden id="editModal" class="ui modal" >
         <div class="header">
             Edit Profile
         </div>
@@ -40,12 +40,17 @@
 
               -->
                 </form>
-                  <form method="POST" action="/profile/" class="ui form" role="form">
+
+
+
+        <form method="POST" action="/profile/" class="ui form" role="form">
                     {% csrf_token %}
+                    {% if request.user == user %}
                   <input type="button" value="Edit" class="ui red mini button right floated" id="editButton" onclick='javascript:showModal()'>
-<!--$('.ui.modal')
-  .modal() onclick='javascript:editStudent()
-; -->
+                    {% endif %}
+                <!--$('.ui.modal')
+                  .modal() onclick='javascript:editStudent()
+                ; -->
                   <input type="submit" value="Save" class="ui red mini button right floated" name="profilesubmit" id="saveButton" style="display: none">
             </div>
 
@@ -79,18 +84,24 @@
                     <tbody>
                         <tr>
                             <td>
-                                Age
+                                Date Of Birth
                             </td>
 
                             <td>
                               <div class="ui fluid input">
                                 <span id="ageSpan">{{ profile.dob }}</span>
-                                <input name=age
-                                          id="ageInput"
-                                          rows=5
-                                          type="text"
-                                          style="width: 100%;"
-                                          value="{{ profile.dob }}" hidden/>
+                                <div class="ui calendar select_date" id="rangestart">
+                                  <div class="ui input left icon"><i class="calendar icon"></i>
+                                  <input name="age"
+                                            id="ageInput"
+                                            rows=5
+                                            type="text"
+                                            disabled
+                                            class="datepicker"
+                                            style="width: 100%;"
+                                            value="{{ profile.date_of_birth }}" />
+                                          </div>
+                                    </div>
                               </div>
                             </td>
                         </tr>
@@ -144,6 +155,7 @@
     </div>
     <!--End of details card!-->
 
+
     <!--The contact details card starts here!-->
     <div class="ui fluid card">
         <div class="content">
@@ -184,12 +196,13 @@
 
                             </td>
                         </tr>
-
-                        </form>
                     </tbody>
                 </table>
             </span>
         </div>
-    </div><!--The contact details card ends here!-->
+    </div>
+    <!--The contact details card ends here!-->
+
+  </form>
 
 {% endblock %}

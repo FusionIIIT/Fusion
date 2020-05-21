@@ -11,6 +11,7 @@ Create Contest
 {% block navBar %}
     {% include 'dashboard/navbar.html' %}
 {% endblock %}
+<button class="ui primary button" onclick="history.back(-1)">Back</button>
 
 
 <div class="ui stackable doubling grid">
@@ -24,8 +25,13 @@ Create Contest
 
 
         <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+                <h3> {{course.course_name}}  </h3>
+                <a class="active item sidetab" href="/ocms/{{course.course_id}}/">
+                     Back To Course
+                     <i class="right floated chevron right icon"></i>
+                </a>
 
-                <a class="active item sidetab" data-tab="first" data-num="11">
+                <!-- <a class="active item sidetab" data-tab="first" data-num="11">
                   View Courses
                   <i class="right floated chevron right icon"></i>
                 </a>
@@ -35,25 +41,25 @@ Create Contest
                   <i class="right floated chevron right icon"></i>
                 </a>
 
-                <a class="item sidetab" data-tab="third" data-num="13">
+                <a class="item sidetab disabled" data-tab="third" data-num="13">
                   View Performance
                   <i class="right floated chevron right icon"></i>
                 </a>
                 {% if lecturer == 1 %}
-                <a class="item sidetab" data-tab="fourth" data-num="14">
+                <a class="item sidetab disabled" data-tab="fourth" data-num="14">
                   Add Content
                   <i class="right floated chevron right icon"></i>
                 </a>
 
-                <a class="item sidetab" data-tab="fifth" data-num="15">
+                <a class="item sidetab disabled" data-tab="fifth" data-num="15">
                   Assessment
                   <i class="right floated chevron right icon"></i>
                 </a>
-                <a class="item sidetab" data-tab="sixth" data-num="16">
+                <a class="item sidetab disabled" data-tab="sixth" data-num="16">
                   Question Bank
                   <i class="right floated chevron right icon"></i>
                 </a>
-              {% endif %}
+              {% endif %} -->
             </div>
     </div>
 
@@ -63,7 +69,7 @@ Create Contest
         {% if questions|length == 0 %}
           <h4 class="ui header">No questions of this topic in the current question bank!</h4>
         {% else %}
-        <form class="ui form" id="question_form" style="margin-top:5em" action="/ocms/{{course.course_id}}/{{details.pk}}/add_questions_to_quiz" method="post">
+        <form class="ui form" id="question_form" style="margin-top:5em" action="/ocms/{{course.id}}/{{details.pk}}/add_questions_to_quiz" method="post">
           {% csrf_token %}
           {% for question in questions %}
           <div class="inline field">

@@ -156,7 +156,7 @@
                         </a>
                     {% endif %}
                     {% ifequal designation 'Assistant Registrar' %}
-                        <a class="item" data-tab="fifth">
+                        <a class="item" href="{% url 'leave:leavemanager' %}">
                             Leave Manager
                             <i class="right floated chevron right icon"></i>
                         </a>
@@ -212,14 +212,7 @@
                 {% comment %}The Approve Leave ends here!{% endcomment %}
 
 
-                {% comment %}The Leave Manager starts here!{% endcomment %}
-                {% ifequal designation 'Assistant Registrar' %}
-                    <div class="ui tab segment" data-tab="fifth">
-                        <a href="{% url 'leave:leavemanager' %}">Go to Leave Manager</a>
-                    </div>
-                {% endifequal %}
-                {% comment %}The Leave Manager ends here!{% endcomment %}
-
+                
 
 
 

@@ -1,0 +1,58 @@
+{% load static %}
+<center><b>Course table</b></center>
+<div class="ui vertical segment" style="width: 100%">
+    <table class="ui very basic celled sortable table" style="width: 100%">
+        <thead>
+            <tr style="background-color: #f1f1f1">
+            <th style="10%">Course ID</th>
+            <th style="20%">Course Name</th>
+            <th style="10%">Quiz 1</th>
+            <th style="10%">Mid Sem</th>
+            <th style="10%">Quiz 2</th>
+            <th style="10%">End Sem</th>
+            <th style="10%">Other</th>
+            <th style="10%">Total </th>
+            {% if result_announced == True %}
+            <th style="10%">Grade</th>
+            {% endif %}
+            </tr>
+        </thead>
+        <tbody id="count_performance">
+            {% for i in performance_list %}
+            {% if i %}
+            <tr>
+                <td style="10%">{{ i.curr_id.course_code }}</td>
+                <td style="20%">{{ i.curr_id.course_id.course_name }}</td>
+                <td style="10%">{{ i.q1 }}</td>
+                <td style="10%">{{ i.mid_term }}</td>
+                <td style="10%">{{ i.q2 }}</td>
+                <td style="10%">{{ i.end_term }}</td>
+                <td style="10%">{{ i.other }}</td>
+                <td style="10%"></td>
+                {% if result_announced == True %}
+                <td style="10%">{{i.grade}}</td>
+                {% endif %}
+
+            </tr>        
+            {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>         
+</div>
+
+<script type="text/javascript">
+$(document).ready(function(){
+    var count = $("#count_performance tr").length;
+
+    for(i=0;i<count;i++){
+        q1 = Number(document.getElementById("count_performance").rows[i].cells[2].innerHTML);
+        mid= Number(document.getElementById("count_performance").rows[i].cells[3].innerHTML);
+        q2 = Number(document.getElementById("count_performance").rows[i].cells[4].innerHTML);
+        end = Number(document.getElementById("count_performance").rows[i].cells[5].innerHTML);
+        other = Number(document.getElementById("count_performance").rows[i].cells[6].innerHTML);
+        total = q1+mid+q2+end+other;
+        total1 = total.toFixed(1);
+        document.getElementById("count_performance").rows[i].cells[7].innerHTML = total1;
+    }
+});
+</script>

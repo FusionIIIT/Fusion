@@ -4,15 +4,194 @@ from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.dateparse import parse_date
+from django.db.models import Q
+from bisect import bisect
 
 from applications.academic_information.models import Student
 from applications.globals.models import *
+from datetime import datetime
+from django.core import serializers
+import json
 
 from .models import *
 
 
-def retrun_content(roll, name, desig):
-	students = ExtraInfo.objects.all().filter(user_type = "student")
+def coordinator_club(request):
+	for i in Club_info.objects.all():
+		co = (str(i.co_ordinator)).split(" ")
+		co_co = (str(i.co_coordinator)).split(" ")
+		if co[0] == str(request.user):
+			return(i)
+
+def delete_sessions(request):
+	selectedIds = request.POST['ids']
+	selectedIds = json.loads(selectedIds)
+	try:
+		for i in selectedIds:
+			delSession = Session_info.objects.get(id=i)
+			delSession.delete()
+		return HttpResponse("success")
+	except e:
+		print("An error was encountered")
+		return HttpResponse("error")
+
+def delete_memberform(request):
+	selectedIds = request.POST['ids']
+	selectedIds = json.loads(selectedIds)
+	try:
+		for i in selectedIds:
+			delMemberform = Club_member.objects.get(id=i)
+			delMemberform.delete()
+		return HttpResponse("success")
+	except e:
+		print("An error was encountered")
+		return HttpResponse("error")
+
+def facultyData(request):
+	current_value = request.POST['current_value']
+	try:
+		# students =ExtraInfo.objects.all().filter(user_type = "student")
+		faculty = ExtraInfo.objects.all().filter(user_type = "faculty")
+		facultyNames = []
+		for i in faculty:
+			name = i.user.first_name + " " + i.user.last_name
+			if current_value is not "":
+				Lowname = name.lower()
+				Lowcurrent_value = current_value.lower()
+				if Lowcurrent_value in Lowname:
+					facultyNames.append(name)
+			else:
+				facultyNames.append(name)
+		print(facultyNames)
+		faculty = json.dumps(facultyNames)
+		return HttpResponse(faculty)
+	except Exception as e:
+		return HttpResponse("error")
+
+def studentsData(request):
+	current_value = request.POST['current_value']
+	try:
+		students =ExtraInfo.objects.all().filter(user_type = "student").filter(id__startswith=current_value)
+		students = serializers.serialize('json', students)
+		return HttpResponse(students)
+	except Exception as e:
+		return HttpResponse("error")
+
+
+
+@login_required
+def new_club(request):
+	if request.method == 'POST':
+		res = None
+		message = None
+		try:
+			club_name = request.POST.get("club_name")
+			category = request.POST.get("category")
+			co = request.POST.get("co")
+			coco = request.POST.get("coco")
+			faculty = request.POST.get("faculty")
+			# club_file = request.FILES.get("file")
+			d_d = request.POST.get("d_d")
+
+			res = "error"
+			message = ""
+			co = co.strip()
+			coco = coco.strip()
+			faculty = faculty.strip()
+			# print("co ", co)
+			# print("coco ", coco)
+			# print("faculty ", faculty)
+			#checking if the form data is authentic
+			#checking for coordinator field
+			students = ExtraInfo.objects.all().filter(user_type = "student")
+			CO = None
+			for i in students:
+				print("id ", len(i.id))
+				print("co ", len(co))
+				if co == i.id:
+					res = "success"
+					CO = i
+					break
+			if (res == "error"):
+				message = message + "The entered roll number of the co_ordinator does not exist"
+				content = {
+					'status' : res,
+					'message' : message
+				}
+				content = json.dumps(content)
+				return HttpResponse(content)
+
+			#checking for co-coordinator field
+			COCO = None
+			res = "error"
+			for i in students:
+				if coco == i.id:
+					res = "success"
+					COCO = i
+					break
+			if(res == "error"):
+				message = message + "The entered roll number of the co_coordinator does not exist"
+				content = {
+					'status' : res,
+					'message' : message
+				}
+				content = json.dumps(content)
+				return HttpResponse(content)
+
+			#checking for faculty field
+			FACUL = None
+			faculties = ExtraInfo.objects.all().filter(user_type = "faculty")
+			res = "error"
+			for i in faculties:
+				checkName = i.user.first_name + " " + i.user.last_name
+				if faculty == checkName:
+					res = "success"
+					FACUL = i
+					break
+			if (res == "error"):
+				message = message + "The entered faculty incharge does not exist"
+				content = {
+					'status' : res,
+					'message' : message
+				}
+				content = json.dumps(content)
+				return HttpResponse(content)
+			#getting queryset class objects
+			co_student = get_object_or_404(Student, id = CO)
+
+			#getting queryset class objects
+			coco_student = get_object_or_404(Student, id = COCO)
+
+			#    #    print "----------------------------------"
+			#    #    print COCO[1]
+			#    #    print COCO[0]
+			#    print "----------------------------"
+			#getting queryset class objects
+			# faculty = faculty.split(" - ")
+			# user_name = get_object_or_404(User, username = faculty[1])
+			# faculty = get_object_or_404(ExtraInfo, id = faculty[0], user = user_name)
+			faculty_inc = get_object_or_404(Faculty, id = FACUL)
+
+			# club_file.name = club_name+"_club_file"
+
+			club_info = Club_info(club_name = club_name, category = category, co_ordinator = co_student, co_coordinator = coco_student, faculty_incharge = faculty_inc, description = d_d)
+			club_info.save()
+
+			message = message + "The form has been successfully dispatched for further process"
+		except Exception as e:
+			res = "error"
+			message = "Some error occurred"
+
+		content = {
+		'status' : res,
+		'message' : message
+				}
+		content = json.dumps(content)
+		return HttpResponse(content)
+
+
+def retrun_content(roll, name, desig , club__ ):
+	students =ExtraInfo.objects.all().filter(user_type = "student")
 	faculty = ExtraInfo.objects.all().filter(user_type = "faculty")
 	club_name = Club_info.objects.all()
 	club_member = Club_member.objects.all()
@@ -21,22 +200,22 @@ def retrun_content(roll, name, desig):
 	club_session = Session_info.objects.all()
 	club_event = Club_report.objects.all()
 
-	# user = name +" - "+ roll
+	venue_type = []
+	id =0
+	venue = []
+
+
+	for i in Constants.venue:
+		for j in i[1]:
+			venue.append(j[0])
 	b=[]
-	##    print (roll, name, desig)
 	if 'student' in desig:
 		user_name = get_object_or_404(User, username = str(roll))
 		extra = get_object_or_404(ExtraInfo, id = roll, user = user_name)
 		student = get_object_or_404(Student, id = extra)
-
-		# curr_club = list(Club_member.objects.all().filter(member = student).values_list('club'))
-
-		# b = [i for sub in curr_club for i in sub]
-		##    print (b)
 	else :
 		b = []
-	# #    print roll, name.lower()
-
+	print(club__)
 	content = {
 		'Students' : students,
 		'Club_name' : club_name,
@@ -47,9 +226,41 @@ def retrun_content(roll, name, desig):
 		'Club_session': club_session,
 		'Club_event' : club_event,
 		'Curr_club' : b,
-		'Curr_desig' : desig
+		'venue' : venue,
+		'Curr_desig' : desig,
+		'club_details':club__,
+		'roll' : str(roll)
 	}
 	return content
+
+@login_required
+def getVenue(request):
+	selected = request.POST.get('venueType')
+	selected = selected.strip()
+	# print(id(selected))
+	venue_type =[]
+	venue_details ={}
+	idd =0
+	for i in Constants.venue:
+		for j in i:
+			if(idd%2==0):
+				venue_type.append(j)
+			else:
+				lt = [k[0] for k in j]
+				venue_details[venue_type[int(idd/2)]] = lt
+			idd=idd+1
+	# print(selected)
+	# print(len(selected))
+	content = []
+	for key, value in venue_details.items():
+		if key == selected:
+			for val in value:
+				val = val.strip()
+				content.append(val)
+	print(content)
+	content = json.dumps(content)
+	return HttpResponse(content)
+
 
 @login_required
 def gymkhana(request):
@@ -62,34 +273,52 @@ def gymkhana(request):
 		name_ = get_object_or_404(Designation, id = i)
 		# #    #    print name_
 		roll_.append(str(name_.name))
+	for i in Club_info.objects.all():
+		lines =str("");
+		Types = lines.split(" ")
+		#print(Types[1])
+	club__ = coordinator_club(request)	
+	return render(request, "gymkhanaModule/gymkhana.html", retrun_content(roll, name, roll_ , club__ ))
 
-	return render(request, "gymkhanaModule/gymkhana.html", retrun_content(roll, name, roll_))
 
 @login_required
 def club_membership(request):
 	if request.method == 'POST':
-		#getting form data
-		user = request.POST.get("user_name")
-		club = request.POST.get("club")
-		pda = request.POST.get("pda")
+		res = "success"
+		message = "The form has been dispatched for further process"
+		try:
+			#getting form data
+			user = request.POST.get("user_name")
+			club = request.POST.get("club")
+			pda = request.POST.get("achievements")
 
-		#getting queryset class objects
-		#user_name = User.objects.get(username = user[-7:])
-		USER = user.split(' - ')
-		user_name = get_object_or_404(User, username = USER[1])
-		extra = get_object_or_404(ExtraInfo, id = USER[0], user = user_name)
-		student = get_object_or_404(Student, id = extra)
-		#extra = ExtraInfo.objects.get(id = user[:-10], user = user_name)
-		#student = Student.objects.get(id = extra)
+			#getting queryset class objects
+			#user_name = User.objects.get(username = user[-7:])
+			USER = user.split(' - ')
+			user_name = get_object_or_404(User, username = USER[1])
+			extra = get_object_or_404(ExtraInfo, id = USER[0], user = user_name)
+			student = get_object_or_404(Student, id = extra)
+			#extra = ExtraInfo.objects.get(id = user[:-10], user = user_name)
+			#student = Student.objects.get(id = extra)
 
-		club_name = get_object_or_404(Club_info, club_name = club)
+			club_name = get_object_or_404(Club_info, club_name = club)
 
-		#saving data to the database
-		club_member = Club_member(member = student, club = club_name, description = pda)
-		club_member.save()
-		messages.success(request,"Successfully sent the application !!!")
+			#saving data to the database
+			club_member = Club_member(member = student, club = club_name, description = pda)
+			club_member.save()
+		except Exception as e:
+			res = "error"
+			message = "Some error occurred"
 
-	return redirect('/gymkhana/')
+		content = {
+			'status':res,
+			'message':message
+		}
+		content = json.dumps(content)
+		return HttpResponse(content)
+		# messages.success(request,"Successfully sent the application !!!")
+
+	# return redirect('/gymkhana/')
 
 @login_required
 def core_team(request):
@@ -115,47 +344,6 @@ def core_team(request):
 
 	return redirect('/gymkhana/')
 
-@login_required
-def new_club(request):
-	if request.method == 'POST' and request.FILES["file"]:
-		club_name = request.POST.get("club_name")
-		category = request.POST.get("category")
-		co = request.POST.get("co")
-		coco = request.POST.get("coco")
-		faculty = request.POST.get("faculty")
-		club_file = request.FILES["file"]
-		d_d = request.POST.get("d_d")
-
-		#getting queryset class objects
-		CO = co.split(' - ')
-		user_name = get_object_or_404(User, username = CO[1])
-		extra = get_object_or_404(ExtraInfo, id = CO[0], user = user_name)
-		co_student = get_object_or_404(Student, id = extra)
-
-		#getting queryset class objects
-		COCO = coco.split(' - ')
-		user_name = get_object_or_404(User, username = COCO[1])
-		extra = get_object_or_404(ExtraInfo, id = COCO[0], user = user_name)
-		coco_student = get_object_or_404(Student, id = extra)
-
-		#    #    print "----------------------------------"
-		#    #    print COCO[1]
-		#    #    print COCO[0]
-		#    print "----------------------------"
-		#getting queryset class objects
-		faculty = faculty.split(" - ")
-		user_name = get_object_or_404(User, username = faculty[1])
-		faculty = get_object_or_404(ExtraInfo, id = faculty[0], user = user_name)
-		faculty_inc = get_object_or_404(Faculty, id = faculty)
-
-		club_file.name = club_name+"_club_file"
-
-		club_info = Club_info(club_name = club_name, category = category, co_ordinator = co_student, co_coordinator = coco_student, faculty_incharge = faculty_inc, club_file = club_file, description = d_d)
-		club_info.save()
-
-		messages.success(request,"Successfully sent the request !!!")
-
-	return redirect('/gymkhana/')
 
 @login_required
 def event_report(request):
@@ -248,6 +436,7 @@ def club_report(request):
 
 	return redirect('/gymkhana/')
 
+
 @login_required
 def change_head(request):
 	if request.method == "POST" :
@@ -274,8 +463,8 @@ def change_head(request):
 
 		club_info = get_object_or_404(Club_info, club_name = club_name)
 
-		old_co = club_info.co_ordinator.id.user
-		old_coco = club_info.co_coordinator.id.user
+		old_co = ""
+		old_coco = ""
 		#    print "--------111"
 		#    print old_coco, old_co
 
@@ -300,19 +489,37 @@ def change_head(request):
 @login_required
 def new_session(request):
 	if request.method == "POST":
-		club = request.POST.get("club")
-		date = request.POST.get("date")
-		time = request.POST.get("time")
-		venue = request.POST.get("venue")
-		desc = request.POST.get("d_d")
+		club_name = None
+		res =None
+		message = None
+		try:
+			venue = request.POST.get("venue_type")
+			session_poster = request.FILES.get("session_poster")
+			date = request.POST.get("date")
+			start_time = request.POST.get("start_time")
+			end_time = request.POST.get("end_time")
+			desc = request.POST.get("d_d")
+			club_name = coordinator_club(request)
+			res = conflict_algorithm(date, start_time, end_time, venue)
+			message = ""
+			if(res == "success"):
+				session = Session_info(club = club_name, venue = venue, date =date, start_time=start_time , end_time = end_time ,session_poster = session_poster , details = desc)
+				session.save()
+				message += "Your form has been dispatched for further process"
+			else:
+				message += "The selected time slot for the given date and venue conflicts with already booked session" 
+		except Exception as e:
+			res = "error"
+			message = "Some error occurred"
 
-		club_name = get_object_or_404(Club_info, club_name = club)
+		content = {
+			'status':res,
+			'message':message
+		}
+		content = json.dumps(content)
+		return HttpResponse(content)
 
-		session = Session_info(club = club_name, venue = venue, date = date+" "+time, details = desc)
-		session.save()
-		messages.success(request,"Successfully created the session !!!")
-
-	return redirect('/gymkhana/')
+		
 
 @login_required
 def fest_budget(request):
@@ -356,29 +563,55 @@ def approve(request):
 	return redirect ('/gymkhana/')
 
 @login_required
+def club_approve(request):
+    lisx = list(request.POST.getlist('check'))
+    print(lisx)
+    for club in lisx:
+        print(club)
+        club_name = get_object_or_404(Club_info, club_name=club)
+        club_name.status = "confirmed"
+        club_name.save()
+        messages.success(request, "Successfully Approved !!!")
+
+    return redirect('/gymkhana/')
+
+@login_required
+def club_reject(request):
+    lisx = list(request.POST.getlist('check'))
+    print(lisx)
+    for club in lisx:
+        print(club)
+        club_name = get_object_or_404(Club_info, club_name=club)
+        club_name.status = "rejected"
+        club_name.save()
+        messages.success(request, "Successfully Rejected !!!")
+
+    return redirect('/gymkhana/')
+
+
+@login_required
 def reject(request):
+    lis = list(request.POST.getlist('check'))
 
-	lis = list(request.POST.getlist('check'))
+    for user in lis:
+        # pos = lis.index(user)
+        re = "remarks" + user
+        remarks = request.POST.getlist(re)
+        user = user.split(',')
+        info = user[0].split(' - ')
 
-	for user in lis :
-		#pos = lis.index(user)
-		re = "remarks"+user
-		remarks = request.POST.getlist(re)
-		user = user.split(',')
-		info = user[0].split(' - ')
+        # getting queryset class objects
+        user_name = get_object_or_404(User, username=info[1])
+        extra1 = get_object_or_404(ExtraInfo, id=info[0], user=user_name)
+        student = get_object_or_404(Student, id=extra1)
 
-		#getting queryset class objects
-		user_name = get_object_or_404(User, username = info[1])
-		extra1 = get_object_or_404(ExtraInfo, id = info[0], user = user_name)
-		student = get_object_or_404(Student, id = extra1)
+        club_member = get_object_or_404(Club_member, club=user[1], member=student)
+        club_member.status = "rejected"
+        club_member.remarks = remarks[0]
+        club_member.save()
+        messages.success(request, "Successfully Rejected !!!")
 
-		club_member = get_object_or_404(Club_member, club = user[1], member = student)
-		club_member.status = "rejectd"
-		club_member.remarks = remarks[0]
-		club_member.save()
-		messages.success(request,"Successfully rejected !!!")
-
-	return redirect ('/gymkhana/')
+    return redirect('/gymkhana/')
 
 @login_required
 def cancel(request):
@@ -401,3 +634,47 @@ def cancel(request):
 		messages.success(request,"Successfully deleted !!!")
 
 	return redirect ('/gymkhana/')
+
+@login_required
+def date_sessions(request):
+	if(request.is_ajax()):
+		value = request.POST.get('date')
+		get_sessions = Session_info.objects.filter(date=value).order_by('start_time')
+		dates = []
+		for i in get_sessions:
+			dates.append(i)
+		dates = serializers.serialize('json', dates)
+		return HttpResponse(dates)
+
+#this algorithm checks if the passed slot time coflicts with any of already booked sessions 
+def conflict_algorithm(date, start_time, end_time, venue):
+	#converting string to datetime type variable
+	start_time = datetime.datetime.strptime(start_time, '%H:%M').time()
+	end_time = datetime.datetime.strptime(end_time, '%H:%M').time()
+	booked_Sessions = Session_info.objects.filter(date=date, venue=venue)
+
+	#placing start time and end time in tuple fashion inside this list
+	slots = [(start_time, end_time)]
+	for value in booked_Sessions:
+		slots.append((value.start_time, value.end_time))
+	slots.sort()
+	#if there isn't any slot present for the selected day just book the session
+	if (len(slots) == 1):
+		return "success"
+	else:
+		#this whole logic checks if the end time of any slot is less than the start time of next slot
+		counter = slots[0][1]
+		flag = 0 
+		i=1
+		while i < len(slots):
+			print(counter)
+			if (slots[i][0] < counter):
+				print("error ", i)
+				flag = 1
+				break
+			counter = slots[i][1]
+			i = i + 1 
+		if (flag == 0):
+			return "success"
+		else:
+			return "error"

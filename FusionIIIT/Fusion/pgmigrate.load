@@ -1,0 +1,5 @@
+LOAD DATABASE
+     FROM      sqlite://fusion.db
+     INTO pgsql://admin:hello123@localhost/fusion
+WITH include drop, create tables
+;

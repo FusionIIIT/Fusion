@@ -151,12 +151,12 @@
 
                           </div>
 
-                          <div class="ui active tab" data-tab="Placement">
+                          <div class="{% if officer_statistics_past_pbi_search or officer_statistics_past_higher_search %}ui tab{% else %}ui active tab{% endif %}" data-tab="Placement">
 
                             <form method="post" class="ui form" role="form" action="{% url 'placement:placement_statistics' %}">
                               {% comment %}The add a new skill Accordian starts here!{% endcomment %}
-                              <div class="ui active accordion field">
-                                  <div class="title">
+                              <div class="ui accordion field">
+                                  <div class="active title">
                                       <i class="icon dropdown"></i>
                                       Search a Student!
                                   </div>
@@ -168,7 +168,7 @@
                                           <div class="field">
                                             {{ form3.stuname.errors }}
                                                   <label for="{{ form3.cname.id_for_label }}">
-                                                      Student Name {% if profile.designation.name != 'student' %}(Only for searching records){% endif %}
+                                                      Student Name
                                                   </label>
 
                                                   <div class="ui large input">
@@ -212,7 +212,7 @@
                                               <div class="field">
                                                 {{ form3.ctc.errors }}
                                                   <label for="{{ form3.ctc.id_for_label }}">
-                                                      CTC (LPA)
+                                                      min CTC (LPA)
                                                   </label>
 
                                                   <div class="ui large input">
@@ -239,6 +239,46 @@
                           {% elif placementrecord %}
                               <br>
                               <br>
+                              <!-- Pagination Section starts here  --->
+                    {% if pagination_placement %}
+
+                        <center>
+                          <div class="ui pagination menu">
+                            {% if placementrecord.has_previous %}
+                            <a href="?page={{placementrecord.previous_page_number}}" class="item">
+                              Previous
+                            </a>
+                            {% endif %}
+
+                            {% if is_disabled %}
+                              <a href="?page=1" class="item">1</a>
+                              <div class="disabled item">
+                                ...
+                              </div>
+                            {% endif %}
+
+                            {% for i in page_range %}
+                              {% if placementrecord.number == i %}
+                                <a href="?page={{i}}" class="active item">{{ i }} </a>
+                              {% else %}
+                                <a href="?page={{ i }}" class="item">{{ i }}</a>
+                              {% endif %}
+                            {% endfor %}
+
+
+
+                            {% if placementrecord.has_next %}
+                            <div class="disabled item">
+                              ...
+                            </div>
+                            <a href="?page={{placementrecord.next_page_number}}" class="item">
+                              Next
+                            </a>
+                            {% endif %}
+                          </div>
+                        </center>
+                    {% endif %}
+                    <!-- Pagination Section ends here --->
                               <div class="ui divider"></div>
                               <br>
 
@@ -248,9 +288,9 @@
                                   <th class="four wide">Student</th>
                                   <th class="two wide">Year</th>
                                   <th class="six wide">Company</th>
-                                  <th class="two wide">CTC</th>
-                                  {% if profile.designation.name != 'student' %}
-                                  <th class="two wide">Delete</th>
+                                  <th class="two wide">CTC(LPA)</th>
+                                  {% if delete_operation == 1 %}
+                                    <th class="two wide">Delete</th>
                                   {% endif %}
                               </tr>
                               </thead>
@@ -282,11 +322,11 @@
                                       {{ student.record_id.ctc }}
                                   </td>
 
-                                  {% if current == None %}
+                                  {% if delete_operation == 1 %}
                                   <td>
-                                    <form method="post" class="ui form" role="form">
+                                    <form method="post" action="{% url 'placement:delete_placement_statistics' %}" class="ui form" role="form">
                                       {% csrf_token %}
-                                      <button name="deleterecord" value="{{ student.pk }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
+                                      <button name="deleterecord" value="{{ student.id }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
                                           <i class="delete red icon"></i>
                                       </button>
                                       </form>
@@ -304,13 +344,13 @@
 
                           </div>
 
-                          <div class="ui tab" data-tab="PBI">
+                          <div class="{% if officer_statistics_past_pbi_search %}ui active tab{% else %}ui tab{% endif %}" data-tab="PBI">
 
 
                                         <form method="post" class="ui form" role="form">
                                         {% comment %}The add a new skill Accordian starts here!{% endcomment %}
-                                        <div class="ui active accordion field">
-                                            <div class="title">
+                                        <div class="ui accordion field">
+                                            <div class="active title">
                                                 <i class="icon dropdown"></i>
                                                 Search a Student!
                                             </div>
@@ -322,7 +362,7 @@
                                                     <div class="field">
                                                       {{ form3.stuname.errors }}
                                                             <label for="{{ form3.cname.id_for_label }}">
-                                                                Student Name {% if profile.designation.name != 'student' %}(Only for searching records){% endif %}
+                                                                Student Name
                                                             </label>
 
                                                             <div class="ui large input">
@@ -366,7 +406,7 @@
                                                         <div class="field">
                                                           {{ form3.ctc.errors }}
                                                             <label for="{{ form3.ctc.id_for_label }}">
-                                                                CTC
+                                                                min CTC (LPA)
                                                             </label>
 
                                                             <div class="ui large input">
@@ -380,7 +420,7 @@
                                                           Search
                                                       </button>
                                                     </div>
-                                              
+
                                                   </div>
                                                 </div>
                                             </div>
@@ -390,6 +430,46 @@
 
                                   <br>
                                   <br>
+                    <!-- Pagination Section starts here  --->
+                    {% if pagination_pbi %}
+
+                        <center>
+                          <div class="ui pagination menu">
+                            {% if pbirecord.has_previous %}
+                            <a href="?page={{pbirecord.previous_page_number}}" class="item">
+                              Previous
+                            </a>
+                            {% endif %}
+
+                            {% if is_disabled %}
+                              <a href="?page=1" class="item">1</a>
+                              <div class="disabled item">
+                                ...
+                              </div>
+                            {% endif %}
+
+                            {% for i in page_range %}
+                              {% if pbirecord.number == i %}
+                                <a href="?page={{i}}" class="active item">{{ i }} </a>
+                              {% else %}
+                                <a href="?page={{ i }}" class="item">{{ i }}</a>
+                              {% endif %}
+                            {% endfor %}
+
+
+
+                            {% if pbirecord.has_next %}
+                            <div class="disabled item">
+                              ...
+                            </div>
+                            <a href="?page={{pbirecord.next_page_number}}" class="item">
+                              Next
+                            </a>
+                            {% endif %}
+                          </div>
+                        </center>
+                    {% endif %}
+                    <!-- Pagination Section ends here --->
                                   <div class="ui divider"></div>
                                   <br>
 
@@ -402,9 +482,9 @@
                                       <th class="four wide">Student</th>
                                       <th class="two wide">Year</th>
                                       <th class="six wide">Company</th>
-                                      <th class="two wide">CTC</th>
-                                      {% if profile.designation.name != 'student' %}
-                                      <th class="two wide">Delete</th>
+                                      <th class="two wide">CTC(LPA)</th>
+                                      {% if delete_operation == 1 %}
+                                        <th class="two wide">Delete</th>
                                       {% endif %}
                                   </tr>
                                   </thead>
@@ -436,11 +516,11 @@
                                           &#8377; {{ student.record_id.ctc }}
                                       </td>
 
-                                      {% if current == None %}
+                                      {% if delete_operation == 1 %}
                                       <td>
-                                        <form method="post" class="ui form" role="form">
+                                        <form method="post" action="{% url 'placement:delete_placement_statistics' %}" class="ui form" role="form">
                                           {% csrf_token %}
-                                          <button name="deleterecord" value="{{ student.pk }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
+                                          <button name="deleterecord" value="{{ student.id }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
                                               <i class="delete red icon"></i>
                                           </button>
                                           </form>
@@ -461,12 +541,12 @@
 
                           </div>
 
-                          <div class="ui tab" data-tab="HigherStudies">
+                          <div class="{% if officer_statistics_past_higher_search %}ui active tab{% else %}ui tab{% endif %}" data-tab="HigherStudies">
 
                                <form method="post" class="ui form" role="form">
                           {% comment %}The add a new skill Accordian starts here!{% endcomment %}
-                          <div class="ui active accordion field">
-                              <div class="title">
+                          <div class="ui accordion field">
+                              <div class="active title">
                                   <i class="icon dropdown"></i>
                                   Search a Student!
                               </div>
@@ -478,7 +558,7 @@
                                     <div class="field">
                                       {{ form4.stuname.errors }}
                                         <label for="{{ form4.stuname.id_for_label }}">
-                                            Student Name {% if profile.designation.name != 'student' %}(Only for searching records){% endif %}
+                                            Student Name
                                         </label>
                                         <div class="ui large input">
                                             {{ form4.stuname }}
@@ -547,7 +627,7 @@
                                             Search
                                         </button>
                                       </div>
-                              
+
                                     </div>
                                   </div>
                               </div>
@@ -558,6 +638,47 @@
 
                                   <br>
                                   <br>
+
+                                  <!-- Pagination Section starts here  --->
+                    {% if pagination_higher %}
+
+                        <center>
+                          <div class="ui pagination menu">
+                            {% if higherrecord.has_previous %}
+                            <a href="?page={{higherrecord.previous_page_number}}" class="item">
+                              Previous
+                            </a>
+                            {% endif %}
+
+                            {% if is_disabled %}
+                              <a href="?page=1" class="item">1</a>
+                              <div class="disabled item">
+                                ...
+                              </div>
+                            {% endif %}
+
+                            {% for i in page_range %}
+                              {% if higherrecord.number == i %}
+                                <a href="?page={{i}}" class="active item">{{ i }} </a>
+                              {% else %}
+                                <a href="?page={{ i }}" class="item">{{ i }}</a>
+                              {% endif %}
+                            {% endfor %}
+
+
+
+                            {% if higherrecord.has_next %}
+                            <div class="disabled item">
+                              ...
+                            </div>
+                            <a href="?page={{higherrecord.next_page_number}}" class="item">
+                              Next
+                            </a>
+                            {% endif %}
+                          </div>
+                        </center>
+                    {% endif %}
+                    <!-- Pagination Section ends here --->
                                   <div class="ui divider"></div>
                                   <br>
 
@@ -571,8 +692,8 @@
                                       <th class="two wide">Exam</th>
                                       <th class="six wide">University</th>
                                       <th class="two wide">Score</th>
-                                      {% if profile.designation.name != 'student' %}
-                                      <th class="two wide">Delete</th>
+                                      {% if delete_operation == 1 %}
+                                        <th class="two wide">Delete</th>
                                       {% endif %}
                                   </tr>
                                   </thead>
@@ -606,11 +727,11 @@
                                           {{ student.record_id.test_score }}
                                       </td>
 
-                                      {% if current == None %}
+                                      {% if delete_operation == 1 %}
                                       <td>
-                                        <form method="post" class="ui form" role="form">
+                                        <form method="post" action="{% url 'placement:delete_placement_statistics' %}" class="ui form" role="form">
                                           {% csrf_token %}
-                                          <button name="deleterecord" value="{{ student.pk }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
+                                          <button name="deleterecord" value="{{ student.id }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
                                               <i class="delete red icon"></i>
                                           </button>
                                           </form>
@@ -645,7 +766,7 @@
                               {% endif %}
                             {% endfor %}
                           </div>
-                          
+
                           {% for year in years %}
                           {% if forloop.first %}
                           <div class="ui active tab" data-tab="{{ year }}">

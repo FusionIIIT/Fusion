@@ -2,12 +2,36 @@
 {% block catalog %}
 
     <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="catalog">
+        <a class="{% if last_clicked == '' or last_clicked == 'Enddate_updated' or last_clicked == 'Submit' %} active item {% else %} item {% endif %}" data-tab="catalog">
             Catalog
         </a>
+
+        <a class="item" data-tab="as">
+            About_spacs
+        </a>
+
+        <a class="{% if last_clicked == 'Submit_previous_winner' %} active item {% else %} item {% endif %}" data-tab="paw">
+              Previous Winners
+          </a>
     </div>
 
-    <div class="ui active tab" data-tab="catalog">
+    <div class="ui tab " data-tab="as">
+        <div class="ui vertical segment">
+            {% block aboutspacs %}
+                {% include 'scholarshipsModule/aboutspacs.html'  with hd=hd hd1=hd1 %}
+            {% endblock %}
+            </div>
+    </div>
+
+    <div class="{% if last_clicked == 'Submit_previous_winner' %} ui active tab {% else %} ui tab {% endif %}" data-tab="paw">
+        <div class="ui vertical segment">
+          {% block winners %}
+              {% include 'scholarshipsModule/winners.html' with winners_list=winners_list awards=awards%}
+          {% endblock %}
+            </div>
+    </div>
+
+    <div class="{% if last_clicked == '' or last_clicked == 'Enddate_updated' or last_clicked == 'Submit' %} ui active tab {% else %} ui tab {% endif %}" data-tab="catalog">
 
         <div class="ui vertical segment">
 
@@ -60,7 +84,7 @@
                             </h4>
 
                             <span class="aboutSpan">
-                                Sample Data about the Award!
+                                Eligibility Requirements : 1. Minimum CPI : Minimum reporting CPI (6.0 for GENERAL Category Students and 5.5 for SC/ST students) at the end of previous semester. 2. Family annual income certificate (Form A or Form B or Form C) : The parental/guardian family annual income of a student and from all sources in the preceeding financial year must not exceed 2.50 Lakhs. Please note that income certificate is properly sealed and signed bu Competent Revenue authority of Government of India. (Normally issued by District Magistrate / Tehsildat in original). Please enclosed the parental/guardian family income in the prescribed format(A,B,or C) as applicable. For more details refer to Institute SPACS manual.ifkhfuguthbuhrt
                             </span>
 
                             <div class="textarea">
@@ -119,20 +143,20 @@
                             </div>
                         </div>
 
-                        
+
 
                         <div class="ui tab" data-tab="Director Silver Medal Games and Sports">
                                 <h4 class="ui dividing header" style="margin-bottom: 16px;">
                                         Director Silver Medal Games and Sports
-    
+
                                     <input type="button"
                                            class="editButton ui red mini button right floated" onclick="editCatalogue()" value = "Edit"/>
                                 </h4>
-    
+
                                 <span class="aboutSpan">
                                     Sample Data about the Award!
                                 </span>
-    
+
                                 <div class="textarea">
                                     <textarea rows=5  style="width: 100%;"  class="aboutTextarea" hidden></textarea>
                                 </div>
@@ -346,4 +370,3 @@ $('#select_award').on('click','.item',function (event) {
     </script>
 
 {% endblock javascript %}
-

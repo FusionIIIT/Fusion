@@ -2,24 +2,28 @@
 {% block feedback %}
 
     {% comment %}The tab menu starts here!{% endcomment %}
+    
+
     <div class="ui pointing secondary menu ">
         <a class="active item" data-tab="feedback">
-            Feedback
+            Feedback for Complaints
         </a>
+        
 
     </div>
 
     <div class="ui active tab " data-tab="feedback">
-        <div class="ui vertical segment">
+        <div class="ui vertical segment" style="overflow-y: auto";>
 
             <table class="ui very basic collapsing celled sortable table"
-                   style="padding-left: 2.5%;
-                                                          padding-right: 2.5%;
+                   style="padding-left: 0.5%;
+                                                          padding-right: 0.5%;
                                                           padding-top: 1%;
                                                           padding-bottom: 1.5%;
                                                           margin: auto;">
                 <thead>
                 <tr>
+                   
                     <th class="three wide column">
                         Date &ensp;&ensp;&ensp;&ensp;&ensp;
 
@@ -32,23 +36,25 @@
                     <th>
                         Location
                     </th>
-
+<!-- 
                     <th>
-                        Specific Location
-                    </th>
+                        Specific <br> Location
+                        
+                    </th> -->
 
-                    <th class="three wide column">
+                    <th class="one wide column">
                         Details
                     </th>
 
                     <th class="one wide column">
                         Status
                     </th>
-                    <th class="three wide column">
-                        Worker Name
+                    <th class="one wide column">
+                        Worker<br>
+                        Name
                     </th>
                     <th class="three wide column">
-                        Submit Feedback
+                        Feedback
                     </th>
                 </tr>
                 </thead>
@@ -58,7 +64,7 @@
 
                 <tbody>
                 <tr>
-
+            
                     <td>
                         {{ a.complaint_date }}
                     </td>
@@ -68,15 +74,13 @@
                     </td>
 
                     <td>
-                        {{ a.location }}
-                    </td>
-
-                    <td>
+                        {{ a.location }} -<br>
+                    
                         {{ a.specific_location }}
                     </td>
 
                     <td>
-                        <a href="./detail/{{ a.id }}/"> Click here!</a>
+                        <a href="./detail/{{ a.id }}/"> <button class="ui inverted basic button" data-tooltip="Click here to view details" ><i class="large green info icon"></i></button></a>
                     </td>
 
                     <td>
@@ -90,10 +94,11 @@
                             <div class="field">
                                 <center>
                                     <a href="./{{ a.id }}">
-                                    <button class="ui green icon button" data-tooltip="Click here to submit" >
-                                        <i class="send icon"></i>
+                                    <button class="ui green icon button" data-tooltip="Give FeedBack" >
+                                       <i class="large comments icon"></i>
                                     </button>
                                     </a>
+                                  
                                 </center>
 
                             </div>
@@ -110,10 +115,6 @@
                     {% endif %}
                 {% endfor %}
             </table>
-
-
-
-
             <br>
             <div class="ui divider"></div>
             <div class="extra content">
@@ -121,7 +122,6 @@
                     <i class="large green checkmark icon"></i> : Completed &ensp;&ensp;&ensp;&ensp;&ensp;
                 </div>
             </div>
-        </div>
     </div>
-
+    </div>
 {% endblock %}

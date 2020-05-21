@@ -3,17 +3,17 @@
 
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
-        <a class=" ui active item" data-tab="menu1">
+        <a class=" ui active item" data-tab="" id="m1">
             Menu : Mess2
         </a>
-        <a class=" ui item" data-tab="menu2">
+        <a class=" ui item" data-tab="" id="m2">
             Menu : Mess1
         </a>
     </div>
 
-    <div class="ui active tab" data-tab="menu1">
+    <div class="ui active tab" data-tab="" id="m1tab">
         <div class="ui vertical segment">
-            <table class="ui definition padded table" style="margin: auto;">
+            <table class="ui definition table" style="margin: auto;">
                 <thead>
                 <tr>
                     <th></th>
@@ -183,18 +183,21 @@
             <div class="ui divider"></div>
 
             <div class="extra content">
-                <button class="ui primary button right floated">
+                <form method="post" target="_blank" action="{% url 'mess:MenuPDF' %}">
+                    {% csrf_token %}
+                <button type="submit" class="ui primary button right floated">
                     <!-- Download -->
                     <i class="ui download icon right floated"></i>
                 </button>
+                </form>
                 <br>
             </div>
         </div>
     </div>
 
-<div class="ui tab" data-tab="menu2">
+<div class="ui tab" data-tab="" id="m2tab">
         <div class="ui vertical segment">
-            <table class="ui definition padded table" style="margin: auto;">
+            <table class="ui definition table" style="margin: auto;">
                 <thead>
                 <tr>
                     <th></th>
@@ -355,21 +358,50 @@
 
                 </tr>
                     
-                
+
                 </tbody>
 
             </table>
 
             <br>
-            <div class="ui divider"></div>
+            <div class="ui divider"> </div>
 
             <div class="extra content">
-                <button class="ui primary button right floated">
+                <!-- TODO add code to direct to a function which renders the template as a pdf file -->
+                 <form method="post" target="_blank" action="{% url 'mess:MenuPDF1' %}">
+                    {% csrf_token %}
+                <button type="submit" class="ui primary button right floated">
                     <!-- Download -->
                     <i class="ui download icon right floated"></i>
                 </button>
+                </form>
                 <br>
             </div>
         </div>
     </div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+$(document).ready(function(){
+     $('#m1').on('click',function(){
+        $(this).addClass('active');
+         $('#m2').removeClass('active');
+         $('#m1tab').show();
+          $('#m2tab').hide();
+
+     });
+
+ });
+ $(document).ready(function(){
+     $('#m2').on('click',function(){
+        $(this).addClass('active');
+         $('#m1').removeClass('active');
+        $('#m1tab').hide();
+          $('#m2tab').show();
+
+     });
+
+ });
+</script>
 {% endblock %}

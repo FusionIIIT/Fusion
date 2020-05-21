@@ -12,17 +12,13 @@
         {% include 'dashboard/navbar.html' %}
     {% endblock %}
 
-    {% comment %}The grid starts here!{% endcomment %}
     <div class="ui stackable doubling grid">
 
         {% comment %}The left-margin segment!{% endcomment %}
         <div class="column"></div>
 
-        {% comment %}
-            The left-rail segment starts here!
-        {% endcomment %}
+        {% comment %}The left-rail segment starts here!{% endcomment %}
         <div class="three wide column">
-
             {% comment %}The user image card starts here!{% endcomment %}
             {% block usercard %}
                 {% include 'globals/usercard.html' %}
@@ -32,95 +28,62 @@
             <div class="ui divider"></div>
 
             {% comment %}The Tab-Menu starts here!{% endcomment %}
-            <div class="ui huge fluid vertical pointing menu"
-            style="max-width: 320px;
-                   height: 400px;
-                   overflow: scroll;">
-                   <a class="item" href="/aims" >
-                       Generate Student List
-                       <i class="right floated chevron right icon"></i>
-                   </a>
-                   <a class=" active item" data-tab="seventh">
-                         Verify Registered Courses
-                       <i class="right floated chevron right icon"></i>
-                   </a>
-
-                  <a class="item" href="/aims">
-                      Select Optional Courses
-                      <i class="right floated chevron right icon"></i>
-                  </a>
-                  <a class="item"  href="/aims">
-                      Add Course
-                      <i class="right floated chevron right icon"></i>
-                  </a>
-                  <a class="item" href="/aims">
-                      Set Minimum Credit
-                      <i class="right floated chevron right icon"></i>
-                  </a>
-                  <a class="item" href="/aims">
-                      Academic Calendar
-                      <i class="right floated chevron right icon"></i>
-                  </a>
-                  <a class="item" href='/academic-procedures/acad_person/branch_change' >
-                      Approve Branch Change
-                      <i class="right floated chevron right icon"></i>
-                  </a>
-
-                     <a class=" item" href="/aims">
-                          Time Tables
-                         <i class="right floated chevron right icon"></i>
-                     </a>
-                 <a class="item" href="/aims">
-                     Manage Student Profile
-                     <i class="right floated chevron right icon"></i>
-                 </a>
-
-
-                 <a class="item" href="/aims">
-                     Senate
-                     <i class="right floated chevron right icon"></i>
-                 </a>
-
-                 <a class="item" href="/aims">
-                     Attendance
-                     <i class="right floated chevron right icon"></i>
-                 </a>
-
+            <div class="ui huge fluid vertical pointing menu" 
+                 style="max-width: 320px;">
+                    <a class="active item" data-tab="register">
+                        <B>Verify Registered Courses</B>
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    <a class="item" data-tab="result">Results
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    <a class="item" href="/aims/" >
+                    Generate Student List
+                    <i class="right floated chevron right icon"></i>
+                    </a>
+                    <a class="item" href="/aims/add_new_profile">
+                    Manage Students Profile
+                    <i class="right floated chevron right icon"></i>
+                    </a>
+                    <a class="item" href="/aims/update_calendar">
+                   Academic Calendar
+                   <i class="right floated chevron right icon"></i>
+                    </a>
+                    <a class="item" href="/aims/add_timetable">
+                    Time Tables
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                    <a class="item" href="/aims/float_course">
+                    Float Courses for Next Sem
+                    <i class="right floated chevron right icon"></i>
+                </a>
+                
+                <a class="item" href="/aims/view_curriculum">
+                    Curriculum
+                    <i class="right floated chevron right icon"></i>
+                </a>
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
-
         </div>
         {% comment %}
             The left-rail segment ends here!
         {% endcomment %}
 
-
-
         {% comment %}
             The central-rail segment starts here!
         {% endcomment %}
         <div class="eight wide column">
-            {% comment %}The ... start here!{% endcomment %}
-            <div class="ui active tab segment" data-tab="seventh">
-                {% block studentlist %}
-                    {%  include 'academic_procedures/studentlist.html' %}
-                {%  endblock %}
+
+
+
+            <div class="ui active tab segment" data-tab="register" >
+                {%  include 'academic_procedures/studentlist.html' %}
             </div>
 
-            {% comment %}The ... end here!{% endcomment %}
-            <div class="ui tab segment" >
-                {% if messages %}
-                <ul class="messages">
-                    {% for message in messages %}
-                    <li>{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-                    {% endfor %}
-                </ul>
-                {% endif %}
-                {% block changebranch %}
-                    {%  include 'academic_procedures/branch_change.html' %}
-                {%  endblock %}
+            <div class="ui tab segment" data-tab="result">
+                {%  include 'academic_procedures/result.html' %}
             </div>
-
+            
         </div>
         {% comment %}The central-rail segment ends here!{% endcomment %}
 
@@ -146,4 +109,5 @@
     <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
     <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
     <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+</script>
 {% endblock %}

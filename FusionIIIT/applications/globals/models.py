@@ -78,13 +78,16 @@ class Designation(models.Model):
 
 
 class DepartmentInfo(models.Model):
-    name = models.CharField(max_length=30, unique=True)
+    name = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
-        return 'department: {}'.format(self.name)
+        return format(self.name)
 
 
 class ExtraInfo(models.Model):
+    """
+    Extra Info to augment the default User model from django
+    """
     id = models.CharField(max_length=20, primary_key=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=20, choices=Constants.TITLE_CHOICES, default='Dr.')
@@ -102,20 +105,25 @@ class ExtraInfo(models.Model):
         timedelta = timezone.now().date() - self.date_of_birth
         return int(timedelta.days / 365)
 
-    @property
-    def age(self):
-        timedelta = timezone.localtime(timezone.now()).date() - self.date_of_birth
-        return int(timedelta.days / 365)
-
     def __str__(self):
         return '{} - {}'.format(self.id, self.user.username)
 
 
 class HoldsDesignation(models.Model):
+    """
+    Records designations held by users.
+
+    'user' refers to the permanent/tenured holder of the designation.
+    'working' always refers to the user who's holding the title, either permanently or temporarily
+    Use 'working' to handle permissions in code
+    """
     user = models.ForeignKey(User, related_name='holds_designations', on_delete=models.CASCADE)
     working = models.ForeignKey(User, related_name='current_designation', on_delete=models.CASCADE)
     designation = models.ForeignKey(Designation, related_name='designees', on_delete=models.CASCADE)
     held_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = [['user', 'designation'], ['working','designation']]
 
     def __str__(self):
         return '{} - {}'.format(self.user.username, self.designation)

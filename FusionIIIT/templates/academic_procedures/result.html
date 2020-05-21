@@ -1,0 +1,103 @@
+{% load static %}
+
+
+<style>
+.submitted_course_marks , .resultBatch{
+  background-color: #f1f1f1;
+  color: #444;
+  cursor: pointer;
+  padding: 18px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 15px;
+  transition: 0.4s;
+  margin-top: 3px;
+  margin-bottom: 3px;
+  border-radius: 3px; 
+}
+
+.submitted_course_marks:hover {
+  background-color: #ddd; 
+}
+.resultBatch:hover {
+  background-color: #ddd; 
+}
+
+
+</style>
+<div class="ui three item stackable tabs menu" style="width: 100%">
+    <a class="active item" data-tab="grade_verification" style="width: 22%">
+        <center>Grade Verification</center>
+    </a>
+    <a class=" item" data-tab="manual_grade" style="width: 34%">
+        <center>Manual Grade Submission</center>
+    </a>
+    <a class=" item" data-tab="results_generate" style="width: 22%">
+        <p><center>Result Generation</center></p>
+    </a>
+    <a class=" item" data-tab="results" style="width: 22%">
+        <p><center>Announce Results</center></p>
+    </a>
+
+</div>
+
+<div class="ui active tab" data-tab="grade_verification">
+	<B><center><p >Verify Grades</p></center></B>
+
+	<div id="submitted_course_list">
+		{% for obj in submitted_course_list %}
+		<div class="submitted_course_marks" id="submitted_course_marks{{forloop.counter}}" data="{{forloop.counter}}" data1 ="{{obj.curriculum_id}}" data2="{{obj.course_code}}">{{obj.course_id.course_name}} - {{obj.course_code}}</div>
+		{% endfor %}
+		<p style="color: red">*There is nothing else to show!!!</p>
+	</div>
+
+	<div id="submitted_course_data">
+		
+	</div>
+</div>
+<div class="ui tab " data-tab="manual_grade" style="width: 100%">
+	{%  include 'academic_procedures/manual_grade_submission.html' %}
+</div>
+<div class="ui tab " data-tab="results_generate" style="width: 100%">
+	{%  include 'academic_procedures/result_generation.html' %}
+</div>
+<div class="ui tab " data-tab="results" style="width: 100%">
+	{%  include 'academic_procedures/result_announce.html' %}
+</div>
+<div id="for_next_html_id" hidden="true" data=""> chal ja be</div>
+
+
+
+
+
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+	$(document).ready(function(){
+		$('.submitted_course_marks').on('click',function(e){
+			var course_code = $(this).attr("data2");
+			var curriculum_id = $(this).attr("data1");
+			var id = $(this).attr("data");
+			$('#for_next_html_id').attr("data",id) ;
+			$.ajax({
+				type:"POST",
+		        url: "/academic-procedures/verify_course_marks_data/",
+		        data:{
+		        		curriculum_id : curriculum_id,
+		                csrfmiddlewaretoken: '{{ csrf_token }}'
+		        },
+		        success: function( data ) 
+		        {
+		        	$('#submitted_course_list').hide(400);
+		        	$("#submitted_course_data").show();
+		        	$("#submitted_course_data").html(data.data);
+		        }
+			});
+		});
+
+
+
+	});
+
+</script>

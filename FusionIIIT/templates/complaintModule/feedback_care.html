@@ -1,0 +1,131 @@
+<!-- feedback details viewed by caretaker -->
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+Complaint
+{% endblock %}
+
+
+{% block body %}
+{% block navBar %}
+{% include 'dashboard/navbar.html' %}
+{% endblock %}
+
+
+{% comment %}The grid starts here!{% endcomment %}
+<div class="ui stackable doubling grid">
+
+    {% comment %}The left-margin segment!{% endcomment %}
+    <div class="column"></div>
+
+    {% comment %}
+    The left-rail segment starts here!
+    {% endcomment %}
+    <div class="three wide column">
+
+        {% comment %}The user image card starts here!{% endcomment %}
+        {% block usercard %}
+        {% include 'globals/usercard.html' %}
+        {% endblock %}
+        {% comment %}The user image card ends here!{% endcomment %}
+
+
+        <div class="ui divider"></div>
+
+        {% comment %}The Tab-Menu starts here!{% endcomment %}
+        <div class="ui huge fluid vertical pointing menu"
+             style="max-width: 320px;">
+
+            <a class="active item" data-tab="first">
+                Feedback Detail
+                <i class="right floated chevron right icon"></i>
+            </a>
+
+
+        </div>
+        {% comment %}The Tab-Menu ends here!{% endcomment %}
+    </div>
+    {% comment %}
+    The left-rail segment ends here!
+    {% endcomment %}
+    <div class="nine wide column">
+        {% comment %}The ... start here!{% endcomment %}
+        <div class="ui active tab segment" data-tab="first">
+
+            <div class="ui pointing secondary menu ">
+                <a class="active item" data-tab="feedback">
+                    Feedback
+                </a>
+
+            </div>
+
+
+            <div class="ui active tab large" data-tab="feedback">
+                <!-- <div class="field">
+                                 <button class="ui green icon button right floated">
+                                    <i class="large undo icon"></i>
+                                </button>
+                        </div> -->
+                <div class="ui vertical segment" style="padding:30px">
+                    <form method="post" action=".">
+                        {% csrf_token %}
+                        <div class="ui header">
+                            <h3><label><b>Complainer Details :</b></label></h3>
+                            <div><i>Complainer : </i>
+                                {{detail2.complainer.user.first_name}}
+                                {{detail2.complainer.user.last_name}}
+                                <br><i> Complainer ID :</i> {{ detail2.complainer.id }}
+                            </div>
+                            <div class="fields">
+                                <br><br>
+                                <div class="eight wide field">
+                                    <h3><label><b>Complaint Details :</b></label></h3>
+                                    <div><i>Complaint ID :</i> {{ comp_id }}<br>
+                                        <i>Complaint Details : </i> {{detail2.details }}<br>
+                                        <i>Feedback : </i> <font color="red"> {{detail2.feedback }} </font></div>
+                                </div>
+
+
+                            </div>
+
+                        </div>
+                    </form>
+                    <a href="javascript:history.go(-1)"><button class="ui large primary button right floated">Back</button></i></a>
+
+                </div>
+            </div>
+            {% comment %}The ... end here!{% endcomment %}
+        </div>
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            <div class="row">
+                {% comment %}
+                TODO: the right rail!
+                {% endcomment %}
+            </div>
+        </div>
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+    </div>
+    {% comment %}The grid ends here!{% endcomment %}
+
+    {% endblock %}
+
+    {% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+
+    {% endblock %}
+
+    {% block css %}
+
+    {% endblock %}
+

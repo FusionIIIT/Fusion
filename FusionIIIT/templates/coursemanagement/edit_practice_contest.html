@@ -1,7 +1,7 @@
 {% extends 'globals/base.html' %}
 {% load static %}
 {% block title %}
-Edit Contest
+Objetive Assignment
 {% endblock %}
 {% block css %}
 <link href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.4/semantic.min.css" rel="stylesheet" type="text/css" />
@@ -177,7 +177,7 @@ Edit Contest
        }
 
        $('#showbox').click(function(){
-        console.log("madar");
+        console.log("edit_contest");
         showbox();
        });
 
@@ -193,7 +193,7 @@ Edit Contest
     data.append('number',pk);
     data.append('csrfmiddlewaretoken','{{csrf_token}}');
     $.ajax({
-        url: "/ocms/{{course.course_id}}/edit_quiz_details/{{details.pk}}/",
+        url: "/ocms/{{course.course_id}}/edit_practice_details/{{details.pk}}/",
         processData: false,
         contentType: false,
         type: 'POST',

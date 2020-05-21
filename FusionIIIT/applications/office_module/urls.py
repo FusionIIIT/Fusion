@@ -3,7 +3,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from . import views
 
-app_name = 'office'
+app_name = 'office_module'
 
 urlpatterns = [
 
@@ -13,8 +13,22 @@ urlpatterns = [
     url(r'^apply_purchase/', views.apply_purchase, name='apply_purchase'),
     url(r'^after_purchase/', views.after_purchase, name='after_purchase'),
     url(r'^officeOfRegistrar/$', views.officeOfRegistrar, name='officeOfRegistrar'),
+    url(r'^officeOfRegistrar/response/ajax$', views.officeOfRegistrar_ajax_submit, name='officeOfRegistrar_ajax_submit'),
+    #url(r'^officeOfRegistrar/assistantRegistrar/$', views.assistantRegistrar, name="assistantRegistrar"),
+    url(r'^officeOfRegistrar/forward/(?P<id>[0-9]+)', views.officeOfRegistrar_forward, name='officeOfRegistrar_forward'),
+    url(r'^officeOfRegistrar/forwardsubmit/$', views.officeOfRegistrar_forward_submit, name='officeOfRegistrar_forward_submit'),
     url(r'^officeOfDeanRSPC/$', views.officeOfDeanRSPC, name='officeOfDeanRSPC'),
+    url(r'^newordershod/',views.newordershod,name='newordershod'),
+    url(r'^newordershod2/',views.newordershod,name='newordershod2'),
+    url(r'^newordersdirector/',views.newordersdirector,name='newordersdirector'),
+    url(r'^add_items/',views.add_items,name='add_items'),
+    url(r'^view_items/',views.view_items,name='view_items'),
+    url(r'^newordersdirectorview/',views.newordersdirectorview,name='newordersdirectorview'),
 
+    url(r'^newordersPOonGem/',views.newordersPOonGem,name='newordersPOonGem'),
+    url(r'^newordersPO/',views.newordersPO,name='newordersPO'),
+    url(r'^newordersregistrar/',views.newordersregistrar,name='newordersregistrar'),
+    url(r'^newordersregistrar2/',views.newordersregistrar2,name='newordersregistrar2'),
     url(r'^officeOfDeanRSPC/submit/$',views.project_register,name='p_register'),
     url(r'^officeOfDeanRSPC/extention/$',views.project_extension,name='p_extension'),
     url(r'^officeOfDeanRSPC/close/$',views.project_closure,name='p_closure'),
@@ -28,6 +42,11 @@ urlpatterns = [
     url(r'^officeOfDeanRSPC/forwarded2/$',views.hod_extension,name='hod_extension'),
     url(r'^officeOfDeanRSPC/forwarded3/$',views.hod_allocation,name='hod_allocation'),
     url(r'^officeOfDeanRSPC/(?P<pr_id>[0-9]+)/$',views.pdf,name='pdf'),
+    url(r'^officeOfDeanRSPC/registration_details/(?P<pr_id>[0-9]+)/$', views.reg_details, name='reg_details'),
+    url(r'^officeOfDeanRSPC/extension_details/(?P<pr_id>[0-9]+)/$', views.ext_details, name='ext_details'),
+    url(r'^officeOfDeanRSPC/closure_details/(?P<pr_id>[0-9]+)/$', views.closure_details, name='closure_details'),
+    url(r'^officeOfDeanRSPC/reallocation_details/(?P<pr_id>[0-9]+)/$', views.reallocate_details,
+        name='reallocate_details'),
 
     url(r'^eisModulenew/profile', views.eisModulenew, name='eisModulenew'),
 
@@ -36,7 +55,10 @@ urlpatterns = [
     url(r'^officeOfHOD/submit/$',views.teaching_form,name='teaching_form'),
     url(r'^officeOfHOD/work/$',views.hod_work,name='hod_work'),
     url(r'^genericModule/', views.genericModule, name='genericModule'),
-    url(r'^deleteitem/(?P<id>[0-9]+)',views.delete_item, name='delete_item'),
+
+
+
+    url(r'^deleteitem/',views.delete_item, name='delete_item'),
     url(r'^deletevendor/(?P<id>[0-9]+)',views.delete_vendor, name='delete_vendor'),
     url(r'^editvendor/(?P<id>[0-9]+)',views.edit_vendor, name='edit_vendor'),
     url(r'^editvendor/office/officeOfPurchaseOfficer/edit/',views.edit,name='edit'),
@@ -44,23 +66,38 @@ urlpatterns = [
     url(r'^edititem/office/officeOfPurchaseOfficer/edit1/',views.edit1,name='edit'),
     url(r'^genericModule/', views.genericModule, name='genericModule'),
     url(r'^directorOffice/$', views.directorOffice, name='directorOffice'),
-    url(r'^directorOffice/appoint', views.appoint, name='appoint'),
+    url(r'^directorOffice/viewProfile', views.viewProfile, name='viewProfile'),
+    url(r'^directorOffice/viewFacProfile', views.viewFacProfile, name='viewFacProfile'),
+    url(r'^directorOffice/viewStaffProfile', views.viewStaffProfile, name='viewStaffProfile'),
+    url(r'^directorOffice/viewStudentProfile', views.viewStudentProfile, name='viewStudentProfile'),
+    url(r'^directorOffice/viewOngoingProjects', views.viewOngoingProjects, name='viewOngoingProjects'),
+    url(r'^directorOffice/viewOfficeBearers', views.viewOfficeBearers, name='viewOfficeBearers'),
+    url(r'^directorOffice/meeting_dropdown', views.meeting_dropdown, name='meeting_dropdown'),
+    url(r'^directorOffice/viewMeetings', views.viewMeetings, name='viewMeetings'),
+    url(r'^directorOffice/viewHOD', views.viewHOD, name='viewHOD'),
     url(r'^directorOffice/meeting', views.meeting, name='meeting'),
+    url(r'^directorOffice/planMeetings', views.planMeetings, name='planMeetings'),
+    url(r'^officeOfRegistrar/view/(?P<id>[0-9]+)', views.officeOfRegistrar_view_file, name='registrar_view_file'),
     url(r'^officeOfRegistrar/upload/$', views.upload, name='upload'),
     url(r'^officeOfRegistrar/generalAdminForm/reject/$', csrf_exempt(views.admin_reject), name='admin_reject'),
     url(r'^officeOfDeanStudents/$', views.officeOfDeanStudents, name='officeOfDeanStudents'),
     url(r'^officeOfPurchaseOfficer/', views.officeOfPurchaseOfficr, name='officeOfPurchaseOfficer'),
     url(r'^officeOfRegistrar/', views.officeOfRegistrar, name='officeOfRegistrar'),
+
     url(r'^genericModule/', views.genericModule, name='genericModule'),
     url(r'^officeOfDeanStudents/holding_meeting', views.holdingMeeting, name='holdingMeetings'),
     url(r'^officeOfDeanStudents/meeting_Minutes', views.meetingMinutes, name='meetingMinutes'),
-    url(r'^officeOfDeanStudents/hostelRoomAllotment', views.hostelRoomAllotment),
+    url(r'^officeOfDeanStudents/hostelRoomAllotment', views.hostelRoomAllotment, name='hostelRoomAllotment'),
+    url(r'^officeOfDeanStudents/deleteHostelRoomAllotment', views.deleteHostelRoomAllotment, name='deleteHostelRoomAllotment'),
+    url(r'^officeOfDeanStudents/deleteAllHostelRoomAllotment', views.deleteAllHostelRoomAllotment),
     url(r'^officeOfDeanStudents/budget_approval', views.budgetApproval),
     url(r'^officeOfDeanStudents/budget_rejection', views.budgetRejection),
     url(r'^officeOfDeanStudents/club_approval', views.clubApproval),
     url(r'^officeOfDeanStudents/club_rejection', views.clubRejection),
-    url(r'^officeOfDeanStudents/budgetAllot', views.budgetAllot),
     url(r'^officeOfDeanStudents/budgetAllotEdit', views.budgetAllotEdit),
+    url(r'^officeOfDeanStudents/budgetAllot', views.budgetAllot),
+    url(r'^officeOfDeanStudents/session_approval', views.sessionApproval),
+    url(r'^officeOfDeanStudents/session_rejection', views.sessionRejection),
     url(r'^officeOfDeanAcademics/$', views.officeOfDeanAcademics, name='officeOfDeanAcademics'),
 
     url(r'^officeOfDeanAcademics/assistantship', views.assistantship, name='assistantship'),

@@ -13,6 +13,7 @@ Edit Contest
 {% block navBar %}
     {% include 'dashboard/navbar.html' %}
 {% endblock %}
+
 <div class="ui stackable doubling grid">
 <div class="column"></div>
 <div class="three wide column" >
@@ -20,40 +21,17 @@ Edit Contest
 
         <div class="ui divider"></div>
 
-
+              <h3> {{course.course_name}}  </h3>
         <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+          
+                    <a class="active item sidetab" data-tab="first" data-num="11">
+                      Course Content
+                    <i class="right floated chevron right icon"></i>
+                 </a>
 
-                <a class="active item sidetab" data-tab="first" data-num="11">
-                  View Courses
-                  <i class="right floated chevron right icon"></i>
-                </a>
-
-                <a class="item sidetab" data-tab="second" data-num="12">
-                  Assignments
-                  <i class="right floated chevron right icon"></i>
-                </a>
-
-                <a class="item sidetab" data-tab="third" data-num="13">
-                  View Performance
-                  <i class="right floated chevron right icon"></i>
-                </a>
-                {% if lecturer == 1 %}
-                <a class="item sidetab" data-tab="fourth" data-num="14">
-                  Add Content
-                  <i class="right floated chevron right icon"></i>
-                </a>
-
-                <a class="item sidetab" data-tab="fifth" data-num="15">
-                  Assessment
-                  <i class="right floated chevron right icon"></i>
-                </a>
-                <a class="item sidetab" data-tab="sixth" data-num="16">
-                  Question Bank
-                  <i class="right floated chevron right icon"></i>
-                </a>
-              {% endif %}
-            </div>
+        </div>
     </div>
+
     <div class="ui grid twelve wide column">
         <div class="centered fourteen wide column" style="margin-top:2em;margin-bottom:2em">
             <h2 class="ui center aligned icon header">
@@ -147,52 +125,82 @@ Edit Contest
                       <tbody>
                         {% for key, value in counter.items %}
                         <tr>
-                          <td><a href="/ocms/{{course.course_id}}/edit_quiz/{{details.pk}}/{{key.pk}}">{{key.topic_name}}</a></td>
+                          <td><a href="/ocms/{{curriculum.course_code}}/edit_quiz/{{details.pk}}/{{key.pk}}">{{key.topic_name}}</a></td>
                           <td><a href="#">{{value}}</a></td>
                         </tr>
                         {% endfor %}
                       </tbody>
 
                     </table>
-                    <a href="/ocms/{{course.course_id}}/preview_quiz/{{details.pk}}" class="ui blue button" style="margin-left:1em">Preview Question Paper</a>
+                    <a href="/ocms/{{curriculum.course_code}}/preview_quiz/{{details.pk}}" class="ui blue button" style="margin-left:1em">Preview Question Paper</a>
                   </div>
                 </div>
 
 
-                <a id="showbox">
+                <a id="showbox_1">
                     <div class="ui primary button">
-                        Add a question
+                        Add question from question bank
                     </div>
                 </a>
 
                 <div class="ui segment" id="ques_div" style="display:none">
-                    <form class="ui large form" method="post" action="/ocms/{{course.course_id}}/{{details.pk}}/add_question_topic">
+                    <form class="ui large form" method="post" action="/ocms/{{curriculum.course_code}}/{{details.pk}}/add_question_topic">
                       {% csrf_token %}
                         <div class="ui two fields">
                           <div class="ui field">
-                            <label>Question Bank</label>
-                              <select name="qbank" id="questionbank" class="ui fluid dropdown">
+                            <label>Question Bank <font color="red" size="4.5">*</font></label>
+                              <select name="qbank" id="questionbank" class="ui fluid dropdown" required/>
                               <option value="">Question Bank</option>
-                              {% for qb in questionbank %}
-                               <option value="{{qb.pk}}">{{qb.name}}</option>
+
+                               {% for qb in questionbank %}
+                                 {% if forloop.first %}
+                                    <option value="{{qb.pk}}" selected="selected">{{qb.name}}</option>
+                                 {% else %}
+                                <option value="{{qb.pk}}">{{qb.name}}</option>
+                               {% endif %}
                               {% endfor %}
                             </select>
                           </div>
                           <div class="ui field">
-                            <label>Topics</label>
-                            <select name="topic" id="topicquestion" class="ui fluid dropdown">
+                            <label>Topics <font color="red" size="4.5">*</font></label>
+                            <select name="topic" id="topicquestion" class="ui fluid dropdown" required/>
                               <option value="">Topic</option>
                               {% for topic in topics %}
-                               <option value="{{topic.pk}}">{{topic.topic_name}}</option>
-                               {% endfor %}
+                                  {% if forloop.first %}
+                                        <option value="{{topic.pk}}" selected="selected">{{topic.topic_name}}</option>
+
+                                  {% else %}
+                                    <option value="{{topic.pk}}">{{topic.topic_name}}</option>
+                                  {% endif %}
+                              {% endfor %}
                              </select>
                           </div>
                         </div>
-                        <button class="ui blue button" type="submit">Submit</button>
+                         <input type="submit" class="ui primary button" value="Submit" />
                       </form>
 
                 </div>
-                <a class="ui blue button" href="/ocms/{{course.course_id}}/">
+
+             <!--    <a id="showbox_2">
+                    <div class="ui primary button">
+                        Add new question
+                    </div>
+               </a> -->
+
+                <div class="ui segment" id="ques_new" style="display:none">
+                  <form class="ui large form" method="post" action="/ocms/{{curriculum.course_code}}/create_bank">
+                  {% csrf_token %} {% if errors %} {{errors}} {% endif %}
+                  <br/>
+                  
+                  <div class="field">
+                    <label>Question Bank Name <font color="red" size="4.5">*</font></label>
+                    <input type="text" name="qbname" placeholder="Name" required="True"/>
+                  </div>
+                  <input type="submit" class="ui primary button" value="Create" />
+                </form>
+              </div>
+				
+            <a class="ui blue button" href="/ocms/{{curriculum.course_code}}/">
                  Done!
                 </a>
             </div>
@@ -213,7 +221,7 @@ Edit Contest
        event.keyCode = 0;
        return false;
    }
- function showbox() {
+ function showbox_1() {
         var x = document.getElementById("ques_div");
         if (x.style.display === "none") {
             x.style.display = "block";
@@ -222,10 +230,25 @@ Edit Contest
         }
        }
 
-       $('#showbox').click(function(){
+       $('#showbox_1').click(function(){
         console.log("madar");
-        showbox();
+        showbox_1();
        });
+
+function showbox_2() {
+        var x = document.getElementById("ques_new");
+        if (x.style.display === "none") {
+            x.style.display = "block";
+        } else {
+            x.style.display = "none";
+        }
+       }
+
+       $('#showbox_2').click(function(){
+        console.log("madar");
+        showbox_2();
+       });
+
 
   $('.form_submit').click(function(){
     event.preventDefault();
@@ -239,7 +262,7 @@ Edit Contest
     data.append('number',pk);
     data.append('csrfmiddlewaretoken','{{csrf_token}}');
     $.ajax({
-        url: "/ocms/{{course.course_id}}/edit_quiz_details/{{details.pk}}/",
+        url: "/ocms/{{curriculum.course_code}}/edit_quiz_details/{{details.pk}}/",
         processData: false,
         contentType: false,
         type: 'POST',

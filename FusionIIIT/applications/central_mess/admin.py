@@ -3,7 +3,7 @@ from django.contrib import admin
 from .models import (Feedback, Menu, Menu_change_request, Mess_meeting,
                      Mess_minutes, Mess_reg, Messinfo, Monthly_bill,
                      Nonveg_data, Nonveg_menu, Payments, Rebate,
-                     Special_request, Vacation_food)
+                     Special_request, Vacation_food,MessBillBase)
 
 # Register your models here.
 
@@ -54,6 +54,7 @@ class Monthly_billAdmin(admin.ModelAdmin):
     fieldsets = [
         ('student_id', {'fields': ['student_id']}),
         ('month', {'fields': ['month']}),
+        ('year', {'fields': ['year']}),
         ('amount', {'fields': ['amount']}),
         ('nonveg_total_bill', {'fields': ['nonveg_total_bill']}),
         ('rebate_count', {'fields': ['rebate_count']}),
@@ -61,7 +62,7 @@ class Monthly_billAdmin(admin.ModelAdmin):
         ('total_bill', {'fields': ['total_bill']}),
 
         ]
-    list_display = ('student_id', 'month', 'amount',
+    list_display = ('student_id', 'month', 'year', 'amount',
                     'nonveg_total_bill', 'rebate_count', 'rebate_amount', 'total_bill')
 
 
@@ -71,9 +72,10 @@ class PaymentsAdmin(admin.ModelAdmin):
     fieldsets = [
         ('student_id', {'fields': ['student_id']}),
         ('sem', {'fields': ['sem']}),
+        ('year', {'fields': ['year']}),
         ('amount_paid', {'fields': ['amount_paid']}),
         ]
-    list_display = ('student_id', 'sem', 'amount_paid')
+    list_display = ('student_id', 'sem', 'year', 'amount_paid')
 
 
 class RebateAdmin(admin.ModelAdmin):
@@ -145,6 +147,7 @@ class Menu_change_requestAdmin(admin.ModelAdmin):
     model = Menu_change_request
     fieldsets = [
         ('dish', {'fields': ['dish']}),
+        # ('student_id', {'fields': ['student_id']}),
         ('request', {'fields': ['request']}),
         ('status', {'fields': ['status']}),
         ]
@@ -174,6 +177,14 @@ class FeedbackAdmin(admin.ModelAdmin):
     list_display = ('student_id', 'fdate', 'description', 'feedback_type')
 
 
+class MessBillBaseAdmin(admin.ModelAdmin):
+    model = MessBillBase
+    fieldsets = [
+        ('bill_amount', {'fields': ['bill_amount']})
+        ]
+    list_display = ('bill_amount', 'timestamp')
+
+
 admin.site.register(Mess_minutes, Mess_minutesAdmin),
 admin.site.register(Messinfo, MessinfoAdmin),
 admin.site.register(Menu, MenuAdmin),
@@ -187,4 +198,5 @@ admin.site.register(Nonveg_menu, Nonveg_menuAdmin),
 admin.site.register(Nonveg_data, Nonveg_dataAdmin),
 admin.site.register(Mess_meeting, Mess_meetingAdmin),
 admin.site.register(Feedback, FeedbackAdmin),
+admin.site.register(MessBillBase,MessBillBaseAdmin),
 admin.site.register(Menu_change_request, Menu_change_requestAdmin)

@@ -1,8 +1,8 @@
 {% load static %}
-
+{% include 'officeModule/officeOfDeanPnD/requisitionModal.html' %}
 {% block tab3content1 %}
+{% comment %}
 <form>
-    {% comment %}The add a new skill Accordian starts here!{% endcomment %}
     <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
         <div class="three fields">
             <div class="field">
@@ -26,7 +26,6 @@
             </div>
 
             <div class="field">
-                {% comment %}The Dropdown field starts here!{% endcomment %}
                 <label>Department</label>
 
                 <div class="ui fluid search selection dropdown">
@@ -45,7 +44,6 @@
                         </div>
                     </div>
                 </div>
-                {% comment %}The Dropdown field ends here!{% endcomment %}
             </div>
         </div>
 
@@ -56,20 +54,14 @@
         </div>
     </div>
 </form>
-
 <br>
 <br>
 <div class="ui divider"></div>
+{% endcomment %}
+
 <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;">
     <thead>
     <tr>
-        <th>
-        Sr.No.
-        </th>
-        <th>
-            Requisition ID
-        </th>
-
         <th>
             Date
         </th>
@@ -79,15 +71,15 @@
         </th>
 
         <th>
-            Building
-        </th>
-
-        <th>
             Title
         </th>
 
         <th>
-            Work Assignment
+            Department
+        </th>
+
+        <th>
+            Work Proposal
         </th>
     </tr>
     </thead>
@@ -96,19 +88,17 @@
 
     {% for object in req%}
     <tr>
-
-        <td>
-            {{forloop.counter}}
-        </td>
-        <td>
-            {{object.id}}
-        </td>
         <td>
             {{object.req_date}}
         </td>
         <td>
         <h4 class="ui image header">
-                <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                <img src="
+                {% if object.userid.user.extrainfo.profile_picture %}
+                    {{ object.userid.user.extrainfo.profile_picture.url }}
+                {% else %}
+                    {% static 'globals/img/zlatan.jpg' %}
+                {% endif %}" class="ui mini circular image">
                 <div class="content">
                     {{object.userid.user.first_name}} {{object.userid.user.last_name}}
                     <div class="sub header">
@@ -122,14 +112,10 @@
         </td>
 
         <td>
-            {{object.building}}
+            {{object.department}}
         </td>
         <td>
-            {% if object.assign_title == None  %}
-            Not made
-             {% else %}
-            made
-            {% endif %}
+            <button class="ui button" type="button" onclick="openRequisition({{object.id}})">Open</button>
         </td>
 </tr>
     {% endfor %}
