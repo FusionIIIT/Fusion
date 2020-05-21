@@ -207,7 +207,22 @@ class AnsweraQuestion(models.Model):
 	uploaded_at = models.DateTimeField(auto_now=False, auto_now_add=False, default=timezone.now)
 	answers = models.ManyToManyField(User, default=1, related_name='answers', blank=True)
 	total_answers = models.IntegerField(default=0)
+	likes = models.ManyToManyField(User, default=1,related_name='answer_likes', blank=True)
+	dislikes = models.ManyToManyField(User, default=1,related_name='answer_dislikes', blank=True)
+	is_liked=models.BooleanField(default=False)
 
+	def total_likes(self):
+		return self.likes.count()
+	
+	def total_votes(self):
+		return self.likes.count() - self.dislikes.count()
+
+	def total_dislikes(self):
+		return self.dislikes.count()
+
+	def total_requests(self):
+		return self.requests.count()
+		
 	def __str__(self):
 		return '{} - answered the question - {}'.format(self.content, self.question)
 

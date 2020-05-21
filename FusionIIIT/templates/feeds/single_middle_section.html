@@ -270,16 +270,31 @@
                     <!-- Answer Section starts here -->
                     
                     <div style="font-size: 20px;font-style: italic; font-weight: bold;" class="header">
-                        {{ question.answeraquestion_set.count }} Answers
+                        <span id="answerCount">{{ question.answeraquestion_set.count }} Answers</span>
                         <i class="ui right labeled icon caret right"></i>		
                     </div>
                     <hr>
 
                     <div id="style-1" class="ui message scrollbar">
                         {% for answer in question.answeraquestion_set.all %}
-                        <div class="ui segment grid ">
+                        <div class="ui segment grid " id="answer{{question.id}}-{{answer.id}}">
                             <div class="two wide column" style="width: 10% !important; padding-right: 0px;">
                                 {% comment %} <h2><a href=""><img class="ui avatar image" src="" alt="dp"></a></h2> {% endcomment %}
+                                <div class="grid one wide column">
+                                    <div class="row">
+                                        <i id="answerupcaret{{answer.id}}" class="icon big arrow alternate circle up {% if request.user in answer.likes.all %}{%else%}outline{% endif %}" 
+                                            onclick='upvote_answer({{answer.id}})' 
+                                            style="cursor:pointer"></i>
+                                    </div>
+                                    <div class="row center aligned container ui" id="answerupvoteCount{{answer.id}}">
+                                        <i style="margin-left: 10px;">{{answer.total_votes}}</i>
+                                    </div>
+                                    <div class="row">
+                                        <i id="answerdowncaret{{answer.id}}" class="icon big arrow alternate circle down {% if request.user in answer.dislikes.all %}{%else%}outline{% endif %}"
+                                            onclick='downvote_answer({{answer.id}})' 
+                                            style="cursor:pointer"></i>
+                                    </div>
+                                </div>
                             </div>
                             <div class="fourteen wide column" style="padding-left: 0px;">
                                 <div id="answer{{question.id}}-{{answer.id}}">{{answer.get_markdown}}</div>
@@ -290,7 +305,32 @@
                                         </a>
                                         | {{answer.uploaded_at|timesince}} ago
                                         {% if request.user.username == answer.user.username %} 
-                                        | <span id="edit_answer{{question.id}}-{{answer.id}}" onclick='edit_answer("{{question.id}}-{{answer.id}}")'>-edit</span>
+                                        | <span style="cursor:pointer;" id="edit_answer{{question.id}}-{{answer.id}}" onclick='edit_answer("{{question.id}}-{{answer.id}}")'><b>-edit</b></span>
+                                        | <span style="cursor:pointer;" id="delete_answer{{question.id}}-{{answer.id}}" onclick='delete_answer("{{question.id}}-{{answer.id}}")'><b>-delete</b></span>
+
+                                        <!-- Modal for delete comment -->
+                                        <div class="ui modal" id="delete_answer_modal{{question.id}}-{{answer.id}}">
+                                            <div class="ui header">
+                                                <i class="ui user icon"></i>
+                                                {{ request.user.username }}
+                                            </div>
+
+                                            <div class="content">
+                                                <div class="ui warning message segment">
+                                                    <p> Are you sure you want to delete this Answer? </p>
+                                                </div>
+                                                <form method="post"  class="delete_answer_form" id={{question.id}}-{{answer.id}}>
+                                                    <a class="ui item">
+                                                        <button class="ui button" type="submit" name="delete" value="delete">
+                                                        <i class="trash icon" id="delete"></i>Delete Answer 
+                                                        </button>
+                                                    </a>
+                                                </form>
+                                            </div>
+
+                                        </div>
+                                        <!-- Modal ends here -->
+
                                         <!-- Modal for edit answer -->
                                         <div class="ui modal" id="edit_answer_modal{{question.id}}-{{answer.id}}">
                                             <i class="close icon"></i>

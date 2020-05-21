@@ -102,7 +102,22 @@
 
                                             <div class="field">
                                                 <label>Description</label>
-                                                <input type="text" id="description" name="description" rows="2" value="{{question.ques.description}}">
+                                                <textarea  id="description" name="description" rows="2">{{question.ques.description}}</textarea>
+                                            </div>
+
+                                            <div class="field">
+                                                <label>Add Tag</label>
+                                                <div class='ui multiple search selection dropdown seasons'>
+                                                    <input name="Add_Tag" id="Add_Tag" value="Add_Tag" type="hidden">
+                                                    <i class="dropdown icon"></i>
+                                                    <div class="default text"><i class="tags icon"></i>Select</div>
+                                                    <div class="menu">
+                                                        {% for allowed_subtag in subtags %}
+                                                        <div class="item" data-value="{{ allowed_subtag.id }}">{{ allowed_subtag.subtag }}</div>
+                                                        {% endfor %}
+                                                    </div>
+
+                                                </div>
                                             </div>
 
                                             <div class="ui hidden divider"></div>

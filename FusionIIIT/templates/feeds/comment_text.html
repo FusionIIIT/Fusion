@@ -12,10 +12,11 @@
 		<!-- <div class="ui segment force-overflow"> -->
 		{% for comment in question.comments_set.all|dictsortreversed:"commented_at" %}						
 			<br>
+			<div id="comment{{comment.id}}">
 			<div style="display: inline;">
 				<a href=""><img class="ui avatar image" src="{% static 'globals/img/zlatan.jpg' %}"></a>
 			</div>
-			<span style="font-size: 15px; padding-left: 5px;">{{ comment.comment_text }}</span>
+			<span style="font-size: 15px; padding-left: 5px;" id="comment{{question.id}}-{{comment.id}}">{{ comment.comment_text }}</span>
 			<footer style="color: rgba(0,0,0,.6); padding-left: 50px;">
 				<small>-<a href="{% url 'feeds:profile' comment.user.username%}">{{comment.user}}</a> | {{comment.commented_at|timesince}} ago</small>
 			</footer>
@@ -29,7 +30,57 @@
 			<button class="ui button" style="background-color: transparent;" onclick="reply_btn('{{comment.id}}');">
 				<span style="color: #6495ed;font-size: 12px;">Replies({{comment.reply_set.count}})</span>
 			</button>
+			{% if comment.user == request.user %}
 
+			<button class="ui button" style="background-color: transparent;" onclick="edit_reply_btn('{{question.id}}','{{comment.id}}');">
+				<span style="color: #6495ed;font-size: 12px;">- edit</span>
+			</button>
+			
+			<button class="ui button" style="background-color: transparent;" onclick="delete_reply_btn('{{question.id}}','{{comment.id}}');">
+				<span style="color: #6495ed;font-size: 12px;">- delete</span>
+			</button>
+
+			<!-- Modal for delete comment -->
+			<div class="ui modal" id="delete_comment_modal{{question.id}}-{{comment.id}}">
+				<div class="ui header">
+					<i class="ui user icon"></i>
+					{{ username }}
+				</div>
+
+				<div class="content">
+					<div class="ui warning message segment">
+						<p> Are you sure you want to delete this Comment? </p>
+					</div>
+
+					<form method="post"  class="delete_comment" id={{question.id}}-{{comment.id}}>
+						<a class="ui item">
+							<button class="ui button" type="submit" name="delete" value="delete">
+							<i class="trash icon" id="delete"></i>Delete Comment 
+							</button>
+						</a>
+					</form>
+				</div>
+
+			</div>
+			<!-- Modal ends here -->
+
+			<!-- Modal for edit comment -->
+			<div class="ui modal" id="edit_comment_modal{{question.id}}-{{comment.id}}">
+				<i class="close icon"></i>
+				<div class="header">Edit Your Comment</div>
+				<div class="scrolling content">
+					<form class="edit_comment_form" id={{question.id}}-{{comment.id}}>
+						<textarea class=" wmd-input" cols="40" id="edit_comment_content{{question.id}}-{{comment.id}}" name="content" rows="10" required="">{{comment.comment_text}}</textarea>
+						<br><br>
+						<div class="actions">
+							<input style="float: right;" class="ui primary button" type="submit" name="edit_comment_button" id="edit_comment_button{{question.id}}-{{comment.id}}">
+						</div>
+					</form>
+					<br><br>
+				</div>
+			</div>
+			<!-- Modal ends here -->
+			{% endif %}
 			
 			<div id="reply{{comment.id}}" style="display: none;">
 				<div class="ui grid">
@@ -69,7 +120,7 @@
 			</div>
 
 			<div class="ui divider"></div>	
-			
+		</div>
 		{% empty %}
 			<p>No comments here yet :(</p>
 		{% endfor %}

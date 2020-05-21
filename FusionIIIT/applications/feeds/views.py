@@ -252,6 +252,25 @@ def LikeComment(request):
         html = render_to_string('feeds/like_section_comment.html', context, request=request)
         return JsonResponse({'form': html})
 
+def delete_comment(request):
+    if request.method == 'POST':
+        print("deleting comment")
+        comment_id = request.POST.get("comment_id")
+        comment = Comments.objects.filter(pk=comment_id)
+        comment.delete()
+        print(comment)
+        return JsonResponse({"done":1})
+
+def delete_answer(request):
+    if request.method == 'POST':
+        print("deleting answer")
+        answer_id = request.POST.get("answer_id")
+        print(answer_id)
+        answer = AnsweraQuestion.objects.filter(pk=answer_id)
+        answer.delete()
+        # print(answer)
+        return JsonResponse({"done":1})
+        
 def delete_post(request, id):
     if request.method == 'POST' and request.POST.get("delete"):
         ques = AskaQuestion.objects.filter(pk=id)[0]
@@ -266,6 +285,18 @@ def update_post(request, id):
         question= AskaQuestion.objects.get(pk=id)
         question.subject = request.POST.get('subject')
         question.description = request.POST.get('description')
+
+        tag = request.POST.get('Add_Tag')
+        tag = tag[8:]
+        ques_tag = []
+        result = []
+        ques_tag = [int(c) for c in tag.split(",")]
+        question.select_tag.clear()
+
+        for i in range(0, len(ques_tag)):
+            result = AllTags.objects.get(id=ques_tag[i])
+            question.select_tag.add(result)
+
         if request.POST.get('anonymous_update')==None :
             question.user= request.user
             question.anonymous_ask=False
@@ -578,6 +609,37 @@ def downvoteQuestion(request,id):
     else:
         return JsonResponse({"done":"0",'votes':question.total_likes() - question.total_dislikes(),})
 
+def upvoteAnswer(request,id):
+    answer = AnsweraQuestion.objects.get(id=request.POST.get('id'))
+    print('upvoting answer')
+    print("-------------likes--------------")
+    print(answer.likes.all())
+    print("-------------dislikes--------------")
+    print(answer.dislikes.all())
+    answer.dislikes.remove(request.user)
+    isupvoted = answer.likes.all().filter(username=request.user.username).count()
+    if request.is_ajax() and isupvoted == 0:
+        answer.likes.add(request.user)
+        return JsonResponse({'done': "1",'votes':answer.total_likes() - answer.total_dislikes(),})
+    else:
+        return JsonResponse({"done":"0",'votes':answer.total_likes() - answer.total_dislikes(),})
+
+def downvoteAnswer(request,id):
+    answer = AnsweraQuestion.objects.get(id=request.POST.get('id'))
+    print('upvoting answer')
+    print("-------------likes--------------")
+    print(answer.likes.all())
+    print("-------------dislikes--------------")
+    print(answer.dislikes.all())
+    answer.likes.remove(request.user)
+    isdownvoted = answer.dislikes.all().filter(username=request.user.username).count()
+    if request.is_ajax() and isdownvoted == 0:
+        answer.dislikes.add(request.user)
+        return JsonResponse({'done': "1",'votes':answer.total_likes() - answer.total_dislikes(),})
+    else:
+        return JsonResponse({"done":"0",'votes':answer.total_likes() - answer.total_dislikes(),})
+
+
 def update_answer(request):
     try:
         ques_id = request.POST.get("ques_id")
@@ -587,6 +649,22 @@ def update_answer(request):
         new_answer = request.POST.get("comment_box")
         answer.content = new_answer
         answer.save()
+        if request.is_ajax():
+            return JsonResponse({'success': 1})
+    except:
+        if request.is_ajax():
+            return JsonResponse({'sucess': 0})
+
+def update_comment(request):
+    try:
+        ques_id = request.POST.get("ques_id")
+        comment_id = request.POST.get("comment_id")
+        question = AskaQuestion.objects.get(pk=ques_id)
+        comment = Comments.objects.get(pk=comment_id)
+        new_comment = request.POST.get("comment_box")
+        print(new_comment)
+        comment.comment_text = new_comment
+        comment.save()
         if request.is_ajax():
             return JsonResponse({'success': 1})
     except:
