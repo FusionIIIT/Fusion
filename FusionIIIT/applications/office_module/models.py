@@ -197,7 +197,7 @@ class Project_Registration(models.Model):
 
     duration = models.IntegerField(default=0)
     agreement = models.CharField(choices=Constants.TICK_TYPE,
-                                 max_length=10, default='NO')
+                                 max_length=20, default='NO')
     amount_sanctioned = models.IntegerField(default=0)
     project_type = models.CharField(choices=Constants.PROJECT_TYPE,
                                     max_length=25)
@@ -251,22 +251,22 @@ class Project_Closure(models.Model):
     date = models.DateField(null=True, blank=True)
 
     expenses_dues = models.CharField(choices=Constants.TICK_TYPE,
-                                     max_length=10, default='Pending')
+                                     max_length=20, default='Pending')
     expenses_dues_description = models.CharField(max_length=200, blank=True, null=True)
     payment_dues = models.CharField(choices=Constants.TICK_TYPE,
-                                    max_length=10, default='Pending')
+                                    max_length=20, default='Pending')
     payment_dues_description = models.CharField(max_length=200, blank=True, null=True)
     salary_dues = models.CharField(choices=Constants.TICK_TYPE,
-                                   max_length=10, default='Pending')
+                                   max_length=20, default='Pending')
     salary_dues_description = models.CharField(max_length=200, blank=True, null=True)
     advances_dues = models.CharField(choices=Constants.TICK_TYPE,
-                                     max_length=10, default='Pending')
+                                     max_length=20, default='Pending')
     advances_description = models.CharField(max_length=200, blank=True, null=True)
     others_dues = models.CharField(choices=Constants.TICK_TYPE,
-                                   max_length=10, default='Pending')
+                                   max_length=20, default='Pending')
     other_dues_description = models.CharField(max_length=200, blank=True, null=True)
     overhead_deducted = models.CharField(choices=Constants.TICK_TYPE,
-                                         max_length=10, default='Pending')
+                                         max_length=20, default='Pending')
     overhead_description = models.CharField(max_length=200, blank=True, null=True)
     HOD_response = models.CharField(choices=Constants.RESPONSE_TYPE1,
                                     max_length=10, default='Pending')

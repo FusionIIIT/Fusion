@@ -91,7 +91,7 @@ class BranchChange(models.Model):
 
 class CoursesMtech(models.Model):
     c_id = models.ForeignKey(Course, on_delete=models.CASCADE)
-    specialization = models.CharField(max_length=30, choices=Constants.MTechSpecialization)
+    specialization = models.CharField(max_length=40, choices=Constants.MTechSpecialization)
 
     def __str__(self):
         return str(self.c_id)
