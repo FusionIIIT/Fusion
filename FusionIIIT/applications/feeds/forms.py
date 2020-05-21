@@ -10,7 +10,7 @@ class CommentForm(forms.ModelForm):
 		fields = ('comment_text',)
 
 class AnswerForm(forms.ModelForm):
-	content = forms.CharField(widget=PagedownWidget(show_preview=False))
+	content = forms.CharField(widget=PagedownWidget(attrs={"show_preview":False}))
 	class Meta:
 		model = AnsweraQuestion
 		fields = [
@@ -18,7 +18,7 @@ class AnswerForm(forms.ModelForm):
 		]
 
 class QuestionForm(forms.ModelForm):
-	description = forms.CharField(widget=PagedownWidget(show_preview=False))
+	description = forms.CharField(widget=PagedownWidget(attrs={"show_preview":False}))
 	class Meta:
 		model = AskaQuestion
 		fields = [

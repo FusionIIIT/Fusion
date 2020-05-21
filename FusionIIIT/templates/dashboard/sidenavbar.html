@@ -59,11 +59,15 @@
                             <a class="item" href="{% url 'complaint:complaint' %}">
                                 <h4>Complaint Module</h4>
                             </a>
-                              {% if user.extrainfo.user_type != 'faculty' %}
+                            {% if user.extrainfo.user_type != 'faculty' %}
                             <a class="item" href="{% url 'mess:mess' %}">
                                 <h4>Central Mess Module</h4>
                             </a>
                             {% endif %}
+
+                            <a class="item" href="{% url 'feeds:feeds' %}">
+                                <h4>Feeds Module</h4>
+                            </a>
 
                             <a class="item" href="{% url 'healthcenter:healthcenter' %}">
                                 <h4>Health Center Module</h4>
@@ -94,10 +98,10 @@
             {% comment %}The Modules Accordian ends here!{% endcomment %}
 
             {% comment %}The Profile Item starts here!{% endcomment %}
-            <a class="centered raised item" href="/dashboard">
+            <!-- <a class="centered raised item" href="/dashboard">
                 <span class="inverted header">Profile</span>
                 <i class="large inverted user icon right floated"></i>
-            </a>
+            </a> -->
             {% comment %}The Profile Item starts here!{% endcomment %}
 <a class="centered raised item" href="{% url 'office_module:officeOfDeanStudents'%}">
     <span class="inverted header">Office Of Dean Students</span>
@@ -141,7 +145,7 @@
 
 {% comment %}The Profile Item starts here!{% endcomment %}
 <a class="centered raised item" href="{% url 'office_module:officeOfDeanPnD'%}">
-    <span class="inverted header">Office Of P & D</span>
+    <span class="inverted header">Office Of P&D</span>
     <i class="large inverted briefcase icon right floated"></i>
 </a>
 {% comment %}The email Item ends here!{% endcomment %}
@@ -149,7 +153,7 @@
 
 {% comment %}The Profile Item starts here!{% endcomment %}
 <a class="centered raised item" href="{% url 'office_module:officeOfHOD'%}">
-    <span class="inverted header">Office Of HOD {{request.user.extrainfo.department}}</span>
+    <span class="inverted header">Office Of HOD ({{request.user.extrainfo.department}})</span>
     <i class="large inverted briefcase icon right floated"></i>
 </a>
 <a class="centered raised item" href="/finance/finance">
@@ -165,15 +169,15 @@
             <a class="centered raised item" href='/about'%}>
                 <span class="inverted header">Meet our team!</span>
                   <i class="briefcase icon right floated"></i>
-            </a>
+            </a><br><br>
             {% comment %}The Activity Log Item ends here!{% endcomment %}
 
             {% comment %}The Logout Item starts here!{% endcomment %}
-            <a class="centered raised item" href='/accounts/logout'>
+            <!-- <a class="centered raised item" href='/accounts/logout'>
                 <span class="inverted header">Logout</span>
                 <i class="large inverted sign out icon right floated"></i>
             </a>
-            <div class="item"></div>
+            <div class="item"></div> -->
             {% comment %}The Logout Item ends here!{% endcomment %}
 
         </div>
