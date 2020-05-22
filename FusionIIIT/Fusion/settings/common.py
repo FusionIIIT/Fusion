@@ -131,6 +131,8 @@ INSTALLED_APPS = [
     'applications.feeds.apps.FeedsConfig',
     'pagedown',
     'markdown_deux',
+    'django_cleanup.apps.CleanupConfig',
+    'django_unused_media',
 ]
 
 MIDDLEWARE = [

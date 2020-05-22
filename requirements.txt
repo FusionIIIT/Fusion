@@ -2,11 +2,13 @@ bs4
 celery
 django
 django-allauth
+django-cleanup
 django-debug-toolbar
 django-markdown-deux
 django-notifications-hq
 django-pagedown
 django-semanticui-forms
+django-unused-media
 html_text
 numpy
 pillow
