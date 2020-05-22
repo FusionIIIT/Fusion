@@ -18,9 +18,9 @@
 
 * on **Ubuntu**:
   * Install the required packages using the following command :  
-    *`sudo apt install python3-pip python3-dev libpq-dev python-virtualenv build-essential git`
-    *`sudo -H pip3 install --upgrade pip`
-    *`sudo -H pip3 install virtualenv`
+    * `sudo apt install python3-pip python3-dev libpq-dev python-virtualenv build-essential git`
+    * `sudo -H pip3 install --upgrade pip`
+    * `sudo -H pip3 install virtualenv`
 
 * on **Windows**:
   * Get Python 3.8 from [here](https://www.python.org/ftp/python/3.8.3/python-3.8.3-amd64.exe) for AMD64/x64 or [here](https://www.python.org/ftp/python/3.8.3/python-3.8.3.exe) for x86
