@@ -9,6 +9,7 @@ django-notifications-hq
 django-pagedown
 django-semanticui-forms
 django-unused-media
+# gunicorn
 html_text
 numpy
 pillow
