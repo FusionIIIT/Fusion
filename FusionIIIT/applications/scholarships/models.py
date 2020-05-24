@@ -125,7 +125,7 @@ class Mcm(models.Model):
         return str(self.student)
 
 
-class National_prize(models.Model):
+class Notional_prize(models.Model):
     spi = models.FloatField()
     cpi = models.FloatField()
     year = models.CharField(max_length=10, choices=Constants.BATCH)
@@ -133,7 +133,7 @@ class National_prize(models.Model):
 
 
     class Meta:
-        db_table = 'National_prize'
+        db_table = 'Notional_prize'
 
 #Addition: a column programme added
 class Previous_winner(models.Model):
