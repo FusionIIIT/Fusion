@@ -1,7 +1,13 @@
 {% load static %} {% block submitassignments %}
 
-<!-- <link rel="stylesheet" type="text/css" href="{% static 'globals/css/demo.css' %}" /> -->
-<!-- <link rel="stylesheet" type="text/css" href="{% static 'globals/css/component.css' %}" /> -->
+<link rel="stylesheet" type="text/css" href="{% static 'globals/css/demo.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'globals/css/component.css' %}" />
+<script>
+    (function(e, t, n) {
+        var r = e.querySelectorAll("html")[0];
+        r.className = r.className.replace(/(^|\s)no-js(\s|$)/, "$1js$2")
+    })(document, window, 0);
+</script>
 {% if Lecturer == 0 %}
 <div class="ui pointing secondary menu">
     <a class="active item" data-tab="uploadassignment">
@@ -265,11 +271,9 @@
 
 {% endif %}
 
-{% endblock %}
-
 <script type="text/javascript" src="{% static 'globals/js/semantic.min.js' %}"></script>
 <script type="text/javascript">
-/* this part for implementing the objective practice assignment 
+   /* this part for implementing the objective practice assignment 
     $(document).ready(function() {
         var vptab = 'objectivetab';
             $('#objectivetab').addClass('active');
@@ -284,12 +288,7 @@
                 console.log("check 22");
         });
     });
-*/      
+*/
+      
 </script>
-
-<script>
-    (function(e, t, n) {
-        var r = e.querySelectorAll("html")[0];
-        r.className = r.className.replace(/(^|\s)no-js(\s|$)/, "$1js$2")
-    })(document, window, 0);
-</script>
+{% endblock %}
