@@ -10,25 +10,21 @@ Edit Contest
 
 {% endblock %}
 {% block body %}
-{% block navBar %}
+  {% block navBar %}
     {% include 'dashboard/navbar.html' %}
-{% endblock %}
+  {% endblock %}
 
-<div class="ui stackable doubling grid">
-<div class="column"></div>
-<div class="three wide column" >
+  <div class="ui stackable doubling grid">
+  <div class="column"></div>
+  <div class="three wide column" >
         {% block usercard %} {% include 'globals/usercard.html' %} {% endblock %}
-
         <div class="ui divider"></div>
-
-              <h3> {{course.course_name}}  </h3>
-        <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
-          
+              <h3>{{course.course_name}}</h3>
+        <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">  
                     <a class="active item sidetab" data-tab="first" data-num="11">
                       Course Content
                     <i class="right floated chevron right icon"></i>
-                 </a>
-
+                    </a>
         </div>
     </div>
 
@@ -96,29 +92,20 @@ Edit Contest
                       </div>
                       <a class="ui primary button form_submit" data-id="edit3" id="submit_edit3">Submit</a>
                     </form>
-                    <strong><label>Number Of Questions Left</label></strong>
-                    <br>    {{questions_left}}
-
-                      <div class="item">
-                          <div class="header">Total Score <a class="edit_contest" data-id="edit4"> <i class="edit icon"></i></a></div>
+                    <div class="item">
+                        <div class="header">Number of questions left</div>
+                        <p id="questions_left">{{questions_left}}</p>
+                    </div>
+                    <div class="item">
+                          <div class="header">Total Score</div>
                           {{details.total_score}}
-                      </div>
-                      <form class="ui form"  id='edit4' style="display:none">
-                      <div class="ui field">
-                          <label>Marks per Question</label>
-                          <div class="ui input"  onkeydown="submit_on_enter()~">
-                              {{ form.per_question_score }}
-                          </div>
-                      </div>
-                      <a class=" ui primary button form_submit"data-id="edit4" id="submit_edit4">Submit</a>
-                    </form>
-
+                    </div>
                   </div>
-                  <div class="ui eight wide column" >
+                  <div class="ui eight wide column">
                     <table class="ui sixteen wide column very basic collapsing celled large table" style="margin-left:2em">
                       <thead>
                         <tr>
-                          <th class="ui thirteen wide column">topic</th>
+                          <th class="ui thirteen wide column">Topic</th>
                           <th class="ui three wide column">No. of Questions</th>
                         </tr>
                       </thead>
@@ -180,27 +167,7 @@ Edit Contest
                       </form>
 
                 </div>
-
-             <!--    <a id="showbox_2">
-                    <div class="ui primary button">
-                        Add new question
-                    </div>
-               </a> -->
-
-                <div class="ui segment" id="ques_new" style="display:none">
-                  <form class="ui large form" method="post" action="/ocms/{{curriculum.course_code}}/create_bank">
-                  {% csrf_token %} {% if errors %} {{errors}} {% endif %}
-                  <br/>
-                  
-                  <div class="field">
-                    <label>Question Bank Name <font color="red" size="4.5">*</font></label>
-                    <input type="text" name="qbname" placeholder="Name" required="True"/>
-                  </div>
-                  <input type="submit" class="ui primary button" value="Create" />
-                </form>
-              </div>
-				
-            <a class="ui blue button" href="/ocms/{{curriculum.course_code}}/">
+                <a class="ui blue button" href="/ocms/{{curriculum.course_code}}/">
                  Done!
                 </a>
             </div>
@@ -209,10 +176,10 @@ Edit Contest
 </div>
 <script type="text/javascript">
 
-   $('.edit_contest').click(function(){
-     id=$(this).attr('data-id');
-     $('#'+id).toggle();
-   })
+  $('.edit_contest').click(function(){
+    id=$(this).attr('data-id');
+    $('#'+id).toggle();
+  })
    function submit_on_enter()
    {
     //  alert(event.keycode);
@@ -230,25 +197,16 @@ Edit Contest
         }
        }
 
-       $('#showbox_1').click(function(){
-        console.log("madar");
-        showbox_1();
-       });
-
-function showbox_2() {
-        var x = document.getElementById("ques_new");
-        if (x.style.display === "none") {
-            x.style.display = "block";
-        } else {
-            x.style.display = "none";
-        }
-       }
-
-       $('#showbox_2').click(function(){
-        console.log("madar");
-        showbox_2();
-       });
-
+  $('#showbox_1').click(function(){
+    var y = document.getElementById("questions_left");
+    var questions_left = Number(y.innerHTML);
+    if(questions_left==0){
+      alert("You have already added the maximum number of questions");
+    }
+    else{
+      showbox_1();
+    }
+  });
 
   $('.form_submit').click(function(){
     event.preventDefault();
@@ -288,23 +246,5 @@ function showbox_2() {
   $('.special.cards .image').dimmer({
     on: 'hover'
   });
-
   </script>
-
-
-
-{% endblock %} {% block Javascript %}
-
-
-<script src="https://cdn.rawgit.com/mdehoog/Semantic-UI-Calendar/76959c6f7d33a527b49be76789e984a0a407350b/dist/calendar.min.js"></script>
-
-
-
-<script type="text/javascript">
-  $(.edit_contest).click(function(){
-
-  });
-</script>
-
-
 {% endblock %}
