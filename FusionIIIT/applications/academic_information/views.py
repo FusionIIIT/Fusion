@@ -1104,7 +1104,7 @@ def add_new_profile(request):
             last_name=str(sheet.cell(i,2).value)
             email=str(sheet.cell(i,3).value)
             sex=str(sheet.cell(i,4).value)
-            if sex == 'F':
+            if sex is 'F':
                 title='Ms.'
             else:
                 title='Mr.'
@@ -1121,10 +1121,10 @@ def add_new_profile(request):
             dept=str(sheet.cell(i,11).value)
             department=DepartmentInfo.objects.get(name=dept)
             specialization=str(sheet.cell(i,12).value)
-            if specialization == "":
+            if specialization is "":
                 specialization="None"
             hall_no=sheet.cell(i,13 ).value
-            if hall_no == "":
+            if hall_no is "":
                 hall_no=3
             else:
                 hall_no=int(hall_no)
