@@ -22,7 +22,7 @@ from applications.globals.models import (Designation, ExtraInfo,
                                          HoldsDesignation)
 
 from .models import (Award_and_scholarship, Constants, Director_gold,
-                     Director_silver, Mcm, Notional_prize, Previous_winner,
+                     Director_silver, Mcm, National_prize, Previous_winner,
                      Proficiency_dm, Release, Notification)
 
 from notification.views import scholarship_portal_notif
@@ -139,7 +139,7 @@ def convener_view(request):
             award = request.POST.get('award')
             a = Award_and_scholarship.objects.get(award_name=award).id
             award_id = Award_and_scholarship.objects.get(id=a)
-            Notional_prize.objects.create(year=year,spi=spi,cpi=cpi,award_id=award_id)
+            National_prize.objects.create(year=year,spi=spi,cpi=cpi,award_id=award_id)
             messages.success(request, award+' are invited successfully')
             return HttpResponseRedirect('/spacs/convener_view')
 
