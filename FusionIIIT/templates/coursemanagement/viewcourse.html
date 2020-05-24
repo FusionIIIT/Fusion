@@ -11,88 +11,10 @@
 {% endblock %}
 
 {% block body %}
-                <style>
-                    #pdf_modal iframe {
-                        width: 100%;
-                        height: 80vh;
-                    }
-
-                    video {
-                        position: relative;
-                        left: 50%;
-                        transform: translateX(-50%);
-                        margin-bottom: 4em;
-                    }
-
-
-                    body {
-                        font-family: 'Roboto Slab', serif;
-                    }
-
-                    .heading {
-                        text-align: center;
-                        font-size: 80px;
-                    }
-
-                    #clock {
-                        display: block;
-                        width: 500px;
-                        margin-left: auto;
-                        margin-right: auto;
-                        margin-top: 20px;
-                        padding: 20px;
-                        text-align: center;
-                        background-color: white;
-                        box-shadow: 2px 2px 5px 1px gray;
-                    }
-
-                    .block {
-                        display: inline-block;
-                        width: 16%;
-                        font-size: 20px;
-                        text-align: center;
-                        background-color: orange;
-                    }
-
-                    .digit {
-                        display: block;
-                        font-size: 30px;
-                        background-color: #fff;
-                    }
-
-
-                    .play-icon {
-                        cursor: pointer;
-                        position: absolute;
-                        top: 50%;
-                        left: 50%;
-                        transform: translate(-50%, -50%);
-                    }
-
-                    svg:hover #play-svg {
-                        fill: #CC181E;
-                    }
-                    .block {
-                        display: inline-block;
-                        width: 16%;
-                        margin: 1px;
-                        padding: 5px;
-                        font-size: 20px;
-                        text-align: center;
-                        background-color: orange;
-                    }
-
-                    .digit {
-                        display: block;
-                        font-size: 30px;
-                        background-color: #fff;
-                    }
-
-        </style>
     {% block navBar %}
         {% include 'dashboard/navbar.html' %}
     {% endblock %}
-    <div class="ui doubling grid">
+    <div class="ui stackable doubling grid">
 
         <div class="column"></div>
 
@@ -142,6 +64,161 @@
                   Topics
                   <i class="right floated chevron right icon"></i>
                 </a>
+                <a class="item sidetab" data-tab="eighth" data-num="19">
+                  Comments
+                  <i class="right floated chevron right icon"></i>
+                </a>
+
+              {% endif %}
+            </div>
+            
+        </div>
+
+        <div class="ten wide column" >
+            <div class="ui active tab segment" id="11" data-tab="first" style="display:block">
+                <style>
+                    #pdf_modal iframe {
+                        width: 100%;
+                        height: 80vh;
+                    }
+
+                    video {
+                        position: relative;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        margin-bottom: 4em;
+                    }
+
+                    /*timer css starts*/
+
+                    body {
+                        font-family: 'Roboto Slab', serif;
+                    }
+
+                    .heading {
+                        text-align: center;
+                        font-size: 80px;
+                    }
+
+                    #clock {
+                        display: block;
+                        width: 500px;
+                        margin-left: auto;
+                        margin-right: auto;
+                        margin-top: 20px;
+                        padding: 20px;
+                        text-align: center;
+                        background-color: white;
+                        box-shadow: 2px 2px 5px 1px gray;
+                    }
+
+                    .block {
+                        display: inline-block;
+                        width: 16%;
+                        font-size: 20px;
+                        text-align: center;
+                        background-color: orange;
+                    }
+
+                    .digit {
+                        display: block;
+                        font-size: 30px;
+                        background-color: #fff;
+                    }
+
+                    /*timer css ends*/
+
+                    .play-icon {
+                        cursor: pointer;
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                    }
+
+                    svg:hover #play-svg {
+                        fill: #CC181E;
+                    }
+
+                </style>
+
+
+                <style>
+                    #pdf_modal iframe {
+                        width: 100%;
+                        height: 80vh;
+                    }
+
+                    /*timer css starts*/
+
+                    body {
+                        font-family: 'Roboto Slab', serif;
+                    }
+
+                    .heading {
+                        text-align: center;
+                        font-size: 80px;
+                    }
+
+                    #clock {
+                        display: block;
+                        width: 500px;
+                        margin-left: auto;
+                        margin-right: auto;
+                        margin-top: 20px;
+                        padding: 20px;
+                        text-align: center;
+                        background-color: white;
+                        box-shadow: 2px 2px 5px 1px gray;
+                    }
+
+                    .block {
+                        display: inline-block;
+                        width: 16%;
+                        margin: 1px;
+                        padding: 5px;
+                        font-size: 20px;
+                        text-align: center;
+                        background-color: orange;
+                    }
+
+                    .digit {
+                        display: block;
+                        font-size: 30px;
+                        background-color: #fff;
+                    }
+
+                    /*timer css ends*/
+
+                </style>
+
+
+                <div class="ui pointing secondary menu">
+                  <a class="item tabs" data-num="1" data-tab="quiz">
+                    Quiz
+                 </a>
+                  <a class="item tabs" data-num="2" data-tab="assignment">
+                   Assignment
+                  </a>
+                  <a class="item tabs" data-num="3" data-tab="videos">
+                    Videos
+                 </a> 
+                 <a class="active item tabs" data-num="4" data-tab="slides">
+                  Slides
+                 </a>
+                  <a class="item tabs" data-num="5" data-tab="time-table">
+                     Time-Table/Quiz
+                  </a>
+<<<<<<< HEAD
+                  
+                <a class="item sidetab" data-tab="sixth" data-num="16">
+                  Question Bank
+                  <i class="right floated chevron right icon"></i>
+                </a>
+                <a class="item sidetab" data-tab="fourth" data-num="18">
+                  Topics
+                  <i class="right floated chevron right icon"></i>
+                </a>
               {% endif %}
 
               <a class="item sidetab" data-tab="eighth" data-num="19">
@@ -166,9 +243,10 @@
 
                   <a class="item tabs" data-num="5" data-tab="time-table">Time-Table/Quiz</a>
 
+=======
+>>>>>>> parent of 742ae038... Some UI Fix
                 </div>
-
-                <div class="ui tab segment" id="1" data-tab="quiz" style="display:block">
+                <div class="ui tab segment" id="1" data-tab="quiz" style="display:none">
                   <h4 class="ui dividing header">Quizzes</h4>
                   {% if Lecturer is 1 %}
                     <a class="ui blue button" href="/ocms/{{curriculum.course_code}}/create_quiz/">Create a New Quiz</a>
@@ -210,13 +288,13 @@
                               {% if Lecturer is 0 %}
                               <!-- if the student have not give n the quiz already then only show the enter button -->
                                 {% if quiz.pk not in quizs_pk %}
-                                <div class="ui primary button disabled quiz_btn" data-start="{{quiz.start_time|date:'Y-m-d H:i:s'}}" data-pk="{{quiz.pk}}" id="quiz{{quiz.pk}}" onclick="disabled">
+                                <div class="ui primary button disabled quiz_btn" data-start="{{quiz.start_time|date:'Y-m-d H:i:s'}}" data-pk="{{quiz.pk}}"id="quiz{{quiz.pk}}" onclick="disabled">
                                  Enter
 
                                  <i class="arrow right icon"></i>
                                 </div>
                                {% else %}
-                               <div class="ui primary button disabled " data-start="{{quiz.start_time|date:'Y-m-d'}}" data-pk="{{quiz.pk}}" id="quiz{{quiz.pk}}">
+                               <div class="ui primary button disabled " data-start="{{quiz.start_time|date:'Y-m-d'}}" data-pk="{{quiz.pk}}"id="quiz{{quiz.pk}}">
                                 Finished
 
                               </div>
