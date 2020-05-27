@@ -2,6 +2,10 @@ import datetime
 from datetime import date
 import xlrd
 import os
+
+from django.core.files.storage import FileSystemStorage
+
+from Fusion import settings
 from applications.visitor_hostel.models import RoomDetail
 from django.contrib.auth.models import User
 
@@ -273,7 +277,7 @@ def get_active_bookings(request):
     if request.method == 'POST':
         active_bookings = BookingDetail.objects.filter(status="Confirmed")
 
-        return render_to_response(request, "vhModule/visitorhostel.html", {'active_bookings': active_bookings})
+        return render(request, "vhModule/visitorhostel.html", {'active_bookings': active_bookings})
     else:
         return HttpResponseRedirect('/visitorhostel/')
 
@@ -360,7 +364,7 @@ def request_booking(request):
             url = settings.MEDIA_URL + filename + file_extenstion
             if not os.path.isdir(full_path):
                 cmd = "mkdir " + full_path
-                subprocess.call(cmd, shell=True)
+                os.subprocess.call(cmd, shell=True)
             fs = FileSystemStorage(full_path, url)
             fs.save(filename + file_extenstion, doc)
             uploaded_file_url = "/media/online_cms/" + filename
