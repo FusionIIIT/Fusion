@@ -11,6 +11,7 @@ admin.site.register(CourseVideo)
 
 admin.site.register(Quiz)
 
+admin.site.register(Topics)
 
 admin.site.register(QuizQuestion)
 
