@@ -86,7 +86,6 @@ def course(request, course_code):
         slides = CourseDocuments.objects.filter(course_id=course1)
         quiz = Quiz.objects.filter(course_id=course1)
         assignment = Assignment.objects.filter(course_id=course1)
-        student = Student.objects.filter(id=extrainfo)
         stu_ass = StudentAssignment.objects.filter
         student_assignment = []
         for assi in assignment:
@@ -815,12 +814,13 @@ def create_quiz(request, course_code):
             k1 = st_time.hour
             k2 = st_time.minute
             k3 = st_time.second
-            start_date_time = datetime.combine(form.cleaned_data['startdate'], time(k1, k2, k3))
+            # datetime is the package name, and the other datetime is the module inside the package and combine is a function inside the module, and hence datetime.datetime.combine
+            start_date_time = datetime.datetime.combine(form.cleaned_data['startdate'], time(k1, k2, k3))
             st_time = form.cleaned_data['endtime']
             k1 = st_time.hour
             k2 = st_time.minute
             k3 = st_time.second
-            end_date_time = datetime.combine(form.cleaned_data['enddate'], time(k1, k2, k3))
+            end_date_time = datetime.datetime.combine(form.cleaned_data['enddate'], time(k1, k2, k3))
             duration = end_date_time - start_date_time
             days, seconds = duration.days, duration.seconds
             hours, remainder = divmod(duration.seconds, 3600)
