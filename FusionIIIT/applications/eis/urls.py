@@ -3,7 +3,6 @@ from django.contrib.auth.decorators import login_required
 
 from . import views
 
-app_name = 'eis'
 urlpatterns = [
     # url used to add data
     url(r'uploadcsv/$', views.upload_file),

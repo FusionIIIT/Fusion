@@ -44,7 +44,7 @@ def filetracking(request):
                 subject = request.POST.get('title')
                 description = request.POST.get('desc')
                 design = request.POST.get('design')
-                designation = Designation.objects.get(id = HoldsDesignation.objects.get(id = design).designation_id)
+                designation = Designation.objects.get(id=design)
                 upload_file = request.FILES.get('myfile')
 
                 File.objects.create(
@@ -356,20 +356,14 @@ def test(request):
 def delete(request,id):
     file = File.objects.get(pk = id)
     file.delete()
+    draft = File.objects.filter(uploader=request.user.extrainfo)
+    extrainfo = ExtraInfo.objects.all()
 
-    # Not required
-    #draft = File.objects.filter(uploader=request.user.extrainfo)
-    #extrainfo = ExtraInfo.objects.all()
-
-    #context = {
-     #   'draft': draft,
-      #  'extrainfo': extrainfo,
-    #}
-
-    #problem over here no need of render since it doesnot affect the url
-    #return render(request, 'filetracking/drafts.html', context)
-
-    return redirect('/filetracking/drafts/')
+    context = {
+        'draft': draft,
+        'extrainfo': extrainfo,
+    }
+    return render(request, 'filetracking/drafts.html', context)
 
 def forward_inward(request,id):
     file = get_object_or_404(File, id=id)

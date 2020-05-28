@@ -4,7 +4,7 @@ from .models import (BranchChange, CoursesMtech, InitialRegistrations,
                      MinimumCredits, Register, Thesis,
                      StudentRegistrationCheck, FinalRegistrations,
                      ThesisTopicProcess, FeePayment, TeachingCreditRegistration,
-                     SemesterMarks, MarkSubmissionCheck,Dues)
+                     SemesterMarks, MarkSubmissionCheck)
 
 class RegisterAdmin(admin.ModelAdmin):
     model = Register
@@ -32,4 +32,3 @@ admin.site.register(FeePayment)
 admin.site.register(TeachingCreditRegistration)
 admin.site.register(SemesterMarks)
 admin.site.register(MarkSubmissionCheck)
-admin.site.register(Dues)

@@ -23,7 +23,7 @@ from applications.placement_cell.forms import (AddAchievement, AddCourse,
                                                AddSkill, AddReference, AddExtracurricular)
 from applications.placement_cell.models import (Achievement, Course, Education, Conference,
                                                 Experience, Has, Patent, Extracurricular,
-                                                Project, Publication, Skill, Reference, PlacementStatus)
+                                                Project, Publication, Skill, Reference)
 from applications.eis.models import *
 from applications.academic_procedures.models import Thesis
 

@@ -12,10 +12,10 @@
             Club Sessions
         </a>
 
-   <a class="item" data-tab="event">
+ <!--   <a class="item" data-tab="event">
             Club Events
         </a>
-
+ --->
         {%  endif %}
     </div>
 
@@ -27,22 +27,22 @@
             </div>
             <div class="image content">
                 <div class="ui medium image">
-                  <img src="/media/{{ i.club_file }}">
+                  <img src="/media/{{ i.club_poster }}">
                 </div>
                 <div class="description">
                     <div class="ui header">
                     <p><H1><u>{{ i.club_name }}&nbsp; Club</u></H1></p>
                     </div>
                     <p><pre>
-<b>Co-Ordinator</b>     : {{ i.co_ordinator.id.user.first_name }} {{ i.co_ordinator.id.user.last_name }}
+<b>Co-Ordinator</b>     : {{ i.co_ordinator.id.id }}
                    {{ i.co_ordinator.id.user }}
                    {{ i.co_ordinator.id.user.email }}
 
-<b>Co-Coordinator</b>   : {{ i.co_coordinator.id.user.first_name }} {{ i.co_coordinator.id.user.last_name }}
-                   {{ i.co_coordinator.id.user }}
-                   {{ i.co_coordinator.id.user.email }}
+<b>Co-Coordinator</b>   : {{ i.co_ordinator.id.id }}
+                   {{ i.co_ordinator.id.user }}
+                   {{ i.co_ordinator.id.user.email }}
 
-<b>Faculty Incharge</b> : {{ i.faculty_incharge.id.user.first_name }} {{ i.faculty_incharge.id.user.last_name }}
+<b>Faculty Incharge</b> : {{ i.faculty_incharge.id.id }}
                    {{ i.faculty_incharge.id.user }}
                    {{ i.faculty_incharge.id.user.email }}
 
@@ -77,7 +77,7 @@
             </div>
             <div class="image content">
                 <div class="ui medium image">
-                  <img src="/media/{{ i.event_details }}">
+                  <img src="">
                 </div>
                 <div class="description">
                     <div class="ui header">
@@ -181,7 +181,7 @@
     </script>
 
     <div class="ui active tab" data-tab="club">
-        <!-- <div class="ui vertical segment"> -->
+        <div class="ui vertical segment">
             <table class="ui very basic collapsing celled sortable table"
                    style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
                 <thead>
@@ -206,6 +206,7 @@
                 </thead>
 
                 <tbody>
+                {% if "Junior Superintendent" in Curr_desig or "Dean_s" in Curr_desig %}
                     {% for i in Club_name %}
                         {% if i.status == "confirmed" %}
                         <tr id="_{{ i.club_name }}">
@@ -242,18 +243,96 @@
                         </tr>
                         {% endif %}
                     {% endfor %}
+                {% endif %}
+
+                {% if "co-ordinator" in Curr_desig or "co co-ordinator" in Curr_desig %}
+                    {% for i in Club_name %}
+                     {% if i.status == "confirmed" %}
+                        <tr id="_{{ i.club_name }}">
+                            <td onclick="view_('{{ i.club_name }}_')">
+                               {{ i.club_name }} 
+                            </td>
+
+                            <td onclick="view_('{{ i.club_name }}_')">
+                                <h4 class="ui image header">
+                                    <!-- <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image"> -->
+                                    <div class="content">
+                                        {{ i.co_ordinator }}
+                                    </div>
+                                </h4>
+                            </td>
+
+                            <td onclick="view_('{{ i.club_name }}_')">
+                                <h4 class="ui image header">
+                                    <!-- <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image"> -->
+                                    <div class="content">
+                                        {{ i.co_coordinator }}
+                                    </div>
+                                </h4>
+                            </td>
+
+                            <td>
+                                {% comment %}
+                                    TODO: Add the attachment here!
+                                {% endcomment %}
+                                <a class="ui inverted circular icon button" style="margin: auto;" target="_blank" href="{{ i.activity_calender.url }}">
+                                    <i class="large attach black icon"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endif %}
+                    {% endfor %}
+                {% else %}
+                    {% for i in Club_name %}
+                        {% if i.status == "confirmed" %}
+
+                       <tr id="_{{ i.club_name }}">
+                            <td onclick="view_('{{ i.club_name }}_')">
+                               {{ i.club_name }} 
+                            </td>
+
+                            <td onclick="view_('{{ i.club_name }}_')">
+                                <h4 class="ui image header">
+                                    <!-- <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image"> -->
+                                    <div class="content">
+                                        {{ i.co_ordinator }}
+                                    </div>
+                                </h4>
+                            </td>
+
+                            <td onclick="view_('{{ i.club_name }}_')">
+                                <h4 class="ui image header">
+                                    <!-- <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image"> -->
+                                    <div class="content">
+                                        {{ i.co_coordinator }}
+                                    </div>
+                                </h4>
+                            </td>
+
+                            <td>
+                                {% comment %}
+                                    TODO: Add the attachment here!
+                                {% endcomment %}
+                                <a class="ui inverted circular icon button" style="margin: auto;" target="_blank" href="{{ i.activity_calender.url }}">
+                                    <i class="large attach black icon"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
                 </tbody>
             </table>
 
             <br>
             <div class="ui divider"></div>
-        <!-- </div> -->
+        </div>
         <br>
-        <!-- <div class="extra content"></div> -->
+        <div class="extra content"></div>
     </div>
 
     <div class="ui tab" data-tab="session">
-        <!-- <div class="ui vertical segment"> -->
+        <div class="ui vertical segment">
             <form class="ui form" style="padding-left: 32px; padding-right: 32px;">
                 <div class="field">
                     <label>Club</label>
@@ -269,6 +348,17 @@
             </form>
             <br>
             <h4 class="ui dividing header" style="margin-left: 32px; margin-right: 32px;">Club Sessions</h4>
+
+
+
+
+
+
+
+
+
+
+
 
          <table class="ui very basic collapsing celled sortable table"
                    style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
@@ -298,13 +388,22 @@
 
             <br>
             <div class="ui divider"></div>
-        <!-- </div> -->
+        </div>
         <br>
-        <!-- <div class="extra content"></div> -->
+        <div class="extra content"></div>
      </div>
 
+
+
+
+
+
+
+
+
+
     <div class="ui tab" data-tab="event">
-        <!-- <div class="ui vertical segment"> -->
+        <div class="ui vertical segment">
             <form class="ui form" style="padding-left: 32px; padding-right: 32px;">
                 <div class="field">
                     <label>Club</label>
@@ -327,7 +426,6 @@
                 </div>
             </form>
             <br>
-            <h4 class="ui dividing header" style="margin-left: 32px; margin-right: 32px;">Club Events</h4>
             <table class="ui very basic collapsing celled sortable table"
                    style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
                 <thead>
@@ -399,8 +497,8 @@
 
             <br>
             <div class="ui divider"></div>
-        <!-- </div> -->
+        </div>
         <br>
-        <!-- <div class="extra content"></div> -->
+        <div class="extra content"></div>
     </div>
 {% endblock %}

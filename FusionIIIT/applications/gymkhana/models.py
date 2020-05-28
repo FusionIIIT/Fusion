@@ -71,7 +71,7 @@ class Club_info(models.Model):
 
 
 class Club_member(models.Model):
-    id = models.AutoField(primary_key=True)
+    id = models.AutoField(max_length=20, primary_key=True)
     member = models.ForeignKey(
         Student, on_delete=models.CASCADE, related_name='member_of')
     club = models.ForeignKey(Club_info, on_delete=models.CASCADE,related_name='this_club', null=False)
@@ -88,7 +88,7 @@ class Club_member(models.Model):
 
 
 class Core_team(models.Model):
-    id = models.AutoField(primary_key=True)
+    id = models.AutoField(max_length=20, primary_key=True)
     student_id = models.ForeignKey(
         Student, on_delete=models.CASCADE, related_name='applied_for')
     team = models.CharField(max_length=50, null=False)
@@ -106,7 +106,7 @@ class Core_team(models.Model):
 
 
 class Club_budget(models.Model):
-    id = models.AutoField(primary_key=True)
+    id = models.AutoField(max_length=20, primary_key=True)
     club = models.ForeignKey(Club_info,on_delete=models.CASCADE, max_length=50, null=False)
     budget_for = models.CharField(max_length=256, null=False)
     budget_amt = models.IntegerField(default=0, null=False)
@@ -124,7 +124,7 @@ class Club_budget(models.Model):
 
 
 class Session_info(models.Model):
-    id = models.AutoField(primary_key=True)
+    id = models.AutoField(max_length=20, primary_key=True)
     club = models.ForeignKey(Club_info, on_delete=models.CASCADE,max_length=50, null=True)
     venue = models.CharField(max_length=50, null=False,
                              choices=Constants.venue)
@@ -144,7 +144,7 @@ class Session_info(models.Model):
 
 
 class Club_report(models.Model):
-    id = models.AutoField(primary_key=True)
+    id = models.AutoField(max_length=20, primary_key=True)
     club = models.ForeignKey(Club_info, on_delete=models.CASCADE,max_length=50, null=False)
     incharge = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE,max_length=256, null=False)
     event_name = models.CharField(max_length=50, null=False)
@@ -161,7 +161,7 @@ class Club_report(models.Model):
 
 
 class Fest_budget(models.Model):
-    id = models.AutoField(primary_key=True)
+    id = models.AutoField(max_length=20, primary_key=True)
     fest = models.CharField(max_length=50, null=False, choices=Constants.fest)
     budget_amt = models.IntegerField(default=0, null=False)
     budget_file = models.FileField(upload_to='uploads/', null=False)
@@ -179,7 +179,7 @@ class Fest_budget(models.Model):
 
 
 class Other_report(models.Model):
-    id = models.AutoField(primary_key=True)
+    id = models.AutoField(max_length=20, primary_key=True)
     incharge = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE,max_length=256, null=False)
     event_name = models.CharField(max_length=50, null=False)
     date = models.DateTimeField(
@@ -195,7 +195,7 @@ class Other_report(models.Model):
 
 
 class Change_office(models.Model):
-    id = models.AutoField(primary_key=True)
+    id = models.AutoField(max_length=20, primary_key=True)
     club = models.ForeignKey(Club_info, on_delete=models.CASCADE,max_length=50, null=False)
     co_ordinator = models.ForeignKey(User, on_delete=models.CASCADE,null=False, related_name='co_of')
     co_coordinator = models.ForeignKey(

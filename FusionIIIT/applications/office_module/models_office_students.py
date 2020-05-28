@@ -59,7 +59,7 @@ class DeanS_approve_committes(models.Model):
 class hostel_guestroom_approval(models.Model):
     id = models.AutoField(primary_key=True)
     intender=models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
-    hall_no=models.CharField(max_length=16, choices=Constants.HALL_NO ,default='')
+    hall_no=models.CharField(max_length=5, choices=Constants.HALL_NO ,default='')
     arrival_date=models.DateField(_("Date"), default=datetime.date.today)
     departure_date=models.DateField(null=True, blank=True)
     status=models.CharField(max_length=20, choices=Constants.APPROVAL_TYPE ,default='Pending')

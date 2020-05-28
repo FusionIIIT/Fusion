@@ -105,6 +105,11 @@ class ExtraInfo(models.Model):
         timedelta = timezone.now().date() - self.date_of_birth
         return int(timedelta.days / 365)
 
+    @property
+    def age(self):
+        timedelta = timezone.localtime(timezone.now()).date() - self.date_of_birth
+        return int(timedelta.days / 365)
+
     def __str__(self):
         return '{} - {}'.format(self.id, self.user.username)
 

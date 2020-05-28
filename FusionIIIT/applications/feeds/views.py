@@ -285,7 +285,7 @@ def RemoveTag(request):
 
     context = {
         'form_answer': AnswerForm(),
-        # 'questions': result,
+        'questions': result,
         'my_tags': all_tags,
         'all_tags_list': all_tags_list,
 

@@ -169,7 +169,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                        {% for i in Club_name %}
+                        {% for i in Club_member %}
                            {% if i.status == "open" and i.member.id.id == roll %}
                                 <tr>
                                     <td class="collapsing">
@@ -178,7 +178,7 @@
                                         </div>
                                     </td>
                                     <td>
-                                        {{ i.club_name }} 
+                                        {{ i.club.club_name }} 
                                     </td>
 
                                     <td>

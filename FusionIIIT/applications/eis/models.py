@@ -1,7 +1,7 @@
 import datetime
 
 from django.contrib.auth.models import User
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 from django.db import models
 
 
@@ -92,7 +92,7 @@ class emp_research_papers(models.Model):
         ('SCI', 'SCI'),
         ('SCIE', 'SCIE'),
     )
-    is_sci = models.CharField(max_length=6, choices=IS_SCI_TYPE_CHOICES, null=True, blank=True)
+    is_sci = models.CharField(max_length=3, choices=IS_SCI_TYPE_CHOICES, null=True, blank=True)
     isbn_no = models.CharField(max_length=250, null=True, blank=True)
     doi = models.DateField(null=True, blank=True)
     start_date = models.DateField(null=True, blank=True)

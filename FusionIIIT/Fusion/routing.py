@@ -1,4 +1,4 @@
-#from channels.routing import route
+from channels.routing import route
 #from notification_channels.consumers import add, disconnect, message
 
 channel_routing = [
