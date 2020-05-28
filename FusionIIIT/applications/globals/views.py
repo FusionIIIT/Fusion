@@ -13,7 +13,7 @@ from PIL import Image
 from applications.academic_information.models import Student
 from applications.globals.forms import IssueForm, WebFeedbackForm
 from applications.globals.models import (ExtraInfo, Feedback, HoldsDesignation,
-                                         Issue, IssueImage)
+                                         Issue, IssueImage, DepartmentInfo)
 from applications.placement_cell.forms import (AddAchievement, AddCourse,
                                                AddEducation, AddExperience,
                                                AddPatent, AddProfile,
@@ -21,8 +21,8 @@ from applications.placement_cell.forms import (AddAchievement, AddCourse,
                                                AddSkill)
 from applications.placement_cell.models import (Achievement, Course, Education,
                                                 Experience, Has, Patent,
-                                                Project, Publication, Skill)
-from Fusion.settings import LOGIN_URL
+                                                Project, Publication, Skill, PlacementStatus)
+from Fusion.settings.common import LOGIN_URL
 from notifications.models import Notification
 
 def index(request):
@@ -676,13 +676,19 @@ def about(request):
 
 @login_required(login_url=LOGIN_URL)
 def dashboard(request):
+    cse_faculty = ExtraInfo.objects.filter(user_type = 'faculty', department = DepartmentInfo.objects.get(name = 'CSE'))
+    ece_faculty = ExtraInfo.objects.filter(user_type = 'faculty', department = DepartmentInfo.objects.get(name = 'ECE'))
+    me_faculty = ExtraInfo.objects.filter(user_type = 'faculty', department = DepartmentInfo.objects.get(name = 'ME'))
+    des_faculty = ExtraInfo.objects.filter(user_type = 'faculty', department = DepartmentInfo.objects.get(name = 'Design'))
+    ns_faculty = ExtraInfo.objects.filter(user_type = 'faculty', department = DepartmentInfo.objects.get(name = 'Natural Science'))
+    data = {'cse': cse_faculty, 'ece': ece_faculty, 'me': me_faculty, 'des': des_faculty, 'ns': ns_faculty}
     user=request.user
     notifs=request.user.notifications.all()
     context={
         'notifications':notifs
     }
     if(request.user.get_username() == 'director'):
-        return render(request, "dashboard/director_dashboard2.html", context)
+        return render(request, "dashboard/director_dashboard2.html", data)
     else:
         return render(request, "dashboard/dashboard.html", context)
 
