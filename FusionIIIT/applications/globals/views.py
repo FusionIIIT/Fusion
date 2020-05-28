@@ -692,6 +692,7 @@ def dashboard(request):
     else:
         return render(request, "dashboard/dashboard.html", context)
 
+
 @login_required(login_url=LOGIN_URL)
 def profile(request, username=None):
     """
@@ -911,6 +912,14 @@ def profile(request, username=None):
                    'form10':form10, 'form11':form11, 'form12':form12, 'current':current,
                    'editable': editable
                    }
+        if 'skillsubmit' in request.POST or 'deleteskill' in request.POST:
+            return render(request, "globals/student_profile2.html", context)
+        if 'coursesubmit' in request.POST or 'educationsubmit' in request.POST or 'deleteedu' in request.POST or 'deletecourse' in request.POST:
+            return render(request, "globals/student_profile3.html", context)
+        if 'experiencesubmit' in request.POST or 'projectsubmit' in request.POST or 'deleteexp' in request.POST or 'deletepro' in request.POST:
+            return render(request, "globals/student_profile4.html", context)
+        if 'achievementsubmit' in request.POST or 'deleteach' in request.POST:
+            return render(request, "globals/student_profile5.html", context)
         return render(request, "globals/student_profile.html", context)
     else:
         return redirect("/")
