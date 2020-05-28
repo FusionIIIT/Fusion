@@ -74,7 +74,7 @@ class Student(models.Model):
     mother_name = models.CharField(max_length=40, default='')
     hall_no = models.IntegerField(default=1)
     room_no = models.CharField(max_length=10, blank=True, null=True)
-    specialization = models.CharField(max_length=20,choices=Constants.MTechSpecialization, null=True, default='')
+    specialization = models.CharField(max_length=40,choices=Constants.MTechSpecialization, null=True, default='')
 
     def __str__(self):
         username = str(self.id.user.username)

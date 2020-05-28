@@ -1,15 +1,16 @@
 bs4
 celery
-django~=1.11
-django-allauth==0.40.0
+django
+django-allauth
+django-cleanup
 django-debug-toolbar
 django-markdown-deux
-django-model-utils==3.2.0
-django-notifications-hq==1.5.0
-django-pagedown==1.0.6
+django-notifications-hq
+django-pagedown
 django-semanticui-forms
+django-unused-media
+# gunicorn
 html_text
-jsonfield==2.1.1
 numpy
 pillow
 psycopg2-binary
