@@ -115,7 +115,7 @@ class Mcm(models.Model):
                                 on_delete=models.CASCADE, related_name='mcm_info')
     annual_income = models.IntegerField(default=0)
     date = models.DateField(default=datetime.date.today)
-    award_id = models.ForeignKey(Award_and_scholarship, default=4)
+    award_id = models.ForeignKey(Award_and_scholarship, default=4, on_delete=models.CASCADE)
 
 
     class Meta:
@@ -129,7 +129,7 @@ class Notional_prize(models.Model):
     spi = models.FloatField()
     cpi = models.FloatField()
     year = models.CharField(max_length=10, choices=Constants.batch)
-    award_id = models.ForeignKey(Award_and_scholarship, default=4)
+    award_id = models.ForeignKey(Award_and_scholarship, default=4, on_delete=models.CASCADE)
 
 
     class Meta:
@@ -137,10 +137,10 @@ class Notional_prize(models.Model):
 
 #Addition: a column programme added
 class Previous_winner(models.Model):
-    student = models.ForeignKey(Student)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
     programme = models.CharField(max_length=10,default='B.Tech')
     year = models.IntegerField(default=datetime.datetime.now().year)
-    award_id = models.ForeignKey(Award_and_scholarship)
+    award_id = models.ForeignKey(Award_and_scholarship, on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'Previous_winner'
@@ -163,7 +163,7 @@ class Release(models.Model):
 
 #Abhilash: new class added for keeping track of notifications and applied application by students
 class Notification(models.Model):
-    release_id = models.ForeignKey(Release,default=None)
+    release_id = models.ForeignKey(Release,default=None, on_delete=models.CASCADE)
     student_id = models.ForeignKey(Student, on_delete = models.CASCADE)
     notification_mcm_flag = models.BooleanField(default=False)
     notification_convocation_flag = models.BooleanField(default=False)
@@ -259,7 +259,7 @@ class Director_gold(models.Model):
     nearest_railwaystation = models.TextField(max_length=30, default='station')
     relevant_document = models.FileField(null=True, blank=True)
     date = models.DateField(default=datetime.date.today)
-    award_id = models.ForeignKey(Award_and_scholarship, default=4)
+    award_id = models.ForeignKey(Award_and_scholarship, default=4, on_delete=models.CASCADE)
     financial_assistance = models.TextField(max_length=1000 ,null=True)
     academic_achievements = models.TextField(max_length=1000 ,null=True)
     science_inside = models.TextField(max_length=1000 ,null=True)

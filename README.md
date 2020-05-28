@@ -1,28 +1,34 @@
 # FusionIIIT
 
-**FusionIIIT** is the automation of various functionalities, modules and tasks of/for **PDPM Indian Institute of Information Technology, Design and Manufacturing, Jabalpur** being developed in `python3.6` and using `Django` Webframework version `1.11`
+**FusionIIIT** is the automation of various functionalities, modules and tasks of/for **PDPM Indian Institute of Information Technology, Design and Manufacturing, Jabalpur** being developed in `python3.8` and using `Django` Webframework.
 
 ## System Configuration
 
-* Ubuntu `18.04` **(Recommended)**
+* Ubuntu `20.04` **(Recommended)**
 * *OR* WSL for Windows `10` \(Follow the guide below\) :  
     [Windows Subsystem for Linux Installation Guide for Windows 10](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
 * *OR* Windows `7/8/8.1/10`
 
 ## Software Requirements
 
-* Python `3.6`
-* PostgreSQL `10.10`
+* Python `3.8`
 * Git
 
 ## How to get started
 
 * on **Ubuntu**:
-  * Install the required packages using the following command :  
-    `sudo apt install python3.6-dev python-virtualenv build-essential git`
+
+    ```sh
+    // Install the required packages using the following command:
+    
+    sudo apt install python3-pip python3-dev libpq-dev python-virtualenv build-essential git
+    sudo -H pip3 install --upgrade pip
+    sudo -H pip3 install virtualenv
+    ```
 
 * on **Windows**:
-  * Get Python 3.6.8 from [here](https://www.python.org/ftp/python/3.6.8/python-3.6.8-amd64.exe) for AMD64/x64 or [here](https://www.python.org/ftp/python/3.6.8/python-3.6.8.exe) for x86
+
+  * Get Python 3.8 from [here](https://www.python.org/ftp/python/3.8.3/python-3.8.3-amd64.exe) for AMD64/x64 or [here](https://www.python.org/ftp/python/3.8.3/python-3.8.3.exe) for x86
   * Git from [here](https://git-scm.com/download/win)
   * Install both using the downloaded `exe` files  
 
@@ -39,7 +45,7 @@
 ### Setting up environment
 
 * Create a virtual environment  
-  * on **Ubuntu**: `virtualenv env -p python3.6`  
+  * on **Ubuntu**: `virtualenv env -p python3`  
   * on **Windows Powershell**: `virtualenv env`
 * Activate the *env*
   * on **Ubuntu**: `source env/bin/activate`  
@@ -49,8 +55,6 @@
 ### Running server
 
 * Change directory to **FusionIIIT** `cd FusionIIIT`
-* Make *migrations* `python manage.py makemigrations`
-* Migrate the changes to the database `$ python manage.py migrate`
 * Run the server `python manage.py runserver`
 
 ## Working with Code \(Method 1\)
@@ -66,6 +70,11 @@
   * Creates a new branch `<module-name>` in your repository
 * `git checkout <module-name>`
   * Switches to the branch you just created
+  
+### Migrating Changes (Database)
+
+* Make migrations `$ python manage.py makemigrations`  
+* Migrate the changes to the database `$ python manage.py migrate`
 
 ### Committing
 
