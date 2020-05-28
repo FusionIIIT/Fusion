@@ -58,7 +58,7 @@ def facultyData(request):
         facultyNames = []
         for i in faculty:
             name = i.user.first_name + " " + i.user.last_name
-            if current_value != "":
+            if current_value is not "":
                 Lowname = name.lower()
                 Lowcurrent_value = current_value.lower()
                 if Lowcurrent_value in Lowname:

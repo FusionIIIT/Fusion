@@ -25,9 +25,7 @@
 
 
             <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
-                <a class="header item">
-                  {{course.course_name}}
-                </a>
+              <h3> {{course.course_name}}  </h3>
                 <a class="active item sidetab" data-tab="first" data-num="11">
                   Course Content
                   <i class="right floated chevron right icon"></i>
@@ -66,13 +64,13 @@
                   Topics
                   <i class="right floated chevron right icon"></i>
                 </a>
-                <a class="item sidetab" data-tab="eighth" data-num="19">
-                  Comments
-                  <i class="right floated chevron right icon"></i>
-                </a>
-
               {% endif %}
-            </div><br><br>
+              
+              <a class="item sidetab" data-tab="eighth" data-num="19">
+                Comments
+                <i class="right floated chevron right icon"></i>
+              </a>
+            </div>
             
         </div>
 
@@ -191,10 +189,7 @@
                     }
 
                     /*timer css ends*/
-
                 </style>
-
-
                 <div class="ui pointing secondary menu">
                   <a class="item tabs" data-num="1" data-tab="quiz">
                     Quiz
@@ -375,7 +370,7 @@
                   </div>
                 </div>
  
-                <div class="ui active tab segment" id="4" data-tab="slides" style="display:block">
+                <div class="ui tab segment" id="4" data-tab="slides" style="display:block">
                     <div class="ui four column grid">
                        {% if Lecturer == 1 %}
                             <div id="add_slides_block" style="display: block;">
@@ -468,7 +463,7 @@
     <script type="text/javascript" src="{% static 'globals/js/editProfile.js' %}"></script>
     <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
 
-    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/semantic.min.js' %}"></script>
     <!-- <script>
         $(document).ready(function() {
             $('table').tablesort();

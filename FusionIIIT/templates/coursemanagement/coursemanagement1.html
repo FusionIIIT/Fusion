@@ -1,55 +1,72 @@
-{% extends 'dashboard/dashboard.html' %} 
-
+{% extends 'globals/base.html' %} 
 {% load static %} 
+{% block title %} Course Management {% endblock %} 
+{% block body %} 
+{% block navBar %} 
+{% include 'dashboard/navbar.html' %} 
+{% endblock %}
+<style>
+    #pdf_modal iframe {
+        width: 100%;
+        height: 80vh;
+    }
+    /*timer css starts*/
+    body {
+        font-family: 'Roboto Slab', serif;
+    }
+    .heading {
+        text-align: center;
+        font-size: 80px;
+    }
+    #clock {
+        display: block;
+        width: 500px;
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: 20px;
+        padding: 20px;
+        text-align: center;
+        background-color: white;
+        box-shadow: 2px 2px 5px 1px gray;
+    }
+    .block {
+        display: inline-block;
+        width: 16%;
+        margin: 1px;
+        padding: 5px;
+        font-size: 20px;
+        text-align: center;
+        background-color: orange;
+    }
+    .digit {
+        display: block;
+        font-size: 30px;
+        background-color: #fff;
+    }
+    /*timer css ends*/
+</style>
 
-{% block title %} 
-    Course Management 
-{% endblock %} 
+{% comment %}The grid starts here!{% endcomment %}
+<div class="ui stackable doubling grid">
 
-    <style>
-        #pdf_modal iframe {
-            width: 100%;
-            height: 80vh;
-        }
-        /*timer css starts*/
-        body {
-            font-family: 'Roboto Slab', serif;
-        }
-        .heading {
-            text-align: center;
-            font-size: 80px;
-        }
-        #clock {
-            display: block;
-            width: 500px;
-            margin-left: auto;
-            margin-right: auto;
-            margin-top: 20px;
-            padding: 20px;
-            text-align: center;
-            background-color: white;
-            box-shadow: 2px 2px 5px 1px gray;
-        }
-        .block {
-            display: inline-block;
-            width: 16%;
-            margin: 1px;
-            padding: 5px;
-            font-size: 20px;
-            text-align: center;
-            background-color: orange;
-        }
-        .digit {
-            display: block;
-            font-size: 30px;
-            background-color: #fff;
-        }
-        /*timer css ends*/
-    </style>
+    {% comment %}The left-margin segment!{% endcomment %}
+    <div class="column"></div>
 
-{% block main %}
+    {% comment %} The left-rail segment starts here! {% endcomment %}
+    <div class="three wide column" style="padding-top:10em">
 
-    <div class="eight wide column">
+        {% comment %}The user image card starts here!{% endcomment %} {% block usercard %} {% include 'globals/usercard.html' %} {% endblock %} {% comment %}The user image card ends here!{% endcomment %}
+
+        <div class="ui divider"></div>
+
+        {% comment %}The Tab-Menu starts here!{% endcomment %}
+
+        {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+    </div>
+    {% comment %} The left-rail segment ends here! {% endcomment %} {% comment %} The central-rail segment starts here! {% endcomment %}
+
+    <div class="eight wide column" style="padding-top:10em">
         {% comment %}The view courses start here!{% endcomment %}
         <div class="ui active tab segment" data-tab="first">
             {% comment %}The CSS starts here!{% endcomment %} {% comment %}The CSS ends here!{% endcomment %} {% comment %}The tab menu starts here!{% endcomment %}
@@ -89,7 +106,7 @@
                         </tr>
                         {% endfor %}
                         {% endifequal %}
-                    
+                       
                     </tbody>
                 </table>
 
@@ -550,55 +567,65 @@
             {% block assessment %} {% include 'coursemanagement/assessment.html' %} {% endblock %}
         </div>
 
-        {% comment %}The assessment ends here!{% endcomment %} {% comment %}The add contents starts here!{% endcomment %}
+        {% comment %}The assessment ends here!{% endcomment %} {% comment %}The add contents starts here!{% endcomment %} {% comment %}
         <div class="ui tab segment" data-tab="fifth">
             {% block addcontent %} {% include 'coursemanagement/addcontent.html' %} {% endblock %}
         </div>
-            {% comment %}The add content ends here!{% endcomment %}
+        {% endcomment %} {% comment %}The add content ends here!{% endcomment %}
 
-        {% comment %}The Attendance starts here!{% endcomment %}
+        {% comment %}The Attendance starts here!{% endcomment %} {% comment %}
         <div class="ui tab segment" data-tab="sixth">
             {% block attendance %} {% include 'coursemanagement/attendance.html' %} {% endblock %}
         </div>
+        {% endcomment %} {% comment %}The Attendance ends here!{% endcomment %}
+
+
+
+
+
+
+
+
     </div>
+    {% comment %}The central-rail segment ends here!{% endcomment %} {% comment %}The right-rail segment starts here!{% endcomment %}
 
-{% endblock %}
-
-{% block javascript %}
-
+    {% comment %}The grid ends here!{% endcomment %} {% endblock %} {% block javascript %}
     <script type="text/javascript" src="{% static 'globals/js/editProfile.js' %}"></script>
     <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
-    <!--
-    <script type="text/javascript" src="{% static 'globals/js/editProfile.js' %}"></script>
-    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
-    -->
-    <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
 
-    <!-- <script src="https://code.jquery.com/jquery-2.1.4.js"></script> -->
-    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+</div>
+<!--
+<script type="text/javascript" src="{% static 'globals/js/editProfile.js' %}"></script>
+<script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+-->
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+
+<!-- <script src="https://code.jquery.com/jquery-2.1.4.js"></script> -->
+<script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
 
 
-    <script>
-        $(document).ready(function() {
-            $('table').tablesort();
-        });
-    </script>
+<script>
+    $(document).ready(function() {
+        $('table').tablesort();
+    });
+</script>
 
-    <script>
-        function toggleContent() {
-            $('.modulesContent').toggle();
-            if ($('.modulesContent').is(':visible')) {
-                $('#toggleIcon').removeClass("chevron down");
-                $('#toggleIcon').addClass("chevron up");
-            } else if (!$('.modulesContent').is(':visible')) {
-                $('#toggleIcon').removeClass("chevron up");
-                $('#toggleIcon').addClass("chevron down");
-            }
+<script>
+    function toggleContent() {
+        $('.modulesContent').toggle();
+        if ($('.modulesContent').is(':visible')) {
+            $('#toggleIcon').removeClass("chevron down");
+            $('#toggleIcon').addClass("chevron up");
+        } else if (!$('.modulesContent').is(':visible')) {
+            $('#toggleIcon').removeClass("chevron up");
+            $('#toggleIcon').addClass("chevron down");
         }
-        $('#enter').click(function() {
-            alert('Do not close');
-            window.open('/quiz/{{contest.pk}}/live/', 'myWindow', "width=1500, height=1000");
-        });
-    </script>
+    }
+    $('#enter').click(function() {
+        alert('Do not close');
+        window.open('/quiz/{{contest.pk}}/live/', 'myWindow', "width=1500, height=1000");
+    });
+</script>
+
 
 {% endblock %}
