@@ -661,12 +661,12 @@
         {% endcomment %}
 
         <div class="eight wide column">
-            <div class="ui top attached tabular large menu">
+            {% comment %} <div class="ui top attached tabular large menu">
                 <a class="active item" data-tab="first">Notifications</a>
                 <a class="item" data-tab="second">News</a>
-            </div>
-            <div class="ui bottom attached active tab segment" data-tab="first">
-                <div id="textSegmentDiv">
+            </div> {% endcomment %}
+            {% comment %} <div class="ui bottom attached active tab segment" data-tab="first">
+                <div id="textSegmentDiv"> {% endcomment %}
 
                     {% comment %}
                     TODO: Loader required?
@@ -676,7 +676,7 @@
                     </div>
                     {% endcomment %}
 
-                    <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
+                    {% comment %} <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
                         {% block alerts %}
                             {% include 'dashboard/alerts.html' %}
                         {% endblock %}
@@ -686,12 +686,12 @@
             </div>
             <div class="ui bottom attached tab segment" data-tab="second">
                 Work in Progress, coming soon!
-            </div>
+            </div> {% endcomment %}
            
         
 <br/><br/>
         
-            <div class="ui three column stackable doubling grid">
+            <div class="ui two column stackable doubling grid">
                 {% comment %}A single modules row starts here!{% endcomment %}
 
                 {% comment %}A single modules row ends here!{% endcomment %}
@@ -700,13 +700,13 @@
                 <div class="row">
                     <div class="column">
                         <div class="ui large label" id="faculty_info" style="height:100px; width:150px;">
-                            <div class="ui centered grid"  style ="background-color:lightcyan;">
+                            <div class="ui centered grid"  style ="background-color:#34eb9e;">
                                 <div class="row" style = "color: teal">
-                                    <i class="ui user icon big"></i>
+                                    <i class="ui users icon big"></i>
                                 </div>
 
                                 <div class="row">
-                                    <span class="ui sub header centered">Faculty Statistics</span>
+                                    <span class="ui sub header centered">Estabilishment info</span>
                                 </div>
                             </div>
                         </div>
@@ -714,19 +714,19 @@
                     
                     <div class="column">
                         <div class="ui large label" id="Student_info" style="height:100px; width:150px;">
-                            <div class="ui centered grid" style ="background-color:lightcyan;">
+                            <div class="ui centered grid" style ="background-color:#34eb9e;">
                                 <div class="row" style = "color: teal">
                                     <i class="ui student icon big"></i>
                                 </div>
 
                                 <div class="row" style = "color: teal">
-                                    <span class="ui sub header centered">Top Scorers (UG)</span>
+                                    <span class="ui sub header centered">Students</span>
                                 </div>
                             </div>
                         </div>
                    </div>
 
-                   <div class="column">
+                   {% comment %} <div class="column">
                          <div id="PnD" class="ui large label" style="height:100px; width:150px;"> 
                             <div class="ui centered grid" style ="background-color:lightcyan;">
                                 <div class="row" style = "color: teal">
@@ -738,20 +738,20 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div> {% endcomment %}
                 </div>  
 
                 <div class="row">
                     <!-- HOD Info -->
                     <div class="column">
                         <div id="HOD" class="ui large label" href="" style="height:100px; width:150px;">
-                            <div class="ui centered grid" style ="background-color:lightcyan;">
+                            <div class="ui centered grid" style ="background-color:#34eb9e;">
                                 <div class="row" style = "color: teal">
                                     <i class="ui book icon big"></i>
                                 </div>
 
                                 <div class="row">
-                                    <span class="ui sub header centered">Heads of Department</span>
+                                    <span class="ui sub header centered">Placement Statistics</span>
                                 </div>
                             </div>
                         </div>
@@ -761,19 +761,19 @@
 
                     <div class="column">
                         <div id="gymkhana_info" class="ui large label" style="height:100px; width:150px;">
-                            <div class="ui centered grid" style ="background-color:lightcyan;">
+                            <div class="ui centered grid" style ="background-color:#34eb9e;">
                                 <div class="row" style = "color: teal">
                                     <i class="ui tasks icon big"></i>
                                 </div>
 
                                 <div class="row">
-                                    <span class="ui sub header centered">Office Bearers</span>
+                                    <span class="ui sub header centered">Results</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="column">
+                    {% comment %} <div class="column">
                         <div id="meetings" class="ui large label" style="height:100px; width:150px;">
                             <div class="ui centered grid" style ="background-color:lightcyan;">
                                 <div class="row"style = "color: teal">
@@ -785,7 +785,7 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div> {% endcomment %}
 
                 </div>
 
@@ -830,7 +830,13 @@
                     </tr>
                     </thead>
 
-                    <tbody></tbody>
+                    <tbody>
+                    <tr>
+                        {% for fac in cse %}
+                            <td>{{ fac.user.first_name }} {{ fac.user.last_name }} {{ fac.phone_no }}</td>
+                        {% endfor %}
+                    </tr>
+                    </tbody>
 
                 </table>
                 
@@ -849,7 +855,7 @@
                                                        margin: auto;">
 
                         <thead style="background-color:lightblue"> 
-                            <tr><th class="three wide column">Top Scorers </th></tr>
+                            <tr><th class="three wide column">Students </th></tr>
                         </thead>
                         <tbody>
                             <tr>
@@ -978,9 +984,9 @@
                 <!-- div for gymkhana -->
                 <div id="gymkhana_stats" style="display: none">
                 
-                    <h3>Gymkhana Office Bearers</h3>
+                    <h3>Results</h3>
 
-                    <table id="gymkhana_stats_table" style='border: 1px solid lightblue' class="ui very basic collapsing celled sortable table" style="padding-left: 5%;padding-right: 5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
+                    {% comment %} <table id="gymkhana_stats_table" style='border: 1px solid lightblue' class="ui very basic collapsing celled sortable table" style="padding-left: 5%;padding-right: 5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
 
                         <thead style='background-color: lightblue'>
                         <tr>
@@ -1005,7 +1011,7 @@
 
                         <tbody></tbody>
 
-                    </table>
+                    </table> {% endcomment %}
                 </div>
 
 
@@ -1019,7 +1025,7 @@
                                                        margin: auto;">
 
                         <thead style="background-color:lightblue"> 
-                            <tr><th class="three wide column"> HODs of Respective Departments </th></tr>
+                            <tr><th class="three wide column"> Placement Statistics </th></tr>
                         </thead>
                     
                         <tbody>

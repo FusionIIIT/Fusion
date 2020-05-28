@@ -1,9 +1,0 @@
-praveen
-performance :
-
-leave application ->leave type-> station           -> 
-                                 special casual    ->
-                                 casual            ->
-                                 restricted        ->
-                                 earned            ->
-                                 commuted          ->
