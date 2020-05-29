@@ -9,6 +9,8 @@
     <div class="ui active tab" data-tab="achievements">
         <div class="ui vertical segment">
             {% comment %}Form Tag starts here!{% endcomment %}
+
+            {% if request.user == user %}
             <form method="post" class="ui form" role="form">
                 {% comment %}Then add a new achievement Accordian starts here!{% endcomment %}
                 <div class="ui active accordion field">
@@ -91,6 +93,7 @@
                 </div>
                 {% comment %}The add a new Achievement Accordian ends here!{% endcomment %}
             </form>
+            {% endif %}
             {% comment %}Form Tag ends here!{% endcomment %}
 
             {% if achievements %}
