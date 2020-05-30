@@ -83,7 +83,6 @@ def course(request, course_code):
         slides = CourseDocuments.objects.filter(course_id=course)
         quiz = Quiz.objects.filter(course_id=course)
         assignment = Assignment.objects.filter(course_id=course)
-        student = Student.objects.filter(id=extrainfo)
         student_assignment = []
         for assi in assignment:
             sa = StudentAssignment.objects.filter(assignment_id=assi, student_id=student)
