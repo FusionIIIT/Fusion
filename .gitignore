@@ -69,4 +69,4 @@ FusionIIIT/static/
 package-lock.json
 
 # idea files
-.idea/
+**/.idea/
