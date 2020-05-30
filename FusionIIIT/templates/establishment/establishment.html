@@ -1,7 +1,7 @@
 {% extends 'globals/base.html' %}
 {% load static %}
 {% block title %}
-    Module
+     Establishment Module
 {% endblock %}
 {% block body %}
     {% block navBar %}
@@ -30,10 +30,12 @@
                     LTC Management
                     <i class="right floated chevron right icon"></i>
                 </a>
+                {% comment %}
                 <a class="item" data-tab="third">
                     APR / Appraisals
                     <i class="right floated chevron right icon"></i>
                 </a>
+                {% endcomment %}
                 <a class="item" data-tab="fourth">
                     Create Payroll Slip
                     <i class="right floated chevron right icon"></i>
@@ -56,11 +58,13 @@
                     {% include 'establishment/ltc.html' %}
                 {% endblock %}
             </div>
+            {% comment %}
             <div class="ui tab segment" data-tab="third">
                 {% block appraisal %}
                     {% include 'establishment/appraisal.html' %}
                 {% endblock %}
             </div>
+            {% endcomment %}
             <div class="ui tab segment" data-tab="fourth">
                 {% block payroll_slip %}
                     {% include 'establishment/payroll_slip.html' %}
