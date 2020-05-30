@@ -3,9 +3,9 @@
   <component name="FacetManager">
     <facet type="django" name="Django">
       <configuration>
-        <option name="rootFolder" value="$MODULE_DIR$" />
-        <option name="settingsModule" value="FusionIIIT/Fusion/settings.py" />
-        <option name="manageScript" value="FusionIIIT/manage.py" />
+        <option name="rootFolder" value="$MODULE_DIR$/FusionIIIT" />
+        <option name="settingsModule" value="Fusion/settings/development.py" />
+        <option name="manageScript" value="manage.py" />
         <option name="environment" value="&lt;map/&gt;" />
         <option name="doNotUseTestRunner" value="false" />
         <option name="trackFilePattern" value="" />

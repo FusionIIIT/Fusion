@@ -10,7 +10,7 @@
         {% comment %}
         TODO: Add a proper JS logic for Skills!
         {% endcomment %}
-
+        {% if request.user == user %}
         <form method="post" class="ui form" role="form">
             {% comment %}The add a new skill Accordian starts here!{% endcomment %}
             <div class="ui active accordion field">
@@ -41,13 +41,17 @@
 
                         <div class="two wide field">
                             <label><br></label>
-                            <button name="skillsubmit" value="skillsubmit" class="ui primary button" type="submit">Add</button>
+
+                            <button name="skillsubmit" value="skillsubmit" class="ui primary button" type="submit" >Add</button>
                         </div>
                     </div>
                 </div>
             </div>
             {% comment %}The add a new skill Accordian ends here!{% endcomment %}
         </form>
+        {% endif %}
+
+
     </div>
     {% if skills %}
     <div class="extra content">
