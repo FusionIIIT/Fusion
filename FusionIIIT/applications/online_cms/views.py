@@ -19,12 +19,12 @@ from applications.academic_information.models import (Course, Curriculum_Instruc
                                                       Student,Student_attendance)
 from applications.academic_procedures.models import Register
 from applications.globals.models import ExtraInfo
+from applications.globals.models import *
 
-from .forms import QuizForm, MarksForm, AttendanceForm
+from .forms import *
+# from .helpers import create_thumbnail, semester
+from .models import *
 from .helpers import create_thumbnail, semester
-from .models import (Assignment, CourseDocuments, CourseVideo, Forum,
-                     ForumReply, Question, QuestionBank, Quiz, QuizQuestion,
-                     QuizResult, StudentAnswer, StudentAssignment, Topics,)
 
 @login_required
 def viewcourses(request):
@@ -873,7 +873,13 @@ def edit_quiz_details(request, course_code, quiz_code):
             quiz.save()
         elif x == 'edit3':
             number = request.POST.get('number_of_questions')
+            score = int(quiz.total_score / quiz.number_of_question)
             quiz.number_of_question = number
+            quiz.total_score = int(number) * score
+            quiz.save()
+        elif x == 'edit4':
+            score = request.POST.get('per_question_score')
+            quiz.total_score = int(score) * quiz.number_of_question
             quiz.save()
         return HttpResponse("Done")
 
@@ -996,8 +1002,6 @@ def add_questions_to_quiz(request, course_id, quiz_id):
                 quiz_id=quiz,
                 question=question
             )
-            quiz.total_score +=  question.marks
-        quiz.save()
         return redirect('/ocms/' + course_code + '/edit_quiz/' + quiz_id)
 
 
