@@ -50,7 +50,11 @@
         <div class="eight wide column">
             <div class="ui active  tab segment" data-tab="first">
                 {% block cpda %}
-                    {% include 'establishment/cpda.html' %}
+                    {% if admin %}
+                        {% include 'establishment/cpda_admin.html' %}
+                    {% else %}
+                        {% include 'establishment/cpda.html' %}
+                    {% endif %}
                 {% endblock %}
             </div>
             <div class="ui tab segment" data-tab="second">

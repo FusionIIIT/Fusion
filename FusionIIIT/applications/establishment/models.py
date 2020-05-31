@@ -11,9 +11,14 @@ class Constants:
         ('finished', 'Finished')
     )
     REVIEW_STATUS = (
+        ('to_assign', 'To Assign'),
         ('under_review', 'Under Review'),
         ('reviewed', 'Reviewed')
     )
+
+
+class Establishment_variables(models.Model):
+    est_admin = models.ForeignKey(User, on_delete=models.CASCADE)
 
 
 class Cpda_application(models.Model):
@@ -38,13 +43,13 @@ class Cpda_application(models.Model):
 
 
 class Cpda_tracking(models.Model):
-    application = models.ForeignKey(Cpda_application, on_delete=models.CASCADE, null=True)
+    application = models.OneToOneField(Cpda_application, primary_key=True, related_name='tracking_info')
     # current_id : application is currently with
     # current_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
     # current_design = models.ForeignKey(HoldsDesignation, null=True, on_delete=models.CASCADE)
     # forward_to : application will be forwarded to
-    reviewer_id = models.ForeignKey(User,null = True, on_delete=models.CASCADE)
-    reviewer_design = models.ForeignKey(Designation, null=True, on_delete=models.CASCADE)
+    reviewer_id = models.ForeignKey(User, null = True, blank=True, on_delete=models.CASCADE)
+    reviewer_design = models.ForeignKey(Designation, null=True, blank=True, on_delete=models.CASCADE)
     remarks = models.CharField(max_length=250, null=True, blank=True)
     review_status = models.CharField(max_length=20, null=True, choices=Constants.REVIEW_STATUS)
 
