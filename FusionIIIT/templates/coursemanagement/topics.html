@@ -1,0 +1,56 @@
+{% load static %} {% block topics %}
+
+<div class="ui active tab segment" data-tab="topics">
+    <h4 class="ui dividing header">Topics </h4>
+
+
+    {% if topics %}
+    <table class="ui very basic collapsing celled table" id="topictable">
+      <thead>
+        <tr>
+          <th>S.No.</th>
+          <th>Name</th>
+          <th></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for topic in topics %}
+          <tr id="topic{{topic.pk}}">
+            <td>{{forloop.counter}}</td>
+            <td>{{topic.topic_name}}</td>
+            <td>
+               <a href="#"class="ui blue button">
+                 Open Description
+               </a>
+            </td>
+            <td>
+          <i class="remove icon topicremove" id="{{topic.pk}}" data-pk="{{topic.pk}}"></i></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="row" style="margin-left:20px">
+        <h4 class="ui header">No Topics added till Now</h4><br>
+    </div>
+    {% endif %}
+    <div class="ui blue button" id="create_topic">
+      Create a New Topic
+    </div>
+    <form class="ui large form" style="display:none" id="topic" method="post" action="/ocms/{{curriculum.course_code}}/create_topic">
+      {% csrf_token %} {% if errors %} {{errors}} {% endif %}
+      <br/>
+      <div class="field">
+        <label>Topic Name <font color="red" size="4.5">*</font></label>
+        <input type="text" name="topic_name" placeholder="Name" required="true"/>
+      </div>
+      <input type="submit" class="ui primary button" value="Create" />
+    </form>
+
+</div>
+<script>
+
+</script>
+
+{% endblock %}
