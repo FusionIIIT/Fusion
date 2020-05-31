@@ -1,5 +1,0 @@
-numpy
-opencv-python
-contours
-matplotlib
-imutils
