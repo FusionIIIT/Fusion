@@ -1,0 +1,26 @@
+<i class="close icon"></i>
+<div class="header">
+    {{ building.name }}
+</div>
+<div class="content">
+    <div class="description">
+        <table class="ui celled definition table">
+            <tbody>
+                <tr>
+                    <td>Date of Approval</td>
+                    <td id="building_date_approval">{{ building.date_approval }}</td>
+                    {% comment %} Note that the django template tags are NOT being used. The text within td tags is
+                    replaced by jQuery {% endcomment %}
+                </tr>
+                <tr>
+                    <td>Date of Start</td>
+                    <td id="building_date_start">{{ building.date_start }}</td>
+                </tr>
+                <tr>
+                    <td>Amount</td>
+                    <td id="building_amount">{{ building.amount }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

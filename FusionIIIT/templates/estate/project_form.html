@@ -1,0 +1,81 @@
+{% csrf_token %}
+<div class="fields">
+    <div class="twelve wide field">
+        <label>Name of work</label>
+        <input type="text" placeholder="Enter name of work" id="work_name" name="work_name">
+        <p id="work_name"></p>
+
+    </div>
+    <div class="four wide field">
+        <label>Date of Approval</label>
+
+        <input type="date" placeholder="Pick a date" id="approval_date" name="approval_date">
+        <p id="approval_date"></p>
+
+
+    </div>
+</div>
+
+<div class="two fields">
+    <div class="field">
+        <label>Name of Contractor</label>
+        <input type="text" placeholder="Enter name of contractor" id="contractor" name="contractor">
+        <p id="contractor"></p>
+
+    </div>
+
+    <div class="field">
+        <label>Name of Supervisor</label>
+        <input type="text" placeholder="Enter name of supervisor" id="supervisor" name="supervisor">
+        <p id="supervisor"></p>
+
+    </div>
+
+</div>
+
+<div class="three fields">
+    <div class="field">
+        <label>Start Date</label>
+        <input type="date" placeholder="Pick a date" id="start_date" name="start_date">
+        <p id="stdt"></p>
+    </div>
+
+    <div class="field">
+        <label>End Date</label>
+
+        <input type="date" placeholder="Pick a date" id="end_date" name="end_date">
+        <p id="endt"></p>
+    </div>
+
+    <div class="field">
+        <label>Actual Date of Completion</label>
+
+        <input type="date" placeholder="Pick a date" id="actual_completion_date" name="actual_completion_date">
+        <p id="actual_completion_date"></p>
+    </div>
+</div>
+
+<div class="three fields">
+
+    <div class="field">
+        <label>Estimated Cost (Rs)</label>
+
+        <input type="number" placeholder="Enter amount" id="estd_cost" name="estd_cost">
+        <p id="estd_cost"></p>
+    </div>
+
+    <div class="field">
+        <label>Actual Cost (Rs)</label>
+
+        <input type="number" placeholder="Enter amount" id="actual_cost" name="actual_cost">
+        <p id="actual_cost"></p>
+    </div>
+</div>
+
+<div class="field">
+    <label>Remarks</label>
+    <div class="ui fluid input">
+        <textarea class="ui textarea" rows="2" id="reason" name="reason"></textarea>
+        <p id="reas"></p>
+    </div>
+</div>
