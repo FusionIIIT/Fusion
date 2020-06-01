@@ -1,8 +1,9 @@
-from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
-from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-# from django.template import RequestContext
+from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
+
 from datetime import datetime
 from .models import Cpda_application, Cpda_tracking, Cpda_bill, Establishment_variables, Constants
 from .forms import Cpda_Form, Cpda_Bills_Form, Cpda_Assign_Form
@@ -26,21 +27,28 @@ def establishment(request):
                 if reviewer and designation and app_id:
                     # assign the app to the reviewer
                     reviewer_id = User.objects.get(username=reviewer)
-                    reviewer_design = Designation.objects.filter(name=designation)[0]
-                    application = Cpda_application.objects.get(id=app_id)
+                    reviewer_design = Designation.objects.filter(name=designation)
 
-                    application.tracking_info.reviewer_id = reviewer_id
-                    application.tracking_info.reviewer_design = reviewer_design
-                    application.tracking_info.remarks = remarks
-                    application.tracking_info.review_status = 'under_review'
-                    application.tracking_info.save()
-                    # add notif
-                    # add message
-                    # print (reviewer_design, ' ||| ', reviewer_id)
+                    # check if the reviewer holds the given designation, if not error
+                    # if reviewer_design:
+                    #     reviewer_design = reviewer_design[0]
+                    if reviewer_design != HoldsDesignation.objects.get(user=reviewer_id):
+                        messages.error(request, 'Reviewer doesn\'t holds the designation you specified!')
+                    else:
+                        application = Cpda_application.objects.get(id=app_id)
+                        application.tracking_info.reviewer_id = reviewer_id
+                        application.tracking_info.reviewer_design = reviewer_design
+                        application.tracking_info.remarks = remarks
+                        application.tracking_info.review_status = 'under_review'
+                        application.tracking_info.save()
+                        
+                        # add notif
+                        messages.success(request, 'Reviewer assigned successfully!')
+                        # print (reviewer_design, ' ||| ', reviewer_id)
 
                 else:
                     errors = "Please specify a reviewer and their designation."
-                    # send errors back to template
+                    messages.error(request, errors)
 
             elif app_id:
                 # update the status of app
@@ -49,8 +57,9 @@ def establishment(request):
                 application.status = status;
                 application.save()
                 # print (application)
+
                 # add notif
-                # add message
+                messages.success(request, 'Status updated successfully!')
                 
 
 
@@ -142,8 +151,9 @@ def establishment(request):
                     review_status = 'to_assign'
                 )
                 # print (application.tracking_info.application)
+
                 # add notif here
-                # add message here
+                messages.success(request, 'Request sent successfully!')
 
             if 'adjust' in request.POST:
                 # add multiple files
@@ -173,6 +183,8 @@ def establishment(request):
                 # get tracking info of a particular application
                 application.tracking_info.review_status = 'to_assign'
                 application.tracking_info.save()
+
+                messages.success(request, 'Bills submitted successfully!')
 
 
         # except:
