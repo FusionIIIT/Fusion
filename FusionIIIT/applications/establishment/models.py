@@ -38,9 +38,12 @@ class Cpda_application(models.Model):
     ppa_register_page_no = models.IntegerField( blank=True, null=True, default='-1')
     adjustment_timestamp = models.DateTimeField(auto_now=True, null=True)
 
+    def __str__(self):
+        return 'cpda id ' + str(self.id) + ', applied by ' + self.applicant.username
+
     class Meta:
         db_table = 'Cpda Application'
-
+        
 
 class Cpda_tracking(models.Model):
     application = models.OneToOneField(Cpda_application, primary_key=True, related_name='tracking_info')
@@ -53,13 +56,19 @@ class Cpda_tracking(models.Model):
     remarks = models.CharField(max_length=250, null=True, blank=True)
     review_status = models.CharField(max_length=20, null=True, choices=Constants.REVIEW_STATUS)
 
+    def __str__(self):
+        return 'cpda id ' + str(self.application.id) + ' tracking'
 
     class Meta:
         db_table = 'Cpda Tracking'
 
+
 class Cpda_bill(models.Model):
     application = models.ForeignKey(Cpda_application, on_delete=models.CASCADE, null=True)
     bill = models.FileField(blank=True)
+
+    def __str__(self):
+        return 'cpda id ' + str(self.application.id) + ', bill id ' + str(self.id)
 
     class Meta:
         db_table = 'Cpda Bills'

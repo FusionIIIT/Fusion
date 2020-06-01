@@ -54,12 +54,6 @@ pending cpda applications
                                 <label>PF Number : {{ app.pf_number }}</label><br>
                                 <label>Requested Advance : {{ app.requested_advance }}</label><br>
                                 <label>Purpose : {{ app.purpose }}</label><br>
-                                {% if app.status == 'finished' %}
-                                    <label>Adjustment Amount : {{ app.adjustment_amount }}</label><br>
-                                    <label>No. of Bills : {{ app.bills_attached }}</label><br>
-                                    <!-- add preview of bills here  -->
-                                    <label>Total amount of Bills : {{ app.total_bills_amount }}</label><br>
-                                {% endif %}
 
                                 <!-- Add form here -->
                                 <form class="ui large form" method="post" enctype="multipart/form-data" id="form1">

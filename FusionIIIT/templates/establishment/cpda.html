@@ -69,7 +69,12 @@ Y8b  d8 88      88  .8D 88   88      88   88 Y8b  d8    88      .88.    `8bd8'  
                 {% for app in active_apps %}
                     <div class="item">
                         <div class="content">
-                            <a class="header">Status : {{app.status}}</a>
+                            <div class="header">Status : {{app.status}}</div>
+                            {% if app.status == 'requested' or app.status == 'adjustments_pending' %}
+                                {% if app.tracking_info.review_status != 'to_assign' %}
+                                    <div class="meta">Review Status : {{app.tracking_info.review_status}} by {{app.tracking_info.reviewer_id}} ({{app.tracking_info.reviewer_design}})</div>
+                                {% endif %}
+                            {% endif %}
                             <div class="meta">
                                 <span>Requested Advance : ₹ {{app.requested_advance}}</span>
                             </div>

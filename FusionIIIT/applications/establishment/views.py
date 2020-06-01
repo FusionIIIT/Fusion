@@ -136,10 +136,12 @@ def establishment(request):
                     request_timestamp=timestamp,
                     status=status
                 )
-                Cpda_tracking.objects.create(
-                    application_id = application.id,
+                # next 3 lines are working magically, DON'T TOUCH THEM
+                track = Cpda_tracking.objects.create(
+                    application = application,
                     review_status = 'to_assign'
                 )
+                # print (application.tracking_info.application)
                 # add notif here
                 # add message here
 
@@ -169,14 +171,15 @@ def establishment(request):
                 application.save()
 
                 # get tracking info of a particular application
-                # track = Cpda_tracking.objects.get(application=application)
-                
+                application.tracking_info.review_status = 'to_assign'
+                application.tracking_info.save()
 
 
         # except:
         #     message = "An error has occured!"
         #     print(message)
             # return HttpResponse(message)
+
     active_apps = (Cpda_application.objects
                     .filter(applicant=request.user)
                     .exclude(status='rejected')
@@ -189,7 +192,6 @@ def establishment(request):
                     .exclude(status='approved')
                     .exclude(status='adjustments_pending')
                     .order_by('-request_timestamp'))
-
     form = Cpda_Form()
     bill_forms = {}
     apps = Cpda_application.objects.filter(applicant=request.user).filter(status='approved')
