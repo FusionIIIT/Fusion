@@ -1,0 +1,63 @@
+<button class="ui red button edit building_{{ forloop.counter0 }}">Edit</button>
+<div class="ui modal edit building_{{ forloop.counter0 }}">
+    <i class="close icon"></i>
+    <div class="header">
+        {{ building.name}}
+    </div>
+    <div class="ui vertical segment">
+        <form class="ui form" method="POST" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+            {% include 'estate/building_form.html' %}
+
+            <input type="button" id="amb_submit" name="amb_submit" value="Update"
+                class="ui submit large primary button" />
+
+        </form>
+    </div>
+</div>
+<script>
+    $('.building_{{ forloop.counter0 }}.edit.modal')
+        .modal('attach events', '.building_{{ forloop.counter0 }}.edit.button', 'show');
+</script>
+
+{% comment %}
+
+<div class="ui modal edit">
+    <i class="close icon"></i>
+    <div class="header">
+    </div>
+    <div class="ui vertical segment">
+        <form class="ui form" method="POST" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+            {% include 'estate/building_form.html' %}
+
+            <input type="button" id="amb_submit" name="amb_submit" value="Update"
+                class="ui submit large primary button" />
+
+        </form>
+        <script type="text/javascript">
+        </script>
+
+    </div>
+</div>
+
+{{ buildings|json_script:"buildings-data" }}
+
+<script>
+    $('.edit.button').on('click', function (e) {
+        //const id = Number($(this).attr("data-id"));
+        const id = e.target.attributes["data-id"].nodeValue;
+        const building = JSON.parse(document.getElementById('buildings-data').textContent)[id];
+
+        $('.edit.modal')
+            .modal({
+                onShow: function () {
+                    $('.edit.modal .header')
+                        .text(building.name);
+                    $('.edit.modal #building_name').val(building.name);
+                    $('.edit.modal #estd_cost').val(building.amount);
+                }
+            })
+            .modal('show');
+    });
+</script>
+
+{% endcomment %}

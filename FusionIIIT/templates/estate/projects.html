@@ -16,10 +16,7 @@
     <div class="ui vertical segment">
         <div class="content">
             <div class="description">
-                <button class="ui right labeled icon blue new button">
-                    <i class="plus icon"></i>
-                    New
-                </button>
+                {% include 'estate/project_new.html' %}
                 <table class="ui selectable celled sortable table">
                     <thead>
                         <tr>
@@ -32,26 +29,30 @@
                         </tr>
                     </thead>
                     <tbody>
+                        {% for project in projects %}
+                        {% if project.status == "incomplete" %}
                         <tr>
                             <td>
-                                Boundary Wall
+                                {{ project.name }}
                             </td>
                             <td class="center aligned">
-                                22-08-07
+                                {{ project.date_approval }}
                             </td>
                             <td class="center aligned">
-                                12-10-08
+                                {{ project.date_start }}
                             </td>
                             <td class="right aligned">
-                                ₹&nbsp;90,85,999
+                                ₹&nbsp;{{ project.amount }}
                             </td>
                             <td class="center aligned">
-                                <button class="ui primary button">Edit</button>
+                                {% include 'estate/building_edit.html' %}
                             </td>
-                            <td>
-                                <button class="ui secondary button">Details</button>
+                            <td class="center aligned">
+                                {% include 'estate/building_detail.html' %}
                             </td>
                         </tr>
+                        {% endif %}
+                        {% endfor %}
                     </tbody>
                     <tfoot>
                         <tr>
@@ -81,10 +82,7 @@
     <div class="ui vertical segment">
         <div class="content">
             <div class="description">
-                <button class="ui right labeled icon blue new button">
-                    <i class="plus icon"></i>
-                    New
-                </button>
+                {% include 'estate/project_new.html' %}
                 <table class="ui selectable celled sortable table">
                     <thead>
                         <tr>
@@ -98,29 +96,33 @@
                         </tr>
                     </thead>
                     <tbody>
+                        {% for project in projects %}
+                        {% if project.status == "complete" %}
                         <tr>
                             <td>
-                                Cricket Ground
+                                {{ project.name }}
                             </td>
                             <td class="center aligned">
-                                22-08-07
+                                {{ project.date_approval }}
                             </td>
                             <td class="center aligned">
-                                12-10-08
+                                {{ project.date_start }}
                             </td>
                             <td class="center aligned">
-                                18-05-09
+                                {{ project.date_end }}
                             </td>
                             <td class="right aligned">
-                                ₹&nbsp;90,85,999
+                                ₹&nbsp;{{ project.amount }}
                             </td>
                             <td class="center aligned">
-                                <button class="ui primary button">Edit</button>
+                                {% include 'estate/building_edit.html' %}
                             </td>
-                            <td>
-                                <button class="ui secondary button">Details</button>
+                            <td class="center aligned">
+                                {% include 'estate/building_detail.html' %}
                             </td>
                         </tr>
+                        {% endif %}
+                        {% endfor %}
                     </tbody>
                     <tfoot>
                         <tr>

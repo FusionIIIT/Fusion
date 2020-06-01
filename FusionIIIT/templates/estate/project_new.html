@@ -1,0 +1,22 @@
+<button class="ui right labeled icon blue newProject button">
+    <i class="plus icon"></i>
+    New
+</button>
+<div class="ui modal newProject">
+    <i class="close icon"></i>
+    <div class="header">
+        New Project
+    </div>
+    <div class="ui vertical segment">
+        <form class="ui form" method="POST" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+            {% include 'estate/project_form.html' %}
+
+            <input type="button" id="amb_submit" name="amb_submit" value="Create"
+                class="ui submit large primary button" />
+        </form>
+    </div>
+</div>
+<script>
+    $('.newProject.modal')
+        .modal('attach events', '.newProject.button', 'show');
+</script>

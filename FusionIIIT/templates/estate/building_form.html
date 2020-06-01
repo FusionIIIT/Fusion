@@ -1,22 +1,19 @@
 {% csrf_token %}
-<div class="fields">
-    <div class="twelve wide field">
-        <label>Name of building</label>
-        <input type="text" placeholder="Enter name of building" id="building_name" name="building_name">
-        <p id="building_name"></p>
+<div class="field">
+    <label>Name of building</label>
+    <input type="text" placeholder="Enter name of building" id="building_name" name="building_name"
+        value="{{ building.name }}">
+    <p id="building_name"></p>
 
-    </div>
-    <div class="four wide field">
+</div>
+
+<div class="four fields">
+    <div class="field">
         <label>Date of Approval</label>
 
         <input type="date" placeholder="Pick a date" id="approval_date" name="approval_date">
         <p id="approval_date"></p>
-
-
     </div>
-</div>
-
-<div class="three fields">
     <div class="field">
         <label>Start Date</label>
         <input type="date" placeholder="Pick a date" id="start_date" name="start_date">
@@ -41,22 +38,31 @@
 <div class="three fields">
     <div class="field">
         <label>Area (acres)</label>
-        <input type="number" placeholder="Enter area" id="area" name="area">
-        <p id="area"></p>
+
+        <div class="ui right labeled input">
+            <input type="number" placeholder="Enter area" id="area" name="area">
+            <div class="ui basic label">
+                acres
+            </div>
+        </div>
     </div>
 
     <div class="field">
         <label>Estimated Cost (Rs)</label>
 
-        <input type="number" placeholder="Enter amount" id="estd_cost" name="estd_cost">
-        <p id="estd_cost"></p>
+        <div class="ui left icon input">
+            <input type="number" placeholder="Enter amount" id="estd_cost" name="estd_cost" value={{ building.amount }}>
+            <i class="rupee sign icon"></i>
+        </div>
     </div>
 
     <div class="field">
         <label>Actual Cost (Rs)</label>
 
-        <input type="number" placeholder="Enter amount" id="actual_cost" name="actual_cost">
-        <p id="actual_cost"></p>
+        <div class="ui left icon input">
+            <input type="number" placeholder="Enter amount" id="actual_cost" name="actual_cost">
+            <i class="rupee sign icon"></i>
+        </div>
     </div>
 </div>
 

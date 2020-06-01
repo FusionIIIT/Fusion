@@ -1,5 +1,6 @@
 {% load static %}
 {% block buildings %}
+{% load humanize %}
 
 <div class="ui pointing secondary menu">
     <a class="active red item" data-tab="building_incomplete">
@@ -19,10 +20,7 @@
     <div class="ui vertical segment">
         <div class="content">
             <div class="description">
-                <button class="ui right labeled icon blue new button">
-                    <i class="plus icon"></i>
-                    New
-                </button>
+                {% include 'estate/building_new.html' %}
                 <table class="ui selectable celled sortable table">
                     <thead>
                         <tr>
@@ -48,17 +46,19 @@
                                 {{ building.date_start }}
                             </td>
                             <td class="right aligned">
-                                ₹&nbsp;{{ building.amount }}
+                                ₹&nbsp;{{ building.amount|intcomma }}
                             </td>
                             <td class="center aligned">
-                                <button class="ui red button edit" data-id="{{ forloop.counter0 }}">Edit</button>
-
+                                {% include 'estate/building_edit.html' %}
                             </td>
-                            <td>
-                                <button class="ui secondary button details"
-                                    data-id="{{ forloop.counter0 }}">Details</button>
+                            <td class="center aligned">
+                                {% include 'estate/building_detail.html' %}
                             </td>
                         </tr>
+
+
+
+
                         {% endif %}
                         {% endfor %}
                     </tbody>
@@ -90,10 +90,7 @@
     <div class="ui vertical segment">
         <div class="content">
             <div class="description">
-                <button class="ui right labeled icon blue new button">
-                    <i class="plus icon"></i>
-                    New
-                </button>
+                {% include 'estate/building_new.html' %}
                 <table class="ui selectable celled sortable table">
                     <thead>
                         <tr>
@@ -119,15 +116,13 @@
                                 {{ building.date_start }}
                             </td>
                             <td class="right aligned">
-                                ₹&nbsp;{{ building.amount }}
+                                ₹&nbsp;{{ building.amount|intcomma }}
                             </td>
                             <td class="center aligned">
-                                <button class="ui primary button edit" data-id="{{ forloop.counter0 }}">Edit</button>
-
+                                {% include 'estate/building_edit.html' %}
                             </td>
-                            <td>
-                                <button class="ui secondary button details"
-                                    data-id="{{ forloop.counter0 }}">Details</button>
+                            <td class="center aligned">
+                                {% include 'estate/building_detail.html' %}
                             </td>
                         </tr>
                         {% endif %}
@@ -161,10 +156,7 @@
     <div class="ui vertical segment">
         <div class="content">
             <div class="description">
-                <button class="ui right labeled icon blue new button">
-                    <i class="plus icon"></i>
-                    New
-                </button>
+                {% include 'estate/building_new.html' %}
                 <table class="ui selectable celled sortable table">
                     <thead>
                         <tr>
@@ -194,15 +186,13 @@
                                 {{ building.date_end }}
                             </td>
                             <td class="right aligned">
-                                ₹&nbsp;{{ building.amount }}
+                                ₹&nbsp;{{ building.amount|intcomma }}
                             </td>
                             <td class="center aligned">
-                                <button class="ui primary button edit" data-id="{{ forloop.counter0 }}">Edit</button>
-
+                                {% include 'estate/building_edit.html' %}
                             </td>
-                            <td>
-                                <button class="ui secondary button details"
-                                    data-id="{{ forloop.counter0 }}">Details</button>
+                            <td class="center aligned">
+                                {% include 'estate/building_detail.html' %}
                             </td>
                         </tr>
                         {% endif %}
@@ -231,107 +221,5 @@
         </div>
     </div>
 </div>
-
-<div class="ui modal new">
-    <i class="close icon"></i>
-    <div class="header">
-        New Building
-    </div>
-    <div class="ui vertical segment">
-        <form class="ui form" method="POST" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
-            {% include 'estate/building_form.html' %}
-
-            <input type="button" id="amb_submit" name="amb_submit" value="Create"
-                class="ui submit large primary button" />
-
-        </form>
-        <script type="text/javascript">
-        </script>
-
-    </div>
-</div>
-
-<div class="ui modal edit">
-    <i class="close icon"></i>
-    <div class="header">
-    </div>
-    <div class="ui vertical segment">
-        <form class="ui form" method="POST" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
-            {% include 'estate/building_form.html' %}
-
-            <input type="button" id="amb_submit" name="amb_submit" value="Update"
-                class="ui submit large primary button" />
-
-        </form>
-        <script type="text/javascript">
-        </script>
-
-    </div>
-</div>
-<div class="ui modal details">
-    {% include 'estate/building_detail.html' %}
-</div>
-
-{{ buildings|json_script:"buildings-data" }}
-
-<script>
-    $('.new.button').on('click', function () {
-        //const id = Number($(this).attr("data-id"));
-        //const id = e.target.attributes["data-id"].nodeValue;
-        //const building = JSON.parse(document.getElementById('buildings-data').textContent)[id];
-
-        $('.new.modal')
-            .modal({
-                onShow: function () {
-                    /*
-                    $('.edit.modal .header')
-                        .text(building.name);
-                    $('.edit.modal #building_name').val(building.name);
-                    $('.edit.modal #estd_cost').val(building.amount);
-                    */
-                }
-            })
-            .modal('show');
-    });
-
-    $('.edit.button').on('click', function (e) {
-        //const id = Number($(this).attr("data-id"));
-        const id = e.target.attributes["data-id"].nodeValue;
-        const building = JSON.parse(document.getElementById('buildings-data').textContent)[id];
-
-        $('.edit.modal')
-            .modal({
-                onShow: function () {
-                    $('.edit.modal .header')
-                        .text(building.name);
-                    $('.edit.modal #building_name').val(building.name);
-                    $('.edit.modal #estd_cost').val(building.amount);
-                }
-            })
-            .modal('show');
-    });
-
-    $('.details.button').on('click', function (e) {
-        //const id = Number($(this).attr("data-id"));
-        const id = e.target.attributes["data-id"].nodeValue;
-        const building = JSON.parse(document.getElementById('buildings-data').textContent)[id];
-
-        $('.details.modal')
-            .modal({
-                onShow: function () {
-                    $('.details.modal .header')
-                        .text(building.name);
-                    $('.details.modal tbody td#building_date_approval')
-                        .text(building.date_approval);
-                    $('.details.modal tbody td#building_date_start')
-                        .text(building.date_start);
-                    $('.details.modal tbody td#building_amount')
-                        .text("₹ " + building.amount)
-                }
-            })
-            .modal('show');
-    });
-</script>
-
 
 {% endblock %}
