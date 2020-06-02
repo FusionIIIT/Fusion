@@ -136,9 +136,7 @@ def convener_view(request):
             year = request.POST.get('year')
             spi = request.POST.get('spi')
             cpi = request.POST.get('cpi')
-            award = request.POST.get('award')
-            a = Award_and_scholarship.objects.get(award_name=award).id
-            award_id = Award_and_scholarship.objects.get(id=a)
+            award_id = getAwardId(request)
             Notional_prize.objects.create(year=year,spi=spi,cpi=cpi,award_id=award_id)
             messages.success(request, award+' are invited successfully')
             return HttpResponseRedirect('/spacs/convener_view')
@@ -415,8 +413,7 @@ def student_view(request):
             income_certificate = request.FILES.get('income_certificate')
             student = request.user.extrainfo.student
             annual_income = income_father + income_mother + income_other
-            a = Award_and_scholarship.objects.get(award_name="MCM").id
-            award_id = Award_and_scholarship.objects.get(id=a)
+            award_id = getAwardId(request)
             releases = Release.objects.filter(Q(startdate__lte=datetime.datetime.today().strftime(
                 '%Y-%m-%d'), enddate__gte=datetime.datetime.today().strftime('%Y-%m-%d'))).filter(award='Merit-cum-Means Scholarship')
             for release in releases:
@@ -502,9 +499,7 @@ def student_view(request):
                 x.save()
             relevant_document = request.FILES.get('myfile')
             student_id = request.user.extrainfo.student
-            a = Award_and_scholarship.objects.get(
-                award_name="Director Gold Medal").id
-            award_id = Award_and_scholarship.objects.get(id=a)
+            award_id = getAwardId(request)
             academic_achievements = request.POST.get('academic_achievements')
             science_inside = request.POST.get('science_inside')
             science_outside = request.POST.get('science_outside')
@@ -596,9 +591,7 @@ def student_view(request):
                 x.invite_convocation_accept_flag = False
                 x.save()
             relevant_document = request.FILES.get('myfile')
-            award = request.POST.get('award')
-            a = Award_and_scholarship.objects.get(award_name=award).id
-            award_id = Award_and_scholarship.objects.get(id=a)
+            award_id = getAwardId(request)
             student_id = request.user.extrainfo.student
             inside_achievements = request.POST.get('inside_achievements')
             outside_achievements = request.POST.get('outside_achievements')
@@ -658,9 +651,7 @@ def student_view(request):
             title_name = request.POST.get('title')
             no_of_students = request.POST.get('students')
             relevant_document = request.FILES.get('myfile')
-            award = request.POST.get('award')
-            a = Award_and_scholarship.objects.get(award_name=award).id
-            award_id = Award_and_scholarship.objects.get(id=a)
+            award_id = getAwardId(request)
             student_id = request.user.extrainfo.student
             try:
                 roll_no1 = int(request.POST.get('roll_no1'))
@@ -1492,3 +1483,9 @@ def updateEndDate(request):
     else:
         context['result'] = 'Failure'
     return HttpResponse(json.dumps(context), content_type='updateEndDate/json')
+
+def getAwardId(request):
+    award = request.POST.get('award')
+    a = Award_and_scholarship.objects.get(award_name=award).id
+    award_id = Award_and_scholarship.objects.get(id=a)
+    return award_id
