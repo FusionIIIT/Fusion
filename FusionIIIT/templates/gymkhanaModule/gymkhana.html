@@ -177,6 +177,10 @@
 
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
+                 <a class="item" data-tab="voting_polls">
+                    Voting Polls
+                    <i class="right floated chevron right icon"></i>
+                </a>
 
                 {% if "student" in Curr_desig %}
 
@@ -294,6 +298,11 @@
             <div class="ui tab segment" data-tab="ninth">
                 {% block clubReport %}
                     {% include 'gymkhanaModule/otherReport.html' %}
+                {% endblock %}
+            </div>
+            <div class="ui tab segment" data-tab="voting_polls">
+                {% block voting_polls %}
+                    {% include 'gymkhanaModule/voting_polls.html' %}
                 {% endblock %}
             </div>
 
