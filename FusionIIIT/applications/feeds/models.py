@@ -27,6 +27,7 @@ class Constants:
 		('Technology-and-Education', 'Technology and Education'),       
 		('Programmes', 'Programmes'),
 		('Others', 'Others'),
+		('Design', 'Design'),
 	)
 
 	SUBTAG_LIST = (
@@ -166,12 +167,11 @@ class AskaQuestion(models.Model):
 	subject = models.CharField(max_length=100, blank=False)
 	description = models.CharField(max_length=500, null=True, blank=True, default="")
 	select_tag = models.ManyToManyField(AllTags)
-	file = models.FileField(null=True, blank=True)
+	file = models.FileField(null=True, blank=True,upload_to='feeds/files')
 	uploaded_at = models.DateTimeField(auto_now_add=False, auto_now=False, default=timezone.now)
-	#like = models.IntegerField(default=0)
 	likes = models.ManyToManyField(User, default=1,related_name='likes', blank=True)
+	dislikes = models.ManyToManyField(User, default=1,related_name='dislikes', blank=True)
 	requests = models.ManyToManyField(User, default=1,related_name='requests', blank=True)
-	#dislikes = models.ManyToManyField(User, related_name='dislikes', blank=True)
 	is_liked=models.BooleanField(default=False)
 	is_requested=models.BooleanField(default=False)
 	request = models.IntegerField(default=0)
@@ -184,6 +184,9 @@ class AskaQuestion(models.Model):
 
 	def total_likes(self):
 		return self.likes.count()
+	
+	def total_dislikes(self):
+		return self.dislikes.count()
 
 	def total_requests(self):
 		return self.requests.count()
@@ -204,7 +207,22 @@ class AnsweraQuestion(models.Model):
 	uploaded_at = models.DateTimeField(auto_now=False, auto_now_add=False, default=timezone.now)
 	answers = models.ManyToManyField(User, default=1, related_name='answers', blank=True)
 	total_answers = models.IntegerField(default=0)
+	likes = models.ManyToManyField(User, default=1,related_name='answer_likes', blank=True)
+	dislikes = models.ManyToManyField(User, default=1,related_name='answer_dislikes', blank=True)
+	is_liked=models.BooleanField(default=False)
 
+	def total_likes(self):
+		return self.likes.count()
+	
+	def total_votes(self):
+		return self.likes.count() - self.dislikes.count()
+
+	def total_dislikes(self):
+		return self.dislikes.count()
+
+	def total_requests(self):
+		return self.requests.count()
+		
 	def __str__(self):
 		return '{} - answered the question - {}'.format(self.content, self.question)
 
@@ -216,7 +234,6 @@ class AnsweraQuestion(models.Model):
 
 	def total_answers(self):
 		return self.answers.count()
-
 
 class Comments(models.Model):
 	user = models.ForeignKey(User, default=1, on_delete=models.CASCADE)
@@ -248,7 +265,6 @@ class Reply(models.Model):
 	def total_replies(self):
 		return self.replies.count()
 
-
 class report(models.Model):
 	user = models.ForeignKey(User, default=1, on_delete=models.CASCADE)
 	question = models.ForeignKey(AskaQuestion, default=1, on_delete = models.CASCADE)
@@ -256,8 +272,6 @@ class report(models.Model):
 
 	# class Meta:
 	# 	unique_together = ('user', 'question')
-
-
 
 class hidden(models.Model):
 	user = models.ForeignKey(User, default=1, on_delete=models.CASCADE)
@@ -270,14 +284,21 @@ class hidden(models.Model):
 	def __str__(self):
 		return '{} - hide - {}'.format(self.user, self.question)
 
-
 class tags(models.Model):
 	user = models.ForeignKey(User, default=1, on_delete=models.CASCADE)
 	my_tag = models.CharField(max_length=100, default=1, choices=Constants.TAG_LIST)
 	my_subtag = models.ForeignKey(AllTags, default=1, on_delete = models.CASCADE)
 
-	# class Meta:
-	# 	unique_together = ('user', 'my_subtag')
+	class Meta:
+		unique_together = ('user', 'my_subtag')
 
 	def __str__(self):
 		return '%s is interested in ----> %s - %s' % (self.user, self.my_tag, self.my_subtag.subtag)
+
+class Profile(models.Model):
+	user = models.ForeignKey(User, default=1, on_delete=models.CASCADE)
+	bio = models.CharField(max_length=250,blank=True)
+	profile_picture = models.ImageField(null=True, blank=True, upload_to='feeds/profile_pictures')
+	profile_view = models.IntegerField(default=0)
+	def __str__(self):
+		return '%s\'s Bio is  ----> %s' % (self.user, self.bio)

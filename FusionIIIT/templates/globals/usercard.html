@@ -36,9 +36,12 @@
             {% endif %}
 
             <div class="meta">
+                {% for i in Curr_desig %}
                 <span> {% comment %}Should this be inside if else?{% endcomment %}
-                    {{ Curr_desig }}
+                    {{ i }}
                 </span>
+                <br>
+                {% endfor %}
             </div>
         </div>
     </div>
