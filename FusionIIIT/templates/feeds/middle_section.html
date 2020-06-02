@@ -242,6 +242,14 @@
     <div class="ui clearing segment red center aligned" style="margin-bottom: 30px;">
         You have choose not to see this post.
         <a style="padding: 0px; font-size: 12px; font-family: Georgia;" href="{% url 'feeds:single_question' question.ques.id %}">Click here</a> to view.
+        <form method="post" action="{% url 'feeds:unhide_post' question.ques.id %}">
+        {% csrf_token %}
+            <a class="ui item">
+                <button class="ui button" type="submit" name="unhide" value="unhide">
+                <i class="eye icon" id="delete"></i>Click here Unhide 
+                </button>
+            </a>
+        </form>
     </div>
     {% endif %}
 

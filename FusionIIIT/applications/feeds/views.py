@@ -295,6 +295,14 @@ def hide_post(request, id):
         print(hid,"sid")
     return redirect ('/feeds/')
 
+def unhide_post(request, id):
+    if request.method == 'POST' and request.POST.get("unhide"):
+        ques = AskaQuestion.objects.filter(pk=id)[0]
+        print(ques)
+        hid = hidden.objects.filter(user=request.user )
+        hid.delete()
+    return redirect ('/feeds/')
+
 def update_post(request, id):
     if request.method == 'POST' and request.POST.get("update"):
         print(request.POST.get('anonymous_update'))
@@ -551,7 +559,8 @@ def profile(request, string):
     ext = ""
     no_img = True
     if len(profile) == 0:
-        prf = ""
+        prf = Profile(user =usr )
+        prf.save()
     else:
         prf = profile[0]
         if prf.profile_picture :
