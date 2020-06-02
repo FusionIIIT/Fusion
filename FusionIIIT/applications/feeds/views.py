@@ -16,13 +16,13 @@ from applications.globals.models import ExtraInfo
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 import math
-PAGE_SIZE = 2
+PAGE_SIZE = 4
 # Create your views here.
 @login_required
 def feeds(request):
     query = AskaQuestion.objects.order_by('-uploaded_at')
     paginator = Paginator(query, PAGE_SIZE) # Show 25 contacts per page.
-    total_page = math.ceil(query.count()/2)
+    total_page = math.ceil(query.count()/PAGE_SIZE)
     if request.GET.get("page_number") :
         current_page = int(request.GET.get("page_number"))
     else:
@@ -33,12 +33,13 @@ def feeds(request):
 
     if request.method == 'POST':
 
-        if request.POST.get('add_qus') and request.FILES or None:
+        if request.POST.get('add_qus') :
             print("Post a Question request received")
             question = AskaQuestion.objects.create(user=request.user)
             question.subject = request.POST.get('subject')
             question.description = request.POST.get('content')
-            question.file = request.FILES['file']
+            if request.FILES :
+                question.file = request.FILES['file']
             tag = request.POST.get('Add_Tag')
             tag = tag[8:]
             ques_tag = []
@@ -76,6 +77,7 @@ def feeds(request):
                 new.my_tag = temp.tag
                 print(AllTags.objects.get(pk=a[i]))
                 new.save()
+            return redirect("/feeds")
 
     all_tags = AllTags.objects.values('tag').distinct()
     askqus_subtags = AllTags.objects.all()
@@ -86,26 +88,31 @@ def feeds(request):
     # print(tags.objects.all().filter(Q(my_tag__icontains='CSE')))
     ques = []
     query = paginator.page(current_page)
+    hid = hidden.objects.all()
     for q in query:
         isliked = 0
         isdisliked = 0
+        hidd = 0
         profi = Profile.objects.all().filter(user=q.user)
         if(q.likes.all().filter(username=request.user.username).count()==1):
             isliked = 1
+        if(hid.all().filter(user=request.user, question = q).count()==1):
+            hidd = 1
         if(q.dislikes.all().filter(username=request.user.username).count()==1):
             isdisliked = 1
         temp = {
             'profile':profi,
             'ques' : q,
             'isliked':isliked,
+            'hidd' : hidd,
             'disliked': isdisliked,
             'votes':q.total_likes() - q.total_dislikes(),
         }
         ques.append(temp)
     add_tag_list = AllTags.objects.all()
     add_tag_list = add_tag_list.exclude(pk__in=a_tags)
-
     context ={
+        'hidden' : hid,
         'form_answer': AnswerForm(),
         'Tags': user_tags,
         'questions': ques,
@@ -274,10 +281,28 @@ def delete_answer(request):
 def delete_post(request, id):
     if request.method == 'POST' and request.POST.get("delete"):
         ques = AskaQuestion.objects.filter(pk=id)[0]
-        print(settings.BASE_DIR+ques.file.url)
-        default_storage.delete(settings.BASE_DIR+ques.file.url)
+        if ques.file:
+            print(settings.BASE_DIR+ques.file.url)
+            default_storage.delete(settings.BASE_DIR+ques.file.url)
         ques.delete()
         return redirect ('/feeds/')
+
+def hide_post(request, id):
+    if request.method == 'POST' and request.POST.get("hide"):
+        ques = AskaQuestion.objects.filter(pk=id)[0]
+        print(ques)
+        hid = hidden(user = request.user, question = ques);
+        hid.save()
+        print(hid,"sid")
+    return redirect ('/feeds/')
+
+def unhide_post(request, id):
+    if request.method == 'POST' and request.POST.get("unhide"):
+        ques = AskaQuestion.objects.filter(pk=id)[0]
+        print(ques)
+        hid = hidden.objects.filter(user=request.user )
+        hid.delete()
+    return redirect ('/feeds/')
 
 def update_post(request, id):
     if request.method == 'POST' and request.POST.get("update"):
@@ -509,7 +534,8 @@ def profile(request, string):
         else:
             Pr = profile[0]
         if request.POST.get("bio"):
-            Pr.bio = request.POST.get("bio")
+            if request.POST.get("bio") != "":
+                Pr.bio = request.POST.get("bio")
         if request.FILES:
             if Pr.profile_picture :
                 default_storage.delete(settings.BASE_DIR+Pr.profile_picture.url)
@@ -534,16 +560,21 @@ def profile(request, string):
     ext = ""
     no_img = True
     if len(profile) == 0:
-        prf = ""
+        prf = Profile(user =usr )
+        prf.save()
     else:
         prf = profile[0]
-        if os.path.exists(settings.BASE_DIR+prf.profile_picture.url):
-            no_img=False
+        if prf.profile_picture :
+            if os.path.exists(settings.BASE_DIR+prf.profile_picture.url):
+                no_img=False
+        else :
+            no_img :True
     
     if len(extra) == 0:
         ext = ""
     else:
         ext = extra[0]
+    hid = hidden.objects.all().filter(user = request.user)
     context = {
         'profile': prf,
         # 'profile_image' : profile[0].profile_picture,
@@ -551,6 +582,7 @@ def profile(request, string):
         'answer_given' : len(ans),
         'last_login' : usr.last_login,
         'extra' : ext,
+        'hidden_ques' : hid,
         'tags' : tags,
         'top_ques' : ques,
         'top_ques_len' : len(ques),

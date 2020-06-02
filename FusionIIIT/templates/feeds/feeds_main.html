@@ -16,9 +16,9 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.1.7/semantic.min.js"></script>
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.1.7/semantic.min.css" rel="stylesheet"/>
 
-	{% comment %} {% block navBar %}
+	{% block navBar %}
 		{% include 'dashboard/navbar.html' %}
-	{% endblock %} {% endcomment %}
+	{% endblock %}
 
 	<div class="sixteen wide column">
 		<!-- Search Bar Section -->
@@ -215,6 +215,7 @@
 					$(`#${id}`).parent().hide();
 					if(response.done==1){
 						alert("tag removed successfully")
+						 location.reload(); 
 					}else{
 						alert("Sorry tag not removed")
 					}
