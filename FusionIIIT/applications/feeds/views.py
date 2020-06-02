@@ -16,13 +16,13 @@ from applications.globals.models import ExtraInfo
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 import math
-PAGE_SIZE = 2
+PAGE_SIZE = 4
 # Create your views here.
 @login_required
 def feeds(request):
     query = AskaQuestion.objects.order_by('-uploaded_at')
     paginator = Paginator(query, PAGE_SIZE) # Show 25 contacts per page.
-    total_page = math.ceil(query.count()/2)
+    total_page = math.ceil(query.count()/PAGE_SIZE)
     if request.GET.get("page_number") :
         current_page = int(request.GET.get("page_number"))
     else:
@@ -77,6 +77,7 @@ def feeds(request):
                 new.my_tag = temp.tag
                 print(AllTags.objects.get(pk=a[i]))
                 new.save()
+            return redirect("/feeds")
 
     all_tags = AllTags.objects.values('tag').distinct()
     askqus_subtags = AllTags.objects.all()
