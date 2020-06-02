@@ -33,12 +33,13 @@ def feeds(request):
 
     if request.method == 'POST':
 
-        if request.POST.get('add_qus') and request.FILES or None:
+        if request.POST.get('add_qus') :
             print("Post a Question request received")
             question = AskaQuestion.objects.create(user=request.user)
             question.subject = request.POST.get('subject')
             question.description = request.POST.get('content')
-            question.file = request.FILES['file']
+            if request.FILES :
+                question.file = request.FILES['file']
             tag = request.POST.get('Add_Tag')
             tag = tag[8:]
             ques_tag = []
@@ -274,8 +275,9 @@ def delete_answer(request):
 def delete_post(request, id):
     if request.method == 'POST' and request.POST.get("delete"):
         ques = AskaQuestion.objects.filter(pk=id)[0]
-        print(settings.BASE_DIR+ques.file.url)
-        default_storage.delete(settings.BASE_DIR+ques.file.url)
+        if ques.file:
+            print(settings.BASE_DIR+ques.file.url)
+            default_storage.delete(settings.BASE_DIR+ques.file.url)
         ques.delete()
         return redirect ('/feeds/')
 
@@ -509,7 +511,8 @@ def profile(request, string):
         else:
             Pr = profile[0]
         if request.POST.get("bio"):
-            Pr.bio = request.POST.get("bio")
+            if request.POST.get("bio") != "":
+                Pr.bio = request.POST.get("bio")
         if request.FILES:
             if Pr.profile_picture :
                 default_storage.delete(settings.BASE_DIR+Pr.profile_picture.url)
@@ -537,8 +540,11 @@ def profile(request, string):
         prf = ""
     else:
         prf = profile[0]
-        if os.path.exists(settings.BASE_DIR+prf.profile_picture.url):
-            no_img=False
+        if prf.profile_picture :
+            if os.path.exists(settings.BASE_DIR+prf.profile_picture.url):
+                no_img=False
+        else :
+            no_img :True
     
     if len(extra) == 0:
         ext = ""

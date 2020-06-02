@@ -1,3 +1,5 @@
+{% load static %}
+
 {% block css %}
     <style>
         .no-margin{
@@ -25,7 +27,11 @@
 
             <div class="two wide column no-padding no-margin">
                 <a href="{% url 'feeds:profile' question.ques.user.username%}">
+                {% if question.profile.0.profile_picture %}
                     <img class="ui avatar image" style="height: 40px; width: 40px ;" src="{{question.profile.0.profile_picture.url}}">
+                {% else %}
+                    <img class="ui avatar image" style="height: 40px; width: 40px ;" src={% static 'globals/img/zlatan.jpg' %}>
+                {% endif %}
                 </a>
             </div>
 
@@ -93,7 +99,7 @@
                                         </ul>
                                     </div>
 
-                                    <form method="post" action="{% url 'feeds:update_post' question.ques.id %}">{% csrf_token %}
+                                    <form method="post" onsubmit="return update_ques_validate()" action="{% url 'feeds:update_post' question.ques.id %}">{% csrf_token %}
                                         <div class="ui large form">
                                             <div class="field">
                                                 <label>Subject</label>
@@ -108,7 +114,7 @@
                                             <div class="field">
                                                 <label>Add Tag</label>
                                                 <div class='ui multiple search selection dropdown seasons'>
-                                                    <input name="Add_Tag" id="Add_Tag" value="Add_Tag" type="hidden">
+                                                    <input class="update_Add_Tag" name="Add_Tag" id="Add_Tag" value="Add_Tag" type="hidden">
                                                     <i class="dropdown icon"></i>
                                                     <div class="default text"><i class="tags icon"></i>Select</div>
                                                     <div class="menu">
