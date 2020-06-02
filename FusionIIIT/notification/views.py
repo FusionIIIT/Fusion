@@ -153,13 +153,13 @@ def scholarship_portal_notif(sender, recipient, type):
     elif type == 'Reject_MCM':
         verb = "Your Mcm form has been rejected as you have not fulfilled the required criteria "
     elif type == 'Accept_Gold':
-        verb = "Your Convocation form for Director Gold Medal has been accepted "
+        verb = "Your Convocation form for Director's Gold Medal has been accepted "
     elif type == 'Reject_Gold':
-        verb = "Your Convocation form for Director Gold Medal has been rejected "
+        verb = "Your Convocation form for Director's Gold Medal has been rejected "
     elif type == 'Accept_Silver':
-        verb = "Your Convocation form for Director Silver Medal has been accepted "
+        verb = "Your Convocation form for Director's Silver Medal has been accepted "
     elif type == 'Reject_Silver':
-        verb = "Your Convocation form for Director Silver Medal has been rejected "
+        verb = "Your Convocation form for Director's Silver Medal has been rejected "
     elif type == 'Accept_DM':
         verb = "Your Convocation form for D&M Proficiency Gold Medal has been accepted "
     elif type == 'Reject_Silver':

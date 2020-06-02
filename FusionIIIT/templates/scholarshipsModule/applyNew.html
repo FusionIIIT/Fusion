@@ -379,11 +379,11 @@
                                     <div class="sixteen wide field">
                                     <label>Award</label>
 
-                                    <select class="ui fluid search large dropdown" name="award" id="award" onchange="java_script_:show(this.options[this.selectedIndex].value)">
+                                    <select class="ui fluid search large dropdown" name="award" id="award" onchange="java_script_:show(this.options[this.selectedIndex].label)">
                                         <option selected hidden default>Select</option>
-                                        <option value="silver">Director Silver Medal</option>
-                                        <option value="gold">Director Gold Medal</option>
-                                        <option value="dandm">D&M Proficiency Gold Medal</option>
+                                        <option value= "Director's Silver Medal" label="silver">Director's Silver Medal</option>
+                                        <option value= "Director's Gold Medal" label="gold">Director's Gold Medal</option>
+                                        <option value= "D&M Proficiency Gold Medal" label="dandm">D&M Proficiency Gold Medal</option>
 
                                     </select>
                                 </div>
@@ -431,13 +431,13 @@
                                 <div class="eight wide field ">
                                     <label>Father's Name</label>
                                     <div class="ui large input">
-                                        <input placeholder="Fathers Name" name="father_name" type="text" value="{{request.user.extrainfo.student.father_name}}" readonly>
+                                        <input placeholder="Fathers Name" name="father_name" type="text" value="{{request.user.extrainfo.student.father_name}}">
                                     </div>
                                 </div>
                                 <div class="eight wide field ">
                                     <label>Mother's Name</label>
                                     <div class="ui large input">
-                                        <input placeholder="Mother's Name" name="mother_name" type="text" value="{{request.user.extrainfo.student.mother_name}}" readonly>
+                                        <input placeholder="Mother's Name" name="mother_name" type="text" value="{{request.user.extrainfo.student.mother_name}}">
                                     </div>
                                 </div>
                             </div>
@@ -657,13 +657,13 @@
                                 <div class="eight wide field ">
                                     <label>Father's Name</label>
                                     <div class="ui large input">
-                                        <input placeholder="Fathers Name" name="father_name" type="text" value="{{request.user.extrainfo.student.father_name}}" readonly>
+                                        <input placeholder="Fathers Name" name="father_name" type="text" value="{{request.user.extrainfo.student.father_name}}">
                                     </div>
                                 </div>
                                 <div class="eight wide field ">
                                     <label>Mother's Name</label>
                                     <div class="ui large input">
-                                        <input placeholder="Mother's Name" name="mother_name" type="text" value="{{request.user.extrainfo.student.mother_name}}" readonly>
+                                        <input placeholder="Mother's Name" name="mother_name" type="text" value="{{request.user.extrainfo.student.mother_name}}">
                                     </div>
                                 </div>
                             </div>
@@ -854,8 +854,8 @@
                                 <label>Type</label>
                                 <select class="ui fluid search selection large dropdown" name="award" required>
                                         <option value="">Select</option>
-                                        <option value="Director Silver Medal Games and Sports">Director Silver Medal Games and Sports</option>
-                                        <option value="Director Silver Medal Cultural">Director Silver Medal Cultural</option>
+                                        <option value="Director's Silver Medal Games and Sports">Director's Silver Medal Games and Sports</option>
+                                        <option value="Director's Silver Medal Cultural">Director's Silver Medal Cultural</option>
                                 </select>
                          </div>
                     </div>
@@ -864,13 +864,13 @@
                     <div class="eight wide field ">
                         <label>Father's Name</label>
                         <div class="ui large input">
-                            <input placeholder="Fathers Name" name="father_name" type="text" value="{{request.user.extrainfo.student.father_name}}" readonly>
+                            <input placeholder="Fathers Name" name="father_name" type="text" value="{{request.user.extrainfo.student.father_name}}">
                         </div>
                     </div>
                     <div class="eight wide field ">
                         <label>Mother's Name</label>
                         <div class="ui large input">
-                            <input placeholder="Mother's Name" name="mother_name" type="text" value="{{request.user.extrainfo.student.mother_name}}" readonly >
+                            <input placeholder="Mother's Name" name="mother_name" type="text" value="{{request.user.extrainfo.student.mother_name}}">
                         </div>
                     </div>
                 </div>
