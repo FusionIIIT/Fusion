@@ -1,3 +1,4 @@
+{% load static %}
 {% block css %}
 	<style type="text/css">
 		.wmd-panel{
@@ -42,7 +43,11 @@
 
             <div class="two wide column no-padding no-margin">
                 <a href="{% url 'feeds:profile' question.user.username%}">
-                    <img class="ui avatar image" style="height: 40px; width: 40px ;" src="{{profile.0.profile_picture.url}}">
+                    {% if profile.0.profile_picture %}
+                        <img class="ui avatar image" style="height: 40px; width: 40px ;" src="{{profile.0.profile_picture.url}}">
+                    {% else %}
+                        <img class="ui avatar image" style="height: 40px; width: 40px ;" src={% static 'globals/img/zlatan.jpg' %}>
+                    {% endif %}
                 </a>
             </div>
 
@@ -110,7 +115,7 @@
                                         </ul>
                                     </div>
 
-                                    <form method="post" action="{% url 'feeds:update_post' question.id %}">{% csrf_token %}
+                                    <form method="post" onsubmit="return update_ques_validate()" action="{% url 'feeds:update_post' question.id %}">{% csrf_token %}
                                         <div class="ui large form">
                                             <div class="field">
                                                 <label>Subject</label>
@@ -119,7 +124,22 @@
 
                                             <div class="field">
                                                 <label>Description</label>
-                                                <input type="text" id="description" name="description" rows="2" value="{{question.description}}">
+                                                <textarea  id="description" name="description" rows="2">{{question.description}}</textarea>
+                                            </div>
+
+                                            <div class="field">
+                                                <label>Add Tag</label>
+                                                <div class='ui multiple search selection dropdown seasons'>
+                                                    <input name="Add_Tag" class="update_Add_Tag" id="Add_Tag" value="Add_Tag" type="hidden">
+                                                    <i class="dropdown icon"></i>
+                                                    <div class="default text"><i class="tags icon"></i>Select</div>
+                                                    <div class="menu">
+                                                        {% for allowed_subtag in subtags %}
+                                                        <div class="item" data-value="{{ allowed_subtag.id }}">{{ allowed_subtag.subtag }}</div>
+                                                        {% endfor %}
+                                                    </div>
+
+                                                </div>
                                             </div>
 
                                             <div class="field">
@@ -147,10 +167,35 @@
                         {% endif %}
 
                         <div class="ui item">
-                            <button class="ui button" style="background-color: transparent;" type="submit" name="hide" value="hide" id="hide_post">
+                            <button class="ui button" style="background-color: transparent;" type="submit" name="hide" value="{{question.id}}" id="hide_post">
                             <i class="eye icon"></i> Hide Post
                             </button>
                         </div>
+
+                        <!-- Are You sure Modal for Hide  button -->
+                        <div class="ui modal" id="hide_modal{{question.id}}">
+                            <i class="close icon"></i>
+                            <div class="ui header">
+                                <i class="ui user icon"></i>
+                                {{ username }}
+                            </div>
+
+                            <div class="content">
+                                <div class="ui warning message segment">
+                                    <p> Are you sure you want to hide this question for you? </p>
+                                </div>
+
+                                <form method="post" action="/feeds/{{question.id}}/hide_post/">
+                                {% csrf_token %}
+                                    <a class="ui item">
+                                        <button class="ui button" type="submit" name="hide" value="hide">
+                                        <i class="trash icon" id="delete"></i>Hide Post for you 
+                                        </button>
+                                    </a>
+                                </form>
+                            </div>
+                        </div> 
+
                     </div>
                 </div>
             </div>
@@ -279,7 +324,6 @@
                         {% for answer in question.answeraquestion_set.all %}
                         <div class="ui segment grid " id="answer{{question.id}}-{{answer.id}}">
                             <div class="two wide column" style="width: 10% !important; padding-right: 0px;">
-                                {% comment %} <h2><a href=""><img class="ui avatar image" src="" alt="dp"></a></h2> {% endcomment %}
                                 <div class="grid one wide column">
                                     <div class="row">
                                         <i id="answerupcaret{{answer.id}}" class="icon big arrow alternate circle up {% if request.user in answer.likes.all %}{%else%}outline{% endif %}" 
@@ -297,7 +341,7 @@
                                 </div>
                             </div>
                             <div class="fourteen wide column" style="padding-left: 0px;">
-                                <div id="answer{{question.id}}-{{answer.id}}">{{answer.get_markdown}}</div>
+                                <div id="answer_text{{question.id}}-{{answer.id}}">{{answer.get_markdown}}</div>
                                 <footer>
                                     <span style="margin-left:15px; font-size:12px;color: rgba(0,0,0,.6);">-
                                         <a href="{% url 'feeds:profile' answer.user.username%}">

@@ -43,7 +43,9 @@
                 <div class="ui pointing secondary demo menu">
                     <a class="active red item" data-tab="profile"><i class="icon user sign"></i>Profile</a>
                     <a class="blue item" data-tab="activity"><i class="icon chart bar outline"></i>Activity</a>
+                    {% if request.user == profile.user %}
                     <a class="green item" data-tab="editProfile"><i class="icon edit sign"></i>Edit Profile</a>
+                    {% endif %}
                     <a class="green item floated right" href="{% url 'feeds:feeds' %}"><i class="icon arrow left"></i>Back</a>
                 </div>
 
@@ -56,12 +58,19 @@
                                 <div class="ui dimmer">
                                     <div class="content">
                                         <div class="center">
-                                            <div class="ui inverted button"><i class="icon edit sign"></i>Edit</div>
+                                            <div class="ui inverted button"><i class="icon user sign"></i>{{profile.user.username}}</div>
                                         </div>
                                     </div>
                                 </div>
-                                {% comment %} <img style="padding:20px; border:0 solid red;" src="https://www.semantic-ui.com/images/avatar/large/elliot.jpg"> {% endcomment %}
-                                <img style="padding:20px; border:0 solid red; min-height:200px; height:{{profile.profile_picture.width}};" src="{{profile.profile_picture.url}}">
+                                {% if profile.profile_picture %}
+                                    {% if no_img %}
+                                        <img style="padding:20px; border:0 solid red; min-height:200px;" src={% static 'globals/img/zlatan.jpg' %}>
+                                    {% else %}
+                                        <img style="padding:20px; border:0 solid red; min-height:200px; height:{{profile.profile_picture.width}};" src="{{profile.profile_picture.url}}">
+                                    {% endif %}
+                                {% else %}
+                                    <img style="padding:20px; border:0 solid red; min-height:200px;" src={% static 'globals/img/zlatan.jpg' %}>
+                                {% endif %}
                                 <div style="margin:-20px auto 0 auto;" class="center aligned"><h5 class="ui header">{{profile.user.username}}</h5></div>
                             </div>
                             <div class="content center aligned">
@@ -144,7 +153,7 @@
                         {% if top_ques_len is 0 %}
                             You have not asked any Question till Now.
                         {% else %}
-                            {{top_ques.0.subject}} - {{top_ques.0.description}}
+                            <a href="/feeds/question_id_/{{top_ques.0.id}}">{{top_ques.0.subject}} - {{top_ques.0.description}}</a>
                         {% endif %}
                     </p>
                     {% comment %} Top stats end {% endcomment %}
@@ -158,6 +167,7 @@
                             <div class="ui secondary vertical vdemo pointing menu">
                                 <a class="active red item" data-tab="summary"><i class="icon user sign"></i>Summary</a>
                                 <a class="blue item" data-tab="answer"><i class="icon user sign"></i>Answers</a>
+                                <a class="blue item" data-tab="hidden"><i class="icon user sign"></i>Hidden</a>
                                 <a class="red item" data-tab="questions"><i class="icon user sign"></i>Questions</a>
                             </div>
                         </div>
@@ -172,7 +182,7 @@
                                     <div class="item">
                                         <i class="large check circle middle aligned icon"></i>
                                         <div class="content">
-                                        <a class="header">{{q.question.subject}}</a>
+                                        <a class="header" href="/feeds/question_id_/{{q.question.id }}">{{q.question.subject}}</a>
                                         <div class="description">{{q.content}}</div>
                                         <p>{{q.uploaded_at}}</p>
                                         </div>
@@ -188,7 +198,7 @@
                                     <div class="item">
                                         <i class="large check circle middle aligned icon"></i>
                                         <div class="content">
-                                        <a class="header">{{q.subject}}</a>
+                                        <a class="header" href="/feeds/question_id_/{{q.id }}">{{q.subject}}</a>
                                         <div class="description">{{q.description}}</div>
                                         <p class="floated right">{{q.uploaded_at}}</p>
                                         </div>
@@ -196,12 +206,29 @@
                                     {% endfor %}
                                 </div>
                             </div>
+
+                            <div class="ui tab" data-tab="hidden">
+                                
+                                <div class="ui relaxed divided list">
+                                    {% for q in hidden_ques %}
+                                    <div class="item">
+                                        <i class="large check circle middle aligned icon"></i>
+                                        <div class="content">
+                                        <a class="header" href="/feeds/question_id_/{{q.id }}">{{q.question.subject}}</a>
+                                        <div class="description">{{q.question.description}}</div>
+                                        <p class="floated right">{{q.question.uploaded_at}}</p>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                 </div>
                 {% comment %} Activity end {% endcomment %}
 
-
+                {% if request.user == profile.user %}
                 <div class="ui tab segment centered" data-tab="editProfile">
 
                     <form method="POST" action="" class="ui center floated form" enctype='multipart/form-data' >
@@ -234,6 +261,7 @@
                     </form>
 
                 </div>
+                {% endif %}
             </div>
         </div>
     </div>
