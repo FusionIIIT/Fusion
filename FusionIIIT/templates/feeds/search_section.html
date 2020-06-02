@@ -143,6 +143,12 @@
                 $('#delete_modal'+ $(this).attr('value'))
                 .modal('show');
             });
+
+            $(document).on("click","#hide_post",function(){
+                {% comment %} alert('#hide_post'+ $(this).attr('value')); {% endcomment %}
+                $('#hide_modal'+ $(this).attr('value'))
+                .modal('show');
+            });
         });
 
         $('#answer').on('click', function(){

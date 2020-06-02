@@ -167,10 +167,35 @@
                         {% endif %}
 
                         <div class="ui item">
-                            <button class="ui button" style="background-color: transparent;" type="submit" name="hide" value="hide" id="hide_post">
+                            <button class="ui button" style="background-color: transparent;" type="submit" name="hide" value="{{question.id}}" id="hide_post">
                             <i class="eye icon"></i> Hide Post
                             </button>
                         </div>
+
+                        <!-- Are You sure Modal for Hide  button -->
+                        <div class="ui modal" id="hide_modal{{question.id}}">
+                            <i class="close icon"></i>
+                            <div class="ui header">
+                                <i class="ui user icon"></i>
+                                {{ username }}
+                            </div>
+
+                            <div class="content">
+                                <div class="ui warning message segment">
+                                    <p> Are you sure you want to hide this question for you? </p>
+                                </div>
+
+                                <form method="post" action="/feeds/{{question.id}}/hide_post/">
+                                {% csrf_token %}
+                                    <a class="ui item">
+                                        <button class="ui button" type="submit" name="hide" value="hide">
+                                        <i class="trash icon" id="delete"></i>Hide Post for you 
+                                        </button>
+                                    </a>
+                                </form>
+                            </div>
+                        </div> 
+
                     </div>
                 </div>
             </div>

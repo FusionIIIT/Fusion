@@ -87,26 +87,31 @@ def feeds(request):
     # print(tags.objects.all().filter(Q(my_tag__icontains='CSE')))
     ques = []
     query = paginator.page(current_page)
+    hid = hidden.objects.all()
     for q in query:
         isliked = 0
         isdisliked = 0
+        hidd = 0
         profi = Profile.objects.all().filter(user=q.user)
         if(q.likes.all().filter(username=request.user.username).count()==1):
             isliked = 1
+        if(hid.all().filter(user=request.user, question = q).count()==1):
+            hidd = 1
         if(q.dislikes.all().filter(username=request.user.username).count()==1):
             isdisliked = 1
         temp = {
             'profile':profi,
             'ques' : q,
             'isliked':isliked,
+            'hidd' : hidd,
             'disliked': isdisliked,
             'votes':q.total_likes() - q.total_dislikes(),
         }
         ques.append(temp)
     add_tag_list = AllTags.objects.all()
     add_tag_list = add_tag_list.exclude(pk__in=a_tags)
-
     context ={
+        'hidden' : hid,
         'form_answer': AnswerForm(),
         'Tags': user_tags,
         'questions': ques,
@@ -280,6 +285,15 @@ def delete_post(request, id):
             default_storage.delete(settings.BASE_DIR+ques.file.url)
         ques.delete()
         return redirect ('/feeds/')
+
+def hide_post(request, id):
+    if request.method == 'POST' and request.POST.get("hide"):
+        ques = AskaQuestion.objects.filter(pk=id)[0]
+        print(ques)
+        hid = hidden(user = request.user, question = ques);
+        hid.save()
+        print(hid,"sid")
+    return redirect ('/feeds/')
 
 def update_post(request, id):
     if request.method == 'POST' and request.POST.get("update"):
@@ -550,6 +564,7 @@ def profile(request, string):
         ext = ""
     else:
         ext = extra[0]
+    hid = hidden.objects.all().filter(user = request.user)
     context = {
         'profile': prf,
         # 'profile_image' : profile[0].profile_picture,
@@ -557,6 +572,7 @@ def profile(request, string):
         'answer_given' : len(ans),
         'last_login' : usr.last_login,
         'extra' : ext,
+        'hidden_ques' : hid,
         'tags' : tags,
         'top_ques' : ques,
         'top_ques_len' : len(ques),

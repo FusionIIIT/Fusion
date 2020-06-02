@@ -62,8 +62,12 @@
                                         </div>
                                     </div>
                                 </div>
-                                {% if profile.profile_picture and no_img == false%}
-                                    <img style="padding:20px; border:0 solid red; min-height:200px; height:{{profile.profile_picture.width}};" src="{{profile.profile_picture.url}}">
+                                {% if profile.profile_picture %}
+                                    {% if no_img %}
+                                        <img style="padding:20px; border:0 solid red; min-height:200px;" src={% static 'globals/img/zlatan.jpg' %}>
+                                    {% else %}
+                                        <img style="padding:20px; border:0 solid red; min-height:200px; height:{{profile.profile_picture.width}};" src="{{profile.profile_picture.url}}">
+                                    {% endif %}
                                 {% else %}
                                     <img style="padding:20px; border:0 solid red; min-height:200px;" src={% static 'globals/img/zlatan.jpg' %}>
                                 {% endif %}
@@ -163,6 +167,7 @@
                             <div class="ui secondary vertical vdemo pointing menu">
                                 <a class="active red item" data-tab="summary"><i class="icon user sign"></i>Summary</a>
                                 <a class="blue item" data-tab="answer"><i class="icon user sign"></i>Answers</a>
+                                <a class="blue item" data-tab="hidden"><i class="icon user sign"></i>Hidden</a>
                                 <a class="red item" data-tab="questions"><i class="icon user sign"></i>Questions</a>
                             </div>
                         </div>
@@ -201,6 +206,23 @@
                                     {% endfor %}
                                 </div>
                             </div>
+
+                            <div class="ui tab" data-tab="hidden">
+                                
+                                <div class="ui relaxed divided list">
+                                    {% for q in hidden_ques %}
+                                    <div class="item">
+                                        <i class="large check circle middle aligned icon"></i>
+                                        <div class="content">
+                                        <a class="header" href="/feeds/question_id_/{{q.id }}">{{q.question.subject}}</a>
+                                        <div class="description">{{q.question.description}}</div>
+                                        <p class="floated right">{{q.question.uploaded_at}}</p>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                 </div>
