@@ -118,7 +118,7 @@ def compounder_view(request):                                                   
                 #data = {'medicine': medicine_name, 'quantity': qty, 'new_supplier': supplier, 'new_expiry_date': expiry}
                 data = {'status': 1}
                 return JsonResponse(data)
-            elif 'edit' in request.POST:                                              # edit schedule for doctors
+            elif 'edit' in request.POST:                                              # edit schedule for the doctors
                 doctor = request.POST.get('doctor')
                 day = request.POST.get('day')
                 time_in = request.POST.get('time_in')

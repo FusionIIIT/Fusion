@@ -4,7 +4,7 @@ from .views import compounder_view, healthcenter, student_view, schedule_entry,d
 
 app_name = 'healthcenter'
 
-urlpatterns = [
+urlpatterns =  [
 
     url(r'^$', healthcenter, name='healthcenter'),
     url(r'^compounder/$', compounder_view, name='compounder_view'),

@@ -1,3 +1,4 @@
+#admin site
 from django.contrib import admin
 
 from .models import (Ambulance_request, Appointment, Complaint, Counter,

@@ -1,4 +1,5 @@
-// Global date variable for today's date
+// Global date variable for today's date and time
+
 
 var d = new Date();
 var date = d.getFullYear() + "-" + (d.getMonth()+1) + "-" + d.getDate();
