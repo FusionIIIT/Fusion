@@ -212,3 +212,44 @@ class Change_office(models.Model):
 
     class Meta:
         db_table = 'Change_office'
+
+
+class Voting_polls(models.Model):
+    
+    title = models.CharField(max_length=200,null=False)
+    description = models.CharField(max_length=5000,null=False)
+    pub_date = models.DateTimeField(default=timezone.now)
+    exp_date = models.DateTimeField(default=timezone.now)
+    created_by = models.CharField(max_length=100,null=True)
+    groups = models.CharField(max_length=500,default='{}')
+    
+    def groups_data(self):
+        return self.groups
+
+    def __str__(self):
+        return self.title
+    class Meta:
+        ordering = ['-pub_date']
+
+class Voting_choices(models.Model):
+
+    poll_event = models.ForeignKey(Voting_polls, on_delete=models.CASCADE)
+    title = models.CharField(max_length=200,null=False)
+    description = models.CharField(max_length=500,default='')
+    votes = models.IntegerField(default=0)
+
+    def __str__(self):
+        return self.title
+    
+    class Meta:
+        get_latest_by = 'votes'
+
+class Voting_voters(models.Model):
+   
+    poll_event = models.ForeignKey(Voting_polls, on_delete=models.CASCADE)
+    student_id = models.CharField(max_length=50, null=False)
+    
+    
+    def __str__(self):
+        return self.student_id
+
