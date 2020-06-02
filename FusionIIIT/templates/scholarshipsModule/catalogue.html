@@ -10,7 +10,7 @@
             About_spacs
         </a>
 
-        <a class="{% if last_clicked == 'Submit_previous_winner' %} active item {% else %} item {% endif %}" data-tab="paw">
+        <a class="{% if last_clicked == 'SubmitPreviousWinner' %} active item {% else %} item {% endif %}" data-tab="paw">
               Previous Winners
           </a>
     </div>
@@ -23,7 +23,7 @@
             </div>
     </div>
 
-    <div class="{% if last_clicked == 'Submit_previous_winner' %} ui active tab {% else %} ui tab {% endif %}" data-tab="paw">
+    <div class="{% if last_clicked == 'SubmitPreviousWinner' %} ui active tab {% else %} ui tab {% endif %}" data-tab="paw">
         <div class="ui vertical segment">
           {% block winners %}
               {% include 'scholarshipsModule/winners.html' with winners_list=winners_list awards=awards%}
@@ -275,7 +275,7 @@ function editCatalogue() {
 
         $.ajax({
 
-                url: '/spacs/convener_catalogue/',
+                url: '/spacs/convenerCatalogue/',
                 type: 'POST',                                               // sending POST request through ajax
                 data: {
                     award_name:award_name,
@@ -311,7 +311,7 @@ $("#catalogue_clicked").on('click',function () {
 
     $.ajax({
 
-                url: '/spacs/convener_catalogue/',
+                url: '/spacs/convenerCatalogue/',
                 type: 'GET',                                               // sending POST request through ajax
                 data: {
                     award_name:award_name
@@ -345,7 +345,7 @@ $('#select_award').on('click','.item',function (event) {
 
     $.ajax({
 
-                url: '/spacs/convener_catalogue/',
+                url: '/spacs/convenerCatalogue/',
                 type: 'GET',                                               // sending POST request through ajax
                 data: {
                     award_name:award_name

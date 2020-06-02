@@ -20,7 +20,7 @@
 
                 <div class="four wide column">
                     <label>Programme</label>
-                    <select class="ui fluid search large dropdown" id="programme_name"  name = "Previous_winner_programme" required>
+                    <select class="ui fluid search large dropdown" id="programme_name"  name = "PreviousWinnerProgramme" required>
                         <option value="">Select</option>
                         <option value="B.Tech"> B.Tech </option>
                         <option value="B.Des"> B.Des </option>
@@ -32,7 +32,7 @@
 
                 <div class="four wide column">
                     <label>Academic Year</label>
-                    <select class="ui fluid search large dropdown" id="batch_year" name = "Previous_winner_acad_year" required>
+                    <select class="ui fluid search large dropdown" id="batch_year" name = "PreviousWinnerAcadYear" required>
                         <option value="">Select</option>
                         <option value="2013"> 2013-14 </option>
                         <option value="2014"> 2014-15 </option>
@@ -47,7 +47,7 @@
 
                 <div class="six wide column">
                     <label> Scholarship/Awards </label>
-                    <select class="ui fluid search large dropdown"  name = "Previous_winner_award" id="award_name1" required>
+                    <select class="ui fluid search large dropdown"  name = "PreviousWinnerAward" id="award_name1" required>
                         <option value="">Select</option>
                         {% for i in awards %}
                         <option value="{{i.award_name}}">{{i.award_name}}</option>
@@ -59,7 +59,7 @@
             <div class="ui grid row">
                 <div class="twelve wide column"></div>
                 <div class="three wide column">
-                    <button name="Submit_previous_winner" type="submit" class="ui primary large right floated button">
+                    <button name="SubmitPreviousWinner" type="submit" class="ui primary large right floated button">
                         Submit
                     </button>
                 </div>
@@ -273,7 +273,7 @@
                 $('#win_table tbody').find("tr:gt(0)").remove();
                 var element = $('#win_table tbody tr').first();
                 $.ajax({
-                    url: '/spacs/get_win/',
+                    url: '/spacs/getWinners/',
                     type: 'GET',
                     data: {
                         acad_year: $('#acad_year').val()

@@ -3,18 +3,18 @@
 {% block viewstatus %}
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
-        <a class="{% if last_clicked == 'Verify_mcm' or last_clicked == 'Reject_mcm' or last_clicked == '' or last_clicked == 'Submit_previous_winner' %} active item {% else %} item {% endif %}" data-tab="mcm">
-            Mcm Scholarship
+        <a class="{% if last_clicked == 'Verify_MCM' or last_clicked == 'Reject_MCM' or last_clicked == '' or last_clicked == 'SubmitPreviousWinner' %} active item {% else %} item {% endif %}" data-tab="mcm">
+            Merit-cum-Means Scholarship
         </a>
 
-        <a class="{% if last_clicked == 'Verify_gold' or last_clicked == 'Reject_gold' or last_clicked == 'Verify_silver' or last_clicked == 'Reject_silver' or last_clicked == 'Verify_dm' or last_clicked == 'Reject_dm' %} active item {% else %} item {% endif %}" data-tab="convo">
+        <a class="{% if last_clicked == 'Verify_Gold' or last_clicked == 'Reject_Gold' or last_clicked == 'Verify_Silver' or last_clicked == 'Reject_Silver' or last_clicked == 'Verify_DM' or last_clicked == 'Reject_DM' %} active item {% else %} item {% endif %}" data-tab="convo">
             Convocation Medals
         </a>
     </div>
-<div class="{% if last_clicked == 'Verify_mcm' or last_clicked == 'Reject_mcm' or last_clicked == '' or last_clicked == 'Submit_previous_winner' %} ui active tab {% else %} ui tab {% endif %}" data-tab="mcm">
+<div class="{% if last_clicked == 'Verify_MCM' or last_clicked == 'Reject_MCM' or last_clicked == '' or last_clicked == 'SubmitPreviousWinner' %} ui active tab {% else %} ui tab {% endif %}" data-tab="mcm">
         <div class="ui vertical segment">
             <div class="ui header">
-                Mcm ScholarShip
+                Merit-cum-Means Scholarship
             </div>
 
 
@@ -57,14 +57,14 @@
                             <form method='POST'>
                                 {% csrf_token %}
                                 <input type="hidden" name="id" value="{{winner.id}}"/>
-                            <button class="mini ui blue button" name="Verify_mcm" value="{{winner.id}}">Verify</button>
+                            <button class="mini ui blue button" name="Verify_MCM" value="{{winner.id}}">Verify</button>
                                 </form>
                         </td>
                         <td>
                             <form method='POST'>
                                 {%csrf_token %}
                                 <input type="hidden" name="id" value="{{winner.id}}"/>
-                            <button class="mini ui blue button" name="Reject_mcm" value="{{winner.id}}">Reject</button>
+                            <button class="mini ui blue button" name="Reject_MCM" value="{{winner.id}}">Reject</button>
                             </form>
                         </td>
 
@@ -79,7 +79,7 @@
     </div>
 </div>
 
-<div class="{% if last_clicked == 'Verify_gold' or last_clicked == 'Reject_gold' or last_clicked == 'Verify_silver' or last_clicked == 'Reject_silver' or last_clicked == 'Verify_dm' or last_clicked == 'Reject_dm' %} ui active tab {% else %} ui tab {% endif %}" data-tab="convo">
+<div class="{% if last_clicked == 'Verify_Gold' or last_clicked == 'Reject_Gold' or last_clicked == 'Verify_Silver' or last_clicked == 'Reject_Silver' or last_clicked == 'Verify_DM' or last_clicked == 'Reject_DM' %} ui active tab {% else %} ui tab {% endif %}" data-tab="convo">
     <div class="ui vertical segment">
         <div class="ui header">
             Convocation Medals
@@ -140,14 +140,14 @@
                                     <form method='POST'>
                                         {% csrf_token %}
                                         <input type="hidden" name="id" value="{{winner.id}}"/>
-                                    <button class="mini ui blue button" name="Verify_dm" value="{{winner.id}}">Verify</button>
+                                    <button class="mini ui blue button" name="Verify_DM" value="{{winner.id}}">Verify</button>
                                         </form>
                                 </td>
                                 <td>
                                     <form method='POST'>
                                         {%csrf_token %}
                                         <input type="hidden" name="id" value="{{winner.id}}"/>
-                                    <button class="mini ui blue button" name="Reject_dm" value="{{winner.id}}">Reject</button>
+                                    <button class="mini ui blue button" name="Reject_DM" value="{{winner.id}}">Reject</button>
                                     </form>
                                 </td>
 
@@ -200,14 +200,14 @@
                                 <form method='POST'>
                                     {% csrf_token %}
                                     <input type="hidden" name="id" value="{{winner.id}}"/>
-                                <button class="mini ui blue button" name="Verify_silver" value="{{winner.id}}">Verify</button>
+                                <button class="mini ui blue button" name="Verify_Silver" value="{{winner.id}}">Verify</button>
                                     </form>
                             </td>
                             <td>
                                 <form method='POST'>
                                     {%csrf_token %}
                                     <input type="hidden" name="id" value="{{winner.id}}"/>
-                                <button class="mini ui blue button" name="Reject_silver"  value="{{winner.id}}">Reject</button>
+                                <button class="mini ui blue button" name="Reject_Silver"  value="{{winner.id}}">Reject</button>
                                 </form>
                             </td>
 
@@ -260,14 +260,14 @@
                                 <form method='POST'>
                                     {% csrf_token %}
                                     <input type="hidden" name="id" value="{{winner.id}}"/>
-                                <button class="mini ui blue button" name="Verify_gold" value="{{winner.id}}">Verify</button>
+                                <button class="mini ui blue button" name="Verify_Gold" value="{{winner.id}}">Verify</button>
                                     </form>
                             </td>
                             <td>
                                 <form method='POST'>
                                     {%csrf_token %}
                                     <input type="hidden" name="id" value="{{winner.id}}"/>
-                                <button class="mini ui blue button" name="Reject_gold" value="{{winner.id}}">Reject</button>
+                                <button class="mini ui blue button" name="Reject_Gold" value="{{winner.id}}">Reject</button>
                                 </form>
                             </td>
 
