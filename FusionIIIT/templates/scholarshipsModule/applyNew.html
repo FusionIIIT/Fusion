@@ -318,7 +318,7 @@
               {% endif %}
             {% else %}
             <div class="ui disabled button">
-              Apply
+              Applications not invited or has already been submitted
             </div>
             {% endif %}
             {% endif %}
@@ -444,11 +444,11 @@
                             <div class="two fields">
                               <div class="field">
                                         <label>Permanent Address:</label>
-                                        <textarea rows="2" name="p_address" readonly>{{request.user.extrainfo.address}}</textarea>
+                                        <textarea rows="2" name="p_address" required>{{request.user.extrainfo.address}}</textarea>
                                     </div>
 
                                    <div class="field">
-                                        <label>Correspondance Address:</label>
+                                        <label>Correspondence Address:</label>
                                         <textarea rows="2" name="c_address" required></textarea>
                                     </div>
                                 </div>
@@ -670,11 +670,11 @@
                             <div class="two fields">
                               <div class="field">
                                         <label>Permanent Address:</label>
-                                        <textarea rows="2" name="p_address" readonly>{{request.user.extrainfo.address}}</textarea>
+                                        <textarea rows="2" name="p_address" required>{{request.user.extrainfo.address}}</textarea>
                                     </div>
 
                                    <div class="field">
-                                        <label>Correspondance Address:</label>
+                                        <label>Correspondence Address:</label>
                                         <textarea rows="2" name="c_address" required></textarea>
                                     </div>
                                 </div>
@@ -877,11 +877,11 @@
                 <div class="two fields">
                   <div class="field">
                             <label>Permanent Address:</label>
-                            <textarea rows="2" name="p_address" readonly>{{request.user.extrainfo.address}}</textarea>
+                            <textarea rows="2" name="p_address" required>{{request.user.extrainfo.address}}</textarea>
                         </div>
 
                        <div class="field">
-                            <label>Correspondance Address:</label>
+                            <label>Correspondence Address:</label>
                             <textarea rows="2" name="c_address" required></textarea>
                         </div>
                     </div>
@@ -916,7 +916,7 @@
                 </div>
             <div class="field">
                     <div class="sixteen wide field">
-                        <label>Brief Description of Games and Sports/Cultural Achievement: (INSIDE IIITDMJ)</label required>
+                        <label>Brief Description of Games and Sports/Cultural Achievement: (Inside IIITDMJ)</label required>
 
                            <textarea rows="5" name="inside_achievements" required></textarea>
                     </div>
@@ -925,7 +925,7 @@
 
                <div class="field">
                     <div class="sixteen wide field">
-                        <label>Brief Description of Game and Sports/Cultural Achievement: (OUTSIDE IIITDMJ)</label>
+                        <label>Brief Description of Game and Sports/Cultural Achievement: (Outside IIITDMJ)</label>
 
                            <textarea rows="5" name="outside_achievements" required></textarea>
                     </div>
