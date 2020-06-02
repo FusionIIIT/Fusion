@@ -177,10 +177,7 @@
 
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
-                    <a class="item" data-tab="voting_polls">
-                        Voting Polls
-                        <i class="right floated chevron right icon"></i>
-                    </a>
+
                 {% if "student" in Curr_desig %}
 
                     <a class="item" data-tab="first">
@@ -203,9 +200,6 @@
                         New Session
                         <i class="right floated chevron right icon"></i>
                     </a>
-                {% endif %}
-
-                {% if "co-ordinator" in Curr_desig or request.user.username == "2017222" %}
                     <a class="item" data-tab="sixth">
                         Member Requests
                         <i class="right floated chevron right icon"></i>
@@ -230,13 +224,13 @@
 
 {#                {% with '"dean(S)"' as list %}#}
 {#                {% if request.user.holdsdesignation.designation.name in list %}#}
-                {% if request.user.username == "pkjain" %}
+                {% if "Dean_s" in Curr_desig %}
                     <a class="item" data-tab="seventh">
                         Approval Requests
                         <i class="right floated chevron right icon"></i>
                     </a>
                 {% endif %}
-                {% if "Junior Superintendent" in Curr_desig or request.user.username == "root" %}
+                {% if "Junior Superintendent" in Curr_desig or request.user.username == "acadadmin" %}
 
                     <a class="item" data-tab="fourth">
                         Fest Budget
@@ -247,7 +241,7 @@
                         <i class="right floated chevron right icon"></i>
                     </a>
                     <a class="item" data-tab="eleventh">
-                        Submit Event report
+                        Submit Event Report
                         <i class="right floated chevron right icon"></i>
                     </a>
                 {% endif %}
@@ -300,11 +294,6 @@
             <div class="ui tab segment" data-tab="ninth">
                 {% block clubReport %}
                     {% include 'gymkhanaModule/otherReport.html' %}
-                {% endblock %}
-            </div>
-            <div class="ui tab segment" data-tab="voting_polls">
-                {% block voting_polls %}
-                    {% include 'gymkhanaModule/voting_polls.html' %}
                 {% endblock %}
             </div>
 

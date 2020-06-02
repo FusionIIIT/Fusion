@@ -6,7 +6,7 @@ import json
 import os
 import random
 import subprocess
-from datetime import datetime, time, timedelta
+import datetime
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -19,17 +19,12 @@ from applications.academic_information.models import (Course, Curriculum_Instruc
                                                       Student,Student_attendance)
 from applications.academic_procedures.models import Register
 from applications.globals.models import ExtraInfo
+from applications.globals.models import *
 
-# from .forms import *
+from .forms import *
 # from .helpers import create_thumbnail, semester
-# from .models import *
-
-from .forms import QuizForm, MarksForm, AttendanceForm
+from .models import *
 from .helpers import create_thumbnail, semester
-from .models import (Assignment, CourseDocuments, CourseVideo, Forum,
-                     ForumReply, Question, QuestionBank, Quiz, QuizQuestion,
-                     QuizResult, StudentAnswer, StudentAssignment, Topics,)
-
 
 @login_required
 def viewcourses(request):
@@ -66,6 +61,7 @@ def viewcourses(request):
                        'curriculum_list': curriculum_list})
 
 
+
 @login_required
 def course(request, course_code):
     '''
@@ -73,25 +69,20 @@ def course(request, course_code):
     '''
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
-    if extrainfo.user_type == 'student':   #if the user is student .. funtionality used by him
+    if extrainfo.user_type == 'student':   #if the user is student .. funtionality used by him/her
         student = Student.objects.get(id=extrainfo)
         roll = student.id.id[:4]
 
         #info about courses he is registered in
-        curriculum_details = Curriculum.objects.filter(course_code=course_code)         
-
-        course = curriculum_details 
-        course1 = curriculum_details[0].course_id
-        curriculum1 = course[0]
+        curriculum = Curriculum.objects.get(course_code=course_code)          
+        course = curriculum.course_id
         #instructor of the course
-        instructor = Curriculum_Instructor.objects.get(curriculum_id=course[0])
+        instructor = Curriculum_Instructor.objects.get(curriculum_id=curriculum)
         #course material uploaded by the instructor
-        videos = CourseVideo.objects.filter(course_id=course1)
-        slides = CourseDocuments.objects.filter(course_id=course1)
-        quiz = Quiz.objects.filter(course_id=course1)
-        assignment = Assignment.objects.filter(course_id=course1)
-        student = Student.objects.filter(id=extrainfo)
-        stu_ass = StudentAssignment.objects.filter
+        videos = CourseVideo.objects.filter(course_id=course)
+        slides = CourseDocuments.objects.filter(course_id=course)
+        quiz = Quiz.objects.filter(course_id=course)
+        assignment = Assignment.objects.filter(course_id=course)
         student_assignment = []
         for assi in assignment:
             sa = StudentAssignment.objects.filter(assignment_id=assi, student_id=student)
@@ -107,15 +98,14 @@ def course(request, course_code):
         #quizzes details 
         for q in quiz:
             qs = QuizResult.objects.filter(quiz_id=q, student_id=student)
-            qs_pk = QuizResult.objects.filter(
-                quiz_id=q, student_id=student).values_list('quiz_id', flat=True)
+            qs_pk = qs.values_list('quiz_id', flat=True)
             if q.end_time > timezone.now():
                 quizs.append(q)
-            if len(qs) is not 0:
+            if qs:
                 marks.append(qs[0])
                 marks_pk.append(qs_pk[0])
         lec = 0
-        comments = Forum.objects.filter(course_id=course1).order_by('comment_time')
+        comments = Forum.objects.filter(course_id=course).order_by('comment_time')
         answers = collections.OrderedDict()
         for comment in comments:
             fr = ForumReply.objects.filter(forum_reply=comment)
@@ -123,7 +113,7 @@ def course(request, course_code):
             if not fr:
                 answers[comment] = fr1
         return render(request, 'coursemanagement/viewcourse.html',
-                      {'course': course[0],
+                      {'course': course,
                        'quizs': marks,
                        'quizs_pk': marks_pk,
                        'fut_quiz': quizs,
@@ -135,7 +125,7 @@ def course(request, course_code):
                        'assignment': assignment,
                        'student_assignment': student_assignment,
                        'Lecturer': lec,
-                       'curriculum': curriculum1})
+                       'curriculum': curriculum})
 
     else:
         instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
@@ -144,8 +134,6 @@ def course(request, course_code):
                 registered_students = Register.objects.filter(curr_id = ins.curriculum_id.curriculum_id)
                 students = {}
                 test_marks = {}
-
-
                 for x in registered_students:
                      students[x.student_id.id.id] = (x.student_id.id.user.first_name + " " + x.student_id.id.user.last_name, x.id)
                 #     stored_marks = StoreMarks.objects.filter(mid = x.r_id)
@@ -160,6 +148,11 @@ def course(request, course_code):
 
                 curriculum = ins.curriculum_id
                 course = ins.curriculum_id.course_id
+                result_topics = Topics.objects.filter(course_id = course)
+                if (len(list(result_topics))!=0):
+                    topics = result_topics
+                else:
+                    topics = None
                 print(curriculum)
                 present_attendance = {}
         total_attendance=None
@@ -210,6 +203,7 @@ def course(request, course_code):
                        'quizs': marks,
                        'videos': videos,
                        'slides': slides,
+                       'topics':topics,
                        'course': course,
                        'answers': answers,
                        'assignment': assignment,
@@ -246,8 +240,7 @@ def upload_assignment(request, course_code):
             subprocess.call(cmd, shell=True)
         fs = FileSystemStorage(full_path, url)
         fs.save(name + file_extenstion, doc)  #saving the media files
-        uploaded_file_url = "/media/online_cms/" + course_code + "/assi/" + assign.assignment_name
-        uploaded_file_url = uploaded_file_url + "/" + student.id.id + "/" + name + file_extenstion
+        uploaded_file_url = full_path+ "/" + name + file_extenstion
         # to save the solution of assignment the database
         sa = StudentAssignment(
          student_id=student,
@@ -287,12 +280,11 @@ def add_document(request, course_code):
             subprocess.call(cmd, shell=True)
         fs = FileSystemStorage(full_path, url)
         fs.save(filename + file_extenstion, doc)
-        uploaded_file_url = "/media/online_cms/" + course_code + "/doc/" + filename
-        uploaded_file_url = uploaded_file_url + file_extenstion
+        uploaded_file_url = full_path + filename + file_extenstion
         #save the info/details in the database
         CourseDocuments.objects.create(
             course_id=course,
-            upload_time=datetime.now(),
+            upload_time=datetime.datetime.now(),
             description=description,
             document_url=uploaded_file_url,
             document_name=name+file_extenstion
@@ -324,24 +316,24 @@ def delete(request, course_code):
     #to delete videos
     if data_type == 'video':
         video = CourseVideo.objects.get(pk=pk, course_id=course)
-        url = video.video_url
+        path = video.video_url
         video.delete()
     #to delete slides/documents
     elif data_type == 'slide':
         slide = CourseDocuments.objects.get(pk=pk, course_id=course)
-        url = slide.document_url
+        path = slide.document_url
         slide.delete()
     #to delete the submitted assignment
     elif data_type == 'stuassignment':
         stu_assi = StudentAssignment.objects.get(pk=pk)
-        url = stu_assi.upload_url
+        path = stu_assi.upload_url
         stu_assi.delete()
     #to delete the assignment uploaded by faculty
     elif data_type == 'lecassignment':
         lec_assi = Assignment.objects.get(pk=pk)
-        url = lec_assi.assignment_url
+        path = lec_assi.assignment_url
         lec_assi.delete()
-    cmd = "rm "+url
+    cmd = "rm "+path
     subprocess.call(cmd, shell=True)
     data = { 'msg': 'Data Deleted successfully'}   
     return HttpResponse(json.dumps(data), content_type='application/json')
@@ -372,14 +364,13 @@ def add_videos(request, course_code):
             subprocess.call(cmd, shell=True)
         fs = FileSystemStorage(full_path, url)
         fs.save(filename+file_extenstion, vid)
-        uploaded_file_url = "/media/online_cms/" + course_code + "/vid/" + filename
-        uploaded_file_url = uploaded_file_url + file_extenstion
+        uploaded_file_url = full_path + filename + file_extenstion 
         #saving in the 
         video = CourseVideo.objects.create(
             course_id=course,
-            upload_time=datetime.now(),
+            upload_time=datetime.datetime.now(),
             description=description,
-            video_url=uploaded_file_url[:-4],
+            video_url=uploaded_file_url,
             video_name=name
         )
         create_thumbnail(course_code,course, video, name, file_extenstion, 'Big', 1, '700:500')
@@ -533,9 +524,7 @@ def add_assignment(request, course_code):                 #from faculty side
         fs = FileSystemStorage(full_path, url)
         fs.save(filename+file_extenstion, assi)
         print(request.POST.get('myDate'))
-        uploaded_file_url = "/media/online_cms/" + course_code + "/assi/"
-        uploaded_file_url = uploaded_file_url + name + "/" + name + file_extenstion
-        name = request.POST.get('name')
+        uploaded_file_url = full_path + filename + file_extenstion
         assign = Assignment(
             course_id=course,
             submit_date=request.POST.get('myDate'),
@@ -593,6 +582,19 @@ def create_bank(request, course_code):
                                          course_id=course, name=request.POST.get('qbname'))
         return redirect('/ocms/' + course_code + '/edit_bank/'+str(qb.id))
 
+@login_required
+def create_topic(request, course_code):
+    user = request.user
+    extrainfo = ExtraInfo.objects.get(user=user)
+    if extrainfo.user_type == "faculty":
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
+        for ins in instructor:
+            if ins.curriculum_id.course_code == course_code:
+                course = ins.curriculum_id.course_id
+        topic = Topics.objects.create(course_id=course, topic_name=request.POST.get('topic_name'))
+        return redirect('/ocms/' + course_code)
+
+
 
 @login_required
 def remove_bank(request, course_code):
@@ -606,13 +608,31 @@ def remove_bank(request, course_code):
         qb = QuestionBank.objects.get(id=request.POST.get('pk'))
         qb.delete()
         qb = QuestionBank.objects.filter(instructor_id=extrainfo, course_id=course)
-        data = {'message': "Removed", 'qb': len(qb)}
+        data = {'message': "Removed", 'numberof_qbs': len(qb)}
+        return HttpResponse(json.dumps(data), content_type='application/json')
+
+@login_required
+def remove_topic(request, course_code):
+    user = request.user
+    extrainfo = ExtraInfo.objects.get(user=user)
+    if extrainfo.user_type == "faculty":
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
+        for ins in instructor:
+            if ins.curriculum_id.course_code == course_code:
+                course = ins.curriculum_id.course_id
+        topic = Topics.objects.get(id=request.POST.get('pk'))
+        topic.delete()
+        n_topics = Topics.objects.filter(course_id=course)
+        data = {'message': "Removed", 'numberof_topics': len(n_topics)}
         return HttpResponse(json.dumps(data), content_type='application/json')
 
 
 @login_required
-def add_question(request, course_code, qb_code, topic_id):
+def add_question(request, course_id, qb_code, topic_id):
     user = request.user
+    course = Course.objects.get(pk=course_id)
+    curriculum = Curriculum.objects.get(course_id=course)
+    course_code = curriculum.course_code
     extrainfo = ExtraInfo.objects.get(user=user)
     if extrainfo.user_type == "faculty":
         qb = QuestionBank.objects.filter(pk=qb_code)
@@ -705,7 +725,7 @@ def quiz(request, quiz_id):
         for x in random_ques_pk:
             shuffed_questions.append(QuizQuestion.objects.get(pk=x))
         end = quiz.end_time
-        now = timezone.now() + timedelta(hours=5.5)
+        now = timezone.now() + datetime.timedelta(hours=5.5)
         diff = end-now
         days, seconds = diff.days, diff.seconds
         hours = days * 24 + seconds // 3600
@@ -789,21 +809,20 @@ def create_quiz(request, course_code):
             k1 = st_time.hour
             k2 = st_time.minute
             k3 = st_time.second
-            start_date_time = datetime.combine(form.cleaned_data['startdate'], time(k1, k2, k3))
+            start_date_time = datetime.datetime.combine(form.cleaned_data['startdate'], datetime.time(k1, k2, k3))
             st_time = form.cleaned_data['endtime']
             k1 = st_time.hour
             k2 = st_time.minute
             k3 = st_time.second
-            end_date_time = datetime.combine(form.cleaned_data['enddate'], time(k1, k2, k3))
+            end_date_time = datetime.datetime.combine(form.cleaned_data['enddate'], datetime.time(k1, k2, k3))
             duration = end_date_time - start_date_time
             days, seconds = duration.days, duration.seconds
             hours, remainder = divmod(duration.seconds, 3600)
             minutes, seconds = divmod(remainder, 60)
+
             # If you want to take into account fractions of a second
             seconds += duration.microseconds / 1e6
 
-            # hours = days * 24 + seconds // 3600
-            # minutes = (seconds % 3600) // 60
             description = form.cleaned_data['description'].replace('\r\n', '/')
             rules = form.cleaned_data['rules'].replace('\r\n', '/')
             obj = Quiz.objects.create(
@@ -821,8 +840,6 @@ def create_quiz(request, course_code):
                             )
             # print "Done"
             return redirect('/ocms/' + course_code + '/edit_quiz/' + str(obj.pk))
-            '''except:
-                return HttpResponse('Unexpected Error')'''
         if form.errors:
             errors = form.errors
         return render(request, 'coursemanagement/createcontest.html',
@@ -843,7 +860,7 @@ def edit_quiz_details(request, course_code, quiz_code):
             st_date = request.POST.get('startdate_month') + " " + request.POST.get('startdate_day')
             st_date = st_date + " " + request.POST.get('startdate_year')
             string = str(st_date) + " " + str(st_time)
-            datetime_object = datetime.strptime(string, '%m %d %Y %H:%M')
+            datetime_object = datetime.datetime.strptime(string, '%m %d %Y %H:%M')
             quiz.start_time = datetime_object
             quiz.save()
         elif x == 'edit2':
@@ -851,7 +868,7 @@ def edit_quiz_details(request, course_code, quiz_code):
             st_date = request.POST.get('enddate_month') + " " + request.POST.get('enddate_day')
             st_date = st_date + " " + request.POST.get('enddate_year')
             string = str(st_date) + " " + str(st_time)
-            datetime_object = datetime.strptime(string, '%m %d %Y %H:%M')
+            datetime_object = datetime.datetime.strptime(string, '%m %d %Y %H:%M')
             quiz.end_time = datetime_object
             quiz.save()
         elif x == 'edit3':
@@ -901,7 +918,7 @@ def edit_quiz(request, course_code, quiz_code):
                        'counter': counter, 'questions': questions, 'description': description,
                        'rules': rules, 'questions_left': questions_left, 'curriculum': curriculum})
     else:
-        return HttpResponse("unautherized Access!!It will be reported!!")
+        return HttpResponse("unauthorized Access!!It will be reported!!")
 
 
 @login_required
@@ -943,10 +960,10 @@ def remove_quiz_question(request, course_code, quiz_code, topic_id):
 def add_question_topicwise(request, course_code, quiz_id):
     extrainfo = ExtraInfo.objects.get(user=request.user)
     if extrainfo.user_type == 'faculty':
-        instructor = ICurriculum_Instructor.objects.filter(instructor_id=extrainfo)
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
-            if ins.course_id.course_id == course_code:
-                course = ins.course_id
+            if ins.curriculum_id.course_code == course_code:
+                course = ins.curriculum_id.course_id
         ques_bank = request.POST.get('qbank')
         quiz = Quiz.objects.get(pk=quiz_id)
         topic = request.POST.get('topic')
@@ -971,7 +988,10 @@ def add_question_topicwise(request, course_code, quiz_id):
 
 
 @login_required
-def add_questions_to_quiz(request, course_code, quiz_id):
+def add_questions_to_quiz(request, course_id, quiz_id):
+    course = Course.objects.get(pk=course_id)
+    curriculum = Curriculum.objects.get(course_id = course)
+    course_code = curriculum.course_code
     extrainfo = ExtraInfo.objects.get(user=request.user)
     if extrainfo.user_type == 'faculty':
         questions_selected = request.POST.getlist('questions_selected')
