@@ -1,0 +1,128 @@
+{% block create_poll %}
+<div class="ui tab" data-tab="create">
+  <form
+    action="{% url 'gymkhana:voting_poll' %}"
+    method="post"
+    class="ui form"
+    id="new_poll_form"
+  >
+    {% csrf_token %}
+    <div class="ui grid">
+      <div class="ten wide column">
+        <h4 class="ui dividing header">Poll Information</h4>
+        <div class="field">
+          <label>Title</label>
+          <input type="text" name="title" placeholder="Voting For" required />
+        </div>
+        <div class="field">
+          <label>Description</label>
+          <textarea
+            name="desc"
+            id="desc"
+            style="min-height: 220px;"
+            required
+          ></textarea>
+        </div>
+        <div class="field">
+          <label>Forward to</label>
+          <select name="groups" multiple="" class="ui fluid dropdown">
+            <option value="2017:All">2017 Batch</option>
+            <option value="2018:All">2018 Batch</option>
+            <option value="2019:All">2019 Batch</option>
+            <option value="2017:CSE">2017 CSE Batch</option>
+            <option value="2017:ME">2017 ME Batch</option>
+            <option value="2017:ECE">2017 ECE Batch</option>
+            <option value="2017:DESIGN">2017 Design Batch</option>
+            <option value="2018:CSE">2018 CSE Batch</option>
+            <option value="2018:ME">2018 ME Batch</option>
+            <option value="2018:ECE">2018 ECE Batch</option>
+            <option value="2018:DESIGN">2018 Design Batch</option>
+            <option value="2019:CSE">2019 CSE Batch</option>
+            <option value="2019:ME">2019 ME Batch</option>
+            <option value="2019:ECE">2019 ECE Batch</option>
+            <option value="2019:DESIGN">2019 Design Batch</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Expire Date</label>
+          <input type="date" name="expire_date" id="expire_date" />
+        </div>
+        <button id="submit" class="ui primary button">Submit</button>
+      </div>
+      <div class="six wide column">
+        <h4 class="ui dividing header">Choices</h4>
+        <div
+          style="height: 400px !important; overflow-y: scroll; padding: 5px;"
+          id="choice_"
+        >
+          <div class="field">
+            <label>Choice 1</label>
+            <input
+              type="text"
+              name="choices"
+              style="margin: 0 0 5px 0; box-sizing: border-box;"
+              required
+            />
+          </div>
+        </div>
+        <div
+          class="field"
+          style="display: flex; justify-content: space-between;"
+        >
+          <button class="ui icon teal button" id="addChoice" type="button">
+            <i class="plus icon"></i>
+            Add Choice
+          </button>
+          <button
+            class="ui teal icon button"
+            id="deleteChoice"
+            type="button"
+            onclick=" removeLastChoice()"
+          >
+            <i class="minus icon"></i>
+            Delete
+          </button>
+        </div>
+        <div class="ui grid"></div>
+      </div>
+    </div>
+  </form>
+</div>
+
+<script>
+  let count = 1;
+
+  const addMore = document.getElementById("addChoice");
+  const formChoices = document.getElementById("choice_");
+  const remove_button = document.getElementById("deleteChoice");
+
+  addMore.addEventListener("click", () => {
+    count++;
+    const div = document.createElement("div");
+    const input = document.createElement("input"); // label
+    const label = document.createElement("label"); // input
+
+    div.classList.add("field");
+
+    input.id = "choice" + count;
+    input.type = "text";
+    input.name = "choices";
+    input.required = "true";
+    input.style.margin = " 0 0 5px 0";
+
+    label.innerHTML = "Choice " + count;
+
+    div.append(label);
+    div.append(input);
+
+    formChoices.append(div);
+  });
+  const removeLastChoice = () => {
+    console.log(formChoices.children);
+    if (count > 1) {
+      formChoices.children[count - 1].remove();
+      count--;
+    }
+  };
+</script>
+{% endblock create_poll %}
