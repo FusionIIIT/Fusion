@@ -74,13 +74,10 @@ def course(request, course_code):
         roll = student.id.id[:4]
 
         #info about courses he is registered in
-        curriculum_details = Curriculum.objects.filter(course_code=course_code)         
-
-        course = curriculum_details 
-        course1 = curriculum_details[0].course_id
-        curriculum1 = course[0]
+        curriculum = Curriculum.objects.get(course_code=course_code)          
+        course = curriculum.course_id
         #instructor of the course
-        instructor = Curriculum_Instructor.objects.get(curriculum_id=course[0])
+        instructor = Curriculum_Instructor.objects.get(curriculum_id=curriculum)
         #course material uploaded by the instructor
         # videos = CourseVideo.objects.filter(course_id=course1)
         channel_url = "https://www.googleapis.com/youtube/v3/channels"
@@ -147,15 +144,14 @@ def course(request, course_code):
         #quizzes details 
         for q in quiz:
             qs = QuizResult.objects.filter(quiz_id=q, student_id=student)
-            qs_pk = QuizResult.objects.filter(
-                quiz_id=q, student_id=student).values_list('quiz_id', flat=True)
+            qs_pk = qs.values_list('quiz_id', flat=True)
             if q.end_time > timezone.now():
                 quizs.append(q)
-            if len(qs) is not 0:
+            if qs:
                 marks.append(qs[0])
                 marks_pk.append(qs_pk[0])
         lec = 0
-        comments = Forum.objects.filter(course_id=course1).order_by('comment_time')
+        comments = Forum.objects.filter(course_id=course).order_by('comment_time')
         answers = collections.OrderedDict()
         for comment in comments:
             fr = ForumReply.objects.filter(forum_reply=comment)
@@ -163,7 +159,7 @@ def course(request, course_code):
             if not fr:
                 answers[comment] = fr1
         return render(request, 'coursemanagement/viewcourse.html',
-                      {'course': course[0],
+                      {'course': course,
                        'quizs': marks,
                        'quizs_pk': marks_pk,
                        'fut_quiz': quizs,
@@ -175,7 +171,7 @@ def course(request, course_code):
                        'assignment': assignment,
                        'student_assignment': student_assignment,
                        'Lecturer': lec,
-                       'curriculum': curriculum1})
+                       'curriculum': curriculum})
 
     else:
         instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
