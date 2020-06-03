@@ -124,6 +124,7 @@ INSTALLED_APPS = [
     'applications.scholarships',
     'applications.visitor_hostel',
     'applications.establishment',
+    'applications.estate_module',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
@@ -246,14 +247,13 @@ ACCOUNT_EMAIL_REQUIRED = True
 LOGIN_REDIRECT_URL = "/"
 
 DJANGO_NOTIFICATIONS_CONFIG = {
-'USE_JSONFIELD':True,
+    'USE_JSONFIELD': True,
 }
 
 DJANGO_NOTIFICATIONS_CONFIG = {
-'USE_JSONFIELD':True,
+    'USE_JSONFIELD': True,
 }
 
 CRISPY_TEMPLATE_PACK = 'semantic-ui'
 CRISPY_ALLOWED_TEMPLATE_PACKS = ('semantic-ui')
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240
-

@@ -44,6 +44,7 @@ urlpatterns = [
     url(r'^academic-procedures/', include('applications.academic_procedures.urls')),
     url(r'^aims/', include('applications.academic_information.urls')),
     url(r'^notifications/', include('applications.notifications_extension.urls')),
+    url(r'^estate/', include('applications.estate_module.urls')),
     url(r'^accounts/', include('allauth.urls')),
     url(r'^__debug__/', include(debug_toolbar.urls)),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,0 +1,46 @@
+<div>
+  <div class="paginationparent">
+    <div class="ui pagination menu column" id="pagination">
+      
+      <a class = "item" href="?page_number=1">
+        <i class="icon angle double left"> </i>
+      </a>
+      {% if pages.previous_page > 1 %}
+        <a class = "item" href="?page_number={{pages.previous_page}}">
+      {% else %}
+        <a class = "item" href="?page_number=1">
+      {% endif %}
+        <i class="icon angle left"> </i>
+      </a>
+
+      {% if pages.previous_page > 0 %}
+        <a class = "item" href="?page_number={{pages.previous_page}}">
+          {{pages.previous_page}}
+        </a>
+      {% endif %}
+
+      <a class = "active item">
+        {{pages.current_page}}
+      </a>
+
+      {% if pages.next_page <= pages.total_page %}
+        <a class = "item" href="?page_number={{pages.next_page}}">
+          {{pages.next_page}}
+        </a>
+      {% endif %}
+
+      {% if pages.next_page > pages.total_page %}
+        <a class = "item" href="?page_number={{pages.total_page}}">
+      {% else %}
+        <a class = "item" href="?page_number={{pages.next_page}}">
+      {% endif %}
+        <i class="icon angle right"> </i>
+      </a>
+
+      <a class = "item" href="?page_number={{pages.total_page}}">
+        <i class="icon angle double right"> </i>
+      </a>
+
+    </div>
+  </div>
+</div>

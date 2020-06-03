@@ -798,8 +798,8 @@
 
             <div id="particular_stats">
                 
-                <!-- Table showing count of faculty in each department --> 
-                <div id="faculty_stats" style="display: none">
+                <!-- list showing faculty in each department --> 
+                <!-- <div id="faculty_stats" style="display: none">
                 
                 <h3>Dept Wise Faculty Statistics</h3>
 
@@ -833,20 +833,97 @@
                     <tbody>
                     <tr>
                         {% for fac in cse %}
-                            <td>{{ fac.user.first_name }} {{ fac.user.last_name }} {{ fac.phone_no }}</td>
+                            <td>{{ fac.user.first_name }} {{ fac.user.last_name }}</td>
                         {% endfor %}
                     </tr>
                     </tbody>
 
                 </table>
                 
+                </div> -->
+
+
+                <div id="faculty_stats" style="display: none">
+                
+                    <h3>Dept Wise Faculty</h3>
+                    <div class="ui top attached tabular menu">
+                        <a class="item active" data-tab="first">CSE</a>
+                        <a class="item" data-tab="second">ECE</a>
+                        <a class="item" data-tab="third">ME</a>
+                        <a class="item" data-tab="fourth">DESIGN</a>
+                        <a class="item" data-tab="fifth">NS</a>
+                      </div>
+                      <div class="ui bottom attached tab segment active" data-tab="first">
+                        <div class="ui middle aligned divided list">
+                            {% for cse_fac in cse %}
+                            <div class="item">
+                                <i class="user icon"></i>
+                              <div class="content">
+                                <a class="header" href="{% url 'globals:profile' %}">{{ cse_fac.user.first_name }} {{ cse_fac.user.last_name }}</a>
+                              </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                      </div>
+                      <div class="ui bottom attached tab segment" data-tab="second">
+                        <div class="ui middle aligned divided list">
+                            {% for ece_fac in ece %}
+                            <div class="item">
+                                <i class="user icon"></i>
+                              <div class="content">
+                                <a class="header">{{ ece_fac.user.first_name }} {{ ece_fac.user.last_name }}</a>
+                              </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                      </div>
+                      <div class="ui bottom attached tab segment" data-tab="third">
+                        <div class="ui middle aligned divided list">
+                            {% for me_fac in me %}
+                            <div class="item">
+                                <i class="user icon"></i>
+                              <div class="content">
+                                <a class="header">{{ me_fac.user.first_name }} {{ me_fac.user.last_name }}</a>
+                              </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                      </div>
+                      <div class="ui bottom attached tab segment" data-tab="fourth">
+                        <div class="ui middle aligned divided list">
+                            {% for des_fac in des %}
+                            <div class="item">
+                                <i class="user icon"></i>
+                              <div class="content">
+                                <a class="header">{{ des_fac.user.first_name }} {{ des_fac.user.last_name }}</a>
+                              </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                      </div>
+                      <div class="ui bottom attached tab segment" data-tab="fifth">
+                        <div class="ui middle aligned divided list">
+                            {% for ns_fac in ns %}
+                            <div class="item">
+                                <i class="user icon"></i>
+                              <div class="content">
+                                <a class="header">{{ ns_fac.user.first_name }} {{ ns_fac.user.last_name }}</a>
+                              </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                      </div>
+
                 </div>
+
+
+
                 <br>
                 
                 <div id="faculty_stats_graph" style="height: 260px; width: 90%;"> </div>
 
                 <!-- div for showing top scorers among students   -->
-                <div id="student_stats" style="display: none;">
+                <!-- <div id="student_stats" style="display: none;">
 
                     <table style="border: 1px solid lightblue" class="ui very basic collapsing celled sortable table" style="padding-left: 5%;
                                                        padding-right: 5%;
@@ -881,7 +958,6 @@
                                 </td>  
                             </tr>
 
-                            <!-- <div class="ui divider"></div> -->
                             <tr><td>
                                 <h5>B.Tech 2016 - CSE</h5>
                                     <ol id="cse_16">
@@ -918,9 +994,152 @@
                         </tbody>
                         
                     </table> 
-                      <!-- <div class="ui divider"></div>  
-                       -->
+                </div> -->
+
+                <div id="student_stats" style="display: none;">
+                
+                    <!-- <div class="ui pointing secondary menu">
+                        <a class="item active" data-tab="first">2017</a>
+                        <a class="item" data-tab="second">2016</a>
+                        <a class="item" data-tab="third">2015</a>
+                      </div>
+                      <div class="ui tab segment active" data-tab="first">
+                        <div class="ui top attached tabular menu">
+                          <a class="item active" data-tab="first/a">CSE</a>
+                          <a class="item" data-tab="first/b">ECE</a>
+                          <a class="item" data-tab="first/c">ME</a>
+                          <a class="item" data-tab="first/d">DESIGN</a>
+                          <a class="item" data-tab="first/e">NS</a>
+                        </div>
+                        <div class="ui bottom attached tab segment active" data-tab="first/a">cse_2017</div>
+                        <div class="ui bottom attached tab segment" data-tab="first/b">ece_2017</div>
+                        <div class="ui bottom attached tab segment" data-tab="first/c">me_2017</div>
+                        <div class="ui bottom attached tab segment" data-tab="first/d">des_2017</div>
+                        <div class="ui bottom attached tab segment" data-tab="first/e">ns_2017</div>
+                      </div>
+                      <div class="ui tab segment" data-tab="second">
+                        <div class="ui top attached tabular menu">
+                          <a class="item active" data-tab="second/a">CSE</a>
+                          <a class="item" data-tab="second/b">ECE</a>
+                          <a class="item" data-tab="second/c">ME</a>
+                          <a class="item" data-tab="second/d">DESIGN</a>
+                          <a class="item" data-tab="second/e">NS</a>
+                        </div>
+                        <div class="ui bottom attached tab segment active" data-tab="second/a">cse_2016</div>
+                        <div class="ui bottom attached tab segment" data-tab="second/b">ece_2016</div>
+                        <div class="ui bottom attached tab segment" data-tab="second/c">me_2016</div>
+                        <div class="ui bottom attached tab segment" data-tab="second/d">des_2016</div>
+                        <div class="ui bottom attached tab segment" data-tab="second/e">ns_2016</div>
+                      </div>
+                      <div class="ui tab segment" data-tab="third">
+                        <div class="ui top attached tabular menu">
+                          <a class="item active" data-tab="third/a">CSE</a>
+                          <a class="item" data-tab="third/b">ECE</a>
+                          <a class="item" data-tab="third/c">ME</a>
+                          <a class="item" data-tab="third/d">DESIGN</a>
+                          <a class="item" data-tab="third/e">NS</a>
+                        </div>
+                        <div class="ui bottom attached tab segment active" data-tab="third/a">cse_2015</div>
+                        <div class="ui bottom attached tab segment" data-tab="third/b">ece_2015</div>
+                        <div class="ui bottom attached tab segment" data-tab="third/c">me_2015</div>
+                        <div class="ui bottom attached tab segment" data-tab="third/d">des_2015</div>
+                        <div class="ui bottom attached tab segment" data-tab="third/e">ns_2015</div>
+                      </div> -->
+
+                      <h3>Students</h3>
+
+                      <div class="ui top attached tabular menu">
+                        <a class="item active" data-tab="first">2019</a>
+                        <a class="item" data-tab="second">2018</a>
+                        <a class="item" data-tab="third">2017</a>
+                        <a class="item" data-tab="fourth">2016</a>
+                        <a class="item" data-tab="fifth">2015</a>
+                      </div>
+                      <div class="ui bottom attached tab segment active" data-tab="first">
+                        <div style="width:620px;height:300px;overflow-x: scroll;">
+                            <table class="ui celled table">
+                                <thead>
+                                  <tr><th>Roll no.</th>
+                                </tr></thead>
+                                <tbody>
+                                  {% for student in students_2019 %}
+                                  <tr>
+                                    <td data-label="Name">{{ student }}</td>
+                                  </tr>
+                                  {% endfor %}
+                                </tbody>
+                              </table>
+                        </div>
+                      </div>
+                      <div class="ui bottom attached tab segment" data-tab="second">
+                        <div style="width:620px;height:300px;overflow-x: scroll;">
+                            <table class="ui celled table">
+                                <thead>
+                                  <tr><th>Roll no.</th>
+                                </tr></thead>
+                                <tbody>
+                                  {% for student in students_2018 %}
+                                  <tr>
+                                    <td data-label="Name">{{ student }}</td>
+                                  </tr>
+                                  {% endfor %}
+                                </tbody>
+                              </table>
+                        </div>
+                      </div>
+                      <div class="ui bottom attached tab segment" data-tab="third">
+                        <div style="width:620px;height:300px;overflow-x: scroll;">
+                            <table class="ui celled table">
+                                <thead>
+                                  <tr><th>Roll no.</th>
+                                </tr></thead>
+                                <tbody>
+                                  {% for student in students_2017 %}
+                                  <tr>
+                                    <td data-label="Name">{{ student }}</td>
+                                  </tr>
+                                  {% endfor %}
+                                </tbody>
+                              </table>
+                        </div>
+                      </div>
+                      <div class="ui bottom attached tab segment" data-tab="fourth">
+                        <div style="width:620px;height:300px;overflow-x: scroll;">
+                            <table class="ui celled table">
+                                <thead>
+                                  <tr><th>Roll no.</th>
+                                </tr></thead>
+                                <tbody>
+                                  {% for student in students_2016 %}
+                                  <tr>
+                                    <td data-label="Name">{{ student }}</td>
+                                  </tr>
+                                  {% endfor %}
+                                </tbody>
+                              </table>
+                        </div>
+                      </div>
+                      <div class="ui bottom attached tab segment" data-tab="fifth">
+                        <div style="width:620px;height:300px;overflow-x: scroll;">
+                            <table class="ui celled table">
+                                <thead>
+                                  <tr><th>Roll no.</th>
+                                </tr></thead>
+                                <tbody>
+                                  {% for student in students_2015 %}
+                                  <tr>
+                                    <td data-label="Name">{{ student }}</td>
+                                  </tr>
+                                  {% endfor %}
+                                </tbody>
+                              </table>
+                        </div>
+                      </div>
+                
                 </div>
+
+
+                
 
                 <div id="project_stats" style="display: none;">
 
@@ -1012,6 +1231,104 @@
                         <tbody></tbody>
 
                     </table> {% endcomment %}
+
+                    <div class="ui top attached tabular menu">
+                        <a class="item active" data-tab="first">2019</a>
+                        <a class="item" data-tab="second">2018</a>
+                        <a class="item" data-tab="third">2017</a>
+                        <a class="item" data-tab="fourth">2016</a>
+                        <a class="item" data-tab="fifth">2015</a>
+                      </div>
+                      <div class="ui bottom attached tab segment active" data-tab="first">
+                        <div style="width:620px;height:300px;overflow-x: scroll;">
+                            <table class="ui celled table">
+                                <thead>
+                                  <tr><th>Roll no.</th>
+                                  <th>CPI</th>
+                                </tr></thead>
+                                <tbody>
+                                  {% for student in students_2019 %}
+                                  <tr>
+                                    <td data-label="Name">{{ student }}</td>
+                                    <td data-label="CPI">{{ student.cpi }}</td>
+                                  </tr>
+                                  {% endfor %}
+                                </tbody>
+                              </table>
+                        </div>
+                      </div>
+                      <div class="ui bottom attached tab segment" data-tab="second">
+                        <div style="width:620px;height:300px;overflow-x: scroll;">
+                            <table class="ui celled table">
+                                <thead>
+                                  <tr><th>Roll no.</th>
+                                  <th>CPI</th>
+                                </tr></thead>
+                                <tbody>
+                                  {% for student in students_2018 %}
+                                  <tr>
+                                    <td data-label="Name">{{ student }}</td>
+                                    <td data-label="CPI">{{ student.cpi }}</td>
+                                  </tr>
+                                  {% endfor %}
+                                </tbody>
+                              </table>
+                        </div>
+                      </div>
+                      <div class="ui bottom attached tab segment" data-tab="third">
+                        <div style="width:620px;height:300px;overflow-x: scroll;">
+                            <table class="ui celled table">
+                                <thead>
+                                  <tr><th>Roll no.</th>
+                                  <th>CPI</th>
+                                </tr></thead>
+                                <tbody>
+                                  {% for student in students_2017 %}
+                                  <tr>
+                                    <td data-label="Name">{{ student }}</td>
+                                    <td data-label="CPI">{{ student.cpi }}</td>
+                                  </tr>
+                                  {% endfor %}
+                                </tbody>
+                              </table>
+                        </div>
+                      </div>
+                      <div class="ui bottom attached tab segment" data-tab="fourth">
+                        <div style="width:620px;height:300px;overflow-x: scroll;">
+                            <table class="ui celled table">
+                                <thead>
+                                  <tr><th>Roll no.</th>
+                                  <th>CPI</th>
+                                </tr></thead>
+                                <tbody>
+                                  {% for student in students_2016 %}
+                                  <tr>
+                                    <td data-label="Name">{{ student }}</td>
+                                    <td data-label="CPI">{{ student.cpi }}</td>
+                                  </tr>
+                                  {% endfor %}
+                                </tbody>
+                              </table>
+                        </div>
+                      </div>
+                      <div class="ui bottom attached tab segment" data-tab="fifth">
+                        <div style="width:620px;height:300px;overflow-x: scroll;">
+                            <table class="ui celled table">
+                                <thead>
+                                  <tr><th>Roll no.</th>
+                                  <th>CPI</th>
+                                </tr></thead>
+                                <tbody>
+                                  {% for student in students_2015 %}
+                                  <tr>
+                                    <td data-label="Name">{{ student }}</td>
+                                    <td data-label="CPI">{{ student.cpi }}</td>
+                                  </tr>
+                                  {% endfor %}
+                                </tbody>
+                              </table>
+                        </div>
+                      </div>
                 </div>
 
 

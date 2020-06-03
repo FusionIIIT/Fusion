@@ -681,7 +681,26 @@ def dashboard(request):
     me_faculty = ExtraInfo.objects.filter(user_type = 'faculty', department = DepartmentInfo.objects.get(name = 'ME'))
     des_faculty = ExtraInfo.objects.filter(user_type = 'faculty', department = DepartmentInfo.objects.get(name = 'Design'))
     ns_faculty = ExtraInfo.objects.filter(user_type = 'faculty', department = DepartmentInfo.objects.get(name = 'Natural Science'))
-    data = {'cse': cse_faculty, 'ece': ece_faculty, 'me': me_faculty, 'des': des_faculty, 'ns': ns_faculty}
+    # cse_students = ExtraInfo.objects.filter(user_type = 'student', department = DepartmentInfo.objects.get(name = 'CSE'))
+    # ece_students = ExtraInfo.objects.filter(user_type = 'student', department = DepartmentInfo.objects.get(name = 'ECE'))
+    # me_students = ExtraInfo.objects.filter(user_type = 'student', department = DepartmentInfo.objects.get(name = 'ME'))
+    # des_students = ExtraInfo.objects.filter(user_type = 'student', department = DepartmentInfo.objects.get(name = 'Design'))
+    # ns_students = ExtraInfo.objects.filter(user_type = 'student', department = DepartmentInfo.objects.get(name = 'Natural Science'))
+    students_2017 = Student.objects.filter(batch = 2017)
+    students_2016 = Student.objects.filter(batch = 2016)
+    students_2015 = Student.objects.filter(batch = 2015)
+    students_2019 = Student.objects.filter(batch = 2019)
+    students_2018 = Student.objects.filter(batch = 2018) 
+    data = {'cse': cse_faculty, 
+            'ece': ece_faculty, 
+            'me': me_faculty, 
+            'des': des_faculty, 
+            'ns': ns_faculty,
+            'students_2019': students_2019,
+            'students_2018': students_2018, 
+            'students_2017': students_2017,
+            'students_2016': students_2016,
+            'students_2015': students_2015}
     user=request.user
     notifs=request.user.notifications.all()
     context={
