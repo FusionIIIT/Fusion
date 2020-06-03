@@ -20,15 +20,20 @@
                       <label>Doctor</label>
                       <select id="doc" class="ui search fluid" name="doctor_id" required="true">
                         <option selected hidden>--SELECT--</option>
-                        {% for doctor in doctors %}
-                        <option value="{{doctor.id}}">{{doctor.doctor_name}}</option>
-                        {% endfor %}
+                     <!--   {% for doctor in doctors %}
+                      <option value="{{doctor.id}}">{{doctor.doctor_name}}</option> -->
+                     <option value="Dr. Satish">Dr. Satish</option>
+                     <option value="Dr. Vijay">Dr. Vijay</option>
+                     <option value="Dr. Sharma">Dr. Sharma</option>
+                     <option value="Dr. kumar">Dr. Kumar</option>
+                       <!-- {% endfor %} -->
                       </select>
                   </div>
                         <div class="field">
                             <label>Date Of Appointment</label><p id="app_dte"></p>
                             <select id="date" class="ui search fluid dropdown" name="date">
-                              <option >--SELECT--</option>
+                              <option selected hidden >--SELECT--</option>
+
                             </select>
 						
                         </div>

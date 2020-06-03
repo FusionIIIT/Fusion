@@ -283,7 +283,7 @@ function request_booking (event) {
         },
         error: function(data, err) {
             console.log(name + " " + phone + " " + email + " " + address);
-            alertModal('Something missing! Please refill the form');
+            alertModal('Something missing! Please refill form');
             console.log(booking_to_time);
         }
     });
