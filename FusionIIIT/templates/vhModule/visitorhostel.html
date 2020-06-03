@@ -88,19 +88,19 @@
 
             <!-- fourth, fifth and sixth data tabs are dissabled.. just remove 1 from the end of their datatab value to enable them-->
 
-            <div class="ui tab segment" data-tab="fourth1">
+            <div class="ui tab segment" data-tab="fourth">
                 {% block bookings %}
                     {% include 'vhModule/record-meal.html' %}
                 {% endblock %}
             </div>
 
-            <div class="ui tab segment" data-tab="fifth1">
+            <div class="ui tab segment" data-tab="fifth">
                 {% block viewinventory %}
                     {% include 'vhModule/view-inventory.html' %}
                 {% endblock %}
             </div>
 
-            <div class="ui tab segment" data-tab="sixth1">
+            <div class="ui tab segment" data-tab="sixth">
                 {% block checkout %}
                     {% include 'vhModule/accounts.html' %}
                 {% endblock %}
