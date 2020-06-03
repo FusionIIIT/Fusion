@@ -53,23 +53,17 @@ celerybeat-schedule
 # dotenv
 .env
 
-# virtualenv
-venv/
-ENV/
+# virtualenv: ignore environment folder ending with env. e.g. env, venv, myenv, fusionenv, etc
+*env/
 
 # Rope project settings
 .ropeproject
 
-# Ignore idea files
-.idea
-
 # VSCode Settings
-.vscode/settings.json
+.vscode/
 
 # Node Modules
 node_modules/
 
 FusionIIIT/static/
 package-lock.json
-
-!.idea

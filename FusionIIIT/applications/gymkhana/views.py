@@ -215,7 +215,28 @@ def retrun_content(roll, name, desig , club__ ):
 		student = get_object_or_404(Student, id = extra)
 	else :
 		b = []
-	print(club__)
+	
+	# creating the data for the active voting polls	
+	voting_polls = []
+	for poll in Voting_polls.objects.all():
+		event = {}
+		choices = []
+		event["id"] = poll.id
+		event["title"] = poll.title
+		event["desc"] = poll.description
+		event['exp_date'] = (poll.exp_date- datetime.datetime.now()).days if (datetime.datetime.now() - poll.exp_date).days <= 0 else 'expire'
+		event['pub_date'] = poll.exp_date.strftime("%d/%m/%Y")
+		event["created_by"] = poll.created_by.split(":")	
+		for choice in poll.voting_choices_set.all():
+			choices.append({'title':choice.title,'id':choice.id,'votes':choice.votes})
+				
+		event['choices'] = choices
+		event['max'] = poll.voting_choices_set.latest()
+		event['voters'] = poll.voting_voters_set.values_list('student_id', flat=True)
+		event['groups'] = json.loads(poll.groups)
+		
+		voting_polls.append(event)
+		
 	content = {
 		'Students' : students,
 		'Club_name' : club_name,
@@ -229,7 +250,8 @@ def retrun_content(roll, name, desig , club__ ):
 		'venue' : venue,
 		'Curr_desig' : desig,
 		'club_details':club__,
-		'roll' : str(roll)
+		'roll': str(roll),
+		'voting_polls': voting_polls 
 	}
 	return content
 
@@ -686,3 +708,75 @@ def conflict_algorithm(date, start_time, end_time, venue):
 			return "success"
 		else:
 			return "error"
+
+
+
+##helper function to get the target user for the voting poll
+def get_target_user(groups):
+	dic = {}
+	for i in range(len(groups)):
+		value = groups[i].split(":")
+		batch = value[0]
+		branch = value[1]
+		if dic.get(batch):
+			if dic[batch][0] != 'All':
+				dic[batch].append(branch)
+		else:
+			dic[batch] = [branch]
+	return json.dumps(dic)
+
+## Voting Polls
+@login_required
+def voting_poll(request):
+	if request.POST:
+		try:
+			body = request.POST
+			title = body.get('title')
+			description = body.get('desc')
+			choices = body.getlist('choices')
+			exp_date = body.get('expire_date')
+			groups = body.getlist('groups')
+			target_groups = get_target_user(groups)
+			print(groups,target_groups)
+			name = request.user.first_name + " " + request.user.last_name
+			roll = request.user
+			created_by = str(name) +":"+ str(roll)
+			new_poll = Voting_polls(title=title, description=description, exp_date=exp_date, created_by = str(created_by),groups=target_groups)
+			new_poll.save()
+			for choice in choices:
+				new_choice = Voting_choices(poll_event=new_poll,title=choice)
+				new_choice.save()
+			return redirect('/gymkhana/')
+		except Exception as e:
+			res = "error"
+			message = "Some error occurred"
+			print(e)
+			content = {
+				'status':res,
+				'message':message
+			}
+			content = json.dumps(content)
+			return HttpResponse(content)
+	
+	return redirect('/gymkhana/')
+
+@login_required
+def vote(request,poll_id):
+	poll = Voting_polls.objects.get(pk=poll_id)
+	print(poll_id)
+	if request.POST:
+		try:
+			body = request.POST
+			submitted_choice = body.get('choice')
+			choice = Voting_choices.objects.get(pk=submitted_choice)
+			choice.votes += 1
+			choice.save()
+			new_voter = Voting_voters(poll_event=poll, student_id=str(request.user))
+			new_voter.save()
+			return redirect('/gymkhana/')
+		except Exception as e:
+			print(e)
+			return HttpResponse('error')	
+	data = serializers.serialize('json',Voting_choices.objects.all())
+	return redirect('/gymkhana/')
+	

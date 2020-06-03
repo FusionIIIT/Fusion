@@ -1,0 +1,29 @@
+{% block poll_status %}
+<div class="ui tab" data-tab="status">
+  <div class="ui styled fluid accordion">
+    {% for poll in voting_polls %}
+    <div class="title">
+      <i class="dropdown icon"></i>
+      {{poll.title}}
+    </div>
+    <div class="content">
+      {% for choice in poll.choices %}
+      <div
+        class="ui grid"
+        style="box-shadow: 0 0 6.3px 0 rgb(230, 230, 230); margin: 5px;"
+      >
+        <div class="fourteen wide column">{{choice.title}}</div>
+        <div
+          class="two wide column"
+          style="background-color: rgb(230, 230, 230); text-align: center;"
+        >
+          {{choice.votes}}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% endblock poll_status %}

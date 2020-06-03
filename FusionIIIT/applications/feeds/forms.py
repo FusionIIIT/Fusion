@@ -1,7 +1,7 @@
 from django import forms
 from pagedown.widgets import PagedownWidget
 
-from .models import AnsweraQuestion, AskaQuestion, Comments
+from .models import AnsweraQuestion, AskaQuestion, Comments, Profile
 
 
 class CommentForm(forms.ModelForm):
@@ -10,7 +10,7 @@ class CommentForm(forms.ModelForm):
 		fields = ('comment_text',)
 
 class AnswerForm(forms.ModelForm):
-	content = forms.CharField(widget=PagedownWidget(show_preview=False))
+	content = forms.CharField(widget=PagedownWidget(attrs={"show_preview":False}))
 	class Meta:
 		model = AnsweraQuestion
 		fields = [
@@ -18,9 +18,19 @@ class AnswerForm(forms.ModelForm):
 		]
 
 class QuestionForm(forms.ModelForm):
-	description = forms.CharField(widget=PagedownWidget(show_preview=False))
+	description = forms.CharField(widget=PagedownWidget(attrs={"show_preview":False}))
 	class Meta:
 		model = AskaQuestion
 		fields = [
 			'description',
+		]
+
+class ProfileForm(forms.ModelForm):
+	profile_picture = forms.ImageField()
+	bio = forms.CharField()
+	class Meta:
+		model = Profile
+		fields = [
+			'profile_picture',
+			"bio"
 		]

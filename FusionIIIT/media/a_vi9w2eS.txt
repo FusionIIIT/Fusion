@@ -1,6 +1,0 @@
-feature 1
-feature 3
-=======
-feature 2
->>>>>>> featurex
-

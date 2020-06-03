@@ -3,16 +3,16 @@
 
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="clubbudget">
+        <!-- <a class="item" data-tab="clubbudget">
             Club Budget
-        </a>
+        </a> -->
 
-        <a class="item" data-tab="newclub">
+        <a class="active item" data-tab="newclub">
             New Club Formation
         </a>
     </div>
 
-    <div class="ui active tab" data-tab="clubbudget">
+    <div class="ui tab" data-tab="clubbudget">
         <div class="ui vertical segment">
             <table class="ui very basic collapsing celled sortable table"
                    style="padding-left: 2.5%;
@@ -104,7 +104,7 @@
         </div>
     </div>
 
-    <div class="ui tab" data-tab="newclub">
+    <div class="ui active tab" data-tab="newclub">
         <div class="ui vertical segment">
         <form method="post" action="" id="clubrequest">
         {% csrf_token %}
@@ -115,6 +115,7 @@
                 <thead>
                 <tr>
                     <th>
+                        Select
                     </th>
 
                     <th class="three wide column">
