@@ -16,9 +16,15 @@ class Cpda_Bills_Form(forms.Form):
     bills = forms.FileField(label='Bills')
     total_bills_amount = forms.IntegerField(label='Total Bills Amount', min_value=0, required=True)
 
+
 class Cpda_Assign_Form(forms.Form):
     app_id = forms.IntegerField(widget = forms.HiddenInput(), required=True)
     status = forms.ChoiceField(choices=Constants.STATUS)
     reviewer_id = forms.CharField(label="Reviewer ID", required=False)
     reviewer_design = forms.CharField(label="Reviewer Designation", required=False)
     remarks = forms.CharField(label="Remarks")
+
+
+class Cpda_Review_Form(forms.Form):
+    app_id = forms.IntegerField(widget = forms.HiddenInput(), required=True)
+    remarks = forms.CharField(label="Remarks", required=True)

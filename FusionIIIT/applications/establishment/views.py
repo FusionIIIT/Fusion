@@ -6,7 +6,7 @@ from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 
 from datetime import datetime
 from .models import Cpda_application, Cpda_tracking, Cpda_bill, Establishment_variables, Constants
-from .forms import Cpda_Form, Cpda_Bills_Form, Cpda_Assign_Form
+from .forms import Cpda_Form, Cpda_Bills_Form, Cpda_Assign_Form, Cpda_Review_Form
 
 @login_required(login_url='/accounts/login')
 def establishment(request):
@@ -23,28 +23,28 @@ def establishment(request):
             reviewer = request.POST.get('reviewer_id')
             designation = request.POST.get('reviewer_design')
             remarks = request.POST.get('remarks')
-            if status == 'requested' or status == 'adjusments_pending':
+            if status == 'requested' or status == 'adjustments_pending':
                 if reviewer and designation and app_id:
                     # assign the app to the reviewer
                     reviewer_id = User.objects.get(username=reviewer)
                     reviewer_design = Designation.objects.filter(name=designation)
 
-                    # check if the reviewer holds the given designation, if not error
-                    # if reviewer_design:
-                    #     reviewer_design = reviewer_design[0]
-                    if reviewer_design != HoldsDesignation.objects.get(user=reviewer_id):
-                        messages.error(request, 'Reviewer doesn\'t holds the designation you specified!')
-                    else:
-                        application = Cpda_application.objects.get(id=app_id)
-                        application.tracking_info.reviewer_id = reviewer_id
-                        application.tracking_info.reviewer_design = reviewer_design
-                        application.tracking_info.remarks = remarks
-                        application.tracking_info.review_status = 'under_review'
-                        application.tracking_info.save()
-                        
-                        # add notif
-                        messages.success(request, 'Reviewer assigned successfully!')
-                        # print (reviewer_design, ' ||| ', reviewer_id)
+                    # check if the reviewer holds the given designation, if not show error
+                    if reviewer_design:
+                        reviewer_design = reviewer_design[0]
+                    # if reviewer_design != HoldsDesignation.objects.get(user=reviewer_id):
+                    #     messages.error(request, 'Reviewer doesn\'t holds the designation you specified!')
+                    # else:
+                    application = Cpda_application.objects.get(id=app_id)
+                    application.tracking_info.reviewer_id = reviewer_id
+                    application.tracking_info.reviewer_design = reviewer_design
+                    application.tracking_info.remarks = remarks
+                    application.tracking_info.review_status = 'under_review'
+                    application.tracking_info.save()
+                    
+                    # add notif
+                    messages.success(request, 'Reviewer assigned successfully!')
+                    # print (reviewer_design, ' ||| ', reviewer_id)
 
                 else:
                     errors = "Please specify a reviewer and their designation."
@@ -183,8 +183,20 @@ def establishment(request):
                 # get tracking info of a particular application
                 application.tracking_info.review_status = 'to_assign'
                 application.tracking_info.save()
-
+                # add notif here
                 messages.success(request, 'Bills submitted successfully!')
+                
+            if 'review' in request.POST:
+                print(" *** CPDA Review submit *** ")
+                app_id = request.POST.get('app_id')
+                # verify that app_id is not changed, ie untampered
+                review_comment = request.POST.get('remarks')
+                application = Cpda_application.objects.get(id=app_id)
+                application.tracking_info.remarks = review_comment
+                application.tracking_info.review_status = 'reviewed'
+                application.tracking_info.save()
+                # add notif here
+                messages.success(request, 'Review submitted successfully!')
 
 
         # except:
@@ -204,6 +216,16 @@ def establishment(request):
                     .exclude(status='approved')
                     .exclude(status='adjustments_pending')
                     .order_by('-request_timestamp'))
+    to_review_apps = (Cpda_application.objects
+                    .filter(tracking_info__reviewer_id=request.user)
+                    .exclude(status='rejected')
+                    .exclude(status='finished')
+                    .exclude(status='approved')
+                    .filter(tracking_info__review_status='under_review')
+                    .order_by('-request_timestamp'))
+    for app in to_review_apps:
+        app.reviewform = Cpda_Review_Form(initial={'app_id': app.id})
+
     form = Cpda_Form()
     bill_forms = {}
     apps = Cpda_application.objects.filter(applicant=request.user).filter(status='approved')
@@ -213,6 +235,7 @@ def establishment(request):
         'form': form,
         'billforms': bill_forms,
         'active_apps': active_apps,
-        'archive_apps': archive_apps
+        'archive_apps': archive_apps,
+        'to_review_apps': to_review_apps
     })
     return response

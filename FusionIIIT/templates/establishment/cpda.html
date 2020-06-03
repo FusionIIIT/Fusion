@@ -11,6 +11,9 @@
     <a class="item" data-tab="cpdathree">
         Archived Applications
     </a>
+    <a class="item" data-tab="cpdafour">
+        Review Applications
+    </a>
 </div>
 
 
@@ -211,6 +214,88 @@ Y8b  d8 88      88  .8D 88   88      88   88 88 `88. Y8b  d8 88   88   .88.    `
         </div>
     </div>
 </div>
+
+<!-- CPDA Review -->
+<div class="ui tab segment" data-tab="cpdafour">
+    <div class="content">
+        <div class="description">
+            <div class="ui items">
+                {% for app in to_review_apps %}
+                    <div class="item">
+                        <div class="content">
+                            <div class="header">Applicant : {{app.applicant}}</div>
+                            {% if app.status == 'requested' %}
+                                <div class="meta">Requested Advance : ₹ {{app.requested_advance}}</div>
+                            {% else%}
+                                <div class="meta">Requested Adjustment Amount : ₹ {{app.adjustment_amount}}</div>
+                            {% endif %}
+                            <div class="meta"> Purpose : {{app.purpose}}</div>
+                            <div>
+                                <button class="ui large primary button" onclick="$('.ui.modal.review-{{app.id}}').modal('show')">
+                                    Review
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ui modal review-{{app.id}}">
+                        <i class="close icon"></i>
+                        <div class="header">
+                            Review CPDA Application
+                        </div>
+                        <div class="content">
+                            <div class="description">
+                            <form class="ui large form" method="post" enctype="multipart/form-data" id="form2">
+                                {% csrf_token %}
+                                <div class="field">
+                                    <div class="disabled field">
+                                        <label>PF Number : {{ app.pf_number }}</label>
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <div class="disabled field">
+                                        <label>Purpose : {{ app.purpose }}</label>
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <div class="disabled field">
+                                        <label>Requested Advance : ₹ {{app.requested_advance}}</label>
+                                    </div>
+                                </div>
+                                {% if app.status == 'requested' %}
+                                    <label>Adjustment Amount : ₹ {{app.adjustment_amount}}</label><br>
+                                    <label>Total Bills Amount : ₹ {{app.total_bills_amount}}</label><br>
+                                {% endif %}
+
+                                <label>Remarks from Est. Admin. : {{app.tracking_info.remarks}}</label><br>
+
+                                {% render_field app.reviewform.app_id %} 
+                                <div class="field">
+                                    {% render_field app.reviewform.remarks %} 
+                                </div>
+                                <br>
+                                <button type="submit" name="review" class="ui large primary button">
+                                    Submit Review
+                                </button>
+                            </form>
+                            </div>
+                        </div>
+                        <!-- <div class="actions">
+                            <div class="ui black deny button">
+                                Cancel
+                            </div>
+                            <div class="ui positive right labeled icon button">
+                                Submit Bills
+                                <i class="checkmark icon"></i>
+                            </div>
+                        </div> -->
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
 
 {% endblock %}
 {% block javascript %}
