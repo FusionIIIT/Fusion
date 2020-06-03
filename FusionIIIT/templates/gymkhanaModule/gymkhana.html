@@ -31,6 +31,9 @@
             if (b == 'new_session_form'){
                 status = validateNewSessionForm(form);
             }
+            if (b == 'new_event_form'){
+                status = validateNewEventForm(form);
+            }
             if (b == 'club_membership_form'){
                 status = validateClubMembershipForm(form) ;
             }
@@ -90,6 +93,43 @@
             var ret = 0 ;
             //this array contains names of all the input fields included in newsession form
             if(empty && empty.length && !(empty.length == 1 && empty[0] == "session_poster")){
+                // code to be executed if some fields are empty except session poster field
+                console.log("empty") ;
+                if (endTime <= startTime)
+                    $("#errorContent").append("<p><b>Start Time should be strictly less than end time.</b></p>");
+                $(".formErrors").modal('show') ;
+                ret = 1 ;
+                // form.reset();-
+                // setTimeout(function(){ location.reload(); }, 5000);
+            }
+            else if (endTime <= startTime)
+            {
+                console.log("time problem") ;
+                $("#errorContent").html("<p><b>Start Time should be strictly less than end time.</b></p>");
+                $(".formErrors").modal('show') ;
+                ret = 1 ;
+                // setTimeout(function(){ location.reload(); }, 5000);
+            }
+            return ret ;
+        }
+
+        function validateNewEventForm(form){
+            var i, startTime, endTime ;
+            var empty = new Array() ;
+            for (i=0 ; i<form.length; i++){
+                if(form.elements[i].value == "" && form.elements[i].name != ""){
+                    empty.push(form.elements[i].name);
+                }
+                else if (form.elements[i].name=="start_time"){
+                    startTime = form.elements[i].value ;
+                }
+                else if (form.elements[i].name=="end_time"){
+                    endTime = form.elements[i].value ;
+                }
+            }
+            var ret = 0 ;
+            //this array contains names of all the input fields included in newevent form
+            if(empty && empty.length && !(empty.length == 1 && empty[0] == "event_poster")){
                 // code to be executed if some fields are empty except session poster field
                 console.log("empty") ;
                 if (endTime <= startTime)
@@ -200,9 +240,13 @@
                         New Session
                         <i class="right floated chevron right icon"></i>
                     </a>
-                {% endif %}
+                    
+                    <a class=" item" data-tab="thirteenth">
+                        New Event
+                        <i class="right floated chevron right icon"></i>
+                    </a>
 
-                {% if "co-ordinator" in Curr_desig or request.user.username == "2017222" %}
+                    
                     <a class="item" data-tab="sixth">
                         Member Requests
                         <i class="right floated chevron right icon"></i>
@@ -331,6 +375,13 @@
             </div>
             {% comment %}The Publications ends here!{% endcomment %}
 
+            {% comment %}The Publications starts here!{% endcomment %}
+            <div class="ui tab segment" data-tab="thirteenth">
+                {% block newevent %}
+                    {% include 'gymkhanaModule/newevent.html' %}
+                {% endblock %}
+            </div>
+            {% comment %}The Publications ends here!{% endcomment %}
 
             {% comment %}The Publications starts here!{% endcomment %}
             <div class="ui tab segment" data-tab="seventh">
@@ -347,6 +398,10 @@
                 {% endblock %}
             </div>
             {% comment %}The Publications ends here!{% endcomment %}
+
+
+            
+
 
             <div class="ui active  tab segment" data-tab="twelth">
                 {% block view_budget %}
@@ -472,6 +527,55 @@
             })
         }
         // $("#sessions_date").datepicker({
+        //     onSelect: function(dateText, inst) {
+        //         var date = $(this).val() ;
+        //         console.log(date) ;
+        //     }
+        // });
+    </script>
+    
+    
+    
+    <script>
+
+        function showEvents(){
+            var date = $("#events_date").val() ;
+            console.log("Gymkhana.html;date"+date);
+            $.ajax({
+                url: "/gymkhana/date_events/",
+                type: "post",
+                data: {'date': date},
+                success: function(response){
+                    // console.log("hello")
+                    console.log(response)
+                    response = JSON.parse(response);
+                    console.log(response)
+                    $("#dateDetails").html('<h2>Booked Events</h2>');
+                    if (jQuery.isEmptyObject(response) == false){
+                        for(var key in response){
+                            $("#dateDetails").append(
+                                '<table class="ui celled table segment"><thead><tr>\
+                                <th>'+response[key].fields.club+'</th>\
+                                <th>'+response[key].fields.event_name+'</th>\
+                                <th>'+response[key].fields.incharge+'</th>\
+                                <th>'+response[key].fields.start_time+'<br><center>to</center>'+response[key].fields.end_time+'</th>\
+                                <th>'+response[key].fields.venue+'</th>\
+                                </tr></thead><tbody>\
+                                <tr><td colspan="3"><b>'+response[key].fields.status+'</b></td></tr>\
+                                </tbody></table>') ;
+                        }
+                    }
+                    else
+                    {
+                        $("#dateDetails").append('<h5>No booked events for the selected date</h5>');
+                    }
+                }
+            })
+        }
+       
+       
+       
+        // $("#events_date").datepicker({
         //     onSelect: function(dateText, inst) {
         //         var date = $(this).val() ;
         //         console.log(date) ;
