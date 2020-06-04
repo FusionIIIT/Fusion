@@ -22,9 +22,9 @@
                     // change delete modal message
                     $('.delete_{{ menuitem }}.modal .content p')
                         .text("Are you sure you want to delete {{ estate.name }}?");
-                    // change delete modal delete button url
-                    $('.delete_{{ menuitem }}.modal a')
-                        .attr("href", "{% url 'delete_estate' estate.id %}");
+                    // change delete form action url
+                    $('.delete_{{ menuitem }}.modal form')
+                        .attr("action", "{% url 'delete_estate' estate.id %}");
                     // prefill form
                     $('.edit_{{ menuitem }}.modal #id_name')
                         .val("{{ estate.name }}");

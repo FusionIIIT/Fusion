@@ -29,12 +29,15 @@
 
     <div class="content">
         <p>Are you sure you want to delete {{ estate.name }}?</p>
+        <form id="delete_{{ menuitem }}_form" action="" method="POST">
+            {% csrf_token %}
+        </form>
     </div>
     <div class="actions">
 
         <div class="ui submit green deny large button">No</div>
 
-        {% comment %} {% url 'delete_estate' estate.id %} {% endcomment %}
-        <a href="" class="ui negative right labeled icon large button">Yes<i class="checkmark icon"></i></a>
+        <button type="submit" form="delete_{{ menuitem }}_form"
+            class="ui negative right labeled icon large button">Yes<i class="checkmark icon"></i></button>
     </div>
 </div>

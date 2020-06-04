@@ -110,7 +110,7 @@ def editEstate(request, estate_id):
     return redirect('estate')
 
 
-# @require_POST
+@require_POST
 def deleteEstate(request, estate_id):
 
     estate = Estate.objects.get(pk=estate_id)
