@@ -7,7 +7,7 @@ import os
 import random
 import subprocess
 from datetime import datetime, time, timedelta
-import requests
+
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.files.storage import FileSystemStorage
@@ -22,7 +22,7 @@ from applications.globals.models import ExtraInfo
 
 from .forms import QuizForm, MarksForm, AttendanceForm
 from .helpers import create_thumbnail, semester
-from .models import (Assignment, CourseDocuments, Forum,
+from .models import (Assignment, CourseDocuments, CourseVideo, Forum,
                      ForumReply, Question, QuestionBank, Quiz, QuizQuestion,
                      QuizResult, StudentAnswer, StudentAssignment, Topics,)
 
@@ -82,51 +82,7 @@ def course(request, course_code):
         #instructor of the course
         instructor = Curriculum_Instructor.objects.get(curriculum_id=course[0])
         #course material uploaded by the instructor
-        # videos = CourseVideo.objects.filter(course_id=course1)
-        channel_url = "https://www.googleapis.com/youtube/v3/channels"
-        playlist_url = "https://www.googleapis.com/youtube/v3/playlistItems"
-        videos_url = "https://www.googleapis.com/youtube/v3/videos"
-
-        videos_list = []
-        channel_params = {
-            'part': 'contentDetails',
-            # 'forUsername': 'TechGuyWeb',
-            'id': 'UCdGQeihs84hyCssI2KuAPmA',
-            'key': settings.YOUTUBE_DATA_API_KEY,
-        }
-        r = requests.get(channel_url, params=channel_params)
-        results = r.json()['items'][0]['contentDetails']['relatedPlaylists']['uploads']
-
-        playlist_params = {
-            'key': settings.YOUTUBE_DATA_API_KEY,
-            'part': 'snippet',
-            'playlistId': results,
-            'maxResults': 5,
-        }
-        p = requests.get(playlist_url, params=playlist_params)
-        results1 = p.json()['items']
-
-        for result in results1:
-            videos_list.append(result['snippet']['resourceId']['videoId'])
-
-        videos_params = {
-            'key': settings.YOUTUBE_DATA_API_KEY,
-            'part': 'snippet',
-            'id': ','.join(videos_list)
-        }
-
-        v = requests.get(videos_url, params=videos_params)
-        results2 = v.json()['items']
-
-        videos = []
-        for res in results2:
-            video_data = {
-                'id': res['id'],
-                'url': f'https://www.youtube.com/watch?v={res["id"]}',
-                'title': res['snippet']['title'],
-            }
-
-            videos.append(video_data)
+        videos = CourseVideo.objects.filter(course_id=course1)
         slides = CourseDocuments.objects.filter(course_id=course1)
         quiz = Quiz.objects.filter(course_id=course1)
         assignment = Assignment.objects.filter(course_id=course1)
@@ -219,51 +175,7 @@ def course(request, course_code):
 
         lec = 1
 
-        # videos = CourseVideo.objects.filter(course_id=course)
-        channel_url = "https://www.googleapis.com/youtube/v3/channels"
-        playlist_url = "https://www.googleapis.com/youtube/v3/playlistItems"
-        videos_url = "https://www.googleapis.com/youtube/v3/videos"
-
-        videos_list = []
-        channel_params = {
-            'part': 'contentDetails',
-            # 'forUsername': 'TechGuyWeb',
-            'id': 'UCdGQeihs84hyCssI2KuAPmA',
-            'key': settings.YOUTUBE_DATA_API_KEY,
-        }
-        r = requests.get(channel_url, params=channel_params)
-        results = r.json()['items'][0]['contentDetails']['relatedPlaylists']['uploads']
-
-        playlist_params = {
-            'key': settings.YOUTUBE_DATA_API_KEY,
-            'part': 'snippet',
-            'playlistId': results,
-            'maxResults': 5,
-        }
-        p = requests.get(playlist_url, params=playlist_params)
-        results1 = p.json()['items']
-
-        for result in results1:
-            videos_list.append(result['snippet']['resourceId']['videoId'])
-
-        videos_params = {
-            'key': settings.YOUTUBE_DATA_API_KEY,
-            'part': 'snippet',
-            'id': ','.join(videos_list)
-        }
-
-        v = requests.get(videos_url, params=videos_params)
-        results2 = v.json()['items']
-
-        videos = []
-        for res in results2:
-            video_data = {
-                'id': res['id'],
-                'url': f'https://www.youtube.com/watch?v={res["id"]}',
-                'title': res['snippet']['title'],
-            }
-
-            videos.append(video_data)
+        videos = CourseVideo.objects.filter(course_id=course)
         slides = CourseDocuments.objects.filter(course_id=course)
         quiz = Quiz.objects.filter(course_id=course)
         marks = []
@@ -433,45 +345,45 @@ def delete(request, course_code):
     return HttpResponse(json.dumps(data), content_type='application/json')
 
 # to upload videos related to the course
-# @login_required
-# def add_videos(request, course_code):
-#     extrainfo = ExtraInfo.objects.get(user=request.user)
-#     #only faculty can add the videos
-#     if extrainfo.user_type == "faculty":
-#         instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
-#         for ins in instructor:
-#             if ins.curriculum_id.course_code == course_code:
-#                 course = ins.curriculum_id.course_id
-#         try:
-#             description = request.POST.get('description')   #the media files required
-#             vid = request.FILES.get('img')
-#             name = request.POST.get('name')
-#             filename, file_extenstion = os.path.splitext(request.FILES.get('img').name)
-#         except:
-#             return HttpResponse("Please fill each and every field correctly!")
-#         #saving the media files
-#         filename = name
-#         full_path = settings.MEDIA_ROOT + "/online_cms/" + course_code + "/vid/"
-#         url = settings.MEDIA_URL+filename + file_extenstion
-#         if not os.path.isdir(full_path):
-#             cmd = "mkdir "+full_path
-#             subprocess.call(cmd, shell=True)
-#         fs = FileSystemStorage(full_path, url)
-#         fs.save(filename+file_extenstion, vid)
-#         uploaded_file_url = full_path + filename + file_extenstion
-#         #saving in the
-#         video = CourseVideo.objects.create(
-#             course_id=course,
-#             upload_time=datetime.now(),
-#             description=description,
-#             video_url=uploaded_file_url,
-#             video_name=name
-#         )
-#         create_thumbnail(course_code,course, video, name, file_extenstion, 'Big', 1, '700:500')
-#         create_thumbnail(course_code,course, video, name, file_extenstion, 'Small', 1, '170:127')
-#         return HttpResponse("Upload successful.")
-#     else:
-#         return HttpResponse("not found")
+@login_required
+def add_videos(request, course_code):
+    extrainfo = ExtraInfo.objects.get(user=request.user)
+    #only faculty can add the videos
+    if extrainfo.user_type == "faculty":
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
+        for ins in instructor:
+            if ins.curriculum_id.course_code == course_code:
+                course = ins.curriculum_id.course_id
+        try:
+            description = request.POST.get('description')   #the media files required
+            vid = request.FILES.get('img')
+            name = request.POST.get('name')
+            filename, file_extenstion = os.path.splitext(request.FILES.get('img').name)
+        except:
+            return HttpResponse("Please fill each and every field correctly!")
+        #saving the media files 
+        filename = name
+        full_path = settings.MEDIA_ROOT + "/online_cms/" + course_code + "/vid/"
+        url = settings.MEDIA_URL+filename + file_extenstion
+        if not os.path.isdir(full_path):
+            cmd = "mkdir "+full_path
+            subprocess.call(cmd, shell=True)
+        fs = FileSystemStorage(full_path, url)
+        fs.save(filename+file_extenstion, vid)
+        uploaded_file_url = full_path + filename + file_extenstion 
+        #saving in the 
+        video = CourseVideo.objects.create(
+            course_id=course,
+            upload_time=datetime.now(),
+            description=description,
+            video_url=uploaded_file_url,
+            video_name=name
+        )
+        create_thumbnail(course_code,course, video, name, file_extenstion, 'Big', 1, '700:500')
+        create_thumbnail(course_code,course, video, name, file_extenstion, 'Small', 1, '170:127')
+        return HttpResponse("Upload successful.")
+    else:
+        return HttpResponse("not found")
 
 
 @login_required
