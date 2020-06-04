@@ -7,7 +7,7 @@ import os
 import random
 import subprocess
 import datetime
-
+import requests
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.files.storage import FileSystemStorage
@@ -18,11 +18,9 @@ from django.utils import timezone
 from applications.academic_information.models import (Course, Curriculum_Instructor,Curriculum,
                                                       Student,Student_attendance)
 from applications.academic_procedures.models import Register
-from applications.globals.models import ExtraInfo
 from applications.globals.models import *
 
 from .forms import *
-# from .helpers import create_thumbnail, semester
 from .models import *
 from .helpers import create_thumbnail, semester
 
@@ -69,6 +67,48 @@ def course(request, course_code):
     '''
     user = request.user
     extrainfo = ExtraInfo.objects.get(user=user)
+    channel_url = "https://www.googleapis.com/youtube/v3/channels"
+    playlist_url = "https://www.googleapis.com/youtube/v3/playlistItems"
+    videos_url = "https://www.googleapis.com/youtube/v3/videos"
+
+    videos_list = []
+    channel_params = {
+        'part': 'contentDetails',
+        # 'forUsername': 'TechGuyWeb',
+        'id': 'UCdGQeihs84hyCssI2KuAPmA',
+        'key': settings.YOUTUBE_DATA_API_KEY,
+    }
+    r = requests.get(channel_url, params=channel_params)
+    results = r.json()['items'][0]['contentDetails']['relatedPlaylists']['uploads']
+
+    playlist_params = {
+        'key': settings.YOUTUBE_DATA_API_KEY,
+        'part': 'snippet',
+        'playlistId': results,
+        'maxResults': 5,
+    }
+    p = requests.get(playlist_url, params=playlist_params)
+    results1 = p.json()['items']
+
+    for result in results1:
+        print(results)
+        videos_list.append(result['snippet']['resourceId']['videoId'])
+
+    videos_params = {
+        'key': settings.YOUTUBE_DATA_API_KEY,
+        'part': 'snippet',
+        'id': ','.join(videos_list)
+    }
+
+    v = requests.get(videos_url, params=videos_params)
+    results2 = v.json()['items']
+    videos = []
+    for res in results2:
+        video_data = {
+            'id': res['id'],
+            'title': res['snippet']['title'],
+        }
+        videos.append(video_data)
     if extrainfo.user_type == 'student':   #if the user is student .. funtionality used by him/her
         student = Student.objects.get(id=extrainfo)
         roll = student.id.id[:4]
@@ -79,7 +119,6 @@ def course(request, course_code):
         #instructor of the course
         instructor = Curriculum_Instructor.objects.get(curriculum_id=curriculum)
         #course material uploaded by the instructor
-        videos = CourseVideo.objects.filter(course_id=course)
         slides = CourseDocuments.objects.filter(course_id=course)
         quiz = Quiz.objects.filter(course_id=course)
         assignment = Assignment.objects.filter(course_id=course)
@@ -168,8 +207,6 @@ def course(request, course_code):
         print(present_attendance)
 
         lec = 1
-
-        videos = CourseVideo.objects.filter(course_id=course)
         slides = CourseDocuments.objects.filter(course_id=course)
         quiz = Quiz.objects.filter(course_id=course)
         marks = []
@@ -873,13 +910,7 @@ def edit_quiz_details(request, course_code, quiz_code):
             quiz.save()
         elif x == 'edit3':
             number = request.POST.get('number_of_questions')
-            score = int(quiz.total_score / quiz.number_of_question)
             quiz.number_of_question = number
-            quiz.total_score = int(number) * score
-            quiz.save()
-        elif x == 'edit4':
-            score = request.POST.get('per_question_score')
-            quiz.total_score = int(score) * quiz.number_of_question
             quiz.save()
         return HttpResponse("Done")
 
@@ -1002,6 +1033,8 @@ def add_questions_to_quiz(request, course_id, quiz_id):
                 quiz_id=quiz,
                 question=question
             )
+            quiz.total_score +=  question.marks
+        quiz.save()
         return redirect('/ocms/' + course_code + '/edit_quiz/' + quiz_id)
 
 
