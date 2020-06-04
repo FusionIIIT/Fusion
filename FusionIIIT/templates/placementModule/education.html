@@ -16,6 +16,8 @@
 
         <div class="ui vertical segment">
             {% comment %}Form Tag starts here!{% endcomment %}
+            {% if request.user == user %}
+
             <form method="post" class="ui form" role="form">
                 {% comment %}The add a new education Accordian starts here!{% endcomment %}
                 <div class="ui active accordion field">
@@ -109,6 +111,7 @@
                 </div>
                 {% comment %}The add a new Education Accordian ends here!{% endcomment %}
             </form>
+            {% endif %}
             {% comment %}Form Tag ends here!{% endcomment %}
 
             {% if educations %}
@@ -171,6 +174,8 @@
     <div class="ui tab" data-tab="courses">
             <div class="ui vertical segment">
             {% comment %}Form Tag starts here!{% endcomment %}
+
+            {% if request.user == user %}
             <form method="post" class="ui form" role="form">
                 {% comment %}The add a new Course Accordian starts here!{% endcomment %}
                 <div class="ui active accordion field">
@@ -257,6 +262,7 @@
                 </div>
                 {% comment %}The add a new Course Accordian ends here!{% endcomment %}
             </form>
+            {% endif %}
             {% comment %}Form Tag ends here!{% endcomment %}
 
             {% if courses %}
