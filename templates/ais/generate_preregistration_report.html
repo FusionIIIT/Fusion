@@ -1,0 +1,24 @@
+<table style="border:2px;">
+  <thead>
+    <tr  style='backgroud:red;'>
+      <th>Sl. No.</th>
+      <th>Roll No.</th>
+      <th>Name</th>
+      <th>Discipline </th>
+      <th>Credits</th>
+      <th>Course Code</th>
+      <th>Course Name</th>
+      <th>Instructor Name</th>
+    </tr>
+  </thead>
+  <tbody>
+      {% for i in dict %}
+      <tr>
+        {% for z in i %}
+        <td>{{z}}</td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+
+  </tbody>
+</table>

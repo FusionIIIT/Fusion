@@ -1,0 +1,39 @@
+{% block tab1 %}
+    <div class="ui pointing secondary menu">
+
+
+        <a class="active item" data-tab="tab1content2">
+            View Previous Salary
+        </a>
+
+        <a class="item" data-tab="tab1content3">
+            View Submitted Current Salary
+        </a>
+
+         
+    </div>
+
+
+    <div class="ui active tab" data-tab="tab1content2">
+        <div class="ui vertical segment">
+            {% block tab1content2 %}
+                {% include 'financeAndAccountsModule/payroll_content2.html' %}
+            {% endblock %}
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="tab1content3">
+        <div class="ui vertical segment">
+            {% block tab1content3 %}
+                {% include 'financeAndAccountsModule/payroll_content3.html' %}
+            {% endblock %}
+        </div>    
+    </div>
+
+    
+
+{% endblock tab1 %}
+
+<script>$('.top.menu .item').tab();</script>
+
+

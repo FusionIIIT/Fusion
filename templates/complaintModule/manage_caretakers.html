@@ -1,0 +1,71 @@
+{% load static %}
+{% block managecaretakers %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="manage_caretakers">
+            VIEW CARETAKERS
+        </a>
+        <!-- <a class="item" data-tab="caretaker_profile">
+            CARETAKERS
+        </a> -->
+    </div>
+
+   
+
+
+
+
+
+    <div class="ui active tab" data-tab="manage_caretakers">
+        <div class="ui vertical segment">
+                <div class="ui header">
+                    Click on the particular Caretaker You Want to inspect
+                <br><br>
+                </div>
+                    These Caretakers are present under Supervisor :   <b>{{ request.user.first_name}}
+                                                             {{ request.user.last_name}}</b>
+                <br><br><br>
+                
+            <div class="ui items">
+            {% for a in all_caretaker %}
+                <div class="item">
+                <a class="ui tiny image">
+                <img src="{% static 'complaint_system/img/stevie.jpg'%}">
+                </a>
+                <div class="content">
+                <a class="header" href="./caretaker_id_know_more/{{a.id}}">{{ a.staff_id.user.first_name }} {{a.staff_id.user.last_name}}</a>
+                <div class="meta">
+                    <span><b>{{a.area}}</b></span>
+                    <span><b>Pending Complaints: {{num}}</b></span>
+                </div>
+                <div class="description">
+                <div>Sex: &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp{{a.staff_id.sex}}</div>
+                <div>Date Of Birth: &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp{{a.staff_id.date_of_birth}}</div>
+                <div>Address:&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp {{a.staff_id.address}}</div>
+                <div>Phone Number: &nbsp&nbsp{{a.staff_id.phone_no}}</div>
+                
+                </div>
+                </div>
+                </div><br><br>
+            {%endfor%}
+      
+
+
+
+
+            <div class="ui divider"></div>
+        </div>
+    </div>
+</div>
+
+
+
+  
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+{% endblock %}

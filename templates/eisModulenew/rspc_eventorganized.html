@@ -1,0 +1,80 @@
+{% load static %}
+
+{% block eventorganised %}
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+
+        <a class="item" data-tab="Workshop">
+            Event Organised
+        </a>
+
+
+
+
+    </div>
+
+
+
+
+
+
+    {% comment %}The Workshop segment starts here!{% endcomment %}
+
+    <div class="ui active tab segment" data-tab="Workshop">
+
+        <h4 class="ui dividing header">Report:</h4>
+ <div class="ui pointing pagination menu">
+
+      {% for event in events %}
+                {% if forloop.counter0|divisibleby:50 %}
+     <span align="right>"><a class="{% if forloop.counter0 == 0 %}active {% endif %}item" data-tab="event-{{ forloop.counter0 }}">
+                        {% widthratio forloop.counter|add:50 50 1 %}
+     </a></span>
+                {% endif %}
+                {% endfor %}
+            </div>
+
+      {% for event in events %}
+
+            {% if forloop.counter0|divisibleby:50 %}
+        <div class="ui {% if forloop.counter0 == 0 %}active {% endif %} tab segment" data-tab="event-{{ forloop.counter0 }}">
+       <table class="ui fixed sortable celled table" id="event">
+            <thead>
+            <tr>
+                <th class="sorted ascending" style="width:7%">Sr.</th>
+                <th class="" style="width: 15%">Role</th>
+                <th class="" style="width:23%"> Name </th>
+                <th class="" style="width:25%">Event Details</th>
+                 <th style="width:20%">From-TO</th>
+
+
+                    </tr>
+            </thead>
+
+
+            <tbody>
+                        {% endif %}
+
+            <tr id="r9">
+            <td id="event{{ forloop.counter }}Z"><div style="display: none;">{{ event.id }}</div>{{ forloop.counter }}.</td>
+                <td id="event{{ forloop.counter }}A">{{ event.role }}</td>
+                <td id="event{{ forloop.counter }}B">{{ event.name }}</td>
+                <td id="event{{ forloop.counter }}C"><b>Sponsoring Agency: </b>{{ event.sponsoring_agency }}<br><b>Venue: </b>{{ event.venue }}
+                <br><b>Type: </b>{{ event.type }}</td>
+                <td id="event{{ forloop.counter }}D">{{ event.start_date }} - {{ event.end_date }}</td>
+            </a> </td>
+            </tr>
+            {% if forloop.counter0|add:1|divisibleby:50 %}
+            </tbody>
+        </table>
+
+    </div>
+        {% endif %}
+            {% endfor %}
+     {% if not events.all.count|divisibleby:50 %}
+    {% comment %}The Workshop segment ends here!{% endcomment %}
+</tbody>
+        </table>
+            </div> {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,100 @@
+{% load static %}
+{% block changebranch %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="complainthistory">
+            Branch Change Approval
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="complainthistory">
+    <div class="ui vertical segment">
+
+            {% if context.tag %}
+                <table class="ui very basic collapsing celled sortable table"
+                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                <thead>
+
+                <tr>
+                    <th>
+                        Applied By
+                    </th>
+
+                    <th>
+                        Branch To Change
+                    </th>
+
+                    <th>
+                        Current Branch
+                    </th>
+                    <th>
+                        Available seats
+                    </th>
+                    <th>
+                        CPI
+                    </th>
+                    <th>
+                        select
+                    </th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <form method='POST' id='branch_change_form' action='/academic-procedures/branch-validate/'>
+                {% csrf_token %}
+                {% for a,b,c,d,e in lists %}
+                    <tr>
+                        <td>{{ a }}</td>
+                        <td>{{ b }}</td>
+                        <td>{{ c }}</td>
+                        <td>{{ d }}</td>
+                        <td>{{ e }}</td>
+                        <td>
+                            <input name="choice" type="checkbox" value="{{ a }}" required="required">
+                            <input type="text" name="branch" value="{{ b }}" hidden="True">
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <br>
+            <div class="ui divider"></div>
+
+            <div class="extra content">
+                <div class="" style="text-align: center;">
+                    <button class="ui primary button">Approve</button>
+                </div>
+            </div>
+        </form>
+            {% else %}
+                Total Request for branch Change: 0
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+$(function() {
+    $("#branch_change_form").submit(function(event) {
+
+        event.preventDefault();
+        var friendForm = $(this);
+
+        var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
+        posting.done(function(data) {
+            alert('Change Successful');
+            window.location = "/academic-procedures/acad_person/";
+        });
+        posting.fail(function(data) {
+            alert('Failed to Change');
+            window.location = "/academic-procedures/acad_person/";
+        });
+    });
+});
+</script>

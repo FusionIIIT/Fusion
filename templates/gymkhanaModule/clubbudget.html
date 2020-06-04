@@ -1,0 +1,82 @@
+{% block clubbudget %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="clubbudgetform">
+            Club Budget Form
+        </a>
+    </div>
+
+    <script type="text/javascript">
+        function ValidateExtension1() {
+            var allowedFiles = [".doc", ".docx", ".pdf"];
+            var fileUpload = document.getElementById("fileUpload1");
+            var lblError = document.getElementById("lblError1");
+            var regex = new RegExp("([a-zA-Z0-9\s_\\.\-:])+(" + allowedFiles.join('|') + ")$");
+            if (!regex.test(fileUpload.value.toLowerCase())) {
+                lblError.innerHTML = "Please upload files having extensions: <b>" + allowedFiles.join(', ') + "</b> only.";
+                fileUpload1.value = "";
+                return false;
+            }
+            lblError.innerHTML = "";
+            return true;
+        }
+    </script>
+
+
+    <div class="ui active tab" data-tab="clubbudgetform">
+        <div class="ui vertical segment">
+            <form method="Post" id="club_budget_form" enctype="multipart/form-data">
+            {%csrf_token %}
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                    <div class="field">
+                        <label>Club</label>
+                        <select class="ui search fluid dropdown" name="club" required>
+                            <option value="">Select</option>
+                            {% for i in Club_name %}
+                                {% if request.user.username in i.co_ordinator|stringformat:"s" %}
+                                    <option value="{{ i.club_name }}">{{ i.club_name }} </option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label>Budget For</label>
+                        <input placeholder="Budget For" class="ui large input" name="budget_for" required></input>
+                    </div>
+
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Budget Amt.</label>
+                            <input class="ui input" type="number" name="amount" required></input>
+                        </div>
+                        <div class="field">
+                            <label>Attachments (if any)</label>
+                            <input class="ui input" id="fileUpload1" onchange="return ValidateExtension1();" type="file" name="budget_file" required></input>
+                            <span id="lblError1" style="color: red;"></span>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Details & Description</label>
+                        <textarea rows="2" name="d_d" required></textarea>
+                    </div>
+
+                    <div class="field">
+                        <button class="ui primary button right floated" type="submit" onclick="form_submit('club_budget','club_budget_form',event)">
+                            Submit
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <br>
+            <br>
+        </div>
+        <br>
+        <div class="extra content"></div>
+    </div>
+
+{% endblock %}

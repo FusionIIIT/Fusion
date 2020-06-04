@@ -1,0 +1,39 @@
+<div>
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="tab3content1">
+            P&amp;D Dashboard
+        </a>
+    </div>
+    <div class="ui active tab" data-tab="tab3content1">
+        <div class="ui vertical segment">
+        {% block projects %}
+        <div class="ui one cards" style="padding: 2px">
+
+            {% for req, history, date in req_history %}
+            <div class="ui card">
+                <div class="content">
+                    <div class="header">
+                        {{ req.title }}
+                    </div>
+                    <div class="meta">
+                        Last updated: {{ date }}
+                    </div>
+                    
+                    <div class="description">
+                        <div class="ui breadcrumb">
+                            <div class="section">Complainant</div>
+                            {% for h in history %}
+                                <i class="right arrow icon divider"></i>
+                                <div class="{% if forloop.last %}active {% endif %}section">{{ h }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+        </div>
+        {% endblock %}
+        </div>
+    </div>
+</div>

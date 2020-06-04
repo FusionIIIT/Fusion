@@ -1,0 +1,71 @@
+{% load static %}
+<table class="ui very basic collapsing celled sortable table"
+       style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+    <thead>
+    <tr>
+        <th class="three wide column">
+            Subject
+        </th>
+
+        <th class="three wide column">
+            Date received
+        </th>
+
+        <th class="seven wide column">
+            Description
+        </th>
+
+        <th class="one wide column">
+            Remark
+        </th>
+
+        <th class="one wide column">
+            Status
+        </th>
+
+    </tr>
+    </thead>
+
+    <tbody>
+    {% for resp, file in archive_view.items %}
+    <tr id = "row{{ forloop.counter0 }}">
+
+        <td>
+            {{ file.subject }}
+            <br>
+            <a href="#">View</a>
+        </td>
+
+        <td>
+            {{ file.upload_date }}
+        </td>
+
+        <td>
+            {{ file.description }}
+        </td>
+
+        <td>
+            <div class="ui fitted textbox">
+                <span>{{ resp.remark }}</span>
+            </div>
+        </td>
+        <td>
+            <div class="ui fitted textbox">
+                <span>{{ resp.status }}</span>
+            </div>
+        </td> 
+            
+        </td>
+    </tr>
+
+    {% endfor %}
+    </tbody>
+</table>
+
+
+
+

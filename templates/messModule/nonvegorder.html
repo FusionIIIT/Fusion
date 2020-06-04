@@ -1,0 +1,132 @@
+{% load static %}
+{% block nonvegorder %}
+    <div class="ui tabular menu">
+        <a class="ui active item" data-tab="nonvegorderstab">
+            Non-Veg Orders
+        </a>
+        <!--
+        <a class="ui item" data-tab="leavedatatab">
+            Leave Data
+        </a>
+        -->
+    </div>
+
+<div class="ui active item" data-tab="nonvegorderstab">
+    <div class="ui vertical segment">
+        <p style="text-align: center";><strong> Non-Veg orders for:</strong> {{ today }} </p>
+    <br>
+        <table class="ui very basic collapsing celled large table"
+                                                          style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+            <thead>
+
+            <th>
+                Order Interval
+            </th>
+            <th>
+                Dish
+            </th>
+            <th>
+                Total
+            </th>
+            </thead>
+
+            <tbody>
+            {% for item in nonveg_orders %}
+            <tr>
+
+                <td>
+                    {{ item.order_interval }}
+                </td>
+                <td>
+                    {{ item.dish__dish }}
+                </td>
+                <td>
+                    {{ item.total }}
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+
+        </table>
+    <br>
+    <hr>
+    <p style="text-align: center";><strong> Non-Veg orders for:</strong> {{ tomorrow }} </p>
+    <br>
+        <table class="ui very basic collapsing celled large table"
+                                                          style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+            <thead>
+
+            <th>
+                Order Interval
+            </th>
+            <th>
+                Dish
+            </th>
+            <th>
+                Total
+            </th>
+            </thead>
+
+            <tbody>
+            {% for item in nonveg_orders_t %}
+            <tr>
+
+                <td>
+                    {{ item.order_interval }}
+                </td>
+                <td>
+                    {{ item.dish__dish }}
+                </td>
+                <td>
+                    {{ item.total }}
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+
+        </table>
+    </div>
+</div>
+
+    <!--
+<div class="ui tab" data-tab="leavedatatab">
+    <div class="ui form">
+        <div class="two fields">
+            <div class="field">
+                <input type="date" id="leavestatdate">
+            </div>
+            <div class="field">
+                <button class="ui primary button right floated" onclick="getLeave()">
+                Get Leave Data
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+-->
+
+    <!--
+
+<div class="ui small modal" id="leavedata" style="padding: 2.5%;">
+    <div class="ui vertical segment">
+        <p id="leave_header" style="text-align: center";><strong></strong></p>
+        <br>
+    </div>
+</div>
+-->
+
+
+{% endblock %}
+{% block javascipt %}
+    <script>
+
+    </script>
+{% endblock %}

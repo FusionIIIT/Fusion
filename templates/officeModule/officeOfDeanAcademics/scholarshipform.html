@@ -1,0 +1,58 @@
+{% block hostelRoomAllotment%}
+<h3>Scholarship form</h3>
+<div class="ui pointing secondary menu">
+                                <a class=" active item" data-tab="new_allotment">
+                                New upload
+                               </a>
+                                <a class="item" data-tab="Allotment">
+                                 Submitted
+                                </a>
+</div>
+<div class="ui tab active segment" data-tab="new_allotment">
+	<form class="ui  form" action="scholarshipform/"  enctype="multipart/form-data" method="post">
+    {% csrf_token %}
+	<div class="fields">
+	<div class="eight wide field">
+	<label>Select Form type</label>
+	<div class="ui selection dropdown">
+  	<input type="hidden" name="hall_no">
+  	<i class="dropdown icon"></i>
+  	<div class="default text">Select Form type</div>
+  	<div class="menu">
+      <div class="item" data-value="1">MCM</div>
+      <div class="item" data-value="2">Notional Prize</div>
+      <div class="item" data-value="3">Director's Award</div>
+  </div>
+</div>
+</div>
+
+	<div class="eight wide field">
+    <label>Allotment file(.xls)</label>
+    <input type="file" name="hostel_file" placeholder="Allotment File" >
+</div>
+</div>
+<button class="ui button" type="submit">Submit</button>
+	</form>
+</div>
+<div class="ui tab segment" data-tab="Allotment">
+	<table class="ui very basic celled table">
+		<thead>
+		<tr>
+			<th class= "eight wide">Select Form type</th>
+			<th class= "eight wide">File</th>
+			
+		</tr>
+	</thead>
+	<tr>
+    {% for items in hall_allotment %}
+		<td >{{ items.hall_no }}</td>
+		<td><a class="ui inverted circular icon button" style="margin: auto;"  href="/media/{{ items.allotment_file }}">
+                            <i class="large attach black icon"></i>
+                        </a></td>
+	</tr>
+  {% endfor %}
+	</table>
+
+</div> 
+
+{%endblock hostelRoomAllotment%}

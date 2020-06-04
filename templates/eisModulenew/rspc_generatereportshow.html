@@ -1,0 +1,947 @@
+
+       <style>
+
+			            table {
+			    border-collapse: collapse;
+			}
+
+			table, td, th {
+			    border: 1px solid black;
+			}
+     @page {
+        size: a4 portrait;
+        @frame header_frame {
+            -pdf-frame-content: header_content;
+            left: 20pt; width: 512pt; top: 10pt; height: 20pt;
+        }
+        @frame content_frame {
+            left: 20pt; width: 550pt; top: 30pt; height: 780pt;
+        }
+        @frame footer_frame {
+            -pdf-frame-content: footer_content;
+            left: 50pt; width: 512pt; top: 820pt; height: 20pt;
+        }
+    }
+       </style>
+
+
+
+
+
+
+       <div class="ui  grid" style="font-family:Helvetica; font-size:12px;">
+
+					  <div class="row">
+					    <div class="column"><center> <b> INDIAN INSTITUTE OF INFORMATION TECHNOLOGY DESIGN AND MANUFACTURING, JABALPUR</b></center></div>
+					  </div>
+
+					  <div class="row">
+					      <div class="column"><center> <b>Employee Information System(EIS) </b></center></div>
+					  </div>
+
+					  	  <div class="row">
+					  	    <div class="column"> <div class="ui fitted divider"></div></div>
+		                  </div>
+
+                   <div class="row">
+
+                        <div class="column"><center><b> Research Report as On <span style="color:red;">{% now "jS F Y" %}</span></b></center></div>
+                   </div>
+
+
+					<div class="row">
+					  	<div class="column"> <div class="ui fitted divider"></div></div>
+		              </div>
+
+		             <div class="row">
+		                <div class="column"><center><b>INSTITUTE REPORT</b></center></div>
+		             </div>
+
+
+
+					<div class="row">
+					  	<div class="column"> <div class="ui fitted divider"></div></div>
+		              </div>
+
+					{% if journal_req == "1" %}
+		             <div class="row">
+		                <div class="column" style="font-size:20px "><b>Journal Publication - </b></div>
+		             </div>
+
+
+
+
+		              <table class="ui fixed sortable celled table" >
+				            <thead>
+				            <tr style="font-size:16px; padding-top:5px;">
+
+				                <th class="sorted ascending" style="width: 7%; ">Sr.</th>
+				                <th class="" style="width: 20%; " >Authors</th>
+				                <th class="" style="width: 20%;">Title of Paper</th>
+				                <th class="" style="width: 45%;">Journal Details</th>
+
+				                <th class="" style="width: 8%;">Year</th>
+				                <!-- <th class="" style="width: 8%;">Action</th>
+ -->				            </tr>
+				            </thead>
+
+				          <tbody>
+					            {% for j in journal %}
+					            <tr>
+									<td ><center>{{ forloop.counter }}.</center></td>
+					                <td id="pub{{ forloop.counter }}A" style="padding:10px">{{ j.authors }}</td>
+					                <td id="pub{{ forloop.counter }}B" style="padding:10px">{{ j.title_paper }}</td>
+					                <td id="pub{{ forloop.counter }}C" style="padding:10px"><b>Name of the Journal:</b> {{ j.name_journal }}<br>
+					                    <b>Volume No./Issue No.:</b> {{ j.volume_no }} <br>
+					                                    <b>Page No.:</b> {{ j.page_no }}    <br>
+					                                    <b>Paper Reference No. :</b> {{ j.reference_number }} <br>
+					                                    <b>Date Of Submission :</b> {{ j.date_submission }}  <br>
+					                                    <b>Date of Publication :</b> {{ j.date_publication }}  <br>
+					                                    <b>Status             :</b> {{ j.status }}  <br>
+					                                    <b>SCI/SCIE        : </b>{{ j.is_sci }} <br>
+					                                    <b>Date of Issuance :</b>  {{ j.doi }}
+
+					                </td>
+
+									<td id="pub{{ forloop.counter }}D" ><center>{{ j.a_month }}/{{ j.year }}</center></td>
+
+					            </tr>
+
+					            {% endfor %}
+
+            			</tbody>
+                    </table>
+
+                    <br><br>
+				{% endif %}
+
+		   {% if conference_req == "1" %}
+               <div class="row">
+		                <div class="column" style="font-size:20px "><b>Conference Publication - </b></div>
+		         </div>
+
+
+		         <table class="ui fixed sortable celled table">
+		            <thead>
+		            <tr style="font-size:16px; padding-top:5px;">
+
+		                 <th class="sorted ascending" style="width: 7%;">Sr.</th>
+		                <th class="" style="width: 20%;" >Authors</th>
+		                <th class="" style="width: 20%;">Title of Paper</th>
+		                <th class=""  style="width: 45%;">Conference Details</th>
+
+		                <th class="" style="width: 8%;">Year</th>
+		               <!--  <th class="" style="width: 8%;">Action</th> -->
+		            </tr>
+		            </thead>
+
+		            <tbody>
+			            {% for c in conference %}
+			            <tr>
+							<td ><center>{{ forloop.counter }}.</center></td>
+			                <td id="con{{ forloop.counter }}A"  style="padding:10px">{{ c.authors }}</td>
+			                <td id="con{{ forloop.counter }}B"  style="padding:10px">{{ c.title_paper }}</td>
+			                <td id="con{{ forloop.counter }}C"  style="padding:10px">
+			                    <b>Name of the Conference:</b> {{ c.name_journal }}  <br>
+			                    <b>Venue/Host Institute:</b> {{ c.venue }}  <br>
+			                    <b>Page No.:  </b>   {{ c.page_no }}         <br>
+			                    <b>Date of Submission :</b>  {{ c.date_submission }}<br>
+			                    <b>Date Of Acceptance :</b>  {{ c.date_acceptance }} <br>
+			                    <b>Date of Publication : </b> {{ c.date_publication }} <br>
+			                    <b>Status              :</b>  {{ c.status }} <br>
+			                    <b>Conference Date(s)   : </b> {{ c.start_date }} to {{ c.end_date }}<br>
+			                    <b>ISBN No.     :   </b> {{ c.issn_no }}
+
+			                </td>
+
+							<td id="con{{ forloop.counter }}D" ><center>{{ c.a_month }}/{{ c.year }}</center></td>
+
+			            </tr>
+			            {% endfor %}
+            		</tbody>
+                  </table>
+
+                  <br><br>
+			{% endif %}
+
+		   {% if books_req == "1" %}
+                <div class="row">
+		                <div class="column" style="font-size:20px "><b>Books/Monographs/Book Chapters/Handlers- </b></div>
+		         </div>
+
+
+		        <table class="ui fixed sortable celled table" width=100%>
+		            <thead>
+		            <tr style="font-size:16px; padding-top:5px;">
+
+
+		                  <th class="sorted ascending" style="width: 7%;">Sr.</th>
+		                <th class="" style="width: 20%;" >Published</th>
+		                <th class="" style="width: 28%;">Title of Paper</th>
+		                <th class=""  style="width: 20%;">Publisher</th>
+
+
+		                <th class="" style="width: 8%;">Year</th>
+		                <th style="width:17%">Co-authors</th>
+
+		            </tr>
+		            </thead>
+
+		            <tbody>
+		            {% for b in books %}
+		            <tr>
+						<td ><center>{{ forloop.counter }}.</center></td>
+		                <td id="books{{ forloop.counter }}A" style="padding:10px">{% if b.p_type %}
+		                                                                            {{ b.p_type }}
+		                                                                           {% else %}
+		                                                                              -
+                                                                                     {% endif %}
+
+
+		                 </td>
+		                <td id="books{{ forloop.counter }}B" style="padding:10px">{% if b.title %}
+		                                                                           {{ b.title }}
+		                                                                            {% else %}
+		                                                                              -
+                                                                                     {% endif %}
+
+
+		                                                                          </td>
+
+		                <td id="books{{ forloop.counter }}C" style="padding:10px">{%if b.publisher %}
+		                                                                           {{ b.publisher }}
+		                                                                            {% else %}
+		                                                                              -
+                                                                                     {% endif %}
+
+
+		                                                                         </td>
+
+						<td id="books{{ forloop.counter }}D"><center>{{ b.a_month }}/{{ b.pyear }}</center></td>
+
+		                <td id="books{{ forloop.counter }}E" style="padding:10px">{% if b.co_authors %}
+		                                                                            {{ b.co_authors }}
+
+                                                                                    {% else %}
+                                                                                        -
+                                                                                     {% endif %}
+		                </td>
+
+		            </tr>
+
+		            {% endfor %}
+		            </tbody>
+		         </table>
+
+
+              <br><br>
+{% endif %}
+		   {% if projects_req == "1" %}
+            <div class="row">
+		                <div class="column" style="font-size:20px"><b>Research Projects -  </b></div>
+		     </div>
+
+                   <table class="ui fixed sortable celled table">
+            <thead>
+            <tr style="font-size:16px; padding-top:5px;">
+
+
+                 <th class="sorted ascending" style="width: 7%;">Sr.</th>
+                <th class="" style="width: 15%;" >PI/CO-PI</th>
+                <th class="" style="width: 20%;">Title of Paper</th>
+                <th class="" style="width: 28%;">Funding Agency</th>
+
+                <th style="width:38%">Other Details</th>
+               <!--
+                   <th class="" style="width: 8%;">Action</th -->
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for project in projects %}
+            <tr>
+				<td ><center>{{ forloop.counter }}.</center></td>
+                <td id="research{{ forloop.counter }}A" style="padding:10px"> <b>PI: </b>{{ project.pi }} <br/> <b>Co-PI: </b>{{ project.co_pi }}</td>
+                <td id="research{{ forloop.counter }}B" style="padding:10px;">  {{ project.title }}</td>
+
+                <td id="research{{ forloop.counter }}C" style="padding:10px">{% if project.funding_agency  %}
+                                                                                   {{ project.funding_agency  }}
+                                                                                      {% else %}
+                                                                                        -
+                                                                                     {% endif %}
+
+                </td>
+                <td id="research{{ forloop.counter }}D" style="padding:10px">                     <b>Submission Date:</b> {{ project.date_submission }}  <br>
+                   <b>Start Date:</b> {{ project.start_date }}  <br>
+                  <b>Expected Finish Date:  </b>   {{ project.finish_date }}         <br>
+                  <b>Status :</b>  {{ project.status }}
+
+                </td>
+
+            </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+
+           <br> <br>
+   {% endif %}
+		   {% if consultancy_req == "1" %}
+              <div class="row" style="font-size:20px">
+		                <div class="column"><b>Consultancy Projects -  </b></div>
+		     </div>
+
+				   <table class="ui fixed sortable celled table" width=100%>
+			            <thead>
+			            <tr style="font-size:16px; padding-top:5px;">
+
+
+			                  <th class="sorted ascending" style="width: 7%;">Sr.</th>
+			                <th class="" style="width: 25%;" >Consultant(s)</th>
+			                <th class="" style="width: 25%;">Title </th>
+			                <th class="" style="width: 20%;">Client</th>
+
+			                <th style="width:16%">Financial Outlay</th>
+			                 <th style="width:22%">Period </th>
+
+			                <!-- <th class="" style="width: 12%;">Action</th> -->
+			            </tr>
+			            </thead>
+
+			            <tbody>
+			            {% for consult in consultancy %}
+			            <tr id="r1">
+							<td><center>{{ forloop.counter }}.</center></td>
+			                 <td id="consultancy{{ forloop.counter }}A" style="padding:10px">{% if consult.consultants %}
+			                                                                                  {{ consult.consultants }}
+			                                                                                    {% else %}
+                                                                                                  -
+                                                                                               {% endif %}
+			                 </td>
+			                 <td id="consultancy{{ forloop.counter }}B" style="padding:10px">{% if consult.title %}
+			                                                                                 {{ consult.title }}
+			                                                                                   {% else %}
+                                                                                                  -
+                                                                                               {% endif %}
+
+			                 </td>
+			                 <td id="consultancy{{ forloop.counter }}C" style="padding:10px">{% if consult.client  %}
+			                                                                                  {{ consult.client }}
+			                                                                                    {% else %}
+                                                                                                  -
+                                                                                               {% endif %}
+
+			                 </td>
+			                 <td id="consultancy{{ forloop.counter }}D" style="padding:10px"> {% if consult.financial_outlay %}
+			                                                                                   {{ consult.financial_outlay }}
+			                                                                                    {% else %}
+                                                                                                  -
+                                                                                               {% endif %}
+
+			                 </td>
+							<td id="consultancy{{ forloop.counter }}E" ><center>From: {{ consult.start_date }}<br/>To: {{ consult.end_date }}</center></td>
+
+			            </tr>
+			            {% endfor %}
+
+			            </tbody>
+                  </table>
+
+               <br><br>
+              {% endif %}
+		   {% if phds_req == "1" %}
+              <div class="row" style="font-size:20px">
+		                <div class="column"><b>Phd Thesis -  </b></div>
+		     </div>
+
+		      <table class="ui fixed sortable celled table" width=100%>
+		            <thead>
+		            <tr style="font-size:16px; padding-top:5px;">
+
+
+		                 <th class="sorted ascending" style="width: 7%;">Sr.</th>
+		                <th class="" style="width: 20%;" >Student</th>
+		                <th class="" style="width: 40%;">Title </th>
+		                <th class="" style="width: 10%;">Year</th>
+
+		                <th style="width:23%">Supervisors</th>
+
+
+
+		            </tr>
+		            </thead>
+
+		            <tbody>
+		            {% for phd in phds %}
+		            <tr id="r2">
+						<td style=""><center>{{ forloop.counter }}.</center></td>
+		                <td id="phd{{ forloop.counter }}A" style="padding:10px;"> <b>Name: </b>{{ phd.s_name }}<br/><b>Roll No.: </b>{{ phd.rollno }}</td>
+		                <td id="phd{{ forloop.counter }}B" style="padding:10px;">{{ phd.title }}</td>
+						<td id="phd{{ forloop.counter }}C" style="padding:10px;"><center> {{ phd.a_month }}/{{ phd.s_year }}</center></td>
+		                <td id="phd{{ forloop.counter }}D" style="padding:10px;"> {{ phd.supervisors }}</td>
+
+		            </tr>
+
+		            {% endfor %}
+
+		            </tbody>
+
+	           </table>
+
+               <br> <br>
+		   {% endif %}
+{% if mtechs_req == "1" %}
+
+	            <div class="row" style="font-size:20px">
+		                <div class="column"><b>M.Tech / M.Des Thesis -  </b></div>
+		       </div>
+
+                       <table class="ui fixed sortable celled table" >
+				            <thead>
+				            <tr style="font-size:16px; padding-top:5px;">
+				                 <th class="sorted ascending" style="width: 7%;">Sr.</th>
+				                <th class="" style="width: 20%;" >Student</th>
+				                <th class="" style="width: 40%;">Title </th>
+				                <th class="" style="width: 10%;">Year</th>
+
+				                <th style="width:23%">Supervisor</th>
+
+
+
+				            </tr>
+				            </thead>
+
+				            <tbody>
+				            {% for mtech in mtechs %}
+				            <tr id="r1">
+								<td style=""><center>{{ forloop.counter }}.</center></td>
+				                <td id="s{{ forloop.counter }}A" style="padding:10px;"><b>Name: </b>{{ mtech.s_name }}<br/><b>Roll No.: </b>{{ mtech.rollno }}</td>
+				                <td id="s{{ forloop.counter }}B" style="padding:10px;"> {{ mtech.title }}</td>
+								<td id="s{{ forloop.counter }}C" style=""> <center>{{ mtech.a_month }}/{{ mtech.s_year }}</center></td>
+				                <td id="s{{ forloop.counter }}D" style="padding:10px;"> {{ mtech.supervisors }}</td>
+
+				            </tr>
+
+				            {% endfor %}
+
+				            </tbody>
+				       </table>
+
+
+                 <br><br>
+		   {% endif %}
+		   {% if awards_req == "1" %}
+                  <div class="row" style="font-size:20px">
+		                <div class="column"><b>Achievements -  </b></div>
+		         </div>
+		           <table class="ui fixed sortable celled table" width=100%>
+			            <thead>
+			            <tr style="font-size:16px; padding-top:5px;">
+
+
+			                  <th class="sorted ascending" style="width: 7%;">Sr.</th>
+			                <th class="" style="width: 15%;" > Achievement</th>
+			                <th class="" style="width: 53%;">Title </th>
+			                <th class="" style="width: 25%;">Day/Month/Year</th>
+
+			               <!--  <th style="width:10%">Action</th> -->
+			            </tr>
+			            </thead>
+
+			            <tbody>
+			            {% for award in awards %}
+			            <tr>
+							<td style=""><center>{{ forloop.counter }}.</center></td>
+			                <td id="ach{{ forloop.counter }}A" style="padding:10px;"> {% if award.a_type %}
+			                                                                           {{ award.a_type }}
+			                                                                            {% else %}
+                                                                                                 -
+                                                                                              {% endif %}
+
+
+			                </td>
+			                <td id="ach{{ forloop.counter }}B" style="padding:10px;"> {% if award.details %}
+			                                                                            {{ award.details }}
+			                                                                            {% else %}
+                                                                                                 -
+                                                                                              {% endif %}
+
+			                                                                            </td>
+							<td id="ach{{ forloop.counter }}C" style=""><center>{% if award.a_day %}{{ award.a_day }} / {% endif %}{% if award.a_month %}{{ award.a_month }} / {% endif %}{% if award.a_year %}{{ award.a_year }}{% endif %}</center></td>
+
+
+			            </tr>
+			            {% endfor %}
+			            </tbody>
+			        </table>
+
+                  <br><br>
+		   {% endif %}
+		   {% if patents_req == "1" %}
+	            <div class="row"  style="font-size:20px">
+		                <div class="column"><b>Patents -  </b></div>
+		       </div>
+		        <table class="ui fixed sortable celled table" width=100%>
+			            <thead>
+			            <tr style="font-size:16px; padding-top:5px;">
+
+			                  <th class="sorted ascending" style="width: 7%;">Sr.</th>
+			                <th class="" style="width: 15%;" >Patent No.</th>
+			                <th class="" style="width: 20%;">Title </th>
+			                <th class="" style="width: 20%;">Status</th>
+
+			                <th style="width:20%">Year</th>
+			                 <th style="width:28%">Earning in (Rs.)</th>
+
+			                <!-- <th class="" style="width: 8%;">Action</th> -->
+			            </tr>
+			            </thead>
+
+			            <tbody>{% for patent in patents %}
+			            <tr>
+							<td><center>{{ forloop.counter }}.</center></td>
+			                 <td id="patent{{ forloop.counter }}A" style="padding:10px;" > {% if patent.p_no %}
+			                                                                                {{ patent.p_no }}
+			                                                                                  {% else %}
+                                                                                                 -
+                                                                                              {% endif %}
+
+			                                                                           </td>
+
+			                 <td id="patent{{ forloop.counter }}B" style="padding:10px;"> {% if patent.title %}
+			                                                                               {{ patent.title }}
+			                                                                               {% else %}
+                                                                                                 -
+                                                                                              {% endif %}
+
+			                                                                               </td>
+
+			                 <td id="patent{{ forloop.counter }}C" style="padding:10px;"> {% if patent.status %}
+			                                                                               {{ patent.status }}
+			                                                                                   {% else %}
+                                                                                                 -
+                                                                                              {% endif %}
+
+			                                                                               </td>
+
+							<td id="patent{{ forloop.counter }}D" ><center>{{ patent.a_month }}/{{ patent.p_year }}</center></td>
+
+			                 <td id="patent{{ forloop.counter }}E" style="padding:10px;"> {% if  patent.earnings %}
+			                                                                               {{ patent.earnings }}
+			                                                                                 {% else %}
+                                                                                                 -
+                                                                                              {% endif %}
+
+
+			                                                                               </td>
+
+			            </tr>
+			            {% endfor %}
+			            </tbody>
+               </table>
+
+     <br><br>
+{% endif %}
+		   {% if techtransfers_req == "1" %}
+              <div class="row">
+		                <div class="column"  style="font-size:20px"><b>Technology Transfers -  </b></div>
+		       </div>
+               <table class="ui fixed single line sortable celled table" width=100%>
+		            <thead>
+		            <tr style="font-size:16px; padding-top:5px;">
+
+		                <th class="sorted ascending" style="width:7%">Sr.</th>
+		                <th class="" style="width:93%" >Details</th>
+
+
+
+		            </tr>
+		            </thead>
+
+		            <tbody>
+		           {% for techtransfer in techtransfers %}
+		            <tr>
+						<td><center>{{ forloop.counter }}.</center></td>
+		                <td class=""  id="tech{{ forloop.counter }}A" style="padding:10px;">{{ techtransfer.details }}</td>
+
+		            </tr>
+		            {% endfor %}
+		            </tbody>
+              </table>
+
+
+              <br><br>
+		   {% endif %}
+{% if talks_req == "1" %}
+                <div class="row" style="font-size:20px">
+		                <div class="column"><b>Expert Lectures/Invited Talk -  </b></div>
+		       </div>
+		        <table class="ui fixed sortable celled table" width=100%>
+		            <thead>
+		            <tr style="font-size:16px; padding-top:5px;">
+
+
+		                <th class="sorted ascending" style="width: 7%;">Sr.</th>
+		                <th class="" style="width: 15%;" >Presented</th>
+		                <th class="" style="width: 30%;">Title </th>
+		                <th class="" style="width: 25%;">Place</th>
+		                  <th style="width:23%">Date</th>
+		               <!--  <th style="width:10%">Action</th>
+                         -->
+                       </tr>
+		            </thead>
+
+		            <tbody>
+		             {% for talk in talks %}
+		            <tr id="r1">
+						<td><center>{{ forloop.counter }}.</center></td>
+		                <td id="lec{{ forloop.counter }}A" style="padding:10px;">  {% if talk.l_type  %}
+		                                                                            {{ talk.l_type }}
+		                                                                             {% else %}
+                                                                                                 -
+                                                                                              {% endif %}
+
+		                                                                            </td>
+
+		                <td id="lec{{ forloop.counter }}B" style="padding:10px;"> {% if talk.title  %}
+		                                                                            {{ talk.title }}
+		                                                                            {% else %}
+                                                                                                 -
+                                                                                              {% endif %}
+
+		                                                                           </td>
+
+		                <td id="lec{{ forloop.counter }}C" style="padding:10px;"> {% if  talk.place %}
+		                                                                           {{ talk.place }}
+		                                                                           {% else %}
+                                                                                                 -
+                                                                                              {% endif %}
+
+		                                                                        </td>
+
+						<td id="lec{{ forloop.counter }}D"><center> {% if  talk.l_date %}
+
+						                                              {{ talk.l_date }}
+
+						                                               {% else %}
+                                                                                                 -
+                                                                                              {% endif %}
+
+						                                              </center></td>
+
+
+		            </tr>
+		            {% endfor %}
+		            </tbody>
+                 </table>
+
+                 <br><br>
+		   {% endif %}
+{% if keynotes_req == "1" %}
+               <div class="row" style="font-size:20px">
+		                <div class="column"><b>Keynotes/Planery Address -  </b></div>
+		       </div>
+		       <table class="ui fixed sortable celled table" width=100%>
+		            <thead>
+		            <tr style="font-size:16px; padding-top:5px;">
+		                <!--<th class="sorted ascending">Sr.</th>
+		                <th class="" >Type</th>
+		                <th class="" colspan="2">Title</th>
+		                <th class="" colspan="3">Conference Details</th>
+		                <th class="" >Date</th>
+		                <th class="">Action</th>-->
+
+		                <th class="sorted ascending" style="width: 7%;">Sr.</th>
+		                <th class="" style="width: 15%;" >Type</th>
+		                <th class="" style="width: 28%;">Title </th>
+		                <th class="" style="width: 30%;">Conference Details</th>
+		                <th style="width:20%">Date</th>
+		                <!-- <th style="width:10%">Action</th> -->
+		            </tr>
+		            </thead>
+
+		            <tbody>
+		             {% for keynote in keynotes %}
+		            <tr>
+						<td><center>{{ forloop.counter }}.</center></td>
+						<td id="key{{ forloop.counter }}A" >  {% if keynote.type   %}
+						                                         {{ keynote.type }}
+						                                          {% else %}
+                                                                                                 -
+                                                                                              {% endif %}
+
+						                                         </td>
+
+		                <td id="key{{ forloop.counter }}B" style="padding:10px;" > {% if keynote.title  %}
+		                                                                           {{ keynote.title }}
+		                                                                             {% else %}
+                                                                                                 -
+                                                                                              {% endif %}
+
+		                                                                        </td>
+		                <td id="key{{ forloop.counter }}C" style="padding:10px;"><b>Name:</b>{{ keynote.name }}<br/><b>Venue:</b>{{ keynote.venue }}<br/><b>Page No:</b>{{ keynote.page_no }}<br/><b>ISBN No.:</b>{{ keynote.isbn_no }}</td>
+						<td id="key{{ forloop.counter }}D" ><center>{{ keynote.start_date }}</center></td>
+
+
+		            </tr>
+		            {% endfor %}
+		            </tbody>
+                </table>
+
+                <br><br>
+{% endif %}
+		   {% if consymps_req == "1" %}
+                <div class="row" style="font-size:20px">
+		                <div class="column"><b>Conference/Symposium -  </b></div>
+		       </div>
+                       <table class="ui fixed sortable celled table" width=100%>
+				            <thead>
+				            <tr style="font-size:16px; padding-top:5px;">
+
+
+				                  <th class="sorted ascending" style="width: 7%;">Sr.</th>
+				                <th class="" style="width: 13%;" >Role</th>
+				                <th class="" style="width: 25%;"> Conference Name</th>
+				                <th class="" style="width: 25%;">Venue</th>
+				                 <th style="width:30%">From-TO</th>
+				                <!-- <th style="width:10%">Action</th> -->
+				            </tr>
+				            </thead>
+
+				            <tbody>
+				             {% for consymp in consymps %}
+				            <tr>
+								<td><center>{{ forloop.counter }}.</center></td>
+				                {% if consymp.role1 == 'Any Other' %}
+				                    <td style="padding:10px;"> {% if consymp.role2 %}
+
+				                                                  {{ consymp.role2 }}
+				                                                    {% else %}
+                                                                                                 -
+                                                                                              {% endif %}
+
+				                                                  </td>
+
+				                {% elif consymp.role1 == 'Organised' %}
+				                    <td style="padding:10px;">{{ consymp.role1 }}:<br> {{ consymp.role2 }}</td>
+				                {% else %}
+				                <td style="padding:10px;"> {% if consymp.role1  %}
+
+				                                             {{ consymp.role1 }}
+				                                              {% else %}
+                                                                                                 -
+                                                                                              {% endif %}
+
+				                                             </td>
+				                {% endif %}
+				                <td id="conf{{ forloop.counter }}A" style="padding:10px;">{% if consymp.name  %}
+				                                                                         {{ consymp.name }}
+				                                                                          {% else %}
+                                                                                                 -
+                                                                                              {% endif %}
+
+				                                                                         </td>
+
+				                <td id="conf{{ forloop.counter }}B" style="padding:10px;">{% if consymp.venue %}
+				                                                                           {{ consymp.venue }}
+				                                                                            {% else %}
+                                                                                                 -
+                                                                                              {% endif %}
+				                                                                           </td>
+
+								<td id="conf{{ forloop.counter }}C"><center>{{ consymp.start_date }} - {{ consymp.end_date }}</center></td>
+
+				            </tr>
+				            {% endfor %}
+				            </tbody>
+				          </table>
+
+
+                 <br><br>
+		   {% endif %}
+{% if chairs_req == "1" %}
+				  <div class="row" style="font-size:20px">
+		                <div class="column"><b>Session Chaired -  </b></div>
+		         </div>
+		          <table class="ui fixed sortable celled table" width=100%>
+		            <thead>
+		            <tr style="font-size:16px; padding-top:5px;">
+
+
+		                   <th class="sorted ascending" style="width: 7%;">Sr.</th>
+		                <th class="" style="width: 25%;" >Name</th>
+		                <th class="" style="width: 38%;">Event </th>
+		                <th class="" style="width: 35%;">Duration</th>
+
+		                <!-- <th style="width:10%">Action</th> -->
+		            </tr>
+		            </thead>
+
+		            <tbody>
+		             {% for chair in chairs %}
+		            <tr>
+						<td><center>{{ forloop.counter }}.</center></td>
+		                <td class=""  id="session{{ forloop.counter }}A" style="padding:10px;"> {% if chair.name %}
+		                                                                                         {{ chair.name }}
+		                                                                                            {% else %}
+                                                                                                 -
+                                                                                              {% endif %}
+		                                                                                         </td>
+		                <td class="" id="session{{ forloop.counter }}B" style="padding:10px;">{% if chair.event %}
+		                                                                                             {{ chair.event }}
+		                                                                                              {% else %}
+                                                                                                 -
+                                                                                              {% endif %}
+
+		                                                                                        </td>
+		                <td id="session{{ forloop.counter }}C" style="padding:10px;">{{ chair.start_date }} - {{ chair.end_date }}</td>
+
+
+		            </tr>
+		            {% endfor %}
+		            </tbody>
+                 </table>
+
+                 <br><br>
+{% endif %}
+{% if fvisits_req == "1" %}
+                 <div class="row" style="font-size:20px">
+		                <div class="column"><b>Foreign Visits -  </b></div>
+		         </div>
+              <table class="ui fixed sortable celled table" width=100%>
+		            <thead>
+		            <tr style="font-size:16px; padding-top:5px;">
+
+
+		                      <th class="sorted ascending" style="width: 7%;">Sr.</th>
+		                <th class="" style="width: 13%;" >Country</th>
+		                <th class="" style="width: 20%;">Place </th>
+		                <th class="" style="width: 25%;">From-TO</th>
+		                 <th style="width:35%">Purpose</th>
+		                <!-- <th style="width:10%">Action</th> -->
+		            </tr>
+		            </thead>
+
+		            <tbody>
+		            {% for fvisit in fvisits %}
+		            <tr id="r1">
+						<td  style=""><center>{{ forloop.counter }}.</center></td>
+		                <td id="fvisits{{ forloop.counter }}A"  style="padding:10px;">
+		                    <i class="{{ fvisit.country.lower }} flag"></i>{{ fvisit.countryfull }}
+		                </td>
+		                <td id="fvisits{{ forloop.counter }}B"  style="padding:10px;">{% if fvisit.place %}
+                                                                                       {{ fvisit.place }}
+                                                                                         {% else %}
+                                                                                                 -
+                                                                                              {% endif %}
+
+                                                                                       </td>
+
+						<td id="fvisits{{ forloop.counter }}C"  style=""><center> {{ fvisit.start_date }} - {{ fvisit.end_date }}</center></td>
+		                <td id="fvisits{{ forloop.counter }}D"  style="padding:10px;"> {% if fvisit.purpose %}
+		                                                                                {{ fvisit.purpose }}
+		                                                                                 {% else %}
+                                                                                                 -
+                                                                                              {% endif %}
+
+		                                                                             </td>
+
+		            </tr>  {% endfor %}
+
+		            </tbody>
+
+                </table>
+
+
+               <br><br>
+		   {% endif %}
+{% if ivisits_req == "1" %}
+                 <div class="row">
+		                <div class="column" style="font-size:20px"><b>Indian Visits -  </b></div>
+		         </div>
+		           <table class="ui fixed sortable celled table" width=100%>
+			            <thead>
+			            <tr style="font-size:16px; padding-top:5px;">
+
+			                   <th class="sorted ascending" style="width: 7%;">Sr.</th>
+
+			                <th class="" style="width: 28%;">Place </th>
+			                <th class="" style="width: 30%;">From-TO</th>
+			                 <th style="width:35%">Purpose</th>
+			               <!--  <th style="width:10%">Action</th> -->
+			            </tr>
+			            </thead>
+
+			            <tbody>
+			            {% for ivisit in ivisits %}
+				            <tr id="r1">
+								<td><center>{{ forloop.counter }}.</center></td>
+				                <td id="ivisits{{ forloop.counter }}A" style="padding:10px;">{% if ivisit.place %}
+				                                                                                 {{ ivisit.place }}
+                                                                                                    {% else %}
+                                                                                                 -
+                                                                                              {% endif %}
+				                                                                                 </td>
+								<td id="ivisits{{ forloop.counter }}B" ><center>{{ ivisit.start_date }} - {{ ivisit.end_date }}</center></td>
+				                <td id="ivisits{{ forloop.counter }}C" style="padding:10px;">{% if ivisit.purpose %}
+				                                                                          {{ ivisit.purpose }}
+				                                                                           {% else %}
+                                                                                                 -
+                                                                                              {% endif %}
+
+				                                                                          </td>
+
+
+				            </tr>
+			            {% endfor %}
+
+
+			            </tbody>
+			          </table>
+
+			          <br><br>
+		    {% endif %}
+{% if events_req == "1" %}
+
+			             <div class="row" style="font-size:30px">
+		                   <div class="column" style="font-size:20px"><b>Event Organised-  </b></div>
+		                 </div>
+                      <table class="ui fixed sortable celled table">
+			            <thead>
+			            <tr style="font-size:16px; padding-top:5px;">
+			                <th class="sorted ascending" style="width:7%">Sr.</th>
+			                <th class="" style="width: 15%">Role</th>
+			                <th class="" style="width:23%"> Name </th>
+			                <th class="" style="width:35%">Event Details</th>
+			                 <th style="width:20%">From-TO</th>
+
+			                <!-- <th class="" style="width:10%" >Action</th> -->
+
+			                    </tr>
+			            </thead>
+
+
+			            <tbody>
+			            {% for event in events %}
+			            <tr id="">
+							<td style=""><center>{{ forloop.counter }}.</center></td>
+			                <td id="event{{ forloop.counter }}A" style="padding:10px;">{{ event.role }}</td>
+			                <td id="event{{ forloop.counter }}B" style="padding:10px;">  {{ event.name }}</td>
+			                <td id="event{{ forloop.counter }}C" style="padding:10px;"><b>Sponsoring Agency: </b>{{ event.sponsoring_agency }}<br> <b>Venue.: </b>{{ event.venue }}
+			                <br><b>Type:{{ event.type }} </b></td>
+							<td id="event{{ forloop.counter }}D" style=""><center>{{ event.start_date }} - {{ event.end_date }}</center></td>
+			               </tr>
+			            {% endfor %}
+			            </tbody>
+
+			          </table>
+
+ {% endif %}
+
+
+
+	 </div>
+	   <div id="header_content"><div style="font-size:10px;">{% now "jS F Y" %}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Employee Information System (EIS) - PDPM IIITDM Jabalpur</span></div>
+
+	   <div id="footer_content" align="right" style="font-size:10px;">-- page <pdf:pagenumber></pdf:pagenumber>
+        of <pdf:pagecount>
+	   </pdf:pagecount></div>

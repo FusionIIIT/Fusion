@@ -1,0 +1,133 @@
+{% load static %}
+<style type="text/css">
+  .verify {
+  background-color: #f1f1f1;
+  color: #444;
+  cursor: pointer;
+  padding: 18px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 15px;
+  transition: 0.4s;
+  margin-top: 3px;
+  margin-bottom: 3px;
+  border-radius: 3px; 
+}
+
+.verify:hover {
+  background-color: #ddd; 
+}
+</style>
+{% if student %}
+
+            {% for stu in student %}
+            {% if stu %}
+                    <div class="verify" id = "ver-{{forloop.counter}}" data="{{forloop.counter}}">
+                      <table style="border-width: 0px;width: 100%">
+                      <td style="width: 20%">{{ stu.0.id.user }}</td>
+                      <td style="width: 40%">{{ stu.0.id.user.first_name   }} {{stu.0.id.user.last_name}}</td>
+                      <td style="width: 20%"> {{ stu.0.id.department.name  }}</td>
+                      <td  style="width: 20%"><div  data='{{ stu.0.id.user.username }}' data-two="{{forloop.counter}}" data-three="6" class="reg-approve ui basic green button">Approve</div>
+                      </td>
+                      </table>
+                      <div class="pay" id="tran{{forloop.counter}}" hidden>
+                        
+                        <table style="border-width: 0px;width: 100%">
+                          <td style="width: 80%">
+                            <p>Payment Mode : {{stu.1.mode}}</p>
+                        <p>Transaction ID : {{stu.1.transaction_id}}</p>
+                          </td>
+                          <td style="width: 20%"><div data='{{ stu.0.id.user.username }}' data-two="{{forloop.counter}}" class="reg-disapprove ui basic red button" style="margin-right: 10px">Decline</div></td>
+                        </table><br><br>
+                        <center><b> Registered Courses </b></center>
+                        <table style="width: 100%">
+                          <tr>
+                            <th style="width: 20%"><center>Course ID</center></th>
+                            <th style="width: 60%"><center>Course Name</center></th>
+                            <th style="width: 20%"><center>Credits</center></th>
+                          </tr>
+                          
+                            {% for x in stu.2 %}
+                            <tr>
+                            <td style="width: 20%"><center>{{x.curr_id.course_code}}</center></td>
+                            <td style="width: 60%">{{x.curr_id.course_id.course_name}}</td>
+                            <td style="width: 20%"><center>{{x.curr_id.credits}}</center></td>
+                            </tr>
+                            {% endfor %}
+                          
+                        </table>
+                      </div>
+                    </div>
+            {% endif %}
+            {% endfor %}
+            <CENTER><BR><BR>  <B> NO MORE RECORDS FOUND</B> </center>
+
+{% else %}
+<CENTER><BR><BR>  <B> NO RECORDS FOUND</B> </center>
+  {% endif %}
+
+
+ 
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+var i;
+        $('.reg-approve').on('click', function(e){
+            var id = $(this).attr('data-two');
+            var roll = $(this).attr('data');
+            var sem = $(this).attr('data-three');
+            $.ajax({
+                type: 'post',
+                url: '/academic-procedures/process_verification_request/',
+                data: {
+                    roll: roll,
+                    sem: sem,
+                    status_req: 'accept',
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                },
+                success: function(data) {
+                    $('#ver-' + id).remove();
+                    $('.process-modal p').html('<center>'+data.message+'</center>');
+                    $('.process-modal').modal('show');
+                },
+
+                error: function(data, err) {
+                    if(err) {
+                        $('.fail-modal').modal('show');
+                    }
+                }
+            });
+            // });
+        });
+        $('.verify').on('click', function(e){
+            var i = $(this).attr('data');
+            $('.pay').hide();
+            $('#tran'+i).show();
+        });
+        $('.reg-disapprove').on('click', function(e){
+            var id = $(this).attr('data-two');
+            var roll = $(this).attr('data');
+            $.ajax({
+                type: 'post',
+                url: '/academic-procedures/process_verification_request/',
+                data: {
+                    roll: roll,
+                    status_req: 'reject',
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                },
+                success: function(data) {
+                    $('#ver-' + id).remove();
+                    $('.process-modal p').html('<center>'+data.message+'</center>');
+                    $('.process-modal').modal('show');
+                },
+
+                error: function(data, err) {
+                    if(err) {
+                        $('.fail-modal').modal('show');
+                    }
+                }
+            });
+        });
+
+        </script>

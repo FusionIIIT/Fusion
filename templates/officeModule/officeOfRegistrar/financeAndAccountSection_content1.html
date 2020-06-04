@@ -1,0 +1,101 @@
+{% load static %}
+
+<table class="ui very basic collapsing celled sortable table"
+       style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+    <thead>
+    <tr>
+        <th class="one wide column">
+        </th>
+
+        <th class="three wide column">
+            File Number
+        </th>
+
+        <th class="three wide column">
+            Date
+        </th>
+
+        <th class="seven wide column">
+            Purpose
+        </th>
+
+        <th class="one wide column">
+            Amount
+        </th>
+
+        <th class="one wide column">
+            Status
+        </th>
+
+        <th class="one wide column">
+            Attachment
+        </th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr>
+
+        <td class="collapsing">
+            <div class="ui fitted checkbox">
+                <input type="checkbox"> <label></label>
+            </div>
+        </td>
+
+        <td>
+            5432
+        </td>
+
+        <td>
+            11/04/18
+        </td>
+
+        <td>
+            debit money
+        </td>
+
+         <td>
+            500478
+        </td>
+
+        <td>
+            <i class="large green checkmark icon"></i>
+        </td>
+
+        <td>
+            {% comment %}
+                TODO: Add the attachment here!
+            {% endcomment %}
+            <a class="ui inverted circular icon button" style="margin: auto;" target="_blank" href="">
+                <i class="large attach black icon"></i>
+            </a>
+        </td>
+    </tr>
+
+    </tbody>
+</table>
+
+
+<br>
+
+<div class="ui primary right floated button">Approve Selected</div>
+<div class="ui green right floated button">Forward Selected</div>
+<div class="ui red right floated button">Reject Selected</div>
+
+
+<br>
+<br>
+<div class="ui divider"></div>
+
+<div class="extra content">
+    <div class="" style="text-align: center;">
+        <i class="large green checkmark icon"></i> : Approved &ensp;&ensp;&ensp;&ensp;&ensp;
+        <i class="large orange warning icon"></i> : Pending &ensp;&ensp;&ensp;&ensp;&ensp;
+        <i class="large red x icon"></i> : Declined
+    </div>
+</div>
+
