@@ -11,8 +11,9 @@ from applications.globals.models import *
 from datetime import datetime
 from django.core import serializers
 import json
-from .forms import *
 from .models import *
+from django.views.decorators.csrf import csrf_exempt,csrf_protect
+
 
 
 def coordinator_club(request):
@@ -32,10 +33,11 @@ def delete_sessions(request):
 	except Exception as e:
 		print("An error was encountered")
 		return HttpResponse("error")
-
+@csrf_exempt
 def delete_events(request):
 	selectedIds = request.POST['ids']
 	selectedIds = json.loads(selectedIds)
+	message = ""
 	try:
 		for i in selectedIds:
 			delEvent = Event_info.objects.get(id=i)
@@ -44,17 +46,14 @@ def delete_events(request):
 	except Exception as e:
 		print("An error was encountered")
 		return HttpResponse("error")
-		
+
 def edit_event(request,event_id):
 	event = Event_info.objects.get(pk=event_id)	
 	
 
 	if request.method == 'POST':
-		print("I came here buddy laalalal")
 		try:
 			body = request.POST
-			
-			# print(f"This is the body !!!!!!!!!!!!!!!!!!!!!!{body}")
 			event_name = body.get('event_name')
 			incharge=body.get('incharge')
 			venue = body.get('venue_type')
@@ -66,11 +65,10 @@ def edit_event(request,event_id):
 			club_name = coordinator_club(request)
 			res = conflict_algorithm_event(date, start_time, end_time, venue)
 			message = ""
-			
+			print("in the post body")
+			print(res)
 			if(res == 'success'):
-				event.delete()
-				e = Event_info(club = club_name, event_name=event_name, incharge=incharge, venue = venue, date =date, start_time=start_time , end_time = end_time ,event_poster = event_poster , details = desc)
-				e.save()
+				e = Event_info.objects.filter(id=event_id).update(club = club_name, event_name=event_name, incharge=incharge, venue = venue, date =date, start_time=start_time , end_time = end_time ,event_poster = event_poster , details = desc)
 				message += "Your form has been dispatched for further process"
 				print(message)
 				return redirect('/gymkhana/')
@@ -107,8 +105,7 @@ def edit_event(request,event_id):
 			}
 	}
 	# res = conflict_algorithm_event(date, start_time, end_time, venue)
-	#print(f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!{}")
-	template='gymkhanaModule/newevent.html'
+	template='gymkhanaModule/editevent.html'
 	
 	return render(request,template,context)
 
@@ -766,7 +763,6 @@ def date_sessions(request):
 			dates.append(i)
 		dates = serializers.serialize('json', dates)
 		return HttpResponse(dates)
-
 @login_required
 def date_events(request):
 	if(request.is_ajax()):

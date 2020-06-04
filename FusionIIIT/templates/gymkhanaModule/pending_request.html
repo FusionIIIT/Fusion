@@ -157,7 +157,7 @@
                     {% if "co-ordinator" in Curr_desig or "co co-ordinator" in Curr_desig %}
                         {% for i in Club_event%}
                             {% if club_details.club_name|stringformat:"s" == i.club|stringformat:"s" %}
-                            <form method="post" enctype="multipart/form-data" action="">    
+                            <form method="post" enctype="multipart/form-data" >    
                             {% csrf_token %}
                                 <tr>
                                     <td class="collapsing">
