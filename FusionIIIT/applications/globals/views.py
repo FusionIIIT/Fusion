@@ -13,7 +13,7 @@ from PIL import Image
 from applications.academic_information.models import Student
 from applications.globals.forms import IssueForm, WebFeedbackForm
 from applications.globals.models import (ExtraInfo, Feedback, HoldsDesignation,
-                                         Issue, IssueImage, DepartmentInfo)
+                                         Issue, IssueImage)
 from applications.placement_cell.forms import (AddAchievement, AddCourse,
                                                AddEducation, AddExperience,
                                                AddPatent, AddProfile,
@@ -676,41 +676,15 @@ def about(request):
 
 @login_required(login_url=LOGIN_URL)
 def dashboard(request):
-    cse_faculty = ExtraInfo.objects.filter(user_type = 'faculty', department = DepartmentInfo.objects.get(name = 'CSE'))
-    ece_faculty = ExtraInfo.objects.filter(user_type = 'faculty', department = DepartmentInfo.objects.get(name = 'ECE'))
-    me_faculty = ExtraInfo.objects.filter(user_type = 'faculty', department = DepartmentInfo.objects.get(name = 'ME'))
-    des_faculty = ExtraInfo.objects.filter(user_type = 'faculty', department = DepartmentInfo.objects.get(name = 'Design'))
-    ns_faculty = ExtraInfo.objects.filter(user_type = 'faculty', department = DepartmentInfo.objects.get(name = 'Natural Science'))
-    # cse_students = ExtraInfo.objects.filter(user_type = 'student', department = DepartmentInfo.objects.get(name = 'CSE'))
-    # ece_students = ExtraInfo.objects.filter(user_type = 'student', department = DepartmentInfo.objects.get(name = 'ECE'))
-    # me_students = ExtraInfo.objects.filter(user_type = 'student', department = DepartmentInfo.objects.get(name = 'ME'))
-    # des_students = ExtraInfo.objects.filter(user_type = 'student', department = DepartmentInfo.objects.get(name = 'Design'))
-    # ns_students = ExtraInfo.objects.filter(user_type = 'student', department = DepartmentInfo.objects.get(name = 'Natural Science'))
-    students_2017 = Student.objects.filter(batch = 2017)
-    students_2016 = Student.objects.filter(batch = 2016)
-    students_2015 = Student.objects.filter(batch = 2015)
-    students_2019 = Student.objects.filter(batch = 2019)
-    students_2018 = Student.objects.filter(batch = 2018) 
-    data = {'cse': cse_faculty, 
-            'ece': ece_faculty, 
-            'me': me_faculty, 
-            'des': des_faculty, 
-            'ns': ns_faculty,
-            'students_2019': students_2019,
-            'students_2018': students_2018, 
-            'students_2017': students_2017,
-            'students_2016': students_2016,
-            'students_2015': students_2015}
     user=request.user
     notifs=request.user.notifications.all()
     context={
         'notifications':notifs
     }
     if(request.user.get_username() == 'director'):
-        return render(request, "dashboard/director_dashboard2.html", data)
+        return render(request, "dashboard/director_dashboard2.html", context)
     else:
         return render(request, "dashboard/dashboard.html", context)
-
 
 @login_required(login_url=LOGIN_URL)
 def profile(request, username=None):
@@ -931,14 +905,6 @@ def profile(request, username=None):
                    'form10':form10, 'form11':form11, 'form12':form12, 'current':current,
                    'editable': editable
                    }
-        if 'skillsubmit' in request.POST or 'deleteskill' in request.POST:
-            return render(request, "globals/student_profile2.html", context)
-        if 'coursesubmit' in request.POST or 'educationsubmit' in request.POST or 'deleteedu' in request.POST or 'deletecourse' in request.POST:
-            return render(request, "globals/student_profile3.html", context)
-        if 'experiencesubmit' in request.POST or 'projectsubmit' in request.POST or 'deleteexp' in request.POST or 'deletepro' in request.POST:
-            return render(request, "globals/student_profile4.html", context)
-        if 'achievementsubmit' in request.POST or 'deleteach' in request.POST:
-            return render(request, "globals/student_profile5.html", context)
         return render(request, "globals/student_profile.html", context)
     else:
         return redirect("/")

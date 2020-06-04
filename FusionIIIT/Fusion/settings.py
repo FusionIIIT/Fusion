@@ -170,6 +170,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'Fusion.wsgi.application'
 
+
+PROJECT_DIR = os.path.abspath(os.path.dirname(__file__))
+
 # Database template for mysql
 
 # DATABASES = {

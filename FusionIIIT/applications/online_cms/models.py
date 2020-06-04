@@ -177,7 +177,7 @@ class QuizResult(models.Model):
         return '{} - {} - {} - {} - {}'.format(
                 self.pk, self.student_id,
                 self.quiz_id, self.score,
-                self.finished)
+                self.feedback)
 
 #to store the comment of student and lecturer
 class Forum(models.Model):
