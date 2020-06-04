@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import (Assignment, CourseDocuments, CourseVideo, Forum,
+from .models import (Assignment, CourseDocuments, Forum,
                      ForumReply, Quiz, QuizQuestion, QuizResult, StudentAnswer,
                      StudentAssignment, Topics)
 
@@ -10,7 +10,7 @@ class QuizResultAdmin(admin.ModelAdmin):
 
 admin.site.register(CourseDocuments)
 
-admin.site.register(CourseVideo)
+# admin.site.register(CourseVideo)
 
 admin.site.register(Quiz)
 

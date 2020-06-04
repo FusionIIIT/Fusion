@@ -16,16 +16,16 @@ class CourseDocuments(models.Model):
     def __str__(self):
         return '{} - {}'.format(self.course_id, self.document_name)
 
-#videos added by the faculty and can be downloaded by students
-class CourseVideo(models.Model):
-    course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
-    upload_time = models.DateTimeField(auto_now=True)
-    description = models.CharField(max_length=100)
-    video_name = models.CharField(max_length=40)
-    video_url = models.CharField(max_length=100, null=True)
-
-    def __str__(self):
-        return '{} - {}'.format(self.course_id, self.video_name)
+# #videos added by the faculty and can be downloaded by students
+# class CourseVideo(models.Model):
+#     course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
+#     upload_time = models.DateTimeField(auto_now=True)
+#     description = models.CharField(max_length=100)
+#     video_name = models.CharField(max_length=40)
+#     video_url = models.CharField(max_length=100, null=True)
+#
+#     def __str__(self):
+#         return '{} - {}'.format(self.course_id, self.video_name)
 
 #For storing the questions topic wise
 class Topics(models.Model):
