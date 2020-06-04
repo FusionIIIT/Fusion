@@ -1,0 +1,40 @@
+<div class="ui modal coupled_{{ menuitem }} edit_{{ menuitem }}">
+    <div class="header">
+        Edit {{ menuitem }}
+    </div>
+    <div class="scrolling content">
+        {% comment %} {% url 'edit_estate' estate.id %} {% endcomment %}
+        <form action="" id="edit_{{ menuitem }}_form" class="ui form" method="POST">
+            {% include 'estate_module/'|add:menuitem|add:'/form.html' %}
+
+        </form>
+    </div>
+    <div class="actions">
+
+        <button class="ui large red button delete_{{ menuitem }}">Delete</button>
+
+        <button type="submit" form="edit_{{ menuitem }}_form"
+            class="ui submit large positive right labeled icon approve button"> Update
+            <i class="checkmark icon"></i></button>
+        <div class="ui black deny large button">
+            Cancel
+        </div>
+    </div>
+</div>
+
+<div class="ui tiny modal coupled_{{ menuitem }} delete_{{ menuitem }}">
+    <div class="header">
+        Delete
+    </div>
+
+    <div class="content">
+        <p>Are you sure you want to delete {{ estate.name }}?</p>
+    </div>
+    <div class="actions">
+
+        <div class="ui submit green deny large button">No</div>
+
+        {% comment %} {% url 'delete_estate' estate.id %} {% endcomment %}
+        <a href="" class="ui negative right labeled icon large button">Yes<i class="checkmark icon"></i></a>
+    </div>
+</div>

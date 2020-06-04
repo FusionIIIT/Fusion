@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+{% load static %}
+
+<head>
+    <meta charset="UTF-8">
+
+    {% if title %}
+    <title>Fusion - {{ title }} </title>
+    {% else %}
+    <title>Fusion</title>
+    {% endif %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css"
+        integrity="sha256-9mbkOfVho3ZPXfM7W8sV2SndrGDuh7wuyLjtsWeTI1Q=" crossorigin="anonymous" />
+    {% comment %}
+    <link rel="stylesheet" href="{% static 'estate_module/css/semantic.min.css' %}" /> {% endcomment %}
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"
+        integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+    {% comment %} <script src="https://code.jquery.com/jquery-3.1.1.min.js"
+        integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+    {% endcomment %}
+    {% comment %} <script type="text/javascript" src="{% static 'estate_module/js/jquery.min.js' %}"></script>
+    {% endcomment %}
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"
+        integrity="sha256-t8GepnyPmw9t+foMh3mKNvcorqNHamSKtKRxxpUEgFI=" crossorigin="anonymous"></script>
+    {% comment %} <script type="text/javascript" src="{% static 'estate_module/js/semantic.min.js' %}"></script>
+    {% endcomment %}
+
+    <script type="text/javascript" src="{% static 'estate_module/js/tab.js' %}"></script>
+    <script type="text/javascript" src="{% static 'estate_module/js/tablesort.js' %}"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('.ui.accordion').accordion();
+        });
+    </script>
+
+    <style type="text/css">
+        body {
+            background-color: #FFFFFF;
+        }
+
+        .ui.menu .item img.logo {
+            margin-right: 1.5em;
+        }
+
+        .ui.main {
+            margin-top: 7em;
+        }
+
+        .wireframe {
+            margin-top: 2em;
+        }
+
+        .ui.footer.segment {
+            margin: 5em 0em 0em;
+            padding: 5em 0em;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="ui fixed inverted menu">
+        <div class="ui container">
+            <a href="#" class="header item">
+                {% comment %} <img class="logo" src="https://semantic-ui.com/examples/assets/images/logo.png">
+                {% endcomment %}
+                {% if title %}
+                Fusion - {{ title }}
+                {% else %}
+                Fusion
+                {% endif %}
+            </a>
+            <a href="#" class="item">Home</a>
+            <div class="ui simple dropdown item">
+                Dropdown <i class="dropdown icon"></i>
+                <div class="menu">
+                    <a class="item" href="#">Link Item</a>
+                    <a class="item" href="#">Link Item</a>
+                    <div class="divider"></div>
+                    <div class="header">Header Item</div>
+                    <div class="item">
+                        <i class="dropdown icon"></i>
+                        Sub Menu
+                        <div class="menu">
+                            <a class="item" href="#">Link Item</a>
+                            <a class="item" href="#">Link Item</a>
+                        </div>
+                    </div>
+                    <a class="item" href="#">Link Item</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="ui main text">
+
+        {% block body %}
+        {% endblock body %}
+    </div>
+
+    {% comment %} <div class="ui inverted vertical footer segment">
+        <div class="ui center aligned container">
+            <div class="ui stackable inverted divided grid">
+                <div class="three wide column">
+                    <h4 class="ui inverted header">Group 1</h4>
+                    <div class="ui inverted link list">
+                        <a href="#" class="item">Link One</a>
+                        <a href="#" class="item">Link Two</a>
+                        <a href="#" class="item">Link Three</a>
+                        <a href="#" class="item">Link Four</a>
+                    </div>
+                </div>
+                <div class="three wide column">
+                    <h4 class="ui inverted header">Group 2</h4>
+                    <div class="ui inverted link list">
+                        <a href="#" class="item">Link One</a>
+                        <a href="#" class="item">Link Two</a>
+                        <a href="#" class="item">Link Three</a>
+                        <a href="#" class="item">Link Four</a>
+                    </div>
+                </div>
+                <div class="three wide column">
+                    <h4 class="ui inverted header">Group 3</h4>
+                    <div class="ui inverted link list">
+                        <a href="#" class="item">Link One</a>
+                        <a href="#" class="item">Link Two</a>
+                        <a href="#" class="item">Link Three</a>
+                        <a href="#" class="item">Link Four</a>
+                    </div>
+                </div>
+                <div class="seven wide column">
+                    <h4 class="ui inverted header">Footer Header</h4>
+                    <p>Extra space for a call to action inside the footer that could help re-engage users.</p>
+                </div>
+            </div>
+            <div class="ui inverted section divider"></div>
+            <img src="https://semantic-ui.com/examples/assets/images/logo.png" class="ui centered mini image">
+            <div class="ui horizontal inverted small divided link list">
+                <a class="item" href="#">Site Map</a>
+                <a class="item" href="#">Contact Us</a>
+                <a class="item" href="#">Terms and Conditions</a>
+                <a class="item" href="#">Privacy Policy</a>
+            </div>
+        </div>
+    </div> {% endcomment %}
+
+
+
+</body>
+
+</html>

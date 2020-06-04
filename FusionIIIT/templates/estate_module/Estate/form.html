@@ -1,0 +1,87 @@
+{% csrf_token %}
+<h4 class="ui horizontal divider header">
+    <i class="info circle icon"></i>
+    Main Information
+</h4>
+<div class="field">
+    {{ estateForm.name.label_tag }}
+    {{ estateForm.name }}
+</div>
+
+<div class="four fields">
+    <div class="field">
+        {{ estateForm.dateIssued.label_tag }}
+        {{ estateForm.dateIssued }}
+    </div>
+
+    <div class="field">
+        {{ estateForm.dateConstructionStarted.label_tag }}
+        {{ estateForm.dateConstructionStarted }}
+    </div>
+
+    <div class="field">
+        {{ estateForm.dateConstructionCompleted.label_tag }}
+        {{ estateForm.dateConstructionCompleted }}
+    </div>
+
+    <div class="field">
+        {{ estateForm.dateOperational.label_tag }}
+        {{ estateForm.dateOperational }}
+    </div>
+</div>
+
+<div class="two fields">
+    <div class="field">
+        {{ estateForm.constructionCostEstimated.label_tag }}
+
+        <div class="ui left icon input">
+            {{ estateForm.constructionCostEstimated }}
+            <i class="rupee sign icon"></i>
+        </div>
+
+    </div>
+
+    <div class="field">
+        {{ estateForm.constructionCostActual.label_tag }}
+
+        <div class="ui left icon input">
+            {{ estateForm.constructionCostActual }}
+            <i class="rupee sign icon"></i>
+        </div>
+
+    </div>
+</div>
+
+<h4 class="ui horizontal divider header">
+    <i class="info circle icon"></i>
+    Extra Information
+</h4>
+
+<div class="three fields">
+    <div class="field">
+        {{ estateForm.area.label_tag }}
+
+        <div class="ui right labeled input">
+            {{ estateForm.area }}
+            <div class="ui basic label">
+                acres
+            </div>
+        </div>
+
+    </div>
+    <div class="field">
+        {{ estateForm.numRooms.label_tag }}
+        {{ estateForm.numRooms }}
+
+    </div>
+
+    <div class="field">
+        {{ estateForm.numWashrooms.label_tag }}
+        {{ estateForm.numWashrooms }}
+    </div>
+</div>
+
+<div class="field">
+    {{ estateForm.remarks.label_tag }}
+    {{ estateForm.remarks }}
+</div>

@@ -1,5 +1,9 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
+
+from .forms import EstateForm
+from .models import Estate, WorkType, Work, SubWork
 
 buildings = [
     {
@@ -55,72 +59,9 @@ projects = [
     }
 ]
 
-estate = [
-    {
-        'id': 1,
-        'name': 'Core Lab Complex',
-        'dateIssued': '30-12-05',
-        'dateStarted': '30-12-05',
-        'dateOccupied': '',
-        'dateCompleted': '',
-        'estimatedCost': 9999999,
-        'actualCost': 9999999,
-        'numRooms': 0,
-        'numWashrooms': 0,
-        'constructionTaskList': [],
-        'maintenanceTaskList': [],
-        'inventoryList': []
-    },
-    {
-        'id': 2,
-        'name': 'LHTC',
-        'dateIssued': '15-11-05',
-        'dateStarted': '15-11-05',
-        'dateOccupied': '',
-        'dateCompleted': '',
-        'estimatedCost': 8960099,
-        'actualCost': 0,
-        'numRooms': 0,
-        'numWashrooms': 0,
-        'constructionTaskList': [],
-        'maintenanceTaskList': [],
-        'inventoryList': []
-    },
-    {
-        'id': 3,
-        'name': 'Central Mess',
-        'dateIssued': '21-06-06',
-        'dateStarted': '13-11-06',
-        'dateOccupied': '',
-        'dateCompleted': '',
-        'estimatedCost': 8899999,
-        'actualCost': 0,
-        'numRooms': 0,
-        'numWashrooms': 0,
-        'constructionTaskList': [],
-        'maintenanceTaskList': [],
-        'inventoryList': []
-    },
-    {
-        'id': 4,
-        'name': 'Hall 4',
-        'dateIssued': '22-08-07',
-        'dateStarted': '12-10-08',
-        'dateOccupied': '30-07-08',
-        'dateCompleted': '24-07-08',
-        'estimatedCost': 9085990,
-        'actualCost': 0,
-        'numRooms': 0,
-        'numWashrooms': 0,
-        'constructionTaskList': [],
-        'maintenanceTaskList': [],
-        'inventoryList': []
-    }
-]
-
 
 @login_required(login_url='/accounts/login/')
-def estate(request):
+def oldEstate(request):
 
     context = {
         'buildings': buildings,
@@ -128,3 +69,50 @@ def estate(request):
     }
 
     return render(request, "estate/home.html", context)
+
+
+@login_required(login_url='/accounts/login/')
+def estate(request):
+
+    context = {
+        'title': "Estate Module",
+        'estates': Estate.objects.all(),
+        'works': Work.objects.all(),
+        'estateForm': EstateForm()
+    }
+
+    return render(request, "estate_module/home.html", context)
+
+
+@require_POST
+def newEstate(request):
+
+    newEstateForm = EstateForm(request.POST)
+
+    if newEstateForm.is_valid():
+        new_Estate = newEstateForm.save()
+        return redirect('estate')
+
+    return redirect('estate')
+
+
+@require_POST
+def editEstate(request, estate_id):
+
+    estate = Estate.objects.get(pk=estate_id)
+
+    editEstateForm = EstateForm(request.POST, instance=estate)
+
+    if editEstateForm.is_valid():
+        editEstateForm.save()
+        return redirect('estate')
+
+    return redirect('estate')
+
+
+# @require_POST
+def deleteEstate(request, estate_id):
+
+    estate = Estate.objects.get(pk=estate_id)
+    estate.delete()
+    return redirect('estate')

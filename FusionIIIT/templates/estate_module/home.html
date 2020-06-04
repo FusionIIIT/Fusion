@@ -1,0 +1,73 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+Estate
+{% endblock title %}
+
+{% block override_base_links %}
+
+<link rel="stylesheet" href="{% static 'estate_module/semantic.min.css' %}" />
+
+<script type="text/javascript" src="{% static 'estate_module/jquery.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'estate_module/semantic.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'globals/js/tab.js' %}"></script>
+<script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+
+{% endblock override_base_links %}
+
+{% block css %}
+<style>
+    .ui.segment {
+        margin-top: 0;
+    }
+</style>
+{% endblock css %}
+
+{% block body %}
+
+{% block navBar %}
+{% include 'dashboard/navbar.html' %}
+{% endblock navBar %}
+
+{% comment %} {% with menuitems="Estates Construction Maintenance Inventory" %} {% endcomment %}
+{% with menuitems="Estate" %}
+<div class="ui stackable doubling grid">
+
+    <div class="column">
+    </div>
+
+    <div class="three wide column">
+        {% block usercard %}
+        {% include 'globals/usercard.html' %}
+        {% endblock usercard %}
+
+        <div class="ui divider"></div>
+
+        <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
+            {% for menuitem in menuitems.split %}
+            <a class="{% if forloop.counter0 is 0 %}{{ "active" }}{% endif %} item" data-tab="{{ menuitem }}">
+                {{ menuitem }}
+                <i class="right floated chevron right icon"></i>
+            </a>
+            {% endfor %}
+
+        </div>
+    </div>
+
+    <div class="ten wide column">
+        {% for menuitem in menuitems.split %}
+        <div class="ui {% if forloop.counter0 is 0 %}{{ "active" }}{% endif %} tab segment" data-tab="{{ menuitem }}">
+            {% include 'estate_module/'|add:menuitem|add:'/home.html' %}
+        </div>
+        {% endfor %}
+
+    </div>
+
+</div>
+{% endwith %}
+
+{% block javascript %}
+{% endblock javascript %}
+
+{% endblock body %}

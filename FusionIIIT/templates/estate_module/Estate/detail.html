@@ -1,0 +1,154 @@
+{% load humanize %}
+
+<button class="ui secondary button details {{ menuitem }}_{{ estate.id }}">Details</button>
+<div class="ui modal details {{ menuitem }}_{{ estate.id }}">
+    <div class="header">
+        {{ estate.name }}
+    </div>
+    <div class="scrolling content">
+        <div class="description">
+            <h4 class="ui horizontal divider header">
+                <i class="bar chart icon"></i>
+                Specifications
+            </h4>
+            <table class="ui definition table">
+                <tbody>
+                    <tr>
+                        <td class="four wide column">{{ menuitem }} Name</td>
+                        <td class="name">{% if estate.name %} {{ estate.name }} {% endif %}</td>
+                    </tr>
+
+                    <tr>
+                        <td>Date Issued</td>
+                        <td class="dateIssued">{% if estate.dateIssued %} {{ estate.dateIssued }} {% endif %}</td>
+                    </tr>
+
+                    <tr>
+                        <td>Date Construction Started</td>
+                        <td class="dateConstructionStarted">{% if estate.dateConstructionStarted %}
+                            {{ estate.dateConstructionStarted }} {% endif %}</td>
+                    </tr>
+
+                    <tr>
+                        <td>Date Construction Completed</td>
+                        <td class="dateConstructionCompleted">{% if estate.dateConstructionCompleted %}
+                            {{ estate.dateConstructionCompleted }} {% endif %}</td>
+                    </tr>
+
+                    <tr>
+                        <td>Date Operational</td>
+                        <td class="dateOperational">{% if estate.dateOperational %} {{ estate.dateOperational }}
+                            {% endif %}</td>
+                    </tr>
+
+                    <tr>
+                        <td>Construction Cost (Estimated)</td>
+                        <td class="constructionCostEstimated">{% if estate.constructionCostEstimated %}
+                            ₹&nbsp;{{ estate.constructionCostEstimated|intcomma }} {% endif %}</td>
+                    </tr>
+
+                    <tr>
+                        <td>Construction Cost (Actual)</td>
+                        <td class="constructionCostActual">{% if estate.constructionCostActual %}
+                            ₹&nbsp;{{ estate.constructionCostActual|intcomma }} {% endif %}</td>
+                    </tr>
+
+                    <tr>
+                        <td>Area</td>
+                        <td class="area">{% if estate.area %} {{ estate.area }} acres {% endif %}</td>
+                    </tr>
+
+                    <tr>
+                        <td>Number of Rooms</td>
+                        <td class="numRooms">{% if estate.numRooms %} {{ estate.numRooms }} {% endif %}</td>
+                    </tr>
+
+                    <tr>
+                        <td>Number of Washrooms</td>
+                        <td class="numWashrooms">{% if estate.numWashrooms %} {{ estate.numWashrooms }} {% endif %}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            {% if estate.remarks %}
+            <h4 class="ui horizontal divider header">
+                <i class="sticky note icon"></i>
+                Remarks
+            </h4>
+            <p>{{ estate.remarks }}</p>
+            {% endif %}
+
+            <h4 class="ui horizontal divider header">
+                <i class="wrench icon"></i>
+                Construction Works
+            </h4>
+            {% for work in estate.work_set.all %}
+            <table class="ui definition table">
+                <tbody>
+                    <tr>
+                        <td class="three wide column">name</td>
+                        <td class="name">{% if work.name %} {{ work.name }} {% endif %}</td>
+                    </tr>
+
+                    <tr>
+                        <td>dateIssued</td>
+                        <td class="dateIssued">{% if work.dateIssued %} {{ work.dateIssued }} {% endif %}</td>
+                    </tr>
+                </tbody>
+            </table>
+            {% empty %}
+            <p>No works found for {{ estate.name }}</p>
+            {% endfor %}
+
+            <h4 class="ui horizontal divider header">
+                <i class="tasks icon"></i>
+                Maintenance Works
+            </h4>
+            <p>Test</p>
+        </div>
+    </div>
+    <div class="actions">
+        <div class="ui black deny large button">
+            Close
+        </div>
+    </div>
+</div>
+<script>
+    $('.{{ menuitem }}_{{ estate.id }}.details.modal')
+        .modal('attach events', '.{{ menuitem }}_{{ estate.id }}.details.button',
+            'show');
+</script>
+
+{% comment %}
+
+<div class="ui modal details">
+    {% include 'estate/estate_detail.html' %}
+</div>
+
+{{ buildings|json_script:"buildings-data" }}
+
+<script>
+    $('.details.button').on('click', function (e) {
+        //const id = Number($(this).attr("data-id"));
+        const id = e.target.attributes["data-id"].nodeValue;
+        const estate = JSON.parse(document.getElementById('buildings-data').textContent)[id];
+
+        $('.details.modal')
+            .modal({
+                onShow: function () {
+                    $('.details.modal .header')
+                        .text(estate.name);
+                    $('.details.modal tbody td#{{ menuitem }}_date_approval')
+                        .text(estate.date_approval);
+                    $('.details.modal tbody td#{{ menuitem }}_date_start')
+                        .text(estate.date_start);
+                    $('.details.modal tbody td#{{ menuitem }}_amount')
+                        .text("₹ " + estate.amount)
+                }
+            })
+            .modal('show');
+    });
+</script>
+
+{% endcomment %}

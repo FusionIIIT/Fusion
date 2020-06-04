@@ -1,0 +1,73 @@
+{% load humanize %}
+
+<div class="ui {% if forloop.counter0 is 0 %}{{ "active" }}{% endif %} tab" data-tab="{{ menuitem }}_{{ tabname }}">
+    <div class="ui vertical segment">
+        <div class="content">
+            <div class="description">
+
+
+                <table class="ui selectable celled sortable table">
+                    <thead>
+                        <tr>
+                            <th class="five wide column">Building</th>
+                            <th class="two wide column">Issued Date</th>
+                            <th class="two wide column">Construction Started</th>
+                            <th class="two wide column right aligned">Estimated Cost</th>
+                            <th colspan="2" class="one wide column"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        {% for estate in estates %}
+                        {% if tab_id == menuitem|add:"_All" or tab_id == menuitem|add:"_Complete" and estate.dateConstructionCompleted or tab_id == menuitem|add:"_Incomplete" and not estate.dateConstructionCompleted %}
+
+                        <tr>
+                            <td>
+                                {{ estate.name }}
+                            </td>
+                            <td class="center aligned">
+                                {{ estate.dateIssued }}
+                            </td>
+                            <td class="center aligned">
+                                {{ estate.dateConstructionStarted }}
+                            </td>
+                            <td class="right aligned">
+                                ₹&nbsp;{{ estate.constructionCostEstimated|intcomma }}
+                            </td>
+                            {% comment %} <td class="center aligned">
+                                {% include 'estate_module/'|add:menuitem|add:'/edit.html' %}
+                            </td> {% endcomment %}
+                            <td class="center aligned">
+                                {% include 'estate_module/'|add:menuitem|add:'/edit_button.html' %}
+
+                            </td>
+                            <td class="center aligned">
+                                {% include 'estate_module/'|add:menuitem|add:'/detail.html' %}
+                            </td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="6">
+                                <div class="ui right floated pagination menu">
+                                    <a class="icon item">
+                                        <i class="left chevron icon"></i>
+                                    </a>
+                                    <a class="item">1</a>
+                                    <a class="item">2</a>
+                                    <a class="item">3</a>
+                                    <a class="item">4</a>
+                                    <a class="icon item">
+                                        <i class="right chevron icon"></i>
+                                    </a>
+                                </div>
+                            </th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
