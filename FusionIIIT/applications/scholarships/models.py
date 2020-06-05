@@ -14,7 +14,7 @@ class Constants:
         ('Accept', 'ACCEPT')
 
     )
-    time = (
+    TIME = (
         ('0', '12 Midnight'),
         ('1am', '1'),
         ('2am', '2'),
@@ -41,7 +41,7 @@ class Constants:
         ('11pm', '23'),
         ('12 Midnight', '0')
     )
-    batch = (
+    BATCH = (
         ('UG1', 'UG1'),
         ('UG2', 'UG2'),
         ('UG3', 'UG3'),
@@ -49,7 +49,7 @@ class Constants:
         ('PG1', 'PG1'),
         ('PG2', 'PG2')
     )
-    father_occ_choice = (
+    FATHER_OCC_CHOICE = (
         ('government', 'Government'),
         ('private', 'Private'),
         ('public', 'Public'),
@@ -88,7 +88,7 @@ class Mcm(models.Model):
     income_mother = models.IntegerField(default=0)
     income_other = models.IntegerField(default=0)
     father_occ = models.CharField(max_length=10,
-                                  choices=Constants.father_occ_choice,
+                                  choices=Constants.FATHER_OCC_CHOICE,
                                   default='')
     mother_occ = models.CharField(max_length=10,
                                   choices=Constants.MOTHER_OCC_CHOICES,
@@ -115,7 +115,7 @@ class Mcm(models.Model):
                                 on_delete=models.CASCADE, related_name='mcm_info')
     annual_income = models.IntegerField(default=0)
     date = models.DateField(default=datetime.date.today)
-    award_id = models.ForeignKey(Award_and_scholarship, default=4)
+    award_id = models.ForeignKey(Award_and_scholarship, default=4, on_delete=models.CASCADE)
 
 
     class Meta:
@@ -128,8 +128,8 @@ class Mcm(models.Model):
 class Notional_prize(models.Model):
     spi = models.FloatField()
     cpi = models.FloatField()
-    year = models.CharField(max_length=10, choices=Constants.batch)
-    award_id = models.ForeignKey(Award_and_scholarship, default=4)
+    year = models.CharField(max_length=10, choices=Constants.BATCH)
+    award_id = models.ForeignKey(Award_and_scholarship, default=4, on_delete=models.CASCADE)
 
 
     class Meta:
@@ -137,10 +137,10 @@ class Notional_prize(models.Model):
 
 #Addition: a column programme added
 class Previous_winner(models.Model):
-    student = models.ForeignKey(Student)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
     programme = models.CharField(max_length=10,default='B.Tech')
     year = models.IntegerField(default=datetime.datetime.now().year)
-    award_id = models.ForeignKey(Award_and_scholarship)
+    award_id = models.ForeignKey(Award_and_scholarship, on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'Previous_winner'
@@ -161,14 +161,14 @@ class Release(models.Model):
     class Meta:
         db_table = 'Release'
 
-#Abhilash: new class added for keeping track of notifications and applied application by students
+# new class added for keeping track of notifications and applied application by students
 class Notification(models.Model):
-    release_id = models.ForeignKey(Release,default=None)
+    release_id = models.ForeignKey(Release,default=None, on_delete=models.CASCADE)
     student_id = models.ForeignKey(Student, on_delete = models.CASCADE)
     notification_mcm_flag = models.BooleanField(default=False)
     notification_convocation_flag = models.BooleanField(default=False)
     invite_mcm_accept_flag = models.BooleanField(default=False)
-    invite_covocation_accept_flag = models.BooleanField(default=False)
+    invite_convocation_accept_flag = models.BooleanField(default=False)
     def __str__(self):
         return str(self.student_id)
 
@@ -254,12 +254,12 @@ class Proficiency_dm(models.Model):
 class Director_gold(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     status = models.CharField(max_length=10,choices=Constants.STATUS_CHOICES, default='INCOMPLETE')
-    correspondence_address = models.TextField(max_length=40, default='adress')
+    correspondence_address = models.TextField(max_length=40, default='address')
     nearest_policestation = models.TextField(max_length=30, default='station')
     nearest_railwaystation = models.TextField(max_length=30, default='station')
     relevant_document = models.FileField(null=True, blank=True)
     date = models.DateField(default=datetime.date.today)
-    award_id = models.ForeignKey(Award_and_scholarship, default=4)
+    award_id = models.ForeignKey(Award_and_scholarship, default=4, on_delete=models.CASCADE)
     financial_assistance = models.TextField(max_length=1000 ,null=True)
     academic_achievements = models.TextField(max_length=1000 ,null=True)
     science_inside = models.TextField(max_length=1000 ,null=True)
@@ -269,7 +269,7 @@ class Director_gold(models.Model):
     cultural_inside = models.TextField(max_length=1000 ,null=True)
     cultural_outside = models.TextField(max_length=1000 ,null=True)
     social = models.TextField(max_length=1000 ,null=True)
-    coorporate = models.TextField(max_length=1000 ,null=True)
+    corporate = models.TextField(max_length=1000 ,null=True)
     hall_activities = models.TextField(max_length=1000 ,null=True)
     gymkhana_activities = models.TextField(max_length=1000 ,null=True)
     institute_activities = models.TextField(max_length=1000 ,null=True)

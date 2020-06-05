@@ -1,7 +1,7 @@
 {% load static %}
 
 {% block sidenav %}
-    <div class="ui sidebar inverted vertical menu">
+    <div class="ui sidebar inverted vertical menu" style="overflow-y:scroll;">
         <div class="ui doubling stackable grid container">
 
             <div class="ui inverted centered raised item"></div>
@@ -46,12 +46,15 @@
 			        <h4> Academics Module </h4>
 			    </a>
 			    {% endif %}
-          <a class = "item" href="/gymkhana">
-              <h4> Gymkhana Module </h4>
-          </a>
-            <a class = "item" href="/library/library">
-  			        <h4> Library Module </h4>
-  			    </a>
+                <a class = "item" href="/gymkhana">
+                    <h4> Gymkhana Module </h4>
+                </a>
+                <a class = "item" href="/establishment">
+                    <h4> Establishment Module </h4>
+                </a>
+                <a class = "item" href="/library/library">
+                    <h4> Library Module </h4>
+                </a>
     			    <a class="item" href="{% url 'spacs:spacs' %}">
                                 <h4>Awards & Scholarship</h4>
                             </a>
@@ -75,6 +78,10 @@
 
                             <a class="item" href="{% url 'leave:leave' %}">
                                 <h4>Leave Module</h4>
+                            </a>
+
+                            <a class="item" href="{% url 'feeds:feeds' %}">
+                                <h4>Feeds Module</h4>
                             </a>
 
                             <a class="item" href="{% url 'placement:placement' %}">
