@@ -60,7 +60,7 @@ celerybeat-schedule
 .ropeproject
 
 # VSCode Settings
-.vscode/settings.json
+.vscode/
 
 # Node Modules
 node_modules/

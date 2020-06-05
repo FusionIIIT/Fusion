@@ -5,6 +5,7 @@ from django import template
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
+from django.urls import reverse
 
 from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, Faculty
@@ -142,6 +143,27 @@ class Session_info(models.Model):
     class Meta:
         db_table = 'Session_info'
 
+class Event_info(models.Model):
+    id = models.AutoField(max_length=20, primary_key=True)
+    club = models.ForeignKey(Club_info, on_delete=models.CASCADE,max_length=50, null=True)
+    event_name= models.CharField(max_length=256, null=False)
+    venue = models.CharField(max_length=50, null=False,
+                             choices=Constants.venue)
+    incharge=models.CharField(max_length=256, null=False)
+    date = models.DateField(default=None, auto_now=False, null=False)
+    start_time = models.TimeField(default=None, auto_now=False, null=False)
+    end_time = models.TimeField(default=None, auto_now=False, null=True)
+    event_poster = models.FileField(upload_to='gymkhana/event_poster', blank=True)
+    details = models.TextField(max_length=256, null=True)
+    status = models.CharField(
+        max_length=50, choices=Constants.status, default='open')
+
+    def __str__(self):
+        return str(self.id)
+
+    class Meta:
+        db_table = 'Event_info'            
+
 
 class Club_report(models.Model):
     id = models.AutoField(primary_key=True)
@@ -212,3 +234,44 @@ class Change_office(models.Model):
 
     class Meta:
         db_table = 'Change_office'
+
+
+class Voting_polls(models.Model):
+    
+    title = models.CharField(max_length=200,null=False)
+    description = models.CharField(max_length=5000,null=False)
+    pub_date = models.DateTimeField(default=timezone.now)
+    exp_date = models.DateTimeField(default=timezone.now)
+    created_by = models.CharField(max_length=100,null=True)
+    groups = models.CharField(max_length=500,default='{}')
+    
+    def groups_data(self):
+        return self.groups
+
+    def __str__(self):
+        return self.title
+    class Meta:
+        ordering = ['-pub_date']
+
+class Voting_choices(models.Model):
+
+    poll_event = models.ForeignKey(Voting_polls, on_delete=models.CASCADE)
+    title = models.CharField(max_length=200,null=False)
+    description = models.CharField(max_length=500,default='')
+    votes = models.IntegerField(default=0)
+
+    def __str__(self):
+        return self.title
+    
+    class Meta:
+        get_latest_by = 'votes'
+
+class Voting_voters(models.Model):
+   
+    poll_event = models.ForeignKey(Voting_polls, on_delete=models.CASCADE)
+    student_id = models.CharField(max_length=50, null=False)
+    
+    
+    def __str__(self):
+        return self.student_id
+

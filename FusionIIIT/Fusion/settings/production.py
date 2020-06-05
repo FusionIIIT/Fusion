@@ -14,9 +14,9 @@ EMAIL_HOST_PASSWORD = os.environ['MAIL_PASSWORD']
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'fusion',
+        'NAME': 'fusionlab',
         'HOST': 'localhost',
-        'USER': 'admin',
-        'PASSWORD': os.environ['DBPASS'],
+        'USER': 'fusion_admin',
+        'PASSWORD': 'hello123',
     }
 }

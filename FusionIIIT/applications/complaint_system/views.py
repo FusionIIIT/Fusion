@@ -516,8 +516,8 @@ def caretaker(request):
                         age=age,
                         phone=phone,
                         worker_type=worker_type)
-
-            x.save()
+            if not Workers.objects.filter(caretaker_id=a,name=name, age=age,phone=phone,worker_type=worker_type).exists():
+                x.save()
         b = a.area
         historytemp = StudentComplain.objects.filter(location=b).order_by('-id')
         history = []

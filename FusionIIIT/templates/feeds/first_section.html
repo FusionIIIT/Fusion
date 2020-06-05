@@ -1,9 +1,9 @@
 <div class="three wide column" style="min-width:200px; padding:0 0 0 50px;">
-	<form action="{% url 'feeds:feeds' %}" method="POST" class="ui form">
+	<form action="{% url 'feeds:feeds' %}" method="POST" class="ui form" onsubmit = "return tag_validate()">
 		{% csrf_token %}
 		<div class="field">
 			<div class='ui multiple search selection dropdown seasons'>
-				<input name="tag" id="tag" value="tag" type="hidden">
+				<input class="add_tag_fav" name="tag" id="tag" value="tag" type="hidden">
 				<i class="dropdown icon"></i>
 				<div class="default text"><i class="tags icon"></i>Select</div>
 				<div class="menu">
@@ -294,3 +294,15 @@
 		<b>Note : </b> You can add your favourite tags for fast shortlisting.
 	</div>
 </div>
+
+{% block javascript %}
+<script>
+        function tag_validate(){
+            var da = $(".add_tag_fav").val();
+            if(da == "tag")
+                return false;
+            else
+                return true;
+        }
+    </script>
+{% endblock javascript %}

@@ -1,3 +1,5 @@
+{% load static %}
+
 {% block css %}
     <style>
         .no-margin{
@@ -19,13 +21,17 @@
     {% endif %}
 
     {% for question in questions %}
-    
+    {% if question.hidd == 0 %}
     <div class="ui clearing segment blue" style="margin-bottom: 30px;">
         <div class="ui grid header">
 
             <div class="two wide column no-padding no-margin">
                 <a href="{% url 'feeds:profile' question.ques.user.username%}">
+                {% if question.profile.0.profile_picture %}
                     <img class="ui avatar image" style="height: 40px; width: 40px ;" src="{{question.profile.0.profile_picture.url}}">
+                {% else %}
+                    <img class="ui avatar image" style="height: 40px; width: 40px ;" src={% static 'globals/img/zlatan.jpg' %}>
+                {% endif %}
                 </a>
             </div>
 
@@ -93,7 +99,7 @@
                                         </ul>
                                     </div>
 
-                                    <form method="post" action="{% url 'feeds:update_post' question.ques.id %}">{% csrf_token %}
+                                    <form method="post" onsubmit="return update_ques_validate()" action="{% url 'feeds:update_post' question.ques.id %}">{% csrf_token %}
                                         <div class="ui large form">
                                             <div class="field">
                                                 <label>Subject</label>
@@ -108,7 +114,7 @@
                                             <div class="field">
                                                 <label>Add Tag</label>
                                                 <div class='ui multiple search selection dropdown seasons'>
-                                                    <input name="Add_Tag" id="Add_Tag" value="Add_Tag" type="hidden">
+                                                    <input class="update_Add_Tag" name="Add_Tag" id="Add_Tag" value="Add_Tag" type="hidden">
                                                     <i class="dropdown icon"></i>
                                                     <div class="default text"><i class="tags icon"></i>Select</div>
                                                     <div class="menu">
@@ -148,10 +154,35 @@
                         {% endif %}
 
                         <div class="ui item">
-                            <button class="ui button" style="background-color: transparent;" type="submit" name="hide" value="hide" id="hide_post">
+                            <button class="ui button" style="background-color: transparent;" type="submit" name="hide" value="{{question.ques.id}}" id="hide_post">
                             <i class="eye icon"></i> Hide Post
                             </button>
                         </div>
+
+                        <!-- Are You sure Modal for Hide  button -->
+                        <div class="ui modal" id="hide_modal{{question.ques.id}}">
+                            <i class="close icon"></i>
+                            <div class="ui header">
+                                <i class="ui user icon"></i>
+                                {{ username }}
+                            </div>
+
+                            <div class="content">
+                                <div class="ui warning message segment">
+                                    <p> Are you sure you want to hide this question for you? </p>
+                                </div>
+
+                                <form method="post" action="{% url 'feeds:hide_post' question.ques.id %}">
+                                {% csrf_token %}
+                                    <a class="ui item">
+                                        <button class="ui button" type="submit" name="hide" value="hide">
+                                        <i class="trash icon" id="delete"></i>Hide Post for you 
+                                        </button>
+                                    </a>
+                                </form>
+                            </div>
+                        </div> 
+
                     </div>
                 </div>
             </div>
@@ -207,6 +238,21 @@
             </div>
         </div>
     </div>
+    {% else %}
+    <div class="ui clearing segment red center aligned" style="margin-bottom: 30px;">
+        You have choose not to see this post.
+        <a style="padding: 0px; font-size: 12px; font-family: Georgia;" href="{% url 'feeds:single_question' question.ques.id %}">Click here</a> to view.
+        <form method="post" action="{% url 'feeds:unhide_post' question.ques.id %}">
+        {% csrf_token %}
+            <a class="ui item">
+                <button class="ui button" type="submit" name="unhide" value="unhide">
+                <i class="eye icon" id="delete"></i>Click here Unhide 
+                </button>
+            </a>
+        </form>
+    </div>
+    {% endif %}
+
     {% endfor %}
     
     {% include 'feeds/pagination.html' %}
