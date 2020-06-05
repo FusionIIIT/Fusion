@@ -8,6 +8,18 @@ django-model-utils==3.2.0
 django-notifications-hq==1.5.0
 django-pagedown==1.0.6
 django-semanticui-forms
+=======
+django
+django-allauth
+django-cleanup
+django-debug-toolbar
+django-markdown-deux
+django-notifications-hq
+django-pagedown
+django-semanticui-forms
+django-unused-media
+# gunicorn
+>>>>>>> bd8b97642dfd4bbc0b8c45cf8c9e3974c492a754
 html_text
 jsonfield==2.1.1
 numpy
