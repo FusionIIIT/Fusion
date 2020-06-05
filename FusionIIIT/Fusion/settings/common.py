@@ -123,6 +123,7 @@ INSTALLED_APPS = [
     'applications.placement_cell',
     'applications.scholarships',
     'applications.visitor_hostel',
+    'applications.establishment',
     'applications.estate_module',
     'allauth',
     'allauth.account',
