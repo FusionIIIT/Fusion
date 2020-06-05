@@ -63,7 +63,9 @@ class Constants:
 
     DESIGNATIONS = (
         ('academic', 'Academic Designation'),
-        ('administrative', 'Administrative Designation')
+        ('administrative', 'Administrative Designation'),
+
+
     )
 
 

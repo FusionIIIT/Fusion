@@ -110,8 +110,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
-    'applications.globals',
     'applications.eis',
+    'notification',
     'notifications',
     'applications.academic_procedures',
     'applications.academic_information',
@@ -120,6 +120,7 @@ INSTALLED_APPS = [
     'applications.notifications_extension',
     'applications.gymkhana',
     'applications.office_module',
+    'applications.globals',
     'applications.central_mess',
     'applications.complaint_system',
     'applications.filetracking',
@@ -199,7 +200,7 @@ DATABASES = {
         'PASSWORD': 'hello123',
     }
 }
-
+#
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.sqlite3',
@@ -208,7 +209,7 @@ DATABASES = {
 # }
 
 
-# Password validation
+# # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
