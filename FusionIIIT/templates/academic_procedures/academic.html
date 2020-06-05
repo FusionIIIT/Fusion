@@ -52,10 +52,12 @@
                         <i class="right floated chevron right icon"></i>
                     </a>
                     {% if ug_flag %}
-                        <a class="item" data-tab="four" style="display: none;">
+                        {% if BranchFlag %}
+                        <a class="item" data-tab="four">
                             Branch Change
                             <i class="right floated chevron right icon"></i>
                         </a>
+                        {%  endif %}
                         <a class="item" data-tab="five">
                             Evaluate Teaching Credits
                             <i class="right floated chevron right icon"></i>
@@ -158,11 +160,12 @@
                 {%  include 'academic_procedures/bonafide.html' %}
             </div>
             <div class="ui tab segment" data-tab="four">
-                {%  include 'academic_procedures/underconstruction.html' %}
+                {%  include 'academic_procedures/branchChange.html' %}
             </div>
             <div class="ui tab segment" data-tab="five">
                 {%  include 'academic_procedures/underconstruction.html' %}
             </div>
+
             <div class="ui tab segment" data-tab="six">
                 <div class="ui pointing secondary menu">
                     <a class="active item" data-tab="registered_thesis" style="width: 50%;">

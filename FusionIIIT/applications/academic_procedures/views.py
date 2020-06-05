@@ -28,7 +28,7 @@ from .models import (BranchChange, CoursesMtech, InitialRegistrations, StudentRe
                      Constants, FeePayment, TeachingCreditRegistration, SemesterMarks, MarkSubmissionCheck, Dues)
 
 from notification.views import academics_module_notif
-#from .forms import BonafideForm
+from .forms import BranchChangeForm
 
 
 
@@ -217,6 +217,10 @@ def academic_procedures_student(request):
         student_registration_check_final = get_student_registrtion_check(obj,user_sem)
         cpi = get_cpi(user_details.id)
 
+        # branch change flag
+        branchchange_flag=True  # True for testing, to be initialised as False
+        if user_sem==2:
+            branchchange_flag=True
 
         pre_registration_date_flag = get_pre_registration_eligibility(current_date)
         final_registration_date_flag = get_final_registration_eligibility(current_date)
@@ -259,7 +263,7 @@ def academic_procedures_student(request):
             #Student.objects.filter(id = user_details.id).update(cpi = 9.2)
             #FeePayment.objects.all().delete()
             #print(FeePayment.objects.all().first().transaction_id)
-
+        print(user_sem)
         details = {
                 'current_user': current_user,
                 'year': acad_year,
@@ -373,6 +377,16 @@ def academic_procedures_student(request):
                 ab += len(absents)
             attendence.append((i,pr,pr+ab))
         print(attendence)
+        # Branch Change Form save
+        if request.method=='POST':
+            print('Branch Change submitted')
+            if True:
+                # Processing Branch Change form
+                print('Branch Change submitted')
+                objb = BranchChange()
+                form=BranchChangeForm(request.POST)
+                print(request.POST)
+                objb = BranchChange()
         return render(
                           request, '../templates/academic_procedures/academic.html',
                           {'details': details,
@@ -424,6 +438,8 @@ def academic_procedures_student(request):
                            'hos_d':hos_d,
                             'tot_d':tot_d,
                            'attendence':attendence,
+                           'BranchChangeForm': BranchChangeForm(),
+                           'BranchFlag':branchchange_flag,
                            }
                 )
 
