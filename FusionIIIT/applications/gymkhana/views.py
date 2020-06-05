@@ -831,8 +831,6 @@ def conflict_algorithm_session(date, start_time, end_time, venue):
 		else:
 			return "error"
 
-
-
 ##helper function to get the target user for the voting poll
 def get_target_user(groups):
 	dic = {}
@@ -901,4 +899,37 @@ def vote(request,poll_id):
 			return HttpResponse('error')	
 	data = serializers.serialize('json',Voting_choices.objects.all())
 	return redirect('/gymkhana/')
+
+#this algorithm checks if the passed slot time coflicts with any of already booked events
+def conflict_algorithm_event(date, start_time, end_time, venue):
+	#converting string to datetime type variable
+	start_time = datetime.datetime.strptime(start_time, '%H:%M').time()
+	end_time = datetime.datetime.strptime(end_time, '%H:%M').time()
+	booked_Events = Event_info.objects.filter(date=date, venue=venue)
+
+	#placing start time and end time in tuple fashion inside this list
+	slots = [(start_time, end_time)]
+	for value in booked_Events:
+		slots.append((value.start_time, value.end_time))
+	slots.sort()
+	#if there isn't any slot present for the selected day just book the event
+	if (len(slots) == 1):
+		return "success"
+	else:
+		#this whole logic checks if the end time of any slot is less than the start time of next slot
+		counter = slots[0][1]
+		flag = 0 
+		i=1
+		while i < len(slots):
+			print(counter)
+			if (slots[i][0] < counter):
+				print("error ", i)
+				flag = 1
+				break
+			counter = slots[i][1]
+			i = i + 1 
+		if (flag == 0):
+			return "success"
+		else:
+			return "error"
 	

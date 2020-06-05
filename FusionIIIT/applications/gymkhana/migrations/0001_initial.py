@@ -113,25 +113,6 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
-            name='Event_info',
-            fields=[
-                ('id', models.AutoField(max_length=20, primary_key=True, serialize=False)),
-                ('event_name', models.CharField(choices=[('Classroom', (('CR101', 'CR101'), ('CR102', 'CR102'))), ('Lecturehall', (('L101', 'L101'), ('L102', 'L102')))], max_length=50)),
-                ('venue', models.CharField(choices=[('Classroom', (('CR101', 'CR101'), ('CR102', 'CR102'))), ('Lecturehall', (('L101', 'L101'), ('L102', 'L102')))], max_length=50)),
-                ('incharge', models.CharField(choices=[('Classroom', (('CR101', 'CR101'), ('CR102', 'CR102'))), ('Lecturehall', (('L101', 'L101'), ('L102', 'L102')))], max_length=50)),
-                ('date', models.DateField(default=None)),
-                ('start_time', models.TimeField(default=None)),
-                ('end_time', models.TimeField(default=None, null=True)),
-                ('event_poster', models.FileField(blank=True, upload_to='gymkhana/event_poster')),
-                ('details', models.TextField(max_length=256, null=True)),
-                ('status', models.CharField(choices=[('open', 'Open'), ('confirmed', 'Confirmed'), ('rejected', 'Rejected')], default='open', max_length=50)),
-                ('club', models.ForeignKey(max_length=50, null=True, on_delete=django.db.models.deletion.CASCADE, to='gymkhana.Club_info')),
-            ],
-            options={
-                'db_table': 'Event_info',
-            },
-        ),
-        migrations.CreateModel(
             name='Fest_budget',
             fields=[
                 ('id', models.AutoField(max_length=20, primary_key=True, serialize=False)),

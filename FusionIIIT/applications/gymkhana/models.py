@@ -144,7 +144,7 @@ class Session_info(models.Model):
         db_table = 'Session_info'
 
 class Event_info(models.Model):
-    id = models.AutoField(max_length=20, primary_key=True)
+    id = models.AutoField(primary_key=True)
     club = models.ForeignKey(Club_info, on_delete=models.CASCADE,max_length=50, null=True)
     event_name= models.CharField(max_length=256, null=False)
     venue = models.CharField(max_length=50, null=False,

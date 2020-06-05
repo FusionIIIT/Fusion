@@ -408,19 +408,15 @@
             </div>
             {% comment %}The Publications ends here!{% endcomment %}
 
-
-            
-
-
-            <div class="ui active  tab segment" data-tab="twelth">
-                {% block view_budget %}
-                    {% include 'gymkhanaModule/club_details.html' %}
-                {% endblock %}
-            </div>
-
             <div class="ui tab segment" data-tab="last">
                 {% block pendingrequest %}
                     {% include 'gymkhanaModule/pending_request.html' %}
+                {% endblock %}
+            </div>
+
+            <div class="ui active tab segment" data-tab="twelth">
+                {% block view_budget %}
+                    {% include 'gymkhanaModule/club_details.html' %}
                 {% endblock %}
             </div>
         </div>
