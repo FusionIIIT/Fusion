@@ -1,0 +1,42 @@
+{% block tab1 %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="tab1content1">
+            Application
+        </a>
+
+        <a class="item" data-tab="tab1content2">
+            Accepted
+        </a>
+
+        <a class="item" data-tab="tab1content3">
+            Rejected
+        </a>
+
+    </div>
+
+    <div class="ui active tab" data-tab="tab1content1">
+        <div class="ui vertical segment">
+            {% block tab1content1 %}
+                {% include 'officeModule/directorOffice/registrarSection_content1.html' %}
+            {% endblock %}
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="tab1content2">
+        <div class="ui vertical segment">
+            {% block tab1content2 %}
+                {% include 'officeModule/directorOffice/registrarSection_content2.html' %}
+            {% endblock %}
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="tab1content3">
+        <div class="ui vertical segment">
+            {% block tab1content3 %}
+                {% include 'officeModule/directorOffice/registrarSection_content3.html' %}
+            {% endblock %}
+        </div>
+    </div>
+{% endblock tab1%}

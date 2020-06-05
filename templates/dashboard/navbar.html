@@ -1,0 +1,137 @@
+{% load static %}
+{% block navBar %}
+    {% include 'dashboard/sidenavbar.html' %}
+
+    <div>
+        <div class="ui stackable massive inverted top attached menu" id="navbar">
+            <a class="item" id="sidebartrigger">
+                <i class="sidebar icon"></i>
+            </a>
+
+
+            <a class="item" href="{% url 'globals:dashboard' %}">
+                {% load notifications_tags %}
+                {% register_notify_callbacks badge_class='badge' callbacks='fill_notification_badge' %}
+                <i class="ui active inverted large home icon"></i>
+                Dashboard
+                <div class="ui red circular label">{% live_notify_badge badge_class='badge' %}</div>
+            </a>
+            <div class="item">
+                <a class="icon mail" href = '/feedback'>
+                <i class="comment icon"></i>Feedback</a>
+            </div>
+            <div class="item">
+                <form method="GET" action="{% url 'globals:search' %}">
+                    <div class="ui search">
+                        <div class="ui action input">
+                          <input type="text" name="q" placeholder="Search...">
+                          <button type="submit" class="ui button"><i class="search icon"></i></button>
+                        </div>
+                        <div class="results"></div>
+                    </div>
+                    
+                </form>
+            </div>
+            <div class="right inverted menu">
+                <a class="item" href="{% url 'globals:profile' %}">
+                    {% comment %}
+                        TODO: User details! depending on type of user say: STUDENT/FACULTY/STAFF!
+                    {% endcomment %}
+                    <img class="ui avatar image" src="{% static 'globals/img/zlatan.jpg' %}">
+                    {{request.user.first_name}} {{request.user.last_name}}
+                </a>
+                {% comment %}
+                <a class="item ui pointed dropdown link" href="{% url 'globals:dashboard' %}" id="new-notification">
+                    <div class="text">Notifications</div>
+                    <i class="dropdown"></i>
+                    <div class="ui red circular label">22</div>
+                        TODO: Make dropdown menu
+                    <div class="menu">
+                        <div class="item">Notification1</div>
+                        <div class="item">Notification1</div>
+                    </div>
+                    {% endcomment %}
+                </a>
+                    
+                <div class="ui fluid popup bottom left transition">
+                    <div class="ui four column relaxed equal height stackable doubling grid">
+                        <div class="row">
+                            <h3 class="ui dividing header" style="margin: auto; margin-top: 8px;">Notifications</h3>
+                        </div>
+
+                        <div class="row">
+                            <div class="column">
+                                <div class="ui secondary vertical pointing compact menu">
+                                    <a class="active item" data-tab="leaveModule">
+                                        <span style="color: #000;">
+                                            Leave
+                                        </span>
+                                    </a>
+
+                                    <a class="item" data-tab="complaintModule">
+                                        <span style="color: #000;">
+                                            Complaint
+                                        </span>
+                                    </a>
+
+                                    <a class="item" data-tab="messModule">
+                                        <span style="color: #000;">
+                                            Mess
+                                        </span>
+                                    </a>
+
+                                    <a class="item" data-tab="placementModule">
+                                        <span style="color: #000;">
+                                            Placement
+                                        </span>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="three wide column">
+                                <div class="ui active tab" data-tab="leaveModule">
+                                    <div class="ui animated fluid list"
+                                         id="new-message-list" style="min-width: 20vw; max-height: 28.5vh; overflow-y: auto;">
+                                    </div>
+                                </div>
+
+                                <div class="ui tab"  data-tab="complaintModule">
+                                </div>
+
+                                <div class="ui tab"  data-tab="messModule">
+                                </div>
+
+                                <div class="ui tab"  data-tab="placementModule">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <a class="right item" href="/accounts/logout">
+                    {% comment %}
+                        TODO: LOGOUT!
+                    {% endcomment %}
+                    <i class="ui inverted sign out icon"></i>
+                    Logout
+                </a>
+
+            </div>
+        </div>
+
+        <div class="ui divider"></div>
+
+
+
+
+        {% block data%}
+
+        {% endblock %}
+
+
+
+    </div>
+
+
+{% endblock %}

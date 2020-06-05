@@ -1,0 +1,839 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Placement
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}
+            The left-rail segment starts here!
+        {% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu starts here!{% endcomment %}
+            <div class="ui huge fluid vertical pointing menu"
+                 style="max-width: 320px;">
+                {% for c in current %}
+                    {% if c.designation.name == 'student' %}
+                     <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" data-tab="twelth">
+                         Placement Schedule
+                         <i class="right floated chevron right icon"></i>
+                     </a>
+                     {% endif %}
+                 {% endfor %}
+
+
+                {% for c in current2 %}
+                    {% if c.designation.name == 'placement officer' %}
+                        {% if students or invitecheck == 1 or student_record_check == 1 %}
+                            <a class="item" data-tab="twelth">
+                                Placement Schedule
+                                <i class="right floated chevron right icon"></i>
+                            </a>
+                            <a class="{% if officer_manage or officer_manage_pbi or officer_statistics_past or officer_statistics_past_add or officer_statistics_past_pbi_search or officer_statistics_past_pbi_add or officer_statistics_past_higher_search or officer_statistics_past_higher_add %}item{% else %}active item{% endif %}" href="{% url 'placement:student_records' %}">
+                                Send Notification
+                                <i class="right floated chevron right icon"></i>
+                            </a>
+                        {% else %}
+                             <a class="{% if schedule_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement' %}">
+                                 Placement Schedule
+                                 <i class="right floated chevron right icon"></i>
+                             </a>
+                             <a class="{% if strecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:student_records' %}">
+                                 Send Notification
+                                 <i class="right floated chevron right icon"></i>
+                             </a>
+                         {% endif %}
+                    <a class="{% if mnrecord_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:manage_records' %}">
+                        Manage Records
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    {% endif %}
+                {% endfor %}
+
+
+                {% for c in current1 %}
+                    {% if c.designation.name == 'placement chairman' %}
+                        {% if students %}
+                            <a class="item" data-tab="twelth">
+                                Placement Schedule
+                                <i class="right floated chevron right icon"></i>
+                            </a>
+                            <a class="{% if officer_manage or officer_manage_pbi or officer_statistics_past or officer_statistics_past_add or officer_statistics_past_pbi_search or officer_statistics_past_pbi_add or officer_statistics_past_higher_search or officer_statistics_past_higher_add or chairman_visit_add %}item{% else %}active item{% endif %}" data-tab="ninth">
+                                Send Notification
+                                <i class="right floated chevron right icon"></i>
+                            </a>
+                        {% else %}
+                             <a class="{% if officer_manage or officer_manage_pbi or officer_statistics_past or officer_statistics_past_add or officer_statistics_past_higher_search or officer_statistics_past_higher_add or officer_statistics_past_pbi_add or officer_statistics_past_pbi_search or chairman_visit_add%}item{% else %}active item{% endif %}" data-tab="twelth">
+                                 Placement Schedule
+                                 <i class="right floated chevron right icon"></i>
+                             </a>
+                             <a class="item" data-tab="ninth">
+                                 Send Notification
+                                 <i class="right floated chevron right icon"></i>
+                             </a>
+                         {% endif %}
+
+                    <a class="{% if officer_manage or officer_manage_pbi %}active item{% else %}item{% endif %}" data-tab="tenth">
+                        Manage Records
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    <a class="{% if chairman_visit_add %}active item{% else %}item{% endif %}" data-tab="seventh">
+                        Placement Visits
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    {% endif %}
+                {% endfor %}
+
+                <a class="{% if statistics_tab %}active item{% else %}item{% endif %}" href="{% url 'placement:placement_statistics' %}">
+                    Placement Statistics
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+            </div>
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+
+        {% comment %} The central-rail segment starts here!{% endcomment %}
+        <div class="eight wide column">
+          {% comment %}The tab menu starts here!{% endcomment %}
+            <div class="ui pointing secondary menu">
+                <a class="active item" data-tab="pastrecords">
+                    Search/Update Past Records
+                </a>
+            </div>
+
+            <div class="ui active tab" data-tab="pastrecords">
+                <div class="ui vertical segment">
+
+                    <div class="ui three item menu">
+                        <a class="{% if officer_statistics_past_pbi_search or officer_statistics_past_pbi_add or officer_statistics_past_higher_search or officer_statistics_past_higher_add %}item{% else %}active item{% endif %}" data-tab="Placement">
+                          Placement
+                        </a>
+
+                        <a class="{% if officer_statistics_past_pbi_search or officer_statistics_past_pbi_add %}active item{% else %}item{% endif %}" data-tab="PBI">
+                          PBI
+                        </a>
+
+                        <a class="{% if officer_statistics_past_higher_search or officer_statistics_past_higher_add %}active item{% else %}item{% endif %}" data-tab="HigherStudies">
+                          Higher Studies
+                        </a>
+
+                    </div>
+
+                    <div class="{% if officer_statistics_past_pbi_search or officer_statistics_past_higher_search %}ui tab{% else %}ui active tab{% endif %}" data-tab="Placement">
+
+                      <div style="display: none;" id="placement_required_message_error" class="ui negative message">
+                        <i onclick="closePlacementErrorMessage();" class="close icon"></i>
+                        <div class="header">
+                          Please fill all the fields in order to add record.
+                        </div>
+                      </div>
+
+                      <form method="post" class="ui form" role="form" action="{% url 'placement:manage_records' %}">
+                        {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                        <div class="ui accordion field">
+                            <div class="active title">
+                                <i class="icon dropdown"></i>
+                                Search a Student!
+                            </div>
+                              {{ form2.non_field_errors }}
+                            <div class="active content">
+                                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                                    {% csrf_token %}
+                                    <div class="two fields">
+                                    <div class="field">
+                                      {{ form2.stuname.errors }}
+                                            <label for="{{ form3.cname.id_for_label }}">
+                                                Student Name {% if profile.designation.name != 'student' %}(Only for searching records){% endif %}
+                                            </label>
+
+                                            <div class="ui large input">
+                                                {{ form2.stuname }}
+                                            </div>
+                                        </div>
+                                        <div class="field">
+                                          {{ form2.cname.errors }}
+                                                <label for="{{ form3.cname.id_for_label }}">
+                                                    Company
+                                                </label>
+
+                                                <div class="ui large input">
+                                                    {{ form2.cname }}
+                                                </div>
+                                            </div>
+                                            </div>
+                                    <div class="three fields">
+                                        <div class="field">
+                                          {{ form2.roll.errors }}
+                                            <label for="{{ form3.stuname.id_for_label }}">
+                                                Roll No
+                                            </label>
+
+                                            <div class="ui large input">
+                                                {{ form2.roll}}
+                                            </div>
+                                        </div>
+
+                                        <div class="field">
+                                          {{ form2.year.errors }}
+                                            <label for="{{ form3.year.id_for_label }}">
+                                                Placed Year
+                                            </label>
+
+                                            <div class="ui large input">
+                                                {{ form2.year }}
+                                            </div>
+                                        </div>
+
+                                        <div class="field">
+                                          {{ form2.ctc.errors }}
+                                            <label for="{{ form3.ctc.id_for_label }}">
+                                                CTC (LPA) (minimum for Search)
+                                            </label>
+
+                                            <div class="ui large input">
+                                                {{ form2.ctc }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="two fields">
+                                    <div class="field">
+                                      <button name="studentplacementrecordsubmit" class="ui fluid large primary button" type="submit">
+                                          Search
+                                      </button>
+                                    </div>
+                                    {% if current == None %}
+                                    <div class="field">
+                                        <button name="studentplacementaddsubmit" value="studentplacementaddsubmit" id="studentplacementaddsubmit" class="ui fluid large primary button" type="submit">
+                                            Add
+                                        </button>
+                                    </div>
+                                    {% endif %}
+                                  </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% comment %}The add a new skill Accordian ends here!{% endcomment %}
+                      </form>
+                      {% comment %}Form Tag ends here!{% endcomment %}
+
+                    {% if placementrecord == 1 %}
+                      <br>
+                    {% elif placementrecord %}
+                        <br>
+                        <br>
+                    <!-- Pagination Section starts here  --->
+                    {% if pagination_placement %}
+                        <center>
+                          <div class="ui pagination menu">
+                            {% if placementrecord.has_previous %}
+                            <a href="?page={{placementrecord.previous_page_number}}" class="item">
+                              Previous
+                            </a>
+                            {% endif %}
+
+                            {% if is_disabled %}
+                              <a href="?page=1" class="item">1</a>
+                              <div class="disabled item">
+                                ...
+                              </div>
+                            {% endif %}
+
+                            {% for i in page_range %}
+                              {% if placementrecord.number == i %}
+                                <a href="?page={{i}}" class="active item">{{ i }} </a>
+                              {% else %}
+                                <a href="?page={{ i }}" class="item">{{ i }}</a>
+                              {% endif %}
+                            {% endfor %}
+
+
+
+                            {% if placementrecord.has_next %}
+                            <div class="disabled item">
+                              ...
+                            </div>
+                            <a href="?page={{placementrecord.next_page_number}}" class="item">
+                              Next
+                            </a>
+                            {% endif %}
+                          </div>
+                        </center>
+                    {% endif %}
+                    <!-- Pagination Section ends here --->
+                    <div class="ui divider"></div>
+                    <br>
+
+                    <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;">
+                        <thead>
+                        <tr>
+                            <th class="four wide">Student</th>
+                            <th class="two wide">Year</th>
+                            <th class="six wide">Company</th>
+                            <th class="two wide">CTC(LPA)</th>
+                            <th class="two wide">Delete</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                          {% for student in placementrecord %}
+                          {% if student.record_id.placement_type == 'PLACEMENT' %}
+                        <tr>
+                            <td>
+                                <h4 class="ui image header">
+                                    <div class="content">
+                                        {{ student.unique_id.id.user.first_name }} {{ student.unique_id.id.user.last_name }}
+                                        <div class="sub header">
+                                            {{ student.unique_id.id.id }}
+                                        </div>
+                                    </div>
+                                </h4>
+                            </td>
+
+                            <td>
+                                {{ student.record_id.year }}
+                            </td>
+
+                            <td>
+                                {{ student.record_id.name }}
+                            </td>
+
+                            <td>
+                                {{ student.record_id.ctc }}
+                            </td>
+
+                            {% if current == None %}
+                            <td>
+                              <form method="post" action="{% url 'placement:delete_placement_statistics' %}" class="ui form" role="form">
+                                {% csrf_token %}
+                                <button name="deleterecordmanaged" value="{{ student.id }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
+                                    <i class="delete red icon"></i>
+                                </button>
+                                </form>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                        </tbody>
+                    </table>
+
+                        {% else %}<center><hr><h5>Data Not Found</h5></center>
+
+                        {% endif %}
+
+                    </div>
+
+                    <div class="{% if officer_statistics_past_pbi_search %}ui active tab{% else %}ui tab{% endif %}" data-tab="PBI">
+                      <div style="display: none;" id="pbi_required_message_error" class="ui negative message">
+                        <i onclick="closePbiErrorMessage();" class="close icon"></i>
+                        <div class="header">
+                          Please fill all the fields in order to add record.
+                        </div>
+                      </div>
+                        <form method="post" class="ui form" role="form" action="{% url 'placement:manage_records' %}">
+                              {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                              <div class="ui accordion field">
+                                  <div class="active title">
+                                      <i class="icon dropdown"></i>
+                                      Search a Student!
+                                  </div>
+                                    {{ form3.non_field_errors }}
+                                  <div class="active content">
+                                      <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                                          {% csrf_token %}
+                                          <div class="two fields">
+                                          <div class="field">
+                                            {{ form3.stuname.errors }}
+                                                  <label for="{{ form3.cname.id_for_label }}">
+                                                      Student Name {% if profile.designation.name != 'student' %}(Only for searching records){% endif %}
+                                                  </label>
+
+                                                  <div class="ui large input">
+                                                      {{ form3.stuname }}
+                                                  </div>
+                                              </div>
+                                              <div class="field">
+                                                {{ form3.cname.errors }}
+                                                      <label for="{{ form3.cname.id_for_label }}">
+                                                          Company
+                                                      </label>
+
+                                                      <div class="ui large input">
+                                                          {{ form3.cname }}
+                                                      </div>
+                                                  </div>
+                                                  </div>
+                                          <div class="three fields">
+                                              <div class="field">
+                                                {{ form3.roll.errors }}
+                                                  <label for="{{ form3.stuname.id_for_label }}">
+                                                      Roll No
+                                                  </label>
+
+                                                  <div class="ui large input">
+                                                      {{ form3.roll}}
+                                                  </div>
+                                              </div>
+
+                                              <div class="field">
+                                                {{ form3.year.errors }}
+                                                  <label for="{{ form3.year.id_for_label }}">
+                                                      Placed Year
+                                                  </label>
+
+                                                  <div class="ui large input">
+                                                      {{ form3.year }}
+                                                  </div>
+                                              </div>
+
+                                              <div class="field">
+                                                {{ form3.ctc.errors }}
+                                                  <label for="{{ form3.ctc.id_for_label }}">
+                                                      CTC (LPA) (minimum for Search)
+                                                  </label>
+
+                                                  <div class="ui large input">
+                                                      {{ form3.ctc }}
+                                                  </div>
+                                              </div>
+                                          </div>
+                                          <div class="two fields">
+                                          <div class="field">
+                                            <button name="studentpbirecordsubmit" name="studentpbirecordsubmit" class="ui fluid large primary button" type="submit">
+                                                Search
+                                            </button>
+                                          </div>
+                                          {% if current == None %}
+                                          <div class="field">
+                                              <button name="studentpbiaddsubmit" id="studentpbiaddsubmit" value="studentpbiaddsubmit" class="ui fluid large primary button" type="submit">
+                                                  Add
+                                              </button>
+                                          </div>
+                                          {% endif %}
+                                        </div>
+                                      </div>
+                                  </div>
+                              </div>
+                              {% comment %}The add a new skill Accordian ends here!{% endcomment %}
+                        </form>
+
+                        <br>
+                        <br>
+                    <!-- Pagination Section starts here  --->
+                    {% if pagination_pbi %}
+
+                        <center>
+                          <div class="ui pagination menu">
+                            {% if pbirecord.has_previous %}
+                            <a href="?page={{pbirecord.previous_page_number}}" class="item">
+                              Previous
+                            </a>
+                            {% endif %}
+
+                            {% if is_disabled %}
+                              <a href="?page=1" class="item">1</a>
+                              <div class="disabled item">
+                                ...
+                              </div>
+                            {% endif %}
+
+                            {% for i in page_range %}
+                              {% if pbirecord.number == i %}
+                                <a href="?page={{i}}" class="active item">{{ i }} </a>
+                              {% else %}
+                                <a href="?page={{ i }}" class="item">{{ i }}</a>
+                              {% endif %}
+                            {% endfor %}
+
+
+
+                            {% if pbirecord.has_next %}
+                            <div class="disabled item">
+                              ...
+                            </div>
+                            <a href="?page={{pbirecord.next_page_number}}" class="item">
+                              Next
+                            </a>
+                            {% endif %}
+                          </div>
+                        </center>
+                    {% endif %}
+                    <!-- Pagination Section ends here --->
+                        <div class="ui divider"></div>
+                        <br>
+
+                        {% if pbirecord == 1 %}
+                            <br>
+                        {% elif pbirecord %}
+                            <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;">
+                                <thead>
+                                <tr>
+                                    <th class="four wide">Student</th>
+                                    <th class="two wide">Year</th>
+                                    <th class="six wide">Company</th>
+                                    <th class="two wide">CTC(LPA)</th>
+                                    <th class="two wide">Delete</th>
+                                </tr>
+                                </thead>
+
+                                <tbody>
+                                    {% for student in pbirecord %}
+                                        {% if student.record_id.placement_type == 'PBI' %}
+                                            <tr>
+                                                <td>
+                                                  <h4 class="ui image header">
+                                                        <div class="content">
+                                                            {{ student.unique_id.id.user.first_name }} {{ student.unique_id.id.user.last_name }}
+                                                            <div class="sub header">
+                                                                {{ student.unique_id.id.id }}
+                                                            </div>
+                                                        </div>
+                                                          </h4>
+                                                </td>
+
+                                                <td>
+                                                    {{ student.record_id.year }}
+                                                </td>
+
+                                                <td>
+                                                    {{ student.record_id.name }}
+                                                </td>
+
+                                                <td>
+                                                    &#8377; {{ student.record_id.ctc }}
+                                                </td>
+
+                                                {% if current == None %}
+                                                <td>
+                                                  <form method="post" action="{% url 'placement:delete_placement_statistics' %}" class="ui form" role="form">
+                                                    {% csrf_token %}
+                                                    <button name="deleterecordmanaged" value="{{ student.id }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
+                                                        <i class="delete red icon"></i>
+                                                    </button>
+                                                    </form>
+                                                </td>
+                                                {% endif %}
+                                            </tr>
+                                        {% endif %}
+                                    {% endfor %}
+
+                                </tbody>
+                            </table>
+
+                        {% else %}<center><h5>Data Not Found</h5></center>
+
+                        {% endif %}
+                    </div>
+
+                    <div class="{% if officer_statistics_past_higher_search %}ui active tab{% else %}ui tab{% endif %}" data-tab="HigherStudies">
+
+                      <div style="display: none;" id="higher_required_message_error" class="ui negative message">
+                        <i onclick="closeHigherErrorMessage();" class="close icon"></i>
+                        <div class="header">
+                          Please fill all the fields in order to add record.
+                        </div>
+                      </div>
+
+                         <form method="post" class="ui form" role="form" action="{% url 'placement:manage_records' %}">
+                    {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                    <div class="ui accordion field">
+                        <div class="active title">
+                            <i class="icon dropdown"></i>
+                            Search a Student!
+                        </div>
+                        {{ form4.non_field_errors }}
+                        <div class="active content">
+                            <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                              {% csrf_token %}
+                              <div class="two fields">
+                              <div class="field">
+                                {{ form4.stuname.errors }}
+                                  <label for="{{ form4.stuname.id_for_label }}">
+                                      Student Name {% if profile.designation.name != 'student' %}(Only for searching records){% endif %}
+                                  </label>
+                                  <div class="ui large input">
+                                      {{ form4.stuname }}
+
+                                  </div>
+                              </div>
+                              <div class="field">
+                                {{ form4.roll.errors }}
+                                  <label for="{{ form4.stuname.id_for_label }}">
+                                      Roll No
+                                  </label>
+
+                                  <div class="ui large input">
+                                      {{ form4.roll }}
+                                  </div>
+                              </div>
+                              </div>
+                                <div class="three fields">
+
+                                    <div class="field">
+                                      {{ form4.year.errors }}
+                                            <label for="{{ form4.cname.id_for_label }}">
+                                                Placed Year
+                                            </label>
+
+                                            <div class="ui large input">
+                                                {{ form4.year }}
+                                            </div>
+                                        </div>
+                                    <div class="field">
+                                      {{ form4.test_type.errors }}
+                                        <label for="{{ form4.test_type.id_for_label }}">
+                                            Exam
+                                        </label>
+
+                                        <div class="ui large input">
+                                            {{ form4.test_type }}
+                                        </div>
+                                    </div>
+
+                                    <div class="field">
+                                      {{ form4.test_score.errors }}
+                                        <label for="{{ form4.test_score.id_for_label }}">
+                                            Test Score (Minimum for Search)
+                                        </label>
+
+                                        <div class="ui large input">
+                                            {{ form4.test_score }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="field">
+                                  {{ form4.uname.errors }}
+                                        <label for="{{ form4.cname.id_for_label }}">
+                                            University
+                                        </label>
+
+                                        <div class="ui large input">
+                                            {{ form4.uname }}
+                                        </div>
+                                    </div>
+
+                                  <div class="two fields">
+                                <div class="field">
+                                  <button name="studenthigherrecordsubmit" name="studenthigherrecordsubmit" class="ui fluid large primary button" type="submit">
+                                      Search
+                                  </button>
+                                </div>
+                                {% if current == None %}
+                                <div class="field">
+                                    <button name="studenthigheraddsubmit" id="studenthigheraddsubmit" value="studenthigheraddsubmit" class="ui fluid large primary button" type="submit">
+                                        Add
+                                    </button>
+                                </div>
+                                {% endif %}
+                              </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% comment %}The add a new skill Accordian ends here!{% endcomment %}
+                </form>
+
+
+                            <br>
+                            <br>
+                    <!-- Pagination Section starts here  --->
+                    {% if pagination_higher %}
+
+                        <center>
+                          <div class="ui pagination menu">
+                            {% if higherrecord.has_previous %}
+                            <a href="?page={{higherrecord.previous_page_number}}" class="item">
+                              Previous
+                            </a>
+                            {% endif %}
+
+                            {% if is_disabled %}
+                              <a href="?page=1" class="item">1</a>
+                              <div class="disabled item">
+                                ...
+                              </div>
+                            {% endif %}
+
+                            {% for i in page_range %}
+                              {% if higherrecord.number == i %}
+                                <a href="?page={{i}}" class="active item">{{ i }} </a>
+                              {% else %}
+                                <a href="?page={{ i }}" class="item">{{ i }}</a>
+                              {% endif %}
+                            {% endfor %}
+
+
+
+                            {% if higherrecord.has_next %}
+                            <div class="disabled item">
+                              ...
+                            </div>
+                            <a href="?page={{higherrecord.next_page_number}}" class="item">
+                              Next
+                            </a>
+                            {% endif %}
+                          </div>
+                        </center>
+                    {% endif %}
+                    <!-- Pagination Section ends here --->
+                            <div class="ui divider"></div>
+                            <br>
+
+                            {% if higherrecord == 1 %}
+                            <br>
+                        {% elif higherrecord %}
+                        <table class="ui very basic collapsing celled sortable table" style="margin: auto; padding-left: 32px; padding-right: 32px; overflow-y: auto;">
+                            <thead>
+                            <tr>
+                                <th class="four wide">Student</th>
+                                <th class="two wide">Exam</th>
+                                <th class="six wide">University</th>
+                                <th class="two wide">Score</th>
+                                <th class="two wide">Delete</th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+                              {% for student in higherrecord %}
+
+                              {% if student.record_id.placement_type == 'HIGHER STUDIES' %}
+                            <tr>
+                                <td>
+                                    <h4 class="ui image header">
+
+                                        <div class="content">
+                                            {{ student.unique_id.id.user.first_name }} {{ student.unique_id.id.user.last_name }}
+                                            <div class="sub header">
+                                                {{ student.unique_id.id.id }}
+                                            </div>
+                                        </div>
+                                    </h4>
+                                </td>
+
+                                <td>
+                                    {{ student.record_id.test_type }}
+                                </td>
+
+                                <td>
+                                    {{ student.record_id.name }}
+                                </td>
+
+                                <td>
+                                    {{ student.record_id.test_score }}
+                                </td>
+
+                                {% if current == None %}
+                                <td>
+                                  <form method="post" action="{% url 'placement:delete_placement_statistics' %}" class="ui form" role="form">
+                                    {% csrf_token %}
+                                    <button name="deleterecordmanaged" value="{{ student.id }}" class="ui inverted huge circular icon button" style="margin: auto;" type="submit">
+                                        <i class="delete red icon"></i>
+                                    </button>
+                                    </form>
+                                </td>
+                                {% endif %}
+                            </tr>
+                            {% endif %}
+                        {% endfor %}
+                 </tbody>
+                    </table>
+
+                    {% else %}<center><h5>Data Not Found</h5></center>
+
+                    {% endif %}
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+    </div>
+
+  {% endblock %}
+
+  {% block javascript %}
+  <script type="text/javascript">
+      $('#studentplacementaddsubmit').on('click', function(event){
+        var stuname = $('#add_placement_stuname').val();
+        var year = $('#add_placement_year').val();
+        var roll = $('#add_placement_roll').val();
+        var cname = $('#add_placement_cname').val();
+        var ctc = $('#add_placement_year').val();
+
+        if (year == '' || roll == '' || cname == '' || ctc == '') {
+          $('#placement_required_message_error').css('display', 'block');
+          event.preventDefault();
+        }
+      });
+
+      $('#studentpbiaddsubmit').on('click', function(event){
+        var stuname = $('#add_pbi_stuname').val();
+        var year = $('#add_pbi_year').val();
+        var roll = $('#add_pbi_roll').val();
+        var cname = $('#add_pbi_cname').val();
+        var ctc = $('#add_pbi_ctc').val();
+        console.log(stuname, year, roll, cname, ctc);
+
+        if (year == '' || roll == '' || cname == '' || ctc == '') {
+          $('#pbi_required_message_error').css('display', 'block');
+          event.preventDefault();
+        }
+      });
+
+
+      $('#studenthigheraddsubmit').on('click', function(event){
+        var stuname = $('#add_higher_stuname').val();
+        var year = $('#add_higher_year').val();
+        var roll = $('#add_higher_roll').val();
+        var test_score = $('#add_higher_test_score').val();
+        var test_type = $('#add_higher_test_type').val();
+        var uname = $('#add_higher_uname').val()
+
+        if (year == '' || roll == '' || test_score == '' || test_type == '' || uname == '') {
+          $('#higher_required_message_error').css('display', 'block');
+          event.preventDefault();
+        }
+      });
+
+
+      function closePlacementErrorMessage(){
+       $('#placement_required_message_error').css('display', 'none');
+      }
+
+      function closePbiErrorMessage(){
+       $('#pbi_required_message_error').css('display', 'none');
+      }
+
+      function closeHigherErrorMessage(){
+       $('#higher_required_message_error').css('display', 'none');
+      }
+  </script>
+  {% endblock %}

@@ -1,0 +1,419 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+{% block body %}
+{% block view_feedback %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="ui active item" id="fd">
+            Feedback
+        </a>
+        <a class="ui item" id="fs">
+            Feedback Statistics
+        </a>
+
+    </div>
+<div class="ui active tab" id="fd_tab">
+    <div class="ui four item menu">
+        <a class="active item" data-tab="" id="fd_1">
+            Food
+        </a>
+        <a class=" item" data-tab="" id="fd_2">
+            Cleanliness
+        </a>
+        <a class=" item" data-tab="" id="fd_3">
+            Maintenance
+        </a>
+        <a class=" item" data-tab="" id="fd_4">
+            Other
+        </a>
+    </div>
+    <div class="ui active tab" data-tab="" id="fd_11">
+        <div class="ui vertical segment">
+
+            <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
+                <thead>
+                <tr>
+                    <th>Fedback Date</th>
+                    <th>Student ID</th>
+                    <th>Feedback Type</th>
+                    <th>Description</th>
+                </tr>
+                </thead>
+                <tbody>
+                    {% for item in feed %}
+                    {% if item.feedback_type == 'Food' %}
+                <tr>
+                    <td>{{item.fdate}}</td>
+                    <td>{{ item.student_id.id|truncatewords:1|slice:"-4" }}</td>
+                    <td>{{item.feedback_type}}</td>
+                    <td>{{item.description}}</td>
+                </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <br>
+            <br>
+        </div>
+    </div>
+    <div class="ui tab" data-tab="" id="fd_21">
+        <div class="ui vertical segment">
+
+            <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
+                <thead>
+                <tr>
+                    <th>Fedback Date</th>
+                    <th>Student ID</th>
+                    <th>Feedback Type</th>
+                    <th>Description</th>
+                </tr>
+                </thead>
+                <tbody>
+                    {% for item in feed %}
+                    {% if item.feedback_type == 'Cleanliness' %}
+                <tr>
+                    <td>{{item.fdate}}</td>
+                    <td>{{ item.student_id|truncatewords:1|slice:"-4" }}</td>
+                    <td>{{item.feedback_type}}</td>
+                    <td>{{item.description}}</td>
+                </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <br>
+            <br>
+        </div>
+    </div>
+    <div class="ui  tab" data-tab="" id="fd_31">
+        <div class="ui vertical segment">
+
+            <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
+                <thead>
+                <tr>
+                    <th>Fedback Date</th>
+                    <th>Student ID</th>
+                    <th>Feedback Type</th>
+                    <th>Description</th>
+                </tr>
+                </thead>
+                <tbody>
+                    {% for item in feed %}
+                    {% if item.feedback_type == 'Maintenance' %}
+                <tr>
+                    <td>{{item.fdate}}</td>
+                    <td>{{ item.student_id.id|truncatewords:1|slice:"-4" }}</td>
+                    <td>{{item.feedback_type}}</td>
+                    <td>{{item.description}}</td>
+                </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <br>
+            <br>
+        </div>
+    </div>
+    <div class="ui tab" data-tab="" id="fd_41">
+        <div class="ui vertical segment">
+
+            <table class="ui very basic collapsing celled table sortable centered" style="margin: auto;">
+                <thead>
+                <tr>
+                    <th>Fedback Date</th>
+                    <th>Student ID</th>
+                    <th>Feedback Type</th>
+                    <th>Description</th>
+                </tr>
+                </thead>
+                <tbody>
+                    {% for item in feed %}
+                    {% if item.feedback_type == 'Others' %}
+                <tr>
+                    <td>{{item.fdate}}</td>
+                    <td>{{ item.student_id.id|truncatewords:1|slice:"-4" }}</td>
+                    <td>{{item.feedback_type}}</td>
+                    <td>{{item.description}}</td>
+                </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <br>
+            <br>
+        </div>
+    </div>
+</div>
+
+    <div class="ui tab" id="fs_tab">
+        <div class="ui two item menu">
+        <a class="active item" data-tab="" id="fs_1">
+            Mess 1
+        </a>
+        <a class=" item" data-tab="" id="fs_2">
+            Mess 2
+        </a>
+
+    </div>
+        <div class="ui active tab" data-tab="" id="fs_11">
+        <div class="ui vertical segment">
+            <div class="ui header">
+                Feedback Statistics:
+            </div>
+
+
+            <div class="content">
+                <div class="description">
+                    {% comment %}The HTML5 Canvas for the Chart starts here!{% endcomment %}
+                    <canvas id="myChart"></canvas>
+                </div>
+            </div>
+
+            <div class="extra content">
+
+                <br>
+
+                <div class="ui four equal width blue small stackable statistics"
+                     style="margin: auto;">
+
+                    <div class="ui statistic">
+                        <div class="value">
+                            {{count2}}
+                        </div>
+
+                        <div class="label">
+                            <i class="plane icon"></i>
+                            Food&ensp;
+                        </div>
+                    </div>
+
+                    <div class="ui statistic">
+                        <div class="value">
+                            {{count3}}
+                        </div>
+
+                        <div class="label">
+                            <i class="plane icon"></i>
+                            Hygiene&ensp;
+                        </div>
+                    </div>
+
+                    <div class="ui statistic">
+                        <div class="value">
+                            {{count1}}
+                        </div>
+
+                        <div class="label">
+                            <i class="plane icon"></i>
+                            Maintenance
+                        </div>
+                    </div>
+
+                    <div class="ui statistic">
+                        <div class="value">
+                            {{count4}}
+                        </div>
+
+                        <div class="label">
+                            <i class="plane icon"></i>
+                            Others
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <div class="ui tab" data-tab="" id="fs_21">
+        <div class="ui vertical segment">
+            <div class="ui header">
+                Feedback Statistics:
+            </div>
+
+
+            <div class="content">
+                <div class="description">
+                    {% comment %}The HTML5 Canvas for the Chart starts here!{% endcomment %}
+                    <canvas id="myChart2"></canvas>
+                </div>
+            </div>
+
+            <div class="extra content">
+
+                <br>
+
+                <div class="ui four equal width blue small stackable statistics"
+                     style="margin: auto;">
+
+                    <div class="ui statistic">
+                        <div class="value">
+                            {{count6}}
+                        </div>
+
+                        <div class="label">
+                            <i class="plane icon"></i>
+                            Food&ensp;
+                        </div>
+                    </div>
+
+                    <div class="ui statistic">
+                        <div class="value">
+                            {{count7}}
+                        </div>
+
+                        <div class="label">
+                            <i class="plane icon"></i>
+                            Hygiene&ensp;
+                        </div>
+                    </div>
+
+                    <div class="ui statistic">
+                        <div class="value">
+                            {{count5}}
+                        </div>
+
+                        <div class="label">
+                            <i class="plane icon"></i>
+                            Maintenance
+                        </div>
+                    </div>
+
+                    <div class="ui statistic">
+                        <div class="value">
+                            {{count8}}
+                        </div>
+
+                        <div class="label">
+                            <i class="plane icon"></i>
+                            Others
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+    </div>
+
+
+{% endblock %}
+{% endblock %}
+{% block javascript %}
+<script>
+  $(document).ready(function() {
+        $('#fd').on('click', function () {
+            $(this).addClass('active');
+            $('#fs').removeClass('active');
+            $('#fd_tab').show();
+            $('#fs_tab').hide();
+        });
+    });
+
+    $(document).ready(function() {
+        $('#fs').on('click', function () {
+            $(this).addClass('active');
+            $('#fd').removeClass('active');
+
+             $('#fd_tab').hide();
+            $('#fs_tab').show();
+
+        });
+    });
+$(document).ready(function() {
+        $('#fs_1').on('click', function () {
+            $(this).addClass('active');
+            $('#fs_2').removeClass('active');
+            $('#fs_11').show();
+            $('#fs_21').hide();
+        });
+    });
+
+    $(document).ready(function() {
+        $('#fs_2').on('click', function () {
+            $(this).addClass('active');
+            $('#fs_1').removeClass('active');
+
+             $('#fs_11').hide();
+            $('#fs_21').show();
+
+        });
+    });
+
+
+
+    $(document).ready(function() {
+        $('#fd').on('click', function () {
+            $(this).addClass('active');
+            $('#fs').removeClass('active');
+            $('#fd_tab').show();
+            $('#fs_tab').hide();
+        });
+    });
+
+    $(document).ready(function() {
+        $('#fd_1').on('click', function () {
+            $(this).addClass('active');
+            $('#fd_2').removeClass('active');
+  $('#fd_3').removeClass('active');
+    $('#fd_4').removeClass('active');
+     $('#fd_11').show();
+    $('#fd_21').hide();
+     $('#fd_31').hide();
+      $('#fd_41').hide();
+
+
+        });
+    });
+$(document).ready(function() {
+        $('#fd_2').on('click', function () {
+            $(this).addClass('active');
+            $('#fd_1').removeClass('active');
+             $('#fd_3').removeClass('active');
+              $('#fd_4').removeClass('active');
+            $('#fd_21').show();
+            $('#fd_11').hide();
+             $('#fd_31').hide();
+              $('#fd_41').hide();
+
+        });
+    });
+
+    $(document).ready(function() {
+        $('#fd_3').on('click', function () {
+            $(this).addClass('active');
+            $('#fd_1').removeClass('active');
+            $('#fd_2').removeClass('active');
+               $('#fd_4').removeClass('active');
+             $('#fd_31').show();
+               $('#fd_11').hide();
+                 $('#fd_21').hide();
+                   $('#fd_41').hide();
+
+
+        });
+    });
+      $(document).ready(function() {
+        $('#fd_4').on('click', function () {
+            $(this).addClass('active');
+            $('#fd_1').removeClass('active');
+            $('#fd_2').removeClass('active');
+               $('#fd_3').removeClass('active');
+             $('#fd_41').show();
+               $('#fd_11').hide();
+                 $('#fd_21').hide();
+                   $('#fd_31').hide();
+
+
+        });
+    });
+</script>
+
+{% endblock %}

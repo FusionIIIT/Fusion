@@ -1,0 +1,114 @@
+{% load static %}
+{% block complainthistory %}
+
+<center><b>Drop Couse(s)</b></center>
+
+<div class="ui active tab" data-tab="complainthistory">
+    <div class="ui vertical segment">
+        {% if adc_date_flag %}
+                {% if final_registration_flag %}
+                    {% if drop_courses_options %}
+                        <form id='drop_courses' action='/academic-procedures/drop_course/'>
+                        {% csrf_token %}
+                                <input type="text" hidden="true" id="c_count" value="{{dropped_courses_count}}">
+                                <input type="text" hidden="true" id="cr_count" value="{{current_credits}}">
+                            <table  class="ui very basic collapsing celled sortable table"               
+                                    style= "padding-left: 2.5%;
+                                            padding-right: 2.5%;
+                                            padding-top: 1%;
+                                            padding-bottom: 1.5%;
+                                            margin: auto;">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Course ID</th>
+                                    <th>Course Name</th>
+                                    <th>Credits</th>
+                                    <th>Semester</th>
+                                    <th>Select Course</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {% for items in drop_courses_options %}
+                                            <tr>
+                                                <td>{{forloop.counter}}</td>
+                                                <td>{{ items.course_code }}
+                                                    {% if items.optional %}
+                                                    <B><div style="color:green;">(optional)</B></div>
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ items.course_id.course_name}}</td>
+                                                <td>{{ items.credits }}</td>
+                                                <td>{{items.sem}}
+                                                    <input type="text" name='semester' value='{{ items.sem}}' hidden="True">
+                                                </td>
+                                                <td>
+                                                    <input name="choice" id="mycheck" type="checkbox" value="{{ items.curriculum_id }}" data-valuetwo="{{items.credits}}">
+                                                    <input type="text" name='user' value='{{ details.current_user}}' hidden="True">
+                                                </td>
+                                            </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+
+                        <br>
+                        <div class="ui divider"></div>
+                        <center><button class="ui negative basic button">Drop Course(s)</button></center></form>
+                    {% else %}
+                        <B> YOU HAVE NOT REGISTERED YET</B>
+                    {% endif %}
+                {% else %}
+                    <B><center>You need to complete Registration process first</center></B>
+                {% endif %}
+        {% else %}
+            <b><center>You have to wait for the date</center></b>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
+
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+$(function() {
+    $("#drop_courses").submit(function(event) {
+
+        var credits = parseInt(document.getElementById("cr_count").value);
+        var count = parseInt(document.getElementById("c_count").value);
+        var checkboxing = document.getElementById("mycheck");
+        var test =0;
+        for(var i=0; i<mycheck.length;i++){
+            if(mycheck[i].checked==true){
+                credits = credits - parseInt(mycheck[i].getAttribute("data-valuetwo"));
+                count =count+1;
+                test =test+1;
+            }
+        }
+
+        if (count >= 3){
+            alert("You Can't drop more than 2 courses in one semester");
+            window.location = "/academic-procedures/main/" ;  
+        }else if(credits <= 11 ){
+            alert("You need to earn at least 12 credits in one semester");
+            window.location = "/academic-procedures/main/" ;           
+        }else if(test ==0 ){
+            alert("please Select a course");
+            window.location = "/academic-procedures/main/" ;           
+        }else{
+        event.preventDefault();
+        var friendForm = $(this);
+        var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
+
+        posting.done(function(data) {
+            alert('Course Drop Successful');
+            window.location = "/academic-procedures/main/";
+        });
+        posting.fail(function(data) {
+            alert('Failed to drop a course');
+            window.location = "/academic-procedures/main/";
+        });
+    }
+    });
+});
+</script>

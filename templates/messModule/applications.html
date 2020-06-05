@@ -1,0 +1,946 @@
+{#{% extends 'globals/base.html' %}#}
+{% load static %}
+{% block body %}
+    {% block leaveRequest %}
+
+        {% comment %}The tab menu starts here!{% endcomment %}
+        <div class="ui pointing secondary menu">
+            {% if programme == 1 %}
+            <a class="ui active item" data-tab="" id="la">
+                Leave Requests
+            </a>
+            {% endif %}
+
+            <a class="ui {% if programme == 0 %}active{% endif%} item" data-tab="" id="va">
+                Vacation Food Requests
+            </a>
+            <a class="ui item" data-tab="" id="sa">
+                Special Food Requests
+            </a>
+        </div>
+<div class="ui {% if programme == 1 %}active{% endif%} tab" data-tab="" id="latab">
+    <div class="ui two item menu">
+        <a class="ui item" data-tab="" id="la_1">
+            Apply for leave
+        </a>
+        <a class="ui item" data-tab="" id="la_2">
+            Leave Status
+        </a>
+    </div>
+        <div class="ui active tab" data-tab="" id="leave">
+            <div class="ui vertical segment">
+
+                {% comment %}Form Tag starts here!{% endcomment %}
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                    <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                        <div class="ui header">
+                            Leave Application:
+                        </div>
+                        <div class="two fields">
+                            <div class="field">
+                                <label>Mess:</label>
+                                <input value="{{ messinfo.mess_option }}" class="ui small input" readonly>
+                            </div>
+
+                            <div class="two fields">
+                                <div class="twelve wide field">
+                                    <label>Leave Type*</label>
+                                    <select name="leave_type" class="ui fluid dropdown" required="true" id="leave_type">
+                                        <option value="vacation">Vacation Leave</option>
+                                    </select>
+                                </div>
+
+                                <div class="field">
+                                    <label><br></label>
+                                    <button class="ui primary fluid button" onclick="return lsrequest()">
+                                        Submit
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="two fields">
+                            <div class="field">
+                                <label>Leave From*</label>
+                                <div class="ui calendar" id="rangestart">
+                                    <div>
+                                        <input name="start_date" type="date" placeholder="From" required="true"
+                                               id="start_date">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label>Leave To*</label>
+                                <div class="ui calendar" id="rangeend">
+                                    <div class="ui input left icon">
+                                        <input name="end_date" type="date" placeholder="To" required="true"
+                                               id="end_date">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% comment %}
+                            TODO: Make this Optional
+                        {% endcomment %}
+                        <div class="field">
+                            <label>Purpose*</label>
+                            <textarea name="purpose" rows="2" required="true" id="purpose"></textarea>
+
+                        </div>
+                        {#                    <div class="field">#}
+                        {#                        <input type="file" name="myfile">#}
+                        {#                    </div>#}
+
+                    </div>
+                </form>
+                {% comment %}Form Tag ends here!{% endcomment %}
+
+
+                <div class="ui divider"></div>
+
+            </div>
+        </div>
+
+        <div class="ui tab" data-tab="" id="leavestatus">
+
+            <div class="ui vertical segment" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                <br>
+
+                <div class="content">
+                    <div class="description">
+
+                        <table class="ui very basic collapsing celled table sortable centered"
+                               style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                            <thead>
+                            <tr>
+                                <th>
+                                    Date
+                                </th>
+
+                                <th>
+                                    Type
+                                </th>
+
+                                <th>
+                                    From
+                                </th>
+
+                                <th>
+                                    To
+                                </th>
+                                <th>
+                                    Status
+                                </th>
+                            </tr>
+                            </thead>
+
+                            {% for item in rebates %}
+                                <tbody id="ls_table">
+                                <tr>
+                                    <td>
+                                        {{ item.app_date }}
+                                    </td>
+
+                                    <td>
+                                        {{ item.leave_type }}
+                                    </td>
+
+                                    <td>
+                                        {{ item.start_date }}
+                                    </td>
+
+                                    <td>
+                                        {{ item.end_date }}
+                                    </td>
+                                    <td>
+                                        {% if item.status == '2' %}
+                                            <i class="large green checkmark icon"></i>
+
+                                        {% elif item.status == '1' %}
+                                            <i class="large orange warning icon"></i>
+
+                                        {% else %}
+                                            <i class="large red x icon"></i>
+
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                </tbody>
+                            {% endfor %}
+                        </table>
+                        <br>
+                    </div>
+                </div>
+            </div>
+
+            <br>
+
+            <div class="extra content">
+                <div class="" style="text-align: center;">
+                    <i class="large green checkmark icon"></i> : Approved &ensp;&ensp;&ensp;&ensp;&ensp;
+                    <i class="large orange warning icon"></i> : Pending &ensp;&ensp;&ensp;&ensp;&ensp;
+                    <i class="large red x icon"></i> : Declined
+                </div>
+            </div>
+
+        </div>
+</div>
+
+<div class="ui {% if programme == 0 %}active{% endif%} tab" data-tab="" id="vatab">
+        <div class="ui two item menu">
+        <a class="ui active item" data-tab="" id="va_1">
+            Apply for Food During Vacation
+        </a>
+        <a class="ui item" data-tab="" id="va_2">
+             Status
+        </a>
+        </div>
+
+        <div class="ui active tab" data-tab="" id="lrequest">
+            <div class="ui vertical segment">
+
+                {% comment %}Form Tag starts here!{% endcomment %}
+                <form method="POST" id="vfreq">
+                    {% csrf_token %}
+                    {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                    <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                        <div class="ui header">
+                            Apply for Food during Vacations:
+                        </div>
+                        <div class="two fields">
+                            <div class="field">
+                                <label>Mess:</label>
+                                <input value="{{ messinfo.mess_option }}" class="ui large input" readonly id="mess">
+                            </div>
+                        </div>
+
+                        <div class="two fields">
+                            <div class="field">
+                                <label>Leave From*</label>
+                                <div id="rangestart">
+                                    <input name="start_date" type="date" placeholder="From" required="true"
+                                               id="sdate">
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label>Leave To*</label>
+                                <div id="rangeend">
+                                    <input name="end_date" type="date" placeholder="To" required="true" id="edate">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label>Purpose*</label>
+                            <textarea rows="2" name="purpose" id="purpose1"></textarea>
+                        </div>
+
+                        <div class="field">
+                            <button class="ui primary button right floated" onclick="return vacarequest()">
+                                Submit
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                {% comment %}Form Tag ends here!{% endcomment %}
+
+                <br>
+                <br>
+
+                <div class="ui divider"></div>
+
+            </div>
+        </div>
+
+        <div class="ui tab" data-tab="" id="vacationstatus">
+
+
+            <div class="ui vertical segment" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                <br>
+
+                <div class="content">
+                    <div class="description">
+
+                        <table class="ui very basic collapsing celled large sortable table"
+                               style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                            <thead>
+                            <tr>
+                                <th>
+                                    Date Of Application
+                                </th>
+
+                                <th>
+                                    From
+                                </th>
+
+                                <th>
+                                    To
+                                </th>
+
+                                <th>
+                                    Purpose
+                                </th>
+
+                                <th>
+                                    Status
+                                </th>
+
+
+                            </tr>
+                            </thead>
+
+                            <tbody id="vacatable">
+                            {% for req in vaca %}
+                                <tr>
+                                    <td>
+                                        {{ req.app_date }}
+                                    </td>
+
+                                    <td>
+                                        {{ req.start_date }}
+                                    </td>
+
+                                    <td>
+                                        {{ req.end_date }}
+                                    </td>
+
+                                    <td>
+                                        {{ req.purpose }}
+                                    </td>
+
+                                    <td>
+                                        {% if req.status == '1' %}
+                                            <i class="large orange warning icon"></i>
+
+                                        {% elif req.status == '0' %}
+                                            <i class="large red x icon"></i>
+
+                                        {% else %}
+                                            <i class="large green checkmark icon"></i>
+
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+
+                            </tbody>
+                        </table>
+                        <br>
+                    </div>
+                </div>
+            </div>
+
+            <br>
+
+            <div class="extra content">
+                <div class="" style="text-align: center;">
+                    <i class="large green checkmark icon"></i> : Approved &ensp;&ensp;&ensp;&ensp;&ensp;
+                    <i class="large orange warning icon"></i> : Pending &ensp;&ensp;&ensp;&ensp;&ensp;
+                    <i class="large red x icon"></i> : Declined
+                </div>
+            </div>
+            <div class="ui divider"></div>
+        </div>
+
+</div>
+
+<div class="ui tab" data-tab="" id="satab">
+    <div class="ui two item menu">
+        <a class="ui active item" data-tab="" id="sa_1">
+            Apply For Special Food
+        </a>
+        <a class="ui item" data-tab="" id="sa_2">
+            Special Food Status
+        </a>
+    </div>
+
+
+<div class="ui active tab" data-tab="" id="spfood">
+    <div class="ui vertical segment">
+        {% comment %}Form Tag starts here!{% endcomment %}
+        <form action="" method="POST">
+            {% csrf_token %}
+            {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+            <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                <div class="ui header">
+                    Apply for Special Food:
+                </div>
+
+
+                <div class="field">
+                    <label>Mess:</label>
+                    <input value="{{messinfo.mess_option}}" class="ui large input" readonly>
+                </div>
+
+
+                <div class="two fields">
+                    <div class="field">
+                        <label>Food Item(a)*</label>
+                        <input placeholder="Food Item" name="food1" class="ui large input" required="true" id="food1">
+                    </div>
+
+                    <div class="field">
+                        <label>Food Item(b)*</label>
+                        <input placeholder="Food Item" name="food2" class="ui large input" id="food2">
+                    </div>
+                </div>
+
+                <div class="two fields">
+                    {% if messages %}
+                    <ul class="messages">
+                        {% for message in messages %}
+                        <li
+                        {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                    <div class="field">
+                        <label>From*</label>
+                        <div id="rangestart1">
+                                <input type="date" name="start_date" placeholder="From" required="true"
+                                       id="s_date">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>To*</label>
+                        <div id="rangeend1">
+                                <input type="date" name="end_date" placeholder="To" required="true" id="e_date">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>Purpose*</label>
+                    <textarea rows="2" class="purpose" name="purpose" required="true"></textarea>
+                </div>
+
+                <div class="field">
+                    <button class="ui primary button right floated" onclick="return sprequests()">
+                        Submit
+                    </button>
+                </div>
+            </div>
+        </form>
+        {% comment %}Form Tag ends here!{% endcomment %}
+
+        <br>
+        <br>
+
+        <div class="ui divider"></div>
+
+    </div>
+</div>
+
+<div class="ui tab" data-tab="" id="spstatus">
+
+    <div class="ui vertical segment" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+
+        <br>
+
+        <div class="content">
+            <div class="description">
+
+                <table class="ui very basic collapsing celled table sortable centered"
+                       style="padding-left: 2.5%;
+                                                              padding-right: 2.5%;
+                                                              padding-top: 1%;
+                                                              padding-bottom: 1.5%;
+                                                              margin: auto;">
+
+                    <thead>
+                    <tr>
+                        <th>
+                            Application Date
+                        </th>
+
+                        <th>
+                            Purpose
+                        </th>
+
+                        <th>
+                            From
+                        </th>
+
+                        <th>
+                            To
+                        </th>
+
+                        <th>
+                            Status
+                        </th>
+                    </tr>
+                    </thead>
+
+                    <tbody id="sptable">
+                    {% for item in splrequest %}
+                    <tr>
+                        <td>
+                            {{item.app_date}}
+                        </td>
+
+                        <td>
+                            {{item.request}}
+                        </td>
+
+                        <td>
+                            {{item.start_date}}
+                        </td>
+
+                        <td>
+                            {{item.end_date}}
+                        </td>
+
+
+                        <td>
+                            {% if item.status == '2' %}
+                            <i class="large green checkmark icon"></i>
+                            {% elif item.status == '0' %}
+                            <i class="large red x icon"></i>
+                            {% elif item.status == '1' %}
+                            <i class="large orange warning icon"></i>
+
+                            {% endif %}
+
+                        </td>
+                    </tr>
+                    {% endfor %}
+
+                    </tbody>
+                </table>
+                <br>
+            </div>
+        </div>
+    </div>
+    <br>
+
+    <div class="extra content">
+        <div class="" style="text-align: center;">
+            <i class="large green checkmark icon"></i> : Approved &ensp;&ensp;&ensp;&ensp;&ensp;
+            <i class="large orange warning icon"></i> : Pending &ensp;&ensp;&ensp;&ensp;&ensp;
+            <i class="large red x icon"></i> : Declined
+        </div>
+    </div>
+
+</div>
+
+</div>
+    {% endblock %}
+{% endblock %}
+
+
+{% block javascript %}
+    <script>
+
+       $(document).ready(function() {
+        $('#la').on('click', function () {
+            $(this).addClass('active');
+            $('#va').removeClass('active');
+              $('#sa').removeClass('active');
+            $('#latab').show();
+            $('#vatab').hide();
+            $('#satab').hide();
+        });
+    });
+
+    $(document).ready(function() {
+        $('#va').on('click', function () {
+            $(this).addClass('active');
+            $('#la').removeClass('active');
+          $('#sa').removeClass('active');
+             $('#latab').hide();
+               $('#satab').hide();
+            $('#vatab').show();
+
+        });
+    });
+
+     $(document).ready(function() {
+        $('#sa').on('click', function () {
+            $(this).addClass('active');
+            $('#la').removeClass('active');
+            $('#va').removeClass('active');
+             $('#latab').hide();
+             $('#vatab').hide();
+            $('#satab').show();
+
+        });
+    });
+      $(document).ready(function() {
+        $('#la_1').on('click', function () {
+            $(this).addClass('active');
+            $('#la_2').removeClass('active');
+            $('#leave').show();
+            $('#leavestatus').hide();
+        });
+    });
+
+    $(document).ready(function() {
+        $('#la_2').on('click', function () {
+            $(this).addClass('active');
+            $('#la_1').removeClass('active');
+
+             $('#leave').hide();
+            $('#leavestatus').show();
+
+        });
+    });
+
+     $(document).ready(function() {
+        $('#va_1').on('click', function () {
+            $(this).addClass('active');
+            $('#va_2').removeClass('active');
+            $('#lrequest').show();
+            $('#vacationstatus').hide();
+        });
+    });
+
+    $(document).ready(function() {
+        $('#va_2').on('click', function () {
+            $(this).addClass('active');
+            $('#va_1').removeClass('active');
+
+             $('#lrequest').hide();
+            $('#vacationstatus').show();
+
+        });
+    });
+     $(document).ready(function() {
+        $('#sa_1').on('click', function () {
+            $(this).addClass('active');
+            $('#sa_2').removeClass('active');
+
+             $('#spstatus').hide();
+            $('#spfood').show();
+
+        });
+    });
+      $(document).ready(function() {
+        $('#sa_2').on('click', function () {
+            $(this).addClass('active');
+            $('#sa_1').removeClass('active');
+
+             $('#spfood').hide();
+            $('#spstatus').show();
+
+        });
+    });
+    </script>
+
+    <script>
+        function required_check_leave() {
+            if ($("#purpose").val().length == 0) {
+                check = 0;
+                if (!($("#leave_type").val())) {
+                    check = 3;
+                }
+                return check;
+            }
+            else {
+                if (!($("#leave_type").val())) {
+                    check = 4;
+                }
+                check = 1;
+            }
+        }
+
+        function lsrequest() {
+
+            event.preventDefault();
+
+            var calendarOpts = {
+                type: 'date',
+                formatter: {
+                    date: function (date, settings) {
+                        if (!date) return '';
+                        var day = date.getDate() + '';
+                        if (day.length < 2) {
+                            day = '0' + day;
+                        }
+                        var month = (date.getMonth() + 1) + '';
+                        if (month.length < 2) {
+                            month = '0' + month;
+                        }
+                        var year = date.getFullYear();
+                        return year + '-' + month + '-' + day;
+                    }
+                }
+            };
+            $('.ui.calendar').calendar(calendarOpts);
+            check = required_check_leave();
+            if (check == 0) {
+                alert("Please add purpose");
+            }
+            else if (check == 3) {
+                alert("Please select leave type and add purpose");
+            }
+            else if (check == 4) {
+                alert("Please select leave type");
+            }
+            else {
+                $.ajax({
+                    type: 'POST',
+                    url: 'leave/',
+                    dataType: 'json',
+                    data: {
+                        'csrfmiddlewaretoken': '{{ csrf_token }}',
+                        'leave_type': $("#leave_type").val(),
+                        'start_date': $("#start_date").val(),
+                        'end_date': $("#end_date").val(),
+                        'purpose': $("#purpose").val()
+                    },
+                    success: function (data) {
+                        if (data.status == 1) {
+
+                             $("#leave").load(location.href + " #leave>*", "");
+                            var monthNames = ["January", "February", "March", "April", "May", "June",
+                                              "July", "August", "September", "October", "November", "December"];
+                            var start_date = new Date($("#start_date").val());
+                            var end_date = new Date($("#end_date").val());
+                            var today_date = new Date();
+                            var s_date = monthNames[start_date.getMonth()] + " " + start_date.getDate() + ", " + start_date.getFullYear();
+                            var t_date = monthNames[today_date.getMonth()] + " " + today_date.getDate() + ", " + today_date.getFullYear();
+                            var e_date = monthNames[end_date.getMonth()] + " " + end_date.getDate() + ", " + end_date.getFullYear();
+                            $('#ls_table').prepend("<tr><td>" + t_date + "</td><td>" +
+                                $("#leave_type").val() + "</td><td>" + s_date+ "</td><td>"+
+                            e_date + "</td><td><i class='large orange warning icon'></i>" +
+                            "</td></tr>");
+                            alert("Data Inserted Successfully");
+                            document.getElementById('leave_type').value = "";
+                            document.getElementById('start_date').value = "";
+                            document.getElementById('end_date').value = "";
+                            document.getElementById('purpose').value = "";
+
+                        }
+                        else if (data.status == 3) {
+                            alert(data.message);
+                            $("#leave").load(location.href + " #leave>*", "");
+                        }
+                        else if (data.status == 4) {
+                            alert(data.message);
+                            $("#leave").load(location.href + " #leave>*", "");
+                        }
+                        else {
+                            alert("Already applied for leaves in the respective dates");
+                            $("#leave").load(location.href + " #leave>*", "");
+                        }
+                    },
+                    error: function (data, err) {
+                        alert(err.message);
+                    }
+                });
+            }
+            return false;
+        }
+
+        function required_check_vacation(){
+            if ($("#purpose1").val().length == 0) {
+                check = 0;
+                return check;
+            }
+            else {
+                check = 1;
+            }
+        }
+
+        function vacarequest(){
+
+            event.preventDefault();
+
+            var calendarOpts = {
+                type: 'date',
+                formatter: {
+                date: function (date, settings) {
+                    if (!date) return '';
+                    var day = date.getDate() + '';
+                    if (day.length < 2) {
+                        day = '0' + day;
+                    }
+                    var month = (date.getMonth() + 1) + '';
+                     if (month.length < 2) {
+                        month = '0' + month;
+                }
+                var year = date.getFullYear();
+                return year + '-' + month + '-' + day;
+            }
+        }
+    };
+    $('.ui.calendar').calendar(calendarOpts);
+            check = required_check_vacation();
+            if (check == 0) {
+                alert("Please add purpose");
+            }
+            else {
+
+                $.ajax({
+                    type: 'POST',
+                    url: 'messvacationsubmit/',
+                    dataType: 'json',
+                    data: {
+                        'csrfmiddlewaretoken': '{{ csrf_token }}',
+                        'start_date': $("#sdate").val(),
+                        'end_date': $("#edate").val(),
+                        'purpose': $("#purpose1").val()
+                    },
+                    success: function (data) {
+                        if (data.status == 1) {
+
+                            $("#lrequest").load(location.href + " #lrequest>*", "");
+                            var monthNames = ["January", "February", "March", "April", "May", "June",
+                                              "July", "August", "September", "October", "November", "December"];
+                            var start_date = new Date($("#sdate").val());
+                            var end_date = new Date($("#edate").val());
+                            var today_date = new Date();
+                            var s_date = monthNames[start_date.getMonth()] + " " + start_date.getDate() + ", " + start_date.getFullYear();
+                            var t_date = monthNames[today_date.getMonth()] + " " + today_date.getDate() + ", " + today_date.getFullYear();
+                            var e_date = monthNames[end_date.getMonth()] + " " + end_date.getDate() + ", " + end_date.getFullYear();
+                            $('#vacatable').prepend("<tr><td>" + t_date + "</td><td>" +
+                                s_date + "</td><td>" + e_date+ "</td><td>"+
+                            $("#purpose1").val() + "</td><td><i class='large orange warning icon'></i>" +
+                            "</td></tr>");
+                            alert("Vacation request placed Successfully");
+                            document.getElementById('sdate').value = "";
+                            document.getElementById('edate').value = "";
+                            document.getElementById('purpose1').value = "";
+                        }
+                        else if (data.status == 2) {
+                            alert("Please check the dates");
+                            $("#lrequest").load(location.href + " #lrequest>*", "");
+                        }
+                        else if (data.status == 3) {
+                            alert(data.message);
+                            $("#lrequest").load(location.href + " #lrequest>*", "");
+                        }
+                        else{
+                            alert("Please check the data entered");
+                            $("#lrequest").load(location.href + " #lrequest>*", "");
+                        }
+
+                    },
+                    error: function (data, err) {
+                        alert(err.message);
+                        $("#lrequest").load(location.href + " #lrequest>*", "");
+                    }
+                });
+            }
+        return false;
+    }
+
+    function required_check_spfood(){
+            if (($("#food1").val().length == 0)||($("#food2").val().length == 0) || ($("textarea.purpose").val().length == 0)) {
+                check = 0;
+                return check;
+            }
+            else {
+                check = 1;
+            }
+        }
+    function sprequests() {
+
+            var calendarOpts = {
+                type: 'date',
+                formatter: {
+                date: function (date, settings) {
+                    if (!date) return '';
+                    var day = date.getDate() + '';
+
+                    if (day.length < 2) {
+                        day = '0' + day;
+                    }
+
+                    var month = (date.getMonth() + 1) + '';
+                     if (month.length < 2) {
+                        month = '0' + month;
+                }
+                var year = date.getFullYear();
+                return year + '-' + month + '-' + day;
+            }
+        }
+    };
+    $('.ui.calendar').calendar(calendarOpts);
+    check = required_check_spfood();
+    if (check == 0){
+        alert("Please Fill All The Required Fields");
+    }
+    else {
+        $.ajax({
+            type: 'POST',
+            url: 'placerequest/',
+            dataType: 'json',
+            data: {
+                'csrfmiddlewaretoken': '{{ csrf_token }}',
+                'food1': $("#food1").val(),
+                'food2': $("#food2").val(),
+                'start_date': $("#s_date").val(),
+                'end_date': $("#e_date").val(),
+                'purpose': $("textarea.purpose").val()
+            },
+            success: function (data) {
+                if (data.status == 1) {
+
+                    $("#spfood").load(location.href + " #spfood>*", "");
+                    var monthNames = ["January", "February", "March", "April", "May", "June",
+                                              "July", "August", "September", "October", "November", "December"];
+                    var start_date = new Date($("#s_date").val());
+                    var end_date = new Date($("#e_date").val());
+                    var today_date = new Date();
+                    var s_date = monthNames[start_date.getMonth()] + " " + start_date.getDate() + ", " + start_date.getFullYear();
+                    var t_date = monthNames[today_date.getMonth()] + " " + today_date.getDate() + ", " + today_date.getFullYear();
+                    var e_date = monthNames[end_date.getMonth()] + " " + end_date.getDate() + ", " + end_date.getFullYear();
+                    $('#sptable').prepend("<tr><td>" + t_date + "</td><td>" +
+                        $("#purpose1").val() + "</td><td>" + s_date+ "</td><td>"+
+                    e_date + "</td><td><i class='large orange warning icon'></i>" +
+                    "</td></tr>");
+
+                    alert("Data Inserted Successfully");
+
+                    document.getElementById('food1').value = "";
+                    document.getElementById('food2').value = "";
+                    document.getElementById('s_date').value = "";
+                    document.getElementById('e_date').value = "";
+                    document.getElementById('purpose').value = "";
+
+                }
+                else if (data.status == 2) {
+                    alert("Special Food request has already been made");
+                    $("#spfood").load(location.href + " #spfood>*", "");
+                }
+                else if (data.status == 3) {
+                    alert("Please check the date. The date may have passed or might not be a valid date");
+                    $("#spfood").load(location.href + " #spfood>*", "");
+                    return false;
+                }
+                else {
+                    alert("Please check the data or try again");
+                }
+            },
+            error: function (data, err) {
+                alert(err.message);
+            }
+        });
+    }
+            return false;
+}
+
+
+
+    </script>
+{% endblock %}

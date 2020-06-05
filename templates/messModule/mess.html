@@ -1,0 +1,288 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+Central Mess
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+    {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+{% comment %}The grid starts here!{% endcomment %}
+<div class="ui stackable doubling grid">
+
+    {% comment %}The left-margin segment!{% endcomment %}
+    <div class="column"></div>
+
+    {% comment %}
+    The left-rail segment starts here!
+    {% endcomment %}
+    <div class="three wide column">
+
+        {% comment %}The user image card starts here!{% endcomment %}
+        {% block usercard %}
+        {% include 'globals/usercard.html' %}
+        {% endblock %}
+        {% comment %}The user image card ends here!{% endcomment %}
+
+        <div class="ui divider"></div>
+
+        {% comment %}The Tab-Menu starts here!{% endcomment %}
+        <div class="ui huge fluid vertical pointing menu"
+             style="max-width: 320px;">
+            {% block menucard %}
+                {% include 'messModule/menu_card.html' %}
+            {% endblock %}
+
+        </div>
+        {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+    </div>
+    <!--Closing tag 3 wid column-->
+    {% comment %}
+    The left-rail segment ends here!
+    {% endcomment %}
+
+    {% comment %}
+    The central-rail segment starts here!
+    {% endcomment %}
+    <div class="eight wide column">
+        {% comment %}The ... start here!{% endcomment %}
+        <div class="ui tab segment" data-tab="first">
+            {% block feedback %}
+            {% include 'messModule/feedback.html' %}
+            {% endblock %}
+        </div>
+        {% comment %}The ... end here!{% endcomment %}
+
+        {% comment %}The ... starts here!{% endcomment %}
+        <div class="ui tab segment" data-tab="second">
+            {% block leaveRequest %}
+            {% include 'messModule/applications.html' %}
+            {% endblock %}
+        </div>
+        {% comment %}The ... ends here!{% endcomment %}
+
+
+        {% comment %}The ... starts here!{% endcomment %}
+        <div class="ui {% if info.user_type == 'student' %}active {% endif %}tab segment" data-tab="fourth">
+            {% block views %}
+            {% include 'messModule/views.html' %}
+            {% endblock %}
+        </div>
+        {% comment %}The ... ends here!{% endcomment %}
+
+        {% comment %}The ... starts here!{% endcomment %}
+        <div class="ui tab segment" data-tab="sixth">
+            {% block nonvegfood %}
+            {% include 'messModule/nonvegfood.html' %}
+            {% endblock %}
+        </div>
+        {% comment %}The ... ends here!{% endcomment %}
+
+        {% comment %}The ... starts here!{% endcomment %}
+        <div class="ui tab segment" data-tab="seventh">
+            {% block respondtoleave %}
+            {% include 'messModule/respondtorequests.html' %}
+            {% endblock %}
+        </div>
+        {% comment %}The ... ends here!{% endcomment %}
+
+        {% comment %}The ... starts here!{% endcomment %}
+        <div class="ui tab segment" data-tab="eighth">
+            {% block changemenu %}
+            {% include 'messModule/changemenu.html' %}
+            {% endblock %}
+        </div>
+        {% comment %}The ... ends here!{% endcomment %}
+
+        {% comment %}The ... starts here!{% endcomment %}
+        <div class="ui tab segment" data-tab="ninth">
+            <!--in invitation-->
+            {% block invitation %}
+            {% include 'messModule/meeting_information.html' %}
+            {% endblock %}
+        </div>
+        {% comment %}The ... ends here!{% endcomment %}
+
+
+        {% comment %}The ... starts here!{% endcomment %}
+        <div class="ui tab segment" data-tab="eleventh">
+            {% block splreq %}
+            {% include 'messModule/splreq.html' %}
+            {% endblock %}
+        </div>
+        {% comment %}The ... ends here!{% endcomment %}
+
+        {% comment %}The ... starts here!{% endcomment %}
+        <div class="ui tab segment" data-tab="twelfth">
+            {% block registration %}
+            {% include 'messModule/messactivities.html' %}
+            {% endblock %}
+        </div>
+        {% comment %}The ... ends here!{% endcomment %}
+
+        {% comment %}The ... starts here!{% endcomment %}
+        <div class="ui {% if info.user_type == 'staff' or info.user_type == 'faculty' %}active {% endif %} tab segment" data-tab="thirteenth">
+            {% block viewmenu %}
+            {% include 'messModule/viewmenu.html' %}
+            {% endblock %}
+        </div>
+        {% comment %}The ... ends here!{% endcomment %}
+
+        {% comment %}The ... starts here!{% endcomment %}
+        <div class="ui tab segment" data-tab="forteenth">
+            {% block view_feedback %}
+            {% include 'messModule/view_feedback.html' %}
+            {% endblock %}
+        </div>
+        {% comment %}The ... ends here!{% endcomment %}
+
+        {% comment %}The ... starts here!{% endcomment %}
+        <div class="ui tab segment" data-tab="fifteenth">
+            {% block view_meeting %}
+            {% include 'messModule/view_meeting_information.html' %}
+            {% endblock %}
+        </div>
+        {% comment %}The ... ends here!{% endcomment %}
+
+        {% comment %}The ... starts here!{% endcomment %}
+        <div class="ui tab segment" data-tab="sixteenth">
+            {% block statistics %}
+            {% include 'messModule/statistics.html' %}
+            {% endblock %}
+        </div>
+
+        <div class="ui tab segment" data-tab="nineteenth">
+            {% block respondmenu %}
+            {% include 'messModule/respondmenu.html' %}
+            {% endblock %}
+        </div>
+
+
+        <div class="ui tab segment" data-tab="twentytwo">
+            {% block nonvegorders %}
+            {% include 'messModule/nonvegorder.html' %}
+            {% endblock %}
+        </div>
+
+
+
+    </div>
+    <!--closing tag of 8 wide column-->
+    {% comment %}The central-rail segment ends here!{% endcomment %}
+
+    {% comment %}The right-rail segment starts here!{% endcomment %}
+    <div class="three wide column">
+        <div class="row">
+            {% comment %}
+            TODO: the right rail!
+            {% endcomment %}
+        </div>
+    </div>
+    {% comment %}The right-rail segment ends here!{% endcomment %}
+
+    {% comment %}The right-margin segment!{% endcomment %}
+    <div class="column"></div>
+
+</div>
+
+{% comment %}The grid ends here!{% endcomment %}
+
+{% endblock %}
+
+{% block javascript %}
+<script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+<script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+<script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.js"></script>
+<script type="text/javascript" src="{% static 'globals/js/chartjs/src/chart.js' %}"></script>
+
+
+<script>
+        $(document).ready(function() {
+                var tab = $([data-tab = 'first']).tabs('getSelected');
+                tab.panel('refresh');
+            }
+            )
+        var ctx = document.getElementById("myChart").getContext('2d');
+        var myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ["Food", "Hygiene", "Maintenance", "Others"],
+                datasets: [{
+                    label: 'Feedback',
+                    data: [{{count2}},{{count3}},{{count1}},{{count4}}],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(255, 159, 64, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255,99,132,1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero:true
+                        }
+                    }]
+                }
+            }
+        });
+        var ctx = document.getElementById("myChart2").getContext('2d');
+        var myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ["Food", "Hygiene", "Maintenance", "Others"],
+                datasets: [{
+                    label: 'Feedback',
+                    data: [{{count6}},{{count7}},{{count5}},{{count8}}],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(255, 159, 64, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255,99,132,1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero:true
+                        }
+                    }]
+                }
+            }
+        });
+
+</script>
+{% endblock %}

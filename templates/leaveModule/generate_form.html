@@ -1,0 +1,67 @@
+<style>
+
+.application-form {
+    font-size: 13px;
+}
+
+.right {
+    display: block;
+    float: right;
+}
+</style>
+
+<div class="application-form">
+
+    <p>
+        <center>
+            <h2><u> Leave Application Form </u></h2>
+            <b> <h3> PDPM Indian Institute of Information Technology Design and Manufacturing, Jabalpur </h3> </b>
+        </center>
+    </p>
+    <br>
+    {% now "jS F\, Y" %}
+    <br> <hr>
+    <p><b> Applicant: </b> {{ leave.applicant.get_full_name }} <br></p>
+    {% if leave.segments.count > 0 %}
+        <p>
+            {% for segment in leave.segments.all %}
+                <b> From </b> {{ segment.start_date }} <b> To </b> {{ segment.end_date }}: <u> {{ segment.leave_type.name }} Leave. </u>
+                <ul>
+                    <li> Start with Half Day: {{ segment.start_half|yesno:"Yes,No" }} </li>
+                    <li> End with Half Day: {{ segment.end_half|yesno:"Yes,No" }} </li>
+                </ul>
+                {% if not forloop.last %}
+                    <br>
+                {% endif %}
+
+            {% endfor %}
+        </p>
+    {% endif %}
+    <b> Purpose: </b> {{ leave.purpose }} <br><br>
+    <b> Extra Information: </b> {{ leave.extra_info|default:"Not Available" }} <br><br>
+
+    {% if request.user.extrainfo.user_type != 'student' %}
+        <hr>
+        {% for rep in leave.replace_segments.all %}
+            <ul>
+                <li> <b> {{ rep.get_replacement_type_display }}: </b> </li>
+                <ul>
+                    <li> <b> {{ rep.replacer.get_full_name }} </b> </li>
+                    <li> <b> From </b> {{ rep.start_date }} <b> To </b> {{ rep.end_date }} </li>
+                </ul>
+            </ul>
+        {% endfor %}
+    {% endif %}
+    <p><span> <b> Applicant Sign </b> </span> <span class="right"> <b> Head/Officer/Convener/In-Charge of Discipline </b> </span></p>
+    <p> <span> .............................. </span> <span class="right"> ................................. </span> </p>
+    <br>
+    <hr>
+    <center> <b> <u> <h4> For Office Use </h4> </u> </b> <br> </center>
+    <p><span> <b> Dealing Assistant </b> </span> <span class="right"> <b> Assistant Registrar </b> </span></p>
+    <p> <span> .............................. </span> <span class="right"> ...................................... </span> </p>
+    <p> <b> Sanctioned / Not Sanctioned </b> </p>
+    <p> ............................................. </p>
+    <p> <b> Director / Dean / Head of Discipline / Registrar / Deputy Registrar </b> </p>
+    <p> .......................................................... </p>
+    <br><hr>
+</div>
