@@ -46,7 +46,7 @@ class Cpda_application(models.Model):
         
 
 class Cpda_tracking(models.Model):
-    application = models.OneToOneField(Cpda_application, primary_key=True, related_name='tracking_info')
+    application = models.OneToOneField(Cpda_application, primary_key=True, related_name='tracking_info',on_delete=models.CASCADE)
     # current_id : application is currently with
     # current_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
     # current_design = models.ForeignKey(HoldsDesignation, null=True, on_delete=models.CASCADE)
