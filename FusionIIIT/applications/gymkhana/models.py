@@ -10,6 +10,8 @@ from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, Faculty
 
 register = template.Library()
+
+
 # Class definations:
 
 
@@ -19,6 +21,17 @@ class Constants:
         ('Technical', 'Technical'),
         ('Sports', 'Sports'),
         ('Cultural', 'Cultural')
+    )
+    branch = (
+        ('cse', 'CSE'),
+        ('ece', 'ECE'),
+        ('me', 'ME')
+    )
+    programme = (
+        ('B.tech', 'B.tech'),
+        ('B.des', 'B.des'),
+        ('M.tech', 'M.tech'),
+        ('M.des', 'M.des'),
     )
     status = (
         ('open', 'Open'),
@@ -31,10 +44,10 @@ class Constants:
         ('Tarang', 'Tarang')
     )
     venue = (
-            ('Classroom', (
-                ('CR101', 'CR101'),
-                ('CR102', 'CR102'),
-            )),
+        ('Classroom', (
+            ('CR101', 'CR101'),
+            ('CR102', 'CR102'),
+        )),
         ('Lecturehall', (
             ('L101', 'L101'),
             ('L102', 'L102'),
@@ -45,14 +58,14 @@ class Constants:
 
 class Club_info(models.Model):
     club_name = models.CharField(max_length=50, null=False, primary_key=True)
-    club_website = models.CharField(max_length=150, null=True , default="hello")
+    club_website = models.CharField(max_length=150, null=True, default="hello")
     category = models.CharField(
         max_length=50, null=False, choices=Constants.categoryCh)
-    co_ordinator = models.ForeignKey(Student, on_delete=models.CASCADE,null=False, related_name='co_of')
+    co_ordinator = models.ForeignKey(Student, on_delete=models.CASCADE, null=False, related_name='co_of')
     co_coordinator = models.ForeignKey(
-        Student, on_delete=models.CASCADE,null=False, related_name='coco_of')
+        Student, on_delete=models.CASCADE, null=False, related_name='coco_of')
     faculty_incharge = models.ForeignKey(
-        Faculty,on_delete=models.CASCADE, null=False, related_name='faculty_incharge_of')
+        Faculty, on_delete=models.CASCADE, null=False, related_name='faculty_incharge_of')
     club_file = models.FileField(upload_to='gymkhana/club_poster', null=True)
     activity_calender = models.FileField(
         upload_to='gymkhana/activity_calender', null=True, default=" ")
@@ -70,11 +83,25 @@ class Club_info(models.Model):
         db_table = 'Club_info'
 
 
+class Registration_form(models.Model):
+    user_name = models.CharField(max_length=40, default="Student")
+    branch = models.CharField(max_length=20, default='open')
+    roll = models.CharField(max_length=7, default="2016001", primary_key=True)
+    cpi = models.FloatField(max_length=3, default=6.0)
+    programme = models.CharField(max_length=20, default='B.tech')
+
+    def __str__(self):
+        return str(self.roll)
+
+    class Meta:
+        db_table = 'Registration_form'
+
+
 class Club_member(models.Model):
     id = models.AutoField(max_length=20, primary_key=True)
     member = models.ForeignKey(
         Student, on_delete=models.CASCADE, related_name='member_of')
-    club = models.ForeignKey(Club_info, on_delete=models.CASCADE,related_name='this_club', null=False)
+    club = models.ForeignKey(Club_info, on_delete=models.CASCADE, related_name='this_club', null=False)
     description = models.TextField(max_length=256, null=True)
     status = models.CharField(
         max_length=50, choices=Constants.status, default='open')
@@ -107,7 +134,7 @@ class Core_team(models.Model):
 
 class Club_budget(models.Model):
     id = models.AutoField(max_length=20, primary_key=True)
-    club = models.ForeignKey(Club_info,on_delete=models.CASCADE, max_length=50, null=False)
+    club = models.ForeignKey(Club_info, on_delete=models.CASCADE, max_length=50, null=False)
     budget_for = models.CharField(max_length=256, null=False)
     budget_amt = models.IntegerField(default=0, null=False)
     budget_file = models.FileField(upload_to='uploads/', null=False)
@@ -125,7 +152,7 @@ class Club_budget(models.Model):
 
 class Session_info(models.Model):
     id = models.AutoField(max_length=20, primary_key=True)
-    club = models.ForeignKey(Club_info, on_delete=models.CASCADE,max_length=50, null=True)
+    club = models.ForeignKey(Club_info, on_delete=models.CASCADE, max_length=50, null=True)
     venue = models.CharField(max_length=50, null=False,
                              choices=Constants.venue)
     date = models.DateField(default=None, auto_now=False, null=False)
@@ -145,8 +172,8 @@ class Session_info(models.Model):
 
 class Club_report(models.Model):
     id = models.AutoField(max_length=20, primary_key=True)
-    club = models.ForeignKey(Club_info, on_delete=models.CASCADE,max_length=50, null=False)
-    incharge = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE,max_length=256, null=False)
+    club = models.ForeignKey(Club_info, on_delete=models.CASCADE, max_length=50, null=False)
+    incharge = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE, max_length=256, null=False)
     event_name = models.CharField(max_length=50, null=False)
     date = models.DateTimeField(
         max_length=50, default=timezone.now, blank=True)
@@ -180,7 +207,7 @@ class Fest_budget(models.Model):
 
 class Other_report(models.Model):
     id = models.AutoField(max_length=20, primary_key=True)
-    incharge = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE,max_length=256, null=False)
+    incharge = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE, max_length=256, null=False)
     event_name = models.CharField(max_length=50, null=False)
     date = models.DateTimeField(
         max_length=50, default=timezone.now, blank=True)
@@ -196,10 +223,10 @@ class Other_report(models.Model):
 
 class Change_office(models.Model):
     id = models.AutoField(max_length=20, primary_key=True)
-    club = models.ForeignKey(Club_info, on_delete=models.CASCADE,max_length=50, null=False)
-    co_ordinator = models.ForeignKey(User, on_delete=models.CASCADE,null=False, related_name='co_of')
+    club = models.ForeignKey(Club_info, on_delete=models.CASCADE, max_length=50, null=False)
+    co_ordinator = models.ForeignKey(User, on_delete=models.CASCADE, null=False, related_name='co_of')
     co_coordinator = models.ForeignKey(
-        User, on_delete=models.CASCADE,null=False, related_name='coco_of')
+        User, on_delete=models.CASCADE, null=False, related_name='coco_of')
     status = models.CharField(
         max_length=50, choices=Constants.status, default='open')
     date_request = models.DateTimeField(
