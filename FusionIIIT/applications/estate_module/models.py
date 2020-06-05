@@ -16,11 +16,17 @@ class Estate(models.Model):
     numWashrooms = models.IntegerField(null=True, blank=True)
     remarks = models.TextField(null=True, blank=True)
 
+    def CW_List(self):
+        return self.work_set.filter(workType='CW')
+
+    def MW_List(self):
+        return self.work_set.filter(workType='MW')
+
     def __str__(self):
         return self.name
 
-    # class Meta:
-    #     ordering = ['dateIssued']
+    class Meta:
+        ordering = ['-id']
 
 
 class WorkType(models.Model):
@@ -35,8 +41,8 @@ class Work(models.Model):
     CONSTRUCTION_WORK = 'CW'
     MAINTENANCE_WORK = 'MW'
     WORK_CHOICES = [
-        (CONSTRUCTION_WORK, 'Construction Work'),
-        (MAINTENANCE_WORK, 'Maintenance Work'),
+        (CONSTRUCTION_WORK, 'Construction'),
+        (MAINTENANCE_WORK, 'Maintenance'),
     ]
 
     name = models.CharField(max_length=100)
@@ -53,7 +59,7 @@ class Work(models.Model):
     remarks = models.TextField(null=True, blank=True)
 
     def __str__(self):
-        return self.estate.name + ' - ' + self.workType.name + ' - ' + self.name
+        return self.estate.name + ' - ' + self.workType + ' - ' + self.name
 
 
 class SubWork(models.Model):

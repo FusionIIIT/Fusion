@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 
-from .forms import EstateForm
+from .forms import EstateForm, WorkForm
 from .models import Estate, WorkType, Work, SubWork
 
 buildings = [
@@ -78,7 +78,9 @@ def estate(request):
         'title': "Estate Module",
         'estates': Estate.objects.all(),
         'works': Work.objects.all(),
-        'estateForm': EstateForm()
+        'WORK_CHOICES': Work.WORK_CHOICES,
+        'estateForm': EstateForm(),
+        'workForm': WorkForm()
     }
 
     return render(request, "estate_module/home.html", context)
@@ -115,4 +117,38 @@ def deleteEstate(request, estate_id):
 
     estate = Estate.objects.get(pk=estate_id)
     estate.delete()
+    return redirect('estate')
+
+
+@require_POST
+def newWork(request):
+
+    newWorkForm = WorkForm(request.POST)
+
+    if newWorkForm.is_valid():
+        new_Work = newWorkForm.save()
+        return redirect('estate')
+
+    return redirect('estate')
+
+
+@require_POST
+def editWork(request, work_id):
+
+    work = Work.objects.get(pk=work_id)
+
+    editWorkForm = WorkForm(request.POST, instance=work)
+
+    if editWorkForm.is_valid():
+        editWorkForm.save()
+        return redirect('estate')
+
+    return redirect('estate')
+
+
+@require_POST
+def deleteWork(request, work_id):
+
+    work = Work.objects.get(pk=work_id)
+    work.delete()
     return redirect('estate')

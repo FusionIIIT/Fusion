@@ -1,0 +1,63 @@
+{% csrf_token %}
+<div class="two fields">
+    <div class="required field">
+        {{ workForm.name.label_tag }}
+        {{ workForm.name }}
+    </div>
+
+    <div class="required field">
+        {{ workForm.contractorName.label_tag }}
+        {{ workForm.contractorName }}
+    </div>
+</div>
+
+<div class="two fields">
+    <div class="required field">
+        {{ workForm.workType.label_tag }}
+        {{ workForm.workType }}
+    </div>
+
+    <div class="required field">
+        {{ workForm.estate.label_tag }}
+        {{ workForm.estate }}
+    </div>
+</div>
+
+<div class="three fields">
+    <div class="required field">
+        {{ workForm.dateIssued.label_tag }}
+        {{ workForm.dateIssued }}
+    </div>
+
+    <div class="field">
+        {{ workForm.dateStarted.label_tag }}
+        {{ workForm.dateStarted }}
+    </div>
+
+    <div class="field">
+        {{ workForm.dateCompleted.label_tag }}
+        {{ workForm.dateCompleted }}
+    </div>
+</div>
+
+<div class="two fields">
+    <div class="field">
+        {{ workForm.costEstimated.label_tag }}
+        {{ workForm.costEstimated }}
+    </div>
+
+    <div class="field">
+        {{ workForm.costActual.label_tag }}
+        {{ workForm.costActual }}
+    </div>
+</div>
+<h4 class="ui horizontal divider header">
+    <i class="info circle icon"></i>
+    Extra Information
+</h4>
+<div class="field">
+    {{ workForm.remarks.label_tag }}
+    {{ workForm.remarks }}
+</div>
+
+<p></p>

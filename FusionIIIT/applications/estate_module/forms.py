@@ -1,5 +1,5 @@
 from django.forms import ModelForm, Textarea, TextInput, DateInput, NumberInput
-from .models import Estate
+from .models import Estate, Work, Inventory
 
 
 class EstateForm(ModelForm):
@@ -8,7 +8,7 @@ class EstateForm(ModelForm):
         fields = '__all__'
         widgets = {
             'name': TextInput(attrs={
-                'placeholder': 'Enter name'
+                'placeholder': 'Enter name of estate'
             }),
             'dateIssued': DateInput(attrs={
                 'type': 'date'
@@ -53,6 +53,45 @@ class EstateForm(ModelForm):
             'numRooms': 'Number of Rooms',
             'numWashrooms': 'Number of Washrooms',
             'remarks': 'Remarks',
-
         }
-# type = "text" placeholder = "Enter name" id = "name" name = "name" { % if estate.name % } value = "{{ estate.name }}"
+
+
+class WorkForm(ModelForm):
+    class Meta:
+        model = Work
+        fields = '__all__'
+        widgets = {
+            'name': TextInput(attrs={
+                'placeholder': 'Enter name of work'
+            }),
+            'dateIssued': DateInput(attrs={
+                'type': 'date'
+            }),
+            'dateStarted': DateInput(attrs={
+                'type': 'date'
+            }),
+            'dateCompleted': DateInput(attrs={
+                'type': 'date'
+            }),
+            'costEstimated': NumberInput(attrs={
+                'placeholder': 'Enter estimated construction cost'
+            }),
+            'costActual': NumberInput(attrs={
+                'placeholder': 'Enter actual construction cost'
+            }),
+            'remarks': Textarea(attrs={
+                'placeholder': 'Enter remarks'
+            }),
+        }
+        labels = {
+            'name': 'Name of work',
+            'workType': 'Type of Work',
+            'estate': 'Estate',
+            'contractorName': 'Name of contractor',
+            'dateIssued': 'Date Issued',
+            'dateStarted': 'Date Started',
+            'dateCompleted': 'Date Completed',
+            'costEstimated': 'Estimated cost',
+            'costActual': 'Actual cost',
+            'remarks': 'Remarks',
+        }

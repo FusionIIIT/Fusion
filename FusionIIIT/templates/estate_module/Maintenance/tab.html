@@ -9,39 +9,33 @@
                 <table class="ui selectable celled sortable table">
                     <thead>
                         <tr>
-                            <th class="four wide column">Building</th>
+                            <th class="five wide column">Maintenance Work Name</th>
+                            <th>Estate</th>
                             <th class="right aligned">Issued Date</th>
-                            <th class="right aligned">Construction Started</th>
                             <th class="right aligned">Estimated Cost</th>
                             <th colspan="2" class="two wide column"></th>
                         </tr>
                     </thead>
                     <tbody>
 
-                        {% for estate in estates %}
-                        {% if tab_id == menuitem|add:"_All" or tab_id == menuitem|add:"_Complete" and estate.dateConstructionCompleted or tab_id == menuitem|add:"_Incomplete" and not estate.dateConstructionCompleted %}
+                        {% for work in works %}
+                        {% if tab_id == menuitem|add:"_All" or tab_id == menuitem|add:"_Complete" and work.dateCompleted or tab_id == menuitem|add:"_Incomplete" and not work.dateCompleted %}
 
                         <tr>
                             <td>
-                                {{ estate.name }}
+                                {{ work.name }}
+                            </td>
+                            <td>
+                                {{ work.estate.name }}
                             </td>
                             <td class="right aligned">
-                                {{ estate.dateIssued }}
+                                {{ work.dateIssued }}
                             </td>
                             <td class="right aligned">
-                                {{ estate.dateConstructionStarted }}
+                                {% if work.costEstimated %}₹&nbsp;{{ work.costEstimated|intcomma }}{% endif %}
                             </td>
-                            <td class="right aligned">
-                                {% if estate.constructionCostEstimated %}
-                                ₹&nbsp;{{ estate.constructionCostEstimated|intcomma }} {% endif %}
-
-                            </td>
-                            {% comment %} <td class="center aligned">
-                                {% include 'estate_module/'|add:menuitem|add:'/edit.html' %}
-                            </td> {% endcomment %}
                             <td class="center aligned">
                                 {% include 'estate_module/'|add:menuitem|add:'/edit_button.html' %}
-
                             </td>
                             <td class="center aligned">
                                 {% include 'estate_module/'|add:menuitem|add:'/detail.html' %}

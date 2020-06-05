@@ -5,18 +5,16 @@
 
 <div class="ui modal new_{{ menuitem }}">
     <div class="header">
-        New {{menuitem }}
+        New {{menuitem }} Work
     </div>
     <div class="scrolling content">
         <h4 class="ui horizontal divider header">
             <i class="info circle icon"></i>
             Main Information
         </h4>
-        <form action="{% url 'new_estate' %}" id="new_{{ menuitem }}_form" class="ui form" method="POST">
+        <form action="{% url 'new_work' %}" id="new_{{ menuitem }}_form" class="ui form" method="POST">
             {% include 'estate_module/'|add:menuitem|add:'/form.html' %}
-
         </form>
-
     </div>
     <div class="actions">
         <button type="submit" form="new_{{ menuitem }}_form"

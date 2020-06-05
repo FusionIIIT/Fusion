@@ -1,0 +1,54 @@
+<button class="ui red button edit_{{ menuitem }}_{{ work.id }}">Edit</button>
+<script>
+    $('.coupled_{{ menuitem }}.modal')
+        .modal({
+            allowMultiple: true
+        });
+
+    $('.delete_{{ menuitem }}.modal')
+        .modal('attach events',
+            '.edit_{{ menuitem }}.modal .delete_{{ menuitem }}.button');
+
+    $('.edit_{{ menuitem }}_{{ work.id }}.button').on('click', function () {
+        $('.edit_{{ menuitem }}.modal')
+            .modal({
+                onShow: function () {
+                    // change edit modal header
+                    $('.edit_{{ menuitem }}.modal .header').first()
+                        .text("{{ work.name }}");
+                    // change modal form action url
+                    $('.edit_{{ menuitem }}.modal form')
+                        .attr("action", "{% url 'edit_work' work.id %}");
+                    // change delete modal message
+                    $('.delete_{{ menuitem }}.modal .content p')
+                        .text("Are you sure you want to delete {{ work.name }}?");
+                    // change delete form action url
+                    $('.delete_{{ menuitem }}.modal form')
+                        .attr("action", "{% url 'delete_work' work.id %}");
+                    // prefill form
+                    $('.edit_{{ menuitem }}.modal #id_name')
+                        .val("{{ work.name }}");
+                    $('.edit_{{ menuitem }}.modal #id_workType')
+                        .val("{{ work.workType }}");
+                    $(".edit_{{ menuitem }}.modal #id_estate option[value='{{ work.estate.id }}']")
+                        .attr(
+                            'selected', 'selected');
+                    $('.edit_{{ menuitem }}.modal #id_contractorName')
+                        .val("{{ work.contractorName }}");
+                    $('.edit_{{ menuitem }}.modal #id_dateIssued')
+                        .val("{{ work.dateIssued|date:'Y-m-d' }}");
+                    $('.edit_{{ menuitem }}.modal #id_dateStarted')
+                        .val("{{ work.dateStarted|date:'Y-m-d' }}");
+                    $('.edit_{{ menuitem }}.modal #id_dateCompleted')
+                        .val("{{ work.dateCompleted|date:'Y-m-d' }}");
+                    $('.edit_{{ menuitem }}.modal #id_costEstimated')
+                        .val("{{ work.costEstimated }}");
+                    $('.edit_{{ menuitem }}.modal #id_costActual')
+                        .val("{{ work.costActual }}");
+                    $('.edit_{{ menuitem }}.modal #id_remarks')
+                        .val("{{ work.remarks }}");
+                }
+            })
+            .modal('show');
+    });
+</script>

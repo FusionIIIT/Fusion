@@ -1,15 +1,11 @@
 {% csrf_token %}
-<h4 class="ui horizontal divider header">
-    <i class="info circle icon"></i>
-    Main Information
-</h4>
-<div class="field">
+<div class="required field">
     {{ estateForm.name.label_tag }}
     {{ estateForm.name }}
 </div>
 
 <div class="four fields">
-    <div class="field">
+    <div class="required field">
         {{ estateForm.dateIssued.label_tag }}
         {{ estateForm.dateIssued }}
     </div>
@@ -85,3 +81,5 @@
     {{ estateForm.remarks.label_tag }}
     {{ estateForm.remarks }}
 </div>
+
+<p></p>

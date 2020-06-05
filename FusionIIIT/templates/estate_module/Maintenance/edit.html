@@ -2,25 +2,26 @@
     <div class="header">
         Edit {{ menuitem }}
     </div>
-
     <div class="scrolling content">
         <h4 class="ui horizontal divider header">
             <i class="info circle icon"></i>
             Main Information
         </h4>
+
         <form action="" id="edit_{{ menuitem }}_form" class="ui form" method="POST">
             {% include 'estate_module/'|add:menuitem|add:'/form.html' %}
         </form>
     </div>
-
     <div class="actions">
 
         <button class="ui large red button delete_{{ menuitem }}">Delete</button>
+
         <button type="submit" form="edit_{{ menuitem }}_form"
             class="ui submit large positive right labeled icon approve button"> Update
             <i class="checkmark icon"></i></button>
-        <div class="ui black deny large button">Cancel</div>
-
+        <div class="ui black deny large button">
+            Cancel
+        </div>
     </div>
 </div>
 
@@ -30,7 +31,7 @@
     </div>
 
     <div class="content">
-        <p>Are you sure you want to delete {{ estate.name }}?</p>
+        <p>Are you sure you want to delete {{ work.name }}?</p>
         <form id="delete_{{ menuitem }}_form" action="" method="POST">
             {% csrf_token %}
         </form>
