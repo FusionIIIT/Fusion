@@ -384,9 +384,11 @@ def academic_procedures_student(request):
                 # Processing Branch Change form
                 print('Branch Change submitted')
                 objb = BranchChange()
-                form=BranchChangeForm(request.POST)
+                form=BranchChangeForm(request.POST, instance=objb)
                 print(request.POST)
                 objb = BranchChange()
+                objb.branches=request.POST['branches']
+                objb.save()
         return render(
                           request, '../templates/academic_procedures/academic.html',
                           {'details': details,
