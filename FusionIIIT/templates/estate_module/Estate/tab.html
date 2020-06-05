@@ -6,13 +6,14 @@
             <div class="description">
 
 
-                <table class="ui selectable celled sortable table">
+                <table class="ui selectable celled sortable single line table">
                     <thead>
                         <tr>
                             <th class="four wide column">Building</th>
+                            <th class="center aligned">Status</th>
                             <th class="right aligned">Issued Date</th>
-                            <th class="right aligned">Construction Started</th>
                             <th class="right aligned">Estimated Cost</th>
+                            <th class="center aligned">Verification</th>
                             <th colspan="2" class="two wide column"></th>
                         </tr>
                     </thead>
@@ -25,20 +26,19 @@
                             <td>
                                 {{ estate.name }}
                             </td>
-                            <td class="right aligned">
-                                {{ estate.dateIssued }}
+                            <td class="center aligned">
+                                estate.status
                             </td>
                             <td class="right aligned">
-                                {{ estate.dateConstructionStarted }}
+                                {{ estate.dateIssued|date:'j-m-Y' }}
                             </td>
                             <td class="right aligned">
                                 {% if estate.constructionCostEstimated %}
                                 ₹&nbsp;{{ estate.constructionCostEstimated|intcomma }} {% endif %}
-
                             </td>
-                            {% comment %} <td class="center aligned">
-                                {% include 'estate_module/'|add:menuitem|add:'/edit.html' %}
-                            </td> {% endcomment %}
+                            <td class="center aligned">
+                                estate.isVerified
+                            </td>
                             <td class="center aligned">
                                 {% include 'estate_module/'|add:menuitem|add:'/edit_button.html' %}
 

@@ -64,6 +64,9 @@ class WorkForm(ModelForm):
             'name': TextInput(attrs={
                 'placeholder': 'Enter name of work'
             }),
+            'contractorName': TextInput(attrs={
+                'placeholder': 'Enter name of contractor'
+            }),
             'dateIssued': DateInput(attrs={
                 'type': 'date'
             }),

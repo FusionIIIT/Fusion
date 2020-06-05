@@ -100,7 +100,7 @@
                 {% elif workType_CODE == 'MW' %}
                 <i class="tasks icon"></i>
                 {% endif %}
-                {{ menuitem }} Works ({{ workType_CODE }})
+                {{ menuitem }} Works
             </h4>
 
             {% if estate.MW_List|length > 0 and workType_CODE == 'MW' or estate.CW_List|length > 0 and workType_CODE == 'CW' %}
@@ -128,10 +128,10 @@
                             ₹&nbsp;{{ work.costEstimated|intcomma }}
                         </td>
                         <td class="center aligned">
-                            {% include 'estate_module/'|add:menuitem|add:'/edit_button.html' %}
+                            {% include 'estate_module/Work/edit_button.html' %}
                         </td>
                         <td class="center aligned">
-                            {% include 'estate_module/'|add:menuitem|add:'/detail.html' %}
+                            {% include 'estate_module/Work/detail.html' %}
                         </td>
                     </tr>
 
@@ -142,7 +142,7 @@
                     <tr>
                         <th colspan="6">
                             <button
-                                class="ui right floated labeled icon blue new_{{ menuitem }}_{{ estate.id }} button">
+                                class="ui right floated right labeled icon blue new_{{ menuitem }}_{{ estate.id }} button">
                                 <i class="plus icon"></i>
                                 New
                             </button>

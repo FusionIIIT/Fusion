@@ -43,12 +43,20 @@
 <div class="two fields">
     <div class="field">
         {{ workForm.costEstimated.label_tag }}
-        {{ workForm.costEstimated }}
+
+        <div class="ui left icon input">
+            {{ workForm.costEstimated }}
+            <i class="rupee sign icon"></i>
+        </div>
     </div>
 
     <div class="field">
         {{ workForm.costActual.label_tag }}
-        {{ workForm.costActual }}
+
+        <div class="ui left icon input">
+            {{ workForm.costActual }}
+            <i class="rupee sign icon"></i>
+        </div>
     </div>
 </div>
 <h4 class="ui horizontal divider header">

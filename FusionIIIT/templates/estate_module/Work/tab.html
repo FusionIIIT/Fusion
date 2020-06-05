@@ -6,41 +6,51 @@
             <div class="description">
 
 
-                <table class="ui selectable celled sortable table">
+                <table class="ui selectable celled sortable single line table">
                     <thead>
                         <tr>
-                            <th class="five wide column">Maintenance Work Name</th>
+                            <th class="four wide column">{{ menuitem }} Work Name</th>
+                            <th>Status</th>
                             <th>Estate</th>
                             <th class="right aligned">Issued Date</th>
                             <th class="right aligned">Estimated Cost</th>
+                            <th class="center aligned">Verification</th>
                             <th colspan="2" class="two wide column"></th>
+
                         </tr>
                     </thead>
                     <tbody>
 
+
                         {% for work in works %}
+                        {% if work.get_workType_display == menuitem %}
                         {% if tab_id == menuitem|add:"_All" or tab_id == menuitem|add:"_Complete" and work.dateCompleted or tab_id == menuitem|add:"_Incomplete" and not work.dateCompleted %}
 
                         <tr>
                             <td>
                                 {{ work.name }}
                             </td>
+                            <td>{{ work.status }}</td>
                             <td>
                                 {{ work.estate.name }}
                             </td>
                             <td class="right aligned">
-                                {{ work.dateIssued }}
+                                {{ work.dateIssued|date:'j-m-Y' }}
                             </td>
                             <td class="right aligned">
                                 {% if work.costEstimated %}₹&nbsp;{{ work.costEstimated|intcomma }}{% endif %}
                             </td>
                             <td class="center aligned">
-                                {% include 'estate_module/'|add:menuitem|add:'/edit_button.html' %}
+                                work.isVerified
                             </td>
                             <td class="center aligned">
-                                {% include 'estate_module/'|add:menuitem|add:'/detail.html' %}
+                                {% include 'estate_module/Work/edit_button.html' %}
+                            </td>
+                            <td class="center aligned">
+                                {% include 'estate_module/Work/detail.html' %}
                             </td>
                         </tr>
+                        {% endif %}
                         {% endif %}
                         {% endfor %}
                     </tbody>

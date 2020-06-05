@@ -22,11 +22,11 @@ class Estate(models.Model):
     def MW_List(self):
         return self.work_set.filter(workType='MW')
 
-    def __str__(self):
-        return self.name
-
     class Meta:
         ordering = ['-id']
+
+    def __str__(self):
+        return self.name
 
 
 class WorkType(models.Model):
@@ -45,6 +45,10 @@ class Work(models.Model):
         (MAINTENANCE_WORK, 'Maintenance'),
     ]
 
+    INITIATED = 'Initiated'
+    ONGOING = 'Ongoing'
+    COMPLETED = 'Completed'
+
     name = models.CharField(max_length=100)
     # workType = models.ForeignKey(WorkType, on_delete=models.CASCADE)
     workType = models.CharField(
@@ -58,8 +62,17 @@ class Work(models.Model):
     costActual = models.IntegerField(null=True, blank=True)
     remarks = models.TextField(null=True, blank=True)
 
+    def status(self):
+        if self.dateStarted and not self.dateCompleted:
+            return self.ONGOING
+        else:
+            return ''
+
+    class Meta:
+        ordering = ['-id']
+
     def __str__(self):
-        return self.estate.name + ' - ' + self.workType + ' - ' + self.name
+        return self.estate + ' - ' + self.workType + ' - ' + self.name
 
 
 class SubWork(models.Model):
@@ -71,6 +84,9 @@ class SubWork(models.Model):
     costEstimated = models.IntegerField(null=True, blank=True)
     costActual = models.IntegerField(null=True, blank=True)
     remarks = models.TextField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-id']
 
     def __str__(self):
         return self.work.name + ' - ' + self.name
@@ -96,6 +112,9 @@ class Inventory(models.Model):
     dateOrdered = models.DateField()
     dateReceived = models.DateField(null=True, blank=True)
     remarks = models.TextField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-id']
 
     def __str__(self):
         return self.inventoryType.name
