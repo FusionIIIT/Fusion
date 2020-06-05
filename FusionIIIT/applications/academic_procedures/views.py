@@ -206,7 +206,7 @@ def academic_procedures_student(request):
 
         else :
             return HttpResponse("Student has no record")
-
+        masters_flag=True
         current_date = demo_date.date()
         year = demo_date.year
         
@@ -332,6 +332,9 @@ def academic_procedures_student(request):
             faculty_list = get_faculty_list()    
             thesis_request_list = ThesisTopicProcess.objects.all().filter(student_id = obj)
             pre_existing_thesis_flag = get_thesis_flag(obj)
+            print('PG module')
+            print(faculty_list)
+            print(thesis_request_list)
         if phd_flag:
             pre_existing_thesis_flag = get_thesis_flag(obj)
             teaching_credit_registration_course = Curriculum.objects.all().filter(batch = 2016, sem =6)
