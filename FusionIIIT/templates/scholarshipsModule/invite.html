@@ -3,7 +3,7 @@
 
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
-        <a class="{% if last_clicked == 'Submit' or last_clicked == '' or last_clicked == 'Submit_previous_winner'%} active item {% else %} item {% endif %}" data-tab="inviteapplications">
+        <a class="{% if last_clicked == 'Submit' or last_clicked == '' or last_clicked == 'SubmitPreviousWinner'%} active item {% else %} item {% endif %}" data-tab="inviteapplications">
             Invite Applications
         </a>
         <a class="{% if last_clicked == 'Enddate_updated' %} active item {% else %} item {% endif %}" data-tab="recent_app">
@@ -35,7 +35,7 @@
         </div>
     </div>-->
 
-    <div class="{% if last_clicked == 'Submit' or last_clicked == ''  or last_clicked == 'Submit_previous_winner' %} ui active tab {% else %} ui tab {% endif %}" data-tab="inviteapplications">
+    <div class="{% if last_clicked == 'Submit' or last_clicked == ''  or last_clicked == 'SubmitPreviousWinner' %} ui active tab {% else %} ui tab {% endif %}" data-tab="inviteapplications">
         <div class="ui vertical segment">
             <form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;">
                 {% csrf_token %}
@@ -44,7 +44,7 @@
                         <label>Type</label>
                         <select class="ui fluid search selection large dropdown" name="type" required>
                                 <option value="">Select</option>
-                                <option value="Mcm Scholarship">Mcm Scholarship</option>
+                                <option value="Merit-cum-Means Scholarship">Merit-cum-Means Scholarship</option>
                                 <option value="Convocation Medals">Convocation Medals</option>
                             </select>
                     </div>
@@ -176,7 +176,7 @@
           var x = $('#update_release_id').val();
           var y = $('#enddate_up').val();
           $.ajax({
-              url: '/spacs/update_enddate/',
+              url: '/spacs/updateEndDate/',
               type: 'GET',
               data:{
                   up_id:x,
