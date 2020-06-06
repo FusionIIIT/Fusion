@@ -1,5 +1,5 @@
 
-import datetime
+from datetime import *
 from django import forms
 from django.core.validators import MaxValueValidator, MinValueValidator
 
@@ -43,6 +43,17 @@ class AddEducation(forms.Form):
     sdate = forms.DateField(label='sdate', widget=forms.DateInput(attrs={'class':'datepicker'}))
     edate = forms.DateField(label='edate', widget=forms.DateInput(attrs={'class':'datepicker'}))
 
+    def clean(self):
+        sdate = self.cleaned_data.get("sdate")
+        edate = self.cleaned_data.get("edate")
+        grade = self.cleaned_data.get("grade")
+        if (sdate> edate):
+            raise forms.ValidationError("Start Date but me before End Date")
+
+        if (len(grade)>3):
+            raise forms.ValidationError("Invalid")
+        return self.cleaned_data
+
 
 class AddSkill(forms.Form):
     """
@@ -79,6 +90,14 @@ class AddCourse(forms.Form):
     sdate = forms.DateField(label='sdate', widget=forms.DateInput(attrs={'class':'datepicker'}))
     edate = forms.DateField(label='edate', widget=forms.DateInput(attrs={'class':'datepicker'}))
 
+    def clean(self):
+        sdate = self.cleaned_data.get("sdate")
+        edate = self.cleaned_data.get("edate")
+
+        if (sdate > edate):
+            raise forms.ValidationError("Start Date but me before End Date")
+        return self.cleaned_data
+
 
 class AddConference(forms.Form):
     """
@@ -98,6 +117,14 @@ class AddConference(forms.Form):
                                   label="description", required=False)
     sdate = forms.DateField(label='sdate', widget=forms.DateInput(attrs={'class':'datepicker'}))
     edate = forms.DateField(label='edate', widget=forms.DateInput(attrs={'class':'datepicker'}))
+
+    def clean(self):
+        sdate = self.cleaned_data.get("sdate")
+        edate = self.cleaned_data.get("edate")
+
+        if (sdate > edate):
+            raise forms.ValidationError("Start Date cant be after End Date")
+        return self.cleaned_data
 
 
 class AddExperience(forms.Form):
@@ -129,6 +156,14 @@ class AddExperience(forms.Form):
     sdate = forms.DateField(label='sdate', widget=forms.DateInput(attrs={'class':'datepicker'}))
     edate = forms.DateField(label='edate', widget=forms.DateInput(attrs={'class':'datepicker'}))
 
+    def clean(self):
+        sdate = self.cleaned_data.get("sdate")
+        edate = self.cleaned_data.get("edate")
+
+        if (sdate > edate):
+            raise forms.ValidationError("Start Date cant be after End Date")
+        return self.cleaned_data
+
 
 class AddProject(forms.Form):
     """
@@ -154,6 +189,14 @@ class AddProject(forms.Form):
                                    label="project_link", required=False)
     sdate = forms.DateField(label='sdate', widget=forms.DateInput(attrs={'class':'datepicker'}))
     edate = forms.DateField(label='edate', widget=forms.DateInput(attrs={'class':'datepicker'}))
+
+    def clean(self):
+        sdate = self.cleaned_data.get("sdate")
+        edate = self.cleaned_data.get("edate")
+
+        if (sdate > edate):
+            raise forms.ValidationError("Start Date cant be after End Date")
+        return self.cleaned_data
 
 
 class AddAchievement(forms.Form):
@@ -247,11 +290,16 @@ class AddReference(forms.Form):
                                                               'id': 'reference_email',
                                                               }),
                                 label="email")
-    mobile_number = forms.CharField(widget=forms.TextInput(attrs={'max_length': 15,
+    mobile_number = forms.CharField(widget=forms.TextInput(attrs={'max_length': 10,
                                                                       'class': 'field',
                                                                       'id': 'reference_mobile',
                                                                       'type': 'number'}),
                                         label="mobile_number")
+    def clean(self):
+        mobile_number = self.cleaned_data.get("mobile_number")
+        if(len(mobile_number)>10):
+            raise forms.ValidationError("Invalid Number")
+        return self.cleaned_data
 
 
 class AddPatent(forms.Form):

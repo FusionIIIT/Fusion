@@ -264,9 +264,45 @@ def new_club(request):
 				}
 		content = json.dumps(content)
 		return HttpResponse(content)
+@login_required()
+def registration_form(request):
+	if request.method == 'POST':
+		res = "success"
+		message = "The form has been dispatched for further process"
+		try:
+			#getting form data
+			info = Student.objects.get(id__user=request.user).cpi
+			print(info)
+			user = request.POST.get("user_name")
+			roll = request.POST.get("roll")
+			cpi = request.POST.get("cpi")
+			branch = request.POST.get("branch")
+			programme = request.POST.get("programme")
 
 
-def retrun_content(roll, name, desig , club__ ):
+			#saving data to the database
+			reg = Registration_form(user_name=user, branch=branch, roll=roll, cpi=cpi, programme=programme)
+			print(reg)
+			reg.save()
+			# club_member = Club_member(member = student, club = club_name, description = pda)
+			# club_member.save()
+		except Exception as e:
+			print(f"{e}DSANKJDVBJBDAKSCBASKFBasjcbaskjvbaskvaslvbna")
+			res = "error"
+			message = "Some error occurred"
+
+		content = {
+			'status':res,
+			'message':message
+		}
+		content = json.dumps(content)
+		return HttpResponse(content)
+		# messages.success(request,"Successfully sent the application !!!")
+
+	# return redirect('/gymkhana/')
+
+
+def retrun_content(request, roll, name, desig , club__ ):
 	students =ExtraInfo.objects.all().filter(user_type = "student")
 	faculty = ExtraInfo.objects.all().filter(user_type = "faculty")
 	club_name = Club_info.objects.all()
@@ -274,8 +310,12 @@ def retrun_content(roll, name, desig , club__ ):
 	fest_budget = Fest_budget.objects.all()
 	club_budget = Club_budget.objects.all()
 	club_session = Session_info.objects.all()
-	club_event = Event_info.objects.all()
+	# club_event = Event_info.objects.all()
 	club_event_report = Club_report.objects.all()
+	club_event = Club_report.objects.all()
+	registration_form = Registration_form.objects.all()
+	cpi = Student.objects.get(id__user=request.user).cpi
+	print(registration_form)
 
 	venue_type = []
 	id =0
@@ -328,8 +368,10 @@ def retrun_content(roll, name, desig , club__ ):
 		'venue' : venue,
 		'Curr_desig' : desig,
 		'club_details':club__,
-		'roll': str(roll),
-		'voting_polls': voting_polls 
+		'voting_polls': voting_polls, 
+		'roll' : str(roll),
+		'registration_form': registration_form,
+		'cpi': cpi,
 	}
 	return content
 
@@ -378,7 +420,7 @@ def gymkhana(request):
 		Types = lines.split(" ")
 		#print(Types[1])
 	club__ = coordinator_club(request)	
-	return render(request, "gymkhanaModule/gymkhana.html", retrun_content(roll, name, roll_ , club__ ))
+	return render(request, "gymkhanaModule/gymkhana.html", retrun_content(request, roll, name, roll_ , club__ ))
 
 
 @login_required

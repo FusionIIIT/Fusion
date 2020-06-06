@@ -28,6 +28,9 @@
                 console.log(form.elements[i].value) ;
             }
             var status = 1 ;
+            if (b == 'registration__form'){
+                status = 0
+            }
             if (b == 'new_session_form'){
                 status = validateNewSessionForm(form);
             }
@@ -239,6 +242,22 @@
                     <i class="right floated chevron right icon"></i>
                 </a>
 
+<!--                -->
+
+                {% if "student" in Curr_desig %}
+                    <a class="item" data-tab="thirteenth">
+                        Senate Registration
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                {% endif %}
+
+                {% if "Convenor" in Curr_desig %}
+                    <a class="item" data-tab="twentyth">
+                        Senate Nomination Details
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                {% endif %}
+<!--                -->
                 {% if "co-ordinator" in Curr_desig or "co co-ordinator" in Curr_desig %}
                     <a class=" item" data-tab="fifth">
                         New Session
@@ -408,6 +427,29 @@
             </div>
             {% comment %}The Publications ends here!{% endcomment %}
 
+            <div class="ui active  tab segment" data-tab="twelth">
+                {% block view_budget %}
+                    {% include 'gymkhanaModule/club_details.html' %}
+                {% endblock %}
+            </div>
+<!--            -->
+            {% comment %}The Publications ends here!{% endcomment %}
+            <div class="ui tab segment" data-tab="thirteenth">
+                {% block convenor_form %}
+                    {% include 'gymkhanaModule/convenor_form.html' %}
+                {% endblock %}
+            </div>
+
+            {% comment %}The Publications ends here!{% endcomment %}
+            <div class="ui tab segment" data-tab="twentyth">
+                {% block nomination_details %}
+                    {% include 'gymkhanaModule/nomination_details.html' %}
+                {% endblock %}
+            </div>
+
+
+<!--            -->
+            {% comment %}The Publications ends here!{% endcomment %}
             <div class="ui tab segment" data-tab="last">
                 {% block pendingrequest %}
                     {% include 'gymkhanaModule/pending_request.html' %}
