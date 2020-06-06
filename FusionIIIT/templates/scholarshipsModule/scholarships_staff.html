@@ -47,11 +47,11 @@
                     Spacs Members Details
                     <i class="right floated chevron right icon"></i>
                 </a>-->
-                <a class="{% if last_clicked == '' or last_clicked == 'Submit_previous_winner' %} active item {% else %} item {% endif %}" data-tab="first">
+                <a class="{% if last_clicked == '' or last_clicked == 'SubmitPreviousWinner' %} active item {% else %} item {% endif %}" data-tab="first">
                         Browse Award Catalogue
                     <i class="right floated chevron right icon"></i>
                 </a>
-                <a class="{% if last_clicked == 'Verify_mcm' or last_clicked == 'Reject_mcm' or last_clicked == 'Verify_gold' or last_clicked == 'Reject_gold' or last_clicked == 'Verify_silver' or last_clicked == 'Reject_silver' or last_clicked == 'Verify_dm' or last_clicked == 'Reject_dm' %} active item {% else %} item {% endif %}" data-tab="second">
+                <a class="{% if last_clicked == 'Verify_MCM' or last_clicked == 'Reject_MCM' or last_clicked == 'Verify_Gold' or last_clicked == 'Reject_Gold' or last_clicked == 'Verify_Silver' or last_clicked == 'Reject_Silver' or last_clicked == 'Verify_DM' or last_clicked == 'Reject_DM' %} active item {% else %} item {% endif %}" data-tab="second">
                     Browse Applications
                     <i class="right floated chevron right icon"></i>
                 </a>
@@ -94,12 +94,12 @@
                     {% comment %}The Publications about spacs  ends here!{% endcomment %}
 
                     {% comment %}The Publications awards  starts here!{% endcomment %}
-                    <div class="{% if last_clicked == '' or last_clicked == 'Submit_previous_winner' %}ui active tab segment {% else %} ui tab segment {% endif %}" data-tab="first">
+                    <div class="{% if last_clicked == '' or last_clicked == 'SubmitPreviousWinner' %}ui active tab segment {% else %} ui tab segment {% endif %}" data-tab="first">
                      {% block browsecatalogue %}
                                  {% include 'scholarshipsModule/browsecatalogue.html' with awards=awards %}
                     {% endblock %}
                      </div>
-                        <div class="{% if last_clicked == 'Verify_mcm' or last_clicked == 'Reject_mcm' or last_clicked == 'Verify_gold' or last_clicked == 'Reject_gold' or last_clicked == 'Verify_silver' or last_clicked == 'Reject_silver' or last_clicked == 'Verify_dm' or last_clicked == 'Reject_dm' %} ui active tab segment {% else %} ui tab segment {% endif %}" data-tab="second">
+                        <div class="{% if last_clicked == 'Verify_MCM' or last_clicked == 'Reject_MCM' or last_clicked == 'Verify_Gold' or last_clicked == 'Reject_Gold' or last_clicked == 'Verify_Silver' or last_clicked == 'Reject_Silver' or last_clicked == 'Verify_DM' or last_clicked == 'Reject_DM' %} ui active tab segment {% else %} ui tab segment {% endif %}" data-tab="second">
                                 {% block awards %}
                                     {% include 'scholarshipsModule/browsea1.html' with mcm=mcm gold=gold silver=silver dandm=dandm awards=awards last_clicked=last_clicked%}
                                 {% endblock %}
