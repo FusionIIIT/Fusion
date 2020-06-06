@@ -155,16 +155,19 @@
 
             <div class="ui two column centered grid">
                 <div class="twelve wide column">
-                    <div class="ui placeholder segment">
-                        <div class="ui icon header">
-                            {% comment %} <i class="exclamation triangle icon"></i> {% endcomment %}
-                            No {{ menuitem }} Work found for {{ estate.name }}
+                    <div class="ui icon warning message">
+                        <i class="inbox icon"></i>
+                        <div class="content">
+                            <div class="header">
+                                No {{ menuitem }} Work found for {{ estate.name }}
+                            </div>
+                            {% comment %} <p>Get the best news in your e-mail every day.</p> {% endcomment %}
                         </div>
-                        <button class="ui right labeled icon blue new_{{ menuitem }}_{{ estate.id }} button">
-                            <i class="plus icon"></i>
-                            New
-                        </button>
                     </div>
+                    <button class="ui right labeled icon blue new_{{ menuitem }}_{{ estate.id }} button">
+                        <i class="plus icon"></i>
+                        New
+                    </button>
                 </div>
             </div>
             {% endif %}
@@ -175,12 +178,17 @@
                         .modal({
                             onShow: function () {
                                 // prefill form
-                                $(".new_{{ menuitem }}.modal #id_workType option[value='{{ workType_CODE }}']")
+                                /*$(".new_{{ menuitem }}.modal #id_workType option[value='{{ workType_CODE }}']")
                                     .attr(
                                         'selected', 'selected');
                                 $(".new_{{ menuitem }}.modal #id_estate option[value='{{ estate.id }}']")
                                     .attr(
-                                        'selected', 'selected');
+                                        'selected', 'selected');*/
+                                $('.new_{{ menuitem }}.modal form')
+                                    .form('set values', {
+                                        workType: '{{ workType_CODE }}',
+                                        estate: '{{ estate.id }}',
+                                    });
                             }
                         })
                         .modal('show');

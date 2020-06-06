@@ -26,28 +26,19 @@
                     $('.delete_{{ menuitem }}.modal form')
                         .attr("action", "{% url 'delete_estate' estate.id %}");
                     // prefill form
-                    $('.edit_{{ menuitem }}.modal #id_name')
-                        .val("{{ estate.name }}");
-                    $('.edit_{{ menuitem }}.modal #id_dateIssued')
-                        .val("{{ estate.dateIssued|date:'Y-m-d' }}");
-                    $('.edit_{{ menuitem }}.modal #id_dateConstructionStarted')
-                        .val("{{ estate.dateConstructionStarted|date:'Y-m-d' }}");
-                    $('.edit_{{ menuitem }}.modal #id_dateConstructionCompleted')
-                        .val("{{ estate.dateConstructionCompleted|date:'Y-m-d' }}");
-                    $('.edit_{{ menuitem }}.modal #id_dateOperational')
-                        .val("{{ estate.dateOperational|date:'Y-m-d' }}");
-                    $('.edit_{{ menuitem }}.modal #id_area')
-                        .val("{{ estate.area }}");
-                    $('.edit_{{ menuitem }}.modal #id_constructionCostEstimated')
-                        .val("{{ estate.constructionCostEstimated }}");
-                    $('.edit_{{ menuitem }}.modal #id_constructionCostActual')
-                        .val("{{ estate.constructionCostActual }}");
-                    $('.edit_{{ menuitem }}.modal #id_numRooms')
-                        .val("{{ estate.numRooms }}");
-                    $('.edit_{{ menuitem }}.modal #id_numWashrooms')
-                        .val("{{ estate.numWashrooms }}");
-                    $('.edit_{{ menuitem }}.modal #id_remarks')
-                        .val("{{ estate.remarks }}");
+                    $('.edit_{{ menuitem }}.modal form')
+                        .form('set values', {
+                            name: '{% if estate.name %}{{ estate.name }}{% endif %}',
+                            dateIssued: '{% if estate.dateIssued %}{{ estate.dateIssued }}{% endif %}',
+                            dateConstructionStarted: '{% if estate.dateConstructionStarted %}{{ estate.dateConstructionStarted }}{% endif %}',
+                            dateConstructionCompleted: '{% if estate.dateConstructionCompleted %}{{ estate.dateConstructionCompleted }}{% endif %}',
+                            dateOperational: '{% if estate.dateOperational %}{{ estate.dateOperational }}{% endif %}',
+                            constructionCostEstimated: '{% if estate.constructionCostEstimated %}{{ estate.constructionCostEstimated }}{% endif %}',
+                            constructionCostActual: '{% if estate.constructionCostActual %}{{ estate.constructionCostActual }}{% endif %}',
+                            numRooms: '{% if estate.numRooms %}{{ estate.numRooms }}{% endif %}',
+                            numWashrooms: '{% if estate.numWashrooms %}{{ estate.numWashrooms }}{% endif %}',
+                            remarks: '{% if estate.remarks %}{{ estate.remarks }}{% endif %}',
+                        });
                 }
             })
             .modal('show');

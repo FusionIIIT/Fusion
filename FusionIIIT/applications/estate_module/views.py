@@ -43,7 +43,7 @@ def newEstate(request):
     if newEstateForm.is_valid():
         new_Estate = newEstateForm.save()
         messages.success(
-            request, f'New estate created: { new_Estate.name }')
+            request, f'New Estate Created: { new_Estate.name }')
         return redirect('estate_module_home')
 
     for label, errors in newEstateForm.errors.items():
@@ -60,9 +60,13 @@ def editEstate(request, estate_id):
     editEstateForm = EstateForm(request.POST, instance=estate)
 
     if editEstateForm.is_valid():
-        editEstateForm.save()
+        editedEstate = editEstateForm.save()
+        messages.success(request, f'Estate Updated: { editedEstate.name }')
         return redirect('estate_module_home')
 
+    for label, errors in editEstateForm.errors.items():
+        for error in errors:
+            messages.error(request, f'{ label }: { error }')
     return redirect('estate_module_home')
 
 
@@ -70,7 +74,9 @@ def editEstate(request, estate_id):
 def deleteEstate(request, estate_id):
 
     estate = Estate.objects.get(pk=estate_id)
+    estate_name = estate.name
     estate.delete()
+    messages.success(request, f'Estate Deleted: { estate_name }')
     return redirect('estate_module_home')
 
 

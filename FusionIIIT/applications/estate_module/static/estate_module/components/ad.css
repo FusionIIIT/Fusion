@@ -1,6 +1,6 @@
 /*!
- * # Semantic UI 2.4.1 - Ad
- * http://github.com/semantic-org/semantic-ui/
+ * # Fomantic-UI - Ad
+ * http://github.com/fomantic/Fomantic-UI/
  *
  *
  * Copyright 2013 Contributors
@@ -17,17 +17,17 @@
 .ui.ad {
   display: block;
   overflow: hidden;
-  margin: 1em 0em;
+  margin: 1em 0;
 }
 .ui.ad:first-child {
-  margin: 0em;
+  margin: 0;
 }
 .ui.ad:last-child {
-  margin: 0em;
+  margin: 0;
 }
 .ui.ad iframe {
-  margin: 0em;
-  padding: 0em;
+  margin: 0;
+  padding: 0;
   border: none;
   overflow: hidden;
 }
@@ -62,8 +62,8 @@
 }
 
 /*--------------
-     Square
----------------*/
+       Square
+  ---------------*/
 
 
 /* Square */
@@ -79,8 +79,8 @@
 }
 
 /*--------------
-    Rectangle
----------------*/
+      Rectangle
+  ---------------*/
 
 
 /* Small Rectangle */
@@ -96,8 +96,8 @@
 }
 
 /*--------------
-     Button
----------------*/
+       Button
+  ---------------*/
 
 .ui.button.ad {
   width: 120px;
@@ -113,8 +113,8 @@
 }
 
 /*--------------
-   Skyscrapers
----------------*/
+     Skyscrapers
+  ---------------*/
 
 
 /* Skyscraper */
@@ -129,8 +129,8 @@
 }
 
 /*--------------
-     Banners
----------------*/
+       Banners
+  ---------------*/
 
 
 /* Banner */
@@ -175,8 +175,8 @@
 }
 
 /*--------------
-    Panorama
----------------*/
+      Panorama
+  ---------------*/
 
 
 /* Panorama */
@@ -186,8 +186,8 @@
 }
 
 /*--------------
-     Netboard
----------------*/
+       Netboard
+  ---------------*/
 
 
 /* Netboard */
@@ -197,8 +197,8 @@
 }
 
 /*--------------
-     Mobile
----------------*/
+       Mobile
+  ---------------*/
 
 
 /* Large Mobile Banner */
@@ -223,7 +223,7 @@
 .ui.mobile.ad {
   display: none;
 }
-@media only screen and (max-width: 767px) {
+@media only screen and (max-width: 767.98px) {
   .ui.mobile.ad {
     display: block;
   }

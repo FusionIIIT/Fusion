@@ -59,12 +59,12 @@ Estate
         {% if messages %}
         {% for message in messages %}
 
-        <div class="ui {{ message.tags }} message message_{{ forloop.counter0 }}">
+        {% comment %} <div class="ui {{ message.tags }} message message_{{ forloop.counter0 }}">
             <i class="close icon"></i>
             <div class="header">
                 {{ message }}
             </div>
-            {% comment %} <p>More detailed message</p> {% endcomment %}
+            <p>More detailed message</p>
         </div>
         <script>
             $('.message_{{ forloop.counter0 }} .close')
@@ -73,7 +73,24 @@ Estate
                         .closest('.message')
                         .transition('fade');
                 });
+        </script> {% endcomment %}
+
+        <script>
+            $('body')
+                .toast({
+                    position: 'top left',
+                    title: '{{ message.tags|title }}!',
+                    message: '{{ message }}',
+                    class: '{{ message.tags }}',
+                    showProgress: 'bottom',
+                    displayTime: 6000,
+                    /*className: {
+                        toast: 'ui message'
+                    }*/
+                });
         </script>
+
+
         {% endfor %}
         {% endif %}
 
@@ -90,9 +107,17 @@ Estate
 
 {% block javascript %}
 <script>
-    $('.ui.dropdown')
+    $('select')
         .dropdown();
+    $(document).ready(function () {
+        $('.ui.calendar')
+            .calendar({
+                type: 'date',
+                startMode: 'year'
+            });
+    });
 </script>
+
 {% endblock javascript %}
 
 {% endblock body %}

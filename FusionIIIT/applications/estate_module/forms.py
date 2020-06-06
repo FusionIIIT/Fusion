@@ -11,16 +11,24 @@ class EstateForm(ModelForm):
                 'placeholder': 'Enter name of estate'
             }),
             'dateIssued': DateInput(attrs={
-                'type': 'date'
+                # 'type': 'date',
+                'placeholder': 'Enter date',
+                'type': 'text'
             }),
             'dateConstructionStarted': DateInput(attrs={
-                'type': 'date'
+                # 'type': 'date',
+                'placeholder': 'Enter date',
+                'type:': 'text'
             }),
             'dateConstructionCompleted': DateInput(attrs={
-                'type': 'date'
+                # 'type': 'date',
+                'placeholder': 'Enter date',
+                'type:': 'text'
             }),
             'dateOperational': DateInput(attrs={
-                'type': 'date'
+                # 'type': 'date',
+                'placeholder': 'Enter date',
+                'type:': 'text'
             }),
             'area': NumberInput(attrs={
                 'placeholder': 'Enter area',
@@ -74,19 +82,27 @@ class WorkForm(ModelForm):
                 'placeholder': 'Enter name of contractor'
             }),
             'dateIssued': DateInput(attrs={
-                'type': 'date'
+                # 'type': 'date',
+                'placeholder': 'Enter date',
+                'type': 'text'
             }),
             'dateStarted': DateInput(attrs={
-                'type': 'date'
+                # 'type': 'date',
+                'placeholder': 'Enter date',
+                'type': 'text'
             }),
             'dateCompleted': DateInput(attrs={
-                'type': 'date'
+                # 'type': 'date',
+                'placeholder': 'Enter date',
+                'type': 'text'
             }),
             'costEstimated': NumberInput(attrs={
-                'placeholder': 'Enter estimated construction cost'
+                'placeholder': 'Enter estimated construction cost',
+                'type': 'text'
             }),
             'costActual': NumberInput(attrs={
-                'placeholder': 'Enter actual construction cost'
+                'placeholder': 'Enter actual construction cost',
+                'type': 'text'
             }),
             'remarks': Textarea(attrs={
                 'placeholder': 'Enter remarks'

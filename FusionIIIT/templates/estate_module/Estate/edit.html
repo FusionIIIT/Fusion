@@ -1,3 +1,4 @@
+{% with 'edit_'|add:menuitem|add:'_form' as form_id %}
 <div class="ui modal coupled_{{ menuitem }} edit_{{ menuitem }}">
     <div class="header">
         Edit {{ menuitem }}
@@ -8,7 +9,7 @@
             <i class="info circle icon"></i>
             Main Information
         </h4>
-        <form action="" id="edit_{{ menuitem }}_form" class="ui form" method="POST">
+        <form action="" id="{{ form_id }}" class="ui form" method="POST">
             {% include 'estate_module/'|add:menuitem|add:'/form.html' %}
         </form>
     </div>
@@ -16,13 +17,13 @@
     <div class="actions">
 
         <button class="ui large red button delete_{{ menuitem }}">Delete</button>
-        <button type="submit" form="edit_{{ menuitem }}_form"
-            class="ui submit large positive right labeled icon approve button"> Update
+        <button type="submit" form="{{ form_id }}" class="ui large right labeled icon green button">Update
             <i class="checkmark icon"></i></button>
         <div class="ui black deny large button">Cancel</div>
 
     </div>
 </div>
+{% endwith %}
 
 <div class="ui tiny modal coupled_{{ menuitem }} delete_{{ menuitem }}">
     <div class="header">
