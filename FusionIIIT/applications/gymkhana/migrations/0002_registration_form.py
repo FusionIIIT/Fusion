@@ -10,19 +10,3 @@ class Migration(migrations.Migration):
     dependencies = [
         ('gymkhana', '0001_initial'),
     ]
-
-    operations = [
-        migrations.CreateModel(
-            name='Registration_form',
-            fields=[
-                ('user_name', models.CharField(max_length=20, primary_key=True, serialize=False)),
-                ('branch', models.CharField(choices=[('cse', 'CSE'), ('ece', 'ECE'), ('me', 'ME')], default='open', max_length=20)),
-                ('batch', models.CharField(default=2016, max_length=4)),
-                ('cpi', models.FloatField(default=6.0, max_length=3)),
-                ('programme', models.CharField(choices=[('B.tech', 'B.tech'), ('B.des', 'B.des'), ('M.tech', 'M.tech'), ('M.des', 'M.des')], default='open', max_length=20)),
-            ],
-            options={
-                'db_table': 'Registration_form',
-            },
-        ),
-    ]
