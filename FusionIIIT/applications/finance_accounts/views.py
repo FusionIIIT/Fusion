@@ -143,11 +143,9 @@ def previewing(request):
             context = {
             }
             return render(request ,"financeAndAccountsModule/financeAndAccountsModuleds.html",context)
-
-
-        if (str(z.designation) == 'adminstrator'):
-            flag = 1
-            return render(request, "financeAndAccountsModule/financeAndAccountsModulead.html", context)
+        # if (str(z.designation) == 'adminstrator'):
+        #     flag = 1
+        #     return render(request, "financeAndAccountsModule/financeAndAccountsModulead.html", context)
 
         if (str(z.designation) == 'sr dealing assitant'):
             flag = 1
@@ -188,8 +186,8 @@ def previewing(request):
                 'b' : b
             }
             return render(request, "financeAndAccountsModule/financeAndAccountsModule.html", context)
-    if(flag == 0):
-        return render(request, "financeAndAccountsModule/employee.html", context)
+    # if(flag == 0):
+    #     return render(request, "financeAndAccountsModule/employee.html", context)
 
 
 

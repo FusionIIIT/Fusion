@@ -1,0 +1,33 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+pylint = "*"
+
+[packages]
+bs4 = "*"
+celery = "*"
+django-allauth = "*"
+django-cleanup = "*"
+django-debug-toolbar = "*"
+django-markdown-deux = "*"
+django-notifications-hq = "*"
+django-pagedown = "*"
+django-semanticui-forms = "*"
+django-unused-media = "*"
+html-text = "*"
+numpy = "*"
+pillow = "*"
+psycopg2-binary = "*"
+requests = "*"
+whitenoise = {extras = ["brotli"],version = "*"}
+xhtml2pdf = "*"
+xlrd = "*"
+xlwt = "*"
+xlsxwriter = "*"
+Django = "*"
+
+[requires]
+python_version = "3.8"

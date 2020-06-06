@@ -35,7 +35,7 @@
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
 
-                 <a class=" {% if last_clicked == '' or last_clicked == 'Submit_previous_winner'%}active item {% else %}item {% endif %}" data-tab="first" id="catalogue_clicked">
+                 <a class=" {% if last_clicked == '' or last_clicked == 'SubmitPreviousWinner'%}active item {% else %}item {% endif %}" data-tab="first" id="catalogue_clicked">
                      Catalogue
                      <i class="right floated chevron right icon"></i>
                  </a>
@@ -61,7 +61,7 @@
                     <i class="right floated chevron right icon"></i>
                 </a>-->
 
-                <a class="{% if last_clicked == 'Accept_mcm' or last_clicked == 'Reject_mcm' or last_clicked == 'Accept_gold' or last_clicked == 'Reject_gold' or last_clicked == 'Accept_silver' or last_clicked == 'Reject_silver' or last_clicked == 'Accept_dm' or last_clicked == 'Reject_dm' %} active item {% else %} item {% endif %}" data-tab="five">
+                <a class="{% if last_clicked == 'Accept_MCM' or last_clicked == 'Reject_MCM' or last_clicked == 'Accept_Gold' or last_clicked == 'Reject_Gold' or last_clicked == 'Accept_Silver' or last_clicked == 'Reject_Silver' or last_clicked == 'Accept_DM' or last_clicked == 'Reject_DM' %} active item {% else %} item {% endif %}" data-tab="five">
                     Browse Applications
                     <i class="right floated chevron right icon"></i>
                 </a>
@@ -119,12 +119,12 @@
                             {% comment %}The Publications about awards ends here!{% endcomment %}
 
                     {% comment %}The Publications browse catalogue starts here!{% endcomment %}-->
-                    <div class="{% if last_clicked == 'Accept_mcm' or last_clicked == 'Reject_mcm' or last_clicked == 'Accept_gold' or last_clicked == 'Reject_gold' or last_clicked == 'Accept_silver' or last_clicked == 'Reject_silver' or last_clicked == 'Accept_dm' or last_clicked == 'Reject_dm' %} ui active tab segment {% else %} ui tab segment {% endif %}" data-tab="five">
+                    <div class="{% if last_clicked == 'Accept_MCM' or last_clicked == 'Reject_MCM' or last_clicked == 'Accept_Gold' or last_clicked == 'Reject_Gold' or last_clicked == 'Accept_Silver' or last_clicked == 'Reject_Silver' or last_clicked == 'Accept_DM' or last_clicked == 'Reject_DM' %} ui active tab segment {% else %} ui tab segment {% endif %}" data-tab="five">
                         {% block browsecat %}
                             {% include 'scholarshipsModule/browse1.html' with last_clicked=last_clicked%}
                         {% endblock %}
                     </div>
-                  <div class="{% if last_clicked == '' or last_clicked == 'Submit_previous_winner' %}ui active tab segment {% else %}ui tab segment {% endif %}" data-tab="first">
+                  <div class="{% if last_clicked == '' or last_clicked == 'SubmitPreviousWinner' %}ui active tab segment {% else %}ui tab segment {% endif %}" data-tab="first">
                         {% block catalogue %}
                             {% include 'scholarshipsModule/catalogue.html'%}
                         {% endblock %}

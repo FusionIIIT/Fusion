@@ -63,7 +63,9 @@ class Constants:
 
     DESIGNATIONS = (
         ('academic', 'Academic Designation'),
-        ('administrative', 'Administrative Designation')
+        ('administrative', 'Administrative Designation'),
+
+
     )
 
 
@@ -103,11 +105,6 @@ class ExtraInfo(models.Model):
     @property
     def age(self):
         timedelta = timezone.now().date() - self.date_of_birth
-        return int(timedelta.days / 365)
-
-    @property
-    def age(self):
-        timedelta = timezone.localtime(timezone.now()).date() - self.date_of_birth
         return int(timedelta.days / 365)
 
     def __str__(self):

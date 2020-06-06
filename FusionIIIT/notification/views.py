@@ -148,22 +148,22 @@ def scholarship_portal_notif(sender, recipient, type):
     if type.startswith('award'):
         s = type.split('-')
         verb = "Invitation to apply for " + s[1]
-    elif type == 'Accept_mcm':
+    elif type == 'Accept_MCM':
         verb = "Your Mcm form has been accepted "
-    elif type == 'Reject_mcm':
-        verb = "Your Mcm form has been rejected as you have not fulfiled the required criteria "
-    elif type == 'Accept_gold':
-        verb = "Your Covocation form for Director Gold Medal has been accepted "
-    elif type == 'Reject_gold':
-        verb = "Your Covocation form for Director Gold Medal has been rejected "
-    elif type == 'Accept_silver':
-        verb = "Your Covocation form for Director Silver Medal has been accepted "
-    elif type == 'Reject_silver':
-        verb = "Your Covocation form for Director Silver Medal has been rejected "
-    elif type == 'Accept_dm':
-        verb = "Your Covocation form for D&M Proficiency Gold Medal has been accepted "
-    elif type == 'Reject_silver':
-        verb = "Your Covocation form for D&M Proficiency Gold Medal has been rejected "
+    elif type == 'Reject_MCM':
+        verb = "Your Mcm form has been rejected as you have not fulfilled the required criteria "
+    elif type == 'Accept_Gold':
+        verb = "Your Convocation form for Director's Gold Medal has been accepted "
+    elif type == 'Reject_Gold':
+        verb = "Your Convocation form for Director's Gold Medal has been rejected "
+    elif type == 'Accept_Silver':
+        verb = "Your Convocation form for Director's Silver Medal has been accepted "
+    elif type == 'Reject_Silver':
+        verb = "Your Convocation form for Director's Silver Medal has been rejected "
+    elif type == 'Accept_DM':
+        verb = "Your Convocation form for D&M Proficiency Gold Medal has been accepted "
+    elif type == 'Reject_Silver':
+        verb = "Your Convocation form for D&M Proficiency Gold Medal has been rejected "
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
 

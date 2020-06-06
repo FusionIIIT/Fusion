@@ -3,7 +3,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .models import File, Tracking
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 from django.template.defaulttags import csrf_token
-from django.http import HttpResponse,HttpResponseRedirect,JsonResponse
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.core import serializers
@@ -44,7 +44,7 @@ def filetracking(request):
                 subject = request.POST.get('title')
                 description = request.POST.get('desc')
                 design = request.POST.get('design')
-                designation = Designation.objects.get(id=design)
+                designation = Designation.objects.get(id = HoldsDesignation.objects.get(id = design).designation_id)
                 upload_file = request.FILES.get('myfile')
 
                 File.objects.create(
@@ -52,7 +52,7 @@ def filetracking(request):
                     #ref_id=ref_id,
                     description=description,
                     subject=subject,
-                    designation=designation,
+                     designation=designation,
                     upload_file=upload_file
                 )
 
@@ -356,14 +356,20 @@ def test(request):
 def delete(request,id):
     file = File.objects.get(pk = id)
     file.delete()
-    draft = File.objects.filter(uploader=request.user.extrainfo)
-    extrainfo = ExtraInfo.objects.all()
 
-    context = {
-        'draft': draft,
-        'extrainfo': extrainfo,
-    }
-    return render(request, 'filetracking/drafts.html', context)
+    # Not required
+    #draft = File.objects.filter(uploader=request.user.extrainfo)
+    #extrainfo = ExtraInfo.objects.all()
+
+    #context = {
+     #   'draft': draft,
+      #  'extrainfo': extrainfo,
+    #}
+
+    #problem over here no need of render since it doesnot affect the url
+    #return render(request, 'filetracking/drafts.html', context)
+
+    return redirect('/filetracking/drafts/')
 
 def forward_inward(request,id):
     file = get_object_or_404(File, id=id)
