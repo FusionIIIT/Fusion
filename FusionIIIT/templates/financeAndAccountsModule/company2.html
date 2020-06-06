@@ -3,12 +3,8 @@
 </h1>
 
 <table class="ui very basic collapsing celled sortable table"
-                   style="padding-left: 2.5%;
-                                                          padding-right: 2.5%;
-                                                          padding-top: 1%;
-                                                          padding-bottom: 1.5%;
-                                                          margin: auto;">
-                <thead>
+        style="padding-left: 2.5%; padding-right: 2.5%; padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
+            <thead>
                 <tr>
 
                     <th class="four wide column" >
@@ -33,35 +29,38 @@
 
 
                 </tr>
-                </thead>
+            </thead>
 
-                <tbody>
+            <tbody>
+                {% for info in c %}
                 <tr>
 
 
 
                     <td>
-                        ...
+                        {{info.Company_Name}}
                     </td>
 
                     <td>
-                        ...
+                        {{info.Start_Date}}
                     </td>
 
                     <td>
-                        ...
+                        {{info.End_Date}}
                     </td>
 
                     <td>
-                        ...
+                        {{info.Description}}
                     </td>
 
                     <td>
-                        ...
+                        {{info.Status}}
                     </td>
 
 
                 </tr>
+                
+                {% endfor %}
                 <tr>
 
 
@@ -70,32 +69,32 @@
 
 
 
-
+<form action="/finance/alterCompany/" method="post">
 <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
 <div class="five fields">
             <div class="four wide field">
                 <label>Company Name</label>
-                <input type="text" class="ui large input" >
+                <input type="text" class="ui large input" name = "c_name">
             </div>
 
             <div class="four wide field">
                 <label>Start Date</label>
-                <input type="date" class="ui large input" >
+                <input type="date" class="ui large input" name = "start_date">
             </div>
 
             <div class="four wide field">
                 <label>End Date</label>
-                <input type="date" class="ui large input" >
+                <input type="date" class="ui large input" name = "end_date">
             </div>
 
             <div class="four wide field">
                 <label>Description</label>
-                <input type="text" class="ui large input" >
+                <input type="text" class="ui large input" name = "description">
             </div>
 
             <div class="four wide field">
                 <label>Status</label>
-                <input type="text" class="ui large input" >
+                <input type="text" class="ui large input" name = "status">
             </div>
 
         </div>
@@ -105,6 +104,7 @@
             </button>
         </div>
 </div>
+</form>
 
 <br><br>
 <div class="ui divider"></div>
