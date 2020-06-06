@@ -90,6 +90,9 @@
                                     <td>
                                         {{ i.status }}
                                     </td>
+                                    <td>
+                                        <a href='{% url "gymkhana:editsession" session_id=i.pk %}'><button type="button">Edit</button> </a>
+                                    </td>
                                     
                                 </tr>
                             {% endif %}
