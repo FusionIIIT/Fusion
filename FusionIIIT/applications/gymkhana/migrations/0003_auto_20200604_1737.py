@@ -10,15 +10,3 @@ class Migration(migrations.Migration):
     dependencies = [
         ('gymkhana', '0002_registration_form'),
     ]
-
-    operations = [
-        migrations.RemoveField(
-            model_name='registration_form',
-            name='batch',
-        ),
-        migrations.AddField(
-            model_name='registration_form',
-            name='roll',
-            field=models.CharField(default=2016001, max_length=7),
-        ),
-    ]
