@@ -9,16 +9,14 @@
         </script> 
 
     <div class="ui pointing secondary menu">
-{% if "co-ordinator" in Curr_desig or "co co-ordinator" in Curr_desig %}
- <a class=" ui active item" data-tab="otherrequests">
-            Club Requests
-</a>
-{% endif %}
 
-    {% if "co-ordinator" in Curr_desig or "co co-ordinator" in Curr_desig %}
-        <a class="ui item" data-tab="sentrequests">
-            Club Session Requests
+         <a class=" ui active item" data-tab="otherrequests">
+                    Club Requests
         </a>
+        {% if "co-ordinator" in Curr_desig or "co co-ordinator" in Curr_desig %}
+            <a class="ui item" data-tab="sentrequests">
+                Club Session Requests
+            </a>
         {% endif %}
         {% if "co-ordinator" in Curr_desig or "co co-ordinator" in Curr_desig %}
         <a class="ui item" data-tab="senteventrequests">
@@ -26,7 +24,7 @@
         </a>
         {% endif %}
 
-</div>
+    </div>
 
 
     <div class="ui tab" data-tab="sentrequests">

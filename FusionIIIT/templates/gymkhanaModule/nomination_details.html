@@ -1,0 +1,80 @@
+{% load static %}
+{% block nomination_details %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+
+        {% if "Convenor" in Curr_desig %}
+            <a class="ui active item" data-tab="nomination_requests">
+                Nomination Requests
+            </a>
+        {% endif %}
+
+    </div>
+
+
+    <div class="ui active tab" data-tab="nomination_requests">
+        <div class="ui vertical segment">
+        <form method="post" action="" id="nom_requests">
+        {% csrf_token %}
+            <table id="mytable" class="ui very basic collapsing celled sortable table"
+                   style="padding-top: 1%; padding-bottom: 1.5%;margin: auto;">
+                <thead>
+                <tr>
+                    <th>
+                        Name
+                    </th>
+
+                    <th class="four wide column">
+                        Roll Number
+                    </th>
+
+                    <th>
+                        Branch
+                    </th>
+
+                    <th>
+                        CPI
+                    </th>
+
+                    <th>
+                        Programme
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                        {% for i in registration_form %}
+
+                                <tr>
+                                    <td class="collapsing">
+                                        {{ i.user_name }}
+                                    </td>
+                                    <td>
+                                        {{ i.roll }}
+                                    </td>
+
+                                    <td>
+                                        {{ i.branch }}
+                                    </td>
+
+                                    <td>
+                                        {{ i.cpi }}
+                                    </td>
+
+                                    <td>
+                                        {{ i.programme }}
+                                    </td>
+
+                                </tr>
+                        {% endfor %}
+                </tbody>
+            </table>
+
+
+        </form>
+            <div class="ui divider"></div>
+
+        </div>
+    </div>
+
+{% endblock %}
