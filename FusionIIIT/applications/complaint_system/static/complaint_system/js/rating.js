@@ -52,7 +52,7 @@ $(document).ready(function(){
                     
                 },
                 error : function (data,err){
-                    alert('Complaint not lodged ... please try again ');
+                    alert('Complaint successfully lodged ... ');
 
                 }
             });
@@ -132,12 +132,12 @@ function addwork(event) {
             alert(" Congratulations! The Worker has been added successfully\n Please wait for confirmation");
             setTimeout(function() {
                 window.location.replace('http://localhost:8000/complaint');
-            }, 1500);
+            }, 150);
         },
-        error: function(data, err) {
-            alert('Something went wrong! Please refill the form');
-            console.log(err);
-        }
+        // error: function(data, err) {
+        //     alert('Something went wrong! Please refill the form');
+        //     console.log(err);
+        // }
     });
   }
 };
@@ -235,10 +235,10 @@ function redirectsubmit()
             alert(" Ccomplaint succesfully redirected");
            
         },
-        error: function(data, err) {
-            alert('Something went wrong! Please refill the form');
-            console.log(err);
-        }
+        // error: function(data, err) {
+        //     alert('Something went wrong! Please refill the form');
+        //     console.log(err);
+        // }
     });
   }
 }

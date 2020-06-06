@@ -6,7 +6,7 @@ import json
 import os
 import random
 import subprocess
-from datetime import datetime, time, timedelta
+import datetime
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -74,20 +74,15 @@ def course(request, course_code):
         roll = student.id.id[:4]
 
         #info about courses he is registered in
-        curriculum_details = Curriculum.objects.filter(course_code=course_code)         
-
-        course = curriculum_details 
-        course1 = curriculum_details[0].course_id
-        curriculum1 = course[0]
+        curriculum = Curriculum.objects.get(course_code=course_code)          
+        course = curriculum.course_id
         #instructor of the course
-        instructor = Curriculum_Instructor.objects.get(curriculum_id=course[0])
+        instructor = Curriculum_Instructor.objects.get(curriculum_id=curriculum)
         #course material uploaded by the instructor
-        videos = CourseVideo.objects.filter(course_id=course1)
-        slides = CourseDocuments.objects.filter(course_id=course1)
-        quiz = Quiz.objects.filter(course_id=course1)
-        assignment = Assignment.objects.filter(course_id=course1)
-        student = Student.objects.filter(id=extrainfo)
-        stu_ass = StudentAssignment.objects.filter
+        videos = CourseVideo.objects.filter(course_id=course)
+        slides = CourseDocuments.objects.filter(course_id=course)
+        quiz = Quiz.objects.filter(course_id=course)
+        assignment = Assignment.objects.filter(course_id=course)
         student_assignment = []
         for assi in assignment:
             sa = StudentAssignment.objects.filter(assignment_id=assi, student_id=student)
@@ -103,15 +98,14 @@ def course(request, course_code):
         #quizzes details 
         for q in quiz:
             qs = QuizResult.objects.filter(quiz_id=q, student_id=student)
-            qs_pk = QuizResult.objects.filter(
-                quiz_id=q, student_id=student).values_list('quiz_id', flat=True)
+            qs_pk = qs.values_list('quiz_id', flat=True)
             if q.end_time > timezone.now():
                 quizs.append(q)
-            if len(qs) is not 0:
+            if qs:
                 marks.append(qs[0])
                 marks_pk.append(qs_pk[0])
         lec = 0
-        comments = Forum.objects.filter(course_id=course1).order_by('comment_time')
+        comments = Forum.objects.filter(course_id=course).order_by('comment_time')
         answers = collections.OrderedDict()
         for comment in comments:
             fr = ForumReply.objects.filter(forum_reply=comment)
@@ -119,7 +113,7 @@ def course(request, course_code):
             if not fr:
                 answers[comment] = fr1
         return render(request, 'coursemanagement/viewcourse.html',
-                      {'course': course[0],
+                      {'course': course,
                        'quizs': marks,
                        'quizs_pk': marks_pk,
                        'fut_quiz': quizs,
@@ -131,7 +125,7 @@ def course(request, course_code):
                        'assignment': assignment,
                        'student_assignment': student_assignment,
                        'Lecturer': lec,
-                       'curriculum': curriculum1})
+                       'curriculum': curriculum})
 
     else:
         instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
@@ -290,7 +284,7 @@ def add_document(request, course_code):
         #save the info/details in the database
         CourseDocuments.objects.create(
             course_id=course,
-            upload_time=datetime.now(),
+            upload_time=datetime.datetime.now(),
             description=description,
             document_url=uploaded_file_url,
             document_name=name+file_extenstion
@@ -374,7 +368,7 @@ def add_videos(request, course_code):
         #saving in the 
         video = CourseVideo.objects.create(
             course_id=course,
-            upload_time=datetime.now(),
+            upload_time=datetime.datetime.now(),
             description=description,
             video_url=uploaded_file_url,
             video_name=name
@@ -731,7 +725,7 @@ def quiz(request, quiz_id):
         for x in random_ques_pk:
             shuffed_questions.append(QuizQuestion.objects.get(pk=x))
         end = quiz.end_time
-        now = timezone.now() + timedelta(hours=5.5)
+        now = timezone.now() + datetime.timedelta(hours=5.5)
         diff = end-now
         days, seconds = diff.days, diff.seconds
         hours = days * 24 + seconds // 3600
@@ -815,12 +809,12 @@ def create_quiz(request, course_code):
             k1 = st_time.hour
             k2 = st_time.minute
             k3 = st_time.second
-            start_date_time = datetime.combine(form.cleaned_data['startdate'], time(k1, k2, k3))
+            start_date_time = datetime.datetime.combine(form.cleaned_data['startdate'], datetime.time(k1, k2, k3))
             st_time = form.cleaned_data['endtime']
             k1 = st_time.hour
             k2 = st_time.minute
             k3 = st_time.second
-            end_date_time = datetime.combine(form.cleaned_data['enddate'], time(k1, k2, k3))
+            end_date_time = datetime.datetime.combine(form.cleaned_data['enddate'], datetime.time(k1, k2, k3))
             duration = end_date_time - start_date_time
             days, seconds = duration.days, duration.seconds
             hours, remainder = divmod(duration.seconds, 3600)
@@ -866,7 +860,7 @@ def edit_quiz_details(request, course_code, quiz_code):
             st_date = request.POST.get('startdate_month') + " " + request.POST.get('startdate_day')
             st_date = st_date + " " + request.POST.get('startdate_year')
             string = str(st_date) + " " + str(st_time)
-            datetime_object = datetime.strptime(string, '%m %d %Y %H:%M')
+            datetime_object = datetime.datetime.strptime(string, '%m %d %Y %H:%M')
             quiz.start_time = datetime_object
             quiz.save()
         elif x == 'edit2':
@@ -874,7 +868,7 @@ def edit_quiz_details(request, course_code, quiz_code):
             st_date = request.POST.get('enddate_month') + " " + request.POST.get('enddate_day')
             st_date = st_date + " " + request.POST.get('enddate_year')
             string = str(st_date) + " " + str(st_time)
-            datetime_object = datetime.strptime(string, '%m %d %Y %H:%M')
+            datetime_object = datetime.datetime.strptime(string, '%m %d %Y %H:%M')
             quiz.end_time = datetime_object
             quiz.save()
         elif x == 'edit3':
