@@ -115,8 +115,6 @@ class Club_member(models.Model):
         db_table = 'Club_member'
 
 
-
-
 class Core_team(models.Model):
     id = models.AutoField(primary_key=True)
     student_id = models.ForeignKey(

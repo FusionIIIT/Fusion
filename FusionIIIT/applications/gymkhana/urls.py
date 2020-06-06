@@ -9,7 +9,6 @@ urlpatterns = [
     url(r'^$', views.gymkhana, name='gymkhana'),
     url(r'^registration_form/$', views.registration_form, name='registration_form'),
     url(r'^new_club/$', views.new_club, name='new_club'),
-
     url(r'^club_membership/$', views.club_membership, name='membership'),
     url(r'^core_team/$', views.core_team, name='core_team'),
     url(r'^event_report/$', views.event_report, name='event_report'),
