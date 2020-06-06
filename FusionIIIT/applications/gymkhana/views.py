@@ -17,7 +17,7 @@ from django.core import serializers
 from django.contrib.auth.models import User
 from timeit import default_timer as time
 from notification.views import office_module_notif
-
+from django.views.decorators.csrf import ensure_csrf_cookie
 from applications.academic_information.models import Student
 from applications.globals.models import *
 from datetime import datetime
@@ -43,6 +43,67 @@ def delete_sessions(request):
 	except Exception as e:
 		print("An error was encountered")
 		return HttpResponse("error")
+
+
+def editsession(request, session_id):
+    event = Session_info.objects.get(pk=session_id)
+
+    if request.method == 'POST':
+        try:
+            body = request.POST
+            venue = body.get('venue_type')
+            session_poster = request.FILES.get('session_poster')
+            date = body.get('date')
+            start_time = body.get('start_time')
+            end_time = body.get('end_time')
+            desc = body.get('d_d')
+            club_name = coordinator_club(request)
+            res = conflict_algorithm_session(date, start_time, end_time, venue)
+            message = ""
+            print("in the post body")
+            print(res)
+            if (res == 'success'):
+                e = Session_info.objects.filter(id=session_id).update(club=club_name,
+                                                                  venue=venue, date=date,
+                                                                  start_time=start_time, end_time=end_time,
+                                                                  session_poster=session_poster, details=desc)
+                message += "Your form has been dispatched for further process"
+                print(message)
+                return redirect('/gymkhana/')
+            else:
+                message += "The selected time slot for the given date and venue conflicts with already booked session"
+                print(message)
+        except Exception as e:
+            res = "error"
+            message = "Some error occurred"
+            print(message, e)
+
+    ##Get Request
+    #  Session_info.objects(club=club_name,venue=venue,date=date,start_time=start_time,end_time=end_time,session_poster=session_poster, details=desc)
+    venue = []
+
+    for i in Constants.venue:
+        for j in i[1]:
+            venue.append(j[0])
+    context = {
+        'form': {
+            "venue": event.venue,
+            "session_poster": event.session_poster,
+            "date": datetime.datetime.strftime(event.date, '%Y-%m-%d'),
+            "start_time": event.start_time,
+            "end_time": event.end_time,
+            "desc": event.details,
+            "club_name": event.club,
+            "Venue": venue,
+            "id": session_id
+        }
+    }
+    # res = conflict_algorithm_event(date, start_time, end_time, venue)
+    template = 'gymkhanaModule/editsession.html'
+
+    return render(request, template, context)
+
+
 @csrf_exempt
 def delete_events(request):
 	selectedIds = request.POST['ids']
@@ -58,8 +119,8 @@ def delete_events(request):
 		return HttpResponse("error")
 
 def edit_event(request,event_id):
-	event = Event_info.objects.get(pk=event_id)	
-	
+	event = Event_info.objects.get(pk=event_id)
+
 
 	if request.method == 'POST':
 		try:
@@ -84,12 +145,12 @@ def edit_event(request,event_id):
 				return redirect('/gymkhana/')
 			else:
 				message += "The selected time slot for the given date and venue conflicts with already booked session"
-				print(message) 
+				print(message)
 		except Exception as e:
 			res = "error"
 			message = "Some error occurred"
 			print(message,e)
-	
+
 
 	##Get Request
 	#  Event_info(club = club_name, event_name=event_name, incharge=incharge, venue = venue, date =date, start_time=start_time , end_time = end_time ,event_poster = event_poster , details = desc)
@@ -116,10 +177,10 @@ def edit_event(request,event_id):
 	}
 	# res = conflict_algorithm_event(date, start_time, end_time, venue)
 	template='gymkhanaModule/editevent.html'
-	
+
 	return render(request,template,context)
 
-	
+
 
 def delete_memberform(request):
 	selectedIds = request.POST['ids']
@@ -342,8 +403,8 @@ def retrun_content(request, roll, name, desig , club__ ):
 		student = get_object_or_404(Student, id = extra)
 	else :
 		b = []
-	
-	# creating the data for the active voting polls	
+
+	# creating the data for the active voting polls
 	voting_polls = []
 	for poll in Voting_polls.objects.all():
 		event = {}
@@ -353,17 +414,17 @@ def retrun_content(request, roll, name, desig , club__ ):
 		event["desc"] = poll.description
 		event['exp_date'] = (poll.exp_date- datetime.datetime.now()).days if (datetime.datetime.now() - poll.exp_date).days <= 0 else 'expire'
 		event['pub_date'] = poll.exp_date.strftime("%d/%m/%Y")
-		event["created_by"] = poll.created_by.split(":")	
+		event["created_by"] = poll.created_by.split(":")
 		for choice in poll.voting_choices_set.all():
 			choices.append({'title':choice.title,'id':choice.id,'votes':choice.votes})
-				
+
 		event['choices'] = choices
 		event['max'] = poll.voting_choices_set.latest()
 		event['voters'] = poll.voting_voters_set.values_list('student_id', flat=True)
 		event['groups'] = json.loads(poll.groups)
-		
+
 		voting_polls.append(event)
-		
+
 	content = {
 		'Students' : students,
 		'Club_name' : club_name,
@@ -378,7 +439,7 @@ def retrun_content(request, roll, name, desig , club__ ):
 		'venue' : venue,
 		'Curr_desig' : desig,
 		'club_details':club__,
-		'voting_polls': voting_polls, 
+		'voting_polls': voting_polls,
 		'roll' : str(roll),
 		'registration_form': registration_form,
 		'cpi': cpi,
@@ -429,7 +490,7 @@ def gymkhana(request):
 		lines =str("")
 		Types = lines.split(" ")
 		#print(Types[1])
-	club__ = coordinator_club(request)	
+	club__ = coordinator_club(request)
 	return render(request, "gymkhanaModule/gymkhana.html", retrun_content(request, roll, name, roll_ , club__ ))
 
 
@@ -659,7 +720,7 @@ def new_session(request):
 				session.save()
 				message += "Your form has been dispatched for further process"
 			else:
-				message += "The selected time slot for the given date and venue conflicts with already booked session" 
+				message += "The selected time slot for the given date and venue conflicts with already booked session"
 		except Exception as e:
 			res = "error"
 			message = "Some error occurred"
@@ -694,7 +755,7 @@ def new_event(request):
 				event.save()
 				message += "Your form has been dispatched for further process"
 			else:
-				message += "The selected time slot for the given date and venue conflicts with already booked session" 
+				message += "The selected time slot for the given date and venue conflicts with already booked session"
 		except Exception as e:
 			res = "error"
 			message = "Some error occurred"
@@ -704,7 +765,7 @@ def new_event(request):
 			'message':message
 		}
 		content = json.dumps(content)
-		return HttpResponse(content)		
+		return HttpResponse(content)
 
 @login_required
 def fest_budget(request):
@@ -829,6 +890,7 @@ def cancel(request):
 	return redirect ('/gymkhana/')
 
 @login_required
+@csrf_exempt
 def date_sessions(request):
 	if(request.is_ajax()):
 		value = request.POST.get('date')
@@ -838,6 +900,7 @@ def date_sessions(request):
 			dates.append(i)
 		dates = serializers.serialize('json', dates)
 		return HttpResponse(dates)
+
 @login_required
 def date_events(request):
 	if(request.is_ajax()):
@@ -850,7 +913,7 @@ def date_events(request):
 		dates = serializers.serialize('json', dates)
 		return HttpResponse(dates)
 
-#this algorithm checks if the passed slot time coflicts with any of already booked sessions 
+#this algorithm checks if the passed slot time coflicts with any of already booked sessions
 def conflict_algorithm_session(date, start_time, end_time, venue):
 	#converting string to datetime type variable
 	start_time = datetime.datetime.strptime(start_time, '%H:%M').time()
@@ -868,7 +931,7 @@ def conflict_algorithm_session(date, start_time, end_time, venue):
 	else:
 		#this whole logic checks if the end time of any slot is less than the start time of next slot
 		counter = slots[0][1]
-		flag = 0 
+		flag = 0
 		i=1
 		while i < len(slots):
 			print(counter)
@@ -877,7 +940,7 @@ def conflict_algorithm_session(date, start_time, end_time, venue):
 				flag = 1
 				break
 			counter = slots[i][1]
-			i = i + 1 
+			i = i + 1
 		if (flag == 0):
 			return "success"
 		else:
@@ -929,7 +992,7 @@ def voting_poll(request):
 			}
 			content = json.dumps(content)
 			return HttpResponse(content)
-	
+
 	return redirect('/gymkhana/')
 
 @login_required
@@ -948,11 +1011,13 @@ def vote(request,poll_id):
 			return redirect('/gymkhana/')
 		except Exception as e:
 			print(e)
-			return HttpResponse('error')	
+			return HttpResponse('error')
 	data = serializers.serialize('json',Voting_choices.objects.all())
 	return redirect('/gymkhana/')
 
 #this algorithm checks if the passed slot time coflicts with any of already booked events
+
+
 def conflict_algorithm_event(date, start_time, end_time, venue):
 	#converting string to datetime type variable
 	start_time = datetime.datetime.strptime(start_time, '%H:%M').time()
@@ -970,7 +1035,7 @@ def conflict_algorithm_event(date, start_time, end_time, venue):
 	else:
 		#this whole logic checks if the end time of any slot is less than the start time of next slot
 		counter = slots[0][1]
-		flag = 0 
+		flag = 0
 		i=1
 		while i < len(slots):
 			print(counter)
@@ -979,12 +1044,12 @@ def conflict_algorithm_event(date, start_time, end_time, venue):
 				flag = 1
 				break
 			counter = slots[i][1]
-			i = i + 1 
+			i = i + 1
 		if (flag == 0):
 			return "success"
 		else:
 			return "error"
-	
+
 
 @login_required(login_url = "/accounts/login/")
 def filetracking(request):
