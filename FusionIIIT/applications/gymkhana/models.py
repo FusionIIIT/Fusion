@@ -155,7 +155,7 @@ class Club_budget(models.Model):
 
 class Session_info(models.Model):
     id = models.AutoField(primary_key=True)
-    club = models.ForeignKey(Club_info, on_delete=models.CASCADE, max_length=50, null=True)
+    club = models.ForeignKey(Club_info, on_delete=models.CASCADE,max_length=50, null=True)
     venue = models.CharField(max_length=50, null=False,
                              choices=Constants.venue)
     date = models.DateField(default=None, auto_now=False, null=False)
