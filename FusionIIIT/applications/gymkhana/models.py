@@ -85,9 +85,9 @@ class Club_info(models.Model):
 
 
 class Registration_form(models.Model):
+    roll = models.CharField(max_length=7, default="2016001", primary_key=True)
     user_name = models.CharField(max_length=40, default="Student")
     branch = models.CharField(max_length=20, default='open')
-    roll = models.CharField(max_length=7, default="2016001", primary_key=True)
     cpi = models.FloatField(max_length=3, default=6.0)
     programme = models.CharField(max_length=20, default='B.tech')
 
@@ -113,6 +113,8 @@ class Club_member(models.Model):
 
     class Meta:
         db_table = 'Club_member'
+
+
 
 
 class Core_team(models.Model):

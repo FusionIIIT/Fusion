@@ -10,11 +10,3 @@ class Migration(migrations.Migration):
     dependencies = [
         ('gymkhana', '0004_auto_20200605_0924'),
     ]
-
-    operations = [
-        migrations.AlterField(
-            model_name='registration_form',
-            name='programme',
-            field=models.CharField(default='B.tech', max_length=20),
-        ),
-    ]
