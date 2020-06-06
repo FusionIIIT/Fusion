@@ -1,0 +1,200 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Academic
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}The left-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu starts here!{% endcomment %}
+            <div class="ui huge fluid vertical pointing menu" id="vtab" 
+                 style="max-width: 320px;">
+                {% if student_flag %}
+                    <a class="active item" data-tab="one">
+                        <B>Current Semester</B>
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    <a class="item" data-tab="two">Registration
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    <a class="item" data-tab="three" style="display: none;">
+                        Add/Drop Courses
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    {% if ug_flag %}
+                        <a class="item" data-tab="four" style="display: none;">
+                            Branch Change
+                            <i class="right floated chevron right icon"></i>
+                        </a>
+                        <a class="item" data-tab="five">
+                            Evaluate Teaching Credits
+                            <i class="right floated chevron right icon"></i>
+                        </a>
+                    {% elif masters_flag %}
+                        <a class="item" data-tab="six">
+                            Thesis
+                            <i class="right floated chevron right icon"></i>
+                        </a>
+                    {% elif phd_flag %}
+                        <a class="item" data-tab="six">
+                            Thesis
+                            <i class="right floated chevron right icon"></i>
+                        </a>
+                        <a class="item" data-tab="seven">
+                            Apply for Teaching Credits
+                            <i class="right floated chevron right icon"></i>
+                        </a>
+                    {% endif %}
+                    <a class="item" data-tab="eight" style="display: none;">
+                        Apply for Leave
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    <a class="item" data-tab="nine" style="display: none;">
+                        Apply for Bonafide
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                    <a class="item" data-tab="ten" >
+                        View Performance
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                {% endif %}
+            </div>
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+
+        {% comment %}
+            The central-rail segment starts here!
+        {% endcomment %}
+        <div class="eight wide column">
+
+
+
+            <div class="ui active tab segment" data-tab="one" >
+                {%  include 'academic_procedures/current_sem.html' %}
+            </div>
+            <div class="ui tab segment" data-tab="two" style="width: 100%"  >
+                <div class="ui pointing secondary menu">
+                    <a class=" active item" data-tab="next_courses" style="width: 33%;">
+                        <p style="margin-left: 30%;">Courses</p>
+                    </a>
+                    <a class="item" data-tab="pre_registration" style="width: 33%;">
+                        <p style="margin-left: 25%;">Pre-Registration</p>
+                    </a>
+                    <a class=" item" data-tab="final_registration" style="width: 33%;">
+                        <p style="margin-left: 25%;">Final-Registration</p>
+                    </a>
+                </div>
+                <div class="ui active tab segment" data-tab="next_courses" >
+                    {%  include 'academic_procedures/registeredCourse.html' %}
+                </div>
+                <div class="ui tab segment" data-tab="pre_registration">
+                    {%  include 'academic_procedures/register.html' %}
+                </div>
+                <div class="ui tab segment" data-tab="final_registration">
+                    {%  include 'academic_procedures/finalregister.html' %}
+                </div>
+            </div>
+            <div class="ui tab segment" data-tab="three" style="width: 100%">
+                <div class="ui pointing secondary menu">
+                    <a class="active item" data-tab="add_courses" style="width: 37%;">
+                        <p style="margin-left: 30%;">Add Course</p>
+                    </a>
+                    <a class="item" data-tab="drop_courses" style="width: 38%;">
+                        <p style="margin-left: 35%;">Drop Course</p>
+                    </a>
+                    <p class="item"  style="width: 25%;text-align: right; font-weight:bold;color:green">
+                        Current Credits :  {{current_credits}}
+                    </p>
+                </div>
+                <div class="ui active tab segment" data-tab="add_courses" >
+                    {%  include 'academic_procedures/addCourse.html' %}
+                </div>
+                <div class="ui tab segment" data-tab="drop_courses">
+                    {%  include 'academic_procedures/dropCourse.html' %}
+                </div>                
+            </div>
+            <div class="ui tab segment" data-tab="four">
+                {%  include 'academic_procedures/underconstruction.html' %}
+            </div>
+            <div class="ui tab segment" data-tab="five">
+                {%  include 'academic_procedures/underconstruction.html' %}
+            </div>
+            <div class="ui tab segment" data-tab="six">
+                <div class="ui pointing secondary menu">
+                    <a class="active item" data-tab="registered_thesis" style="width: 50%;">
+                        <p style="margin-left: 30%;">Registered Thesis</p>
+                    </a>
+                    <a class="item" data-tab="add_thesis" style="width: 50%;">
+                        <p style="margin-left: 35%;">Add Thesis Topic</p>
+                    </a>
+                </div>
+                <div class="ui active tab segment" data-tab="registered_thesis" >
+                    {%  include 'academic_procedures/registeredThesis.html' %}
+                </div>
+                <div class="ui tab segment" data-tab="add_thesis">
+                    {%  include 'academic_procedures/addThesis.html' %}
+                </div>
+            </div>
+            <div class="ui tab segment" data-tab="seven" >
+                    {%  include 'academic_procedures/teaching_credit_register.html' %}
+            </div>
+            <div class="ui tab segment" data-tab="eight">
+                {%  include 'academic_procedures/underconstruction.html' %}
+            </div>
+            <div class="ui tab segment" data-tab="nine">
+                {%  include 'academic_procedures/underconstruction.html' %}
+            </div>
+            <div class="ui tab segment" data-tab="ten">
+                {%  include 'academic_procedures/view_performance.html' %}
+            </div>
+        </div>
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            <div class="row">
+                {% comment %}
+                    TODO: the right rail!
+                {% endcomment %}
+            </div>
+        </div>
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+    </div>
+    {% comment %}The grid ends here!{% endcomment %}
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+</script>
+{% endblock %}

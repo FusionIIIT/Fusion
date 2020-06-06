@@ -1,0 +1,146 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+    ThisWorker
+{% endblock %}
+
+
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}
+            The left-rail segment starts here!
+        {% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+
+            <div class="ui divider"></div>
+
+            {% comment %}The Tab-Menu starts here!{% endcomment %}
+            <div class="ui huge fluid vertical pointing menu"
+                 style="max-width: 320px;">
+
+                <a class="active item" data-tab="fifth">
+                    Details
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+            </div>
+            {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+        </div>
+        {% comment %}
+            The left-rail segment ends here!
+        {% endcomment %}
+        <div class="nine wide column">
+            {% comment %}The ... start here!{% endcomment %}
+
+            <div class="ui tab segment" data-tab="fourth">
+                {% block overduecomplaint %}
+                    {%  include 'complaintModule/overduecomplaint.html' %}
+                {%  endblock %}
+            </div>
+            <div class="ui active tab segment" data-tab="fifth">
+
+                <div class="ui pointing secondary menu ">
+
+                    <a class="active item" data-tab="thisworker">
+                        This Worker
+                    </a>
+                     
+                </div>
+               
+
+                <div class="ui active tab large" data-tab="thisworker">
+                    
+                    <div class="ui vertical segment">
+                        <p><b>{{this_worker.name}}</b> works under <b><i>{{work_under_caretaker1}} {{work_under_caretaker2}}</i></b> </p><br><br><br>
+                      
+                    {%if numpend == 0 %}
+                        <div><p>The Worker does not hold any pending complaints.</p>
+                            <p>You can go ahead and remove him.</p></div>
+                            <a href="javascript:history.go(-1)"><button class="ui primary button right floated">Back</button></i></a>
+                            <a href="./removew/">
+                                <button class="ui primary button right floated">Remove</button></a><br><br>
+                    {%elif numpend > 0%}
+                        <div><p>The Worker has some pending complaints.</p>
+                            <p>Click on the complaint to make sure you reassign them before Removing the worker.</p></div>
+                        <div class="ui list">
+                        {% for i in complaints_list_onhold %}
+                            <div class="item">
+                            <a class="ui tiny image">
+                            <img src="{% static 'complaint_system/img/boy.jpg'%}">
+                            </a>
+                            <div class="content">
+                            <a class="header" href="./complaint_reassign/{{i.id}}">{{i.complainer.user.first_name}} {{i.complainer.user.first_name}}</a>
+                            <div class="meta">
+                            <span><b>{{i.specific_location}}&nbsp&nbsp &nbsp&nbsp &nbsp&nbsp    </b></span>
+                            <span><b>{{i.location}}</b></span>
+                            </div>
+                            <div class="description">
+                            <div>{{i.details}}</div>
+                            <div>Date: {{i.complaint_date}}</div>
+                            <div>Type: {{i.complaint_type}}</div>
+                            <div>Finish Date: {{i.complaint_finish}}</div>
+                            <div>Status: {{i.status}}</div>
+                            </div>
+                            </div>
+                            </div>
+                        {% endfor %}
+
+                         <a href="javascript:history.go(-1)"><button class="ui primary button right floated">Back</button></i></a><br><br>
+                    {%endif%}
+                  
+                    </div>
+                </div>
+            {% comment %}The ... end here!{% endcomment %}
+            </div>
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            <div class="row">
+                {% comment %}
+                    TODO: the right rail!
+                {% endcomment %}
+            </div>
+        </div>
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+    </div>
+    {% comment %}The grid ends here!{% endcomment %}
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+
+{% endblock %}
+
+{% block css %}
+
+{% endblock %}
+

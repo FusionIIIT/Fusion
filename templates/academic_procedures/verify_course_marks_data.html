@@ -1,0 +1,160 @@
+{% load static %}
+{% if grade_verification_date_eligibility %}
+<div class="wrap">
+	<form id='marks_verification_form' action='/academic-procedures/verify_marks/'>
+    {% csrf_token %}
+
+	<div style="width: 100%">
+    <table class="head ui celled table"
+         style="padding-left: 2.5%;
+                padding-right: 2.5%;
+                padding-top: 1%;
+                padding-bottom: 1.5%;
+                background-color: #ddd;
+                width: 100%">
+        <tr>
+          <th style="width: 20%;"> <center>Roll No.</center></th>
+          <th style="width: 10%"><center>Quiz 1</center></th>
+          <th style="width: 10%"><center>Mid-Sem</center></th>
+          <th style="width: 10%"><center>Quiz 2</center></th>
+          <th style="width: 10%"><center>End-Sem</center></th>
+          <th style="width: 10%"><center>Other</center></th>
+          <th style="width: 15%"><center>Total</center></th>
+          {% if grade_verification_date_eligibility %}
+          <th style="width: 15%"><center>Grade</center></th>
+          {% endif %}
+        </tr>
+
+    </table>
+	</div>
+
+	<div id="inner_table_verify">
+    	<table id="verify_tb" class=" ui celled table"
+         style="padding-left: 2.5%;
+                padding-right: 2.5%;
+                padding-top: 1%;
+                padding-bottom: 1.5%;
+                /*margin: auto;*/
+                width: 100%">
+        {% for items in enrolled_student_list %}
+          <tr>
+            <td style="width: 20%"><center><input type="text" name="user" value="{{ items.student_id.id.user.username }}" hidden="True">{{ items.student_id.id.user.username }}</center></td>
+            <td style="width: 10%"><center>{{items.q1}}</center></td>
+            <td style="width: 10%"><center>{{items.mid_term}}</center></td>
+            <td style="width: 10%"><center>{{items.q2}}</center></td>
+            <td style="width: 10%"><center>{{items.end_term}}</center></td>
+            <td style="width: 10%"><center>{{items.other}}</center></td>
+            <td style="width: 15%"><center></center></td>
+            {% if grade_verification_date_eligibility %}
+            <td style="width: 15%"><center><input id="grade{{forloop.counter}}" type="text" name="grade" data2="{{forloop.counter}}" value="{{items.grade}}" data="{{items.grade}}" required="True" onchange="change_grade_ver({{forloop.counter}})"></center></td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+
+  </table>
+<div class="bn_back"><div href="" id="back" style="text-decoration: none;
+                                                            display: inline-block;
+                                                            padding: 8px 16px;
+                                                            cursor: pointer;">&laquo; Back</div>
+
+
+<button class="ui primary button" style="background-color: green" >Submit as Verified</button>
+</div></div>
+<input type="text" name="curriculum_id" value="{{course.curriculum_id}}" hidden="True">
+</form>
+
+</div>
+
+{% else %}
+<p style="color: red">*Submissiond are ongoing, please try on starting of verification date</p>
+{% endif %}
+
+
+
+
+
+
+  <style type="text/css">
+.wrap {
+    width: 100%;
+    max-height: 30%;
+}
+.wrap table {
+    width: 100%;
+    table-layout: fixed;
+}
+table tr td {
+    word-wrap: break-word;
+}
+#inner_table {
+	width: 100%;
+    overflow-y: auto;
+}
+.bn_back button{
+    float: right;
+}
+
+.wrap input {
+  width: 100%;
+  border-width: 0px;
+  align-content: center;
+}
+</style>
+
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+  $(document).ready(function () {
+    var i = $('#for_next_html_id').attr('data');
+   TotalMarks(); 
+        $("#marks_verification_form").submit(function(event) {
+             event.preventDefault();
+            var form = $(this);
+            var posting = $.post( form.attr('action'), form.serialize() );
+            // if success:
+            posting.done(function(data) {
+                alert('You have successfully Verified');
+                $('#submitted_course_marks'+i).remove();
+                $('#submitted_course_list').show(400);
+                $("#submitted_course_data").html("");
+                window.open("/academic-procedures/generate_grade_pdf/", '_blank');
+            });
+            // if failure
+            posting.fail(function(data) {
+                alert('verification Failed');
+                window.location = "/academic-procedures/acad_person/";
+            });
+            
+    });  
+    $('#back').on('click',function(e){
+      $('#submitted_course_data').hide(400);
+      $('#submitted_course_data').html("");
+      $('#submitted_course_list').show(400);
+    });
+});
+
+function TotalMarks(){
+  
+    var count = $('#verify_tb tr').length;
+    var table = document.getElementById('verify_tb');
+
+
+    for (x = 0; x < count; x++){
+      q1 = Number(table.rows[x].cells[1].innerText);
+      mid = Number(table.rows[x].cells[2].innerText);
+      q2 = Number(table.rows[x].cells[3].innerText);
+      end = Number(table.rows[x].cells[4].innerText);
+      other = Number(table.rows[x].cells[5].innerText);
+      total = q1+mid+q2+end+other;
+      table.rows[x].cells[6].innerText = total;
+    } 
+  }
+
+
+function change_grade_ver(id){
+    var r =   confirm("Are you sure before overwriting grades");
+  if (r != true) {
+    data = $('#grade'+id).attr('data');
+    $('#grade'+id).val(data);
+  } 
+}
+</script>

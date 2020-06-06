@@ -1,0 +1,75 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{verified_marks_students_curr.course_code}} Grades
+    </title>
+    <style type="text/css">
+    	.student_marks td, th{
+    		padding: 5px;
+    	}
+    	th{
+    		background-color: #f1f1f1;
+    	}
+    	.info td{
+    		width: 100px;
+    	}
+    </style>
+  </head>
+<body>
+  
+  <h1 style="text-decoration: underline;" align="center">{{verified_marks_students_curr.course_code}} : {{verified_marks_students_curr.course_id.course_name}}</h1>
+  <br>
+  <div>
+  	<table class="info" >
+  		<tr>
+  			<td><h3><b>Instructer Name </b> </h3></td>
+  			<td>:&nbsp &nbsp &nbsp {{ instructor.instructor_id.user.first_name}} {{ instructor.instructor_id.user.last_name}}</td>
+  		</tr>
+  		<tr>
+  			<td><h3><b>Credit </b> </h3></td>
+  			<td> :&nbsp &nbsp &nbsp {{ verified_marks_students_curr.credits }}</td>
+  		</tr>
+  		<tr>
+  			<td><h3><b>Batch </b></h3></td>
+  			<td> :&nbsp &nbsp &nbsp {{ verified_marks_students_curr.batch }}</td>
+  		</tr>
+  		<tr>
+  			<td><h3><b>Semester</b></h3></td>
+  			<td> :&nbsp &nbsp &nbsp {{ verified_marks_students_curr.sem }}</td>
+  		</tr>
+  	</table>
+  	
+  </div>
+<br>
+  <div class="student_marks">
+<table  style="border:1px solid gray;" >
+        <thead>
+            <tr>
+            <th style="20%">Roll No.</th>
+            <th style="60%">Student Name</th>
+            <th style="20%">Grade</th>
+            </tr>
+        </thead>
+        <tbody >
+            {% for obj in verified_marks_students %}
+            {% if obj %}
+            <tr>
+                <td style="20%"><center>{{ obj.0.id.user.username }}</center></td>
+                <td style="60%"><center>{{ obj.0.id.user.first_name }} {{ obj.0.id.user.last_name }}</center></td>
+                <td style="20%"><center>{{ obj.1 }}</center></td>
+            </tr>        
+            {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+      </div>
+</body>
+
+</html>
+
+
+<style type="text/css">
+
+</style>

@@ -1,0 +1,16 @@
+<form style="display: inline;" method="POST" action="{% url 'feeds:request' %}">	
+	<div style="font-weight: bold; box-sizing: inherit">
+		{{ question.total_requests }} people requested
+	</div>
+	<br>
+
+	{% if question.is_requested is True %}
+		<button type="submit" value="{{question.id}}" class="ui positive button" id="request">
+			Requested
+		</button>
+	{% else %}
+		<button type="submit" value="{{question.id}}" class="ui button" id="request">
+			Request
+		</button>
+	{% endif %}
+</form>

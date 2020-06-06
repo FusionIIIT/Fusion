@@ -1,0 +1,167 @@
+{% load static %}
+{% block calendar %}
+<h3 class="ui header">Academic Calendar</h3>
+<table class="ui celled table">
+  <thead>
+    <tr>
+      <th>Description</th>
+      <th>Start Date</th>
+      <th>End Date</th>
+      <th></th>
+    </tr>
+  </thead>
+  {% for i in academic_calendar %}
+  {% csrf_token %}
+  <tr>
+    <td>{{ i.description }}</td><input type="hidden" name="desc" value="{{ i.description }}">
+    <td>{{ i.from_date }}</td>
+    <td>{{ i.to_date }}</td>
+    <td><button class="ui button red icon" id="{{ forloop.counter }}"><i class="edit icon"></i></button>
+      <div class="ui modal {{forloop.counter}}">
+        <i class="close icon"></i>
+        <div class="header">
+          Academic Calendar
+        </div>
+        <div class="image content">
+          <div class="description">
+            <form class="ui form" id='update_calendar_{{forloop.counter}}' action='/aims/update_calendar/'>
+              {% csrf_token %}
+              <div class="field">
+                <label>Description:</label>
+                <input name="description" value="{{ i.description }}" type="text">
+                <input type="text" name="prev_desc" value="{{i.description}}" hidden="true">
+              </div>
+              <div class="ui calendar" id="date1">
+                <label>From Date:</label><br>
+                <div class="ui input left icon">
+                  <i class="calendar icon"></i>
+                  <input type="date" placeholder="From Date" id="fe_date_{{forloop.counter}}" name="from_date" value="{{i.from_date|date:"Y-m-d"}}">
+                </div>
+              </div><br>
+              <div class="ui calendar" id="date2">
+                <label>To Date:</label><br>
+                <div class="ui input left icon">
+                  <i class="calendar icon"></i>
+                  <input type="date" placeholder="To Date" id="toe_date_{{forloop.counter}}" name="to_date" value="{{i.to_date|date:"Y-m-d"}}">
+                </div>
+              </div>
+              <hr>
+              <button class="ui button black create_btn" type="submit">Submit</button>
+              <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+              <script type="text/javascript">
+                $(function () {
+                  $("#update_calendar_{{forloop.counter}}").submit(function (event) {
+                    event.preventDefault();
+                    var friendForm = $(this);
+                    var start_date = $('#fe_date_{{forloop.counter}}').val();
+                    var end_date = $('#toe_date_{{forloop.counter}}').val();
+                    console.log(start_date,end_date);
+                    console.log(Date.parse(start_date),Date.parse(end_date));
+                    console.log(Date.parse(start_date) > Date.parse(end_date));
+                    console.log(" ");
+                    if (Date.parse(start_date) > Date.parse(end_date)) {
+                      alert("Start Date must be less than End date");
+                    } else {
+                      var posting = $.post(friendForm.attr('action'), friendForm.serialize());
+                      posting.done(function (data) {
+                        alert('Academic Calendar Updated');
+                        location.reload();
+                      });
+                      posting.fail(function (data) {
+                        alert('Failed to update');
+                      });
+                    }
+
+                  });
+                });
+              </script>
+            </form>
+          </div>
+        </div>
+      </div>
+      <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+      <script type="text/javascript">
+        $(function () {
+          $("#{{forloop.counter}}").click(function () {
+            $(".{{forloop.counter}}").modal('show');
+          });
+          $(".{{forloop.counter}}").modal({
+            closable: true
+          });
+        });
+      </script>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}
+<button class="ui button yellow create_btn" type="button" id="test">Add More</button>
+<div class="ui modal test">
+  <i class="close icon"></i>
+  <div class="header">
+    Academic Calendar
+  </div>
+  <div class="image content">
+    <div class="description">
+      <form class="ui form" id='add_calendar' action='/aims/add_calendar/' method='post'>
+        {% csrf_token %}
+        <div class="field">
+          <label>Description:</label>
+          <input name="description" placeholder="Enter the description..." type="text">
+        </div>
+        <div class="ui calendar" id="date1">
+          <label>From Date:</label><br>
+          <div class="ui input left icon">
+            <i class="calendar icon"></i>
+            <input type="date" placeholder="From Date" id="f_date" name="from_date">
+          </div>
+        </div><br>
+        <div class="ui calendar" id="date2">
+          <label>To Date:</label><br>
+          <div class="ui input left icon">
+            <i class="calendar icon"></i>
+            <input type="date" placeholder="To Date" id="to_date" name="to_date">
+          </div>
+        </div>
+        <hr>
+        <button class="ui button black create_btn" type="submit">Submit</button>
+      </form>
+    </div>
+  </div>
+</div>
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+  $(function () {
+    $("#test").click(function () {
+      $(".test").modal('show');
+    });
+    $(".test").modal({
+      closable: true
+    });
+  });
+  $(function () {
+    $("#add_calendar").submit(function (event) {
+      event.preventDefault();
+      var friendForm = $(this);
+      var start_date = $('#f_date').val();
+      var end_date = $('#to_date').val();
+      console.log(start_date,end_date);
+      console.log(Date.parse(start_date),Date.parse(end_date));
+      console.log(Date.parse(start_date) > Date.parse(end_date));
+      console.log(" ");
+      if (Date.parse(start_date) > Date.parse(end_date)) {
+        alert("Start Date must be less than End date");
+      } else {
+        var posting = $.post(friendForm.attr('action'), friendForm.serialize());
+        posting.done(function (data) {
+          alert('Academic Calendar Updated');
+          location.reload()
+        });
+        posting.fail(function (data) {
+          alert('Failed to update');
+        });
+      }
+
+    });
+  });
+</script>

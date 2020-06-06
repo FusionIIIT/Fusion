@@ -1,0 +1,174 @@
+{% load static %}
+{% block modal4 %}
+<script type="text/javascript">
+    function viewAssignment(a, isIncoming=false){
+        var id= '.ui.modal#assignment'+a;
+        $(id).modal('show');
+        console.log("Is incoming", isIncoming)
+        if (!isIncoming) {
+            var form = document.getElementById('action-form'+a);
+            form.style.display = 'none';
+        }
+        else {
+            var form = document.getElementById('action-form'+a);
+            form.style.display = 'block';
+        }
+    }
+
+</script>
+
+{% for object, track in assigned_req %}
+<div class="ui modal {{ object.pk }}" id="assignment{{object.pk}}">
+    <div class="content">
+        <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;" >
+            <h4> Proposal </h4>
+            <div class="two fields">
+                <div class="field">
+
+                    <label>Building</label>
+
+                    <input value={{object.building}} class="ui large input" readonly>
+                </div>
+
+                <div class="field">
+
+                    <label>Department</label>
+
+                    <input value={{object.department}} class="ui large input" readonly>
+                </div>
+
+            </div>
+            <div class="two fields">
+                <div class="field">
+
+                    <label>Date</label>
+                    <input value="{{object.req_date}}" class="ui large input" readonly>
+                </div>
+
+                <div class="field">
+
+                    <h4 class="ui image header">
+                        &emsp;&emsp;&emsp;
+                        <label>Requester</label><br>
+                        &emsp;&emsp;&emsp;
+                        <img src="
+                        {% if object.userid.user.extrainfo.profile_picture %}
+                            {{ object.userid.user.extrainfo.profile_picture.url }}
+                        {% else %}
+                            {% static 'globals/img/zlatan.jpg' %}
+                        {% endif %}" class="ui mini circular image">
+                        <div class="content">
+                            {{object.userid.user.first_name}}{{object.userid.user.last_name}}
+                            <div class="sub header">
+                                {{object.userid.user.email}}
+                            </div>
+                        </div>
+                    </h4>
+                </div>
+            </div>
+            <div class="field">
+                <label>Title</label>
+                <input value="{{object.title}}" class="ui large input" readonly>
+            </div>
+            <div class="field">
+                <label>Description</label>
+                <textarea readonly rows="4">{{object.description}}</textarea>
+            </div>
+          
+            <div class="ui comments">
+                <h4 class="ui dividing header">Proposal history</h4>
+            {% for t in track %}
+                <div class="comment">
+                    <div class="content">
+                     <a class="author blue header" href="/profile/{{t.current_id.user}}">{{t.current_id.user}}</a>
+                     <div class="metadata">
+                         {{t.current_design.designation|pndReadableDesignation}},&nbsp;
+                         <span class="date">{{t.forward_date}}</span>
+                     </div>
+                     <div class="right floated" style="font-color: black;">
+                        <b>File uploaded:</b>
+                        {% if t.upload_file %}
+                            <a target="_blank" rel="noopener noreferrer" href="{{t.upload_file.url}}">Click here to view attached file</a>
+                        {% else %}
+                            <span class="meta">No file uploaded</span>
+                        {% endif %}
+                     </div>
+                     <div class="right floated" style="font-color: black;">
+                        <b>Remarks:</b>
+                        {% if t.remarks %}
+                            {{t.remarks}}
+                        {% else %}
+                            <span class="meta">No remarks</span>
+                        {% endif %}
+                     </div>
+                     <div class="right floated" style="font-color: black;">
+                         {% if t.receive_design %}
+                         <b>Sent to:</b>&nbsp;{{t.receive_design|pndReadableDesignation}}
+                         {% else %}
+                         <b>Proposal closed!</b>
+                         {% endif %}
+                     </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            
+            <form id="action-form{{object.pk}}" method="POST" enctype="multipart/form-data" action="/office/officeOfDeanPnD/action" onsubmit="return validateForm(this)">
+            {% csrf_token %}
+                <h4> Perform actions on the Proposal </h4>
+                <input type="hidden" name="req_id" value="{{object.pk}}"/>
+                <div class="field">
+                    <label>Remark</label>
+                    <textarea rows="2" name="description"></textarea>
+                </div>
+                <div class="field">
+                    <label>Upload File</label>
+                    <input class="ui input" type="file" name="estimate" id="estimate" accept=".pdf, .docx,.doc" ></input>
+                </div>
+                <div class="two fields">
+                <div class="six wide field">
+                    <div class="ui fluid selection dropdown">
+                        <input name="sent_design" type="hidden">
+                        <i class="dropdown icon"></i>
+                        <div class="default text">Select designation to send </div>
+                        <div class="menu">
+                            {% for key, value in deslist.items %}
+                            {% if key != "None" %}
+                            <div class="item" data-value="{{key}}">
+                                {{value}}
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <input type="submit" class="ui primary button" name="Send" value="Send"/>
+                </div>
+                </div>
+                <div class="field">
+                    {% if allowed_actions %}
+                    <label>Other actions:</label>
+                    <input type="submit" class="ui positive button" name="Approve" value="Approve"/>
+                    <input type="submit" class="ui negative button" name="Reject" value="Reject"/>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endfor %}
+
+{% endblock %}
+
+<script>
+    function validateForm(form) {
+        if (!form['sent_design'].value) {
+            window.alert('Select designation to send assignment to!');
+            return false;
+        }
+        return true;
+    }
+</script>

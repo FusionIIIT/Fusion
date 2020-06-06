@@ -1,0 +1,192 @@
+{% load static %} {% block assessment %}
+<div class="ui pointing secondary menu">
+    <a class="item active" data-tab="assignment">
+            Assignment
+        </a>
+<!--     <a class="item" data-tab="exams">
+            Exams
+        </a> -->
+</div>
+<div class="ui active tab segment" data-tab="assignment" style="overflow:scroll;overflow-y:hidden">
+    <h4 class="ui dividing header">{{course.course_name}}</h4>
+
+    <div class="ui top attached tabular menu">
+      {% for assi in assignment %}
+        <a class="item tabheading" data-pk="{{forloop.counter}}" id="tab{{forloop.counter}}" data-tab="{{forloop.counter}}">{{assi.assignment_name}}</a>
+      {% endfor %}
+    </div>
+    {% for assi in assignment %}
+    <div class="ui bottom attached tab tabdata segment" data-pk="{{forloop.counter}}" id="tabdata{{forloop.counter}}" data-tab="{{forloop.counter}}">
+        <table class="ui very basic collapsing celled table">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Total Marks &amp; Feedback</th>
+                    <th>Download Assignment</th>
+                    <th>Marks</th>
+                    <th>Feedback</th>
+                </tr>
+            </thead>
+            <tbody>
+              {% for student_assi in student_assignment %}
+                {% if student_assi %}
+                {% if assi.pk == student_assi.0.assignment_id.pk %}
+                {% for sa in student_assi %}
+                <tr>
+                    <td>
+                        <h4 class="ui image header">
+                            <img src="{% static 'globals/img/jenny.jpg' %}" class="ui  rounded image">
+                            <div class="content">
+                                {{sa.student_id.id.user.first_name}} {{sa.student_id.id.user.last_name}}
+                                <div class="sub header">{{sa.student_id.id.id}}
+                                </div>
+                            </div>
+                        </h4>
+                    </td>
+                    <td>
+                      <div class="ui form" style="margin-bottom:10px">
+                        <div class="field">
+                          <input type="text" placeholder="Enter Marks" onkeydown="assess_student(this)" data-assign="{{sa.pk}}" id="assign{{sa.pk}}">
+                        </div>
+                      </div>
+                      <div class="ui form">
+                        <div class="field">
+                          <input type="text" placeholder="Enter Feedback"  onkeydown="assess_feedback(this)" data-feedback="{{sa.pk}}" id="feedback{{sa.pk}}">
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <a class="ui primary button" href="{{sa.upload_url}}">Download</a>
+                    </td>
+                    <td >
+                      {% if sa.score %}
+                        <span id="score{{sa.pk}}">{{sa.score}}</span>
+                      {% else %}
+                        -
+                      {% endif %}
+                    </td>
+                    <td >
+                      {% if sa.feedback %}
+                        <p id="feedback{{sa.pk}}">{{sa.feedback}}</p>
+                      {% else %}
+                        -
+                      {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="ui tab segment" data-tab="exams" style="overflow:scroll;overflow-y:hidden">
+  
+  <form class="ui large form" name="entermarks" id="entermarks" method="POST" action="/ocms/{{curriculum.course_code}}/edit_marks"> 
+    
+    {% csrf_token %}
+  <div id="refresh_table">
+    <select name="examtype" id = "examtype" style="width: 100px" >
+      <option selected="selected" disabled="disabled">Select Exam</option>
+      <option value = "Quiz 1">Quiz 1</option>
+      <option value = "Quiz 2">Quiz 2</option>
+      <option value = "Mid Sem">Mid Sem</option>
+      <option value = "End Sem">End sem</option>
+    </select>
+    
+    <table class="ui very basic collapsing celled table" >
+      <thead>
+        <tr>
+          <th>Students</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for x in registered_students %}
+          <tr>
+            <td>
+              <div class="content">
+                <p style="text-align:center">{{x.student_id}}</p>
+              </div>
+            </td>
+            <td>
+              
+              <input type="number" name="enteredmarks" id="enteredmarks{{x.r_id}}" required="true">
+
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+    <input type="submit" class="ui primary button" id="submit_marks" value="Upload">
+    
+  </form>
+</div>
+{% endblock %}
+
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+<script type="text/javascript">
+
+$(function() {
+    $("#entermarks").submit(function(event) {
+            event.preventDefault();
+            var friendForm = $(this);
+
+            var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
+            // if success:
+            posting.done(function(data) {
+                alert('Upload Successful');
+                 $("#refresh_table").load(" #refresh_table > *");
+                // window.location = "/academic-procedures/main/";
+            });
+            // if failure
+            posting.fail(function(data) {
+                alert('Failed :Check the form');
+                // window.location = "/academic-procedures/main/";
+            });
+    });
+});
+
+ $("#examtype").change(function (e) {
+  e.preventDefault();
+  console.log("reached");
+  var exam_name = $(this).val();
+  var csrf = $('input[name=csrfmiddlewaretoken]').val();
+  
+  $.ajax({
+    method: "POST",
+    url: '/ocms/{{curriculum.course_code}}/get_exam_data',
+    data: {"exam_name": exam_name, 'csrfmiddlewaretoken': csrf }
+  }).done(function (response) {
+    console.log(response);  // changing the default value as the already saved marks
+    var placeholder = " ";
+    var studentCount = Object.keys(response).length;
+    for(var i=0;i<studentCount;i++){
+      
+      placeholder = response[i].fields['marks'];
+      var student_id = response[i].fields['mid'];
+      console.log(placeholder);
+      student_id = "enteredmarks" + student_id;
+
+      document.getElementById(student_id).defaultValue = placeholder;
+
+    }
+    
+    //$("#refresh_table").load(" #refresh_table > *");
+  }).fail(function (err) {
+    console.log(err);
+  })
+});
+ /*function changePlaceholder(marks)
+ {
+
+    document.getElementsById("enteredmarks")placeholder=marks;
+    $("#refresh_table").load(" #refresh_table > *");
+ }*/
+</script>
+
+

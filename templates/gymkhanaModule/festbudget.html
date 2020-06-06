@@ -1,0 +1,79 @@
+{% block festbudget %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="festbudgetform">
+            Fest Budget Form
+        </a>
+    </div>
+
+    <script type="text/javascript">
+        function ValidateExtension4() {
+            var allowedFiles = [".doc", ".docx", ".pdf"];
+            var fileUpload = document.getElementById("fileUpload4");
+            var lblError = document.getElementById("lblError4");
+            var regex = new RegExp("([a-zA-Z0-9\s_\\.\-:])+(" + allowedFiles.join('|') + ")$");
+            if (!regex.test(fileUpload.value.toLowerCase())) {
+                lblError.innerHTML = "Please upload files having extensions: <b>" + allowedFiles.join(', ') + "</b> only.";
+                fileUpload4.value = "";
+                return false;
+            }
+            lblError.innerHTML = "";
+            return true;
+        }
+    </script>
+
+    <div class="ui active tab" data-tab="festbudgetform">
+        <div class="ui vertical segment">
+            <form method="post" action="/gymkhana/festbudget/" enctype="multipart/form-data">
+            {% csrf_token %}
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                    <div class="two fields">
+                        <div class="ui twelve field">
+                            <label>Fest</label>
+                            <select class="ui search fluid dropdown" name="fest" required>
+                                <option value="">Select</option>
+                                <option value="Gusto">Gusto</option>
+                                <option value="Abhikalpan">Abhikalpan</option>
+                                <option value="Tarang">Tarang</option>
+                            </select>
+                        </div>
+                        <div class="ui four field">
+                            <label>Year</label>
+                            <input class="ui input" type="text" name="year" required></input>
+                        </div>
+                    </div>
+
+                    <div class="two fields">
+                        <div class="field">
+                            <label>Budget Amt.</label>
+                            <input class="ui input" type="number" name="amount" required></input>
+                        </div>
+                        <div class="field">
+                            <label>Attachments (if any)</label>
+                            <input class="ui input" type="file" id="fileUpload4" onchange="return ValidateExtension4()" name="file" accept=".pdf" required></input>
+                            <span id="lblError4" style="color: red;"></span>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Details & Description</label>
+                        <textarea rows="2" name="d_d" required></textarea>
+                    </div>
+
+                    <div class="field">
+                        <button class="ui primary button right floated" type="submit">
+                            Submit
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <br>
+            <br>
+        </div>
+        <br>
+        <div class="extra content"></div>
+    </div>
+
+{% endblock %}

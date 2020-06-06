@@ -231,10 +231,15 @@
                         Apply
                         <i class="right floated chevron right icon"></i>
                     </a>
+
                     <a class="item" data-tab="last">
                         Submitted requests
                         <i class="right floated chevron right icon"></i>
                     </a>
+
+
+
+
                 {% endif %}
 
                 <a class="active item" data-tab="twelth">
@@ -269,7 +274,49 @@
                         <i class="right floated chevron right icon"></i>
                     </a>
 
-                    
+                <a class="item" href="/filetracking">
+                        Submit Event report To Convener
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                {% endif %}
+
+                {% if "Convener" in Curr_desig  %}
+
+
+                <a class="item" href="/filetracking">
+                        Submit Event Report To counsellor
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                <a class="item" href="/filetracking">
+                        Event Report To Co/Co-coordinator-(Back)
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                {% endif %}
+
+                {% if "Counsellor" in Curr_desig  %}
+
+                <a class="item" href="/filetracking">
+                        Submit Event Report To Dean
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                <a class="item" href="/filetracking">
+                        Event Report To Convener-(Back)
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+                {% endif %}
+
+                {% if "Dean_s" in Curr_desig  %}
+
+                <a class="item" href="/filetracking">
+                         Event Report To counsellor-(Back)
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                {% endif %}
+
                     <a class="item" data-tab="sixth">
                         Member Requests
                         <i class="right floated chevron right icon"></i>
@@ -336,6 +383,7 @@
                     {% include 'gymkhanaModule/applyform.html' %}
                 {% endblock %}
             </div>
+
 
             {% comment %}The Personal Details end here!{% endcomment %}
 

@@ -1,0 +1,140 @@
+{% load static %}
+
+{% block accounts %}
+{% comment %}The tab menu starts here!{% endcomment %}
+
+<h4> Current Balance : &#x20B9;{{ current_balance }} </h4>
+
+<div class="ui pointing secondary menu">
+    <a class="active item" data-tab="all">
+        All
+    </a>
+
+    <a class="item" data-tab="expenditure">
+        Expenditure
+    </a>
+
+    <a class="item" data-tab="income">
+        Income
+    </a>
+</div>
+
+<div class="ui active tab" data-tab="all">
+    <div class="ui vertical segment">
+        <div class="content">
+            <div class="description">
+                <table class="ui very basic collapsing celled sortable table">
+                    <thead>
+                        <tr>
+                            <th class="three wide column">Heads</th>
+                            <th class="three wide column">Amount</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for key,value in completed_booking_bills.items %}
+                        <tr>
+                            <td>
+                                <h4 class="ui image header">
+                                    <div class="content">
+                                        Booking for {{ value.intender }}
+                                    </div>
+                                </h4>
+                            </td>
+                            <td>+&#x20B9;{{ value.total_bill }}</td>
+                        </tr>
+                        {% endfor %}
+
+                        {% for bill in inventory_bill %}
+                        <tr>
+                            <td>
+                                <h4 class="ui image header">
+                                    <div class="content">
+                                        Spent on {{ bill.item_name.item_name }}
+                                    </div>
+                                </h4>
+                            </td>
+                            <td>-&#x20B9;{{ bill.cost }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="ui divider"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="ui tab" data-tab="expenditure">
+    <div class="ui vertical segment">
+        <div class="content">
+            <div class="description">
+                <table class="ui very basic collapsing celled sortable table">
+                    <thead>
+                        <tr>
+                            <th class="three wide column">Item  Name</th>
+                            <th class="three wide column">Bill ID</th>
+                            <th class="three wide column">Amount</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for bill in inventory_bill %}
+                        <tr>
+                            <td>
+                                <h4 class="ui image header">
+                                    <div class="content">
+                                        {{ bill.item_name.item_name }}
+                                    </div>
+                                </h4>
+                            </td>
+                            <td>{{ bill.bill_number }}</td>
+                            <td>&#x20B9;{{ bill.cost }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="ui divider"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="ui tab" data-tab="income">
+    <div class="ui vertical segment">
+        <div class="content">
+            <div class="description">
+                <table class="ui very basic collapsing celled sortable table">
+                    <thead>
+                        <tr>
+                            <th class="three wide column">Intender</th>
+                            <th class="three wide column">Booking From</th>
+                            <th class="three wide column">Booking To</th>
+                            <th class="three wide column">Total Bill</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for key,value in completed_booking_bills.items %}
+                        <tr>
+                            <td>
+                                <h4 class="ui image header">
+                                    <div class="content">
+                                        {{ value.intender }}
+                                    </div>
+                                </h4>
+                            </td>
+                            <td>{{ value.booking_from }}</td>
+                            <td>{{ value.booking_to }}</td>
+                            <td>&#x20B9;{{ value.total_bill }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="ui divider"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

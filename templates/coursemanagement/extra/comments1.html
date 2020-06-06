@@ -1,0 +1,73 @@
+{% load static %}
+
+{% block comments %}
+
+  {% comment %}The comments starts here!{% endcomment %}
+
+    <div class="ui segment comments" style="height:30em;overflow:scroll;">
+      <h3 class="ui dividing header">Comments</h3>
+      {% for key, value in answers.items %}
+      <div class="question"id="question{{key.pk}}">
+        <div class="comment comment_q" id="comment{{key.pk}}">
+          <a class="avatar">
+            <img src="{% static 'globals/img/zlatan.jpg' %}">
+          </a>
+          <div class="content" data-pk="{{key.pk}}" id="question{{key.pk}}">
+            <a class="author">{{key.commenter_id.user.get_full_name}}</a>
+            <div class="metadata">
+              <span class="date">{{key.comment_time}}</span>
+            </div>
+
+            <div class="text">
+              <p>{{key.comment}}</p>
+            </div>
+            <div class="actions" >
+              <a class="reply remove_q" data-user="{{key.commenter_id.user.pk}}"data-pk="{{key.pk}}" id="remove{{key.pk}}" name="remove{{key.pk}}">remove</a>
+            </div>
+          </div>
+        </div>
+          <div class="comments answer" style="padding-left:10px;padding-bottom:10px">
+            {% for v in value %}
+            <div class="comment comment_r" id="comment{{v.forum_reply.pk}}">
+              <a class="avatar">
+                <img src="{% static 'globals/img/zlatan.jpg' %}">
+              </a>
+              <div class="content">
+                <a class="author">{{v.forum_reply.commenter_id.user.get_full_name}}</a>
+                <div class="metadata">
+                  <span class="date">{{v.forum_reply.comment_time}}</span>
+                </div>
+                <div class="text">
+                  {{v.forum_reply.comment}}
+                </div>
+                <div class="actions">
+                  <a class="reply remove_r" data-user="{{v.forum_reply.commenter_id.user.pk}}"data-pk="{{v.forum_reply.pk}}" id="remove{{v.forum_reply.pk}}" name="remove{{v.forum_reply.pk}}">remove</a>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+            <form class="ui form"  id="{{key.pk}}" data-pk="{{key.pk}}" method="post">
+              {% csrf_token %}
+              <div class="field">
+                <input type="text" name="comment{{key.pk}}" placeholder="Enter Your Comment">
+              </div>
+              <input type="submit" class="ui blue submit button submit_r" data-pk="{{key.pk}}" name="submit" value="Reply">
+
+              </input>
+            </form>
+
+          </div>
+        </div>
+        {% endfor %}
+        <form class="ui form" id="new" method="post" style="margin-bottom:10px">
+          {% csrf_token %}
+          <div class="field">
+            <input type="text" name="new_comment" placeholder="Enter Your Comment">
+          </div>
+          <input type="submit" class="ui blue submit button submit_new" data-pk="{{key.pk}}" name="submit" value="Comment">
+        </form>
+    </div>
+
+
+
+{% endblock %}

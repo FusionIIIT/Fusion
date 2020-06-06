@@ -1,0 +1,467 @@
+<!--HTML file for user in Complaint Hostory to view the list of complaints lodged by him ; sorted as Pending, ON Hold,
+Resolved, Declined-->
+{% load static %}
+{% block complainthistory %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+     <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="pendingcomplaints">
+           <i class="large orange warning icon"></i> Pending <br>Complaints
+        </a>
+         <a class="item" data-tab="onholdcomplaints">
+           <i class="large orange add user icon"></i> On-Hold <br>Complaints
+        </a>
+         <a class="item" data-tab="resolvedcomplaints">
+             <i class="large green checkmark icon"></i>Resolved<br> Complaints
+        </a>
+         <a class="item" data-tab="declinedcomplaints">
+           <i class="large red x icon"></i>  Declined<br> Complaints
+        </a>
+    </div> 
+
+
+    <div class="ui active tab" data-tab="pendingcomplaints">
+        <div class="ui vertical segment" style="height: 700px;overflow-y: auto";>
+
+            <!-- <div class="extra content">
+                <div class="" style="text-align: center;">
+                    <i class="large orange warning icon"></i> : Pending &ensp;&ensp;&ensp;&ensp;&ensp;
+                    <i class="large orange add user icon"></i> : Worker Assigned &ensp;&ensp;&ensp;&ensp;&ensp;
+                    <i class="large green checkmark icon"></i> : Completed &ensp;&ensp;&ensp;&ensp;&ensp;
+                    <i class="large red x icon"></i> : Declined &ensp;&ensp;&ensp;&ensp;&ensp;
+                </div>
+            </div> -->
+            <!--  <div class="ui divider"></div> -->
+        
+
+            <table class="ui very basic collapsing celled sortable table"
+                   style="padding-left: 0.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+             
+             <thead>
+                <tr>
+                    <td>
+                        <b>S.No</b>
+                    </td>
+
+                     <td class="five wide column">
+                        <b>Date</b>
+                    </td>
+
+                    <td>
+                    <b>Complaint </br>
+                        Type</b>
+                    </td>
+
+                    <td>
+                        <b>Location</b>
+                    </td>
+
+                    <!-- <th>
+                        Specific </br> Location
+                    </th> -->
+
+                    <td class="one wide column">
+                        <b>Details</b>
+                    </td>
+
+                   <!-- <th class="one wide column">
+                        Status
+                    </th> -->
+                    <td class="three wide column">
+                        <b>Worker </br> Name</b>
+                    </td>
+                    
+                    
+                   
+                </tr>
+                </thead>
+               
+                {% for a in history %}
+                    {% if a.status == 0 %}
+                        
+                        
+                        
+                <tbody>
+                <tr>
+                    <td>
+                        <h4 class="ui image header">
+                            <div class="content">
+                                {{a.serial_no}}
+                                <div class="sub header">
+
+                                </div>
+                            </div>
+                           
+                        </h4>
+                    </td>
+                    <td>
+                        {{ a.complaint_date }}
+                    </td>
+                    <td>
+                        {{ a.complaint_type }}
+                    </td>
+                    <td>
+                        {{ a.specific_location }},&nbsp;
+                        {{ a.location }}
+                    </td>
+                    <td>
+                        <a href="./detail/{{ a.id }}/">  <button class="ui inverted basic button" data-tooltip="Click here to view details" ><i class="large green info icon"></i></button></a>
+                    </td>
+                    <!-- <td>
+                          <i class="large orange warning icon"></i>
+                    </td> -->
+                    <td>
+                        <b>NOT ASSIGN</b>
+                    </td>
+                    
+</tr>
+
+
+                </tbody>
+                         
+                   {% endif %}
+                {% endfor %}
+            </table>
+
+            <br>
+            <div class="ui divider"></div>
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+
+
+    <div class="ui tab" data-tab="onholdcomplaints">
+        <div class="ui vertical segment">
+
+          
+        
+
+            <table class="ui very basic collapsing celled sortable table"
+                   style="padding-left: 0.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+             
+             <thead>
+                <tr>
+                    <td>
+                        <b>S.No</b>
+                    </td>
+
+                    <td class="five wide column">
+                        <b>Date</b>
+                    </td>
+
+                    <td>
+                        <b>Complaint </br>
+                        Type</b>
+                    </td>
+
+                    <td>
+                        <b>Location</b>
+                    </td>
+
+                   <!--  <th>
+                        Specific </br> Location
+                    </th> -->
+
+                    <td class="two wide column">
+                        <b>Details</b>
+                    </td>
+
+                  <!--  <th class="one wide column">
+                        Status
+                    </th> -->
+                    <td class="three wide column">
+                        <b>Worker </br> Name</b>
+                    </td>
+                    
+                    
+                   
+                </tr>
+                </thead>
+                {% for a in history %}
+                    {% if a.status == 1 %}
+                <tbody>
+                <tr>
+                    <td>
+                        <h4 class="ui image header">
+                            <div class="content">
+                                {{ a.serial_no }}
+                                <div class="sub header">
+
+                                </div>
+                            </div>
+                           
+                        </h4>
+                    </td>
+                    <td>
+                        {{ a.complaint_date }}
+                    </td>
+                    <td>
+                        {{ a.complaint_type }}
+                    </td>
+                    <td>
+                        {{ a.specific_location }},&nbsp;
+                        {{ a.location }}
+                    </td>
+                    <td>
+                        <a href="./detail/{{ a.id }}/">  <button class="ui inverted basic button" data-tooltip="Click here to view details" ><i class="large green info icon"></i></button></a>
+                    </td>
+                    <!-- <td>
+                          <i class="large orange add user icon"></i>
+                    </td> -->
+                    <td>
+                        <b> {{ a.worker_id.name }}</b>
+                    </td>
+                    
+</tr>
+
+
+                </tbody>
+                   {% endif %}
+                {% endfor %}
+            </table>
+
+            <br>
+            <div class="ui divider"></div>
+        </div>
+    </div>
+
+
+
+
+
+
+    <div class="ui tab" data-tab="resolvedcomplaints">
+        <div class="ui vertical segment">
+
+            <!-- <div class="extra content">
+                <div class="" style="text-align: center;">
+                    <i class="large orange warning icon"></i> : Pending &ensp;&ensp;&ensp;&ensp;&ensp;
+                    <i class="large orange add user icon"></i> : Worker Assigned &ensp;&ensp;&ensp;&ensp;&ensp;
+                    <i class="large green checkmark icon"></i> : Completed &ensp;&ensp;&ensp;&ensp;&ensp;
+                    <i class="large red x icon"></i> : Declined &ensp;&ensp;&ensp;&ensp;&ensp;
+                </div>
+            </div>
+             <div class="ui divider"></div> -->
+        
+
+            <table class="ui very basic collapsing celled sortable table"
+                   style="padding-left: 0.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+             
+             <thead>
+                <tr>
+                    <td>
+                        <b>S.No</b>
+                    </td>
+
+                    <td class="five wide column">
+                        <b>Date</b>
+                    </td>
+
+                    <td>
+                        <b>Complaint </br>
+                        Type</b>
+                    </td>
+
+                    <td>
+                        <b>Location</b>
+                    </td>
+
+                   
+
+                    <td class="two wide column">
+                        <b>Details</b>
+                    </td>
+
+                   <!-- <th class="one wide column">
+                        Status
+                    </th> -->
+                    <td class="three wide column">
+                        <b>Worker </br> Name </b>
+                    </td>
+                    
+                    
+                   
+                </tr>
+                </thead>
+                {% for a in history %}
+                    {% if a.status == 2 %}
+                <tbody>
+                <tr>
+                    <td>
+                        <h4 class="ui image header">
+                            <div class="content">
+                                {{ a.serial_no }}
+                                <div class="sub header">
+
+                                </div>
+                            </div>
+                           
+                        </h4>
+                    </td>
+                    <td>
+                        {{ a.complaint_date }}
+                    </td>
+                    <td>
+                        {{ a.complaint_type }}
+                    </td>
+                    <td>
+                        {{ a.specific_location }},&nbsp;
+                        {{ a.location }}
+                    </td>
+                    <td>
+                        <a href="./detail/{{ a.id }}/">  <button class="ui inverted basic button" data-tooltip="Click here to view details" ><i class="large green info icon"></i></button></a>
+                    </td>
+                    <!-- <td>
+                          <i class="large green checkmark icon"></i>
+                    </td> -->
+                    <td>
+                        <b> {{ a.worker_id.name }}</b>
+                    </td>
+                    
+</tr>
+
+
+                </tbody>
+                   {% endif %}
+                {% endfor %}
+            </table>
+
+            <br>
+            <div class="ui divider"></div>
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+ <div class="ui tab" data-tab="declinedcomplaints">
+        <div class="ui vertical segment">
+
+            <!-- <div class="extra content">
+                <div class="" style="text-align: center;">
+                    <i class="large orange warning icon"></i> : Pending &ensp;&ensp;&ensp;&ensp;&ensp;
+                    <i class="large orange add user icon"></i> : Worker Assigned &ensp;&ensp;&ensp;&ensp;&ensp;
+                    <i class="large green checkmark icon"></i> : Completed &ensp;&ensp;&ensp;&ensp;&ensp;
+                    <i class="large red x icon"></i> : Declined &ensp;&ensp;&ensp;&ensp;&ensp;
+                </div>
+            </div>
+             <div class="ui divider"></div> -->
+        
+
+            <table class="ui very basic collapsing celled sortable table"
+                   style="padding-left: 0.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+             
+             <thead>
+                <tr>
+                    <td width="1">
+                        <b>S.No</b>
+                    </td>
+
+                    <td class="five wide column">
+                        <b>Date</b>
+                    </td>
+
+                    <td>
+                        <b>Complaint </br>
+                        Type</b>
+                    </td>
+
+                    <td>
+                        <b>Location</b>
+                    </td>
+
+                    <!-- <th>
+                        Specific </br> Location
+                    </th> -->
+
+                    <td class="two wide column">
+                        <b>Details</b>
+                    </td>
+
+                  <!--  <th class="one wide column">
+                        Status
+                    </th> -->
+                    <td class="three wide column">
+                        <b>Worker </br> Name</b>
+                    </td>
+                    
+                    
+                   
+                </tr>
+                </thead>
+                {% for a in history %}
+                    {% if a.status == 3 %}
+                <tbody>
+                <tr>
+                    <td>
+                        <h4 class="ui image header">
+                            <div class="content">
+                                {{ a.serial_no }}
+                                <div class="sub header">
+
+                                </div>
+                            </div>
+                           
+                        </h4>
+                    </td>
+                    <td>
+                        {{ a.complaint_date }}
+                    </td>
+                    <td>
+                        {{ a.complaint_type }}
+                    </td>
+                    <td>
+                        {{ a.specific_location }},&nbsp;
+                        {{ a.location }}
+                    </td>
+                    <td>
+                        <a href="./detail/{{ a.id }}/">  <button class="ui inverted basic button" data-tooltip="Click here to view details" ><i class="large green info icon"></i></button></a>
+                    </td>
+                   <!--  <td>
+                          <i class="large red x icon"></i>
+                    </td> -->
+                    <td>
+                        <b> {{ a.worker_id.name }}</b>
+                    </td>
+                    
+</tr>
+
+
+                </tbody>
+                   {% endif %}
+                {% endfor %}
+            </table>
+
+            <br>
+            <div class="ui divider"></div>
+        </div>
+    </div>
+
+    {% endblock%}

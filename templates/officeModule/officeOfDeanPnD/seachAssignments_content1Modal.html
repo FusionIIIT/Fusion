@@ -1,0 +1,206 @@
+{% load static %}
+{% block modal4 %}
+<script type="text/javascript">
+    function detail(a){
+        var id= '.ui.modal.'+a;;
+
+        $(id).modal('show');
+    }
+
+</script>
+ 
+{% for object in req %}
+<div class="ui modal {{ object.pk }} " id={{object.pk}}>
+    <div class="header"> </div>
+
+    <div class="content">
+        <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;" >
+            <div class="three fields">
+
+
+                <div class="four wide field">
+
+                    <label>Building</label>
+
+                    <input value={{object.building}} class="ui large input" readonly>
+                </div>
+                <div class="four wide field">
+
+                    <label>Date</label>
+                    <input value="{{object.req_date}}" class="ui large input" readonly>
+                </div>
+
+                <div class="field">
+
+                    <h4 class="ui image header">
+                        &emsp;&emsp;&emsp;
+                        <label>Requester</label><br>
+                        &emsp;&emsp;&emsp;
+                        <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                        <div class="content">
+                            {{object.userid.user.first_name}}{{object.userid.user.last_name}}
+                            <div class="sub header">
+                                {{object.userid.user.email}}
+                            </div>
+                        </div>
+                    </h4>
+                </div>
+            </div>
+            <h4> Requisition </h4>
+            <div class="two fields" >
+                <div class="four wide field">
+                    <label>Title</label>
+                    <input value="{{object.title}}" class="ui large input" readonly>
+                </div>
+                <div class="twelve wide field">
+                    <label>Description</label>
+                    <input value="{{object.description}}" readonly></input>
+                </div>
+            </div>
+             
+             <h4> Work Assignment </h4>
+            <div class="eight wide field">
+                <label>Title</label>
+                <input value="{{object.assign_title}}" class="ui large input" readonly>
+            </div>
+
+            <div class="field" >
+                <label>Description</label>
+                <input value="{{object.assign_description}}" readonly></input>
+            </div>
+
+            <div class="four wide field" >
+                <label>Current Status</label>
+                {% if object.tag == 0 %}
+                <input value="Ongoing" readonly></input>
+                {% elif object.tag == 1 %}
+                 <input value="Completed" readonly></input>
+                 {% endif %}
+            </div>  
+
+            
+
+
+
+        </div>
+    </div>
+    <div class="content">
+        <table class="ui very basic collapsing celled sortable table"
+               style="padding-left: 5%;
+                                                          padding-right: 5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+            <thead>
+            <tr>
+                <th class="two wide column">
+                    Date Sent
+                </th>
+
+                <th class="three wide column">
+                    Sent By
+                </th>
+
+                <th class="three wide column">
+                    Sent To
+                </th>
+
+                <th class="one wide column">
+                    Remarks
+                </th>
+
+            </tr>
+            </thead> <tbody>
+        {% for file in allfiles %}
+        {% if file.rid.id == object.pk %}
+
+
+
+
+        <tr>
+            <td>
+                {{file.date}}
+            </td>
+
+            <td>
+                <h4 class="ui image header">
+                    <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                    <div class="content">
+                        {{file.sentby.user.first_name}}{{file.sentby.user.lasr_name}}
+                        <div class="sub header">
+                        {% if "Civil_AE" in file.receivedby.designation.name %}
+                        {{file.sentby.designation.name}}
+                        {% elif "Civil_JE" in file.receivedby.designation.name %}
+                        {{file.sentby.designation.name}}
+                        {% elif "EE" in file.receivedby.designation.name %}
+                        {{file.sentby.designation.name}}
+                        {% elif "DeanPnD" in file.receivedby.designation.name %}
+                        {{file.sentby.designation.name}}
+                        {% elif "Director" in file.receivedby.designation.name %}
+                        {{file.sentby.designation.name}}
+                        {% elif "Electrical_AE" in file.receivedby.designation.name %}
+                        {{file.sentby.designation.name}}
+                        {% elif "Electrical_JE" in file.receivedby.designation.name %}
+                        {{file.sentby.designation.name}}
+                        {% endif %}
+                        </div>
+                        <div class="sub header">
+                            {{file.sentby.user.email}}
+                        </div>
+                    </div>
+                </h4>
+            </td>
+
+            <td>
+                <h4 class="ui image header">
+                    <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
+                    <div class="content">
+                        {{file.receivedby.user.first_name}}{{file.receivedby.user.first_name}}
+                        <div class="sub header">
+                        {% if "Civil_AE" in file.receivedby.designation.name %}
+                        {{file.receivedby.designation.name}}
+                        {% elif "Civil_JE" in file.receivedby.designation.name %}
+                        {{file.receivedby.designation.name}}
+                        {% elif "EE" in file.receivedby.designation.name %}
+                        {{file.receivedby.designation.name}}
+                        {% elif "DeanPnD" in file.receivedby.designation.name %}
+                        {{file.receivedby.designation.name}}
+                        {% elif "Director" in file.receivedby.designation.name %}
+                        {{file.receivedby.designation.name}}
+                        {% elif "Electrical_AE" in file.receivedby.designation.name %}
+                        {{file.receivedby.designation.name}}
+                        {% elif "Electrical_JE" in file.receivedby.designation.name %}
+                        {{file.receivedby.designation.name}}
+                        {% endif %}
+                        </div>
+                        <div class="sub header">
+                            {{file.receivedby.user.email}}
+                        </div>
+                    </div>
+                </h4>
+            </td>
+
+            <td>
+
+                {{file.remarks}}
+
+            </td>
+
+
+        </tr>
+
+
+
+        {% endif %}
+
+        {% endfor %}  </tbody>
+        </table>
+    </div>
+
+</div>
+
+
+
+{% endfor %}
+
+{% endblock %}

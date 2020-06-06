@@ -1,0 +1,141 @@
+{% comment %} ACAD ADMIN will drop course here {% endcomment%}
+{% load static %}
+{% block complainthistory %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="complainthistory">
+            Registered Courses for Sem {{ date.semflag }} {{ date.year }}
+
+        </a>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"> </script>
+    <script type="text/javascript">
+    $(document).on('click','.ui.blue.label',
+    function(e)
+    {
+        e.preventDefault();
+        $('.ajaxProgress').show();
+        console.log("clickk");
+        var this_ = $(this);
+        var url_ = this_.attr("href");
+        var id = url_.indexOf('=') + 1;
+        var id2 = url_.indexOf('%');
+        console.log(id2);
+        console.log(id);
+        var num = url_.substring(id,id2);
+
+        num = '.' + num;
+        console.log($(num).text());
+
+        $.ajax({
+            url: url_,
+            method: "GET",
+            async: true,
+            data: $(this).serialize(),
+            success: function(jsondata)
+            {
+              $(num).hide();
+              $('.ajaxProgress').hide()
+            },
+            error: function(error)
+            {
+              alert("Some Error Occured")
+            }
+        });
+      });
+    </script>
+    <div class="ui active tab" data-tab="complainthistory">
+        <div class="ui vertical segment">
+          <B>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            Name = {{ dict2.firstname }}&nbsp;{{ dict2.lastname }}
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            Roll No = {{ dict2.roll_no }}
+          </B>
+            {% if details %}
+            <table class="ui very basic collapsing celled sortable table"
+                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                <thead>
+                <tr>
+                    <th>
+                        Reg ID#
+                    </th>
+
+                    <th>
+                        Course ID
+                    </th>
+
+                    <th>
+                        Course Name
+                    </th>
+
+                    <th>
+                        Credits
+                    </th>
+                    <th>
+                        Semester
+                    </th>
+                    <th>
+                        Drop Course
+                    </th>
+                </tr>
+                </thead>
+
+                <tbody>
+
+                    {% csrf_token %}
+                    {% for items in details %}
+
+                        <tr class= "{{ items.rid }}" >
+                            <td >
+                                {{ items.rid }}
+                            </td>
+                            <td>
+                                {{ items.course_id }}
+                            </td>
+                            <td>
+                                {{ items.course_name }}
+                            </td>
+                            <td>
+                                {{ items.credits }}
+                             </td>
+                             <td>
+                                {{ items.sem }}
+                             </td>
+                             <td>
+                               <A class="ui blue label"
+                               href="/academic-procedures/acad_person/verifyCourse/drop/?id={{ items.reg_id|urlencode }}">
+                                  DROP </A>
+                             </td>
+
+                        </tr>
+
+                    {% endfor %}
+                </form>
+                </tbody>
+            </table>
+
+              <br>
+              {% else %}
+                <br>
+                  <br>  <br>  <br><CENTER>
+                  <B> NO RECORDS FOUND </B></center>
+              {% endif %}
+
+            <div class="ui divider"></div>
+
+
+        </div>
+    </div>
+
+{% endblock %}
