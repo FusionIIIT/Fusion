@@ -2,7 +2,7 @@
 {% block pendingrequest %}
 
     {% comment %}The tab menu starts here!{% endcomment %}
-       
+
 
     <div class="ui pointing secondary menu">
 
@@ -13,6 +13,7 @@
         <a class="ui item" data-tab="sentrequests">
             Club Session Requests
         </a>
+
         {% endif %}
 
 </div>
@@ -64,19 +65,15 @@
                         <td onclick="view('{{ i.member.id.id }}','{{ i.club.club_name }}')">
                             {{ i.member.id.id }}
                         </td>
-
                         <td>
                             {{ i.member.id.user.username }}
                         </td>
-
                         <td>
                             {{ i.club.club_name}}
                         </td>
-
                         <td>
                             {{ i.club.category }}
                         </td>
-
                         <td>
                             {{ i.status }}
                         </td>
@@ -84,7 +81,6 @@
                     {% endif %}
                 {% endfor %}
                 </tr>
-
                 </tbody> -->
                 <tbody>
                     {% if "co-ordinator" in Curr_desig or "co co-ordinator" in Curr_desig %}
@@ -115,6 +111,9 @@
                                     <td>
                                         {{ i.status }}
                                     </td>
+                                    <td>
+                                        <a href='{% url "gymkhana:editsession" session_id=i.pk %}'><button type="button">Edit</button> </a>
+                                    </td>
                                 </tr>
                             {% endif %}
                         {% endfor %}
@@ -139,7 +138,7 @@
 
         </div>
     </div>
-    
+
 
 
 
@@ -178,7 +177,7 @@
                                         </div>
                                     </td>
                                     <td>
-                                        {{ i.club_name }} 
+                                        {{ i.club_name }}
                                     </td>
 
                                     <td>
@@ -201,7 +200,7 @@
             <!-- <div class="ui primary right floated button" name="approve" onclick="approve();">Approve Selected</div> -->
             <!-- <div class="ui red right floated button" name = "reject" onclick="approve();">Reject Selected</div> -->
             <div class="field">
-                <button class="ui primary button right floated" type="submit" onclick="event.preventDefault();deleteSessions()">
+                <button class="ui primary button right floated" type="submit" onclick="event.preventDefault();deleteclub()">
                     Cancel Request
                 </button>
                 <br>
@@ -212,7 +211,13 @@
 
         </div>
     </div>
-    
+
+
+
+
+
+
+
 {% endblock %}
 
 {% block javascript %}
@@ -220,7 +225,7 @@
     <script type="text/javascript">
         function deleteSessions(){
             var selectedIds = new Array() ;
-            $.each($("input[name='check']:checked"), function(){            
+            $.each($("input[name='check']:checked"), function(){
                 selectedIds.push($(this).val());
             });
             if (selectedIds.length > 0){
@@ -230,8 +235,8 @@
                     type: "post",
                     data: {"ids":selectedIds},
                     success: function(response){
-                        $.each($("input[name='check']"), function(){  
-                            this.checked = false ;          
+                        $.each($("input[name='check']"), function(){
+                            this.checked = false ;
                             // console.log($(this).attr("checked", false));
                         });
                         if(response == "success"){
@@ -253,20 +258,20 @@
     </script>
 
      <script type="text/javascript">
-        function deleteSessions(){
+        function deleteclub(){
             var selectedIds = new Array() ;
-            $.each($("input[name='check']:checked"), function(){            
+            $.each($("input[name='check']:checked"), function(){
                 selectedIds.push($(this).val());
             });
             if (selectedIds.length > 0){
                 var selectedIds = JSON.stringify(selectedIds);
                 $.ajax({
-                    url: '/gymkhana/delete_memberform/',
+                    url: '/gymkhana/delete_club/',
                     type: "post",
                     data: {"ids":selectedIds},
                     success: function(response){
-                        $.each($("input[name='check']"), function(){  
-                            this.checked = false ;          
+                        $.each($("input[name='check']"), function(){
+                            this.checked = false ;
                             // console.log($(this).attr("checked", false));
                         });
                         if(response == "success"){

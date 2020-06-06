@@ -6,14 +6,13 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.dateparse import parse_date
 from django.db.models import Q
 from bisect import bisect
-
 from applications.academic_information.models import Student
 from applications.globals.models import *
 from datetime import datetime
 from django.core import serializers
 import json
-
 from .models import *
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
 
 
 def coordinator_club(request):
@@ -32,9 +31,71 @@ def delete_sessions(request):
             delSession = Session_info.objects.get(id=i)
             delSession.delete()
         return HttpResponse("success")
-    except:
+    except Exception as e:
         print("An error was encountered")
         return HttpResponse("error")
+
+
+
+
+
+def editsession(request, session_id):
+    event = Session_info.objects.get(pk=session_id)
+
+    if request.method == 'POST':
+        try:
+            body = request.POST
+            venue = body.get('venue_type')
+            session_poster = request.FILES.get('session_poster')
+            date = body.get('date')
+            start_time = body.get('start_time')
+            end_time = body.get('end_time')
+            desc = body.get('d_d')
+            club_name = coordinator_club(request)
+            res = conflict_algorithm_session(date, start_time, end_time, venue)
+            message = ""
+            print("in the post body")
+            print(res)
+            if (res == 'success'):
+                e = Session_info.objects.filter(id=session_id).update(club=club_name,
+                                                                  venue=venue, date=date,
+                                                                  start_time=start_time, end_time=end_time,
+                                                                  session_poster=session_poster, details=desc)
+                message += "Your form has been dispatched for further process"
+                print(message)
+                return redirect('/gymkhana/')
+            else:
+                message += "The selected time slot for the given date and venue conflicts with already booked session"
+                print(message)
+        except Exception as e:
+            res = "error"
+            message = "Some error occurred"
+            print(message, e)
+
+    ##Get Request
+    #  Session_info.objects(club=club_name,venue=venue,date=date,start_time=start_time,end_time=end_time,session_poster=session_poster, details=desc)
+    venue = []
+
+    for i in Constants.venue:
+        for j in i[1]:
+            venue.append(j[0])
+    context = {
+        'form': {
+            "venue": event.venue,
+            "session_poster": event.session_poster,
+            "date": datetime.datetime.strftime(event.date, '%Y-%m-%d'),
+            "start_time": event.start_time,
+            "end_time": event.end_time,
+            "desc": event.details,
+            "club_name": event.club,
+            "Venue": venue,
+            "id": session_id
+        }
+    }
+    # res = conflict_algorithm_event(date, start_time, end_time, venue)
+    template = 'gymkhanaModule/editsession.html'
+
+    return render(request, template, context)
 
 
 def delete_memberform(request):
@@ -45,7 +106,7 @@ def delete_memberform(request):
             delMemberform = Club_member.objects.get(id=i)
             delMemberform.delete()
         return HttpResponse("success")
-    except:
+    except Exception as e:
         print("An error was encountered")
         return HttpResponse("error")
 
@@ -202,7 +263,7 @@ def retrun_content(roll, name, desig, club__):
     fest_budget = Fest_budget.objects.all()
     club_budget = Club_budget.objects.all()
     club_session = Session_info.objects.all()
-    club_event = Club_report.objects.all()
+    club_event_report = Club_report.objects.all()
 
     venue_type = []
     id = 0
@@ -218,7 +279,6 @@ def retrun_content(roll, name, desig, club__):
         student = get_object_or_404(Student, id=extra)
     else:
         b = []
-    print(club__)
     content = {
         'Students': students,
         'Club_name': club_name,
@@ -227,7 +287,7 @@ def retrun_content(roll, name, desig, club__):
         'Fest_budget': fest_budget,
         'Club_budget': club_budget,
         'Club_session': club_session,
-        'Club_event': club_event,
+        'Club_event_report': club_event_report,
         'Curr_club': b,
         'venue': venue,
         'Curr_desig': desig,
@@ -278,7 +338,7 @@ def gymkhana(request):
         # #    #    print name_
         roll_.append(str(name_.name))
     for i in Club_info.objects.all():
-        lines = str("");
+        lines = str("")
         Types = lines.split(" ")
     # print(Types[1])
     club__ = coordinator_club(request)
@@ -512,7 +572,7 @@ def new_session(request):
             end_time = request.POST.get("end_time")
             desc = request.POST.get("d_d")
             club_name = coordinator_club(request)
-            res = conflict_algorithm(date, start_time, end_time, venue)
+            res = conflict_algorithm_session(date, start_time, end_time, venue)
             message = ""
             if (res == "success"):
                 session = Session_info(club=club_name, venue=venue, date=date, start_time=start_time, end_time=end_time,
@@ -531,6 +591,8 @@ def new_session(request):
         }
         content = json.dumps(content)
         return HttpResponse(content)
+
+
 
 
 @login_required
@@ -596,6 +658,7 @@ def club_approve(request):
         messages.success(request, "Successfully Approved !!!")
 
     return redirect('/gymkhana/')
+
 
 @login_required
 def club_reject(request):
@@ -669,9 +732,10 @@ def date_sessions(request):
         dates = serializers.serialize('json', dates)
         return HttpResponse(dates)
 
-
 # this algorithm checks if the passed slot time coflicts with any of already booked sessions
-def conflict_algorithm(date, start_time, end_time, venue):
+
+
+def conflict_algorithm_session(date, start_time, end_time, venue):
     # converting string to datetime type variable
     start_time = datetime.datetime.strptime(start_time, '%H:%M').time()
     end_time = datetime.datetime.strptime(end_time, '%H:%M').time()
@@ -702,3 +766,6 @@ def conflict_algorithm(date, start_time, end_time, venue):
             return "success"
         else:
             return "error"
+
+
+
