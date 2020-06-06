@@ -56,6 +56,27 @@ Estate
     </div>
 
     <div class="eleven wide column">
+        {% if messages %}
+        {% for message in messages %}
+
+        <div class="ui {{ message.tags }} message message_{{ forloop.counter0 }}">
+            <i class="close icon"></i>
+            <div class="header">
+                {{ message }}
+            </div>
+            {% comment %} <p>More detailed message</p> {% endcomment %}
+        </div>
+        <script>
+            $('.message_{{ forloop.counter0 }} .close')
+                .on('click', function () {
+                    $(this)
+                        .closest('.message')
+                        .transition('fade');
+                });
+        </script>
+        {% endfor %}
+        {% endif %}
+
         {% for menuitem in menuitems.split %}
         <div class="ui {% if forloop.counter0 is 0 %}{{ "active" }}{% endif %} tab segment" data-tab="{{ menuitem }}">
             {% include 'estate_module/'|add:menuitem|add:'/home.html' %}
@@ -68,6 +89,10 @@ Estate
 {% endwith %}
 
 {% block javascript %}
+<script>
+    $('.ui.dropdown')
+        .dropdown();
+</script>
 {% endblock javascript %}
 
 {% endblock body %}

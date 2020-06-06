@@ -15,11 +15,22 @@
     <div class="required field">
         {{ workForm.workType.label_tag }}
         {{ workForm.workType }}
+
+        <script>
+            $('#id_workType')
+                .dropdown();
+        </script>
     </div>
 
     <div class="required field">
         {{ workForm.estate.label_tag }}
         {{ workForm.estate }}
+
+        <script>
+            $('#id_estate')
+                .addClass('search')
+                .dropdown();
+        </script>
     </div>
 </div>
 

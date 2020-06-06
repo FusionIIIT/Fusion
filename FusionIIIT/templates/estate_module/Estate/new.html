@@ -12,19 +12,83 @@
             <i class="info circle icon"></i>
             Main Information
         </h4>
-        <form action="{% url 'new_estate' %}" id="new_{{ menuitem }}_form" class="ui form" method="POST">
-            {% include 'estate_module/'|add:menuitem|add:'/form.html' %}
 
+        <form action="{% url 'new_estate' %}" id="new_{{ menuitem }}_form" class="ui form" method="POST" novalidate>
+            <div class="ui error message"></div>
+            {% include 'estate_module/'|add:menuitem|add:'/form.html' %}
         </form>
 
     </div>
     <div class="actions">
-        <button type="submit" form="new_{{ menuitem }}_form"
-            class="ui submit large positive right labeled icon approve button">Create
+        {% comment %} <button form="XYZ" class="ui large primary submit button">Submit</button> {% endcomment %}
+        <button type="submit" form="new_{{ menuitem }}_form" class="ui large right labeled icon green button">Create
             <i class="checkmark icon"></i></button>
         <div class="ui black deny large button">
             Cancel
         </div>
+
+        <script>
+            $('#new_{{ menuitem }}_form')
+                .form({
+                    fields: {
+                        name: {
+                            identifier: 'name',
+                            rules: [{
+                                type: 'empty',
+                                prompt: 'Estate name cannot be blank'
+                            }]
+                        },
+                        dateIssued: {
+                            identifier: 'dateIssued',
+                            rules: [{
+                                type: 'empty',
+                                prompt: 'Date Issued cannot be blank'
+                            }]
+                        },
+                        constructionCostEstimated: {
+                            identifier: 'constructionCostEstimated',
+                            optional: true,
+                            rules: [{
+                                type: 'integer',
+                                prompt: 'Estimated Construction Cost must be an integer'
+                            }]
+                        },
+                        constructionCostActual: {
+                            identifier: 'constructionCostActual',
+                            optional: true,
+                            rules: [{
+                                type: 'integer',
+                                prompt: 'Actual Construction Cost must be an integer'
+                            }]
+                        },
+                        area: {
+                            identifier: 'area',
+                            optional: true,
+                            rules: [{
+                                type: 'integer',
+                                prompt: 'Area must be an integer'
+                            }]
+                        },
+                        numRooms: {
+                            identifier: 'numRooms',
+                            optional: true,
+                            rules: [{
+                                type: 'integer',
+                                prompt: 'Number of rooms must be an integer'
+                            }]
+                        },
+                        numWashrooms: {
+                            identifier: 'numWashrooms',
+                            optional: true,
+                            rules: [{
+                                type: 'integer',
+                                prompt: 'Number of washrooms must be an integer'
+                            }]
+                        },
+
+                    }
+                });
+        </script>
     </div>
 </div>
 <script>

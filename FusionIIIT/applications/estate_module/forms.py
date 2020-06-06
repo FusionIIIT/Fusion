@@ -1,5 +1,5 @@
 from django.forms import ModelForm, Textarea, TextInput, DateInput, NumberInput
-from .models import Estate, Work, Inventory
+from .models import Estate, Work, SubWork, InventoryType, Inventory
 
 
 class EstateForm(ModelForm):
@@ -23,19 +23,25 @@ class EstateForm(ModelForm):
                 'type': 'date'
             }),
             'area': NumberInput(attrs={
-                'placeholder': 'Enter area'
+                'placeholder': 'Enter area',
+                'type': 'text'
             }),
             'constructionCostEstimated': NumberInput(attrs={
-                'placeholder': 'Enter estimated construction cost'
+                'placeholder': 'Enter estimated construction cost',
+                'type': 'text'  # made type=text because semantic UI's optional form validation doesn't work on type=number
+                # if this changes in the future, you may remove this type=text line
             }),
             'constructionCostActual': NumberInput(attrs={
-                'placeholder': 'Enter actual construction cost'
+                'placeholder': 'Enter actual construction cost',
+                'type': 'text'  # made type=text because semantic UI's optional form validation doesn't work on type=number
             }),
             'numRooms': NumberInput(attrs={
-                'placeholder': 'Enter number of rooms'
+                'placeholder': 'Enter number of rooms',
+                'type': 'text'  # made type=text because semantic UI's optional form validation doesn't work on type=number
             }),
             'numWashrooms': NumberInput(attrs={
-                'placeholder': 'Enter number of washrooms'
+                'placeholder': 'Enter number of washrooms',
+                'type': 'text'  # made type=text because semantic UI's optional form validation doesn't work on type=number
             }),
             'remarks': Textarea(attrs={
                 'placeholder': 'Enter remarks'
@@ -96,5 +102,35 @@ class WorkForm(ModelForm):
             'dateCompleted': 'Date Completed',
             'costEstimated': 'Estimated cost',
             'costActual': 'Actual cost',
+            'remarks': 'Remarks',
+        }
+
+
+class InventoryTypeForm(ModelForm):
+    class Meta:
+        model = InventoryType
+        fields = '__all__'
+        widgets = {
+            'name': TextInput(attrs={
+                'placeholder': 'Enter name of inventory'
+            }),
+            'manufacturer': TextInput(attrs={
+                'placeholder': 'Enter name of manufacturer'
+            }),
+            'model': TextInput(attrs={
+                'placeholder': 'Enter model name/number'
+            }),
+            'rate': NumberInput(attrs={
+                'placeholder': 'Enter rate (cost per unit)'
+            }),
+            'remarks': Textarea(attrs={
+                'placeholder': 'Enter remarks'
+            }),
+        }
+        labels = {
+            'name': 'Inventory name',
+            'manufacuter': 'Manufactuer name',
+            'model': 'Model name',
+            'rate': 'Rate',
             'remarks': 'Remarks',
         }
