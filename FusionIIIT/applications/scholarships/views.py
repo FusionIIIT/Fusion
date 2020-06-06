@@ -1,10 +1,3 @@
-# from django.shortcuts import render
-
-# Create your views here.
-# from django.shortcuts import render
-
-# Create your views here.
-# from django.shortcuts import render
 
 import datetime
 import json
@@ -284,6 +277,7 @@ def convener_view(request):
             assis = Designation.objects.get(name='spacsassistant')
             hd = HoldsDesignation.objects.get(designation=con)
             hd1 = HoldsDesignation.objects.get(designation=assis)
+            year_range = range(2013, datetime.datetime.now().year)
 
             last_clicked = ''
             try:
@@ -294,7 +288,7 @@ def convener_view(request):
             context = {'mcm': mcm, 'source': source, 'time': time, 'ch': ch, 'awards': awards,
                        'spi': spi, 'student': student, 'winners_list': winners_list, 'release': release,
                        'gold': gold, 'silver': silver, 'dandm': dandm, 'con': con, 'assis': assis,
-                       'hd': hd, 'hd1': hd1, 'last_clicked': last_clicked}
+                       'hd': hd, 'hd1': hd1, 'last_clicked': last_clicked, 'year_range': year_range}
             return render(request, 'scholarshipsModule/scholarships_convener.html', context)
 
     else:
@@ -336,11 +330,12 @@ def convener_view(request):
             assis = Designation.objects.get(name='spacsassistant')
             hd = HoldsDesignation.objects.get(designation=con)
             hd1 = HoldsDesignation.objects.get(designation=assis)
+            year_range = range(2013, datetime.datetime.now().year)
 
             context = {'mcm': mcm, 'source': source, 'time': time, 'ch': ch, 'awards': awards,
                        'spi': spi, 'student': student, 'winners_list': winners_list, 'release': release,
                        'gold': gold, 'silver': silver, 'dandm': dandm, 'con': con, 'assis': assis,
-                       'hd': hd, 'hd1': hd1, 'last_clicked': last_clicked}
+                       'hd': hd, 'hd1': hd1, 'last_clicked': last_clicked, "year_range": year_range}
             return render(request, 'scholarshipsModule/scholarships_convener.html', context)
 
         except:
@@ -363,6 +358,7 @@ def convener_view(request):
         assis = Designation.objects.get(name='spacsassistant')
         hd = HoldsDesignation.objects.get(designation=con)
         hd1 = HoldsDesignation.objects.get(designation=assis)
+        year_range = range(2013, datetime.datetime.now().year)
 
         last_clicked = ''
         try:
@@ -374,7 +370,7 @@ def convener_view(request):
         context = {'mcm': mcm, 'source': source, 'time': time, 'ch': ch, 'awards': awards,
                    'spi': spi, 'student': student, 'release': release,
                    'gold': gold, 'silver': silver, 'dandm': dandm, 'con': con, 'assis': assis,
-                   'hd': hd, 'hd1': hd1, 'last_clicked': last_clicked }
+                   'hd': hd, 'hd1': hd1, 'last_clicked': last_clicked, "year_range": year_range }
         return render(request, 'scholarshipsModule/scholarships_convener.html', context)
 
 @login_required(login_url='/accounts/login')
@@ -852,7 +848,10 @@ def student_view(request):
                 student_id=request.user.extrainfo.id).order_by('-release_id__date_time')
 
             show_mcm_flag = False
-            show_convocation_flag = False
+            show_convocation_flag = False 
+            year_range = range(2013, datetime.datetime.now().year)
+
+            year
             for i in x:
                 if i.invite_mcm_accept_flag == True:
                     print('why is this true')
@@ -875,7 +874,7 @@ def student_view(request):
                            'release_count': release_count, 'x_notif_mcm_flag': x_notif_mcm_flag, 'x_notif_con_flag': x_notif_con_flag,
                            'gold': gold, 'silver': silver, 'dandm': dandm, 'source': source, 'show_mcm_flag': show_mcm_flag, 'show_convocation_flag': show_convocation_flag,
                            'update_mcm_flag': update_mcm_flag, 'update_con_flag': update_con_flag,
-                           'mother_occ': mother_occ, 'con': con, 'assis': assis, 'hd': hd, 'hd1': hd1, 'last_clicked': last_clicked, 'x': x})
+                           'mother_occ': mother_occ, 'con': con, 'assis': assis, 'hd': hd, 'hd1': hd1, 'last_clicked': last_clicked, 'x': x, "year_range": year_range})
 
     else:
         try:
@@ -959,6 +958,8 @@ def student_view(request):
 
             show_mcm_flag = False
             show_convocation_flag = False
+            year_range = range(2013, datetime.datetime.now().year)
+
             for i in x:
                 if i.invite_mcm_accept_flag == True:
                     print('why is this true')
@@ -981,7 +982,7 @@ def student_view(request):
                            'release_count': release_count, 'x_notif_mcm_flag': x_notif_mcm_flag, 'x_notif_con_flag': x_notif_con_flag,
                            'gold': gold, 'silver': silver, 'dandm': dandm, 'source': source, 'show_mcm_flag': show_mcm_flag, 'show_convocation_flag': show_convocation_flag,
                            'update_mcm_flag': update_mcm_flag, 'update_con_flag': update_con_flag,
-                           'mother_occ': mother_occ, 'con': con, 'assis': assis, 'hd': hd, 'hd1': hd1, 'last_clicked': last_clicked, 'x': x})
+                           'mother_occ': mother_occ, 'con': con, 'assis': assis, 'hd': hd, 'hd1': hd1, 'last_clicked': last_clicked, 'x': x, "year_range": year_range})
 
         except:
             print("session not defined")
@@ -1048,6 +1049,8 @@ def student_view(request):
 
         show_mcm_flag = False
         show_convocation_flag = False
+        year_range = range(2013, datetime.datetime.now().year)
+
         for i in x:
             if i.invite_mcm_accept_flag == True:
                 print('why is this true')
@@ -1071,7 +1074,7 @@ def student_view(request):
                        'release_count': release_count, 'x_notif_mcm_flag': x_notif_mcm_flag, 'x_notif_con_flag': x_notif_con_flag,
                        'gold': gold, 'silver': silver, 'dandm': dandm, 'source': source, 'show_mcm_flag': show_mcm_flag, 'show_convocation_flag': show_convocation_flag,
                        'update_mcm_flag': update_mcm_flag, 'update_con_flag': update_con_flag,
-                       'mother_occ': mother_occ, 'con': con, 'assis': assis, 'hd': hd, 'hd1': hd1, 'last_clicked': last_clicked, 'x': x})
+                       'mother_occ': mother_occ, 'con': con, 'assis': assis, 'hd': hd, 'hd1': hd1, 'last_clicked': last_clicked, 'x': x, "year_range": year_range})
 
 
 @login_required(login_url='/accounts/login')
@@ -1178,6 +1181,7 @@ def staff_view(request):
             assis = Designation.objects.get(name='spacsassistant')
             hd = HoldsDesignation.objects.get(designation=con)
             hd1 = HoldsDesignation.objects.get(designation=assis)
+            year_range = range(2013, datetime.datetime.now().year)
 
             last_clicked = ''
             try:
@@ -1190,7 +1194,7 @@ def staff_view(request):
                           {'mcm': mcm, 'student': student,
                            'awards': awards, 'gold': gold,
                            'silver': silver, 'dandm': dandm, 'winners_list': winners_list,
-                           'con': con, 'assis': assis, 'hd': hd, 'hd1': hd1, 'last_clicked': last_clicked})
+                           'con': con, 'assis': assis, 'hd': hd, 'hd1': hd1, 'last_clicked': last_clicked, "year_range": year_range})
 
     else:
         try:
@@ -1225,6 +1229,7 @@ def staff_view(request):
             assis = Designation.objects.get(name='spacsassistant')
             hd = HoldsDesignation.objects.get(designation=con)
             hd1 = HoldsDesignation.objects.get(designation=assis)
+            year_range = range(2013, datetime.datetime.now().year)
 
             last_clicked = ''
             try:
@@ -1237,7 +1242,7 @@ def staff_view(request):
                           {'mcm': mcm, 'student': student,
                            'awards': awards, 'gold': gold,
                            'silver': silver, 'dandm': dandm, 'winners': winners,
-                           'con': con, 'assis': assis, 'hd': hd, 'hd1': hd1, 'last_clicked': last_clicked})
+                           'con': con, 'assis': assis, 'hd': hd, 'hd1': hd1, 'last_clicked': last_clicked, "year_range": year_range})
         except:
             print("error in try")
 
@@ -1253,7 +1258,8 @@ def staff_view(request):
         assis = Designation.objects.get(name='spacsassistant')
         hd = HoldsDesignation.objects.get(designation=con)
         hd1 = HoldsDesignation.objects.get(designation=assis)
-
+        year_range = range(2013, datetime.datetime.now().year)
+        
         last_clicked = ''
         try:
             last_clicked = request.session['last_clicked']
@@ -1266,7 +1272,7 @@ def staff_view(request):
                       {'mcm': mcm, 'student': student,
                        'awards': awards, 'gold': gold,
                        'silver': silver, 'dandm': dandm, 'winners': winners,
-                       'con': con, 'assis': assis, 'hd': hd, 'hd1': hd1, 'last_clicked': last_clicked})
+                       'con': con, 'assis': assis, 'hd': hd, 'hd1': hd1, 'last_clicked': last_clicked, "year_range": year_range})
 
 #  This view is created for the rest of audience excluding students, spacs convenor and spacs assistant
 
