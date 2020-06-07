@@ -3,27 +3,27 @@ from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
-from .forms import EstateForm, WorkForm, InventoryTypeForm
-from .models import Estate, WorkType, Work, SubWork, Inventory, InventoryType
+from .forms import BuildingForm, WorkForm, InventoryTypeForm
+from .models import Building, Work, SubWork, Inventory, InventoryType
 
 
 @login_required(login_url='/accounts/login/')
 def estate(request):
 
-    estates = Estate.objects.all()
+    buildings = Building.objects.all()
 
     context = {
         'title': "Estate Module",
-        'estates': Estate.objects.all(),
-        # 'estates': {
-        #     'All': estates,
-        #     'Complete': estates.exclude(dateConstructionCompleted=None),
-        #     'Incomplete': estates.filter(dateConstructionCompleted=None)
+        'buildings': Building.objects.all(),
+        # 'buildings': {
+        #     'All': buildings,
+        #     'Complete': buildings.exclude(dateConstructionCompleted=None),
+        #     'Incomplete': buildings.filter(dateConstructionCompleted=None)
         # },
         'WORK_CHOICES': Work.WORK_CHOICES,
         'works': Work.objects.all(),
         'inventoryTypes': InventoryType.objects.all(),
-        'estateForm': EstateForm(),
+        'buildingForm': BuildingForm(),
         'workForm': WorkForm(),
         'inventoryTypeForm': InventoryTypeForm(),
     }
@@ -32,47 +32,47 @@ def estate(request):
 
 
 @require_POST
-def newEstate(request):
+def newBuilding(request):
 
-    newEstateForm = EstateForm(request.POST)
+    newBuildingForm = BuildingForm(request.POST)
 
-    if newEstateForm.is_valid():
-        new_Estate = newEstateForm.save()
+    if newBuildingForm.is_valid():
+        new_Building = newBuildingForm.save()
         messages.success(
-            request, f'New Estate Created: { new_Estate.name }')
+            request, f'New Building Created: { new_Building.name }')
         return redirect('estate_module_home')
 
-    for label, errors in newEstateForm.errors.items():
+    for label, errors in newBuildingForm.errors.items():
         for error in errors:
             messages.error(request, f'{ label }: { error }')
     return redirect('estate_module_home')
 
 
 @require_POST
-def editEstate(request, estate_id):
+def editBuilding(request, building_id):
 
-    estate = Estate.objects.get(pk=estate_id)
+    building = Building.objects.get(pk=building_id)
 
-    editEstateForm = EstateForm(request.POST, instance=estate)
+    editBuildingForm = BuildingForm(request.POST, instance=building)
 
-    if editEstateForm.is_valid():
-        editedEstate = editEstateForm.save()
-        messages.success(request, f'Estate Updated: { editedEstate.name }')
+    if editBuildingForm.is_valid():
+        editedBuilding = editBuildingForm.save()
+        messages.success(request, f'Building Updated: { editedBuilding.name }')
         return redirect('estate_module_home')
 
-    for label, errors in editEstateForm.errors.items():
+    for label, errors in editBuildingForm.errors.items():
         for error in errors:
             messages.error(request, f'{ label }: { error }')
     return redirect('estate_module_home')
 
 
 @require_POST
-def deleteEstate(request, estate_id):
+def deleteBuilding(request, building_id):
 
-    estate = Estate.objects.get(pk=estate_id)
-    estate_name = estate.name
-    estate.delete()
-    messages.success(request, f'Estate Deleted: { estate_name }')
+    building = Building.objects.get(pk=building_id)
+    building_name = building.name
+    building.delete()
+    messages.success(request, f'Building Deleted: { building_name }')
     return redirect('estate_module_home')
 
 

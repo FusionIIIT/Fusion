@@ -1,75 +1,79 @@
 {% csrf_token %}
 <div class="ui error message"></div>
 <div class="required field">
-    {{ estateForm.name.label_tag }}
-    {{ estateForm.name }}
+    {{ buildingForm.name.label_tag }}
+    {{ buildingForm.name }}
 </div>
 
 <div class="four fields">
     <div class="required field">
-        {{ estateForm.dateIssued.label_tag }}
+        {{ buildingForm.dateIssued.label_tag }}
 
         <div class="ui calendar">
             <div class="ui input left icon">
                 <i class="calendar icon"></i>
-                {{ estateForm.dateIssued }}
+                {{ buildingForm.dateIssued }}
             </div>
         </div>
     </div>
 
     <div class="field">
-        {{ estateForm.dateConstructionStarted.label_tag }}
+        {{ buildingForm.dateConstructionStarted.label_tag }}
 
         <div class="ui calendar">
             <div class="ui input left icon">
                 <i class="calendar icon"></i>
-                {{ estateForm.dateConstructionStarted }}
+                {{ buildingForm.dateConstructionStarted }}
             </div>
         </div>
     </div>
 
     <div class="field">
-        {{ estateForm.dateConstructionCompleted.label_tag }}
+        {{ buildingForm.dateConstructionCompleted.label_tag }}
 
         <div class="ui calendar">
             <div class="ui input left icon">
                 <i class="calendar icon"></i>
-                {{ estateForm.dateConstructionCompleted }}
+                {{ buildingForm.dateConstructionCompleted }}
             </div>
         </div>
     </div>
 
     <div class="field">
-        {{ estateForm.dateOperational.label_tag }}
+        {{ buildingForm.dateOperational.label_tag }}
 
         <div class="ui calendar">
             <div class="ui input left icon">
                 <i class="calendar icon"></i>
-                {{ estateForm.dateOperational }}
+                {{ buildingForm.dateOperational }}
             </div>
         </div>
     </div>
 </div>
 
-<div class="two fields">
+<div class="three fields">
     <div class="field">
-        {{ estateForm.constructionCostEstimated.label_tag }}
+        {{ buildingForm.constructionCostEstimated.label_tag }}
 
         <div class="ui left icon input">
-            {{ estateForm.constructionCostEstimated }}
+            {{ buildingForm.constructionCostEstimated }}
             <i class="rupee sign icon"></i>
         </div>
 
     </div>
 
     <div class="field">
-        {{ estateForm.constructionCostActual.label_tag }}
+        {{ buildingForm.constructionCostActual.label_tag }}
 
         <div class="ui left icon input">
-            {{ estateForm.constructionCostActual }}
+            {{ buildingForm.constructionCostActual }}
             <i class="rupee sign icon"></i>
         </div>
+    </div>
 
+    <div class="field">
+        {{ buildingForm.status.label_tag }}
+        {{ buildingForm.status }}
     </div>
 </div>
 
@@ -80,10 +84,10 @@
 
 <div class="three fields">
     <div class="field">
-        {{ estateForm.area.label_tag }}
+        {{ buildingForm.area.label_tag }}
 
         <div class="ui right labeled input">
-            {{ estateForm.area }}
+            {{ buildingForm.area }}
             <div class="ui basic label">
                 acres
             </div>
@@ -91,20 +95,20 @@
 
     </div>
     <div class="field">
-        {{ estateForm.numRooms.label_tag }}
-        {{ estateForm.numRooms }}
+        {{ buildingForm.numRooms.label_tag }}
+        {{ buildingForm.numRooms }}
 
     </div>
 
     <div class="field">
-        {{ estateForm.numWashrooms.label_tag }}
-        {{ estateForm.numWashrooms }}
+        {{ buildingForm.numWashrooms.label_tag }}
+        {{ buildingForm.numWashrooms }}
     </div>
 </div>
 
 <div class="field">
-    {{ estateForm.remarks.label_tag }}
-    {{ estateForm.remarks }}
+    {{ buildingForm.remarks.label_tag }}
+    {{ buildingForm.remarks }}
 </div>
 <script>
     $('#{{ form_id }}')
@@ -114,7 +118,7 @@
                     identifier: 'name',
                     rules: [{
                         type: 'empty',
-                        prompt: 'Estate name cannot be blank'
+                        prompt: 'Building name cannot be blank'
                     }]
                 },
                 dateIssued: {

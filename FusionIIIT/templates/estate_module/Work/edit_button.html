@@ -33,13 +33,15 @@
                         .form('set values', {
                             name: '{% if work.name %}{{ work.name }}{% endif %}',
                             workType: '{% if work.workType %}{{ work.workType }}{% endif %}',
-                            estate: '{% if work.estate %}{{ work.estate.id }}{% endif %}',
+                            building: '{% if work.building %}{{ work.building.id }}{% endif %}',
                             contractorName: '{% if work.contractorName %}{{ work.contractorName }}{% endif %}',
                             dateIssued: '{% if work.dateIssued %}{{ work.dateIssued }}{% endif %}',
                             dateStarted: '{% if work.dateStarted %}{{ work.dateStarted }}{% endif %}',
                             dateCompleted: '{% if work.dateCompleted %}{{ work.dateCompleted }}{% endif %}',
                             costEstimated: '{% if work.costEstimated %}{{ work.costEstimated }}{% endif %}',
                             costActual: '{% if work.costActual %}{{ work.costActual }}{% endif %}',
+                            status: '{{ work.status }}',
+                            verified: '{{ work.verified }}',
                             remarks: '{% if work.remarks %}{{ work.remarks }}{% endif %}',
                         });
                     /*$('.edit_{{ menuitem }}.modal #id_name')

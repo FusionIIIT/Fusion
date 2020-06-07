@@ -30,9 +30,9 @@
                             <td>
                                 {{ work.name }}
                             </td>
-                            <td>{{ work.status }}</td>
+                            <td>{{ work.get_status_display }}</td>
                             <td>
-                                {{ work.estate.name }}
+                                {{ work.building.name }}
                             </td>
                             <td class="right aligned">
                                 {{ work.dateIssued|date:'j-m-Y' }}
@@ -41,7 +41,7 @@
                                 {% if work.costEstimated %}₹&nbsp;{{ work.costEstimated|intcomma }}{% endif %}
                             </td>
                             <td class="center aligned">
-                                work.isVerified
+                                {{ work.verified }}
                             </td>
                             <td class="center aligned">
                                 {% include 'estate_module/Work/edit_button.html' %}

@@ -1,0 +1,52 @@
+<button class="ui red button edit_{{ menuitem }}_{{ building.id }}">Edit</button>
+<script>
+    $('.coupled_{{ menuitem }}.modal')
+        .modal({
+            allowMultiple: true
+        });
+
+    $('.delete_{{ menuitem }}.modal')
+        .modal('attach events',
+            '.edit_{{ menuitem }}.modal .delete_{{ menuitem }}.button');
+
+    $('.edit_{{ menuitem }}_{{ building.id }}.button').on('click', function () {
+        $('.edit_{{ menuitem }}.modal')
+            .modal({
+                centered: false,
+            })
+            .modal({
+                onShow: function () {
+                    // change edit modal header
+                    $('.edit_{{ menuitem }}.modal .header').first()
+                        .text("{{ building.name }}");
+                    // change modal form action url
+                    $('.edit_{{ menuitem }}.modal form')
+                        .attr("action", "{% url 'edit_building' building.id %}");
+                    // change delete modal message
+                    $('.delete_{{ menuitem }}.modal .content p')
+                        .text("Are you sure you want to delete {{ building.name }}?");
+                    // change delete form action url
+                    $('.delete_{{ menuitem }}.modal form')
+                        .attr("action", "{% url 'delete_building' building.id %}");
+                    // prefill form
+                    $('.edit_{{ menuitem }}.modal form')
+                        .form('set values', {
+                            name: '{% if building.name %}{{ building.name }}{% endif %}',
+                            dateIssued: '{% if building.dateIssued %}{{ building.dateIssued }}{% endif %}',
+                            dateConstructionStarted: '{% if building.dateConstructionStarted %}{{ building.dateConstructionStarted }}{% endif %}',
+                            dateConstructionCompleted: '{% if building.dateConstructionCompleted %}{{ building.dateConstructionCompleted }}{% endif %}',
+                            dateOperational: '{% if building.dateOperational %}{{ building.dateOperational }}{% endif %}',
+                            constructionCostEstimated: '{% if building.constructionCostEstimated %}{{ building.constructionCostEstimated }}{% endif %}',
+                            constructionCostActual: '{% if building.constructionCostActual %}{{ building.constructionCostActual }}{% endif %}',
+                            status: '{{ building.status }}',
+                            verified: '{{ building.verified }}',
+                            numRooms: '{% if building.numRooms %}{{ building.numRooms }}{% endif %}',
+                            numWashrooms: '{% if building.numWashrooms %}{{ building.numWashrooms }}{% endif %}',
+                            remarks: '{% if building.remarks %}{{ building.remarks }}{% endif %}',
+                        });
+                }
+            })
+            .modal('setting', 'closable', false)
+            .modal('show');
+    });
+</script>

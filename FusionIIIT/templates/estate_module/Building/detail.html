@@ -1,9 +1,9 @@
 {% load humanize %}
 
-<button class="ui secondary button details {{ menuitem }}_{{ estate.id }}">Details</button>
-<div class="ui modal details {{ menuitem }}_{{ estate.id }}">
+<button class="ui secondary button details {{ menuitem }}_{{ building.id }}">Details</button>
+<div class="ui modal details {{ menuitem }}_{{ building.id }}">
     <div class="header">
-        {{ estate.name }}
+        {{ building.name }}
     </div>
     <div class="scrolling content">
         <div class="description">
@@ -27,59 +27,60 @@
                             <tbody>
                                 <tr>
                                     <td class="six wide">{{ menuitem }} Name</td>
-                                    <td class="name">{% if estate.name %} {{ estate.name }} {% endif %}</td>
+                                    <td class="name">{% if building.name %} {{ building.name }} {% endif %}</td>
                                 </tr>
 
                                 <tr>
                                     <td>Date Issued</td>
-                                    <td class="dateIssued">{% if estate.dateIssued %} {{ estate.dateIssued }}
+                                    <td class="dateIssued">{% if building.dateIssued %} {{ building.dateIssued }}
                                         {% endif %}</td>
                                 </tr>
 
                                 <tr>
                                     <td>Date Construction Started</td>
-                                    <td class="dateConstructionStarted">{% if estate.dateConstructionStarted %}
-                                        {{ estate.dateConstructionStarted }} {% endif %}</td>
+                                    <td class="dateConstructionStarted">{% if building.dateConstructionStarted %}
+                                        {{ building.dateConstructionStarted }} {% endif %}</td>
                                 </tr>
 
                                 <tr>
                                     <td>Date Construction Completed</td>
-                                    <td class="dateConstructionCompleted">{% if estate.dateConstructionCompleted %}
-                                        {{ estate.dateConstructionCompleted }} {% endif %}</td>
+                                    <td class="dateConstructionCompleted">{% if building.dateConstructionCompleted %}
+                                        {{ building.dateConstructionCompleted }} {% endif %}</td>
                                 </tr>
 
                                 <tr>
                                     <td>Date Operational</td>
-                                    <td class="dateOperational">{% if estate.dateOperational %}
-                                        {{ estate.dateOperational }}
+                                    <td class="dateOperational">{% if building.dateOperational %}
+                                        {{ building.dateOperational }}
                                         {% endif %}</td>
                                 </tr>
 
                                 <tr>
                                     <td>Construction Cost (Estimated)</td>
-                                    <td class="constructionCostEstimated">{% if estate.constructionCostEstimated %}
-                                        ₹&nbsp;{{ estate.constructionCostEstimated|intcomma }} {% endif %}</td>
+                                    <td class="constructionCostEstimated">{% if building.constructionCostEstimated %}
+                                        ₹&nbsp;{{ building.constructionCostEstimated|intcomma }} {% endif %}</td>
                                 </tr>
 
                                 <tr>
                                     <td>Construction Cost (Actual)</td>
-                                    <td class="constructionCostActual">{% if estate.constructionCostActual %}
-                                        ₹&nbsp;{{ estate.constructionCostActual|intcomma }} {% endif %}</td>
+                                    <td class="constructionCostActual">{% if building.constructionCostActual %}
+                                        ₹&nbsp;{{ building.constructionCostActual|intcomma }} {% endif %}</td>
                                 </tr>
 
                                 <tr>
                                     <td>Area</td>
-                                    <td class="area">{% if estate.area %} {{ estate.area }} acres {% endif %}</td>
+                                    <td class="area">{% if building.area %} {{ building.area }} acres {% endif %}</td>
                                 </tr>
 
                                 <tr>
                                     <td>Number of Rooms</td>
-                                    <td class="numRooms">{% if estate.numRooms %} {{ estate.numRooms }} {% endif %}</td>
+                                    <td class="numRooms">{% if building.numRooms %} {{ building.numRooms }} {% endif %}
+                                    </td>
                                 </tr>
 
                                 <tr>
                                     <td>Number of Washrooms</td>
-                                    <td class="numWashrooms">{% if estate.numWashrooms %} {{ estate.numWashrooms }}
+                                    <td class="numWashrooms">{% if building.numWashrooms %} {{ building.numWashrooms }}
                                         {% endif %}
                                     </td>
                                 </tr>
@@ -87,14 +88,14 @@
                         </table>
                     </div>
                 </div>
-                {% if estate.remarks %}
+                {% if building.remarks %}
                 <h4 class="ui horizontal divider header">
                     <i class="sticky note icon"></i>
                     Remarks
                 </h4>
                 <div class="ui two column centered grid">
                     <div class="twelve wide column">
-                        <p>{{ estate.remarks }}</p>
+                        <p>{{ building.remarks }}</p>
                     </div>
                 </div>
                 {% endif %}
@@ -102,7 +103,7 @@
             </div>
             {% for workType_CODE, menuitem in WORK_CHOICES %}
             <div class="ui tab basic segment" data-tab="{{ workType_CODE }}">
-                {% if estate.MW_List|length > 0 and workType_CODE == 'MW' or estate.CW_List|length > 0 and workType_CODE == 'CW' %}
+                {% if building.MW_List|length > 0 and workType_CODE == 'MW' or building.CW_List|length > 0 and workType_CODE == 'CW' %}
                 <table class="ui selectable celled sortable table">
                     <thead>
                         <tr>
@@ -113,7 +114,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for work in estate.work_set.all %}
+                        {% for work in building.work_set.all %}
                         {% if work.workType == workType_CODE %}
 
                         <tr>
@@ -141,7 +142,7 @@
                         <tr>
                             <th colspan="6">
                                 <button
-                                    class="ui right floated right labeled icon blue new_{{ menuitem }}_{{ estate.id }} button">
+                                    class="ui right floated right labeled icon blue new_{{ menuitem }}_{{ building.id }} button">
                                     <i class="plus icon"></i>
                                     New
                                 </button>
@@ -157,7 +158,7 @@
                             <i class="database icon"></i>
                             <div class="content">
                                 <div class="header">
-                                    No {{ menuitem }} Work found for {{ estate.name }}
+                                    No {{ menuitem }} Work found for {{ building.name }}
                                 </div>
                                 {% comment %} <p>Get the best news in your e-mail every day.</p> {% endcomment %}
                             </div>
@@ -165,7 +166,7 @@
 
                     </div>
                     <div class="row">
-                        <button class="ui right labeled icon blue new_{{ menuitem }}_{{ estate.id }} button">
+                        <button class="ui right labeled icon blue new_{{ menuitem }}_{{ building.id }} button">
                             <i class="plus icon"></i>
                             New
                         </button>
@@ -174,7 +175,7 @@
                 {% endif %}
 
                 <script>
-                    $('.new_{{ menuitem }}_{{ estate.id }}.button').on('click', function () {
+                    $('.new_{{ menuitem }}_{{ building.id }}.button').on('click', function () {
                         $('.new_{{ menuitem }}.modal')
                             .modal({
                                 centered: false
@@ -185,7 +186,7 @@
                                     $('.new_{{ menuitem }}.modal form')
                                         .form('set values', {
                                             workType: '{{ workType_CODE }}',
-                                            estate: '{{ estate.id }}',
+                                            building: '{{ building.id }}',
                                         });
                                 }
                             })
@@ -205,12 +206,12 @@
 </div>
 <script>
     $(document).ready(function () {
-        $('.{{ menuitem }}_{{ estate.id }}.details.modal')
+        $('.{{ menuitem }}_{{ building.id }}.details.modal')
             .modal({
                 centered: false
             })
             .modal('setting', 'closable', false)
-            .modal('attach events', '.{{ menuitem }}_{{ estate.id }}.details.button',
+            .modal('attach events', '.{{ menuitem }}_{{ building.id }}.details.button',
                 'show');
     });
 </script>
@@ -233,13 +234,13 @@
             .modal({
                 onShow: function () {
                     $('.details.modal .header')
-                        .text(estate.name);
+                        .text(building.name);
                     $('.details.modal tbody td#{{ menuitem }}_date_approval')
-                        .text(estate.date_approval);
+                        .text(building.date_approval);
                     $('.details.modal tbody td#{{ menuitem }}_date_start')
-                        .text(estate.date_start);
+                        .text(building.date_start);
                     $('.details.modal tbody td#{{ menuitem }}_amount')
-                        .text("₹ " + estate.amount)
+                        .text("₹ " + building.amount)
                 }
             })
             .modal('show');

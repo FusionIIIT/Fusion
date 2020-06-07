@@ -19,25 +19,25 @@
                     </thead>
                     <tbody>
 
-                        {% for estate in estates %}
-                        {% if tab_id == menuitem|add:"_All" or tab_id == menuitem|add:"_Complete" and estate.dateConstructionCompleted or tab_id == menuitem|add:"_Incomplete" and not estate.dateConstructionCompleted %}
+                        {% for building in buildings %}
+                        {% if tab_id == menuitem|add:"_All" or tab_id == menuitem|add:"_Complete" and building.dateConstructionCompleted or tab_id == menuitem|add:"_Incomplete" and not building.dateConstructionCompleted %}
 
                         <tr>
                             <td>
-                                {{ estate.name }}
+                                {{ building.name }}
                             </td>
                             <td class="center aligned">
-                                estate.status
+                                {{ building.get_status_display }}
                             </td>
                             <td class="right aligned">
-                                {{ estate.dateIssued|date:'j-m-Y' }}
+                                {{ building.dateIssued|date:'j-m-Y' }}
                             </td>
                             <td class="right aligned">
-                                {% if estate.constructionCostEstimated %}
-                                ₹&nbsp;{{ estate.constructionCostEstimated|intcomma }} {% endif %}
+                                {% if building.constructionCostEstimated %}
+                                ₹&nbsp;{{ building.constructionCostEstimated|intcomma }} {% endif %}
                             </td>
                             <td class="center aligned">
-                                estate.isVerified
+                                {{ building.verified }}
                             </td>
                             <td class="center aligned">
                                 {% include 'estate_module/'|add:menuitem|add:'/edit_button.html' %}

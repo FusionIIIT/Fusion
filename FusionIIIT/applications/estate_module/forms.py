@@ -1,14 +1,14 @@
 from django.forms import ModelForm, Textarea, TextInput, DateInput, NumberInput
-from .models import Estate, Work, SubWork, InventoryType, Inventory
+from .models import Building, Work, SubWork, InventoryType, Inventory
 
 
-class EstateForm(ModelForm):
+class BuildingForm(ModelForm):
     class Meta:
-        model = Estate
+        model = Building
         fields = '__all__'
         widgets = {
             'name': TextInput(attrs={
-                'placeholder': 'Enter name of estate'
+                'placeholder': 'Enter name of building'
             }),
             'dateIssued': DateInput(attrs={
                 'placeholder': 'Enter date',
@@ -52,7 +52,7 @@ class EstateForm(ModelForm):
             }),
         }
         labels = {
-            'name': 'Estate name',
+            'name': 'Building name',
             'dateIssued': 'Date Issued',
             'dateConstructionStarted': 'Construction Started',
             'dateConstructionCompleted': 'Construction Completed',
@@ -104,7 +104,7 @@ class WorkForm(ModelForm):
         labels = {
             'name': 'Name of work',
             'workType': 'Type of Work',
-            'estate': 'Estate',
+            'building': 'Building',
             'contractorName': 'Name of contractor',
             'dateIssued': 'Date Issued',
             'dateStarted': 'Date Started',
