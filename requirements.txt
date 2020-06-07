@@ -20,3 +20,4 @@ xhtml2pdf
 xlrd
 xlwt
 xlsxwriter
+jsonschema
