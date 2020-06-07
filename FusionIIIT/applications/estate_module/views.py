@@ -11,17 +11,26 @@ from .models import Building, Work, SubWork, Inventory, InventoryType
 def estate(request):
 
     buildings = Building.objects.all()
+    building_tabs = {
+        'Complete': buildings.exclude(dateConstructionCompleted=None),
+        'Incomplete': buildings.filter(dateConstructionCompleted=None),
+        'Operational': buildings.exclude(dateOperational=None),
+        'Delayed': buildings.filter(status=Building.DELAYED),
+        'On Schedule': buildings.filter(status=Building.ON_SCHEDULE)
+    }
+
+    works = Work.objects.all()
+    workTypes = {
+        'Construction': works.filter(workType=Work.CONSTRUCTION_WORK),
+        'Maintenance': works.filter(workType=Work.MAINTENANCE_WORK)
+    }
 
     context = {
         'title': "Estate Module",
         'buildings': Building.objects.all(),
-        # 'buildings': {
-        #     'All': buildings,
-        #     'Complete': buildings.exclude(dateConstructionCompleted=None),
-        #     'Incomplete': buildings.filter(dateConstructionCompleted=None)
-        # },
+        'building_tabs': building_tabs,
         'WORK_CHOICES': Work.WORK_CHOICES,
-        'works': Work.objects.all(),
+        'works': works,
         'inventoryTypes': InventoryType.objects.all(),
         'buildingForm': BuildingForm(),
         'workForm': WorkForm(),

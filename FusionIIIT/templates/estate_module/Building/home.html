@@ -1,13 +1,19 @@
 {% load static %}
-{% block buildings %}
 {% load humanize %}
 
-{% with tabnames="All Incomplete Complete" %}
+{% comment %} {% with tabnames="All Incomplete Complete" %} {% endcomment %}
+{% comment %} {% with tabnames="Incomplete Complete" %} {% endcomment %}
+
+
 
 <div class="ui pointing secondary menu">
-    {% for tabname in tabnames.split %}
-    <a class="blue {% if forloop.counter0 is 0 %}{{ "active" }}{% endif %} item"
-        data-tab="{{ menuitem }}_{{ tabname }}">
+
+    <a class="blue active item" data-tab="{{ menuitem }}_All">
+        All
+    </a>
+
+    {% for tabname, buildings in building_tabs.items %}
+    <a class="blue item" data-tab="{{ menuitem }}_{{ tabname }}">
         {{ tabname }}
     </a>
     {% endfor %}
@@ -16,13 +22,33 @@
 
 {% comment %} {% if  %}{% else %}{% endif %} {% endcomment %}
 
-{% include 'estate_module/'|add:menuitem|add:'/new.html' %}
-{% include 'estate_module/'|add:menuitem|add:'/edit.html' %}
 
-{% for tabname in tabnames.split %}
-{% include 'estate_module/'|add:menuitem|add:'/tab.html' with tab_id=menuitem|add:'_'|add:tabname %}
+
+<div class="ui active tab" data-tab="{{ menuitem }}_All">
+    {% if buildings|length > 0 %}
+    <button class="ui right labeled icon blue new_{{ menuitem }} button">
+        <i class="plus icon"></i>
+        New
+    </button>
+    {% endif %}
+    {% include 'estate_module/'|add:menuitem|add:'/tab.html' with tab_id=menuitem|add:'_All' %}
+</div>
+
+{% for tabname, buildings in building_tabs.items %}
+<div class="ui tab" data-tab="{{ menuitem }}_{{ tabname }}">
+    {% if buildings|length > 0 %}
+    <button class="ui right labeled icon blue new_{{ menuitem }} button">
+        <i class="plus icon"></i>
+        New
+    </button>
+    {% endif %}
+    {% include 'estate_module/'|add:menuitem|add:'/tab.html' with tab_id=menuitem|add:'_'|add:tabname %}
+</div>
 {% endfor %}
 
-{% endwith %}
+{% include 'estate_module/'|add:menuitem|add:'/edit_modal.html' %}
+{% include 'estate_module/'|add:menuitem|add:'/new_modal.html' %}
 
-{% endblock %}
+
+
+{% comment %} {% endwith %} {% endcomment %}

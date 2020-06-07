@@ -25,24 +25,21 @@ class Building(models.Model):
     remarks = models.TextField(null=True, blank=True)
     verified = models.BooleanField(default=False)
 
-    def CW_List(self):
-        return self.work_set.filter(workType='CW')
-
-    def MW_List(self):
-        return self.work_set.filter(workType='MW')
+    def works(self):
+        works_all = self.work_set.all()
+        workList = [
+            (Work.MAINTENANCE_WORK, 'Maintenance',
+             works_all.filter(workType=Work.MAINTENANCE_WORK)),
+            (Work.CONSTRUCTION_WORK, 'Construction',
+             works_all.filter(workType=Work.CONSTRUCTION_WORK))
+        ]
+        return workList
 
     class Meta:
         ordering = ['-id']
 
     def __str__(self):
         return self.name
-
-
-# class WorkType(models.Model):
-#     name = models.CharField(max_length=100)
-
-#     def __str__(self):
-#         return self.name
 
 
 class Work(models.Model):
@@ -54,7 +51,6 @@ class Work(models.Model):
         (MAINTENANCE_WORK, 'Maintenance'),
     ]
 
-    ONGOING = 'Ongoing'
     ON_SCHEDULE = 'OS'
     DELAYED = 'DL'
 
@@ -78,12 +74,6 @@ class Work(models.Model):
     costActual = models.IntegerField(null=True, blank=True)
     remarks = models.TextField(null=True, blank=True)
     verified = models.BooleanField(default=False)
-
-    # def status(self):
-    #     if self.dateStarted and not self.dateCompleted:
-    #         return self.ONGOING
-    #     else:
-    #         return ''
 
     class Meta:
         ordering = ['-id']

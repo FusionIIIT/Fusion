@@ -59,22 +59,6 @@ Estate
         {% if messages %}
         {% for message in messages %}
 
-        {% comment %} <div class="ui {{ message.tags }} message message_{{ forloop.counter0 }}">
-            <i class="close icon"></i>
-            <div class="header">
-                {{ message }}
-            </div>
-            <p>More detailed message</p>
-        </div>
-        <script>
-            $('.message_{{ forloop.counter0 }} .close')
-                .on('click', function () {
-                    $(this)
-                        .closest('.message')
-                        .transition('fade');
-                });
-        </script> {% endcomment %}
-
         <script>
             $('body')
                 .toast({

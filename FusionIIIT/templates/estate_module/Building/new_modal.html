@@ -1,12 +1,7 @@
-<button class="ui right labeled icon blue new_{{ menuitem }} button">
-    <i class="plus icon"></i>
-    New
-</button>
-
 {% with 'new_'|add:menuitem|add:'_form' as form_id %}
 <div class="ui modal new_{{ menuitem }}">
     <div class="header">
-        New {{menuitem }}
+        New {{ menuitem }}
     </div>
     <div class="scrolling content">
         <h4 class="ui horizontal divider header">

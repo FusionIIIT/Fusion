@@ -8,19 +8,21 @@
     <div class="scrolling content">
         <div class="description">
             <div class="ui pointing secondary menu">
-                <a class="item active" data-tab="specifications"><i class="bar chart icon"></i>Specifications</a>
-                {% for workType_CODE, menuitem in WORK_CHOICES %}
-                <a class="item" data-tab="{{ workType_CODE }}">
+                <a class="item active" data-tab="{{ menuitem }}_{{ building.id }}_specifications"><i
+                        class="bar chart icon"></i>Specifications</a>
+                {% comment %} {% for workType_CODE, menuitem in WORK_CHOICES %} {% endcomment %}
+                {% for workType_CODE, workType, works in building.works %}
+                <a class="item" data-tab="{{ menuitem }}_{{ building.id }}_{{ workType_CODE }}">
                     {% if workType_CODE == 'CW' %}
                     <i class="wrench icon"></i>
                     {% elif workType_CODE == 'MW' %}
                     <i class="tasks icon"></i>
                     {% endif %}
-                    {{ menuitem }} Works
+                    {{ workType }} Works
                 </a>
                 {% endfor %}
             </div>
-            <div class="ui tab basic segment active" data-tab="specifications">
+            <div class="ui tab basic segment active" data-tab="{{ menuitem }}_{{ building.id }}_specifications">
                 <div class="ui two column centered grid">
                     <div class="twelve wide column">
                         <table class="ui definition table">
@@ -101,22 +103,20 @@
                 {% endif %}
 
             </div>
-            {% for workType_CODE, menuitem in WORK_CHOICES %}
-            <div class="ui tab basic segment" data-tab="{{ workType_CODE }}">
-                {% if building.MW_List|length > 0 and workType_CODE == 'MW' or building.CW_List|length > 0 and workType_CODE == 'CW' %}
+            {% for workType_CODE, workType, works in building.works %}
+            <div class="ui tab basic segment" data-tab="{{ menuitem }}_{{ building.id }}_{{ workType_CODE }}">
+                {% if works|length > 0 %}
                 <table class="ui selectable celled sortable table">
                     <thead>
                         <tr>
-                            <th class="five wide column">{{ menuitem }} Work Name</th>
+                            <th class="five wide column">{{ workType }} Work Name</th>
                             <th class="two wide column">Issued Date</th>
                             <th class="two wide column right aligned">Estimated Cost</th>
                             <th colspan="2" class="one wide column"></th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for work in building.work_set.all %}
-                        {% if work.workType == workType_CODE %}
-
+                        {% for work in works %}
                         <tr>
                             <td>
                                 {{ work.name }}
@@ -128,21 +128,19 @@
                                 ₹&nbsp;{{ work.costEstimated|intcomma }}
                             </td>
                             <td class="center aligned">
-                                {% include 'estate_module/Work/edit_button.html' %}
+                                {% include 'estate_module/Work/edit_button.html' with menuitem=workType %}
                             </td>
                             <td class="center aligned">
-                                {% include 'estate_module/Work/detail.html' %}
+                                {% include 'estate_module/Work/detail.html' with menuitem=workType %}
                             </td>
                         </tr>
-
-                        {% endif %}
                         {% endfor %}
                     </tbody>
                     <tfoot>
                         <tr>
                             <th colspan="6">
                                 <button
-                                    class="ui right floated right labeled icon blue new_{{ menuitem }}_{{ building.id }} button">
+                                    class="ui right floated right labeled icon blue new_{{ workType }}_{{ building.id }} button">
                                     <i class="plus icon"></i>
                                     New
                                 </button>
@@ -158,15 +156,14 @@
                             <i class="database icon"></i>
                             <div class="content">
                                 <div class="header">
-                                    No {{ menuitem }} Work found for {{ building.name }}
+                                    No {{ workType }} Work found for {{ building.name }}
                                 </div>
-                                {% comment %} <p>Get the best news in your e-mail every day.</p> {% endcomment %}
                             </div>
                         </div>
 
                     </div>
                     <div class="row">
-                        <button class="ui right labeled icon blue new_{{ menuitem }}_{{ building.id }} button">
+                        <button class="ui right labeled icon blue new_{{ workType }}_{{ building.id }} button">
                             <i class="plus icon"></i>
                             New
                         </button>
@@ -175,15 +172,15 @@
                 {% endif %}
 
                 <script>
-                    $('.new_{{ menuitem }}_{{ building.id }}.button').on('click', function () {
-                        $('.new_{{ menuitem }}.modal')
+                    $('.new_{{ workType }}_{{ building.id }}.button').on('click', function () {
+                        $('.new_{{ workType }}.modal')
                             .modal({
                                 centered: false
                             })
                             .modal({
                                 onShow: function () {
                                     // prefill form
-                                    $('.new_{{ menuitem }}.modal form')
+                                    $('.new_{{ workType }}.modal form')
                                         .form('set values', {
                                             workType: '{{ workType_CODE }}',
                                             building: '{{ building.id }}',
