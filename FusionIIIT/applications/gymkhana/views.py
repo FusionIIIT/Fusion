@@ -6,15 +6,25 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.dateparse import parse_date
 from django.db.models import Q
 from bisect import bisect
-
+from django.contrib import messages
+from django.shortcuts import render, get_object_or_404, redirect
+from applications.filetracking.models import  File, Tracking
+from django.template.defaulttags import csrf_token
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.contrib.auth.decorators import login_required
+from django.db import IntegrityError
+from django.core import serializers
+from django.contrib.auth.models import User
+from timeit import default_timer as time
+from notification.views import office_module_notif
+from django.views.decorators.csrf import ensure_csrf_cookie
 from applications.academic_information.models import Student
 from applications.globals.models import *
 from datetime import datetime
 from django.core import serializers
 import json
-
 from .models import *
-
+from django.views.decorators.csrf import csrf_exempt,csrf_protect
 
 def coordinator_club(request):
 	for i in Club_info.objects.all():
@@ -22,7 +32,6 @@ def coordinator_club(request):
 		co_co = (str(i.co_coordinator)).split(" ")
 		if co[0] == str(request.user):
 			return(i)
-
 def delete_sessions(request):
 	selectedIds = request.POST['ids']
 	selectedIds = json.loads(selectedIds)
@@ -31,9 +40,147 @@ def delete_sessions(request):
 			delSession = Session_info.objects.get(id=i)
 			delSession.delete()
 		return HttpResponse("success")
-	except e:
+	except Exception as e:
 		print("An error was encountered")
 		return HttpResponse("error")
+
+
+def editsession(request, session_id):
+    event = Session_info.objects.get(pk=session_id)
+
+    if request.method == 'POST':
+        try:
+            body = request.POST
+            venue = body.get('venue_type')
+            session_poster = request.FILES.get('session_poster')
+            date = body.get('date')
+            start_time = body.get('start_time')
+            end_time = body.get('end_time')
+            desc = body.get('d_d')
+            club_name = coordinator_club(request)
+            res = conflict_algorithm_session(date, start_time, end_time, venue)
+            message = ""
+            print("in the post body")
+            print(res)
+            if (res == 'success'):
+                e = Session_info.objects.filter(id=session_id).update(club=club_name,
+                                                                  venue=venue, date=date,
+                                                                  start_time=start_time, end_time=end_time,
+                                                                  session_poster=session_poster, details=desc)
+                message += "Your form has been dispatched for further process"
+                print(message)
+                return redirect('/gymkhana/')
+            else:
+                message += "The selected time slot for the given date and venue conflicts with already booked session"
+                print(message)
+        except Exception as e:
+            res = "error"
+            message = "Some error occurred"
+            print(message, e)
+
+    ##Get Request
+    #  Session_info.objects(club=club_name,venue=venue,date=date,start_time=start_time,end_time=end_time,session_poster=session_poster, details=desc)
+    venue = []
+
+    for i in Constants.venue:
+        for j in i[1]:
+            venue.append(j[0])
+    context = {
+        'form': {
+            "venue": event.venue,
+            "session_poster": event.session_poster,
+            "date": datetime.datetime.strftime(event.date, '%Y-%m-%d'),
+            "start_time": event.start_time,
+            "end_time": event.end_time,
+            "desc": event.details,
+            "club_name": event.club,
+            "Venue": venue,
+            "id": session_id
+        }
+    }
+    # res = conflict_algorithm_event(date, start_time, end_time, venue)
+    template = 'gymkhanaModule/editsession.html'
+
+    return render(request, template, context)
+
+
+@csrf_exempt
+def delete_events(request):
+	selectedIds = request.POST['ids']
+	selectedIds = json.loads(selectedIds)
+	message = ""
+	try:
+		for i in selectedIds:
+			delEvent = Event_info.objects.get(id=i)
+			delEvent.delete()
+		return HttpResponse("success")
+	except Exception as e:
+		print("An error was encountered")
+		return HttpResponse("error")
+
+def edit_event(request,event_id):
+	event = Event_info.objects.get(pk=event_id)
+
+
+	if request.method == 'POST':
+		try:
+			body = request.POST
+			event_name = body.get('event_name')
+			incharge=body.get('incharge')
+			venue = body.get('venue_type')
+			event_poster = request.FILES.get('event_poster')
+			date = body.get('date')
+			start_time = body.get('start_time')
+			end_time = body.get('end_time')
+			desc = body.get('d_d')
+			club_name = coordinator_club(request)
+			res = conflict_algorithm_event(date, start_time, end_time, venue)
+			message = ""
+			print("in the post body")
+			print(res)
+			if(res == 'success'):
+				e = Event_info.objects.filter(id=event_id).update(club = club_name, event_name=event_name, incharge=incharge, venue = venue, date =date, start_time=start_time , end_time = end_time ,event_poster = event_poster , details = desc)
+				message += "Your form has been dispatched for further process"
+				print(message)
+				return redirect('/gymkhana/')
+			else:
+				message += "The selected time slot for the given date and venue conflicts with already booked session"
+				print(message)
+		except Exception as e:
+			res = "error"
+			message = "Some error occurred"
+			print(message,e)
+
+
+	##Get Request
+	#  Event_info(club = club_name, event_name=event_name, incharge=incharge, venue = venue, date =date, start_time=start_time , end_time = end_time ,event_poster = event_poster , details = desc)
+	venue = []
+
+
+	for i in Constants.venue:
+		for j in i[1]:
+			venue.append(j[0])
+	context = {
+		'form':{
+				"event_name":event.event_name,
+				"incharge":event.incharge,
+				"venue" : event.venue,
+				"event_poster" : event.event_poster,
+				"date":datetime.datetime.strftime(event.date,'%Y-%m-%d'),
+				"start_time": event.start_time,
+				"end_time" : event.end_time,
+				"desc" : event.details,
+				"club_name" : event.club,
+				"Venue": venue,
+				"id":event_id
+			}
+	}
+	# res = conflict_algorithm_event(date, start_time, end_time, venue)
+	template='gymkhanaModule/editevent.html'
+
+	return render(request,template,context)
+
+
 
 def delete_memberform(request):
 	selectedIds = request.POST['ids']
@@ -43,7 +190,7 @@ def delete_memberform(request):
 			delMemberform = Club_member.objects.get(id=i)
 			delMemberform.delete()
 		return HttpResponse("success")
-	except e:
+	except Exception as e:
 		print("An error was encountered")
 		return HttpResponse("error")
 
@@ -188,9 +335,45 @@ def new_club(request):
 				}
 		content = json.dumps(content)
 		return HttpResponse(content)
+@login_required()
+def registration_form(request):
+	if request.method == 'POST':
+		res = "success"
+		message = "The form has been dispatched for further process"
+		try:
+			#getting form data
+			info = Student.objects.get(id__user=request.user).cpi
+			print(info)
+			user = request.POST.get("user_name")
+			roll = request.POST.get("roll")
+			cpi = request.POST.get("cpi")
+			branch = request.POST.get("branch")
+			programme = request.POST.get("programme")
 
 
-def retrun_content(roll, name, desig , club__ ):
+			#saving data to the database
+			reg = Registration_form(user_name=user, branch=branch, roll=roll, cpi=cpi, programme=programme)
+			print(reg)
+			reg.save()
+			# club_member = Club_member(member = student, club = club_name, description = pda)
+			# club_member.save()
+		except Exception as e:
+			print(f"{e}DSANKJDVBJBDAKSCBASKFBasjcbaskjvbaskvaslvbna")
+			res = "error"
+			message = "Some error occurred"
+
+		content = {
+			'status':res,
+			'message':message
+		}
+		content = json.dumps(content)
+		return HttpResponse(content)
+		# messages.success(request,"Successfully sent the application !!!")
+
+	# return redirect('/gymkhana/')
+
+
+def retrun_content(request, roll, name, desig , club__ ):
 	students =ExtraInfo.objects.all().filter(user_type = "student")
 	faculty = ExtraInfo.objects.all().filter(user_type = "faculty")
 	club_name = Club_info.objects.all()
@@ -198,7 +381,12 @@ def retrun_content(roll, name, desig , club__ ):
 	fest_budget = Fest_budget.objects.all()
 	club_budget = Club_budget.objects.all()
 	club_session = Session_info.objects.all()
+	# club_event = Event_info.objects.all()
+	club_event_report = Club_report.objects.all()
 	club_event = Club_report.objects.all()
+	registration_form = Registration_form.objects.all()
+	cpi = Student.objects.get(id__user=request.user).cpi
+	print(registration_form)
 
 	venue_type = []
 	id =0
@@ -215,8 +403,8 @@ def retrun_content(roll, name, desig , club__ ):
 		student = get_object_or_404(Student, id = extra)
 	else :
 		b = []
-	
-	# creating the data for the active voting polls	
+
+	# creating the data for the active voting polls
 	voting_polls = []
 	for poll in Voting_polls.objects.all():
 		event = {}
@@ -226,17 +414,17 @@ def retrun_content(roll, name, desig , club__ ):
 		event["desc"] = poll.description
 		event['exp_date'] = (poll.exp_date- datetime.datetime.now()).days if (datetime.datetime.now() - poll.exp_date).days <= 0 else 'expire'
 		event['pub_date'] = poll.exp_date.strftime("%d/%m/%Y")
-		event["created_by"] = poll.created_by.split(":")	
+		event["created_by"] = poll.created_by.split(":")
 		for choice in poll.voting_choices_set.all():
 			choices.append({'title':choice.title,'id':choice.id,'votes':choice.votes})
-				
+
 		event['choices'] = choices
 		event['max'] = poll.voting_choices_set.latest()
 		event['voters'] = poll.voting_voters_set.values_list('student_id', flat=True)
 		event['groups'] = json.loads(poll.groups)
-		
+
 		voting_polls.append(event)
-		
+
 	content = {
 		'Students' : students,
 		'Club_name' : club_name,
@@ -245,13 +433,16 @@ def retrun_content(roll, name, desig , club__ ):
 		'Fest_budget' : fest_budget,
 		'Club_budget' : club_budget,
 		'Club_session': club_session,
-		'Club_event' : club_event,
+		'Club_event' :   club_event,
+		'Club_event_report' : club_event_report,
 		'Curr_club' : b,
 		'venue' : venue,
 		'Curr_desig' : desig,
 		'club_details':club__,
-		'roll': str(roll),
-		'voting_polls': voting_polls 
+		'voting_polls': voting_polls,
+		'roll' : str(roll),
+		'registration_form': registration_form,
+		'cpi': cpi,
 	}
 	return content
 
@@ -296,11 +487,11 @@ def gymkhana(request):
 		# #    #    print name_
 		roll_.append(str(name_.name))
 	for i in Club_info.objects.all():
-		lines =str("");
+		lines =str("")
 		Types = lines.split(" ")
 		#print(Types[1])
-	club__ = coordinator_club(request)	
-	return render(request, "gymkhanaModule/gymkhana.html", retrun_content(roll, name, roll_ , club__ ))
+	club__ = coordinator_club(request)
+	return render(request, "gymkhanaModule/gymkhana.html", retrun_content(request, roll, name, roll_ , club__ ))
 
 
 @login_required
@@ -522,14 +713,14 @@ def new_session(request):
 			end_time = request.POST.get("end_time")
 			desc = request.POST.get("d_d")
 			club_name = coordinator_club(request)
-			res = conflict_algorithm(date, start_time, end_time, venue)
+			res = conflict_algorithm_session(date, start_time, end_time, venue)
 			message = ""
 			if(res == "success"):
 				session = Session_info(club = club_name, venue = venue, date =date, start_time=start_time , end_time = end_time ,session_poster = session_poster , details = desc)
 				session.save()
 				message += "Your form has been dispatched for further process"
 			else:
-				message += "The selected time slot for the given date and venue conflicts with already booked session" 
+				message += "The selected time slot for the given date and venue conflicts with already booked session"
 		except Exception as e:
 			res = "error"
 			message = "Some error occurred"
@@ -540,8 +731,41 @@ def new_session(request):
 		}
 		content = json.dumps(content)
 		return HttpResponse(content)
+@login_required
+def new_event(request):
+	print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+	if request.method == "POST":
+		club_name = None
+		res =None
+		message = None
+		try:
+			event_name=request.POST.get("event_name")
+			incharge=request.POST.get("incharge")
+			venue = request.POST.get("venue_type")
+			event_poster = request.FILES.get("event_poster")
+			date = request.POST.get("date")
+			start_time = request.POST.get("start_time")
+			end_time = request.POST.get("end_time")
+			desc = request.POST.get("d_d")
+			club_name = coordinator_club(request)
+			res = conflict_algorithm_event(date, start_time, end_time, venue)
+			message = ""
+			if(res == "success"):
+				event = Event_info(club = club_name, event_name=event_name, incharge=incharge, venue = venue, date =date, start_time=start_time , end_time = end_time ,event_poster = event_poster , details = desc)
+				event.save()
+				message += "Your form has been dispatched for further process"
+			else:
+				message += "The selected time slot for the given date and venue conflicts with already booked session"
+		except Exception as e:
+			res = "error"
+			message = "Some error occurred"
 
-		
+		content = {
+			'status':res,
+			'message':message
+		}
+		content = json.dumps(content)
+		return HttpResponse(content)
 
 @login_required
 def fest_budget(request):
@@ -666,6 +890,7 @@ def cancel(request):
 	return redirect ('/gymkhana/')
 
 @login_required
+@csrf_exempt
 def date_sessions(request):
 	if(request.is_ajax()):
 		value = request.POST.get('date')
@@ -676,8 +901,20 @@ def date_sessions(request):
 		dates = serializers.serialize('json', dates)
 		return HttpResponse(dates)
 
-#this algorithm checks if the passed slot time coflicts with any of already booked sessions 
-def conflict_algorithm(date, start_time, end_time, venue):
+@login_required
+def date_events(request):
+	if(request.is_ajax()):
+		value = request.POST.get('date')
+		print(f"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@{value}")
+		get_events = Event_info.objects.filter(date=value).order_by('start_time')
+		dates = []
+		for i in get_events:
+			dates.append(i)
+		dates = serializers.serialize('json', dates)
+		return HttpResponse(dates)
+
+#this algorithm checks if the passed slot time coflicts with any of already booked sessions
+def conflict_algorithm_session(date, start_time, end_time, venue):
 	#converting string to datetime type variable
 	start_time = datetime.datetime.strptime(start_time, '%H:%M').time()
 	end_time = datetime.datetime.strptime(end_time, '%H:%M').time()
@@ -694,7 +931,7 @@ def conflict_algorithm(date, start_time, end_time, venue):
 	else:
 		#this whole logic checks if the end time of any slot is less than the start time of next slot
 		counter = slots[0][1]
-		flag = 0 
+		flag = 0
 		i=1
 		while i < len(slots):
 			print(counter)
@@ -703,13 +940,11 @@ def conflict_algorithm(date, start_time, end_time, venue):
 				flag = 1
 				break
 			counter = slots[i][1]
-			i = i + 1 
+			i = i + 1
 		if (flag == 0):
 			return "success"
 		else:
 			return "error"
-
-
 
 ##helper function to get the target user for the voting poll
 def get_target_user(groups):
@@ -757,7 +992,7 @@ def voting_poll(request):
 			}
 			content = json.dumps(content)
 			return HttpResponse(content)
-	
+
 	return redirect('/gymkhana/')
 
 @login_required
@@ -776,7 +1011,252 @@ def vote(request,poll_id):
 			return redirect('/gymkhana/')
 		except Exception as e:
 			print(e)
-			return HttpResponse('error')	
+			return HttpResponse('error')
 	data = serializers.serialize('json',Voting_choices.objects.all())
 	return redirect('/gymkhana/')
-	
+
+#this algorithm checks if the passed slot time coflicts with any of already booked events
+
+
+def conflict_algorithm_event(date, start_time, end_time, venue):
+	#converting string to datetime type variable
+	start_time = datetime.datetime.strptime(start_time, '%H:%M').time()
+	end_time = datetime.datetime.strptime(end_time, '%H:%M').time()
+	booked_Events = Event_info.objects.filter(date=date, venue=venue)
+
+	#placing start time and end time in tuple fashion inside this list
+	slots = [(start_time, end_time)]
+	for value in booked_Events:
+		slots.append((value.start_time, value.end_time))
+	slots.sort()
+	#if there isn't any slot present for the selected day just book the event
+	if (len(slots) == 1):
+		return "success"
+	else:
+		#this whole logic checks if the end time of any slot is less than the start time of next slot
+		counter = slots[0][1]
+		flag = 0
+		i=1
+		while i < len(slots):
+			print(counter)
+			if (slots[i][0] < counter):
+				print("error ", i)
+				flag = 1
+				break
+			counter = slots[i][1]
+			i = i + 1
+		if (flag == 0):
+			return "success"
+		else:
+			return "error"
+
+
+@login_required(login_url = "/accounts/login/")
+def filetracking(request):
+    """
+        The function is used to create files by current user(employee).
+        It adds the employee(uploader) and file datails to a file(table) of filetracking(model)
+        if he intends to create file.
+
+        @param:
+                request - trivial.
+
+        @variables:
+
+
+                uploader - Employee who creates file.
+                subject - Title of the file.
+                description - Description of the file.
+                upload_file - Attachment uploaded while creating file.
+                file - The file object.
+                exations - The HoldsDesignation object.
+                context - Hotrainfo - The Extrainfo object.
+                holdsdesignlds data needed to make necessary changes in the template.
+    """
+    if request.method =="POST":
+        try:
+            if 'save' in request.POST:
+                print("********************")
+                uploader = request.user.extrainfo
+                print(uploader)
+                #ref_id = request.POST.get('fileid')
+                subject = request.POST.get('title')
+                description = request.POST.get('desc')
+                design = request.POST.get('design')
+                designation = Designation.objects.get(id=design)
+                upload_file = request.FILES.get('myfile')
+
+                File.objects.create(
+                    uploader=uploader,
+                    #ref_id=ref_id,
+                    description=description,
+                    subject=subject,
+                     designation=designation,
+                    upload_file=upload_file
+                )
+
+            if 'send' in request.POST:
+
+
+                uploader = request.user.extrainfo
+                print(uploader)
+                #ref_id = request.POST.get('fileid')
+                subject = request.POST.get('title')
+                description = request.POST.get('desc')
+                design = request.POST.get('design')
+                print("designation is ", design)
+                designation = Designation.objects.get(id = HoldsDesignation.objects.get(id = design).designation_id)
+
+                upload_file = request.FILES.get('myfile')
+
+                file = File.objects.create(
+                    uploader=uploader,
+                    #ref_id=ref_id,
+                    description=description,
+                    subject=subject,
+                    designation=designation,
+                    upload_file=upload_file
+                )
+
+
+                current_id = request.user.extrainfo
+                remarks = request.POST.get('remarks')
+
+                sender = request.POST.get('design')
+                current_design = HoldsDesignation.objects.get(id=sender)
+
+                receiver = request.POST.get('receiver')
+                receiver_id = User.objects.get(username=receiver)
+                print("Receiver_id = ")
+                print(receiver_id)
+                receive = request.POST.get('recieve')
+                print("recieve = ")
+                print(receive)
+                receive_designation = Designation.objects.filter(name=receive)
+                print("receive_designation = ")
+                print(receive_designation)
+                receive_design = receive_designation[0]
+                upload_file = request.FILES.get('myfile')
+                # return HttpResponse ("success")
+                Tracking.objects.create(
+                    file_id=file,
+                    current_id=current_id,
+                    current_design=current_design,
+                    receive_design=receive_design,
+                    receiver_id=receiver_id,
+                    remarks=remarks,
+                    upload_file=upload_file,
+                )
+                office_module_notif(request.user, receiver_id)
+                messages.success(request,'File sent successfully')
+
+        except IntegrityError:
+            message = "FileID Already Taken.!!"
+            return HttpResponse(message)
+
+
+
+    file = File.objects.all()
+    extrainfo = ExtraInfo.objects.all()
+    holdsdesignations = HoldsDesignation.objects.all()
+    designations = HoldsDesignation.objects.filter(user = request.user)
+
+    context = {
+        'file': file,
+        'extrainfo': extrainfo,
+        'holdsdesignations': holdsdesignations,
+        'designations': designations,
+    }
+    return render(request, 'filetracking/composefile.html', context)
+
+
+
+
+
+@login_required(login_url = "/accounts/login")
+def forward(request, id):
+    """
+            The function is used to forward files received by user(employee) from other
+            employees which are filtered from Tracking(table) objects by current user
+            i.e. receiver_id to other employees.
+            It also gets track of file created by uploader through all users involved in file
+            along with their remarks and attachments
+            It displays details file of a File(table) and remarks and attachments of user involved
+            in file of Tracking(table) of filetracking(model) in the template.
+
+            @param:
+                    request - trivial.
+                    id - id of the file object which the user intends to forward to other employee.
+
+            @variables:
+                    file - The File object.
+                    track - The Tracking object.
+                    remarks = Remarks posted by user.
+                    receiver = Receiver to be selected by user for forwarding file.
+                    receiver_id = Receiver_id who has been selected for forwarding file.
+                    upload_file = File attached by user.
+                    extrainfo = ExtraInfo object.
+                    holdsdesignations = HoldsDesignation objects.
+                    context - Holds data needed to make necessary changes in the template.
+    """
+    # start = timer()
+    file = get_object_or_404(File, id=id)
+    # end = timer()
+    # print (end-start)
+
+    # start = timer()
+    track = Tracking.objects.filter(file_id=file)
+    # end = timer()
+    # print (end-start)
+
+
+
+    if request.method == "POST":
+            if 'finish' in request.POST:
+                file.complete_flag = True
+                file.save()
+
+            if 'send' in request.POST:
+                current_id = request.user.extrainfo
+                remarks = request.POST.get('remarks')
+
+                sender = request.POST.get('sender')
+                current_design = HoldsDesignation.objects.get(id=sender)
+
+                receiver = request.POST.get('receiver')
+                receiver_id = User.objects.get(username=receiver)
+                print("Receiver_id = ")
+                print(receiver_id)
+                receive = request.POST.get('recieve')
+                print("recieve = ")
+                print(receive)
+                receive_designation = Designation.objects.filter(name=receive)
+                print("receive_designation = ")
+                print(receive_designation)
+                receive_design = receive_designation[0]
+                upload_file = request.FILES.get('myfile')
+                # return HttpResponse ("success")
+                Tracking.objects.create(
+                    file_id=file,
+                    current_id=current_id,
+                    current_design=current_design,
+                    receive_design=receive_design,
+                    receiver_id=receiver_id,
+                    remarks=remarks,
+                    upload_file=upload_file,
+                )
+    # start = timer()
+
+    extrainfo = ExtraInfo.objects.all()
+    holdsdesignations = HoldsDesignation.objects.all()
+    designations = HoldsDesignation.objects.filter(user=request.user)
+
+    context = {
+        # 'extrainfo': extrainfo,
+        # 'holdsdesignations': holdsdesignations,
+        'designations':designations,
+        'file': file,
+        'track': track,
+    }
+
+    return render(request, 'filetracking/forward.html', context)

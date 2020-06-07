@@ -282,8 +282,8 @@ def delete_post(request, id):
     if request.method == 'POST' and request.POST.get("delete"):
         ques = AskaQuestion.objects.filter(pk=id)[0]
         if ques.file:
-            print(settings.BASE_DIR+ques.file.url)
-            default_storage.delete(settings.BASE_DIR+ques.file.url)
+            pth = os.path.join(settings.BASE_DIR, '..')
+            default_storage.delete(pth+ques.file.url)
         ques.delete()
         return redirect ('/feeds/')
 
@@ -538,12 +538,15 @@ def profile(request, string):
                 Pr.bio = request.POST.get("bio")
         if request.FILES:
             if Pr.profile_picture :
-                default_storage.delete(settings.BASE_DIR+Pr.profile_picture.url)
+                pth = os.path.join(settings.BASE_DIR, '..')
+                default_storage.delete(pth+Pr.profile_picture.url)
             Pr.profile_picture = request.FILES["profile_img"]
         Pr.save()
     print("Profile Loading ......")
-
-    usr = User.objects.get(username=string)
+    try:
+        usr = User.objects.get(username=string)
+    except:
+        return redirect("/feeds")
     profile = Profile.objects.all().filter(user=usr)
     ques = AskaQuestion.objects.all().filter(user=usr)
     ans = AnsweraQuestion.objects.all().filter(user=usr)
@@ -565,7 +568,8 @@ def profile(request, string):
     else:
         prf = profile[0]
         if prf.profile_picture :
-            if os.path.exists(settings.BASE_DIR+prf.profile_picture.url):
+            pth = os.path.join(settings.BASE_DIR, '..')
+            if os.path.exists(pth+prf.profile_picture.url):
                 no_img=False
         else :
             no_img :True

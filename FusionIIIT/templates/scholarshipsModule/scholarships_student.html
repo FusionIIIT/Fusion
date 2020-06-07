@@ -35,7 +35,7 @@
             <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
 
-                 <a class="{% if last_clicked == 'Submit_previous_winner' or last_clicked == ''%}active item {% else %}item {% endif %}" data-tab="one">
+                 <a class="{% if last_clicked == 'SubmitPreviousWinner' or last_clicked == ''%}active item {% else %}item {% endif %}" data-tab="one">
                      Browse Award Catalogue
                      <i class="right floated chevron right icon"></i>
                  </a>
@@ -54,7 +54,7 @@
                     Spacs Members Details
                     <i class="right floated chevron right icon"></i>
                 </a>-->
-                <a class="{% if last_clicked == 'get_mcm_flag' or last_clicked == 'get_convocation_flag' or last_clicked == 'Submit_mcm' or last_clicked == 'Submit_silver' or last_clicked == 'Submit_gold' or last_clicked == 'Submit_dm' or last_clicked == 'studentapprovesubmit_mcm' or last_clicked == 'studentapprovesubmit_con' %}active item {% else %}item {% endif %}" data-tab="two">
+                <a class="{% if last_clicked == 'get_MCM_Flag' or last_clicked == 'getConvocationFlag' or last_clicked == 'Submit_MCM' or last_clicked == 'Submit_Silver' or last_clicked == 'Submit_Gold' or last_clicked == 'Submit_dm' or last_clicked == 'studentApproveSubmit_MCM' or last_clicked == 'studentApproveSubmit_Con' %}active item {% else %}item {% endif %}" data-tab="two">
                     Apply for Awards
                     <i class="right floated chevron right icon"></i>
                 </a>
@@ -106,12 +106,12 @@
                     {% comment %}The Publications about spacs  ends here!{% endcomment %}
 
                     {% comment %}The Publications awards  starts here!{% endcomment %}-->
-                    <div class="{% if last_clicked == 'Submit_previous_winner' or last_clicked == ''%}ui active tab segment {% else %}ui tab segment {% endif %}" data-tab="one">
+                    <div class="{% if last_clicked == 'SubmitPreviousWinner' or last_clicked == ''%}ui active tab segment {% else %}ui tab segment {% endif %}" data-tab="one">
                        {% block browsecatalogue %}
                                  {% include 'scholarshipsModule/browsecatalogue.html' with winners_list=winners_list mcm=mcm gold=gold silver=silver dandm=dandm awards=awards %}
                       {% endblock %}
                      </div>
-                        <div class="{% if last_clicked == 'get_mcm_flag' or last_clicked == 'get_convocation_flag' or last_clicked == 'Submit_mcm' or last_clicked == 'Submit_silver' or last_clicked == 'Submit_gold' or last_clicked == 'Submit_dm' or last_clicked == 'studentapprovesubmit_mcm' or last_clicked == 'studentapprovesubmit_con' %}ui active tab segment {% else %}ui tab segment {% endif %}" data-tab="two">
+                        <div class="{% if last_clicked == 'get_MCM_Flag' or last_clicked == 'getConvocationFlag' or last_clicked == 'Submit_MCM' or last_clicked == 'Submit_Silver' or last_clicked == 'Submit_Gold' or last_clicked == 'Submit_dm' or last_clicked == 'studentApproveSubmit_MCM' or last_clicked == 'studentApproveSubmit_Con' %}ui active tab segment {% else %}ui tab segment {% endif %}" data-tab="two">
                                 {% block awards %}
                                     {% include 'scholarshipsModule/applyNew.html' with mcm=mcm gold=gold silver=silver dandm=dandm source=source mother_occ=mother_occ awards=awards last_clicked=last_clicked x=x x_notif_con_flag=x_notif_con_flag x_notif_mcm_flag=x_notif_mcm_flag %}
                                 {% endblock %}
@@ -155,7 +155,7 @@
                     <div class="ui cards">
 
                     {% for m in x %}
-                    {% if m.release_id.award == 'Mcm Scholarship' and m.notification_mcm_flag == True  %}
+                    {% if m.release_id.award == 'Merit-cum-Means Scholarship' and m.notification_mcm_flag == True  %}
                     <div class="ui fluid card">
                         <div class="content">
                             <div class="header">
@@ -177,13 +177,13 @@
                               <form method="post" action="{% url 'spacs:spacs' %}" class="ui form" role="form">
                                 {% csrf_token %}
                                 <input type="hidden" name="release_id" value="{{m.release_id.id}}">
-                                <button name="studentapprovesubmit" value="{{ m.release_id.award }}" class="ui positive button" type="submit">Apply<i class="arrow alternate circle right icon"></i></button>
+                                <button name="studentApproveSubmit" value="{{ m.release_id.award }}" class="ui positive button" type="submit">Apply<i class="arrow alternate circle right icon"></i></button>
                               </form>
                               <div class="or"></div>
                               <form method="post" action="{% url 'spacs:spacs' %}" class="ui form" role="form">
                                 {% csrf_token %}
                                 <input type="hidden" name="release_id" value="{{m.release_id.id}}">
-                                <button name="studentdeclinesubmit" value="{{ m.release_id.award }}" class="ui button" type="submit">Ignore <i class="close icon"></i></button>
+                                <button name="studentDeclineSubmit" value="{{ m.release_id.award }}" class="ui button" type="submit">Ignore <i class="close icon"></i></button>
                               </form>
                             </div>
                         </div>
@@ -210,13 +210,13 @@
                               <form method="post" action="{% url 'spacs:spacs' %}" class="ui form" role="form">
                                 {% csrf_token %}
                                 <input type="hidden" name="release_id" value="{{m.release_id.id}}">
-                                <button name="studentapprovesubmit" value="{{ m.release_id.award }}"class="ui positive button" type="submit">Apply<i class="arrow alternate circle right icon"></i></button>
+                                <button name="studentApproveSubmit" value="{{ m.release_id.award }}"class="ui positive button" type="submit">Apply<i class="arrow alternate circle right icon"></i></button>
                               </form>
                               <div class="or"></div>
                               <form method="post" action="{% url 'spacs:spacs' %}" class="ui form" role="form">
                                 {% csrf_token %}
                                 <input type="hidden" name="release_id" value="{{m.release_id.id}}">
-                                <button name="studentdeclinesubmit" value="{{ m.release_id.award }}" class="ui button" type="submit">Ignore <i class="close icon"></i></button>
+                                <button name="studentDeclineSubmit" value="{{ m.release_id.award }}" class="ui button" type="submit">Ignore <i class="close icon"></i></button>
                               </form>
                             </div>
                         </div>

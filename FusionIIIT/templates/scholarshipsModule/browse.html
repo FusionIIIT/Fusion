@@ -95,14 +95,14 @@
                             <form method='POST'>
                                 {% csrf_token %}
                                 <input type="hidden" name="id" value="{{winner.student}}"/>
-                            <button class="ui blue button" name="Accept_dm" value="{{winner.id}}">Accept</button>
+                            <button class="ui blue button" name="Accept_DM" value="{{winner.id}}">Accept</button>
                                 </form>
                         </td>
                         <td>
                             <form method='POST'>
                                 {%csrf_token %}
                                 <input type="hidden" name="id" value="{{winner.student}}"/>
-                            <button class="ui blue button" name="Reject_dm" value="{{winner.id}}">Reject</button>
+                            <button class="ui blue button" name="Reject_DM" value="{{winner.id}}">Reject</button>
                             </form>
                         </td>
                         
@@ -179,14 +179,14 @@
                             <form method='POST'>
                                 {% csrf_token %}
                                 <input type="hidden" name="id" value="{{winner.id}}"/>
-                            <button class="ui blue button" name="Accept_mcm" value="{{winner.id}}">Accept</button>
+                            <button class="ui blue button" name="Accept_MCM" value="{{winner.id}}">Accept</button>
                                 </form>
                         </td>
                         <td>
                             <form method='POST'>
                                 {%csrf_token %}
                                 <input type="hidden" name="id" value="{{winner.id}}"/>
-                            <button class="ui blue button" name="Reject_mcm" value="{{winner.id}}">Reject</button>
+                            <button class="ui blue button" name="Reject_MCM" value="{{winner.id}}">Reject</button>
                             </form>
                         </td>
                         
@@ -251,14 +251,14 @@
                             <form method='POST'>
                                 {% csrf_token %}
                                 <input type="hidden" name="id" value="{{winner.id}}"/>
-                            <button class="ui blue button" name="Accept_silver" value="{{winner.id}}">Accept</button>
+                            <button class="ui blue button" name="Accept_Silver" value="{{winner.id}}">Accept</button>
                                 </form>
                         </td>
                         <td>
                             <form method='POST'>
                                 {%csrf_token %}
                                 <input type="hidden" name="id" value="{{winner.id}}"/>
-                            <button class="ui blue button" name="Reject_silver"  value="{{winner.id}}">Reject</button>
+                            <button class="ui blue button" name="Reject_Silver"  value="{{winner.id}}">Reject</button>
                             </form>
                         </td>
                         
@@ -324,14 +324,14 @@
                             <form method='POST'>
                                 {% csrf_token %}
                                 <input type="hidden" name="id" value="{{winner.id}}"/>
-                            <button class="ui blue button" name="Accept_gold" value="{{winner.id}}">Accept</button>
+                            <button class="ui blue button" name="Accept_Gold" value="{{winner.id}}">Accept</button>
                                 </form>
                         </td>
                         <td>
                             <form method='POST'>
                                 {%csrf_token %}
                                 <input type="hidden" name="id" value="{{winner.id}}"/>
-                            <button class="ui blue button" name="Reject_gold" value="{{winner.id}}">Reject</button>
+                            <button class="ui blue button" name="Reject_Gold" value="{{winner.id}}">Reject</button>
                             </form>
                         </td>
                         
