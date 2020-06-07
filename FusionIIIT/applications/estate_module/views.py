@@ -8,22 +8,18 @@ from .models import Estate, WorkType, Work, SubWork, Inventory, InventoryType
 
 
 @login_required(login_url='/accounts/login/')
-def oldEstate(request):
-
-    context = {
-        'buildings': buildings,
-        'projects': projects
-    }
-
-    return render(request, "estate/home.html", context)
-
-
-@login_required(login_url='/accounts/login/')
 def estate(request):
+
+    estates = Estate.objects.all()
 
     context = {
         'title': "Estate Module",
         'estates': Estate.objects.all(),
+        # 'estates': {
+        #     'All': estates,
+        #     'Complete': estates.exclude(dateConstructionCompleted=None),
+        #     'Incomplete': estates.filter(dateConstructionCompleted=None)
+        # },
         'WORK_CHOICES': Work.WORK_CHOICES,
         'works': Work.objects.all(),
         'inventoryTypes': InventoryType.objects.all(),
@@ -100,9 +96,14 @@ def editWork(request, work_id):
     editWorkForm = WorkForm(request.POST, instance=work)
 
     if editWorkForm.is_valid():
-        editWorkForm.save()
+        editedWork = editWorkForm.save()
+        messages.success(
+            request, f'Updated { editedWork.get_workType_display() } Work: { editedWork.name }')
         return redirect('estate_module_home')
 
+    for label, errors in editWorkForm.errors.items():
+        for error in errors:
+            messages.error(request, f'{ label }: { error }')
     return redirect('estate_module_home')
 
 
@@ -110,40 +111,9 @@ def editWork(request, work_id):
 def deleteWork(request, work_id):
 
     work = Work.objects.get(pk=work_id)
+    work_name = work.name
+    work_Type = work.get_workType_display()
     work.delete()
-    return redirect('estate_module_home')
 
-
-@require_POST
-def newInventoryType(request):
-
-    newInventoryTypeForm = InventoryTypeForm(request.POST)
-
-    if newInventoryTypeForm.is_valid():
-        new_InventoryType = newInventoryTypeForm.save()
-        return redirect('estate_module_home')
-
-    return redirect('estate_module_home')
-
-
-@require_POST
-def editInventoryType(request, inventoryType_id):
-
-    inventoryType = InventoryType.objects.get(pk=inventoryType_id)
-
-    editInventoryTypeForm = InventoryTypeForm(
-        request.POST, instance=inventoryType)
-
-    if editInventoryTypeForm.is_valid():
-        editInventoryTypeForm.save()
-        return redirect('estate_module_home')
-
-    return redirect('estate_module_home')
-
-
-@require_POST
-def deleteInventoryType(request, inventoryType_id):
-
-    inventoryType = InventoryType.objects.get(pk=inventoryType_id)
-    inventoryType.delete()
+    messages.success(request, f'{ work_Type } Work Deleted: { work_name }')
     return redirect('estate_module_home')

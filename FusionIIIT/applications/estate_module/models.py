@@ -72,7 +72,7 @@ class Work(models.Model):
         ordering = ['-id']
 
     def __str__(self):
-        return self.estate + ' - ' + self.workType + ' - ' + self.name
+        return self.estate.name + ' - ' + self.workType + ' - ' + self.name
 
 
 class SubWork(models.Model):

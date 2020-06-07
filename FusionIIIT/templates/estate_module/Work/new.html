@@ -29,6 +29,10 @@
 
 <script>
     $('.new_{{ menuitem }}.modal')
+        .modal({
+            centered: false
+        })
+        .modal('setting', 'closable', false)
         .modal('attach events', '.new_{{ menuitem }}.button', 'show');
 </script>
 

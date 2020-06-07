@@ -12,6 +12,9 @@
     $('.edit_{{ menuitem }}_{{ estate.id }}.button').on('click', function () {
         $('.edit_{{ menuitem }}.modal')
             .modal({
+                centered: false,
+            })
+            .modal({
                 onShow: function () {
                     // change edit modal header
                     $('.edit_{{ menuitem }}.modal .header').first()
@@ -41,6 +44,7 @@
                         });
                 }
             })
+            .modal('setting', 'closable', false)
             .modal('show');
     });
 </script>

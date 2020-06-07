@@ -11,24 +11,20 @@ class EstateForm(ModelForm):
                 'placeholder': 'Enter name of estate'
             }),
             'dateIssued': DateInput(attrs={
-                # 'type': 'date',
                 'placeholder': 'Enter date',
-                'type': 'text'
+                # 'type': 'date',
             }),
             'dateConstructionStarted': DateInput(attrs={
-                # 'type': 'date',
                 'placeholder': 'Enter date',
-                'type:': 'text'
+                # 'type': 'date',
             }),
             'dateConstructionCompleted': DateInput(attrs={
-                # 'type': 'date',
                 'placeholder': 'Enter date',
-                'type:': 'text'
+                # 'type': 'date',
             }),
             'dateOperational': DateInput(attrs={
-                # 'type': 'date',
                 'placeholder': 'Enter date',
-                'type:': 'text'
+                # 'type': 'date',
             }),
             'area': NumberInput(attrs={
                 'placeholder': 'Enter area',
@@ -82,19 +78,16 @@ class WorkForm(ModelForm):
                 'placeholder': 'Enter name of contractor'
             }),
             'dateIssued': DateInput(attrs={
-                # 'type': 'date',
                 'placeholder': 'Enter date',
-                'type': 'text'
+                # 'type': 'date',
             }),
             'dateStarted': DateInput(attrs={
-                # 'type': 'date',
                 'placeholder': 'Enter date',
-                'type': 'text'
+                # 'type': 'date',
             }),
             'dateCompleted': DateInput(attrs={
-                # 'type': 'date',
                 'placeholder': 'Enter date',
-                'type': 'text'
+                # 'type': 'date',
             }),
             'costEstimated': NumberInput(attrs={
                 'placeholder': 'Enter estimated construction cost',

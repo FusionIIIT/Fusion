@@ -109,13 +109,11 @@ Estate
 <script>
     $('select')
         .dropdown();
-    $(document).ready(function () {
-        $('.ui.calendar')
-            .calendar({
-                type: 'date',
-                startMode: 'year'
-            });
-    });
+    $('.ui.calendar')
+        .calendar({
+            type: 'date',
+            startMode: 'year'
+        });
 </script>
 
 {% endblock javascript %}

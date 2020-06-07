@@ -129,6 +129,10 @@
 </div>
 <script>
     $('.{{ menuitem }}_{{ work.id }}.details.modal')
+        .modal({
+            centered: false
+        })
+        .modal('setting', 'closable', false)
         .modal('attach events', '.{{ menuitem }}_{{ work.id }}.details.button',
             'show');
 </script>

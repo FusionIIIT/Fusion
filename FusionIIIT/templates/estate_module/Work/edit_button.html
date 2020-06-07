@@ -12,6 +12,9 @@
     $('.edit_{{ menuitem }}_{{ work.id }}.button').on('click', function () {
         $('.edit_{{ menuitem }}.modal')
             .modal({
+                centered: false
+            })
+            .modal({
                 onShow: function () {
                     // change edit modal header
                     $('.edit_{{ menuitem }}.modal .header').first()
@@ -62,6 +65,7 @@
                         .val("{{ work.remarks }}");*/
                 }
             })
+            .modal('setting', 'closable', false)
             .modal('show');
     });
 </script>
