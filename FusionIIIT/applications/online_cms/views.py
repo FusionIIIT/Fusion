@@ -32,7 +32,6 @@ def viewcourses(request):
     desc: Shows all the courses under the user
     '''
     user = request.user
-    
     extrainfo = ExtraInfo.objects.get(user=user)  #get the type of user
     if extrainfo.user_type == 'student':         #if student is using
         print(extrainfo)
