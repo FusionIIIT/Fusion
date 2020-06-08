@@ -49,6 +49,7 @@ def estate(request):
         'buildingForm': BuildingForm(),
         # 'WORK_CHOICES': Work.WORK_CHOICES,
         'works': works,
+        'workList': workList,
         'inventoryTypes': InventoryType.objects.all(),
         'workForm': WorkForm(),
         'inventoryTypeForm': InventoryTypeForm(),

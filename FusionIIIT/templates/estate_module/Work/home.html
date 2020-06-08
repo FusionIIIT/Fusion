@@ -1,54 +1,41 @@
 {% load static %}
+{% block buildings %}
 {% load humanize %}
 
-{% comment %} {% with tabnames="All Incomplete Complete" %} {% endcomment %}
-{% comment %} {% with tabnames="Incomplete Complete" %} {% endcomment %}
-
-
-
 <div class="ui pointing secondary menu">
-
     <a class="blue active item" data-tab="{{ menuitem }}_All">
         All
     </a>
-
-    {% for tabname, buildings in building_tabs.items %}
+    {% for tabname, works in work_tabs.items %}
     <a class="blue item" data-tab="{{ menuitem }}_{{ tabname }}">
         {{ tabname }}
     </a>
     {% endfor %}
-
 </div>
 
-{% comment %} {% if  %}{% else %}{% endif %} {% endcomment %}
-{% include 'estate_module/'|add:menuitem|add:'/edit_modal.html' %}
-
-
+{% include 'estate_module/Work/new.html' %}
+{% include 'estate_module/Work/edit.html' %}
 
 <div class="ui active tab" data-tab="{{ menuitem }}_All">
-    {% if buildings|length > 0 %}
+    {% if works|length > 0 %}
     <button class="ui right labeled icon blue new_{{ menuitem }} button">
         <i class="plus icon"></i>
         New
     </button>
     {% endif %}
-    {% include 'estate_module/'|add:menuitem|add:'/tab.html'%}
+    {% include 'estate_module/Work/tab.html'%}
 </div>
 
-{% for tabname, buildings in building_tabs.items %}
+{% for tabname, works in work_tabs.items %}
 <div class="ui tab" data-tab="{{ menuitem }}_{{ tabname }}">
-    {% if buildings|length > 0 %}
+    {% if works|length > 0 %}
     <button class="ui right labeled icon blue new_{{ menuitem }} button">
         <i class="plus icon"></i>
         New
     </button>
     {% endif %}
-    {% include 'estate_module/'|add:menuitem|add:'/tab.html' %}
+    {% include 'estate_module/Work/tab.html'%}
 </div>
 {% endfor %}
 
-{% include 'estate_module/'|add:menuitem|add:'/new_modal.html' %}
-
-
-
-{% comment %} {% endwith %} {% endcomment %}
+{% endblock %}

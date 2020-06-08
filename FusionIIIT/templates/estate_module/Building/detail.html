@@ -131,6 +131,10 @@
                             </td>
                             <td class="center aligned">
                                 {% include 'estate_module/Work/detail.html' with menuitem=workType %}
+                                {% comment %} <button
+                                    class="ui secondary button details {{ workType }}_{{ work.id }}">Details</button>
+                                {% endcomment %}
+
                             </td>
                         </tr>
                         {% endfor %}
@@ -189,6 +193,13 @@
                             .modal('setting', 'closable', false)
                             .modal('show');
                     });
+                    {% comment %} $('.{{ menuitem }}_{{ work.id }}.details.modal')
+                            .modal({
+                                centered: false
+                            })
+                            .modal('setting', 'closable', false)
+                            .modal('attach events', '.{{ menuitem }}_{{ work.id }}.details.button',
+                                'show'); {% endcomment %}
                 </script>
             </div>
             {% endfor %}
