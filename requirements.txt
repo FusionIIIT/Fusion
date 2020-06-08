@@ -11,6 +11,7 @@ django-semanticui-forms
 django-unused-media
 # gunicorn
 html_text
+jsonschema
 numpy
 pillow
 psycopg2-binary
@@ -20,4 +21,3 @@ xhtml2pdf
 xlrd
 xlwt
 xlsxwriter
-jsonschema
