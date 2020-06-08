@@ -26,12 +26,12 @@
                     
                     <div class="field">
                         <label>Event name</label>
-                        <input value="{{form.event_name}}" placeholder="Event Name" class="ui  largeinput" name="event_name" required></input>
+                        <input  placeholder="Event Name" class="ui  largeinput" name="event_name" required></input>
                     </div>
                     
                     <div class="eight wide field">
                         <label>Incharge</label>
-                        <input class="ui  largeinput" name="incharge" value="{{form.incharge}}"required></input>                    
+                        <input class="ui  largeinput" name="incharge" required></input>                    
                     </div>
                     
 
@@ -56,7 +56,7 @@
                         <label>Date</label>
                         <div class="ui input left icon">
                             <i class="calendar icon"></i>
-                            <input type="date" value={{form.date}} data-date-format="YYYY-MM-DD" placeholder="From" id = "events_date" name="date" oninput="showEvents()" required>
+                            <input type="date"  data-date-format="YYYY-MM-DD" placeholder="From" id = "events_date" name="date" oninput="showEvents()" required>
                         </div>
                       </div>
 
@@ -80,7 +80,7 @@
                     </div>
                     <div class="field">
                         <label>Details & Description</label>
-                        <textarea rows="2" name="d_d" required>{{form.desc}}</textarea>
+                        <textarea rows="2" name="d_d" required></textarea>
                     </div>
 
                     <div class="field">
@@ -98,6 +98,7 @@
     </div>
 
     
+    {% endblock %}
 
     
     {% block javascript %}
@@ -146,7 +147,6 @@
         });
     </script>
 
-{% endblock %}
 {% endblock %}
 
 
