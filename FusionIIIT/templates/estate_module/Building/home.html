@@ -8,12 +8,13 @@
 
 <div class="ui pointing secondary menu">
 
-    <a class="blue active item" data-tab="{{ menuitem }}_All">
+    {% comment %} <a class="blue active item" data-tab="{{ menuitem }}_All">
         All
-    </a>
+    </a> {% endcomment %}
 
-    {% for tabname, buildings in building_tabs.items %}
-    <a class="blue item" data-tab="{{ menuitem }}_{{ tabname }}">
+    {% for tabname, buildings in menuitem_data.tabs.items %}
+    <a class="blue {% if forloop.counter0 is 0 %}{{ "active" }}{% endif %} item"
+        data-tab="{{ menuitem }}_{{ tabname }}">
         {{ tabname }}
     </a>
     {% endfor %}
@@ -25,7 +26,7 @@
 
 
 
-<div class="ui active tab" data-tab="{{ menuitem }}_All">
+{% comment %} <div class="ui active tab" data-tab="{{ menuitem }}_All">
     {% if buildings|length > 0 %}
     <button class="ui right labeled icon blue new_{{ menuitem }} button">
         <i class="plus icon"></i>
@@ -33,10 +34,10 @@
     </button>
     {% endif %}
     {% include 'estate_module/'|add:menuitem|add:'/tab.html'%}
-</div>
+</div> {% endcomment %}
 
-{% for tabname, buildings in building_tabs.items %}
-<div class="ui tab" data-tab="{{ menuitem }}_{{ tabname }}">
+{% for tabname, buildings in menuitem_data.tabs.items %}
+<div class="ui {% if forloop.counter0 is 0 %}{{ "active" }}{% endif %} tab" data-tab="{{ menuitem }}_{{ tabname }}">
     {% if buildings|length > 0 %}
     <button class="ui right labeled icon blue new_{{ menuitem }} button">
         <i class="plus icon"></i>

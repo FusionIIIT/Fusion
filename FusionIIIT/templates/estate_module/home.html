@@ -30,8 +30,6 @@ Estate
 {% include 'dashboard/navbar.html' %}
 {% endblock navBar %}
 
-{% comment %} {% with menuitems="Estates Construction Maintenance Inventory" %} {% endcomment %}
-{% with menuitems="Building" %}
 <div class="ui stackable doubling grid">
 
     <div class="column">
@@ -45,16 +43,9 @@ Estate
         <div class="ui divider"></div>
 
         <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
-            {% for menuitem in menuitems.split %}
+            {% for menuitem, menuitem_data in menuitems.items %}
             <a class="{% if forloop.counter0 is 0 %}{{ "active" }}{% endif %} item" data-tab="{{ menuitem }}">
                 {{ menuitem }}
-                <i class="right floated chevron right icon"></i>
-            </a>
-            {% endfor %}
-
-            {% for workType_CODE, workType, works, work_tabs in workList %}
-            <a class="item" data-tab="{{ workType }}">
-                {{ workType }}
                 <i class="right floated chevron right icon"></i>
             </a>
             {% endfor %}
@@ -85,23 +76,16 @@ Estate
         {% endfor %}
         {% endif %}
 
-        {% for menuitem in menuitems.split %}
+        {% for menuitem, menuitem_data in menuitems.items %}
         <div class="ui {% if forloop.counter0 is 0 %}{{ "active" }}{% endif %} tab raised segment"
             data-tab="{{ menuitem }}">
-            {% include 'estate_module/'|add:menuitem|add:'/home.html' %}
-        </div>
-        {% endfor %}
-
-        {% for workType_CODE, menuitem, works, work_tabs in workList %}
-        <div class="ui tab raised segment" data-tab="{{ menuitem }}">
-            {% include 'estate_module/Work/home.html' %}
+            {% include menuitem_data.template_dir|add:'/home.html' %}
         </div>
         {% endfor %}
 
     </div>
 
 </div>
-{% endwith %}
 
 {% block javascript %}
 <script type='module'>

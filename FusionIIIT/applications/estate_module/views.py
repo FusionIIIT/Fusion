@@ -10,48 +10,68 @@ from .models import Building, Work, SubWork, Inventory, InventoryType
 @login_required(login_url='/accounts/login/')
 def estate(request):
 
+    workForm = WorkForm()
+
     buildings = Building.objects.all()
     building_tabs = {
+        'All': buildings,
         'Complete': buildings.exclude(dateConstructionCompleted=None),
         'Incomplete': buildings.filter(dateConstructionCompleted=None),
         'Operational': buildings.exclude(dateOperational=None),
         'Delayed': buildings.filter(status=Building.DELAYED),
         'On Schedule': buildings.filter(status=Building.ON_SCHEDULE)
     }
+    building_data = {
+        'tabs': building_tabs,
+        'form': BuildingForm(),
+        'template_dir': 'estate_module/Building',
+    }
 
     works = Work.objects.all()
-    maintenanceWorks = works.filter(workType=Work.MAINTENANCE_WORK)
-    constructionWorks = works.filter(workType=Work.CONSTRUCTION_WORK)
 
+    maintenanceWorks = works.filter(workType=Work.MAINTENANCE_WORK)
     maintenance_tabs = {
+        'All': maintenanceWorks,
         'Complete': maintenanceWorks.exclude(dateCompleted=None),
         'Incomplete': maintenanceWorks.filter(dateCompleted=None),
         'Delayed': maintenanceWorks.filter(status=Building.DELAYED),
         'On Schedule': maintenanceWorks.filter(status=Building.ON_SCHEDULE)
     }
+    maintenance_data = {
+        'tabs': maintenance_tabs,
+        'form': workForm,
+        'workType': Work.MAINTENANCE_WORK,
+        'template_dir': 'estate_module/Work',
+    }
 
+    constructionWorks = works.filter(workType=Work.CONSTRUCTION_WORK)
     construction_tabs = {
+        'All': constructionWorks,
         'Complete': constructionWorks.exclude(dateCompleted=None),
         'Incomplete': constructionWorks.filter(dateCompleted=None),
         'Delayed': constructionWorks.filter(status=Building.DELAYED),
         'On Schedule': constructionWorks.filter(status=Building.ON_SCHEDULE)
     }
-    workList = [
-        (Work.MAINTENANCE_WORK, 'Maintenance', maintenanceWorks, maintenance_tabs),
-        (Work.CONSTRUCTION_WORK, 'Construction',
-         constructionWorks, construction_tabs),
-    ]
+
+    construction_data = {
+        'tabs': construction_tabs,
+        'form': workForm,
+        'workType': Work.CONSTRUCTION_WORK,
+        'template_dir': 'estate_module/Work',
+    }
+
+    menuitems = {
+        'Building': building_data,
+        'Maintenance': maintenance_data,
+        'Construction': construction_data,
+    }
 
     context = {
         'title': "Estate Module",
-        'buildings': Building.objects.all(),
-        'building_tabs': building_tabs,
+        'menuitems': menuitems,
         'buildingForm': BuildingForm(),
-        # 'WORK_CHOICES': Work.WORK_CHOICES,
-        'works': works,
-        'workList': workList,
+        'workForm': workForm,
         'inventoryTypes': InventoryType.objects.all(),
-        'workForm': WorkForm(),
         'inventoryTypeForm': InventoryTypeForm(),
     }
 
