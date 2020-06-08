@@ -32,6 +32,8 @@ def coordinator_club(request):
 		co_co = (str(i.co_coordinator)).split(" ")
 		if co[0] == str(request.user):
 			return(i)
+
+@csrf_exempt
 def delete_sessions(request):
 	selectedIds = request.POST['ids']
 	selectedIds = json.loads(selectedIds)
@@ -179,7 +181,6 @@ def edit_event(request,event_id):
 	template='gymkhanaModule/editevent.html'
 
 	return render(request,template,context)
-
 
 
 def delete_memberform(request):
