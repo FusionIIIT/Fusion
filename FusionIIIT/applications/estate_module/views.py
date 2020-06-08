@@ -20,19 +20,36 @@ def estate(request):
     }
 
     works = Work.objects.all()
-    workTypes = {
-        'Construction': works.filter(workType=Work.CONSTRUCTION_WORK),
-        'Maintenance': works.filter(workType=Work.MAINTENANCE_WORK)
+    maintenanceWorks = works.filter(workType=Work.MAINTENANCE_WORK)
+    constructionWorks = works.filter(workType=Work.CONSTRUCTION_WORK)
+
+    maintenance_tabs = {
+        'Complete': maintenanceWorks.exclude(dateCompleted=None),
+        'Incomplete': maintenanceWorks.filter(dateCompleted=None),
+        'Delayed': maintenanceWorks.filter(status=Building.DELAYED),
+        'On Schedule': maintenanceWorks.filter(status=Building.ON_SCHEDULE)
     }
+
+    construction_tabs = {
+        'Complete': constructionWorks.exclude(dateCompleted=None),
+        'Incomplete': constructionWorks.filter(dateCompleted=None),
+        'Delayed': constructionWorks.filter(status=Building.DELAYED),
+        'On Schedule': constructionWorks.filter(status=Building.ON_SCHEDULE)
+    }
+    workList = [
+        (Work.MAINTENANCE_WORK, 'Maintenance', maintenanceWorks, maintenance_tabs),
+        (Work.CONSTRUCTION_WORK, 'Construction',
+         constructionWorks, construction_tabs),
+    ]
 
     context = {
         'title': "Estate Module",
         'buildings': Building.objects.all(),
         'building_tabs': building_tabs,
-        'WORK_CHOICES': Work.WORK_CHOICES,
+        'buildingForm': BuildingForm(),
+        # 'WORK_CHOICES': Work.WORK_CHOICES,
         'works': works,
         'inventoryTypes': InventoryType.objects.all(),
-        'buildingForm': BuildingForm(),
         'workForm': WorkForm(),
         'inventoryTypeForm': InventoryTypeForm(),
     }

@@ -27,7 +27,7 @@
 </div>
 {% endwith %}
 
-<script>
+<script type='module'>
     $('.new_{{ menuitem }}.modal')
         .modal({
             centered: false
@@ -59,7 +59,7 @@
 
 {{ buildings|json_script:"buildings-data" }}
 
-<script>
+<script type='module'>
     $('.new.button').on('click', function () {
         //const id = Number($(this).attr("data-id"));
         //const id = e.target.attributes["data-id"].nodeValue;

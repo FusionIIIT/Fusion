@@ -9,10 +9,10 @@ Estate
 
 <link rel="stylesheet" href="{% static 'estate_module/semantic.min.css' %}" />
 
-<script type="text/javascript" src="{% static 'estate_module/jquery.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'estate_module/semantic.min.js' %}"></script>
-<script type="text/javascript" src="{% static 'globals/js/tab.js' %}"></script>
-<script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+<script defer type="text/javascript" src="{% static 'estate_module/jquery.min.js' %}"></script>
+<script defer type="text/javascript" src="{% static 'estate_module/semantic.min.js' %}"></script>
+<script defer type="text/javascript" src="{% static 'globals/js/tab.js' %}"></script>
+<script defer type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
 
 {% endblock override_base_links %}
 
@@ -59,7 +59,7 @@ Estate
         {% if messages %}
         {% for message in messages %}
 
-        <script>
+        <script type='module'>
             $('body')
                 .toast({
                     position: 'top left',
@@ -79,7 +79,8 @@ Estate
         {% endif %}
 
         {% for menuitem in menuitems.split %}
-        <div class="ui {% if forloop.counter0 is 0 %}{{ "active" }}{% endif %} tab segment" data-tab="{{ menuitem }}">
+        <div class="ui {% if forloop.counter0 is 0 %}{{ "active" }}{% endif %} tab raised segment"
+            data-tab="{{ menuitem }}">
             {% include 'estate_module/'|add:menuitem|add:'/home.html' %}
         </div>
         {% endfor %}
@@ -90,7 +91,7 @@ Estate
 {% endwith %}
 
 {% block javascript %}
-<script>
+<script type='module'>
     $('select')
         .dropdown();
     $('.ui.calendar')

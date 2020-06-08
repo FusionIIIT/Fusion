@@ -10,7 +10,6 @@
             <div class="ui pointing secondary menu">
                 <a class="item active" data-tab="{{ menuitem }}_{{ building.id }}_specifications"><i
                         class="bar chart icon"></i>Specifications</a>
-                {% comment %} {% for workType_CODE, menuitem in WORK_CHOICES %} {% endcomment %}
                 {% for workType_CODE, workType, works in building.works %}
                 <a class="item" data-tab="{{ menuitem }}_{{ building.id }}_{{ workType_CODE }}">
                     {% if workType_CODE == 'CW' %}
@@ -171,7 +170,7 @@
                 </div>
                 {% endif %}
 
-                <script>
+                <script type='module'>
                     $('.new_{{ workType }}_{{ building.id }}.button').on('click', function () {
                         $('.new_{{ workType }}.modal')
                             .modal({
@@ -201,7 +200,7 @@
         </div>
     </div>
 </div>
-<script>
+<script type='module'>
     $(document).ready(function () {
         $('.{{ menuitem }}_{{ building.id }}.details.modal')
             .modal({
