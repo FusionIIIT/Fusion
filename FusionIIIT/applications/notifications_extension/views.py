@@ -7,9 +7,8 @@ from notifications.models import Notification
 
 def mark_as_read_and_redirect(request, slug=None):
     notification_id = slug2id(slug)
-
     notification = get_object_or_404(
         Notification, recipient=request.user, id=notification_id)
     notification.mark_as_read()
-
-    return HttpResponseRedirect(reverse(notification.data['url']))
+    complaint_id=notification.verb
+    return HttpResponseRedirect(reverse(notification.data['url'],kwargs={'detailcomp_id1':complaint_id}))

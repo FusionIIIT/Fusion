@@ -333,10 +333,20 @@ def user(request):
                                 status=status,
                                 complaint_finish=complaint_finish,
                                 upload_complaint=comp_file)
-                            
-                                    
-
-            x.save()
+            
+            c=StudentComplain.objects.filter(complainer=y,
+                                complaint_type=comp_type,
+                                location=location,
+                                specific_location=specific_location,
+                                details=details,
+                                status=status,
+                                complaint_finish=complaint_finish,
+                                upload_complaint=comp_file).count()
+            print(c)
+            if not StudentComplain.objects.filter(id=x.id).exists():
+                x.save() 
+            print(c)                      
+            
         historytemp = StudentComplain.objects.filter(complainer=y).order_by('-id')
         history = []
         j = 1
@@ -376,7 +386,7 @@ def user(request):
           dsgn = "rewacaretaker"
         caretaker_name = HoldsDesignation.objects.get(designation__name = dsgn)
         
-        complaint_system_notif(request.user, caretaker_name.user,'lodge_comp_alert')
+        complaint_system_notif(request.user, caretaker_name.user,'lodge_comp_alert',x.id)
 
         # return render(request, "complaintModule/complaint_user.html",
         #               {'history': history, 'comp_id': comp_id })
@@ -473,6 +483,7 @@ def save_comp(request):
                             complaint_finish=complaint_finish,
                             upload_complaint =comp_file)
 
+        print('lets check')
         x.save()
        # messages.info(request,'Complaint successfully launched.')
         # return HttpResponseRedirect('/complaint/user/')
