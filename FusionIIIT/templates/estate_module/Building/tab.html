@@ -23,9 +23,17 @@
                         <td>
                             {{ building.name }}
                         </td>
-                        <td class="center aligned">
+
+                        <td class="center aligned 
+                        {% if building.status == 'OS' %}
+                        positive
+                        {% elif building.status == 'DL' %}
+                        warning
+                        {% endif %}
+                        ">
                             {{ building.get_status_display }}
                         </td>
+
                         <td class="right aligned">
                             {{ building.dateIssued|date:'j-m-Y' }}
                         </td>
@@ -33,13 +41,13 @@
                             {% if building.constructionCostEstimated %}
                             ₹&nbsp;{{ building.constructionCostEstimated|intcomma }} {% endif %}
                         </td>
-                        <td class="center aligned">
-                            {% if building.verified is True %}
-                            <i class="check icon"></i>
-                            {% else %}
-                            <i class="times icon"></i>
-                            {% endif %}
-                        </td>
+
+                        {% if building.verified is True %}
+                        <td class="center aligned positive"><i class="check icon"></i></td>
+                        {% else %}
+                        <td class="center aligned warning"><i class="times icon"></i></td>
+                        {% endif %}
+
                         <td class="center aligned">
                             {% include menuitem_data.template_dir|add:'/edit_button.html' %}
 

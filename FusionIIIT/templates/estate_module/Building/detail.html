@@ -20,6 +20,12 @@
                     {{ workType }} Works
                 </a>
                 {% endfor %}
+                {% if building.remarks %}
+                <a class="item" data-tab="{{ menuitem }}_{{ building.id }}_remarks">
+                    <i class="sticky note icon"></i>
+                    Remarks
+                </a>
+                {% endif %}
             </div>
             <div class="ui tab basic segment active" data-tab="{{ menuitem }}_{{ building.id }}_specifications">
                 <div class="ui two column centered grid">
@@ -33,8 +39,16 @@
 
                                 <tr>
                                     <td> Status </td>
-                                    <td class="status">{% if building.status %} {{ building.get_status_display }}
-                                        {% endif %}</td>
+
+                                    <td class=" 
+                                    {% if building.status == 'OS' %}
+                                    positive
+                                    {% elif building.status == 'DL' %}
+                                    warning
+                                    {% endif %}
+                                    ">
+                                        {{ building.get_status_display }}
+                                    </td>
                                 </tr>
 
                                 <tr>
@@ -118,18 +132,6 @@
                         {% endif %}
                     </div>
                 </div>
-                {% if building.remarks %}
-                <h4 class="ui horizontal divider header">
-                    <i class="sticky note icon"></i>
-                    Remarks
-                </h4>
-                <div class="ui two column centered grid">
-                    <div class="twelve wide column">
-                        <p>{{ building.remarks }}</p>
-                    </div>
-                </div>
-                {% endif %}
-
             </div>
 
             {% for workType_CODE, workType, works in building.works %}
@@ -151,7 +153,13 @@
                             <td>
                                 {{ work.name }}
                             </td>
-                            <td class="center aligned">
+                            <td class="center aligned
+                                {% if work.status == 'OS' %}
+                                positive
+                                {% elif work.status == 'DL' %}
+                                warning
+                                {% endif %}
+                                ">
                                 {{ work.get_status_display }}
                             </td>
                             <td class="right aligned">
@@ -166,9 +174,6 @@
                             <td class="center aligned">
                                 <button
                                     class="ui secondary button details {{ workType }}_{{ work.id }}">Details</button>
-
-                                {% comment %} {% include 'estate_module/Work/detail.html' with menuitem=workType %}
-                                {% endcomment %}
                             </td>
                         </tr>
                         {% endfor %}
@@ -230,6 +235,9 @@
                 </script>
             </div>
             {% endfor %}
+            <div class="ui tab basic segment" data-tab="{{ menuitem }}_{{ building.id }}_remarks">
+                <p>{{ building.remarks }}</p>
+            </div>
         </div>
     </div>
     <div class="actions">

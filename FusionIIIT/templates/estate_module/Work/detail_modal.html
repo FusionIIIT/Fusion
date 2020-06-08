@@ -22,8 +22,15 @@
 
                             <tr>
                                 <td> Status </td>
-                                <td class="status">{% if work.status %} {{ work.get_status_display }}
-                                    {% endif %}</td>
+                                <td class=" 
+                                {% if work.status == 'OS' %}
+                                positive
+                                {% elif work.status == 'DL' %}
+                                warning
+                                {% endif %}
+                                ">
+                                    {{ work.get_status_display }}
+                                </td>
                             </tr>
 
                             <tr>
@@ -41,6 +48,8 @@
                                     &nbsp;
                                     <button
                                         class="ui secondary mini button details Building_{{ work.building.id }}">Details</button>
+                                    {% else %}
+                                    IIITDMJ
                                     {% endif %}
                                 </td>
 

@@ -22,17 +22,27 @@
                     {% for work in works %}
                     <tr>
                         <td>{{ work.name }}</td>
-                        <td class="center aligned">{{ work.get_status_display }}</td>
+
+                        <td class="center aligned 
+                        {% if work.status == 'OS' %}
+                        positive
+                        {% elif work.status == 'DL' %}
+                        warning
+                        {% endif %}
+                        ">
+                            {{ work.get_status_display }}
+                        </td>
+
                         <td>{% if work.building.name %}{{ work.building.name }}{% else %} IIITDMJ {% endif %}
                         </td>
                         <td class="right aligned">{{ work.dateIssued|date:'j-m-Y' }}</td>
-                        <td class="center aligned">
-                            {% if work.verified is True %}
-                            <i class="check icon"></i>
-                            {% else %}
-                            <i class="times icon"></i>
-                            {% endif %}
-                        </td>
+
+                        {% if work.verified is True %}
+                        <td class="center aligned positive"><i class="check icon"></i></td>
+                        {% else %}
+                        <td class="center aligned warning"><i class="times icon"></i></td>
+                        {% endif %}
+
                         <td class="center aligned">{% include menuitem_data.template_dir|add:'/edit_button.html' %}</td>
                         <td class="center aligned">
                             <button class="ui secondary button details {{ menuitem }}_{{ work.id }}">Details</button>

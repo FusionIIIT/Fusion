@@ -49,8 +49,8 @@ def estate(request):
         'All': constructionWorks,
         'Complete': constructionWorks.exclude(dateCompleted=None),
         'Incomplete': constructionWorks.filter(dateCompleted=None),
+        'On Schedule': constructionWorks.filter(status=Building.ON_SCHEDULE),
         'Delayed': constructionWorks.filter(status=Building.DELAYED),
-        'On Schedule': constructionWorks.filter(status=Building.ON_SCHEDULE)
     }
 
     construction_data = {
