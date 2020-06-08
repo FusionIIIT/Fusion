@@ -381,9 +381,8 @@ def retrun_content(request, roll, name, desig , club__ ):
 	fest_budget = Fest_budget.objects.all()
 	club_budget = Club_budget.objects.all()
 	club_session = Session_info.objects.all()
-	# club_event = Event_info.objects.all()
+	club_event = Event_info.objects.all()
 	club_event_report = Club_report.objects.all()
-	club_event = Club_report.objects.all()
 	registration_form = Registration_form.objects.all()
 	cpi = Student.objects.get(id__user=request.user).cpi
 	print(registration_form)
