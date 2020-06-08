@@ -277,9 +277,11 @@ function request_booking (event) {
         success: function(data) {
             console.log(name + " " + phone + " " + email + " " + address);
             alertModal(" Congratulations! Your booking has been placed successfully\n Please wait for confirmation");
+            
             setTimeout(function() {
-               location.reload();
-            }, 1500);
+                location.reload();
+             }, 1500);
+           
         },
         error: function(data, err) {
             console.log(name + " " + phone + " " + email + " " + address);

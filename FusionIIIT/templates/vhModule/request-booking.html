@@ -1,4 +1,3 @@
-
 {% load static %}
 {% block bookaroom %}
 
@@ -693,16 +692,29 @@
                 </div>
 
                 <div class="field">
-                    <label>Bill to be Settled by*</label>
-                                            
-                  
-                  <select name="cars" id="cars">
-                    <option value="Intender" selected>Intender</option>
-                    <option value="Visitor">Visitor</option>
-                    <option value="Institute">Institute/No Charges</option>
-                    <option value="Project no.">Project No.</option>
-                  </select>
-                </div>    
+                            <label>Bill to be Settled by*</label>
+                            <div class="ui fluid simple selection dropdown">
+                                <input name="bill_settlement" type="hidden">
+                                <i class="dropdown icon"></i>
+
+                                <div class="default text">Select</div>
+
+                                <div class="menu">
+                                    <div class="item" data-value="Visitor">
+                                        Visitor
+                                    </div>
+                                    <div class="item" data-value="Intender">
+                                        Intender
+                                    </div>
+                                    <div class="item" data-value="Institute / No Charges">
+                                        Institute / No Charges
+                                    </div>
+                                    <div class="item" data-value="Project No.">
+                                        Project No.
+                                    </div>
+                                </div>
+                            </div>
+                </div>
 
             
 
@@ -1094,3 +1106,5 @@
 </div>
 
 {% endblock %}
+
+

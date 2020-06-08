@@ -20,19 +20,19 @@
                       <label>Doctor</label>
                       <select id="doc" class="ui search fluid" name="doctor_id" required="true">
                         <option selected hidden>--SELECT--</option>
-                     <!--   {% for doctor in doctors %}
-                      <option value="{{doctor.id}}">{{doctor.doctor_name}}</option> -->
-                     <option value="Dr. Satish">Dr. Satish</option>
+                       {% for doctor in doctors %}
+                      <option value="{{doctor.id}}">{{doctor.doctor_name}}</option>
+                    <!-- <option value="Dr. Satish">Dr. Satish</option>
                      <option value="Dr. Vijay">Dr. Vijay</option>
                      <option value="Dr. Sharma">Dr. Sharma</option>
-                     <option value="Dr. kumar">Dr. Kumar</option>
-                       <!-- {% endfor %} -->
+                     <option value="Dr. kumar">Dr. Kumar</option> -->
+                       {% endfor %}
                       </select>
                   </div>
                         <div class="field">
                             <label>Date Of Appointment</label><p id="app_dte"></p>
-                            <select id="date" class="ui search fluid dropdown" name="date">
-                              <option selected hidden >--SELECT--</option>
+                            <input type="date" placeholder="From" id="date" name="date">
+                            <p id="dt"></p>
 
                             </select>
 						
@@ -49,7 +49,7 @@
                     <label><br></label>
 
                     <div >
-                      <input type="submit" id="appo" name="Submit" value="Submit" class="ui small right floated primary button" />
+                      <input type="button" id="amb_submit" name="amb_submit"  value="Submit"class="ui large right floated primary button" />
                     </div>
 
                 </div>
@@ -64,70 +64,63 @@
                                          return str.replace(/^\s+|\s+$/g,'');
                                        }
 				 
-                  $('#doc').change(function()
-                  {
-
-
-                      $.ajax({
-                      type:'post',
-                      url:'/healthcenter/student/',
-                      data: {
-                      csrfmiddlewaretoken: '{{ csrf_token }}',
-                      doctor:$("#doc").val(),
-                      },
-                      success: function(JSON){
-                        $("#date").empty();
-                        $.each(JSON, function(key, value) {
-                       $("#date").append("<option value="+value.pk +">" + value.fields.date+"-------"+value.fields.from_time+"-"+value.fields.to_time+"</option>");
-	                   });
-                    }
-                   });
-                 });
-						
 					
 					
-					
-                $('#appo').on('click',function(e){
-                     e.preventDefault();
+                 $('#amb_submit1').click(function(e)
+                                                  {
+                                                    var Date = document.getElementById('date').value;
+                                                    
+                                                    var start = new Date(Date);
+                                                    
 
-                     var tod = new Date(new Date().setHours(0, 0, 0, 0));
-                     var today = new Date(new Date());
-                     var now = today.getHours();
+                                                    var today = new Date(new Date().setHours(0, 0, 0, 0));
 
-                     if(trimfield(document.getElementById("description").value) == '')
-                       {
-                       $('#desc').html('*Please fill out the Description!');
-                       document.getElementById("description").focus();
-                        }
-																										
 
-                     else{
-                     $.ajax({
-                     type:'post',
-                     url:'/healthcenter/student/',
-                     data: {
-                     csrfmiddlewaretoken: '{{ csrf_token }}',
-                     doctor:$("#doc").val(),
-                     date:$("#date").val(),
-                     description:$("#description").val(),
-                     appointment:$("#appo").val(),
-                     },
-                     success: function(data){
-                        var dte = new Date(data.dt);
-                        dte.setHours(0, 0, 0, 0);
+                                                    $('#dt').html('');
+                                                    
+                                                    if ( +start < +today ) {
+                                                        $('#dt').html('You cannot enter a date before today!.');
+                                                        return false;
+                                                    }
+                                                   
 
-                         alert("Appointment requested.Check history for the status of appointment. ")
-                         document.getElementById("doc").value=""
-                         document.getElementById("date").value=""
-                         document.getElementById("description").value=" "
-                         $('#desc').html('');
-                         window.location.reload();
-                         $('#app_dte').html('');
+                                                   if(trimfield(document.getElementById("description").value) == '')
+                                                     {
+                                                           $('#desc').html('*Please fill out the details!');
+                                                           document.getElementById("description").focus();
+                                                      }
 
-                   }
-                  });
-                    }
-                });
+                                                   else{
+                                                    $.ajax({
+                                                      type:'post',
+                                                      url:'/healthcenter/student/',
+                                                      data: {
+                                                      csrfmiddlewaretoken: '{{ csrf_token }}',
+                                                      doctor_id:$("#doctor_id").val(),
+
+                                                      date:$("#date").val(),
+                                                      
+                                                      description:$("#description").val(),
+                                                      amb_submit1:$("#amb_submit1").val()
+                                                    },
+                                                      success: function(data){
+                                                      alert("Appointment fixed.");
+                                                      document.getElementById("doctor_id").value="";
+                                                      document.getElementById("date").value="";
+                                                    
+                                                      document.getElementById("desription").value="";
+                                                      window.location.reload();
+
+                                                      $('#doc').html('');
+                                                      $('#desc').html('');
+                                                      $('#app_dte').html('');
+                                                  
+
+                                                    }
+                                                  });
+                                                  }
+                                                });
+                
 
               </script>
 
