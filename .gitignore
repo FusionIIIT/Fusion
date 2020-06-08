@@ -67,6 +67,3 @@ node_modules/
 
 FusionIIIT/static/
 package-lock.json
-
-# idea files
-**/.idea/
