@@ -169,12 +169,13 @@ def scholarship_portal_notif(sender, recipient, type):
 
 
 
-def complaint_system_notif(sender, recipient, type):
-    url=''
+def complaint_system_notif(sender, recipient, type, complaint_id):
+
+    url=('complaint:detail2')
     module='Complaint System'
     sender = sender
     recipient = recipient
-    verb = ''
+    verb = complaint_id
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
