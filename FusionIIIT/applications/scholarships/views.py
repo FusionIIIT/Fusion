@@ -18,7 +18,7 @@ from .models import (Award_and_scholarship, Constants, Director_gold,
                      Proficiency_dm, Release, Notification)
 
 from notification.views import scholarship_portal_notif
-from .applications.scholarship.validations import MCM_list
+from .validations import MCM_list
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 # Create your views here.

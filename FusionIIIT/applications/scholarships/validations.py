@@ -56,6 +56,6 @@ MCM_list = [
     "bank_name",
     "loan_amount",
     "college_fee",
-    "college_name",,
+    "college_name",
     "annual_income",
 ]
