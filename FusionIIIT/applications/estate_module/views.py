@@ -16,10 +16,10 @@ def estate(request):
     building_tabs = {
         'All': buildings,
         'Complete': buildings.exclude(dateConstructionCompleted=None),
-        'Incomplete': buildings.filter(dateConstructionCompleted=None),
         'Operational': buildings.exclude(dateOperational=None),
+        'Incomplete': buildings.filter(dateConstructionCompleted=None),
+        'On Schedule': buildings.filter(status=Building.ON_SCHEDULE),
         'Delayed': buildings.filter(status=Building.DELAYED),
-        'On Schedule': buildings.filter(status=Building.ON_SCHEDULE)
     }
     building_data = {
         'tabs': building_tabs,
@@ -34,8 +34,8 @@ def estate(request):
         'All': maintenanceWorks,
         'Complete': maintenanceWorks.exclude(dateCompleted=None),
         'Incomplete': maintenanceWorks.filter(dateCompleted=None),
+        'On Schedule': maintenanceWorks.filter(status=Building.ON_SCHEDULE),
         'Delayed': maintenanceWorks.filter(status=Building.DELAYED),
-        'On Schedule': maintenanceWorks.filter(status=Building.ON_SCHEDULE)
     }
     maintenance_data = {
         'tabs': maintenance_tabs,
@@ -69,10 +69,6 @@ def estate(request):
     context = {
         'title': "Estate Module",
         'menuitems': menuitems,
-        'buildingForm': BuildingForm(),
-        'workForm': workForm,
-        'inventoryTypes': InventoryType.objects.all(),
-        'inventoryTypeForm': InventoryTypeForm(),
     }
 
     return render(request, "estate_module/home.html", context)
@@ -129,9 +125,14 @@ def newWork(request):
     newWorkForm = WorkForm(request.POST)
 
     if newWorkForm.is_valid():
-        new_Work = newWorkForm.save()
+        new_work = newWorkForm.save()
+        messages.success(
+            request, f'New { new_work.get_workType_display() } Work Created: { new_work.name }')
         return redirect('estate_module_home')
 
+    for label, errors in newBuildingForm.errors.items():
+        for error in errors:
+            messages.error(request, f'{ label }: { error }')
     return redirect('estate_module_home')
 
 

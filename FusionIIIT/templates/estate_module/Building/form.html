@@ -1,5 +1,7 @@
 {% csrf_token %}
 <div class="ui error message"></div>
+
+{% with menuitem_data.form as buildingForm %}
 <div class="required field">
     {{ buildingForm.name.label_tag }}
     {{ buildingForm.name }}
@@ -110,6 +112,8 @@
     {{ buildingForm.remarks.label_tag }}
     {{ buildingForm.remarks }}
 </div>
+{% endwith %}
+
 <script type='module'>
     $('#{{ form_id }}')
         .form({

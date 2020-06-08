@@ -8,10 +8,10 @@
                 <thead>
                     <tr>
                         <th class="four wide column">{{ menuitem }} Work Name</th>
-                        <th>Status</th>
-                        <th>Estate</th>
+                        <th class="center aligned">Status</th>
+                        <th>Building</th>
                         <th class="right aligned">Issued Date</th>
-                        <th class="center aligned">Verification</th>
+                        <th class="center aligned">Verified</th>
                         <th colspan="2" class="two wide column"></th>
 
                     </tr>
@@ -21,24 +21,22 @@
 
                     {% for work in works %}
                     <tr>
-                        <td>
-                            {{ work.name }}
+                        <td>{{ work.name }}</td>
+                        <td class="center aligned">{{ work.get_status_display }}</td>
+                        <td>{% if work.building.name %}{{ work.building.name }}{% else %} IIITDMJ {% endif %}
                         </td>
-                        <td>{{ work.get_status_display }}</td>
-                        <td>
-                            {{ work.building.name }}
-                        </td>
-                        <td class="right aligned">
-                            {{ work.dateIssued|date:'j-m-Y' }}
-                        </td>
+                        <td class="right aligned">{{ work.dateIssued|date:'j-m-Y' }}</td>
                         <td class="center aligned">
-                            {{ work.verified }}
+                            {% if work.verified is True %}
+                            <i class="check icon"></i>
+                            {% else %}
+                            <i class="times icon"></i>
+                            {% endif %}
                         </td>
+                        <td class="center aligned">{% include menuitem_data.template_dir|add:'/edit_button.html' %}</td>
                         <td class="center aligned">
-                            {% include 'estate_module/Work/edit_button.html' %}
-                        </td>
-                        <td class="center aligned">
-                            {% include 'estate_module/Work/detail.html' %}
+                            <button class="ui secondary button details {{ menuitem }}_{{ work.id }}">Details</button>
+                            {% include menuitem_data.template_dir|add:'/detail_modal.html' %}
                         </td>
                     </tr>
                     {% endfor %}

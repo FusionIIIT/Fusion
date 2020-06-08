@@ -12,7 +12,7 @@
                         <th class="center aligned">Status</th>
                         <th class="right aligned">Issued Date</th>
                         <th class="right aligned">Estimated Cost</th>
-                        <th class="center aligned">Verification</th>
+                        <th class="center aligned">Verified</th>
                         <th colspan="2" class="two wide column"></th>
                     </tr>
                 </thead>
@@ -34,14 +34,18 @@
                             ₹&nbsp;{{ building.constructionCostEstimated|intcomma }} {% endif %}
                         </td>
                         <td class="center aligned">
-                            {{ building.verified }}
+                            {% if building.verified is True %}
+                            <i class="check icon"></i>
+                            {% else %}
+                            <i class="times icon"></i>
+                            {% endif %}
                         </td>
                         <td class="center aligned">
-                            {% include 'estate_module/'|add:menuitem|add:'/edit_button.html' %}
+                            {% include menuitem_data.template_dir|add:'/edit_button.html' %}
 
                         </td>
                         <td class="center aligned">
-                            {% include 'estate_module/'|add:menuitem|add:'/detail.html' %}
+                            {% include menuitem_data.template_dir|add:'/detail.html' %}
                         </td>
                     </tr>
                     {% endfor %}

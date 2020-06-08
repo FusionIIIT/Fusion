@@ -32,6 +32,12 @@
                                 </tr>
 
                                 <tr>
+                                    <td> Status </td>
+                                    <td class="status">{% if building.status %} {{ building.get_status_display }}
+                                        {% endif %}</td>
+                                </tr>
+
+                                <tr>
                                     <td>Date Issued</td>
                                     <td class="dateIssued">{% if building.dateIssued %} {{ building.dateIssued }}
                                         {% endif %}</td>
@@ -88,6 +94,29 @@
                             </tbody>
                         </table>
                     </div>
+                    <div class="row">
+                        {% if building.verified is True %}
+                        <div class="ui icon success compact message">
+                            <i class="check icon"></i>
+                            <div class="content">
+                                <div class="header">
+                                    This information has been verified
+                                </div>
+                                {% comment %} <p>Get the best news in your e-mail every day.</p> {% endcomment %}
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="ui icon warning compact message">
+                            <i class="exclamation triangle icon"></i>
+                            <div class="content">
+                                <div class="header">
+                                    This information has not been verified
+                                </div>
+                                {% comment %} <p>Get the best news in your e-mail every day.</p> {% endcomment %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
                 </div>
                 {% if building.remarks %}
                 <h4 class="ui horizontal divider header">
@@ -102,16 +131,18 @@
                 {% endif %}
 
             </div>
+
             {% for workType_CODE, workType, works in building.works %}
             <div class="ui tab basic segment" data-tab="{{ menuitem }}_{{ building.id }}_{{ workType_CODE }}">
                 {% if works|length > 0 %}
                 <table class="ui selectable celled sortable table">
                     <thead>
                         <tr>
-                            <th class="five wide column">{{ workType }} Work Name</th>
-                            <th class="two wide column">Issued Date</th>
-                            <th class="two wide column right aligned">Estimated Cost</th>
-                            <th colspan="2" class="one wide column"></th>
+                            <th class="four wide column">{{ workType }} Work Name</th>
+                            <th class="center aligned">Status</th>
+                            <th class="right aligned">Issued Date</th>
+                            <th>Contractor</th>
+                            <th colspan="2" class="two wide column"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -121,20 +152,23 @@
                                 {{ work.name }}
                             </td>
                             <td class="center aligned">
-                                {{ work.dateIssued }}
+                                {{ work.get_status_display }}
                             </td>
                             <td class="right aligned">
-                                ₹&nbsp;{{ work.costEstimated|intcomma }}
+                                {{ work.dateIssued }}
+                            </td>
+                            <td>
+                                {{ work.contractorName }}
                             </td>
                             <td class="center aligned">
                                 {% include 'estate_module/Work/edit_button.html' with menuitem=workType %}
                             </td>
                             <td class="center aligned">
-                                {% include 'estate_module/Work/detail.html' with menuitem=workType %}
-                                {% comment %} <button
+                                <button
                                     class="ui secondary button details {{ workType }}_{{ work.id }}">Details</button>
-                                {% endcomment %}
 
+                                {% comment %} {% include 'estate_module/Work/detail.html' with menuitem=workType %}
+                                {% endcomment %}
                             </td>
                         </tr>
                         {% endfor %}
@@ -193,13 +227,6 @@
                             .modal('setting', 'closable', false)
                             .modal('show');
                     });
-                    {% comment %} $('.{{ menuitem }}_{{ work.id }}.details.modal')
-                            .modal({
-                                centered: false
-                            })
-                            .modal('setting', 'closable', false)
-                            .modal('attach events', '.{{ menuitem }}_{{ work.id }}.details.button',
-                                'show'); {% endcomment %}
                 </script>
             </div>
             {% endfor %}

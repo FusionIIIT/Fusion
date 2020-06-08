@@ -79,7 +79,7 @@ class Work(models.Model):
         ordering = ['-id']
 
     def __str__(self):
-        return self.building.name + ' - ' + self.workType + ' - ' + self.name
+        return self.name
 
 
 class SubWork(models.Model):

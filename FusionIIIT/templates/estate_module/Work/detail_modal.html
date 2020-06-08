@@ -1,6 +1,5 @@
 {% load humanize %}
 
-<button class="ui secondary button details {{ menuitem }}_{{ work.id }}">Details</button>
 <div class="ui modal details {{ menuitem }}_{{ work.id }}">
     <div class="header">
         {{ work.name }}
@@ -19,6 +18,12 @@
                             <tr>
                                 <td class="six wide column">Name of work</td>
                                 <td class="name">{% if work.name %} {{ work.name }} {% endif %}</td>
+                            </tr>
+
+                            <tr>
+                                <td> Status </td>
+                                <td class="status">{% if work.status %} {{ work.get_status_display }}
+                                    {% endif %}</td>
                             </tr>
 
                             <tr>
@@ -83,6 +88,29 @@
                         </tbody>
                     </table>
                 </div>
+                <div class="row">
+                    {% if work.verified is True %}
+                    <div class="ui icon success compact message">
+                        <i class="check icon"></i>
+                        <div class="content">
+                            <div class="header">
+                                This information has been verified
+                            </div>
+                            {% comment %} <p>Get the best news in your e-mail every day.</p> {% endcomment %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="ui icon warning compact message">
+                        <i class="exclamation triangle icon"></i>
+                        <div class="content">
+                            <div class="header">
+                                This information has not been verified
+                            </div>
+                            {% comment %} <p>Get the best news in your e-mail every day.</p> {% endcomment %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
             </div>
 
             {% if work.remarks %}
@@ -96,28 +124,6 @@
                 </div>
             </div>
             {% endif %}
-
-            {% comment %} <h4 class="ui horizontal divider header">
-                <i class="wrench icon"></i>
-                Sub Work
-            </h4>
-            {% for work in work.work_set.all %}
-            <table class="ui definition table">
-                <tbody>
-                    <tr>
-                        <td class="three wide column">name</td>
-                        <td class="name">{% if work.name %} {{ work.name }} {% endif %}</td>
-                    </tr>
-
-                    <tr>
-                        <td>dateIssued</td>
-                        <td class="dateIssued">{% if work.dateIssued %} {{ work.dateIssued }} {% endif %}</td>
-                    </tr>
-                </tbody>
-            </table>
-            {% empty %}
-            <p>No sub works found for {{ work.name }}</p>
-            {% endfor %} {% endcomment %}
 
         </div>
     </div>

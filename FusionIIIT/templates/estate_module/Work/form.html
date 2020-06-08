@@ -1,5 +1,7 @@
 {% csrf_token %}
 <div class="ui error message"></div>
+
+{% with menuitem_data.form as workForm %}
 <div class="two fields">
     <div class="required field">
         {{ workForm.name.label_tag }}
@@ -19,7 +21,7 @@
 
     </div>
 
-    <div class="required field">
+    <div class="field">
         {{ workForm.building.label_tag }}
         {{ workForm.building }}
     </div>
@@ -93,6 +95,7 @@
     {{ workForm.remarks.label_tag }}
     {{ workForm.remarks }}
 </div>
+{% endwith %}
 
 <script type='module'>
     $('#{{ form_id }}')
@@ -112,13 +115,13 @@
                         prompt: 'workType cannot be blank'
                     }]
                 },
-                building: {
+                /*building: {
                     identifier: 'building',
                     rules: [{
                         type: 'empty',
                         prompt: 'Estate cannot be blank'
                     }]
-                },
+                },*/
                 contractorName: {
                     identifier: 'contractorName',
                     rules: [{
