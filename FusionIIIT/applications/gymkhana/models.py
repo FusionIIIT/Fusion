@@ -17,21 +17,14 @@ register = template.Library()
 
 # # Class for various choices on the enumerations
 class Constants:
+    available = (
+        ('On', 'On'),
+        ('Off', 'Off'),
+    )
     categoryCh = (
         ('Technical', 'Technical'),
         ('Sports', 'Sports'),
         ('Cultural', 'Cultural')
-    )
-    branch = (
-        ('cse', 'CSE'),
-        ('ece', 'ECE'),
-        ('me', 'ME')
-    )
-    programme = (
-        ('B.tech', 'B.tech'),
-        ('B.des', 'B.des'),
-        ('M.tech', 'M.tech'),
-        ('M.des', 'M.des'),
     )
     status = (
         ('open', 'Open'),
@@ -82,6 +75,16 @@ class Club_info(models.Model):
     class Meta:
         db_table = 'Club_info'
 
+
+class Form_available(models.Model):
+    roll = models.CharField(default=2016001, max_length=7, primary_key=True)
+    status = models.BooleanField(default='True', max_length=5)
+
+    def __str__(self):
+        return str(self.roll)
+
+    class Meta:
+        db_table = 'Form_available'
 
 class Registration_form(models.Model):
     user_name = models.CharField(max_length=40, default="Student")
