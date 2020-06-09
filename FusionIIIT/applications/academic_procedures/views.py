@@ -264,6 +264,7 @@ def academic_procedures_student(request):
             #FeePayment.objects.all().delete()
             #print(FeePayment.objects.all().first().transaction_id)
         print(user_sem)
+        cur_cpi=0.0
         details = {
                 'current_user': current_user,
                 'year': acad_year,
@@ -271,7 +272,7 @@ def academic_procedures_student(request):
                 'user_branch' : str(user_branch),
                 'cpi' : cpi,
                 }
-
+        cur_cpi=details['cpi']
 
 
         try:
@@ -377,6 +378,8 @@ def academic_procedures_student(request):
                 ab += len(absents)
             attendence.append((i,pr,pr+ab))
         print(attendence)
+        cur_spi='Sem results not available' # To be fetched from db if result uploaded
+
         # Branch Change Form save
         if request.method=='POST':
             print('Branch Change submitted')
@@ -431,7 +434,8 @@ def academic_procedures_student(request):
                            # 'final_r': final_register_1,
                             
                             'teaching_credit_registration_course' : teaching_credit_registration_course,
-                            
+                            'cur_cpi': cur_cpi,
+                           'cur_spi': cur_spi,
                            # 'mincr': minimum_credit,
                            'lib_d':lib_d,
                            'acad_d':acad_d,
