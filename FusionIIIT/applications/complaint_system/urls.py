@@ -31,7 +31,7 @@ urlpatterns = [
     url(r'^supervisor/caretaker_id_know_more/(?P<caretaker_id>[0-9]+)/complaint_reassign_super/(?P<iid>[0-9]+)/$', views.complaint_reassign_super),
     url(r'^supervisor/detail3/(?P<detailcomp_id1>[0-9]+)/$', views.detail3),
     url(r'^caretaker/worker_id_know_more/(?P<work_id>[0-9]+)/removew/$', views.removew),
-    url(r'^caretaker/(?P<comp_id1>[0-9]+)/$', views.assign_worker),
+    url(r'^caretaker/(?P<comp_id1>[0-9]+)/$', views.assign_worker,name='assign_worker'),
     url(r'^caretaker/deletecomplaint/(?P<comp_id1>[0-9]+)/$', views.deletecomplaint),
     url(r'^caretaker/(?P<comp_id>[0-9]+)/$', views.assign_worker),
     url(r'^caretaker/(?P<complaint_id>[0-9]+)/(?P<status>[0-9]+)/$', views.changestatus),
