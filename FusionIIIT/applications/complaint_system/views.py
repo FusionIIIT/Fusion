@@ -122,6 +122,7 @@ def assign_worker(request, comp_id1):
             StudentComplain.objects.select_for_update().filter(id=comp_id1).\
                 update(worker_id=w, status=1)
             complainer_details = StudentComplain.objects.get(id=comp_id1)
+            print(comp_id)
             complaint_system_notif(request.user, complainer_details.complainer.user ,'assign_worker_alert',comp_id)
 
             return HttpResponseRedirect('/complaint/caretaker/')
@@ -875,11 +876,18 @@ def detail(request, detailcomp_id1):
         num = 1
     temp=StudentComplain.objects.filter(complainer=y).first()                                                                  
     comp_id=temp.id 
-    return render(request, "complaintModule/complaint_user_detail.html", {"detail": detail, "comp_id":comp_id,"num":num})
+    print(detail.id)
+    return render(request, "complaintModule/complaint_user_detail.html", {"detail": detail, "comp_id":detail.id,"num":num})
 
 @login_required
 def detail2(request, detailcomp_id1):
     detail2 = StudentComplain.objects.get(id=detailcomp_id1)
+    if(detail2.worker_id is None):
+        worker_name = None
+    else:
+        worker_id = detail2.worker_id.id
+        worker = Workers.objects.get(id=worker_id)
+        worker_name = worker.name
     a=User.objects.get(username=detail2.complainer.user.username)           
     y=ExtraInfo.objects.get(user=a)
     num=0
@@ -887,7 +895,7 @@ def detail2(request, detailcomp_id1):
         num = 1
     temp=StudentComplain.objects.filter(complainer=y).first()                                                               
     comp_id=temp.id 
-    return render(request, "complaintModule/complaint_caretaker_detail.html", {"detail2": detail2, "comp_id":detail2.id,"num":num})
+    return render(request, "complaintModule/complaint_caretaker_detail.html", {"detail2": detail2, "comp_id":detail2.id,"num":num,"worker_name":worker_name})
 
 @login_required
 def detail3(request, detailcomp_id1):
