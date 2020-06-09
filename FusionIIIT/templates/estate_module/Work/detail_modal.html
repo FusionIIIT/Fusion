@@ -1,6 +1,6 @@
 {% load humanize %}
 
-<div class="ui modal details {{ menuitem }}_{{ work.id }}">
+<div class="ui modal details {{ menuitem|slugify }}_{{ work.id }}">
     <div class="header">
         {{ work.name }}
     </div>
@@ -47,7 +47,7 @@
                                     {{ work.building }}
                                     &nbsp;
                                     <button
-                                        class="ui secondary mini button details Building_{{ work.building.id }}">Details</button>
+                                        class="ui secondary mini button details building_{{ work.building.id }}">Details</button>
                                     {% else %}
                                     IIITDMJ
                                     {% endif %}
@@ -105,7 +105,6 @@
                             <div class="header">
                                 This information has been verified
                             </div>
-                            {% comment %} <p>Get the best news in your e-mail every day.</p> {% endcomment %}
                         </div>
                     </div>
                     {% else %}
@@ -115,7 +114,6 @@
                             <div class="header">
                                 This information has not been verified
                             </div>
-                            {% comment %} <p>Get the best news in your e-mail every day.</p> {% endcomment %}
                         </div>
                     </div>
                     {% endif %}
@@ -143,11 +141,11 @@
     </div>
 </div>
 <script type='module'>
-    $('.{{ menuitem }}_{{ work.id }}.details.modal')
+    $('.{{ menuitem|slugify }}_{{ work.id }}.details.modal')
         .modal({
             centered: false
         })
         .modal('setting', 'closable', false)
-        .modal('attach events', '.{{ menuitem }}_{{ work.id }}.details.button',
+        .modal('attach events', '.{{ menuitem|slugify }}_{{ work.id }}.details.button',
             'show');
 </script>

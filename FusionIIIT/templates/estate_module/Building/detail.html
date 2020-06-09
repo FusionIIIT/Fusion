@@ -1,39 +1,39 @@
 {% load humanize %}
 
-<button class="ui secondary button details {{ menuitem }}_{{ building.id }}">Details</button>
-<div class="ui modal details {{ menuitem }}_{{ building.id }}">
+<button class="ui secondary button details {{ menuitem|slugify }}_{{ building.id }}">Details</button>
+<div class="ui modal details {{ menuitem|slugify }}_{{ building.id }}">
     <div class="header">
         {{ building.name }}
     </div>
     <div class="scrolling content">
         <div class="description">
             <div class="ui pointing secondary menu">
-                <a class="item active" data-tab="{{ menuitem }}_{{ building.id }}_specifications"><i
+                <a class="item active" data-tab="{{ menuitem|slugify }}_{{ building.id }}_specifications"><i
                         class="bar chart icon"></i>Specifications</a>
                 {% for workType_CODE, workType, works in building.works %}
-                <a class="item" data-tab="{{ menuitem }}_{{ building.id }}_{{ workType_CODE }}">
+                <a class="item" data-tab="{{ menuitem|slugify }}_{{ building.id }}_{{ workType_CODE }}">
                     {% if workType_CODE == 'CW' %}
                     <i class="wrench icon"></i>
                     {% elif workType_CODE == 'MW' %}
                     <i class="tasks icon"></i>
                     {% endif %}
-                    {{ workType }} Works
+                    {{ workType|slugify }} Works
                 </a>
                 {% endfor %}
                 {% if building.remarks %}
-                <a class="item" data-tab="{{ menuitem }}_{{ building.id }}_remarks">
+                <a class="item" data-tab="{{ menuitem|slugify }}_{{ building.id }}_remarks">
                     <i class="sticky note icon"></i>
                     Remarks
                 </a>
                 {% endif %}
             </div>
-            <div class="ui tab basic segment active" data-tab="{{ menuitem }}_{{ building.id }}_specifications">
+            <div class="ui tab basic segment active" data-tab="{{ menuitem|slugify }}_{{ building.id }}_specifications">
                 <div class="ui two column centered grid">
                     <div class="twelve wide column">
                         <table class="ui definition table">
                             <tbody>
                                 <tr>
-                                    <td class="six wide">{{ menuitem }} Name</td>
+                                    <td class="six wide">{{ menuitem|slugify }} Name</td>
                                     <td class="name">{% if building.name %} {{ building.name }} {% endif %}</td>
                                 </tr>
 
@@ -116,7 +116,6 @@
                                 <div class="header">
                                     This information has been verified
                                 </div>
-                                {% comment %} <p>Get the best news in your e-mail every day.</p> {% endcomment %}
                             </div>
                         </div>
                         {% else %}
@@ -126,7 +125,6 @@
                                 <div class="header">
                                     This information has not been verified
                                 </div>
-                                {% comment %} <p>Get the best news in your e-mail every day.</p> {% endcomment %}
                             </div>
                         </div>
                         {% endif %}
@@ -135,12 +133,12 @@
             </div>
 
             {% for workType_CODE, workType, works in building.works %}
-            <div class="ui tab basic segment" data-tab="{{ menuitem }}_{{ building.id }}_{{ workType_CODE }}">
+            <div class="ui tab basic segment" data-tab="{{ menuitem|slugify }}_{{ building.id }}_{{ workType_CODE }}">
                 {% if works|length > 0 %}
                 <table class="ui selectable celled sortable table">
                     <thead>
                         <tr>
-                            <th class="four wide column">{{ workType }} Work Name</th>
+                            <th class="four wide column">{{ workType|slugify }} Work Name</th>
                             <th class="center aligned">Status</th>
                             <th class="right aligned">Issued Date</th>
                             <th>Contractor</th>
@@ -173,7 +171,7 @@
                             </td>
                             <td class="center aligned">
                                 <button
-                                    class="ui secondary button details {{ workType }}_{{ work.id }}">Details</button>
+                                    class="ui secondary button details {{ workType|slugify }}_{{ work.id }}">Details</button>
                             </td>
                         </tr>
                         {% endfor %}
@@ -182,7 +180,7 @@
                         <tr>
                             <th colspan="6">
                                 <button
-                                    class="ui right floated right labeled icon blue new_{{ workType }}_{{ building.id }} button">
+                                    class="ui right floated right labeled icon blue new_{{ workType|slugify }}_{{ building.id }} button">
                                     <i class="plus icon"></i>
                                     New
                                 </button>
@@ -198,14 +196,14 @@
                             <i class="database icon"></i>
                             <div class="content">
                                 <div class="header">
-                                    No {{ workType }} Work found for {{ building.name }}
+                                    No {{ workType|slugify }} Work found for {{ building.name }}
                                 </div>
                             </div>
                         </div>
 
                     </div>
                     <div class="row">
-                        <button class="ui right labeled icon blue new_{{ workType }}_{{ building.id }} button">
+                        <button class="ui right labeled icon blue new_{{ workType|slugify }}_{{ building.id }} button">
                             <i class="plus icon"></i>
                             New
                         </button>
@@ -214,15 +212,15 @@
                 {% endif %}
 
                 <script type='module'>
-                    $('.new_{{ workType }}_{{ building.id }}.button').on('click', function () {
-                        $('.new_{{ workType }}.modal')
+                    $('.new_{{ workType|slugify }}_{{ building.id }}.button').on('click', function () {
+                        $('.new_{{ workType|slugify }}.modal')
                             .modal({
                                 centered: false
                             })
                             .modal({
                                 onShow: function () {
                                     // prefill form
-                                    $('.new_{{ workType }}.modal form')
+                                    $('.new_{{ workType|slugify }}.modal form')
                                         .form('set values', {
                                             workType: '{{ workType_CODE }}',
                                             building: '{{ building.id }}',
@@ -235,9 +233,12 @@
                 </script>
             </div>
             {% endfor %}
-            <div class="ui tab basic segment" data-tab="{{ menuitem }}_{{ building.id }}_remarks">
+
+            {% if building.remarks %}
+            <div class="ui tab basic segment" data-tab="{{ menuitem|slugify }}_{{ building.id }}_remarks">
                 <p>{{ building.remarks }}</p>
             </div>
+            {% endif %}
         </div>
     </div>
     <div class="actions">
@@ -248,12 +249,12 @@
 </div>
 <script type='module'>
     $(document).ready(function () {
-        $('.{{ menuitem }}_{{ building.id }}.details.modal')
+        $('.{{ menuitem|slugify }}_{{ building.id }}.details.modal')
             .modal({
                 centered: false
             })
             .modal('setting', 'closable', false)
-            .modal('attach events', '.{{ menuitem }}_{{ building.id }}.details.button',
+            .modal('attach events', '.{{ menuitem|slugify }}_{{ building.id }}.details.button',
                 'show');
     });
 </script>
@@ -277,11 +278,11 @@
                 onShow: function () {
                     $('.details.modal .header')
                         .text(building.name);
-                    $('.details.modal tbody td#{{ menuitem }}_date_approval')
+                    $('.details.modal tbody td#{{ menuitem|slugify }}_date_approval')
                         .text(building.date_approval);
-                    $('.details.modal tbody td#{{ menuitem }}_date_start')
+                    $('.details.modal tbody td#{{ menuitem|slugify }}_date_start')
                         .text(building.date_start);
-                    $('.details.modal tbody td#{{ menuitem }}_amount')
+                    $('.details.modal tbody td#{{ menuitem|slugify }}_amount')
                         .text("₹ " + building.amount)
                 }
             })

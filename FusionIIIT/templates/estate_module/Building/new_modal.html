@@ -1,5 +1,5 @@
 {% with 'new_'|add:menuitem|add:'_form' as form_id %}
-<div class="ui modal new_{{ menuitem }}">
+<div class="ui modal new_{{ menuitem|slugify }}">
     <div class="header">
         New {{ menuitem }}
     </div>
@@ -27,12 +27,12 @@
 {% endwith %}
 
 <script type='module'>
-    $('.new_{{ menuitem }}.modal')
+    $('.new_{{ menuitem|slugify }}.modal')
         .modal({
             centered: false
         })
         .modal('setting', 'closable', false)
-        .modal('attach events', '.new_{{ menuitem }}.button', 'show');
+        .modal('attach events', '.new_{{ menuitem|slugify }}.button', 'show');
 </script>
 
 {% comment %}

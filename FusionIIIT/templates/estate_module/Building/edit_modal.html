@@ -1,7 +1,7 @@
 {% with 'edit_'|add:menuitem|add:'_form' as form_id %}
-<div class="ui modal coupled_{{ menuitem }} edit_{{ menuitem }}">
+<div class="ui modal coupled_{{ menuitem|slugify }} edit_{{ menuitem|slugify }}">
     <div class="header">
-        Edit {{ menuitem }}
+        Edit {{ menuitem|slugify }}
     </div>
 
     <div class="scrolling content">
@@ -16,7 +16,7 @@
 
     <div class="actions">
 
-        <button class="ui large red button delete_{{ menuitem }}">Delete</button>
+        <button class="ui large red button delete_{{ menuitem|slugify }}">Delete</button>
         <button type="submit" form="{{ form_id }}" class="ui large right labeled icon green button">Update
             <i class="checkmark icon"></i></button>
         <div class="ui black deny large button">Cancel</div>
@@ -25,14 +25,14 @@
 </div>
 {% endwith %}
 
-<div class="ui tiny modal coupled_{{ menuitem }} delete_{{ menuitem }}">
+<div class="ui tiny modal coupled_{{ menuitem|slugify }} delete_{{ menuitem|slugify }}">
     <div class="header">
         Delete
     </div>
 
     <div class="content">
-        <p>Are you sure you want to delete {{ building.name }}?</p>
-        <form id="delete_{{ menuitem }}_form" action="" method="POST">
+        <p></p>
+        <form id="delete_{{ menuitem|slugify }}_form" action="" method="POST">
             {% csrf_token %}
         </form>
     </div>
@@ -40,7 +40,7 @@
 
         <div class="ui submit green deny large button">No</div>
 
-        <button type="submit" form="delete_{{ menuitem }}_form"
+        <button type="submit" form="delete_{{ menuitem|slugify }}_form"
             class="ui negative right labeled icon large button">Yes<i class="checkmark icon"></i></button>
     </div>
 </div>

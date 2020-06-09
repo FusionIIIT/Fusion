@@ -8,7 +8,7 @@
             <table class="ui selectable celled sortable single line table">
                 <thead>
                     <tr>
-                        <th class="four wide column">Building</th>
+                        <th class="four wide column">{{ menuitem }}</th>
                         <th class="center aligned">Status</th>
                         <th class="right aligned">Issued Date</th>
                         <th class="right aligned">Estimated Cost</th>
@@ -84,15 +84,14 @@
                         <i class="database icon"></i>
                         <div class="content">
                             <div class="header">
-                                No {{ tabname }} {{ menuitem }} found
+                                No {{ tabname }} {{ menuitem|slugify }} found
                             </div>
-                            {% comment %} <p>Get the best news in your e-mail every day.</p> {% endcomment %}
                         </div>
                     </div>
 
                 </div>
                 <div class="row">
-                    <button class="ui right labeled icon blue new_{{ menuitem }} button">
+                    <button class="ui right labeled icon blue new_{{ menuitem|slugify }} button">
                         <i class="plus icon"></i>
                         New
                     </button>

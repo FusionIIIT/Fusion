@@ -10,8 +10,6 @@ from .models import Building, Work, SubWork, Inventory, InventoryType
 @login_required(login_url='/accounts/login/')
 def estate(request):
 
-    workForm = WorkForm()
-
     buildings = Building.objects.all()
     building_tabs = {
         'All': buildings,
@@ -28,6 +26,7 @@ def estate(request):
     }
 
     works = Work.objects.all()
+    workForm = WorkForm()
 
     maintenanceWorks = works.filter(workType=Work.MAINTENANCE_WORK)
     maintenance_tabs = {
@@ -60,10 +59,20 @@ def estate(request):
         'template_dir': 'estate_module/Work',
     }
 
+    inventoryType_tabs = {
+        'All': InventoryType.objects.all()
+    }
+    inventoryType_data = {
+        'tabs': inventoryType_tabs,
+        'form': InventoryTypeForm(),
+        'template_dir': 'estate_module/InventoryType'
+    }
+
     menuitems = {
         'Building': building_data,
         'Maintenance': maintenance_data,
         'Construction': construction_data,
+        'Inventory List': inventoryType_data,
     }
 
     context = {
@@ -164,4 +173,52 @@ def deleteWork(request, work_id):
     work.delete()
 
     messages.success(request, f'{ work_Type } Work Deleted: { work_name }')
+    return redirect('estate_module_home')
+
+
+@require_POST
+def newInventoryType(request):
+
+    newInventoryTypeForm = InventoryTypeForm(request.POST)
+
+    if newInventoryTypeForm.is_valid():
+        new_InventoryType = newInventoryTypeForm.save()
+        messages.success(
+            request, f'New Inventory Type Created: { new_InventoryType.name }')
+        return redirect('estate_module_home')
+
+    for label, errors in newInventoryTypeForm.errors.items():
+        for error in errors:
+            messages.error(request, f'{ label }: { error }')
+    return redirect('estate_module_home')
+
+
+@require_POST
+def editInventoryType(request, inventoryType_id):
+
+    inventoryType = InventoryType.objects.get(pk=inventoryType_id)
+
+    editInventoryTypeForm = InventoryTypeForm(
+        request.POST, instance=inventoryType)
+
+    if editInventoryTypeForm.is_valid():
+        editedInventoryType = editInventoryTypeForm.save()
+        messages.success(
+            request, f'Inventory Type Updated: { editedInventoryType.name }')
+        return redirect('estate_module_home')
+
+    for label, errors in editInventoryTypeForm.errors.items():
+        for error in errors:
+            messages.error(request, f'{ label }: { error }')
+    return redirect('estate_module_home')
+
+
+@require_POST
+def deleteInventoryType(request, inventoryType_id):
+
+    inventoryType = InventoryType.objects.get(pk=inventoryType_id)
+    inventoryType_name = inventoryType.name
+    inventoryType.delete()
+    messages.success(
+        request, f'Inventory Type Deleted: { inventoryType_name }')
     return redirect('estate_module_home')

@@ -44,7 +44,7 @@ Estate
 
         <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
             {% for menuitem, menuitem_data in menuitems.items %}
-            <a class="{% if forloop.counter0 is 0 %}{{ "active" }}{% endif %} item" data-tab="{{ menuitem }}">
+            <a class="{% if forloop.counter0 is 0 %}{{ "active" }}{% endif %} item" data-tab="{{ menuitem|slugify }}">
                 {{ menuitem }}
                 <i class="right floated chevron right icon"></i>
             </a>
@@ -78,7 +78,7 @@ Estate
 
         {% for menuitem, menuitem_data in menuitems.items %}
         <div class="ui {% if forloop.counter0 is 0 %}{{ "active" }}{% endif %} tab raised segment"
-            data-tab="{{ menuitem }}">
+            data-tab="{{ menuitem|slugify }}">
             {% include menuitem_data.template_dir|add:'/home.html' %}
         </div>
         {% endfor %}

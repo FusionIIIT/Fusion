@@ -1,0 +1,36 @@
+{% with 'new_'|add:menuitem|slugify|add:'_form' as form_id %}
+<div class="ui modal new_{{ menuitem|slugify }}">
+    <div class="header">
+        New {{ menuitem.split|first }} Type
+    </div>
+    <div class="scrolling content">
+        <h4 class="ui horizontal divider header">
+            <i class="info circle icon"></i>
+            Main Information
+        </h4>
+
+        <form action="{% url 'new_inventoryType' %}" id="{{ form_id }}" class="ui form" method="POST" novalidate>
+            {% include menuitem_data.template_dir|add:'/form.html' %}
+        </form>
+
+    </div>
+    <div class="actions">
+        <button type="submit" form="{{ form_id }}" class="ui large right labeled icon green button">Create
+            <i class="checkmark icon"></i></button>
+        <div class="ui black deny large button">
+            Cancel
+        </div>
+
+
+    </div>
+</div>
+{% endwith %}
+
+<script type='module'>
+    $('.new_{{ menuitem|slugify }}.modal')
+        .modal({
+            centered: false
+        })
+        .modal('setting', 'closable', false)
+        .modal('attach events', '.new_{{ menuitem|slugify }}.button', 'show');
+</script>

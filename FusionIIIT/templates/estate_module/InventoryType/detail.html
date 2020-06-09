@@ -1,0 +1,90 @@
+{% load humanize %}
+
+<button class="ui secondary button details {{ menuitem|slugify }}_{{ inventoryType.id }}">Details</button>
+<div class="ui modal details {{ menuitem|slugify }}_{{ inventoryType.id }}">
+    <div class="header">
+        {{ inventoryType.name }}
+    </div>
+    <div class="scrolling content">
+        <div class="description">
+            <div class="ui pointing secondary menu">
+                <a class="item active" data-tab="{{ menuitem|slugify }}_{{ inventoryType.id }}_specifications"><i
+                        class="bar chart icon"></i>Specifications</a>
+                {% for workType_CODE, workType, works in inventoryType.works %}
+                <a class="item" data-tab="{{ menuitem|slugify }}_{{ inventoryType.id }}_{{ workType_CODE }}">
+                    {% if workType_CODE == 'CW' %}
+                    <i class="wrench icon"></i>
+                    {% elif workType_CODE == 'MW' %}
+                    <i class="tasks icon"></i>
+                    {% endif %}
+                    {{ workType|slugify }} Works
+                </a>
+                {% endfor %}
+                {% if inventoryType.remarks %}
+                <a class="item" data-tab="{{ menuitem|slugify }}_{{ inventoryType.id }}_remarks">
+                    <i class="sticky note icon"></i>
+                    Remarks
+                </a>
+                {% endif %}
+            </div>
+            <div class="ui tab basic segment active"
+                data-tab="{{ menuitem|slugify }}_{{ inventoryType.id }}_specifications">
+                <div class="ui two column centered grid">
+                    <div class="twelve wide column">
+                        <table class="ui definition table">
+                            <tbody>
+                                <tr>
+                                    <td class='six wide'>Invenotry Type Name</td>
+                                    <td class="name">{% if inventoryType.name %} {{ inventoryType.name }} {% endif %}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>Rate</td>
+                                    <td class="rate">{% if inventoryType.rate %} {{ inventoryType.rate }} {% endif %}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>Manufacturer</td>
+                                    <td class="manufacturer">{% if inventoryType.manufacturer %}
+                                        {{ inventoryType.manufacturer }}
+                                        {% endif %}</td>
+                                </tr>
+
+                                <tr>
+                                    <td>Model</td>
+                                    <td class="model">{% if inventoryType.model %} {{ inventoryType.model }} {% endif %}
+                                    </td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            {% if inventoryType.remarks %}
+            <div class="ui tab basic segment" data-tab="{{ menuitem|slugify }}_{{ inventoryType.id }}_remarks">
+                <p>{{ inventoryType.remarks }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="actions">
+        <div class="ui black deny large button">
+            Close
+        </div>
+    </div>
+</div>
+<script type='module'>
+    $(document).ready(function () {
+        $('.{{ menuitem|slugify }}_{{ inventoryType.id }}.details.modal')
+            .modal({
+                centered: false
+            })
+            .modal('setting', 'closable', false)
+            .modal('attach events', '.{{ menuitem|slugify }}_{{ inventoryType.id }}.details.button',
+                'show');
+    });
+</script>

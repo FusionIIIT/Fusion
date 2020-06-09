@@ -121,7 +121,7 @@ class InventoryTypeForm(ModelForm):
         fields = '__all__'
         widgets = {
             'name': TextInput(attrs={
-                'placeholder': 'Enter name of inventory'
+                'placeholder': 'Enter name of Inventory Type'
             }),
             'manufacturer': TextInput(attrs={
                 'placeholder': 'Enter name of manufacturer'

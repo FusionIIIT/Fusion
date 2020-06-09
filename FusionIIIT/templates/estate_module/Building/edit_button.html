@@ -1,35 +1,35 @@
-<button class="ui red button edit_{{ menuitem }}_{{ building.id }}">Edit</button>
+<button class="ui red button edit_{{ menuitem|slugify }}_{{ building.id }}">Edit</button>
 <script type='module'>
-    $('.coupled_{{ menuitem }}.modal')
+    $('.coupled_{{ menuitem|slugify }}.modal')
         .modal({
             allowMultiple: true
         });
 
-    $('.delete_{{ menuitem }}.modal')
+    $('.delete_{{ menuitem|slugify }}.modal')
         .modal('attach events',
-            '.edit_{{ menuitem }}.modal .delete_{{ menuitem }}.button');
+            '.edit_{{ menuitem|slugify }}.modal .delete_{{ menuitem|slugify }}.button');
 
-    $('.edit_{{ menuitem }}_{{ building.id }}.button').on('click', function () {
-        $('.edit_{{ menuitem }}.modal')
+    $('.edit_{{ menuitem|slugify }}_{{ building.id }}.button').on('click', function () {
+        $('.edit_{{ menuitem|slugify }}.modal')
             .modal({
                 centered: false,
             })
             .modal({
                 onShow: function () {
                     // change edit modal header
-                    $('.edit_{{ menuitem }}.modal .header').first()
+                    $('.edit_{{ menuitem|slugify }}.modal .header').first()
                         .text("{{ building.name }}");
                     // change modal form action url
-                    $('.edit_{{ menuitem }}.modal form')
+                    $('.edit_{{ menuitem|slugify }}.modal form')
                         .attr("action", "{% url 'edit_building' building.id %}");
                     // change delete modal message
-                    $('.delete_{{ menuitem }}.modal .content p')
+                    $('.delete_{{ menuitem|slugify }}.modal .content p')
                         .text("Are you sure you want to delete {{ building.name }}?");
                     // change delete form action url
-                    $('.delete_{{ menuitem }}.modal form')
+                    $('.delete_{{ menuitem|slugify }}.modal form')
                         .attr("action", "{% url 'delete_building' building.id %}");
                     // prefill form
-                    $('.edit_{{ menuitem }}.modal form')
+                    $('.edit_{{ menuitem|slugify }}.modal form')
                         .form('set values', {
                             name: '{% if building.name %}{{ building.name }}{% endif %}',
                             dateIssued: '{% if building.dateIssued %}{{ building.dateIssued }}{% endif %}',
