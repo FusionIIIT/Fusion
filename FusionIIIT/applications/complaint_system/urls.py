@@ -23,7 +23,7 @@ urlpatterns = [
     url(r'^caretaker/worker_id_know_more/(?P<wid>[0-9]+)/complaint_reassign/(?P<iid>[0-9]+)/$', views.complaint_reassign),
     #url(r'^caretaker/list_caretakers_area/$', views.caretaker, name='caretaker'),
     url(r'^caretaker/pending/(?P<cid>[0-9]+)/$', views.resolvepending),
-    url(r'^caretaker/detail2/(?P<detailcomp_id1>[0-9]+)/$', views.detail2),
+    url(r'^caretaker/detail2/(?P<detailcomp_id1>[0-9]+)/$', views.detail2,name='detail2'),
     url(r'^caretaker/search_complaint$', views.search_complaint),
     url(r'^supervisor/$', views.supervisor),
     url(r'^supervisor/feedback/(?P<feedcomp_id>[0-9]+)/$', views.feedback_super),

@@ -20,6 +20,9 @@ from .models import (Award_and_scholarship, Constants, Director_gold,
                      Proficiency_dm, Release, Notification)
 
 from notification.views import scholarship_portal_notif
+from .validations import MCM_list
+from jsonschema import validate
+from jsonschema.exceptions import ValidationError
 # Create your views here.
 
 
@@ -511,78 +514,127 @@ def submitMCM(request):
     student = request.user.extrainfo.student
     annual_income = income_father + income_mother + income_other
     award, award_id = getAwardId(request)
-    releases = Release.objects.filter(Q(startdate__lte=datetime.datetime.today().strftime(
-        '%Y-%m-%d'), enddate__gte=datetime.datetime.today().strftime('%Y-%m-%d'))).filter(award="Merit-cum-Means Scholarship")
-    for release in releases:
-        existingRelease = Mcm.objects.filter(Q(date__gte=release.startdate, date__lte=release.enddate)).filter(student=request.user.extrainfo.student)
-        if existingRelease:
+    data_insert = {
+        "brother_name": brother_name,
+        "brother_occupation": brother_occupation,
+        "sister_name": sister_name,
+        "sister_occupation": sister_occupation,
+        "income_father": income_father,
+        "income_mother": income_mother,
+        "income_other": income_other,
+        "father_occ": father_occ,
+        "mother_occ": mother_occ,
+        "father_occ_desc": father_occ_desc,
+        "mother_occ_desc": mother_occ_desc,
+        "four_wheeler": four_wheeler,
+        "four_wheeler_desc": four_wheeler_desc,
+        "two_wheeler": two_wheeler,
+        "two_wheeler_desc": two_wheeler_desc,
+        "house": house,
+        "plot_area": plot_area,
+        "constructed_area": constructed_area,
+        "school_fee": school_fee,
+        "school_name": school_name,
+        "bank_name": bank_name,
+        "loan_amount": loan_amount,
+        "college_fee": college_fee,
+        "college_name": college_name,
+        "status": status,
+        "annual_income": annual_income,
+    }
+    try:
+        for column in MCM_list:
+            validate(instance=data_insert[column], schema=getattr(MCM_list, column))
+
+        releases = Release.objects.filter(
+            Q(
+                startdate__lte=datetime.datetime.today().strftime("%Y-%m-%d"),
+                enddate__gte=datetime.datetime.today().strftime("%Y-%m-%d"),
+            )
+        ).filter(award="Merit-cum-Means Scholarship")
+        for release in releases:
+            if Mcm.objects.filter(
+                Q(date__gte=release.startdate, date__lte=release.enddate)
+            ).filter(student=request.user.extrainfo.student):
                 # if len(Mcm.objects.filter(student = request.user.extrainfo.student)) > 0:
-            existingRelease.update(
-                father_occ=father_occ,
-                mother_occ=mother_occ,
-                brother_name=brother_name,
-                sister_name=sister_name,
-                income_father=income_father,
-                income_mother=income_mother,
-                income_other=income_other,
-                brother_occupation=brother_occupation,
-                sister_occupation=sister_occupation,
-                student=student,
-                annual_income=annual_income,
-                income_certificate=income_certificate,
-                award_id=award_id,
-                father_occ_desc=father_occ_desc,
-                mother_occ_desc=mother_occ_desc,
-                four_wheeler=four_wheeler,
-                four_wheeler_desc=four_wheeler_desc,
-                two_wheeler_desc=two_wheeler_desc,
-                two_wheeler=two_wheeler,
-                house=house,
-                plot_area=plot_area,
-                constructed_area=constructed_area,
-                school_fee=school_fee,
-                school_name=school_name,
-                bank_name=bank_name,
-                loan_amount=loan_amount,
-                college_fee=college_fee,
-                college_name=college_name,
-                status='INCOMPLETE'
-            )
-            messages.success(request, award + ' Application is successfully Updated')
-            break
-        else:
-            Mcm.objects.create(
-                father_occ=father_occ,
-                mother_occ=mother_occ,
-                brother_name=brother_name,
-                sister_name=sister_name,
-                income_father=income_father,
-                income_mother=income_mother,
-                income_other=income_other,
-                brother_occupation=brother_occupation,
-                sister_occupation=sister_occupation,
-                student=student,
-                annual_income=annual_income,
-                income_certificate=income_certificate,
-                award_id=award_id,
-                father_occ_desc=father_occ_desc,
-                mother_occ_desc=mother_occ_desc,
-                four_wheeler=four_wheeler,
-                four_wheeler_desc=four_wheeler_desc,
-                two_wheeler_desc=two_wheeler_desc,
-                two_wheeler=two_wheeler,
-                house=house,
-                plot_area=plot_area,
-                constructed_area=constructed_area,
-                school_fee=school_fee,
-                school_name=school_name,
-                bank_name=bank_name,
-                loan_amount=loan_amount,
-                college_fee=college_fee,
-                college_name=college_name
-            )
-            messages.success(request, award + ' Application is successfully submitted')
-            break
+                Mcm.objects.filter(
+                    Q(
+                        date__gte=release.startdate,
+                        date__lte=release.enddate,
+                    )
+                ).filter(student=request.user.extrainfo.student).update(
+                    father_occ=father_occ,
+                    mother_occ=mother_occ,
+                    brother_name=brother_name,
+                    sister_name=sister_name,
+                    income_father=income_father,
+                    income_mother=income_mother,
+                    income_other=income_other,
+                    brother_occupation=brother_occupation,
+                    sister_occupation=sister_occupation,
+                    student=student,
+                    annual_income=annual_income,
+                    income_certificate=income_certificate,
+                    award_id=award_id,
+                    father_occ_desc=father_occ_desc,
+                    mother_occ_desc=mother_occ_desc,
+                    four_wheeler=four_wheeler,
+                    four_wheeler_desc=four_wheeler_desc,
+                    two_wheeler_desc=two_wheeler_desc,
+                    two_wheeler=two_wheeler,
+                    house=house,
+                    plot_area=plot_area,
+                    constructed_area=constructed_area,
+                    school_fee=school_fee,
+                    school_name=school_name,
+                    bank_name=bank_name,
+                    loan_amount=loan_amount,
+                    college_fee=college_fee,
+                    college_name=college_name,
+                    status="INCOMPLETE",
+                )
+                messages.success(
+                    request, "Mcm scholarship is successfully Updated"
+                )
+                break
+            else:
+                Mcm.objects.create(
+                    father_occ=father_occ,
+                    mother_occ=mother_occ,
+                    brother_name=brother_name,
+                    sister_name=sister_name,
+                    income_father=income_father,
+                    income_mother=income_mother,
+                    income_other=income_other,
+                    brother_occupation=brother_occupation,
+                    sister_occupation=sister_occupation,
+                    student=student,
+                    annual_income=annual_income,
+                    income_certificate=income_certificate,
+                    award_id=award_id,
+                    father_occ_desc=father_occ_desc,
+                    mother_occ_desc=mother_occ_desc,
+                    four_wheeler=four_wheeler,
+                    four_wheeler_desc=four_wheeler_desc,
+                    two_wheeler_desc=two_wheeler_desc,
+                    two_wheeler=two_wheeler,
+                    house=house,
+                    plot_area=plot_area,
+                    constructed_area=constructed_area,
+                    school_fee=school_fee,
+                    school_name=school_name,
+                    bank_name=bank_name,
+                    loan_amount=loan_amount,
+                    college_fee=college_fee,
+                    college_name=college_name,
+                )
+                messages.success(
+                    request, "Mcm scholarship is successfully applied"
+                )
+                break
+        request.session["last_clicked"] = "Submit_mcm"
+    except ValidationError as exc:
+        messages.error(column + " : " + str(exc))
     request.session['last_clicked'] = 'Submit_MCM'
     return HttpResponseRedirect('/spacs/student_view')
 

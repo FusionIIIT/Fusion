@@ -6,11 +6,41 @@
 {% endblock %}
 
 {% block body %}
-{% block navBar %}
-{% include 'dashboard/navbar.html' %}
-{% endblock %}
-    {% comment %}The tab menu starts here!{% endcomment %}
-    <div class="ui pointing secondary menu">
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+
+
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+        {% comment %}
+            The left-rail segment starts here!
+        {% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+        </div>
+
+
+
+
+        {% comment %}
+            The central-rail segment starts here!
+        {% endcomment %}
+        <div class="eight wide column">
+        {% comment %}The Details start here!{% endcomment %}
+        <div class="ui pointing secondary menu">
         <a class="active item" data-tab="newevent">
             Edit Event
         </a>
@@ -67,7 +97,7 @@
                     <div class="Two fields">
                       <div class="field">
                           <label>Start Time</label>
-                          <input type="time" class="ui large input" name="start_time" required>
+                          <input type="time" value="{{form.start_time}}"class="ui large input" name="start_time" required>
                       </div>
 
                         <div class="field">
@@ -98,8 +128,29 @@
         <br>
         <div class="extra content"></div>
     </div>
+</div>
 
-    
+{% comment %}The central-rail segment ends here!{% endcomment %}
+{% comment %}The right-rail segment starts here!{% endcomment %}
+<div class="three wide column " id="dateDetails">
+    <div class="row">
+        {% comment %}
+            TODO: the right rail!
+        {% endcomment %}
+    </div>
+</div>
+{% comment %}The right-rail segment ends here!{% endcomment %}
+
+{% comment %}The right-margin segment!{% endcomment %}
+<div class="column"></div>
+
+</div>
+
+
+
+{% comment %}The grid ends here!{% endcomment %}
+{% endblock %}
+
 
     
     {% block javascript %}
@@ -148,7 +199,6 @@
         });
     </script>
    
-{% endblock %}
 {% endblock %}
 
 
