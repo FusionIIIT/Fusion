@@ -396,6 +396,7 @@
             <div class="ui vertical segment">
                 <form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;" enctype="multipart/form-data">
                     {% csrf_token %}
+                    <input type="hidden" id="award" name="award" value="D&M Proficiency Gold Medal">
                     <div class="field">
                             <label>PBI Project/Design Project</label>
                             <div class="ui large input">
@@ -635,6 +636,7 @@
                 <div class="ui vertical segment">
                     <form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;" enctype="multipart/form-data">
                         {% csrf_token %}
+                        <input type="hidden" id="award" name="award" value="Director's Gold Medal">
                         <div class="two fields">
                                 <div class="eight wide field">
                                         <label>Hall no</label>
@@ -835,6 +837,7 @@
             <div class="ui vertical segment">
                 <form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;" enctype="multipart/form-data">
                     {% csrf_token %}
+                    <input type="hidden" id="award" name="award" value="Director's Silver Medal">
             <div class="three fields">
                     <div class="six wide field">
                             <label>Hall no</label>

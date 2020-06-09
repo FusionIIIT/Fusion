@@ -512,7 +512,7 @@ def submitMCM(request):
     annual_income = income_father + income_mother + income_other
     award, award_id = getAwardId(request)
     releases = Release.objects.filter(Q(startdate__lte=datetime.datetime.today().strftime(
-        '%Y-%m-%d'), enddate__gte=datetime.datetime.today().strftime('%Y-%m-%d'))).filter(award=award)
+        '%Y-%m-%d'), enddate__gte=datetime.datetime.today().strftime('%Y-%m-%d'))).filter(award="Merit-cum-Means Scholarship")
     for release in releases:
         existingRelease = Mcm.objects.filter(Q(date__gte=release.startdate, date__lte=release.enddate)).filter(student=request.user.extrainfo.student)
         if existingRelease:
@@ -616,7 +616,7 @@ def submitGold(request):
     nearest_policestation = request.POST.get('nps')
     nearest_railwaystation = request.POST.get('nrs')
     releases = Release.objects.filter(Q(startdate__lte=datetime.datetime.today().strftime(
-        '%Y-%m-%d'), enddate__gte=datetime.datetime.today().strftime('%Y-%m-%d'))).filter(award=award)
+        '%Y-%m-%d'), enddate__gte=datetime.datetime.today().strftime('%Y-%m-%d'))).filter(award="Convocation Medals")
     for release in releases:
         existingRelease = Director_gold.objects.filter(Q(date__gte=release.startdate, date__lte=release.enddate)).filter(student=request.user.extrainfo.student)
         if existingRelease:
@@ -695,7 +695,7 @@ def submitSilver(request):
     nearest_policestation = request.POST.get('nps')
     nearest_railwaystation = request.POST.get('nrs')
     releases = Release.objects.filter(Q(startdate__lte=datetime.datetime.today().strftime(
-        '%Y-%m-%d'), enddate__gte=datetime.datetime.today().strftime('%Y-%m-%d'))).filter(award=award)
+        '%Y-%m-%d'), enddate__gte=datetime.datetime.today().strftime('%Y-%m-%d'))).filter(award="Convocation Medals")
     for release in releases:
         existingRelease = Director_silver.objects.filter(Q(date__gte=release.startdate, date__lte=release.enddate)).filter(student=request.user.extrainfo.student)
         if existingRelease:
@@ -780,10 +780,11 @@ def submitDM(request):
     nearest_policestation = request.POST.get('nps')
     nearest_railwaystation = request.POST.get('nrs')
     releases = Release.objects.filter(Q(startdate__lte=datetime.datetime.today().strftime(
-        '%Y-%m-%d'), enddate__gte=datetime.datetime.today().strftime('%Y-%m-%d'))).filter(award=award)
+        '%Y-%m-%d'), enddate__gte=datetime.datetime.today().strftime('%Y-%m-%d'))).filter(award="Convocation Medals")
     for release in releases:
         existingRelease = Proficiency_dm.objects.filter(Q(date__gte=release.startdate, date__lte=release.enddate)).filter(student=request.user.extrainfo.student)
         if existingRelease:
+            print(existingRelease)
             existingRelease.update(
                 title_name=title_name,
                 no_of_students=no_of_students,
@@ -816,6 +817,7 @@ def submitDM(request):
                 request, award + 'Application is successfully updated')
             break
         else:
+            print(existingRelease)
             Proficiency_dm.objects.create(
                 title_name=title_name,
                 no_of_students=no_of_students,
