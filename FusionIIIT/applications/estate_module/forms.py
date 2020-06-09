@@ -143,3 +143,33 @@ class InventoryTypeForm(ModelForm):
             'rate': 'Rate',
             'remarks': 'Remarks',
         }
+
+
+class InventoryForm(ModelForm):
+    class Meta:
+        model = Inventory
+        fields = '__all__'
+        widgets = {
+            'quantity': NumberInput(attrs={
+                'placeholder': 'Enter quantity',
+                'type': 'text',
+            }),
+            'dateOrdered': DateInput(attrs={
+                'placeholder': 'Enter date',
+            }),
+            'dateReceived': DateInput(attrs={
+                'placeholder': 'Enter date',
+            }),
+            'remarks': Textarea(attrs={
+                'placeholder': 'Enter remarks'
+            }),
+        }
+        labels = {
+            'inventoryType': 'Inventory Type',
+            'building': 'Building',
+            'work': 'Work',
+            'quantity': 'Quantity',
+            'dateOrdered': 'Date Ordered',
+            'dateReceived': 'Date Received',
+            'remarks': 'Remarks',
+        }

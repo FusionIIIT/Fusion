@@ -8,7 +8,7 @@
     </a> {% endcomment %}
     {% for tabname, works in menuitem_data.tabs.items %}
     <a class="blue {% if forloop.counter0 is 0 %}{{ "active" }}{% endif %} item"
-        data-tab="{{ menuitem|slugify }}_{{ tabname }}">
+        data-tab="{{ menuitem|slugify }}_{{ tabname|slugify }}">
         {{ tabname }}
     </a>
     {% endfor %}
@@ -28,7 +28,8 @@
 </div> {% endcomment %}
 
 {% for tabname, works in menuitem_data.tabs.items %}
-<div class="ui {% if forloop.counter0 is 0 %}{{ "active" }}{% endif %} tab" data-tab="{{ menuitem|slugify }}_{{ tabname }}">
+<div class="ui {% if forloop.counter0 is 0 %}{{ "active" }}{% endif %} tab"
+    data-tab="{{ menuitem|slugify }}_{{ tabname|slugify }}">
     {% if works|length > 0 %}
     <button class="ui right labeled icon blue new_{{ menuitem|slugify }} button">
         <i class="plus icon"></i>

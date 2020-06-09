@@ -76,6 +76,14 @@ Estate
         {% endfor %}
         {% endif %}
 
+        {% comment %} <button class="ui right labeled icon blue new_inventory button">
+            <i class="plus icon"></i>
+            New Inventory
+        </button> {% endcomment %}
+
+        {% include inventory_data.template_dir|add:'/edit_modal.html' %}
+
+
         {% for menuitem, menuitem_data in menuitems.items %}
         <div class="ui {% if forloop.counter0 is 0 %}{{ "active" }}{% endif %} tab raised segment"
             data-tab="{{ menuitem|slugify }}">
@@ -84,6 +92,13 @@ Estate
         {% endfor %}
 
     </div>
+
+    {% include inventory_data.template_dir|add:'/new_modal.html' with menuitem='Inventory' %}
+
+    {% for inventory in inventory_data.all %}
+    {% include inventory_data.template_dir|add:'/detail.html' with menuitem='Inventory' %}
+
+    {% endfor %}
 
 </div>
 

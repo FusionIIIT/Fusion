@@ -1,0 +1,85 @@
+{% csrf_token %}
+<div class="ui error message"></div>
+
+<div class="three fields">
+    <div class="required field">
+        {{ inventory_data.form.inventoryType.label_tag }}
+        {{ inventory_data.form.inventoryType }}
+    </div>
+    <div class="required field">
+        {{ inventory_data.form.quantity.label_tag }}
+        {{ inventory_data.form.quantity }}
+    </div>
+
+    <div class="required field">
+        {{ inventory_data.form.dateOrdered.label_tag }}
+
+        <div class="ui calendar">
+            <div class="ui input left icon">
+                <i class="calendar icon"></i>
+                {{ inventory_data.form.dateOrdered }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="three fields">
+    <div class="field">
+        {{ inventory_data.form.building.label_tag }}
+        {{ inventory_data.form.building }}
+    </div>
+
+    <div class="field">
+        {{ inventory_data.form.work.label_tag }}
+        {{ inventory_data.form.work }}
+    </div>
+
+    <div class="field">
+        {{ inventory_data.form.dateReceived.label_tag }}
+
+        <div class="ui calendar">
+            <div class="ui input left icon">
+                <i class="calendar icon"></i>
+                {{ inventory_data.form.dateReceived }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="field">
+    {{ inventory_data.form.remarks.label_tag }}
+    {{ inventory_data.form.remarks }}
+</div>
+<p></p>
+
+<script type='module'>
+    $('#{{ form_id }}')
+        .form({
+            fields: {
+                inventoryType: {
+                    identifier: 'inventoryType',
+                    rules: [{
+                        type: 'empty',
+                        prompt: 'Inventory name cannot be blank'
+                    }]
+                },
+                dateOrdered: {
+                    identifier: 'dateOrdered',
+                    rules: [{
+                        type: 'empty',
+                        prompt: 'Date Ordered cannot be blank'
+                    }]
+                },
+                quantity: {
+                    identifier: 'quantity',
+                    rules: [{
+                        type: 'empty',
+                        prompt: 'Quantity cannot be blank'
+                    }, {
+                        type: 'integer',
+                        prompt: 'Quantity must be an integer'
+                    }]
+                },
+            }
+        });
+</script>

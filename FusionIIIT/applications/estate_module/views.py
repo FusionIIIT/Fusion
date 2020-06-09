@@ -3,7 +3,7 @@ from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
-from .forms import BuildingForm, WorkForm, InventoryTypeForm
+from .forms import BuildingForm, WorkForm, InventoryTypeForm, InventoryForm
 from .models import Building, Work, SubWork, Inventory, InventoryType
 
 
@@ -75,9 +75,16 @@ def estate(request):
         'Inventory List': inventoryType_data,
     }
 
+    inventory_data = {
+        'form': InventoryForm(),
+        'all': Inventory.objects.all(),
+        'template_dir': 'estate_module/Inventory'
+    }
+
     context = {
         'title': "Estate Module",
         'menuitems': menuitems,
+        'inventory_data': inventory_data,
     }
 
     return render(request, "estate_module/home.html", context)
@@ -221,4 +228,50 @@ def deleteInventoryType(request, inventoryType_id):
     inventoryType.delete()
     messages.success(
         request, f'Inventory Type Deleted: { inventoryType_name }')
+    return redirect('estate_module_home')
+
+
+@require_POST
+def newInventory(request):
+
+    newInventoryForm = InventoryForm(request.POST)
+
+    if newInventoryForm.is_valid():
+        new_Inventory = newInventoryForm.save()
+        messages.success(
+            request, f'New Inventory Created: { new_Inventory }')
+        return redirect('estate_module_home')
+
+    for label, errors in newInventoryForm.errors.items():
+        for error in errors:
+            messages.error(request, f'{ label }: { error }')
+    return redirect('estate_module_home')
+
+
+@require_POST
+def editInventory(request, inventory_id):
+
+    inventory = Inventory.objects.get(pk=inventory_id)
+
+    editInventoryForm = InventoryForm(request.POST, instance=inventory)
+
+    if editInventoryForm.is_valid():
+        editedInventory = editInventoryForm.save()
+        messages.success(
+            request, f'Inventory Updated: { editedInventory }')
+        return redirect('estate_module_home')
+
+    for label, errors in editInventoryForm.errors.items():
+        for error in errors:
+            messages.error(request, f'{ label }: { error }')
+    return redirect('estate_module_home')
+
+
+@require_POST
+def deleteInventory(request, inventory_id):
+
+    inventory = Inventory.objects.get(pk=inventory_id)
+    inventory_name = inventory.inventoryType
+    inventory.delete()
+    messages.success(request, f'Inventory Deleted: { inventory_name }')
     return redirect('estate_module_home')

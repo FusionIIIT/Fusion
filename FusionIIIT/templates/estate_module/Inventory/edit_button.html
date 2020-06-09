@@ -1,0 +1,46 @@
+<button class="ui red button edit_inventory_{{ inventory.id }}">Edit</button>
+<script type='module'>
+    $('.coupled_inventory.modal')
+        .modal({
+            allowMultiple: true
+        });
+
+    $('.delete_inventory.modal')
+        .modal('attach events',
+            '.edit_inventory.modal .delete_inventory.button');
+
+    $('.edit_inventory_{{ inventory.id }}.button').on('click', function () {
+        $('.edit_inventory.modal')
+            .modal({
+                centered: false,
+            })
+            .modal({
+                onShow: function () {
+                    // change edit modal header
+                    $('.edit_inventory.modal .header').first()
+                        .text("{{ inventory.inventoryType }}");
+                    // change modal form action url
+                    $('.edit_inventory.modal form')
+                        .attr("action", "{% url 'edit_inventory' inventory.id %}");
+                    // change delete modal message
+                    $('.delete_inventory.modal .content p')
+                        .text("Are you sure you want to delete {{ inventory.name }}?");
+                    // change delete form action url
+                    $('.delete_inventory.modal form')
+                        .attr("action", "{% url 'delete_inventory' inventory.id %}");
+                    // prefill form
+                    $('.edit_inventory.modal form')
+                        .form('set values', {
+                            inventoryType: '{% if inventory.inventoryType %}{{ inventory.inventoryType.id }}{% endif %}',
+                            building: '{% if inventory.building %}{{ inventory.building.id }}{% endif %}',
+                            quantity: '{% if inventory.quantity %}{{ inventory.quantity }}{% endif %}',
+                            dateOrdered: '{% if inventory.dateOrdered %}{{ inventory.dateOrdered }}{% endif %}',
+                            dateReceived: '{% if inventory.dateReceived %}{{ inventory.dateReceived }}{% endif %}',
+                            remarks: '{% if inventory.remarks %}{{ inventory.remarks }}{% endif %}',
+                        });
+                }
+            })
+            .modal('setting', 'closable', false)
+            .modal('show');
+    });
+</script>

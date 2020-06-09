@@ -16,4 +16,9 @@ urlpatterns = [
          views.editInventoryType, name="edit_inventoryType"),
     path('delete/inventoryType/<inventoryType_id>', views.deleteInventoryType,
          name="delete_inventoryType"),
+    path('new/inventory', views.newInventory, name="new_inventory"),
+    path('edit/inventory/<inventory_id>',
+         views.editInventory, name="edit_inventory"),
+    path('delete/inventory/<inventory_id>',
+         views.deleteInventory, name="delete_inventory"),
 ]

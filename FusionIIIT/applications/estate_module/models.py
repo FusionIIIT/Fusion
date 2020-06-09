@@ -121,6 +121,9 @@ class Inventory(models.Model):
     dateReceived = models.DateField(null=True, blank=True)
     remarks = models.TextField(null=True, blank=True)
 
+    def cost(self):
+        return self.quantity * self.inventoryType.rate
+
     class Meta:
         ordering = ['-id']
 

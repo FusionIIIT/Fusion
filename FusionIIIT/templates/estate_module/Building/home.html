@@ -1,43 +1,22 @@
 {% load static %}
 {% load humanize %}
 
-{% comment %} {% with tabnames="All Incomplete Complete" %} {% endcomment %}
-{% comment %} {% with tabnames="Incomplete Complete" %} {% endcomment %}
-
-
-
 <div class="ui pointing secondary menu">
-
-    {% comment %} <a class="blue active item" data-tab="{{ menuitem|slugify }}_All">
-        All
-    </a> {% endcomment %}
 
     {% for tabname, buildings in menuitem_data.tabs.items %}
     <a class="blue {% if forloop.counter0 is 0 %}{{ "active" }}{% endif %} item"
-        data-tab="{{ menuitem|slugify }}_{{ tabname }}">
+        data-tab="{{ menuitem|slugify }}_{{ tabname|slugify }}">
         {{ tabname }}
     </a>
     {% endfor %}
 
 </div>
 
-{% comment %} {% if  %}{% else %}{% endif %} {% endcomment %}
 {% include menuitem_data.template_dir|add:'/edit_modal.html' %}
 
-
-
-{% comment %} <div class="ui active tab" data-tab="{{ menuitem|slugify }}_All">
-    {% if buildings|length > 0 %}
-    <button class="ui right labeled icon blue new_{{ menuitem|slugify }} button">
-        <i class="plus icon"></i>
-        New
-    </button>
-    {% endif %}
-    {% include 'estate_module/'|add:menuitem|add:'/tab.html'%}
-</div> {% endcomment %}
-
 {% for tabname, buildings in menuitem_data.tabs.items %}
-<div class="ui {% if forloop.counter0 is 0 %}{{ "active" }}{% endif %} tab" data-tab="{{ menuitem|slugify }}_{{ tabname }}">
+<div class="ui {% if forloop.counter0 is 0 %}{{ "active" }}{% endif %} tab"
+    data-tab="{{ menuitem|slugify }}_{{ tabname|slugify }}">
     {% if buildings|length > 0 %}
     <button class="ui right labeled icon blue new_{{ menuitem|slugify }} button">
         <i class="plus icon"></i>
@@ -49,7 +28,3 @@
 {% endfor %}
 
 {% include 'estate_module/'|add:menuitem|add:'/new_modal.html' %}
-
-
-
-{% comment %} {% endwith %} {% endcomment %}

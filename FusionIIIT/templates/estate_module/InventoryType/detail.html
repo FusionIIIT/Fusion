@@ -34,14 +34,15 @@
                         <table class="ui definition table">
                             <tbody>
                                 <tr>
-                                    <td class='six wide'>Invenotry Type Name</td>
+                                    <td class='six wide'>Inventory Type Name</td>
                                     <td class="name">{% if inventoryType.name %} {{ inventoryType.name }} {% endif %}
                                     </td>
                                 </tr>
 
                                 <tr>
                                     <td>Rate</td>
-                                    <td class="rate">{% if inventoryType.rate %} {{ inventoryType.rate }} {% endif %}
+                                    <td class="rate">{% if inventoryType.rate %}₹&nbsp;{{ inventoryType.rate|intcomma }}
+                                        {% endif %}
                                     </td>
                                 </tr>
 

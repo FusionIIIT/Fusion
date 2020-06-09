@@ -10,7 +10,7 @@
     {% endfor %}
 </div>
 
-{% include menuitem_data.template_dir|add:'/edit_modal.html' %}
+{% include inventory_data.template_dir|add:'/edit_modal.html' %}
 
 {% for tabname, buildings in menuitem_data.tabs.items %}
 <div class="ui {% if forloop.counter0 is 0 %}{{ "active" }}{% endif %} tab"
@@ -21,8 +21,8 @@
         New
     </button>
     {% endif %}
-    {% include menuitem_data.template_dir|add:'/tab.html' %}
+    {% include inventory_data.template_dir|add:'/tab.html' %}
 </div>
 {% endfor %}
 
-{% include menuitem_data.template_dir|add:'/new_modal.html' %}
+{% include inventory_data.template_dir|add:'/new_modal.html' %}
