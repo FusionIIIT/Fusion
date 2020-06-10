@@ -126,6 +126,7 @@ Complaint
                     {% if worker_name is None %}
                         <a href="{% url 'complaint:assign_worker' comp_id1=comp_id %}"><button class="ui large primary button right floated">Assign Worker</button></i></a>
                     {% else %}
+                      <a href="{% url 'complaint:discharge_worker' wid=wid cid=comp_id %}"><button class="ui large primary button right floated">Delete Assigned Worker</button></i></a>
                       <a href="{% url 'complaint:assign_worker' comp_id1=comp_id %}"><button class="ui large primary button right floated">Re-Assign Worker</button></i></a>
                     {% endif %}
                 </div>

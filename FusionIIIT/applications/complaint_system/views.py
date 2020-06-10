@@ -183,7 +183,7 @@ def discharge_worker(request,wid,cid):
     StudentComplain.objects.select_for_update().filter(id=cid).\
                 update(worker_id=None, status=0)
     #StudentComplain.objects.get(id=cid).delete()
-    url='/complaint/caretaker/worker_id_know_more/'+wid+'/complaint_reassign/'+cid;
+    url='/complaint/caretaker/detail2/'+cid;
     return HttpResponseRedirect(url)
 
 
@@ -598,6 +598,18 @@ def caretaker(request):
                         'complaint_assign_no': complaint_assign_no,
                         'overduecomplaint': overduecomplaint, 'care_id': a})
 
+@login_required
+def remove_worker_from_complaint(request,complaint_id):
+    """
+    The function is used by caretaker to remove a worker
+    already assigned to a complaint
+    @param:
+       request - trivial
+       complaint_id - used to get complaint_id registered
+    """
+    complaint = StudentComplain.objects.filter(complaint_id=complaint_id).update(worker_id='')
+    return HttpResponseRedirect('/complaint/caretaker/')
+
 
 
 
@@ -884,6 +896,7 @@ def detail2(request, detailcomp_id1):
     detail2 = StudentComplain.objects.get(id=detailcomp_id1)
     if(detail2.worker_id is None):
         worker_name = None
+        worker_id = detail2.worker_id  
     else:
         worker_id = detail2.worker_id.id
         worker = Workers.objects.get(id=worker_id)
@@ -895,7 +908,7 @@ def detail2(request, detailcomp_id1):
         num = 1
     temp=StudentComplain.objects.filter(complainer=y).first()                                                               
     comp_id=temp.id 
-    return render(request, "complaintModule/complaint_caretaker_detail.html", {"detail2": detail2, "comp_id":detail2.id,"num":num,"worker_name":worker_name})
+    return render(request, "complaintModule/complaint_caretaker_detail.html", {"detail2": detail2, "comp_id":detail2.id,"num":num,"worker_name":worker_name,"wid":worker_id})
 
 @login_required
 def detail3(request, detailcomp_id1):
