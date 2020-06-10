@@ -11,12 +11,12 @@
         <a class="item" data-tab="session">
             Club Sessions
         </a>
+        {%  endif %}
 
    <a class="item" data-tab="event">
             Club Events
         </a>
 
-        {%  endif %}
     </div>
 
     {% for i in Club_name %}
@@ -70,39 +70,48 @@
 
 
     {% for i in Club_event %}
-        <div class="ui small modal {{ i.club }}_event" >
-            <i class="close icon"></i>
-            <div class="header">
-                Club Event Info
+    <div class="ui modal {{ i.club_event }}_" >
+        <i class="close icon"></i>
+        <div class="header">
+            Event Info
+        </div>
+        <div class="image content">
+            <div class="ui medium image">
+
+              <img src="/media/{{ i.event_poster }}">
             </div>
-            <div class="image content">
-                <div class="ui medium image">
-                  <img src="/media/{{ i.event_details }}">
+            <div class="description">
+                <div class="ui header">
+                <p><H1><u>{{ i.club.club_name }}&nbsp; club </u></H1></p>
                 </div>
-                <div class="description">
-                    <div class="ui header">
-                    <p>{{ i.club }}</p>
-                    </div>
-                    <p>{{ i.event_name }}</p>
-                    <p>{{ i.incharge }}</p>
-                    <p>{{ i.date }}</p>
-                    <p>{{ i.details }}</p>
-                </div>
-            </div>
-            <div class="actions">
-                <div class="ui black deny button">
-                    Close
-                </div>
+<b>Event Name </b>     : {{ i.event_name }}<br/>
+<b>Incharge </b>   : {{ i.incharge }}<br/>
+<b>Date </b>   : {{ i.date }}<br/>
+
+
+<b>Start Time </b>   : {{ i.start_time }}<br/>
+
+<b>End Time </b> : {{ i.end_time}}<br/>
+
+<b>Description : </b>
+{{ i.details }} <br/>
+
             </div>
         </div>
+        <div class="actions">
+            <div class="ui black deny button">
+                Close
+            </div>
+        </div>
+    </div>
     {% endfor %}
 
 
 {{ i.session_poster }}
 <!-- Modal for the session Info -->
 {% for i in Club_session %}
-        <div class="ui modal {{ i }}_" >
-            <i class="close icon"></i>
+<div class="ui modal {{ i.club_session }}_" >
+    <i class="close icon"></i>
             <div class="header">
                 Session Info
             </div>
@@ -144,7 +153,7 @@
             $(id).modal('show');
         }
 
-        function view_event(a) {
+        function view_event_(a) {
 
             var id = '.ui.modal.'+a;
             $(id).modal('show');
@@ -157,8 +166,9 @@
         }
 
         function display_club_events() {
-            var data1 = "_"+document.getElementById('club_events_').value+"_event";
+            var data1 = "_"+document.getElementById('club_event_').value;
             document.getElementById(data1).hidden = false;
+
 
         }
          function display_club_session() {
@@ -252,6 +262,14 @@
         <!-- <div class="extra content"></div> -->
     </div>
 
+   
+   
+   
+   
+   
+   
+   
+   
     <div class="ui tab" data-tab="session">
         <!-- <div class="ui vertical segment"> -->
             <form class="ui form" style="padding-left: 32px; padding-right: 32px;">
@@ -270,7 +288,8 @@
             <br>
             <h4 class="ui dividing header" style="margin-left: 32px; margin-right: 32px;">Club Sessions</h4>
 
-         <table class="ui very basic collapsing celled sortable table"
+
+           <table class="ui very basic collapsing celled sortable table"
                    style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
                 <thead>
                 <tr>
@@ -304,30 +323,8 @@
      </div>
 
     <div class="ui tab" data-tab="event">
-        <!-- <div class="ui vertical segment"> -->
-            <form class="ui form" style="padding-left: 32px; padding-right: 32px;">
-                <div class="field">
-                    <label>Club</label>
-                    <select class="ui search fluid dropdown" name="club" id="club_events_" onchange="display_club_events()" required>
-                        <option value="">Select</option>
-                        {% if "co-ordinator" not in Curr_desig %}
-                            {% for i in Club_member %}
-                                {% if request.user.username in i.member.id.user|stringformat:"s" and i.status == "confirmed" %}
-                                    <option value="{{ i.club.club_name }}">{{ i.club.club_name }} </option>
-                                {% endif %}
-                            {% endfor %}
-                        {% else %}
-                            {% for i in Club_name %}
-                                {% if request.user.username in i.co_ordinator|stringformat:"s" and i.status == "confirmed" %}
-                                    <option value="{{ i.club_name }}">{{ i.club_name }} </option>
-                                {% endif %}
-                            {% endfor %}
-                        {% endif %}
-                    </select>
-                </div>
-            </form>
-            <br>
-            <h4 class="ui dividing header" style="margin-left: 32px; margin-right: 32px;">Club Events</h4>
+        <div class="ui vertical segment">
+            
             <table class="ui very basic collapsing celled sortable table"
                    style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
                 <thead>
@@ -347,54 +344,89 @@
                     <th>
                         Date
                     </th>
+                    
                 </tr>
                 </thead>
+                    <tbody>
+                        {% if "Junior Superintendent" in Curr_desig or "Dean_s" in Curr_desig %}
+                        {% for i in Club_event%}                            
+                               <tr>
+                                        <td onclick="view_event_('{{ i.club_event }}_')">
+                                           {{ i.club.club_name }}
+                                       </td>
+                                       <td onclick="view_event_('{{ i.club_event }}_')">
+                                           {{ i.event_name }}
+                                       </td>
+   
+                                       <td onclick="view_event_('{{ i.club_event }}_')">
+                                           {{ i.incharge }}
+                                       </td>
+   
+                                       <td onclick="view_event_('{{ i.club_event }}_')">
+                                           {{ i.date}}
+                                       </td>
+                                      </tr>
+                                      {% empty %}
+                                       <tr>
+                                         <td colspan="4" class="text-center bg-warning">No Events</td>
+                                       </tr>
 
-                <tbody>
-                {% for i in Club_event %}
-                    <tr id="_{{ i.club }}_event" hidden="true">
-                        <td onclick="view_event('{{ i.club }}_event')">
-                            {{ i.club }}
+                           {% endfor %}
+                         {% endif %}
+                        {% if "co-ordinator" in Curr_desig or "co co-ordinator" in Curr_desig %}
+                            {% for i in Club_event%}
+                            <tr>
+                                <td onclick="view_event_('{{ i.club_event }}_')">
+                                    {{ i.club.club_name }}
+                                </td>
+                                <td onclick="view_event_('{{ i.club_event }}_')">
+                                    {{ i.event_name }}
+                                </td>
+
+                                <td onclick="view_event_('{{ i.club_event }}_')">
+                                    {{ i.incharge }}
+                                </td>
+
+                                <td onclick="view_event_('{{ i.club_event }}_')">
+                                    {{ i.date}}
+                                </td>
+                               
+                           </tr>
+                           {% empty %}
+                           <tr>
+                             <td colspan="4" class="text-center bg-warning">No Events</td>
+                           </tr>
+
+                            {% endfor %}
+                    {% else %}
+                
+                    {% for i in Club_event%}
+                    <tr>
+                        <td onclick="view_event_('{{ i.club_event }}_')">
+                            {{ i.club.club_name }}
                         </td>
-
-                        <td>
+                        <td onclick="view_event_('{{ i.club_event }}_')">
                             {{ i.event_name }}
                         </td>
 
-
-                        <td>
-                            <h4 class="ui image header">
-                                <img src="" class="ui mini circular image">
-                                <div class="content">
-                                    {{ i.incharge }}
-                                </div>
-                            </h4>
+                        <td onclick="view_event_('{{ i.club_event }}_')">
+                            {{ i.incharge }}
                         </td>
 
-                        <td>
-                            {{ i.date }}
+                        <td onclick="view_event_('{{ i.club_event }}_')">
+                            {{ i.date}}
                         </td>
+                       
 
-<!--                         <td>
-                            <h4 class="ui image header">
-                                <img src="{% static 'globals/img/zlatan.jpg' %}" class="ui mini circular image">
-                                <div class="content">
-                                    {{ i.co_ordinator }}
-                                </div>
-                            </h4>
-                        </td>
- -->
-                        <!-- <td>
-                            {% comment %}
-                                TODO: Add the attachment here!
-                            {% endcomment %}
-                            <a class="ui inverted circular icon button" style="margin: auto;" target="_blank" href="{{ i.budget_file.url }}">
-                                <i class="large attach black icon"></i>
-                            </a>
-                         -->
-                    </tr>
+                   </tr>
+                   {% empty %}
+                   <tr>
+                     <td colspan="4" class="text-center bg-warning">No Events</td>
+                   </tr>
                 {% endfor %}
-                </tbody>
+                {% endif %}
+
+                    </tbody>
             </table>
 
             <br>

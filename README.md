@@ -1,4 +1,5 @@
 # FusionIIIT
+[![Maintainability](https://api.codeclimate.com/v1/badges/f82b80eb18f62f88fbfe/maintainability)](https://codeclimate.com/github/sdhiman99/Fusion/maintainability)
 
 **FusionIIIT** is the automation of various functionalities, modules and tasks of/for **PDPM Indian Institute of Information Technology, Design and Manufacturing, Jabalpur** being developed in `python3.8` and using `Django` Webframework.
 
@@ -21,17 +22,15 @@
     ```sh
     // Install the required packages using the following command:
     
-    sudo apt install python3-pip python3-dev libpq-dev python-virtualenv build-essential git
+    sudo apt install python3-pip python3-dev python3-venv libpq-dev build-essential git
     sudo -H pip3 install --upgrade pip
-    sudo -H pip3 install virtualenv
     ```
 
 * on **Windows**:
 
   * Get Python 3.8 from [here](https://www.python.org/ftp/python/3.8.3/python-3.8.3-amd64.exe) for AMD64/x64 or [here](https://www.python.org/ftp/python/3.8.3/python-3.8.3.exe) for x86
   * Git from [here](https://git-scm.com/download/win)
-  * Install both using the downloaded `exe` files  
-
+  * Install both using the downloaded `exe` files   
   **Important:** Make sure to check the box that says **Add Python 3.x to PATH** to ensure that the interpreter will be placed in your execution path
 
 ### Downloading the Code
@@ -45,11 +44,12 @@
 ### Setting up environment
 
 * Create a virtual environment  
-  * on **Ubuntu**: `virtualenv env -p python3`  
-  * on **Windows Powershell**: `virtualenv env`
-* Activate the *env*
-  * on **Ubuntu**: `source env/bin/activate`  
-  * on **Windows Powershell**: `. .\env\scripts\activate`  
+  * on **Ubuntu**: `python3 -m venv env`  
+  * on **Windows PowerShell**: `python -m venv env`
+* Activate the *env*    
+  * on **Ubuntu**: `source env/bin/activate`
+  * on **Windows PowerShell**: `.\env\Scripts\Activate.ps1`     
+  **Note** : On Windows, it may be required to enable the Activate.ps1 script by setting the execution policy for the user. You can do this by issuing the following command: `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser`
 * Install the requirements: `pip install -r requirements.txt`
 
 ### Running server
