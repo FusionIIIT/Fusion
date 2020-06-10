@@ -24,7 +24,7 @@ from datetime import datetime
 from django.core import serializers
 import json
 from .models import *
-from django.views.decorators.csrf import csrf_exempt,csrf_protect
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
 
 def coordinator_club(request):
 	for i in Club_info.objects.all():
@@ -32,6 +32,8 @@ def coordinator_club(request):
 		co_co = (str(i.co_coordinator)).split(" ")
 		if co[0] == str(request.user):
 			return(i)
+
+@csrf_exempt
 def delete_sessions(request):
 	selectedIds = request.POST['ids']
 	selectedIds = json.loads(selectedIds)
@@ -180,8 +182,6 @@ def edit_event(request,event_id):
 
 	return render(request,template,context)
 
-
-
 def delete_memberform(request):
 	selectedIds = request.POST['ids']
 	selectedIds = json.loads(selectedIds)
@@ -202,7 +202,7 @@ def facultyData(request):
 		facultyNames = []
 		for i in faculty:
 			name = i.user.first_name + " " + i.user.last_name
-			if current_value is not "":
+			if current_value != "":
 				Lowname = name.lower()
 				Lowcurrent_value = current_value.lower()
 				if Lowcurrent_value in Lowname:
@@ -335,6 +335,7 @@ def new_club(request):
 				}
 		content = json.dumps(content)
 		return HttpResponse(content)
+
 @login_required()
 def registration_form(request):
 	if request.method == 'POST':
@@ -371,7 +372,6 @@ def registration_form(request):
 		# messages.success(request,"Successfully sent the application !!!")
 
 	# return redirect('/gymkhana/')
-
 
 def retrun_content(request, roll, name, desig , club__ ):
 	students =ExtraInfo.objects.all().filter(user_type = "student")
@@ -473,7 +473,6 @@ def getVenue(request):
 	content = json.dumps(content)
 	return HttpResponse(content)
 
-
 @login_required
 def gymkhana(request):
 	roll = request.user
@@ -491,7 +490,6 @@ def gymkhana(request):
 		#print(Types[1])
 	club__ = coordinator_club(request)
 	return render(request, "gymkhanaModule/gymkhana.html", retrun_content(request, roll, name, roll_ , club__ ))
-
 
 @login_required
 def club_membership(request):
@@ -555,7 +553,6 @@ def core_team(request):
 		messages.success(request,"Successfully applied for the post !!!")
 
 	return redirect('/gymkhana/')
-
 
 @login_required
 def event_report(request):
@@ -648,7 +645,6 @@ def club_report(request):
 
 	return redirect('/gymkhana/')
 
-
 @login_required
 def change_head(request):
 	if request.method == "POST" :
@@ -730,6 +726,7 @@ def new_session(request):
 		}
 		content = json.dumps(content)
 		return HttpResponse(content)
+
 @login_required
 def new_event(request):
 	print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
@@ -814,7 +811,6 @@ def approve(request):
 
     return redirect('/gymkhana/')
 
-
 @login_required
 def club_approve(request):
     lisx = list(request.POST.getlist('check'))
@@ -840,7 +836,6 @@ def club_reject(request):
         messages.success(request, "Successfully Rejected !!!")
 
     return redirect('/gymkhana/')
-
 
 @login_required
 def reject(request):
@@ -1016,7 +1011,6 @@ def vote(request,poll_id):
 
 #this algorithm checks if the passed slot time coflicts with any of already booked events
 
-
 def conflict_algorithm_event(date, start_time, end_time, venue):
 	#converting string to datetime type variable
 	start_time = datetime.datetime.strptime(start_time, '%H:%M').time()
@@ -1048,7 +1042,6 @@ def conflict_algorithm_event(date, start_time, end_time, venue):
 			return "success"
 		else:
 			return "error"
-
 
 @login_required(login_url = "/accounts/login/")
 def filetracking(request):
@@ -1168,10 +1161,6 @@ def filetracking(request):
     }
     return render(request, 'filetracking/composefile.html', context)
 
-
-
-
-
 @login_required(login_url = "/accounts/login")
 def forward(request, id):
     """
@@ -1207,8 +1196,6 @@ def forward(request, id):
     track = Tracking.objects.filter(file_id=file)
     # end = timer()
     # print (end-start)
-
-
 
     if request.method == "POST":
             if 'finish' in request.POST:
