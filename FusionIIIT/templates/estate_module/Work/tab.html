@@ -77,7 +77,7 @@
                         <i class="database icon"></i>
                         <div class="content">
                             <div class="header">
-                                No {{ tabname }} {{ menuitem|slugify }} Work found
+                                No {% if tabname != 'All' %}{{ tabname }}{% endif %} {{ menuitem }} Work found
                             </div>
                         </div>
                     </div>
