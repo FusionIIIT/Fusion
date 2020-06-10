@@ -7,7 +7,7 @@
             <table class="ui selectable celled sortable single line table">
                 <thead>
                     <tr>
-                        <th class="four wide column">{{ menuitem|slugify }} Work Name</th>
+                        <th class="four wide column">{{ menuitem }} Work Name</th>
                         <th class="center aligned">Status</th>
                         <th>Building</th>
                         <th class="right aligned">Issued Date</th>
@@ -45,7 +45,8 @@
 
                         <td class="center aligned">{% include menuitem_data.template_dir|add:'/edit_button.html' %}</td>
                         <td class="center aligned">
-                            <button class="ui secondary button details {{ menuitem|slugify }}_{{ work.id }}">Details</button>
+                            <button
+                                class="ui secondary button details {{ menuitem|slugify }}_{{ work.id }}">Details</button>
                             {% include menuitem_data.template_dir|add:'/detail_modal.html' %}
                         </td>
                     </tr>

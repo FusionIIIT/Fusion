@@ -17,7 +17,7 @@
                     {% elif workType_CODE == 'MW' %}
                     <i class="tasks icon"></i>
                     {% endif %}
-                    {{ workType|slugify }} Works
+                    {{ workType }} Works
                 </a>
                 {% endfor %}
                 <a class="item" data-tab="{{ menuitem|slugify }}_{{ building.id }}_inventory"><i
@@ -35,7 +35,7 @@
                         <table class="ui definition table">
                             <tbody>
                                 <tr>
-                                    <td class="six wide">{{ menuitem|slugify }} Name</td>
+                                    <td class="six wide">{{ menuitem }} Name</td>
                                     <td class="name">{% if building.name %} {{ building.name }} {% endif %}</td>
                                 </tr>
 
@@ -140,7 +140,7 @@
                 <table class="ui selectable celled sortable table">
                     <thead>
                         <tr>
-                            <th class="four wide column">{{ workType|slugify }} Work Name</th>
+                            <th class="four wide column">{{ workType }} Work Name</th>
                             <th class="center aligned">Status</th>
                             <th class="right aligned">Issued Date</th>
                             <th>Contractor</th>

@@ -33,6 +33,7 @@
                         .form('set values', {
                             inventoryType: '{% if inventory.inventoryType %}{{ inventory.inventoryType.id }}{% endif %}',
                             building: '{% if inventory.building %}{{ inventory.building.id }}{% endif %}',
+                            work: '{% if inventory.work %}{{ inventory.work.id }}{% endif %}',
                             quantity: '{% if inventory.quantity %}{{ inventory.quantity }}{% endif %}',
                             dateOrdered: '{% if inventory.dateOrdered %}{{ inventory.dateOrdered }}{% endif %}',
                             dateReceived: '{% if inventory.dateReceived %}{{ inventory.dateReceived }}{% endif %}',

@@ -27,6 +27,18 @@
                                         {{ inventory.inventoryType }}
                                         {% endif %}</td>
                                 </tr>
+                                <tr>
+                                    <td>Manufacturer</td>
+                                    <td class="manufacturer">
+                                        {{ inventory.inventoryType.manufacturer }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Model</td>
+                                    <td class="model">
+                                        {{ inventory.inventoryType.model }}
+                                    </td>
+                                </tr>
 
                                 <tr>
                                     <td>Building</td>
@@ -34,23 +46,21 @@
                                         {% endif %}</td>
                                 </tr>
 
+                                {% if inventory.work %}
                                 <tr>
                                     <td>Work</td>
-                                    <td class="work">{% if inventory.work %} {{ inventory.work }}
-                                        {% endif %}</td>
+                                    <td class="work"> {{ inventory.work }}</td>
                                 </tr>
+                                {% endif %}
 
                                 <tr>
                                     <td>Quantity</td>
-                                    <td class="quantity">
-                                        {% if inventory.quantity %}₹&nbsp;{{ inventory.quantity|intcomma }}
-                                        {% endif %}</td>
+                                    <td class="quantity">{{ inventory.quantity|intcomma }}</td>
                                 </tr>
                                 <tr>
                                     <td>Rate</td>
                                     <td class="rate">
-                                        {% if inventory.quantity %}₹&nbsp;{{ inventory.inventoryType.rate|intcomma }}
-                                        {% endif %}</td>
+                                        ₹&nbsp;{{ inventory.inventoryType.rate|intcomma }}&nbsp;per unit</td>
                                 </tr>
                                 <tr>
                                     <td>Cost</td>
