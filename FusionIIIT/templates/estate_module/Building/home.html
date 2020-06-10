@@ -1,0 +1,34 @@
+{% load static %}
+{% load humanize %}
+
+<div class="ui pointing secondary menu">
+
+    {% for tabname, buildings in menuitem_data.tabs.items %}
+    <a class="blue {% if forloop.counter0 is 0 %}{{ "active" }}{% endif %} item"
+        data-tab="{{ menuitem|slugify }}_{{ tabname|slugify }}">
+        {{ tabname }}
+    </a>
+    {% endfor %}
+
+</div>
+
+{% include menuitem_data.template_dir|add:'/edit_modal.html' %}
+
+{% for tabname, buildings in menuitem_data.tabs.items %}
+<div class="ui {% if forloop.counter0 is 0 %}{{ "active" }}{% endif %} tab"
+    data-tab="{{ menuitem|slugify }}_{{ tabname|slugify }}">
+    {% if buildings|length > 0 %}
+    <button class="ui right labeled icon blue new_{{ menuitem|slugify }} button">
+        <i class="plus icon"></i>
+        New
+    </button>
+    {% endif %}
+    {% include 'estate_module/'|add:menuitem|add:'/tab.html' %}
+</div>
+{% endfor %}
+
+{% for building in menuitem_data.tabs.All %}
+{% include menuitem_data.template_dir|add:'/detail_modal.html' %}
+{% endfor %}
+
+{% include 'estate_module/'|add:menuitem|add:'/new_modal.html' %}
