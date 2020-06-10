@@ -1,0 +1,264 @@
+{% load humanize %}
+
+<div class="ui modal details {{ menuitem|slugify }}_{{ work.id }}">
+    <div class="header">
+        {{ work.name }}
+    </div>
+    <div class="scrolling content">
+        <div class="description">
+            <div class="ui pointing secondary menu">
+                <a class="item active" data-tab="{{ menuitem|slugify }}_{{ work.id }}_specifications"><i
+                        class="bar chart icon"></i>Specifications</a>
+
+                <a class="item" data-tab="{{ menuitem|slugify }}_{{ work.id }}_subworks"><i
+                        class="sitemap icon"></i>SubWorks</a>
+                {% if work.remarks %}
+                <a class="item" data-tab="{{ menuitem|slugify }}_{{ work.id }}_remarks">
+                    <i class="sticky note icon"></i>
+                    Remarks
+                </a>
+                {% endif %}
+            </div>
+
+            {% comment %} <h4 class="ui horizontal divider header">
+                <i class="bar chart icon"></i>
+                Specifications
+
+            </h4> {% endcomment %}
+
+            <div class="ui tab basic segment active" data-tab="{{ menuitem|slugify }}_{{ work.id }}_specifications">
+                <div class="ui two column centered grid">
+                    <div class="ten wide column">
+                        <table class="ui definition table">
+                            <tbody>
+                                <tr>
+                                    <td class="six wide column">Name of work</td>
+                                    <td class="name">{% if work.name %} {{ work.name }} {% endif %}</td>
+                                </tr>
+
+                                <tr>
+                                    <td> Status </td>
+                                    <td class=" 
+                                {% if work.status == 'OS' %}
+                                positive
+                                {% elif work.status == 'DL' %}
+                                warning
+                                {% endif %}
+                                ">
+                                        {{ work.get_status_display }}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>Type of work</td>
+                                    <td class="workType">{% if work.workType %} {{ work.get_workType_display }}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>Building</td>
+                                    <td class="building">
+                                        {% if work.building %}
+
+                                        {{ work.building }}
+                                        &nbsp;
+                                        <button
+                                            class="ui secondary mini button details building_{{ work.building.id }}">Details</button>
+                                        {% else %}
+                                        IIITDMJ
+                                        {% endif %}
+                                    </td>
+
+
+                                </tr>
+
+                                <tr>
+                                    <td>Name of contractor</td>
+                                    <td class="contractorName">{% if work.contractorName %} {{ work.contractorName }}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>Date Issued</td>
+                                    <td class="dateIssued">{% if work.dateIssued %} {{ work.dateIssued }} {% endif %}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>Date Started</td>
+                                    <td class="dateStarted">{% if work.dateStarted %} {{ work.dateStarted }} {% endif %}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>Date Completed</td>
+                                    <td class="dateCompleted">{% if work.dateCompleted %} {{ work.dateCompleted }}
+                                        {% endif %}</td>
+                                </tr>
+
+                                <tr>
+                                    <td>Estimated cost</td>
+                                    <td class="costEstimated">
+                                        {% if work.costEstimated %}₹&nbsp;{{ work.costEstimated|intcomma }}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>Actual cost</td>
+                                    <td class="costActual">{% if work.costActual %}₹&nbsp;{{ work.costActual|intcomma }}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="row">
+                        {% if work.verified is True %}
+                        <div class="ui icon success compact message">
+                            <i class="check icon"></i>
+                            <div class="content">
+                                <div class="header">
+                                    This information has been verified
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="ui icon warning compact message">
+                            <i class="exclamation triangle icon"></i>
+                            <div class="content">
+                                <div class="header">
+                                    This information has not been verified
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="ui tab basic segment" data-tab="{{ menuitem|slugify }}_{{ work.id }}_subworks">
+                {% if work.subwork_set.all|length > 0 %}
+                <table class="ui selectable celled sortable table">
+                    <thead>
+                        <tr>
+                            <th class="four wide column">Sub-Work Name</th>
+                            <th class="right aligned">Date Issued</th>
+                            <th class="right aligned">Date Started</th>
+                            <th class="right aligned">Date Completed</th>
+                            <th class="right aligned">Estimated cost</th>
+                            <th colspan="2" class="two wide column"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for subWork in work.subwork_set.all %}
+                        <tr>
+                            <td class="four wide">
+                                {{ subWork.name }}
+                            </td>
+
+                            <td class="right aligned dateIssued">{% if subWork.dateIssued %}
+                                {{ subWork.dateIssued|date:'j-m-Y' }}
+                                {% endif %}</td>
+
+                            <td class="right aligned dateStarted">{% if subWork.dateStarted %}
+                                {{ subWork.dateStarted|date:'j-m-Y' }}
+                                {% endif %}
+                            </td>
+
+                            <td class="right aligned dateCompleted">{% if subWork.dateCompleted %}
+                                {{ subWork.dateCompleted|date:'j-m-Y' }}
+                                {% endif %}</td>
+
+                            <td class="right aligned costEstimated">
+                                {% if subWork.costEstimated %}₹&nbsp;{{ subWork.costEstimated|intcomma }}
+                                {% endif %}
+                            </td>
+                            <td class="center aligned">
+                                {% include subWork_data.template_dir|add:'/edit_button.html' %}
+                            </td>
+                            <td class="center aligned">
+                                <button class="ui secondary button details subwork_{{ subWork.id }}">Details</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="7">
+                                <button
+                                    class="ui right floated right labeled icon blue new_subwork_work_{{ work.id }} button">
+                                    <i class="plus icon"></i>
+                                    New
+                                </button>
+                            </th>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                {% else %}
+                <div class="ui two column centered grid">
+                    <div class="row">
+                        <div class="ui icon warning compact message">
+                            <i class="database icon"></i>
+                            <div class="content">
+                                <div class="header">
+                                    No Sub-Work found for {{ work.name }}
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="row">
+                        <button class="ui right labeled icon blue new_subwork_work_{{ work.id }} button">
+                            <i class="plus icon"></i>
+                            New
+                        </button>
+                    </div>
+                </div>
+                {% endif %}
+                <script type='module'>
+                    $('.new_subwork_work_{{ work.id }}.button').on('click', function () {
+                        $('.new_subwork.modal')
+                            .modal({
+                                centered: false
+                            })
+                            .modal({
+                                onShow: function () {
+                                    // prefill form
+                                    $('.new_subwork.modal form')
+                                        .form('set values', {
+                                            work: '{{ work.id }}',
+                                        });
+                                }
+                            })
+                            .modal('setting', 'closable', false)
+                            .modal('show');
+                    });
+                </script>
+            </div>
+
+            {% if work.remarks %}
+            <div class="ui tab basic segment" data-tab="{{ menuitem|slugify }}_{{ work.id }}_remarks">
+                <p>{{ work.remarks }}</p>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+    <div class="actions">
+        <div class="ui black deny large button">
+            Close
+        </div>
+    </div>
+</div>
+<script type='module'>
+    $('.{{ menuitem|slugify }}_{{ work.id }}.details.modal')
+        .modal({
+            centered: false
+        })
+        .modal('setting', 'closable', false)
+        .modal('attach events', '.{{ menuitem|slugify }}_{{ work.id }}.details.button',
+            'show');
+</script>
