@@ -82,6 +82,7 @@ Estate
         </button> {% endcomment %}
 
         {% include inventory_data.template_dir|add:'/edit_modal.html' %}
+        {% include subWork_data.template_dir|add:'/edit_modal.html' %}
 
 
         {% for menuitem, menuitem_data in menuitems.items %}
@@ -94,10 +95,14 @@ Estate
     </div>
 
     {% include inventory_data.template_dir|add:'/new_modal.html' with menuitem='Inventory' %}
+    {% include subWork_data.template_dir|add:'/new_modal.html' %}
 
     {% for inventory in inventory_data.all %}
     {% include inventory_data.template_dir|add:'/detail.html' with menuitem='Inventory' %}
+    {% endfor %}
 
+    {% for subWork in subWork_data.all %}
+    {% include subWork_data.template_dir|add:'/detail_modal.html' %}
     {% endfor %}
 
 </div>

@@ -3,7 +3,7 @@ from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
-from .forms import BuildingForm, WorkForm, InventoryTypeForm, InventoryForm
+from .forms import BuildingForm, WorkForm, SubWorkForm, InventoryTypeForm, InventoryForm
 from .models import Building, Work, SubWork, Inventory, InventoryType
 
 
@@ -76,15 +76,22 @@ def estate(request):
     }
 
     inventory_data = {
-        'form': InventoryForm(),
         'all': Inventory.objects.all(),
+        'form': InventoryForm(),
         'template_dir': 'estate_module/Inventory'
+    }
+
+    subWork_data = {
+        'all': SubWork.objects.all(),
+        'form': SubWorkForm(),
+        'template_dir': 'estate_module/SubWork'
     }
 
     context = {
         'title': "Estate Module",
         'menuitems': menuitems,
         'inventory_data': inventory_data,
+        'subWork_data': subWork_data,
     }
 
     return render(request, "estate_module/home.html", context)
@@ -180,6 +187,51 @@ def deleteWork(request, work_id):
     work.delete()
 
     messages.success(request, f'{ work_Type } Work Deleted: { work_name }')
+    return redirect('estate_module_home')
+
+
+@require_POST
+def newSubWork(request):
+
+    newSubWorkForm = SubWorkForm(request.POST)
+
+    if newSubWorkForm.is_valid():
+        new_SubWork = newSubWorkForm.save()
+        messages.success(
+            request, f'New SubWork Created: { new_SubWork.name }')
+        return redirect('estate_module_home')
+
+    for label, errors in newSubWorkForm.errors.items():
+        for error in errors:
+            messages.error(request, f'{ label }: { error }')
+    return redirect('estate_module_home')
+
+
+@require_POST
+def editSubWork(request, subWork_id):
+
+    subWork = SubWork.objects.get(pk=subWork_id)
+
+    editSubWorkForm = SubWorkForm(request.POST, instance=subWork)
+
+    if editSubWorkForm.is_valid():
+        editedSubWork = editSubWorkForm.save()
+        messages.success(request, f'SubWork Updated: { editedSubWork.name }')
+        return redirect('estate_module_home')
+
+    for label, errors in editSubWorkForm.errors.items():
+        for error in errors:
+            messages.error(request, f'{ label }: { error }')
+    return redirect('estate_module_home')
+
+
+@require_POST
+def deleteSubWork(request, subWork_id):
+
+    subWork = SubWork.objects.get(pk=subWork_id)
+    subWork_name = subWork.name
+    subWork.delete()
+    messages.success(request, f'SubWork Deleted: { subWork_name }')
     return redirect('estate_module_home')
 
 

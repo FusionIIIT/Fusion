@@ -115,6 +115,50 @@ class WorkForm(ModelForm):
         }
 
 
+class SubWorkForm(ModelForm):
+    class Meta:
+        model = SubWork
+        fields = '__all__'
+        widgets = {
+            'name': TextInput(attrs={
+                'placeholder': 'Enter name of work'
+            }),
+            'dateIssued': DateInput(attrs={
+                'placeholder': 'Enter date',
+                # 'type': 'date',
+            }),
+            'dateStarted': DateInput(attrs={
+                'placeholder': 'Enter date',
+                # 'type': 'date',
+            }),
+            'dateCompleted': DateInput(attrs={
+                'placeholder': 'Enter date',
+                # 'type': 'date',
+            }),
+            'costEstimated': NumberInput(attrs={
+                'placeholder': 'Enter estimated construction cost',
+                'type': 'text'
+            }),
+            'costActual': NumberInput(attrs={
+                'placeholder': 'Enter actual construction cost',
+                'type': 'text'
+            }),
+            'remarks': Textarea(attrs={
+                'placeholder': 'Enter remarks'
+            }),
+        }
+        labels = {
+            'name': 'Name of Sub-Work',
+            'work': 'Part of Work',
+            'dateIssued': 'Date Issued',
+            'dateStarted': 'Date Started',
+            'dateCompleted': 'Date Completed',
+            'costEstimated': 'Estimated cost',
+            'costActual': 'Actual cost',
+            'remarks': 'Remarks',
+        }
+
+
 class InventoryTypeForm(ModelForm):
     class Meta:
         model = InventoryType
