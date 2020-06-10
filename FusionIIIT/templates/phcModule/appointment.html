@@ -15,29 +15,36 @@
     <div class="ui active tab" data-tab="doctorappointment">
         <div class="ui vertical segment">
             <form class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">{% csrf_token %}
-                <div class="field">
+                
                   <div class="field">
                       <label>Doctor</label>
                       <select id="doc" class="ui search fluid" name="doctor_id" required="true">
                         <option selected hidden>--SELECT--</option>
-                       {% for doctor in doctors %}
-                      <option value="{{doctor.id}}">{{doctor.doctor_name}}</option>
-                    <!-- <option value="Dr. Satish">Dr. Satish</option>
-                     <option value="Dr. Vijay">Dr. Vijay</option>
-                     <option value="Dr. Sharma">Dr. Sharma</option>
-                     <option value="Dr. kumar">Dr. Kumar</option> -->
-                       {% endfor %}
+                        {% for doctor in doctors %}
+                        <option value="{{doctor.id}}">{{doctor.doctor_name}}</option>
+                        {% endfor %}
                       </select>
-                  </div>
-                        <div class="field">
-                            <label>Date Of Appointment</label><p id="app_dte"></p>
-                            <input type="date" placeholder="From" id="date" name="date">
-                            <p id="dt"></p>
+                   </div>
+                <div class="field">
+                  <label>Date of Appointment</label>
+                  <!-- on selection of doctor few days should be displayed -->
+                  
+                  
+                              <input type="date" placeholder="Select" id="date" name="date">
+                              <p id="dte"></p>
+                              <label>From Time</label>
+                              <input type="time" placeholder="Select" id="from_time" name="from_time">
+                              <p id="from_time"></p>
+                              <label>To Time</label>
+                              <input type="time" placeholder="Select" id="to_time" name="to_time">
+                              <p id="to_time"></p>
 
-                            </select>
-						
-                        </div>
-                </div>
+
+                    
+                  
+              </div>
+
+
                 <div class="field">
                     <label>Issues/Symptoms</label><p id="desc"></p>
                     <div class="ui fluid input">
@@ -49,7 +56,7 @@
                     <label><br></label>
 
                     <div >
-                      <input type="button" id="amb_submit" name="amb_submit"  value="Submit"class="ui large right floated primary button" />
+                      <input type="submit" id="appo" name="Submit" value="Submit" class="ui small right floated primary button" />
                     </div>
 
                 </div>
@@ -64,63 +71,51 @@
                                          return str.replace(/^\s+|\s+$/g,'');
                                        }
 				 
+						
 					
 					
-                 $('#amb_submit1').click(function(e)
-                                                  {
-                                                    var Date = document.getElementById('date').value;
-                                                    
-                                                    var start = new Date(Date);
-                                                    
+					
+                $('#appo').on('click',function(e){
+                     e.preventDefault();
 
-                                                    var today = new Date(new Date().setHours(0, 0, 0, 0));
+                     var tod = new Date(new Date().setHours(0, 0, 0, 0));
+                     var today = new Date(new Date());
+                     var now = today.getHours();
 
+                     if(trimfield(document.getElementById("description").value) == '')
+                       {
+                       $('#desc').html('*Please fill out the Description!');
+                       document.getElementById("description").focus();
+                        }
+																										
 
-                                                    $('#dt').html('');
-                                                    
-                                                    if ( +start < +today ) {
-                                                        $('#dt').html('You cannot enter a date before today!.');
-                                                        return false;
-                                                    }
-                                                   
+                     else{
+                     $.ajax({
+                     type:'post',
+                     url:'/healthcenter/student/',
+                     data: {
+                     csrfmiddlewaretoken: '{{ csrf_token }}',
+                     doctor:$("#doc").val(),
+                     date:$("#date").val(),
+                     description:$("#description").val(),
+                     appointment:$("#appo").val(),
+                     },
+                     success: function(data){
+                        var dte = new Date(data.dt);
+                        dte.setHours(0, 0, 0, 0);
 
-                                                   if(trimfield(document.getElementById("description").value) == '')
-                                                     {
-                                                           $('#desc').html('*Please fill out the details!');
-                                                           document.getElementById("description").focus();
-                                                      }
+                         alert("Appointment requested.Check history for the status of appointment. ")
+                         document.getElementById("doc").value=""
+                         document.getElementById("date").value=""
+                         document.getElementById("description").value=" "
+                         $('#desc').html('');
+                         window.location.reload();
+                         $('#app_dte').html('');
 
-                                                   else{
-                                                    $.ajax({
-                                                      type:'post',
-                                                      url:'/healthcenter/student/',
-                                                      data: {
-                                                      csrfmiddlewaretoken: '{{ csrf_token }}',
-                                                      doctor_id:$("#doctor_id").val(),
-
-                                                      date:$("#date").val(),
-                                                      
-                                                      description:$("#description").val(),
-                                                      amb_submit1:$("#amb_submit1").val()
-                                                    },
-                                                      success: function(data){
-                                                      alert("Appointment fixed.");
-                                                      document.getElementById("doctor_id").value="";
-                                                      document.getElementById("date").value="";
-                                                    
-                                                      document.getElementById("desription").value="";
-                                                      window.location.reload();
-
-                                                      $('#doc').html('');
-                                                      $('#desc').html('');
-                                                      $('#app_dte').html('');
-                                                  
-
-                                                    }
-                                                  });
-                                                  }
-                                                });
-                
+                   }
+                  });
+                    }
+                });
 
               </script>
 
