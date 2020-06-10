@@ -63,13 +63,12 @@
                         <label>Batch</label>
                         <select class="ui fluid search selection large dropdown" name="batch" required>
                                 <option value="">Select</option>
-                                <option value="2014">2014</option>
-                                <option value="2015">2015</option>
-                                <option value="2016">2016</option>
-                                <option value="2017">2017</option>
-                                <option value="all">All Batch</option>
-                            </select>
+                                {% for y in active_batches %}
+                                    <option value="{{ y }}">{{ y }}</option>
+                                {% endfor %}
+                                <option value="all">All</option>
                            <!--<input type="text" value="all" name="batch" placeholder="All Batches"  required>-->
+                        </select>
                     </div>
 
 
