@@ -25,6 +25,9 @@
                                 <td class="work">
                                     {% if subWork.work %}
                                     {{ subWork.work }}
+                                    &nbsp;
+                                    <button
+                                        class="ui secondary button details {{ subWork.work.get_workType_display|slugify }}_{{ subWork.work.id }}">Details</button>
                                     {% endif %}
                                 </td>
                             </tr>

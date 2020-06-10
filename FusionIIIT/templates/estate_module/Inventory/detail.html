@@ -42,14 +42,29 @@
 
                                 <tr>
                                     <td>Building</td>
-                                    <td class="building">{% if inventory.building %} {{ inventory.building }}
-                                        {% endif %}</td>
+                                    <td class="building">
+                                        {% if inventory.building %}
+                                        {{ inventory.building }}
+                                        &nbsp;
+                                        <button
+                                            class="ui secondary mini button details building_{{ inventory.building.id }}">Details</button>
+                                        {% else %}
+                                        IIITDMJ
+                                        {% endif %}
+                                    </td>
                                 </tr>
 
                                 {% if inventory.work %}
                                 <tr>
                                     <td>Work</td>
-                                    <td class="work"> {{ inventory.work }}</td>
+                                    <td class="work">
+                                        {% if inventory.work %}
+                                        {{ inventory.work }}
+                                        &nbsp;
+                                        <button
+                                            class="ui secondary mini button details {{ inventory.work.get_workType_display|slugify }}_{{ inventory.work.id }}">Details</button>
+                                        {% endif %}
+                                    </td>
                                 </tr>
                                 {% endif %}
 

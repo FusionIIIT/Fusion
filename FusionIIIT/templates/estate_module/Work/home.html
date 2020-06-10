@@ -40,6 +40,10 @@
 </div>
 {% endfor %}
 
+{% for work in menuitem_data.tabs.All %}
+{% include menuitem_data.template_dir|add:'/detail_modal.html' %}
+{% endfor %}
+
 <script type='module'>
     $('.new_{{ menuitem|slugify }}.button').on('click', function () {
         $('.new_{{ menuitem|slugify }}.modal form')

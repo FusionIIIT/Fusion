@@ -1,6 +1,6 @@
 {% load humanize %}
 
-<button class="ui secondary button details {{ menuitem|slugify }}_{{ building.id }}">Details</button>
+
 <div class="ui modal details {{ menuitem|slugify }}_{{ building.id }}">
     <div class="header">
         {{ building.name }}
@@ -198,7 +198,7 @@
                             <i class="database icon"></i>
                             <div class="content">
                                 <div class="header">
-                                    No {{ workType|slugify }} Work found for {{ building.name }}
+                                    No {{ workType }} Work found for {{ building.name }}
                                 </div>
                             </div>
                         </div>

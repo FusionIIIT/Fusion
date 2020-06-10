@@ -53,7 +53,8 @@
 
                         </td>
                         <td class="center aligned">
-                            {% include menuitem_data.template_dir|add:'/detail.html' %}
+                            <button
+                                class="ui secondary button details {{ menuitem|slugify }}_{{ building.id }}">Details</button>
                         </td>
                     </tr>
                     {% endfor %}
