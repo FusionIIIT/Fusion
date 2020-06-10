@@ -146,17 +146,15 @@ class Previous_winner(models.Model):
         db_table = 'Previous_winner'
 
 
-#To Do:to reduce the last unused column
 class Release(models.Model):
     date_time = models.DateTimeField(default=datetime.datetime.now, blank=True)
     programme = models.CharField(max_length=10,default='B.Tech')
     startdate = models.DateField(default=datetime.date.today)
     enddate = models.DateField()
-    award = models.CharField(default='',max_length=25)
+    award = models.CharField(default='',max_length=50)
     remarks = models.TextField(max_length=500,default='')
     batch = models.TextField(default='all')
     notif_visible = models.IntegerField(default=1)
-    award_form_visible = models.IntegerField(default=0)
 
     class Meta:
         db_table = 'Release'

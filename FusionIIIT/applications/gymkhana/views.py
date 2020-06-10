@@ -1009,6 +1009,26 @@ def vote(request,poll_id):
 	data = serializers.serialize('json',Voting_choices.objects.all())
 	return redirect('/gymkhana/')
 
+@login_required
+def delete_poll(request, poll_id):
+	try:
+		poll = Voting_polls.objects.filter(pk=poll_id)
+		poll.delete()
+		return redirect('/gymkhana/')
+	except Exception as e:
+			print(e)
+			return HttpResponse('error')
+
+	return redirect('/gymkhana/')
+
+
+
+
+
+
+
+
+
 #this algorithm checks if the passed slot time coflicts with any of already booked events
 
 def conflict_algorithm_event(date, start_time, end_time, venue):
@@ -1246,3 +1266,6 @@ def forward(request, id):
     }
 
     return render(request, 'filetracking/forward.html', context)
+
+
+	
