@@ -9,7 +9,75 @@
     {% block navBar %}
         {% include 'dashboard/navbar.html' %}
     {% endblock %}
+ <script type="text/javascript">
 
+
+        function form_submit(b,event){
+            $("#dateDetails").html('');
+
+
+            // alert(b);
+            event.preventDefault();
+            var form = document.getElementById(b); // You need to use standard javascript object here
+            console.log(b);
+
+            var i ;
+            for(i=0 ; i<form.length ; i++){
+                console.log(form.elements[i].name) ;
+                console.log(form.elements[i].value) ;
+            }
+            var status = 1 ;
+
+            if (b == 'new_session_form'){
+                status = validateNewSessionForm(form);
+            }
+
+
+
+        function validateNewSessionForm(form){
+            var i, startTime, endTime ;
+            var empty = new Array() ;
+            for (i=0 ; i<form.length; i++){
+                if(form.elements[i].value == "" && form.elements[i].name != ""){
+                    empty.push(form.elements[i].name);
+                }
+                else if (form.elements[i].name=="start_time"){
+                    startTime = form.elements[i].value ;
+                }
+                else if (form.elements[i].name=="end_time"){
+                    endTime = form.elements[i].value ;
+                }
+            }
+            var ret = 0 ;
+            //this array contains names of all the input fields included in newsession form
+            if(empty && empty.length && !(empty.length == 1 && empty[0] == "session_poster")){
+                // code to be executed if some fields are empty except session poster field
+                console.log("empty") ;
+                if (endTime <= startTime)
+                    $("#errorContent").append("<p><b>Start Time should be strictly less than end time.</b></p>");
+                $(".formErrors").modal('show') ;
+                ret = 1 ;
+                // form.reset();-
+                // setTimeout(function(){ location.reload(); }, 5000);
+            }
+            else if (endTime <= startTime)
+            {
+                console.log("time problem") ;
+                $("#errorContent").html("<p><b>Start Time should be strictly less than end time.</b></p>");
+                $(".formErrors").modal('show') ;
+                ret = 1 ;
+                // setTimeout(function(){ location.reload(); }, 5000);
+            }
+            return ret ;
+        }
+
+
+
+
+
+        }
+
+    </script>
 
 
     {% comment %}The grid starts here!{% endcomment %}
@@ -125,7 +193,7 @@
                              <div><span id="output"></span></div>
 
                     <div class="field">
-                        <button class="ui primary button right floated" type="submit" >
+                        <button class="ui primary button right floated" type="submit" onclick="form_submit('{{form.id}}/editsession','new_session_form',event)">
                             Submit
                         </button>
                     </div>
@@ -317,6 +385,8 @@ function Bold() {
         });
 
     </script>
+
+
     <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
     <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
     <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
