@@ -163,7 +163,8 @@ def assign_worker(request, comp_id1):
                 if Workers.objects.filter(caretaker_id=a).count() == 0:
                     flag = 'no_worker'
                 else:
-                    workertemp = Workers.objects.filter(caretaker_id=a)
+                    workertemp1 = Workers.objects.filter(caretaker_id=a)
+                    workertemp = workertemp1.filter(worker_type=detail.complaint_type)
                     j = 1
                     print('worker asign')
                     for i in workertemp:
