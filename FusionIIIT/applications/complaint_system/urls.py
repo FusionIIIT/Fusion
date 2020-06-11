@@ -13,7 +13,7 @@ urlpatterns = [
     url(r'^user/caretakerfb/$' , views.caretaker_feedback),
 
     url(r'^user/(?P<complaint_id>[0-9]+)/$', views.submitfeedback),
-    url(r'^user/detail/(?P<detailcomp_id1>[0-9]+)/$', views.detail),
+    url(r'^user/detail/(?P<detailcomp_id1>[0-9]+)/$', views.detail,name='detail'),
    # url(r'^user/check_complaint/$', views.save_comp),
     url(r'^caretaker/$', views.caretaker, name='caretaker'),
     url(r'^caretaker/feedback/(?P<feedcomp_id>[0-9]+)/$', views.feedback_care),

@@ -32,6 +32,8 @@ def coordinator_club(request):
 		co_co = (str(i.co_coordinator)).split(" ")
 		if co[0] == str(request.user):
 			return(i)
+
+@csrf_exempt
 def delete_sessions(request):
 	selectedIds = request.POST['ids']
 	selectedIds = json.loads(selectedIds)
@@ -63,10 +65,7 @@ def editsession(request, session_id):
             print("in the post body")
             print(res)
             if (res == 'success'):
-                e = Session_info.objects.filter(id=session_id).update(club=club_name,
-                                                                  venue=venue, date=date,
-                                                                  start_time=start_time, end_time=end_time,
-                                                                  session_poster=session_poster, details=desc)
+                e = Session_info.objects.filter(id=session_id).update(club=club_name,venue=venue, date=date,start_time=start_time, end_time=end_time, session_poster=session_poster, details=desc)
                 message += "Your form has been dispatched for further process"
                 print(message)
                 return redirect('/gymkhana/')
@@ -179,7 +178,6 @@ def edit_event(request,event_id):
 	template='gymkhanaModule/editevent.html'
 
 	return render(request,template,context)
-
 
 
 def delete_memberform(request):
@@ -715,7 +713,7 @@ def new_session(request):
 			res = conflict_algorithm_session(date, start_time, end_time, venue)
 			message = ""
 			if(res == "success"):
-				session = Session_info(club = club_name, venue = venue, date =date, start_time=start_time , end_time = end_time ,session_poster = session_poster , details = desc)
+				session = Session_info(club = club_name, venue = venue, date =date, start_time=start_time , end_time = end_time , session_poster=session_poster, details = desc)
 				session.save()
 				message += "Your form has been dispatched for further process"
 			else:
