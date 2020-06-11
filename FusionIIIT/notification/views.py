@@ -169,9 +169,11 @@ def scholarship_portal_notif(sender, recipient, type):
 
 
 
-def complaint_system_notif(sender, recipient, type, complaint_id):
-
-    url=('complaint:detail2')
+def complaint_system_notif(sender, recipient, type, complaint_id,student):
+    if(student==0):
+        url = ('complaint:detail')
+    else:
+        url=('complaint:detail2')
     module='Complaint System'
     sender = sender
     recipient = recipient
