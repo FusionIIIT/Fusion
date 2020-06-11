@@ -21,6 +21,7 @@ from .models import (Award_and_scholarship, Constants, Director_gold,
 
 from notification.views import scholarship_portal_notif
 from .validations import MCM_list
+from . import validations as validation_schema
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 # Create your views here.
@@ -539,12 +540,11 @@ def submitMCM(request):
         "loan_amount": loan_amount,
         "college_fee": college_fee,
         "college_name": college_name,
-        "status": status,
         "annual_income": annual_income,
     }
     try:
         for column in MCM_list:
-            validate(instance=data_insert[column], schema=getattr(MCM_list, column))
+            validate(instance=data_insert[column], schema=getattr(validation_schema, column))
 
         releases = Release.objects.filter(
             Q(
