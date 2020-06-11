@@ -502,6 +502,7 @@ def caretaker(request):
     y = ExtraInfo.objects.all().filter(user=current_user).first()
 
     if request.method == 'POST':
+        print('time')
         type = request.POST.get('submit', '')
         worker_type = request.POST.get('complaint_type', '')
         name = request.POST.get('name', '')
@@ -516,14 +517,24 @@ def caretaker(request):
             y = None
         intage = int(age)
         intphone = int(phone)
+        # if len(phone) == 10 and intage > 20 and intage < 50 and intphone > 1999999999:
+        #     x = Workers(caretaker_id=a,
+        #                 name=name,
+        #                 age=age,
+        #                 phone=phone,
+        #                 worker_type=worker_type)
+        #     if not Workers.objects.filter(caretaker_id=a,name=name, age=age,phone=phone,worker_type=worker_type).exists():
+        #         x.save()
+
         if len(phone) == 10 and intage > 20 and intage < 50 and intphone > 1999999999:
-            x = Workers(caretaker_id=a,
+            obj, created = Workers.objects.get_or_create(caretaker_id=a,
                         name=name,
                         age=age,
                         phone=phone,
                         worker_type=worker_type)
-            if not Workers.objects.filter(caretaker_id=a,name=name, age=age,phone=phone,worker_type=worker_type).exists():
-                x.save()
+            print(obj)
+            print(created)
+        
         b = a.area
         historytemp = StudentComplain.objects.filter(location=b).order_by('-id')
         history = []
@@ -541,10 +552,15 @@ def caretaker(request):
         total_worker = []
         total_workertemp = Workers.objects.filter(caretaker_id=a)
         j = 1
+        # for i in total_workertemp:
+        #     if j%2 != 0:
+        #         total_worker.append(i)
+        #     j = j + 1
+        
+
         for i in total_workertemp:
-            if j%2 != 0:
-                total_worker.append(i)
-            j = j + 1
+            total_worker.append(i)
+
         complaint_assign_no = []
 
         for x in total_worker:
@@ -552,6 +568,8 @@ def caretaker(request):
             temp = StudentComplain.objects.filter(worker_id=worker).count()
             worker.total_complaint = temp
             complaint_assign_no.append(worker)
+
+        
             
         return render(request, "complaintModule/complaint_caretaker.html",
                       {'history': history, 'comp_id': y.id, 'total_worker':

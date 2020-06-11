@@ -117,6 +117,7 @@ function addwork(event) {
    else
    {
 
+    event.preventDefault();
     $.ajax({
         type: 'POST',
         url: '.',
@@ -132,7 +133,7 @@ function addwork(event) {
             alert(" Congratulations! The Worker has been added successfully\n Please wait for confirmation");
             setTimeout(function() {
                 window.location.replace('http://localhost:8000/complaint');
-            }, 150);
+            }, 1500);
         },
         // error: function(data, err) {
         //     alert('Something went wrong! Please refill the form');
