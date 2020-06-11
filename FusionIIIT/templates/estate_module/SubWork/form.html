@@ -1,0 +1,125 @@
+{% csrf_token %}
+<div class="ui error message"></div>
+
+{% with subWork_data.form as subWorkForm %}
+<div class="two fields">
+    <div class="required field">
+        {{ subWorkForm.name.label_tag }}
+        {{ subWorkForm.name }}
+    </div>
+
+    <div class="required field">
+        {{ subWorkForm.work.label_tag }}
+        {{ subWorkForm.work }}
+    </div>
+</div>
+
+<div class="three fields">
+    <div class="required field">
+        {{ subWorkForm.dateIssued.label_tag }}
+        <div class="ui calendar">
+            <div class="ui input left icon">
+                <i class="calendar icon"></i>
+                {{ subWorkForm.dateIssued }}
+            </div>
+        </div>
+    </div>
+
+    <div class="field">
+        {{ subWorkForm.dateStarted.label_tag }}
+
+        <div class="ui calendar">
+            <div class="ui input left icon">
+                <i class="calendar icon"></i>
+                {{ subWorkForm.dateStarted }}
+            </div>
+        </div>
+    </div>
+
+    <div class="field">
+        {{ subWorkForm.dateCompleted.label_tag }}
+
+        <div class="ui calendar">
+            <div class="ui input left icon">
+                <i class="calendar icon"></i>
+                {{ subWorkForm.dateCompleted }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="two fields">
+    <div class="field">
+        {{ subWorkForm.costEstimated.label_tag }}
+
+        <div class="ui left icon input">
+            {{ subWorkForm.costEstimated }}
+            <i class="rupee sign icon"></i>
+        </div>
+    </div>
+
+    <div class="field">
+        {{ subWorkForm.costActual.label_tag }}
+
+        <div class="ui left icon input">
+            {{ subWorkForm.costActual }}
+            <i class="rupee sign icon"></i>
+        </div>
+    </div>
+
+</div>
+<h4 class="ui horizontal divider header">
+    <i class="info circle icon"></i>
+    Extra Information
+</h4>
+<div class="field">
+    {{ subWorkForm.remarks.label_tag }}
+    {{ subWorkForm.remarks }}
+</div>
+{% endwith %}
+<p></p>
+
+<script type='module'>
+    $('#{{ form_id }}')
+        .form({
+            fields: {
+                name: {
+                    identifier: 'name',
+                    rules: [{
+                        type: 'empty',
+                        prompt: 'Sub-Work name cannot be blank'
+                    }]
+                },
+                work: {
+                    identifier: 'work',
+                    rules: [{
+                        type: 'empty',
+                        prompt: 'Work cannot be blank'
+                    }]
+                },
+                dateIssued: {
+                    identifier: 'dateIssued',
+                    rules: [{
+                        type: 'empty',
+                        prompt: 'Date Issued cannot be blank'
+                    }]
+                },
+                costEstimated: {
+                    identifier: 'costEstimated',
+                    optional: true,
+                    rules: [{
+                        type: 'integer',
+                        prompt: 'Estimated Cost must be an integer'
+                    }]
+                },
+                costActual: {
+                    identifier: 'costActual',
+                    optional: true,
+                    rules: [{
+                        type: 'integer',
+                        prompt: 'Actual Cost must be an integer'
+                    }]
+                },
+            }
+        });
+</script>

@@ -1,5 +1,7 @@
 import datetime
 import json
+from operator import or_
+from functools import reduce
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -18,6 +20,9 @@ from .models import (Award_and_scholarship, Constants, Director_gold,
                      Proficiency_dm, Release, Notification)
 
 from notification.views import scholarship_portal_notif
+from .validations import MCM_list
+from jsonschema import validate
+from jsonschema.exceptions import ValidationError
 # Create your views here.
 
 
@@ -90,20 +95,20 @@ def convener_view(request):
                 remarks=remarks,
                 batch=batch,
                 notif_visible=1,
-                award_form_visible=0
             )
+            
             # It updates the student Notification table on the spacs head sending the mcm invitation
             if batch == 'all':
-                recipient = Student.objects.filter(programme=programme)
+                active_batches = range(datetime.datetime.now().year - 4 , datetime.datetime.now().year + 1)
+                query = reduce(or_, (Q(id__id__startswith=batch) for batch in active_batches))
+                recipient = Student.objects.filter(programme=programme).filter(query)
             else:
-                recipient = Student.objects.filter(
-                    programme=programme, id__id__startswith=batch)
+                recipient = Student.objects.filter(programme=programme, id__id__startswith=batch)
+            
             # Notification starts
             convenor = request.user
             for student in recipient:
-                scholarship_portal_notif(
-                    convenor, student.id.user, 'award-' + award)
-                # Notification
+                scholarship_portal_notif(convenor, student.id.user, 'award_' + award)  # Notification
             if award == 'Merit-cum-Means Scholarship':
                 rel = Release.objects.get(date_time=d_time)
                 Notification.objects.bulk_create([Notification(
@@ -119,7 +124,9 @@ def convener_view(request):
                     notification_convocation_flag=True,
                     invite_convocation_accept_flag=False) for student in recipient])
             # Notification ends
-            messages.success(request, award+' are invited successfully')
+            
+            messages.success(request, 
+                    award + ' applications are invited successfully for ' + batch + ' batch(es)')
             return HttpResponseRedirect('/spacs/convener_view')
 
         elif 'Email' in request.POST:
@@ -507,78 +514,127 @@ def submitMCM(request):
     student = request.user.extrainfo.student
     annual_income = income_father + income_mother + income_other
     award, award_id = getAwardId(request)
-    releases = Release.objects.filter(Q(startdate__lte=datetime.datetime.today().strftime(
-        '%Y-%m-%d'), enddate__gte=datetime.datetime.today().strftime('%Y-%m-%d'))).filter(award=award)
-    for release in releases:
-        existingRelease = Mcm.objects.filter(Q(date__gte=release.startdate, date__lte=release.enddate)).filter(student=request.user.extrainfo.student)
-        if existingRelease:
+    data_insert = {
+        "brother_name": brother_name,
+        "brother_occupation": brother_occupation,
+        "sister_name": sister_name,
+        "sister_occupation": sister_occupation,
+        "income_father": income_father,
+        "income_mother": income_mother,
+        "income_other": income_other,
+        "father_occ": father_occ,
+        "mother_occ": mother_occ,
+        "father_occ_desc": father_occ_desc,
+        "mother_occ_desc": mother_occ_desc,
+        "four_wheeler": four_wheeler,
+        "four_wheeler_desc": four_wheeler_desc,
+        "two_wheeler": two_wheeler,
+        "two_wheeler_desc": two_wheeler_desc,
+        "house": house,
+        "plot_area": plot_area,
+        "constructed_area": constructed_area,
+        "school_fee": school_fee,
+        "school_name": school_name,
+        "bank_name": bank_name,
+        "loan_amount": loan_amount,
+        "college_fee": college_fee,
+        "college_name": college_name,
+        "status": status,
+        "annual_income": annual_income,
+    }
+    try:
+        for column in MCM_list:
+            validate(instance=data_insert[column], schema=getattr(MCM_list, column))
+
+        releases = Release.objects.filter(
+            Q(
+                startdate__lte=datetime.datetime.today().strftime("%Y-%m-%d"),
+                enddate__gte=datetime.datetime.today().strftime("%Y-%m-%d"),
+            )
+        ).filter(award="Merit-cum-Means Scholarship")
+        for release in releases:
+            if Mcm.objects.filter(
+                Q(date__gte=release.startdate, date__lte=release.enddate)
+            ).filter(student=request.user.extrainfo.student):
                 # if len(Mcm.objects.filter(student = request.user.extrainfo.student)) > 0:
-            existingRelease.update(
-                father_occ=father_occ,
-                mother_occ=mother_occ,
-                brother_name=brother_name,
-                sister_name=sister_name,
-                income_father=income_father,
-                income_mother=income_mother,
-                income_other=income_other,
-                brother_occupation=brother_occupation,
-                sister_occupation=sister_occupation,
-                student=student,
-                annual_income=annual_income,
-                income_certificate=income_certificate,
-                award_id=award_id,
-                father_occ_desc=father_occ_desc,
-                mother_occ_desc=mother_occ_desc,
-                four_wheeler=four_wheeler,
-                four_wheeler_desc=four_wheeler_desc,
-                two_wheeler_desc=two_wheeler_desc,
-                two_wheeler=two_wheeler,
-                house=house,
-                plot_area=plot_area,
-                constructed_area=constructed_area,
-                school_fee=school_fee,
-                school_name=school_name,
-                bank_name=bank_name,
-                loan_amount=loan_amount,
-                college_fee=college_fee,
-                college_name=college_name,
-                status='INCOMPLETE'
-            )
-            messages.success(request, award + ' Application is successfully Updated')
-            break
-        else:
-            Mcm.objects.create(
-                father_occ=father_occ,
-                mother_occ=mother_occ,
-                brother_name=brother_name,
-                sister_name=sister_name,
-                income_father=income_father,
-                income_mother=income_mother,
-                income_other=income_other,
-                brother_occupation=brother_occupation,
-                sister_occupation=sister_occupation,
-                student=student,
-                annual_income=annual_income,
-                income_certificate=income_certificate,
-                award_id=award_id,
-                father_occ_desc=father_occ_desc,
-                mother_occ_desc=mother_occ_desc,
-                four_wheeler=four_wheeler,
-                four_wheeler_desc=four_wheeler_desc,
-                two_wheeler_desc=two_wheeler_desc,
-                two_wheeler=two_wheeler,
-                house=house,
-                plot_area=plot_area,
-                constructed_area=constructed_area,
-                school_fee=school_fee,
-                school_name=school_name,
-                bank_name=bank_name,
-                loan_amount=loan_amount,
-                college_fee=college_fee,
-                college_name=college_name
-            )
-            messages.success(request, award + ' Application is successfully submitted')
-            break
+                Mcm.objects.filter(
+                    Q(
+                        date__gte=release.startdate,
+                        date__lte=release.enddate,
+                    )
+                ).filter(student=request.user.extrainfo.student).update(
+                    father_occ=father_occ,
+                    mother_occ=mother_occ,
+                    brother_name=brother_name,
+                    sister_name=sister_name,
+                    income_father=income_father,
+                    income_mother=income_mother,
+                    income_other=income_other,
+                    brother_occupation=brother_occupation,
+                    sister_occupation=sister_occupation,
+                    student=student,
+                    annual_income=annual_income,
+                    income_certificate=income_certificate,
+                    award_id=award_id,
+                    father_occ_desc=father_occ_desc,
+                    mother_occ_desc=mother_occ_desc,
+                    four_wheeler=four_wheeler,
+                    four_wheeler_desc=four_wheeler_desc,
+                    two_wheeler_desc=two_wheeler_desc,
+                    two_wheeler=two_wheeler,
+                    house=house,
+                    plot_area=plot_area,
+                    constructed_area=constructed_area,
+                    school_fee=school_fee,
+                    school_name=school_name,
+                    bank_name=bank_name,
+                    loan_amount=loan_amount,
+                    college_fee=college_fee,
+                    college_name=college_name,
+                    status="INCOMPLETE",
+                )
+                messages.success(
+                    request, "Mcm scholarship is successfully Updated"
+                )
+                break
+            else:
+                Mcm.objects.create(
+                    father_occ=father_occ,
+                    mother_occ=mother_occ,
+                    brother_name=brother_name,
+                    sister_name=sister_name,
+                    income_father=income_father,
+                    income_mother=income_mother,
+                    income_other=income_other,
+                    brother_occupation=brother_occupation,
+                    sister_occupation=sister_occupation,
+                    student=student,
+                    annual_income=annual_income,
+                    income_certificate=income_certificate,
+                    award_id=award_id,
+                    father_occ_desc=father_occ_desc,
+                    mother_occ_desc=mother_occ_desc,
+                    four_wheeler=four_wheeler,
+                    four_wheeler_desc=four_wheeler_desc,
+                    two_wheeler_desc=two_wheeler_desc,
+                    two_wheeler=two_wheeler,
+                    house=house,
+                    plot_area=plot_area,
+                    constructed_area=constructed_area,
+                    school_fee=school_fee,
+                    school_name=school_name,
+                    bank_name=bank_name,
+                    loan_amount=loan_amount,
+                    college_fee=college_fee,
+                    college_name=college_name,
+                )
+                messages.success(
+                    request, "Mcm scholarship is successfully applied"
+                )
+                break
+        request.session["last_clicked"] = "Submit_mcm"
+    except ValidationError as exc:
+        messages.error(column + " : " + str(exc))
     request.session['last_clicked'] = 'Submit_MCM'
     return HttpResponseRedirect('/spacs/student_view')
 
@@ -612,7 +668,7 @@ def submitGold(request):
     nearest_policestation = request.POST.get('nps')
     nearest_railwaystation = request.POST.get('nrs')
     releases = Release.objects.filter(Q(startdate__lte=datetime.datetime.today().strftime(
-        '%Y-%m-%d'), enddate__gte=datetime.datetime.today().strftime('%Y-%m-%d'))).filter(award=award)
+        '%Y-%m-%d'), enddate__gte=datetime.datetime.today().strftime('%Y-%m-%d'))).filter(award="Convocation Medals")
     for release in releases:
         existingRelease = Director_gold.objects.filter(Q(date__gte=release.startdate, date__lte=release.enddate)).filter(student=request.user.extrainfo.student)
         if existingRelease:
@@ -691,7 +747,7 @@ def submitSilver(request):
     nearest_policestation = request.POST.get('nps')
     nearest_railwaystation = request.POST.get('nrs')
     releases = Release.objects.filter(Q(startdate__lte=datetime.datetime.today().strftime(
-        '%Y-%m-%d'), enddate__gte=datetime.datetime.today().strftime('%Y-%m-%d'))).filter(award=award)
+        '%Y-%m-%d'), enddate__gte=datetime.datetime.today().strftime('%Y-%m-%d'))).filter(award="Convocation Medals")
     for release in releases:
         existingRelease = Director_silver.objects.filter(Q(date__gte=release.startdate, date__lte=release.enddate)).filter(student=request.user.extrainfo.student)
         if existingRelease:
@@ -776,10 +832,11 @@ def submitDM(request):
     nearest_policestation = request.POST.get('nps')
     nearest_railwaystation = request.POST.get('nrs')
     releases = Release.objects.filter(Q(startdate__lte=datetime.datetime.today().strftime(
-        '%Y-%m-%d'), enddate__gte=datetime.datetime.today().strftime('%Y-%m-%d'))).filter(award=award)
+        '%Y-%m-%d'), enddate__gte=datetime.datetime.today().strftime('%Y-%m-%d'))).filter(award="Convocation Medals")
     for release in releases:
         existingRelease = Proficiency_dm.objects.filter(Q(date__gte=release.startdate, date__lte=release.enddate)).filter(student=request.user.extrainfo.student)
         if existingRelease:
+            print(existingRelease)
             existingRelease.update(
                 title_name=title_name,
                 no_of_students=no_of_students,
@@ -812,6 +869,7 @@ def submitDM(request):
                 request, award + 'Application is successfully updated')
             break
         else:
+            print(existingRelease)
             Proficiency_dm.objects.create(
                 title_name=title_name,
                 no_of_students=no_of_students,
@@ -943,6 +1001,7 @@ def sendStaffRenderRequest(request, additionalParams={}):
     return render(request, 'scholarshipsModule/scholarships_staff.html', context)
 
 def getCommonParams(request):
+    student = Student.objects.all()
     mcm = Mcm.objects.all()
     gold = Director_gold.objects.all()
     silver = Director_silver.objects.all()
@@ -952,13 +1011,14 @@ def getCommonParams(request):
     assis = Designation.objects.get(name='spacsassistant')
     hd = HoldsDesignation.objects.get(designation=con)
     hd1 = HoldsDesignation.objects.get(designation=assis)
-    year_range = range(2013, datetime.datetime.now().year)
+    year_range = range(2013, datetime.datetime.now().year + 1)
+    active_batches = range(datetime.datetime.now().year - 4 , datetime.datetime.now().year + 1)
     last_clicked = ''
     try:
         last_clicked = request.session['last_clicked']
     except:
         print('last_clicked not found')
-    context = {'mcm': mcm, 'awards': awards, 'gold': gold, 'silver': silver, 
+    context = {'mcm': mcm, 'awards': awards, 'student': student, 'gold': gold, 'silver': silver, 
                 'dandm': dandm, 'con': con, 'assis': assis, 'hd': hd, 'hd1': hd1, 
-                'last_clicked': last_clicked, "year_range": year_range}
+                'last_clicked': last_clicked, 'year_range': year_range, 'active_batches': active_batches}
     return context

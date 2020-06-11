@@ -1,0 +1,50 @@
+<button class="ui red button edit_subwork_{{ subWork.id }}">Edit</button>
+<script type='module'>
+    $('.coupled_subwork.modal')
+        .modal({
+            allowMultiple: true
+        });
+
+    $('.delete_subwork.modal')
+        .modal('attach events',
+            '.edit_subwork.modal .delete_subwork.button');
+
+    $('.edit_subwork_{{ subWork.id }}.button').on('click', function () {
+        $('.edit_subwork.modal')
+            .modal({
+                centered: false
+            })
+            .modal({
+                onShow: function () {
+                    // change edit modal header
+                    $('.edit_subwork.modal .header').first()
+                        .text("{{ subWork.name }}");
+                    // change modal form action url
+                    $('.edit_subwork.modal form')
+                        .attr("action", "{% url 'edit_subWork' subWork.id %}");
+                    // change delete modal message
+                    $('.delete_subwork.modal .content p')
+                        .text("Are you sure you want to delete {{ subWork.name }}?");
+                    // change delete form action url
+                    $('.delete_subwork.modal form')
+                        .attr("action", "{% url 'delete_subWork' subWork.id %}");
+                    // prefill form
+                    $('.edit_subwork.modal form')
+                        .form('set values', {
+                            name: '{% if subWork.name %}{{ subWork.name }}{% endif %}',
+                            work: '{% if subWork.work %}{{ subWork.work.id }}{% endif %}',
+                            dateIssued: '{% if subWork.dateIssued %}{{ subWork.dateIssued }}{% endif %}',
+                            dateStarted: '{% if subWork.dateStarted %}{{ subWork.dateStarted }}{% endif %}',
+                            dateCompleted: '{% if subWork.dateCompleted %}{{ subWork.dateCompleted }}{% endif %}',
+                            costEstimated: '{% if subWork.costEstimated %}{{ subWork.costEstimated }}{% endif %}',
+                            costActual: '{% if subWork.costActual %}{{ subWork.costActual }}{% endif %}',
+                            //status: '{{ subWork.status }}',
+                            //verified: '{{ subWork.verified }}',
+                            remarks: '{% if subWork.remarks %}{{ subWork.remarks }}{% endif %}',
+                        });
+                }
+            })
+            .modal('setting', 'closable', false)
+            .modal('show');
+    });
+</script>

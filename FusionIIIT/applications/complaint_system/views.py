@@ -17,7 +17,6 @@ def complaint_reassign(request,wid,iid):
     current_user = get_object_or_404(User, username=request.user.username)
     y = ExtraInfo.objects.all().filter(user=current_user).first()
     if request.method == 'POST':
-        3
         type = request.POST.get('submit', '')
         a = get_object_or_404(User, username=request.user.username)
         y = ExtraInfo.objects.all().filter(user=a).first()
@@ -31,7 +30,9 @@ def complaint_reassign(request,wid,iid):
                 update(worker_id=w, status=1)
             url = '/complaint/caretaker/worker_id_know_more/'+wid;
             complainer_details = StudentComplain.objects.get(id=iid)
-            complaint_system_notif(request.user, complainer_details.complainer.user ,'reassign_worker_alert')
+            student=0
+            message = "Your complaint has been re-assigned"
+            complaint_system_notif(request.user, complainer_details.complainer.user ,'reassign_worker_alert',complainer_details.id,student,message)
             return HttpResponseRedirect(url)
         elif type == 'redirect':
             assign_caretaker = request.POST.get('assign_caretaker', '')
@@ -42,7 +43,9 @@ def complaint_reassign(request,wid,iid):
                 update(location=c.area, remarks=remark)
             url = '/complaint/caretaker/worker_id_know_more/'+wid;
             complainer_details = StudentComplain.objects.get(id=iid)
-            complaint_system_notif(request.user, complainer_details.complainer.user ,'comp_redirect_alert')
+            student=0
+            message = "Your complaint has been redirected to another caretaker"
+            complaint_system_notif(request.user, complainer_details.complainer.user ,'comp_redirect_alert',complainer_details.id,student,message)
             return HttpResponseRedirect(url)
         
     else:
@@ -66,9 +69,10 @@ def complaint_reassign(request,wid,iid):
                     workertemp = Workers.objects.filter(caretaker_id=a)
                     j = 1
                     for i in workertemp:
-                        if j%2 != 0:
-                            worker.append(i)
-                        j = j + 1
+                        worker.append(i)
+                        # if j%2 != 0:
+                        #     worker.append(i)
+                        # j = j + 1
 
 
             except Caretaker.DoesNotExist:
@@ -123,7 +127,10 @@ def assign_worker(request, comp_id1):
             StudentComplain.objects.select_for_update().filter(id=comp_id1).\
                 update(worker_id=w, status=1)
             complainer_details = StudentComplain.objects.get(id=comp_id1)
-            complaint_system_notif(request.user, complainer_details.complainer.user ,'assign_worker_alert')
+            print(complainer_details.id)
+            student = 0
+            message = "Worker has been assigned to your complaint"
+            complaint_system_notif(request.user, complainer_details.complainer.user ,'assign_worker_alert',complainer_details.id,student,message)
 
             return HttpResponseRedirect('/complaint/caretaker/')
         elif type == 'redirect':
@@ -134,7 +141,9 @@ def assign_worker(request, comp_id1):
             StudentComplain.objects.select_for_update().filter(id=comp_id1).\
                 update(location=c.area, remarks=remark)
             complainer_details = StudentComplain.objects.get(id=comp_id1)
-            complaint_system_notif(request.user, complainer_details.complainer.user ,'comp_redirect_alert')
+            student=0
+            message = "Your Complaint has been redirected to another caretaker"
+            complaint_system_notif(request.user, complainer_details.complainer.user ,'comp_redirect_alert',complainer_details.id,student,message)
             return HttpResponseRedirect('/complaint/caretaker/')
     else:
         y = ExtraInfo.objects.get(id=y.id)
@@ -154,12 +163,15 @@ def assign_worker(request, comp_id1):
                 if Workers.objects.filter(caretaker_id=a).count() == 0:
                     flag = 'no_worker'
                 else:
-                    workertemp = Workers.objects.filter(caretaker_id=a)
+                    workertemp1 = Workers.objects.filter(caretaker_id=a)
+                    workertemp = workertemp1.filter(worker_type=detail.complaint_type)
                     j = 1
+                    print('worker asign')
                     for i in workertemp:
-                        if j%2 != 0:
-                            worker.append(i)
-                        j = j + 1
+                        worker.append(i)
+                        # if j%2 != 0:
+                        #     worker.append(i)
+                        # j = j + 1
 
 
             except Caretaker.DoesNotExist:
@@ -183,7 +195,7 @@ def discharge_worker(request,wid,cid):
     StudentComplain.objects.select_for_update().filter(id=cid).\
                 update(worker_id=None, status=0)
     #StudentComplain.objects.get(id=cid).delete()
-    url='/complaint/caretaker/worker_id_know_more/'+wid+'/complaint_reassign/'+cid;
+    url='/complaint/caretaker/detail2/'+cid;
     return HttpResponseRedirect(url)
 
 
@@ -325,7 +337,18 @@ def user(request):
         print(location)
         if location!="":
             print("huaaaaa")
-            x = StudentComplain(complainer=y,
+            # x = StudentComplain(complainer=y,
+            #                     complaint_type=comp_type,
+            #                     location=location,
+            #                     specific_location=specific_location,
+            #                     details=details,
+            #                     status=status,
+            #                     complaint_finish=complaint_finish,
+            #                     upload_complaint=comp_file)
+            
+            
+            # x.save()
+            obj1, created = StudentComplain.objects.get_or_create(complainer=y,
                                 complaint_type=comp_type,
                                 location=location,
                                 specific_location=specific_location,
@@ -333,18 +356,18 @@ def user(request):
                                 status=status,
                                 complaint_finish=complaint_finish,
                                 upload_complaint=comp_file)
-                            
-                                    
-
-            x.save()
+            print(obj1)
+            print(created)
+            
         historytemp = StudentComplain.objects.filter(complainer=y).order_by('-id')
         history = []
         j = 1
         k = 1
         for i in historytemp:
-            if j%2 != 0:
-                history.append(i)
-            j = j+1
+            history.append(i)
+            # if j%2 != 0:
+            #     history.append(i)
+            # j = j+1
 
 
         for h in history:
@@ -375,8 +398,13 @@ def user(request):
         else:
           dsgn = "rewacaretaker"
         caretaker_name = HoldsDesignation.objects.get(designation__name = dsgn)
-        
-        complaint_system_notif(request.user, caretaker_name.user,'lodge_comp_alert')
+        print('lets chcek')
+    
+
+        # This is to allow the student
+        student = 1
+        message = "A New Complaint has been lodged"
+        complaint_system_notif(request.user, caretaker_name.user,'lodge_comp_alert',obj1.id,student,message)
 
         # return render(request, "complaintModule/complaint_user.html",
         #               {'history': history, 'comp_id': comp_id })
@@ -392,9 +420,10 @@ def user(request):
 
         j = 1
         for i in historytemp:
-            if j%2 != 0:
-                history.append(i)
-            j = j+1
+            history.append(i)
+            # if j%2 != 0:
+            #     history.append(i)
+            # j = j+1
 
         for i in history:
             i.serial_no = j
@@ -473,6 +502,7 @@ def save_comp(request):
                             complaint_finish=complaint_finish,
                             upload_complaint =comp_file)
 
+        print('lets check')
         x.save()
        # messages.info(request,'Complaint successfully launched.')
         # return HttpResponseRedirect('/complaint/user/')
@@ -496,6 +526,7 @@ def caretaker(request):
     y = ExtraInfo.objects.all().filter(user=current_user).first()
 
     if request.method == 'POST':
+        print('time')
         type = request.POST.get('submit', '')
         worker_type = request.POST.get('complaint_type', '')
         name = request.POST.get('name', '')
@@ -510,23 +541,34 @@ def caretaker(request):
             y = None
         intage = int(age)
         intphone = int(phone)
+        # if len(phone) == 10 and intage > 20 and intage < 50 and intphone > 1999999999:
+        #     x = Workers(caretaker_id=a,
+        #                 name=name,
+        #                 age=age,
+        #                 phone=phone,
+        #                 worker_type=worker_type)
+        #     if not Workers.objects.filter(caretaker_id=a,name=name, age=age,phone=phone,worker_type=worker_type).exists():
+        #         x.save()
+
         if len(phone) == 10 and intage > 20 and intage < 50 and intphone > 1999999999:
-            x = Workers(caretaker_id=a,
+            obj, created = Workers.objects.get_or_create(caretaker_id=a,
                         name=name,
                         age=age,
                         phone=phone,
                         worker_type=worker_type)
-            if not Workers.objects.filter(caretaker_id=a,name=name, age=age,phone=phone,worker_type=worker_type).exists():
-                x.save()
+            print(obj)
+            print(created)
+        
         b = a.area
         historytemp = StudentComplain.objects.filter(location=b).order_by('-id')
         history = []
         j = 1
         k = 1
         for i in historytemp:
-            if j%2 == 1:
-                history.append(i)
-            j = j+1
+            history.append(i)
+            # if j%2 == 1:
+            #     history.append(i)
+            # j = j+1
         for h in history:
             h.serial_no = k
             k=k+1
@@ -535,10 +577,15 @@ def caretaker(request):
         total_worker = []
         total_workertemp = Workers.objects.filter(caretaker_id=a)
         j = 1
+        # for i in total_workertemp:
+        #     if j%2 != 0:
+        #         total_worker.append(i)
+        #     j = j + 1
+        
+
         for i in total_workertemp:
-            if j%2 != 0:
-                total_worker.append(i)
-            j = j + 1
+            total_worker.append(i)
+
         complaint_assign_no = []
 
         for x in total_worker:
@@ -546,6 +593,8 @@ def caretaker(request):
             temp = StudentComplain.objects.filter(worker_id=worker).count()
             worker.total_complaint = temp
             complaint_assign_no.append(worker)
+
+        
             
         return render(request, "complaintModule/complaint_caretaker.html",
                       {'history': history, 'comp_id': y.id, 'total_worker':
@@ -563,9 +612,8 @@ def caretaker(request):
         total_workertemp = Workers.objects.filter(caretaker_id=a)
         j = 1
         for i in total_workertemp:
-            if j%2 != 0:
-                total_worker.append(i)
-            j = j + 1
+            total_worker.append(i)
+            
         complaint_assign_no = []
         complaint_assign_no = []
 
@@ -579,9 +627,10 @@ def caretaker(request):
         j = 1
         k = 1
         for i in historytemp:
-            if j%2 != 0:
-                history.append(i)
-            j=j+1
+            history.append(i)
+            # if j%2 != 0:
+            #     history.append(i)
+            # j=j+1
         for i in history:
             i.serial_no = k
             k = k + 1
@@ -593,8 +642,20 @@ def caretaker(request):
 
         return render(request, "complaintModule/complaint_caretaker.html",
                       { 'history': history, 'comp_id': y.id, 'total_worker': total_worker,
-                        'complaint_assign_no': complaint_assign_no,
+                        'complaint_assign_no': total_worker,
                         'overduecomplaint': overduecomplaint, 'care_id': a})
+
+@login_required
+def remove_worker_from_complaint(request,complaint_id):
+    """
+    The function is used by caretaker to remove a worker
+    already assigned to a complaint
+    @param:
+       request - trivial
+       complaint_id - used to get complaint_id registered
+    """
+    complaint = StudentComplain.objects.filter(complaint_id=complaint_id).update(worker_id='')
+    return HttpResponseRedirect('/complaint/caretaker/')
 
 
 
@@ -739,9 +800,10 @@ def supervisor(request):
         all_complainttemp = StudentComplain.objects.filter(location=a.area).order_by('-id')
         j = 1
         for i in all_complainttemp:
-            if j%2 != 0:
-                all_complaint.append(i)
-            j = j + 1
+            all_complaint.append(i)
+            # if j%2 != 0:
+            #     all_complaint.append(i)
+            # j = j + 1
         overduecomplaint = []
         for i in all_complaint:
             if i.status != 2 and i.status != 3:
@@ -763,9 +825,10 @@ def supervisor(request):
         all_complainttemp = StudentComplain.objects.filter(location=a.area).order_by('-id')
         j = 1
         for i in all_complainttemp:
-            if j%2 != 0:
-                all_complaint.append(i)
-            j = j + 1
+            all_complaint.append(i)
+            # if j%2 != 0:
+            #     all_complaint.append(i)
+            # j = j + 1
         overduecomplaint = []
         for i in all_complaint:
             if i.status != 2 and i.status != 3:
@@ -785,9 +848,10 @@ def caretaker_id_know_more(request,caretaker_id):
     list_pending_complaintstemp = StudentComplain.objects.filter(location = this_caretaker_area).filter(status = 0)
     j = 1
     for i in list_pending_complaintstemp:
-        if j%2 != 0:
-            list_pending_complaints.append(i)
-        j = j + 1
+        list_pending_complaints.append(i)
+        # if j%2 != 0:
+        #     list_pending_complaints.append(i)
+        # j = j + 1
 
     # num = StudentComplain.objects.filter(location = this_caretaker_area).filter(status = 0).count();
     num = len(list_pending_complaints)
@@ -812,7 +876,9 @@ def resolvepending(request, cid):
         StudentComplain.objects.filter(id=cid).\
         update(status=intstatus)
         complainer_details = StudentComplain.objects.get(id=cid)
-        complaint_system_notif(request.user, complainer_details.complainer.user ,'comp_resolved_alert')
+        student=0
+        message = "Congrats! Your complaint has been resolved"
+        complaint_system_notif(request.user, complainer_details.complainer.user ,'comp_resolved_alert',complainer_details.id,student,message)
         return HttpResponseRedirect("/complaint/caretaker/")
     else:
         # complainer_details = StudentComplain.objects.get(id=cid)
@@ -867,6 +933,13 @@ def detail(request, detailcomp_id1):
     function that shows detail about complaint
     """
     detail = StudentComplain.objects.get(id=detailcomp_id1)
+    if(detail.worker_id is None):
+        worker_name = None
+        worker_id = detail.worker_id  
+    else:
+        worker_id = detail.worker_id.id
+        worker = Workers.objects.get(id=worker_id)
+        worker_name = worker.name
     a=User.objects.get(username=detail.complainer.user.username)           
     y=ExtraInfo.objects.get(user=a)
     num=0
@@ -874,19 +947,27 @@ def detail(request, detailcomp_id1):
         num = 1
     temp=StudentComplain.objects.filter(complainer=y).first()                                                                  
     comp_id=temp.id 
-    return render(request, "complaintModule/complaint_user_detail.html", {"detail": detail, "comp_id":comp_id,"num":num})
+    print(detail.id)
+    return render(request, "complaintModule/complaint_user_detail.html", {"detail": detail, "comp_id":detail.id,"num":num,"worker_name":worker_name})
 
 @login_required
 def detail2(request, detailcomp_id1):
     detail2 = StudentComplain.objects.get(id=detailcomp_id1)
+    if(detail2.worker_id is None):
+        worker_name = None
+        worker_id = detail2.worker_id  
+    else:
+        worker_id = detail2.worker_id.id
+        worker = Workers.objects.get(id=worker_id)
+        worker_name = worker.name
     a=User.objects.get(username=detail2.complainer.user.username)           
     y=ExtraInfo.objects.get(user=a)
     num=0
     if detail2.upload_complaint != "":
         num = 1
-    temp=StudentComplain.objects.filter(complainer=y).first()                                                                  
+    temp=StudentComplain.objects.filter(complainer=y).first()                                                               
     comp_id=temp.id 
-    return render(request, "complaintModule/complaint_caretaker_detail.html", {"detail2": detail2, "comp_id":comp_id,"num":num})
+    return render(request, "complaintModule/complaint_caretaker_detail.html", {"detail2": detail2, "comp_id":detail2.id,"num":num,"worker_name":worker_name,"wid":worker_id})
 
 @login_required
 def detail3(request, detailcomp_id1):

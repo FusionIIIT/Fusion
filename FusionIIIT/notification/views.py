@@ -146,7 +146,7 @@ def scholarship_portal_notif(sender, recipient, type):
     verb = ''
 
     if type.startswith('award'):
-        s = type.split('-')
+        s = type.split('_')
         verb = "Invitation to apply for " + s[1]
     elif type == 'Accept_MCM':
         verb = "Your Mcm form has been accepted "
@@ -169,14 +169,18 @@ def scholarship_portal_notif(sender, recipient, type):
 
 
 
-def complaint_system_notif(sender, recipient, type):
-    url=''
+def complaint_system_notif(sender, recipient, type, complaint_id,student,message):
+    if(student==0):
+        url = ('complaint:detail')
+    else:
+        url=('complaint:detail2')
     module='Complaint System'
     sender = sender
     recipient = recipient
-    verb = ''
+    verb = message
+    description = complaint_id
 
-    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
+    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb,description=description)
 
 def office_dean_PnD_notif(sender, recipient, type):
     url = 'office:officeOfDeanPnD'

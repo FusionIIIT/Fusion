@@ -28,6 +28,9 @@
                 console.log(form.elements[i].value) ;
             }
             var status = 1 ;
+            if(b == 'form__available'){
+                status = 0
+            }
             if (b == 'registration__form'){
                 status = 0
             }
@@ -249,7 +252,7 @@
 
 <!--                -->
 
-                {% if "student" in Curr_desig %}
+                {% if "student" in Curr_desig and status == True %}
                     <a class="item" data-tab="thirteenth">
                         Senate Registration
                         <i class="right floated chevron right icon"></i>

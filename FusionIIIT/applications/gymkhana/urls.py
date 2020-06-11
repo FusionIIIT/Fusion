@@ -7,6 +7,7 @@ app_name = 'gymkhana'
 urlpatterns = [
 
     url(r'^$', views.gymkhana, name='gymkhana'),
+    url(r'^form_avail/$', views.form_avail, name='form_avail'),
     url(r'^registration_form/$', views.registration_form, name='registration_form'),
     url(r'^new_club/$', views.new_club, name='new_club'),
 
@@ -36,5 +37,6 @@ urlpatterns = [
     url(r'^(?P<session_id>\d+)/editsession/$', views.editsession, name='editsession'),
     url(r'^delete_memberform/$', views.delete_memberform, name='delete_memberform'),
     url(r'^voting_poll/$', views.voting_poll, name='voting_poll'),
+    url(r'^delete_poll/(?P<poll_id>\d+)/$', views.delete_poll, name='delete_poll'),
     url(r'^(?P<poll_id>\d+)/$', views.vote, name='vote'),
 ]
