@@ -1,0 +1,8 @@
+{
+    "python.venvPath": "",
+    "python.autoComplete.extraPaths": [
+        "./FusionIIIT"
+    ],
+    "python.linting.pylintEnabled": true,
+    "python.linting.enabled": true
+}
