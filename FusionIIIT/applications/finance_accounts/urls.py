@@ -18,5 +18,6 @@ urlpatterns = [
     url(r'^createCompany/', views.createCompany, name='createCompany'),
     # url(r'^alterBank/', views.alterBank, name='alterBank'),
     # url(r'^alterCompany/', views.alterCompany, name='alterCompany'),
+    url(r'^printSalary', views.printSalary, name='Salary'),
 
 ]

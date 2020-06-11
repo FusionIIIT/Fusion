@@ -1,43 +1,201 @@
 
 {% block payroll_content4 %}
-	
-		<div class="ui active tab" data-tab="memberrequests">
-        <div class="ui vertical segment">
-            <table class="ui very basic collapsing celled sortable table"
-                   style="padding-left: 2.5%;padding-right: 2.5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
-                <thead>
+
+    <div class="ui active tab" data-tab="memberrequests">
+    <div class="ui vertical segment">
+    <div>
+        <h3>*** Salary Details ***</h3>
+    </div>
+
+    <table class="ui very basic collapsing celled sortable table" >
+        <thead>
+        <tr>
+            <th>
+                PF
+            </th>
+
+            <th>
+                Name
+            </th>
+
+            <th>
+                Designation
+            </th>
+
+            <th>
+                Pay
+            </th>
+
+            <th>
+                Gr. pay
+            </th>
+
+            <th>
+                DA
+            </th>
+
+            <th>
+                TA
+            </th>
+
+            <th>
+                HRA
+            </th>
+
+            <th>
+                FPA
+            </th>
+
+            <th>
+                Sp. Allowances
+            </th>
+
+            <th>
+                NPS
+            </th>
+
+            <th>
+                GPF
+            </th>
+
+            <th>
+                INCOME TAX
+            </th>
+
+            <th>
+                P-TAX
+            </th>
+
+            <th>
+                GSLIS
+            </th>
+
+            <th>
+                GIS
+            </th>
+
+            <th>
+                LICENSE-FEE
+            </th>
+
+            <th>
+                ELECTRICITY
+            </th>
+
+            <th>
+                OTHERS
+            </th>
+
+            <th>
+                Gross Reduction
+            </th>
+
+            <th>
+                Net Payment
+            </th>
+        </tr>
+        </thead>
+
+        <tbody>
+        
+        <form action = "/finance/printSalary/" method="post">
+        {% csrf_token %}
+                {% for info in c %}
                 <tr>
+                    <td class="collapsing">
+                        <div class="ui fitted checkbox">
+                            <input type="checkbox" name = "box" value = "{{ info.id }}" /> <label></label>
+                        </div>
+                    </td>
 
-                    <th>
-                       from 
-                    </th>
+                    <td>
+                        {{ info.pf }}
+                    </td>
 
-                    <th>
-                        Name
-                    </th>
+                    <td>
+                        {{ info.name }}
+                    </td>
 
-                </tr>
-                </thead>
-				<tbody>
-	              
-	                        <tr>
-	                            
+                    <td>
+                        {{ info.designation }}
+                    </td>
 
-	                            <td>
-	                                {{ name }}
-	                            </td>
+                    <td>
+                        {{ info.pay }}
+                    </td>
 
-	                            
-	                      
-	                            <td>
-	                                {{ m }}
-	                            </td>
+                    <td>
+                        {{ info.gr_pay }}
+                    </td>
 
-	                            
+                    <td>
+                        {{ info.da }}
+                    </td>
 
-	                    	</tr>
-	                
-	                
-	            </tbody>
+                    <td>
+                        {{ info.ta }}
+                    </td>
+
+                    <td>
+                        {{ info.hra }}
+                    </td>
+
+                    <td>
+                        {{ info.fpa }}
+                    </td>
+
+                    <td>
+                        {{ info.special_allow }}
+                    </td>
+
+                    <td>
+                        {{ info.nps }}
+                    </td>
+
+                    <td>
+                        {{ info.gpf }}
+                    </td>
+
+                    <td>
+                        {{ info.income_tax }}
+                    </td>
+
+                    <td>
+                        {{ info.p_tax }}
+                    </td>
+
+                    <td>
+                        {{ info.gslis }}
+                    </td>
+
+                    <td>
+                        {{ info.gis }}
+                    </td>
+
+                    <td>
+                        {{ info.license_fee }}
+                    </td>
+
+                    <td>
+                        {{ info.electricity_charges }}
+                    </td>
+
+                    <td>
+                        {{ info.others }}
+                    </td>
+
+                    <td>
+                        {{ info.gr_reduction }}
+                    </td>
+
+                    <td>
+                        {{ info.net_payment }}
+                    </td>
+
+                    
+            </tr>
+                {% endfor %}
+        
+        </tbody>
 
 {% endblock %}

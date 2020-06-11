@@ -3,13 +3,13 @@ from django.http import (Http404, HttpResponse, HttpResponseNotFound,
                          HttpResponseRedirect)
 from django.shortcuts import render, reverse
 
-from applications.globals.models import HoldsDesignation, DepartmentInfo
+from applications.globals.models import HoldsDesignation, Designation
 
 from .models import Bank, Company, Payments, Paymentscheme, Receipts
 
-from django.db.models.functions import (ExtractYear, ExtractMonth)
+from django.views.generic import View
 
-from django.db.models.lookups import ( YearExact, YearGt, YearGte, YearLt, YearLte)
+from .render import Render
 
 from datetime import datetime
 
@@ -206,9 +206,7 @@ officeOfRegistrar
     id - primary key of the payment scheme model
     """
     k = HoldsDesignation.objects.filter(working = request.user)
-    print(k)
-    print("asdasd")
-    flag = 0
+
     for z in k:
         if request.method == "POST" :
             if(str(z.designation) == 'dealing assistant'):
@@ -316,9 +314,7 @@ def previous(request) :
         a,b - these are taken as inout variables of month and year respectively for the display of the corresponding month's payments
     """
     k = HoldsDesignation.objects.filter(working = request.user)
-    print(k)
-    print("asdasd")
-    flag = 0
+    
     for z in k:
         if request.method == "POST" :
             if(str(z.designation) == 'dealing assistant'):
@@ -402,9 +398,7 @@ def createPayments(request):
         Basic details of a new payement transaction.
     """
     k = HoldsDesignation.objects.filter(working = request.user)
-    print(k)
-    print("asdasd")
-    flag = 0
+
     for z in k:
         if(str(z.designation) == "asst. registrar fa"):
             t_id = request.POST.get("t_id")
@@ -458,6 +452,26 @@ def createPayments(request):
             }
             return render(request ,"financeAndAccountsModule/financeAndAccountsModule.html",context)
 
+# Function to get month number
+def getMonth(i):
+    month = {
+        "january" : 1,
+        "february" : 2,
+        "march" : 3,
+        "april" : 4,
+        "may" : 5,
+        "june" : 6,
+        "july" : 7,
+        "august" : 8,
+        "september" : 9,
+        "october" : 10,
+        "november" : 11,
+        "december" : 12
+    }
+
+    return month.get(i, -1)
+
+
 def previousPayments(request) :
     """
         This method is used to view the already created payement transaction, and this method will take the input of the month and year which generates
@@ -470,18 +484,15 @@ def previousPayments(request) :
         a,b - these are taken as inout variables of month and year respectively for the display of the corresponding month's payments.
     """
     k = HoldsDesignation.objects.filter(working = request.user)
-    print(k)
-    print("asdasd")
-    flag = 0
+
     for z in k:
         if request.method == "POST" :
             if(str(z.designation) == 'asst. registrar fa'):
                 a = request.POST.get('selectmonth')
                 b = request.POST.get('selectyear')
-                month = calendar.month_name[ExtractMonth(Payments.Date)]
-                year = ExtractYear(Payements.Date) 
+                month_no = getMonth(a)
 
-                c = Payments.objects.filter(month = a , year = b)
+                c = Payments.objects.filter(Date__month = month_no , Date__year = b)
                 context = {
                     'c': c
                 }
@@ -491,10 +502,9 @@ def previousPayments(request) :
             if(str(z.designation) == 'asst. registrar aud'):
                 a = request.POST.get('selectmonth')
                 b = request.POST.get('selectyear')
-                month = calendar.month_name[ExtractMonth(Payments.Date)]
-                year = ExtractYear(Payements.Date)
+                month_no = getMonth(a)
 
-                c = Payments.objects.filter(month = a , year = b)
+                c = Payments.objects.filter(Date__month = month_no , Date__year = b)
                 context = {
                     'c': c
                 }
@@ -504,9 +514,10 @@ def previousPayments(request) :
             if(str(z.designation) == 'Registrar'):
                 a = request.POST.get('selectmonth')
                 b = request.POST.get('selectyear')
-                month = calendar.month_name[ExtractMonth(Payments.Date)]
-                year = ExtractYear(Payements.Date)
-                c = Payments.objects.filter(month = a , year = b)
+                month_no = getMonth(a)
+
+                c = Payments.objects.filter(Date__month = month_no , Date__year = b)
+
                 context = {
                     'c': c
                 }
@@ -515,11 +526,9 @@ def previousPayments(request) :
             if(str(z.designation) == 'director'):
                 a = request.POST.get('selectmonth')
                 b = request.POST.get('selectyear')
-                month = calendar.month_name[ExtractMonth(Payments.Date)]
-                year = ExtractYear(Payements.Date)
-                print (month)
+                month_no = getMonth(a)
 
-                c = Payments.objects.filter(month = a , year = b)
+                c = Payments.objects.filter(Date__month = month_no , Date__year = b)
                 context = {
                     'c': c
                 }
@@ -537,9 +546,7 @@ def createReceipts(request):
         Basic details of a new payement transaction for generating receipts.
     """
     k = HoldsDesignation.objects.filter(working = request.user)
-    print(k)
-    print("asdasd")
-    flag = 0
+
     for z in k:
         if(str(z.designation) == "asst. registrar fa"):
             t_id = request.POST.get("t_id")
@@ -605,21 +612,17 @@ def previousReceipts(request) :
         a,b - these are taken as inout variables of month and year respectively for the display of the corresponding month's payment recei.
     """
     k = HoldsDesignation.objects.filter(working = request.user)
-    print(k)
-    print("asdasd")
-    flag = 0
+
     for z in k:
         if request.method == "POST" :
             if(str(z.designation) == 'asst. registrar fa'):
                 a = request.POST.get('selectmonth')
                 b = request.POST.get('selectyear')
-                month = calendar.month_name[ExtractMonth(Receipts.Date)]
-                year = ExtractYear(Receipts.Date)
-                print (a)
+                month_no = getMonth(a)
 
-                c = Payments.objects.filter(month = a , year = b)
+                c = Receipts.objects.filter(Date__month = month_no , Date__year = b)
                 context = {
-                    'c': c
+                    'x': c
                 }
                 return render(request, "financeAndAccountsModule/financeAndAccountsModulearfa.html", context)
 
@@ -627,13 +630,11 @@ def previousReceipts(request) :
             if(str(z.designation) == 'asst. registrar aud'):
                 a = request.POST.get('selectmonth')
                 b = request.POST.get('selectyear')
-                month = calendar.month_name[ExtractMonth(Receipts.Date)]
-                year = ExtractYear(Receipts.Date)
-                print (a)
+                month_no = getMonth(a)
 
-                c = Payments.objects.filter(month = a , year = b)
+                c = Receipts.objects.filter(Date__month = month_no , Date__year = b)
                 context = {
-                    'c': c
+                    'x': c
                 }
                 return render(request, "financeAndAccountsModule/finanaceAndAccountsModulearaud.html", context)
 
@@ -641,26 +642,22 @@ def previousReceipts(request) :
             if(str(z.designation) == 'Registrar'):
                 a = request.POST.get('selectmonth')
                 b = request.POST.get('selectyear')
-                month = calendar.month_name[ExtractMonth(Receipts.Date)]
-                year = ExtractYear(Receipts.Date)
-                print (a)
+                month_no = getMonth(a)
 
-                c = Payments.objects.filter(month = a , year = b)
+                c = Receipts.objects.filter(Date__month = month_no , Date__year = b)
                 context = {
-                    'c': c
+                    'x': c
                 }
                 return render(request, "financeAndAccountsModule/financeAndAccountsModule.html", context)
 
             if(str(z.designation) == 'director'):
                 a = request.POST.get('selectmonth')
                 b = request.POST.get('selectyear')
-                month = calendar.month_name[ExtractMonth(Receipts.Date)]
-                year = ExtractYear(Receipts.Date)
-                print (a)
+                month_no = getMonth(a)
 
-                c = Payments.objects.filter(month = a , year = b)
+                c = Receipts.objects.filter(Date__month = month_no , Date__year = b)
                 context = {
-                    'c': c
+                    'x': c
                 }
                 return render(request, "financeAndAccountsModule/financeAndAccountsModule.html", context)
     return HttpResponseRedirect("/finance/finance/")
@@ -675,21 +672,18 @@ def createBank(request):
         @variables
         Basic details of a new bank Branch.
     """
-    k = HoldsDesignation.objects.filter(working = request.user, department = DepartmentInfo.objects.get(name = 'administrator'))
-    print(k)
-    print("asdasd")
-    flag = 0
-    if(str(z.designation) == "administrator"):
-        acc_no = request.POST.get("acc_no")
-        bank_Name = request.POST.get("bank_name")
-        IFSC_code = request.POST.get("IFSC_code")
-        branch = request.POST.get("branch")
+    k = HoldsDesignation.objects.filter(working = request.user, designation = Designation.objects.get(name = 'adminstrator'))
+    
+    acc_no = request.POST.get("acc_no")
+    bank_Name = request.POST.get("bank_name")
+    IFSC_code = request.POST.get("IFSC_code")
+    branch = request.POST.get("branch")
 
-        p = Bank(Account_no = acc_no, Bank_Name = bank_Name, IFSC_Code = IFSC_code, Branch_Name = branch)
-        p.save()
-        context = {
-        }
-        return render(request, "financeAndAccountsModule/financeAndAccountsModulead.html")
+    p = Bank(Account_no = acc_no, Bank_Name = bank_Name, IFSC_Code = IFSC_code, Branch_Name = branch)
+    p.save()
+    context = {
+    }
+    return render(request, "financeAndAccountsModule/financeAndAccountsModulead.html")
 
 def createCompany(request):
     """
@@ -701,20 +695,127 @@ def createCompany(request):
         @variables
         Basic details of a new Company.
     """
-    k = HoldsDesignation.objects.filter(working = request.user)
-    print(k)
-    print("asdasd")
-    flag = 0
-    for z in k:
-        if(str(z.designation) == "administrator"):
-            c_name = request.POST.get("c_name")
-            start_date = request.POST.get("start_date")
-            end_date = request.POST.get("end_date")
-            description = request.POST.get("description")
-            status = request.POST.get("status")
+    k = HoldsDesignation.objects.filter(working = request.user, designation = Designation.objects.get(name = 'adminstrator'))
 
-            p = Company(Company_Name= c_name, Start_Date = start_date, End_Date = end_date, Description = description, Status = status)
-            p.save()
-            context = {
-            }
-            return render(request ,"financeAndAccountsModule/financeAndAccountsModulead.html",context)
+    c_name = request.POST.get("c_name")
+    start_date = request.POST.get("start_date")
+    end_date = request.POST.get("end_date")
+    description = request.POST.get("description")
+    status = request.POST.get("status")
+
+    p = Company(Company_Name= c_name, Start_Date = start_date, End_Date = end_date, Description = description, Status = status)
+    p.save()
+    context = {
+    }
+    return render(request ,"financeAndAccountsModule/financeAndAccountsModulead.html",context)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# def alterBank(request):
+#     """
+#         This method is used to update the details of Bank Branch by the Administrator.
+
+#         @param
+#         request - trivial
+
+#         @variables
+#         Basic details of a new bank Branch.
+#     """
+#     k = HoldsDesignation.objects.filter(working = request.user, designation = Designation.objects.get(name = 'adminstrator'))
+    
+#     acc_no = request.POST.get("acc_no")
+#     bank_Name = request.POST.get("bank_name")
+#     IFSC_code = request.POST.get("IFSC_code")
+#     branch = request.POST.get("branch")
+
+#     if request.method == "POST" :
+#         a = request.POST.getlist('box')
+#         print(a)
+#         for i in range(len(a)) :
+#             if "update" in request.POST :
+#                 p = Bank.objects.get(bank_id = a[i])
+#                 p.Account_no = acc_no
+#                 p.Bank_Name = bank_Name
+#                 p.IFSC_Code = IFSC_code
+#                 p.Branch = branch
+#                 p.save()
+            
+#     context = {
+#     }
+#     return render(request, "financeAndAccountsModule/financeAndAccountsModulead.html")
+
+# def alterCompany(request):
+#     """
+#         This method is used to update the details of Bank Branch by the Administrator.
+
+#         @param
+#         request - trivial
+
+#         @variables
+#         Basic details of a new bank Branch.
+#     """
+#     k = HoldsDesignation.objects.filter(working = request.user, designation = Designation.objects.get(name = 'adminstrator'))
+    
+#     c_name = request.POST.get("c_name")
+#     start_date = request.POST.get("start_date")
+#     end_date = request.POST.get("end_date")
+#     description = request.POST.get("description")
+#     status = request.POST.get("status")
+
+#     a = request.POST.getlist('box')
+#     for i in range(len(a)) :
+#         if "update" in request.POST :
+#             p = Company.objects.get(id = a[i])
+#             p.Company_Name = c_name
+#             p.Start_Date = start_date
+#             p.End_Date = end_date
+#             p.Description = description
+#             p.Status = status
+
+#             p.save()
+            
+#     context = {
+#     }
+#     return render(request, "financeAndAccountsModule/financeAndAccountsModulead.html")
+
+def printSalary(request) :
+    """
+      This method is used to print the salary details of an employee by the Administrator.
+
+      @param
+      request - trivial
+
+      @variables
+      Basic details of an employee's salary including basic pay, ta, da, hra, nps etc.
+
+    """
+
+    k = HoldsDesignation.objects.filter(working = request.user, designation = Designation.objects.get(name = 'adminstrator'))
+
+    month = request.POST.get("month")
+    year = request.POST.get("year")
+
+    c = Paymentscheme.objects.filter(month = month, year = year)
+    context = {
+        'c' : c,
+        'request' : request
+    }
+
+    return Render.render('financeAndAccountsModule/payroll_content4.html', context)
+    
+
+

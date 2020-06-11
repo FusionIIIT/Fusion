@@ -70,6 +70,7 @@
 
 
 <form action="/finance/alterCompany/" method="post">
+    {% csrf_token %}
 <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
 <div class="five fields">
             <div class="four wide field">
@@ -99,7 +100,7 @@
 
         </div>
     <div class="field">
-            <button class="ui primary button right floated" type="submit">
+            <button class="ui primary button right floated" type="submit" name = "update">
                 Submit
             </button>
         </div>
