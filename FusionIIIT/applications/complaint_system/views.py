@@ -30,7 +30,9 @@ def complaint_reassign(request,wid,iid):
                 update(worker_id=w, status=1)
             url = '/complaint/caretaker/worker_id_know_more/'+wid;
             complainer_details = StudentComplain.objects.get(id=iid)
-            complaint_system_notif(request.user, complainer_details.complainer.user ,'reassign_worker_alert','')
+            student=0
+            message = "Your complaint has been re-assigned"
+            complaint_system_notif(request.user, complainer_details.complainer.user ,'reassign_worker_alert',complainer_details.id,student,message)
             return HttpResponseRedirect(url)
         elif type == 'redirect':
             assign_caretaker = request.POST.get('assign_caretaker', '')
@@ -41,7 +43,9 @@ def complaint_reassign(request,wid,iid):
                 update(location=c.area, remarks=remark)
             url = '/complaint/caretaker/worker_id_know_more/'+wid;
             complainer_details = StudentComplain.objects.get(id=iid)
-            complaint_system_notif(request.user, complainer_details.complainer.user ,'comp_redirect_alert','')
+            student=0
+            message = "Your complaint has been redirected to another caretaker"
+            complaint_system_notif(request.user, complainer_details.complainer.user ,'comp_redirect_alert',complainer_details.id,student,message)
             return HttpResponseRedirect(url)
         
     else:
@@ -124,7 +128,8 @@ def assign_worker(request, comp_id1):
             complainer_details = StudentComplain.objects.get(id=comp_id1)
             print(complainer_details.id)
             student = 0
-            complaint_system_notif(request.user, complainer_details.complainer.user ,'assign_worker_alert',complainer_details.id,student)
+            message = "Worker has been assigned to your complaint"
+            complaint_system_notif(request.user, complainer_details.complainer.user ,'assign_worker_alert',complainer_details.id,student,message)
 
             return HttpResponseRedirect('/complaint/caretaker/')
         elif type == 'redirect':
@@ -135,7 +140,9 @@ def assign_worker(request, comp_id1):
             StudentComplain.objects.select_for_update().filter(id=comp_id1).\
                 update(location=c.area, remarks=remark)
             complainer_details = StudentComplain.objects.get(id=comp_id1)
-            complaint_system_notif(request.user, complainer_details.complainer.user ,'comp_redirect_alert','')
+            student=0
+            message = "Your Complaint has been redirected to another caretaker"
+            complaint_system_notif(request.user, complainer_details.complainer.user ,'comp_redirect_alert',complainer_details.id,student,message)
             return HttpResponseRedirect('/complaint/caretaker/')
     else:
         y = ExtraInfo.objects.get(id=y.id)
@@ -391,7 +398,8 @@ def user(request):
 
         # This is to allow the student
         student = 1
-        complaint_system_notif(request.user, caretaker_name.user,'lodge_comp_alert',obj1.id,student)
+        message = "A New Complaint has been lodged"
+        complaint_system_notif(request.user, caretaker_name.user,'lodge_comp_alert',obj1.id,student,message)
 
         # return render(request, "complaintModule/complaint_user.html",
         #               {'history': history, 'comp_id': comp_id })
@@ -612,9 +620,10 @@ def caretaker(request):
         j = 1
         k = 1
         for i in historytemp:
-            if j%2 != 0:
-                history.append(i)
-            j=j+1
+            history.append(i)
+            # if j%2 != 0:
+            #     history.append(i)
+            # j=j+1
         for i in history:
             i.serial_no = k
             k = k + 1
@@ -857,7 +866,9 @@ def resolvepending(request, cid):
         StudentComplain.objects.filter(id=cid).\
         update(status=intstatus)
         complainer_details = StudentComplain.objects.get(id=cid)
-        complaint_system_notif(request.user, complainer_details.complainer.user ,'comp_resolved_alert','')
+        student=0
+        message = "Congrats! Your complaint has been resolved"
+        complaint_system_notif(request.user, complainer_details.complainer.user ,'comp_resolved_alert',complainer_details.id,student,message)
         return HttpResponseRedirect("/complaint/caretaker/")
     else:
         # complainer_details = StudentComplain.objects.get(id=cid)
