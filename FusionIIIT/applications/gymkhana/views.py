@@ -65,10 +65,7 @@ def editsession(request, session_id):
             print("in the post body")
             print(res)
             if (res == 'success'):
-                e = Session_info.objects.filter(id=session_id).update(club=club_name,
-                                                                  venue=venue, date=date,
-                                                                  start_time=start_time, end_time=end_time,
-                                                                  session_poster=session_poster, details=desc)
+                e = Session_info.objects.filter(id=session_id).update(club=club_name,venue=venue, date=date,start_time=start_time, end_time=end_time, session_poster=session_poster, details=desc)
                 message += "Your form has been dispatched for further process"
                 print(message)
                 return redirect('/gymkhana/')
@@ -334,7 +331,41 @@ def new_club(request):
 		'message' : message
 				}
 		content = json.dumps(content)
+		HttpResponse(content)
+		return redirect('/gymkhana/')
+
+
+@login_required()
+def form_avail(request):
+	if request.method == 'POST':
+		res = "success"
+		message = "The form has been dispatched for further process"
+		try:
+			#getting form data
+			status = request.POST["available"]
+			if(status == "On"):
+				status = True
+			else:
+				status = False
+				rev = Registration_form.objects.all()
+				rev.delete()
+
+			roll = request.user.username
+			#saving data to the database
+			reg = Form_available(roll=roll, status=status)
+			reg.save()
+		except Exception as e:
+			res = "error"
+			message = "Some error occurred"
+
+		content = {
+			'status': res,
+			'message': message,
+		}
+		content = json.dumps(content)
 		return HttpResponse(content)
+		# redirect("/gymkhana/")
+
 
 @login_required()
 def registration_form(request):
@@ -350,7 +381,6 @@ def registration_form(request):
 			cpi = request.POST.get("cpi")
 			branch = request.POST.get("branch")
 			programme = request.POST.get("programme")
-
 
 			#saving data to the database
 			reg = Registration_form(user_name=user, branch=branch, roll=roll, cpi=cpi, programme=programme)
@@ -385,7 +415,10 @@ def retrun_content(request, roll, name, desig , club__ ):
 	club_event_report = Club_report.objects.all()
 	registration_form = Registration_form.objects.all()
 	cpi = Student.objects.get(id__user=request.user).cpi
-	print(registration_form)
+	programme = Student.objects.get(id__user=request.user).programme
+	status = Form_available.objects.get(roll=request.user.username).status
+
+	# print(registration_form)
 
 	venue_type = []
 	id =0
@@ -442,6 +475,8 @@ def retrun_content(request, roll, name, desig , club__ ):
 		'roll' : str(roll),
 		'registration_form': registration_form,
 		'cpi': cpi,
+		'programme': programme,
+		'status': status,
 	}
 	return content
 
@@ -711,7 +746,7 @@ def new_session(request):
 			res = conflict_algorithm_session(date, start_time, end_time, venue)
 			message = ""
 			if(res == "success"):
-				session = Session_info(club = club_name, venue = venue, date =date, start_time=start_time , end_time = end_time ,session_poster = session_poster , details = desc)
+				session = Session_info(club = club_name, venue = venue, date =date, start_time=start_time , end_time = end_time , session_poster=session_poster, details = desc)
 				session.save()
 				message += "Your form has been dispatched for further process"
 			else:

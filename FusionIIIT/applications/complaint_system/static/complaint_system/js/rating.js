@@ -15,7 +15,7 @@ $(document).ready(function(){
 
 
 
- function sub()
+ function sub(event)
         {
         var specific_location= $('input[name="specific_location"]').val();
         var Location = $('input[name="Location"]').val();
@@ -29,8 +29,7 @@ $(document).ready(function(){
         }
         else
         {
-         
-       
+            event.preventDefault();
             $.ajax({
                 type : 'POST',
                 url : '.',
@@ -117,6 +116,7 @@ function addwork(event) {
    else
    {
 
+    event.preventDefault();
     $.ajax({
         type: 'POST',
         url: '.',
@@ -132,7 +132,7 @@ function addwork(event) {
             alert(" Congratulations! The Worker has been added successfully\n Please wait for confirmation");
             setTimeout(function() {
                 window.location.replace('http://localhost:8000/complaint');
-            }, 150);
+            }, 1500);
         },
         // error: function(data, err) {
         //     alert('Something went wrong! Please refill the form');

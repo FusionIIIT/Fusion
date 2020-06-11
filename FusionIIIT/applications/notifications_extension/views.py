@@ -16,7 +16,7 @@ def mark_as_read_and_redirect(request, slug=None):
     notification = get_object_or_404(
         Notification, recipient=request.user, id=notification_id)
     notification.mark_as_read()
-    complaint_id=notification.verb
+    complaint_id=notification.description
 
     # This conditional statement is True only in
     # case of complaint_module.

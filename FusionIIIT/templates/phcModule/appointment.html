@@ -15,7 +15,7 @@
     <div class="ui active tab" data-tab="doctorappointment">
         <div class="ui vertical segment">
             <form class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">{% csrf_token %}
-                <div class="field">
+                
                   <div class="field">
                       <label>Doctor</label>
                       <select id="doc" class="ui search fluid" name="doctor_id" required="true">
@@ -24,15 +24,27 @@
                         <option value="{{doctor.id}}">{{doctor.doctor_name}}</option>
                         {% endfor %}
                       </select>
-                  </div>
-                        <div class="field">
-                            <label>Date Of Appointment</label><p id="app_dte"></p>
-                            <select id="date" class="ui search fluid dropdown" name="date">
-                              <option >--SELECT--</option>
-                            </select>
-						
-                        </div>
-                </div>
+                   </div>
+                <div class="field">
+                  <label>Date of Appointment</label>
+                  <!-- on selection of doctor few days should be displayed -->
+                  
+                  
+                              <input type="date" placeholder="Select" id="date" name="date">
+                              <p id="dte"></p>
+                              <label>From Time</label>
+                              <input type="time" placeholder="Select" id="from_time" name="from_time">
+                              <p id="from_time"></p>
+                              <label>To Time</label>
+                              <input type="time" placeholder="Select" id="to_time" name="to_time">
+                              <p id="to_time"></p>
+
+
+                    
+                  
+              </div>
+
+
                 <div class="field">
                     <label>Issues/Symptoms</label><p id="desc"></p>
                     <div class="ui fluid input">
@@ -59,25 +71,6 @@
                                          return str.replace(/^\s+|\s+$/g,'');
                                        }
 				 
-                  $('#doc').change(function()
-                  {
-
-
-                      $.ajax({
-                      type:'post',
-                      url:'/healthcenter/student/',
-                      data: {
-                      csrfmiddlewaretoken: '{{ csrf_token }}',
-                      doctor:$("#doc").val(),
-                      },
-                      success: function(JSON){
-                        $("#date").empty();
-                        $.each(JSON, function(key, value) {
-                       $("#date").append("<option value="+value.pk +">" + value.fields.date+"-------"+value.fields.from_time+"-"+value.fields.to_time+"</option>");
-	                   });
-                    }
-                   });
-                 });
 						
 					
 					

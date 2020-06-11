@@ -11,12 +11,12 @@
         <a class="item" data-tab="session">
             Club Sessions
         </a>
-        {%  endif %}
 
    <a class="item" data-tab="event">
             Club Events
         </a>
 
+        {%  endif %}
     </div>
 
     {% for i in Club_name %}
@@ -27,7 +27,7 @@
             </div>
             <div class="image content">
                 <div class="ui medium image">
-                  <img src="/media/{{ i.club_file }}">
+                  <img src="/media/{{ i.club_poster }}">
                 </div>
                 <div class="description">
                     <div class="ui header">
@@ -45,7 +45,6 @@
 <b>Faculty Incharge</b> : {{ i.faculty_incharge.id.user.first_name }} {{ i.faculty_incharge.id.user.last_name }}
                    {{ i.faculty_incharge.id.user }}
                    {{ i.faculty_incharge.id.user.email }}
-
 <b>Description : </b>
 {{i.description}}
 
@@ -69,7 +68,7 @@
     {% endfor %}
 
 
-    {% for i in Club_event %}
+     {% for i in Club_event %}
     <div class="ui modal {{ i.club_event }}_" >
         <i class="close icon"></i>
         <div class="header">
@@ -107,18 +106,20 @@
     {% endfor %}
 
 
+
+
 {{ i.session_poster }}
 <!-- Modal for the session Info -->
 {% for i in Club_session %}
-<div class="ui modal {{ i.club_session }}_" >
-    <i class="close icon"></i>
+        <div class="ui modal {{ i }}_" >
+            <i class="close icon"></i>
             <div class="header">
                 Session Info
             </div>
             <div class="image content">
                 <div class="ui medium image">
 
-                  <img src="/media/{{ i.session_poster }}">
+                  <img src="/media/gymkhana/session_poster/{{ i.session_poster }}">
                 </div>
                 <div class="description">
                     <div class="ui header">
@@ -169,7 +170,6 @@
             var data1 = "_"+document.getElementById('club_event_').value;
             document.getElementById(data1).hidden = false;
 
-
         }
          function display_club_session() {
             $('#tbody').empty();
@@ -189,8 +189,7 @@
 
 
     </script>
-
-    <div class="ui active tab" data-tab="club">
+<div class="ui active tab" data-tab="club">
         <!-- <div class="ui vertical segment"> -->
             <table class="ui very basic collapsing celled sortable table"
                    style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
@@ -241,7 +240,7 @@
                                 </h4>
                             </td>
 
-                            <td> 
+                            <td>
                                 {% comment %}
                                     TODO: Add the attachment here!
                                 {% endcomment %}
@@ -262,16 +261,8 @@
         <!-- <div class="extra content"></div> -->
     </div>
 
-   
-   
-   
-   
-   
-   
-   
-   
     <div class="ui tab" data-tab="session">
-        <!-- <div class="ui vertical segment"> -->
+        <div class="ui vertical segment">
             <form class="ui form" style="padding-left: 32px; padding-right: 32px;">
                 <div class="field">
                     <label>Club</label>
@@ -287,9 +278,7 @@
             </form>
             <br>
             <h4 class="ui dividing header" style="margin-left: 32px; margin-right: 32px;">Club Sessions</h4>
-
-
-           <table class="ui very basic collapsing celled sortable table"
+            <table class="ui very basic collapsing celled sortable table"
                    style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
                 <thead>
                 <tr>
@@ -317,14 +306,14 @@
 
             <br>
             <div class="ui divider"></div>
-        <!-- </div> -->
+        </div>
         <br>
-        <!-- <div class="extra content"></div> -->
+        <div class="extra content"></div>
      </div>
 
-    <div class="ui tab" data-tab="event">
+<div class="ui tab" data-tab="event">
         <div class="ui vertical segment">
-            
+
             <table class="ui very basic collapsing celled sortable table"
                    style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
                 <thead>
@@ -344,12 +333,12 @@
                     <th>
                         Date
                     </th>
-                    
+
                 </tr>
                 </thead>
                     <tbody>
                         {% if "Junior Superintendent" in Curr_desig or "Dean_s" in Curr_desig %}
-                        {% for i in Club_event%}                            
+                        {% for i in Club_event%}
                                <tr>
                                         <td onclick="view_event_('{{ i.club_event }}_')">
                                            {{ i.club.club_name }}
@@ -357,11 +346,11 @@
                                        <td onclick="view_event_('{{ i.club_event }}_')">
                                            {{ i.event_name }}
                                        </td>
-   
+
                                        <td onclick="view_event_('{{ i.club_event }}_')">
                                            {{ i.incharge }}
                                        </td>
-   
+
                                        <td onclick="view_event_('{{ i.club_event }}_')">
                                            {{ i.date}}
                                        </td>
@@ -390,7 +379,7 @@
                                 <td onclick="view_event_('{{ i.club_event }}_')">
                                     {{ i.date}}
                                 </td>
-                               
+
                            </tr>
                            {% empty %}
                            <tr>
@@ -399,7 +388,7 @@
 
                             {% endfor %}
                     {% else %}
-                
+
                     {% for i in Club_event%}
                     <tr>
                         <td onclick="view_event_('{{ i.club_event }}_')">
@@ -416,7 +405,7 @@
                         <td onclick="view_event_('{{ i.club_event }}_')">
                             {{ i.date}}
                         </td>
-                       
+
 
                    </tr>
                    {% empty %}
@@ -435,4 +424,16 @@
         <br>
         <!-- <div class="extra content"></div> -->
     </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
 {% endblock %}
