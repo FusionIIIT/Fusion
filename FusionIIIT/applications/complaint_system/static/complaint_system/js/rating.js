@@ -15,7 +15,7 @@ $(document).ready(function(){
 
 
 
- function sub()
+ function sub(event)
         {
         var specific_location= $('input[name="specific_location"]').val();
         var Location = $('input[name="Location"]').val();
@@ -29,8 +29,7 @@ $(document).ready(function(){
         }
         else
         {
-         
-       
+            event.preventDefault();
             $.ajax({
                 type : 'POST',
                 url : '.',

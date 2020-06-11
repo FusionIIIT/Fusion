@@ -326,7 +326,18 @@ def user(request):
         print(location)
         if location!="":
             print("huaaaaa")
-            x = StudentComplain(complainer=y,
+            # x = StudentComplain(complainer=y,
+            #                     complaint_type=comp_type,
+            #                     location=location,
+            #                     specific_location=specific_location,
+            #                     details=details,
+            #                     status=status,
+            #                     complaint_finish=complaint_finish,
+            #                     upload_complaint=comp_file)
+            
+            
+            # x.save()
+            obj1, created = StudentComplain.objects.get_or_create(complainer=y,
                                 complaint_type=comp_type,
                                 location=location,
                                 specific_location=specific_location,
@@ -334,9 +345,8 @@ def user(request):
                                 status=status,
                                 complaint_finish=complaint_finish,
                                 upload_complaint=comp_file)
-            
-            
-            x.save()                      
+            print(obj1)
+            print(created)
             
         historytemp = StudentComplain.objects.filter(complainer=y).order_by('-id')
         history = []
@@ -377,11 +387,11 @@ def user(request):
           dsgn = "rewacaretaker"
         caretaker_name = HoldsDesignation.objects.get(designation__name = dsgn)
         print('lets chcek')
-        print(x.id)
+    
 
         # This is to allow the student
         student = 1
-        complaint_system_notif(request.user, caretaker_name.user,'lodge_comp_alert',x.id,student)
+        complaint_system_notif(request.user, caretaker_name.user,'lodge_comp_alert',obj1.id,student)
 
         # return render(request, "complaintModule/complaint_user.html",
         #               {'history': history, 'comp_id': comp_id })
