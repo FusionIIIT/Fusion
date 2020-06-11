@@ -69,9 +69,10 @@ def complaint_reassign(request,wid,iid):
                     workertemp = Workers.objects.filter(caretaker_id=a)
                     j = 1
                     for i in workertemp:
-                        if j%2 != 0:
-                            worker.append(i)
-                        j = j + 1
+                        worker.append(i)
+                        # if j%2 != 0:
+                        #     worker.append(i)
+                        # j = j + 1
 
 
             except Caretaker.DoesNotExist:
@@ -164,10 +165,12 @@ def assign_worker(request, comp_id1):
                 else:
                     workertemp = Workers.objects.filter(caretaker_id=a)
                     j = 1
+                    print('worker asign')
                     for i in workertemp:
-                        if j%2 != 0:
-                            worker.append(i)
-                        j = j + 1
+                        worker.append(i)
+                        # if j%2 != 0:
+                        #     worker.append(i)
+                        # j = j + 1
 
 
             except Caretaker.DoesNotExist:
@@ -360,9 +363,10 @@ def user(request):
         j = 1
         k = 1
         for i in historytemp:
-            if j%2 != 0:
-                history.append(i)
-            j = j+1
+            history.append(i)
+            # if j%2 != 0:
+            #     history.append(i)
+            # j = j+1
 
 
         for h in history:
@@ -415,9 +419,10 @@ def user(request):
 
         j = 1
         for i in historytemp:
-            if j%2 != 0:
-                history.append(i)
-            j = j+1
+            history.append(i)
+            # if j%2 != 0:
+            #     history.append(i)
+            # j = j+1
 
         for i in history:
             i.serial_no = j
@@ -559,9 +564,10 @@ def caretaker(request):
         j = 1
         k = 1
         for i in historytemp:
-            if j%2 == 1:
-                history.append(i)
-            j = j+1
+            history.append(i)
+            # if j%2 == 1:
+            #     history.append(i)
+            # j = j+1
         for h in history:
             h.serial_no = k
             k=k+1
@@ -793,9 +799,10 @@ def supervisor(request):
         all_complainttemp = StudentComplain.objects.filter(location=a.area).order_by('-id')
         j = 1
         for i in all_complainttemp:
-            if j%2 != 0:
-                all_complaint.append(i)
-            j = j + 1
+            all_complaint.append(i)
+            # if j%2 != 0:
+            #     all_complaint.append(i)
+            # j = j + 1
         overduecomplaint = []
         for i in all_complaint:
             if i.status != 2 and i.status != 3:
@@ -817,9 +824,10 @@ def supervisor(request):
         all_complainttemp = StudentComplain.objects.filter(location=a.area).order_by('-id')
         j = 1
         for i in all_complainttemp:
-            if j%2 != 0:
-                all_complaint.append(i)
-            j = j + 1
+            all_complaint.append(i)
+            # if j%2 != 0:
+            #     all_complaint.append(i)
+            # j = j + 1
         overduecomplaint = []
         for i in all_complaint:
             if i.status != 2 and i.status != 3:
@@ -839,9 +847,10 @@ def caretaker_id_know_more(request,caretaker_id):
     list_pending_complaintstemp = StudentComplain.objects.filter(location = this_caretaker_area).filter(status = 0)
     j = 1
     for i in list_pending_complaintstemp:
-        if j%2 != 0:
-            list_pending_complaints.append(i)
-        j = j + 1
+        list_pending_complaints.append(i)
+        # if j%2 != 0:
+        #     list_pending_complaints.append(i)
+        # j = j + 1
 
     # num = StudentComplain.objects.filter(location = this_caretaker_area).filter(status = 0).count();
     num = len(list_pending_complaints)
