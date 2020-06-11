@@ -15,10 +15,15 @@ class Constants:
         (5, 'Saturday'),
         (6, 'Sunday')
     )
+    
+    NAME_OF_DOCTOR = (
+           (0,'Dr. Sharma'),
+           (1,'Dr. Vinay')
 
+    )
 
 class Doctor(models.Model):
-    doctor_name = models.CharField(max_length=50)
+    doctor_name = models.IntegerField(choices=Constants.NAME_OF_DOCTOR)
     doctor_phone = models.CharField(max_length=10)
     specialization = models.CharField(max_length=100)
     active = models.BooleanField(default=True)
