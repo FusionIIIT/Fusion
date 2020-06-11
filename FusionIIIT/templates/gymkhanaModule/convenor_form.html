@@ -23,7 +23,7 @@
 
                         <div class="field">
                             <label>Roll Number</label>
-                            <input name="roll" type="text" readonly='' tyclass="ui large input" value="{{request.user.username}}" required/>
+                            <input name="roll" type="text" readonly='' class="ui large input" value="{{request.user.username}}" required/>
                         </div>
 
                     </div>
@@ -35,14 +35,14 @@
 
                         <div class="field">
                             <label>CPI</label>
-                            <input type="number" name="cpi" class="ui large input" value = '{{cpi}}' required/>
+                            <input type="number" name="cpi" readonly="" class="ui large input" value = '{{cpi}}' required/>
 
                         </div>
                     </div>
                     <div class="two fields">
                         <div class="field">
                             <label>Programme</label>
-                            <input type="text" name="programme"  class="ui large input" value = '{{request.user.student.Programme}}' required/>
+                            <input type="text" name="programme" readonly="" class="ui large input" value = '{{programme}}' required/>
 
                         </div>
 
