@@ -20,8 +20,7 @@ from .models import (Award_and_scholarship, Constants, Director_gold,
                      Proficiency_dm, Release, Notification)
 
 from notification.views import scholarship_portal_notif
-from .validations import MCM_list
-from . import validations as validation_schema
+from .validations import MCM_list, MCM_schema, gold_list, gold_schema
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 # Create your views here.
@@ -544,7 +543,7 @@ def submitMCM(request):
     }
     try:
         for column in MCM_list:
-            validate(instance=data_insert[column], schema=getattr(validation_schema, column))
+            validate(instance=data_insert[column], schema=MCM_schema[column])
 
         releases = Release.objects.filter(
             Q(
@@ -667,65 +666,92 @@ def submitGold(request):
     grand_total = request.POST.get('grand_total')
     nearest_policestation = request.POST.get('nps')
     nearest_railwaystation = request.POST.get('nrs')
-    releases = Release.objects.filter(Q(startdate__lte=datetime.datetime.today().strftime(
-        '%Y-%m-%d'), enddate__gte=datetime.datetime.today().strftime('%Y-%m-%d'))).filter(award="Convocation Medals")
-    for release in releases:
-        existingRelease = Director_gold.objects.filter(Q(date__gte=release.startdate, date__lte=release.enddate)).filter(student=request.user.extrainfo.student)
-        if existingRelease:
-            existingRelease.update(
-                student=student_id,
-                relevant_document=relevant_document,
-                award_id=award_id,
-                academic_achievements=academic_achievements,
-                science_inside=science_inside,
-                science_outside=science_outside,
-                games_inside=games_inside,
-                games_outside=games_outside,
-                cultural_inside=cultural_inside,
-                cultural_outside=cultural_outside,
-                social=social,
-                corporate=corporate,
-                hall_activities=hall_activities,
-                gymkhana_activities=gymkhana_activities,
-                institute_activities=institute_activities,
-                counselling_activities=counselling_activities,
-                correspondence_address=correspondence_address,
-                financial_assistance=financial_assistance,
-                grand_total=grand_total,
-                nearest_policestation=nearest_policestation,
-                nearest_railwaystation=nearest_railwaystation,
-                justification=justification,
-                status='INCOMPLETE'
-            )
-            messages.success(request, award + ' Application is successfully updated')
-            break
-        else:
-            Director_gold.objects.create(
-                student=student_id,
-                relevant_document=relevant_document,
-                award_id=award_id,
-                academic_achievements=academic_achievements,
-                science_inside=science_inside,
-                science_outside=science_outside,
-                games_inside=games_inside,
-                games_outside=games_outside,
-                cultural_inside=cultural_inside,
-                cultural_outside=cultural_outside,
-                social=social,
-                corporate=corporate,
-                hall_activities=hall_activities,
-                gymkhana_activities=gymkhana_activities,
-                institute_activities=institute_activities,
-                counselling_activities=counselling_activities,
-                correspondence_address=correspondence_address,
-                financial_assistance=financial_assistance,
-                grand_total=grand_total,
-                nearest_policestation=nearest_policestation,
-                nearest_railwaystation=nearest_railwaystation,
-                justification=justification
-            )
-            messages.success(request, award + ' Application is successfully submitted')
-            break
+    data_insert={
+        "academic_achievements":academic_achievements,
+        "science_inside":science_inside,
+        "science_outside":science_outside,
+        "games_inside":games_inside,
+        "games_outside":games_outside,
+        "cultural_inside":cultural_inside,
+        "cultural_outside":cultural_outside,
+        "social":social,
+        "corporate":corporate,
+        "hall_activities":hall_activities,
+        "gymkhana_activities":gymkhana_activities,
+        "institute_activities":institute_activities,
+        "counselling_activities":counselling_activities,
+        "other_activities":other_activities,
+        "justification":justification,
+        "correspondence_address":correspondence_address,
+        "financial_assistance":financial_assistance,
+        "grand_total":grand_total,
+        "nearest_policestation":nearest_policestation,
+        "nearest_railwaystation":nearest_railwaystation
+    }
+    try:
+        for column in gold_list:
+            validate(instance=data_insert[column], schema=gold_schema[column])
+        releases = Release.objects.filter(Q(startdate__lte=datetime.datetime.today().strftime(
+            '%Y-%m-%d'), enddate__gte=datetime.datetime.today().strftime('%Y-%m-%d'))).filter(award="Convocation Medals")
+        for release in releases:
+            existingRelease = Director_gold.objects.filter(Q(date__gte=release.startdate, date__lte=release.enddate)).filter(student=request.user.extrainfo.student)
+            if existingRelease:
+                existingRelease.update(
+                    student=student_id,
+                    relevant_document=relevant_document,
+                    award_id=award_id,
+                    academic_achievements=academic_achievements,
+                    science_inside=science_inside,
+                    science_outside=science_outside,
+                    games_inside=games_inside,
+                    games_outside=games_outside,
+                    cultural_inside=cultural_inside,
+                    cultural_outside=cultural_outside,
+                    social=social,
+                    corporate=corporate,
+                    hall_activities=hall_activities,
+                    gymkhana_activities=gymkhana_activities,
+                    institute_activities=institute_activities,
+                    counselling_activities=counselling_activities,
+                    correspondence_address=correspondence_address,
+                    financial_assistance=financial_assistance,
+                    grand_total=grand_total,
+                    nearest_policestation=nearest_policestation,
+                    nearest_railwaystation=nearest_railwaystation,
+                    justification=justification,
+                    status='INCOMPLETE'
+                )
+                messages.success(request, award + ' Application is successfully updated')
+                break
+            else:
+                Director_gold.objects.create(
+                    student=student_id,
+                    relevant_document=relevant_document,
+                    award_id=award_id,
+                    academic_achievements=academic_achievements,
+                    science_inside=science_inside,
+                    science_outside=science_outside,
+                    games_inside=games_inside,
+                    games_outside=games_outside,
+                    cultural_inside=cultural_inside,
+                    cultural_outside=cultural_outside,
+                    social=social,
+                    corporate=corporate,
+                    hall_activities=hall_activities,
+                    gymkhana_activities=gymkhana_activities,
+                    institute_activities=institute_activities,
+                    counselling_activities=counselling_activities,
+                    correspondence_address=correspondence_address,
+                    financial_assistance=financial_assistance,
+                    grand_total=grand_total,
+                    nearest_policestation=nearest_policestation,
+                    nearest_railwaystation=nearest_railwaystation,
+                    justification=justification
+                )
+                messages.success(request, award + ' Application is successfully submitted')
+                break
+    except ValidationError as exc:
+        messages.error(column + " : " + str(exc))
     request.session['last_clicked'] = 'Submit_Gold'
     return HttpResponseRedirect('/spacs/student_view')
 
