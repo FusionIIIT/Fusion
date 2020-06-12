@@ -416,7 +416,7 @@ def retrun_content(request, roll, name, desig , club__ ):
 	registration_form = Registration_form.objects.all()
 	cpi = Student.objects.get(id__user=request.user).cpi
 	programme = Student.objects.get(id__user=request.user).programme
-	status = Form_available.objects.get(roll=request.user.username).status
+	# status = Form_available.objects.get(roll=request.user.username).status
 
 	# print(registration_form)
 
@@ -476,7 +476,7 @@ def retrun_content(request, roll, name, desig , club__ ):
 		'registration_form': registration_form,
 		'cpi': cpi,
 		'programme': programme,
-		'status': status,
+		# 'status': status,
 	}
 	return content
 
