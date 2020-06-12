@@ -683,7 +683,7 @@ def createBank(request):
     p.save()
     context = {
     }
-    return render(request, "financeAndAccountsModule/financeAndAccountsModulead.html")
+    return render(request, "financeAndAccountsModule/financeAndAccountsModulead.html", context)
 
 def createCompany(request):
     """
