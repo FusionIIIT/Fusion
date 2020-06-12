@@ -200,11 +200,6 @@ class Director_silver(models.Model):
     inside_achievements = models.TextField(max_length=1000, null=True)
     justification = models.TextField(max_length=1000, null=True)
     outside_achievements = models.TextField(max_length=1000, null=True)
-    correspondence_address = models.CharField(max_length=100, null=True)
-    financial_assistance = models.TextField(max_length=1000, null=True)
-    grand_total = models.IntegerField(null=True)
-    nearest_policestation = models.CharField(max_length=25, null=True)
-    nearest_railwaystation = models.CharField(max_length=25, null=True)
 
 
     class Meta:
