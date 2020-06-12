@@ -137,7 +137,7 @@ Safari 10 before testing.
 * Install the Cucumber Eclipse Plugin from Eclipse MarketPlace under help
 
 ## Getting Started
-* Open the folder in Eclipse IDE(You are free to use any IDE)
+* Open the Test folder in Eclipse IDE(You are free to use any IDE)
   * Open the pom.xml and build the project
   * Change the driver path in System.setProperty in line 16 of Step_defination.java 
   
