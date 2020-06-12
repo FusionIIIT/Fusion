@@ -16,12 +16,12 @@ DATABASES = {
     }
 }
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'fusion.db'),
-#     }
-# }
+#DATABASES = {
+ #   'default': {
+ #        'ENGINE': 'django.db.backends.sqlite3',
+ #       'NAME': os.path.join(BASE_DIR, 'fusion.db'),
+ #   }
+#}
 
 if DEBUG:
     MIDDLEWARE += (

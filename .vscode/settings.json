@@ -1,0 +1,9 @@
+{
+    "python.autoComplete.extraPaths": [
+        "./FusionIIIT"
+    ],
+    "python.terminal.activateEnvironment": true,
+    "python.terminal.activateEnvInCurrentTerminal": true,
+    "python.linting.enabled": true,
+    "python.linting.flake8Enabled": true,
+}

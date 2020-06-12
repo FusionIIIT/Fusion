@@ -314,15 +314,15 @@ def request_booking(request):
         # getting details from request form
         intender = request.POST.get('intender')
         user = User.objects.get(id=intender)
-        booking_id = "VH"+str(datetime.datetime.now())
+        booking_id =  request.POST.get('booking-id')
         category = request.POST.get('category')
         person_count = request.POST.get('number-of-people')
         bookingObject = []
-        if person_count and (int(person_count)<20):
-            person_count = person_count
+        #if person_count and (int(person_count)<20):
+         #   person_count = person_count
 
-        else:
-            flag = 1    # for error
+        #else:
+          #  flag = 1    # for error
 
         #     person_count = 1
         purpose_of_visit = request.POST.get('purpose-of-visit')
@@ -334,23 +334,25 @@ def request_booking(request):
         bill_to_be_settled_by = request.POST.get('bill_settlement')
         number_of_rooms = request.POST.get('number-of-rooms')
 
-        if (int(person_count)<int(number_of_rooms)):
-            flag=1
+     #   if (int(person_count)<int(number_of_rooms)):
+      #      flag=1
 
-        if flag ==0:
-            bookingObject = BookingDetail.objects.create(purpose=purpose_of_visit,
+      #  if flag ==0:
+        bookingObject = BookingDetail.objects.create(
+                                                     purpose=purpose_of_visit,
                                                      intender=user,
                                                      booking_from=booking_from,
                                                      booking_to=booking_to,
                                                      visitor_category=category,
-                                                     person_count=person_count,
+                                                     person_count=number_of_people,
+                                                     category = category,
                                                      arrival_time=booking_from_time,
                                                      departure_time=booking_to_time,
                                                      remark=remarks_during_booking_request,
                                                      number_of_rooms=number_of_rooms,
-                                                     bill_to_be_settled_by=bill_to_be_settled_by)
+                                                     bill_to_be_settled_by=bill_settlement)
 
-            print(bookingObject.bill_to_be_settled_by)
+       
 
         # in case of any attachment
 
@@ -468,10 +470,10 @@ def confirm_booking(request):
         booking_id = request.POST.get('booking-id')
         intender = request.POST.get('intender'),
         category = request.POST.get('category')
-        purpose = request.POST.get('purpose')
+        purpose = request.POST.get('purpose-of-visit')
         booking_from = request.POST.get('booking_from')
         booking_to = request.POST.get('booking_to')
-        person_count = request.POST.get('numberofpeople')
+        person_count = request.POST.get('number-of-people')
 
         # rooms list
         rooms = request.POST.getlist('rooms[]')

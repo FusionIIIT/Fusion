@@ -42,3 +42,4 @@ class Room_booking(forms.Form):
 	purpose = forms.CharField(widget=forms.Textarea)
 	date_from = forms.DateField(initial=datetime.date.today)
 	date_to = forms.DateField(initial=datetime.date.today)
+    
