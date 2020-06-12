@@ -7,6 +7,8 @@ Scenario Outline: Login functionality exists
 	When User entered username as "<username>" and password as "<password>"
 	Then Pressed Login Button
 	Then Dashboard Must appear and verify the dasboard Title
+	When click on complaint Module
+	Then Fill the form and select the Electricity as complaint type and Location as Hall3
 	Examples:
 	|username|password|
 	|2017013|	Edpt_~D|
