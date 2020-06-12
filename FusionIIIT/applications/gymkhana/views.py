@@ -755,13 +755,13 @@ def new_session(request):
 			res = "error"
 			message = "Some error occurred"
 
-
 		content = {
 			'status':res,
 			'message':message
 		}
+		
 		content = json.dumps(content)
-		gymkhana_module_notif(request.user, request.user, 'new_session')
+		gymkhana_module_notif(request.user, User.objects.all(), 'new_session')
 		return HttpResponse(content)
 
 @login_required
