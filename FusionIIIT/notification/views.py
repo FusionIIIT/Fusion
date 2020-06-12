@@ -205,7 +205,7 @@ def office_dean_PnD_notif(sender, recipient, type):
     elif type=='assignment_rejected':
         verb = "Assignment has been rejected."
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
-    
+
 def office_module_DeanS_notif(sender, recipient, type):
     url='office:officeOfDeanStudents'
     module='Office Module'
@@ -235,5 +235,17 @@ def office_module_DeanS_notif(sender, recipient, type):
         verb = "Club session has been rejected."
     elif type == 'budget_alloted':
         verb = "Budget has been alloted by Junior Superintendent"
+
+    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
+
+def gymkhana_module_notif(sender, recipient, type):
+    url='gymkhana:gymkhana'
+    module='Gymkhana Module'
+    sender = sender
+    recipient = recipient
+    verb = ""
+
+    if type == 'new_session':
+        verb = "A new session has been scheduled."
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)

@@ -16,7 +16,7 @@ from django.db import IntegrityError
 from django.core import serializers
 from django.contrib.auth.models import User
 from timeit import default_timer as time
-from notification.views import office_module_notif
+from notification.views import gymkhana_module_notif
 from django.views.decorators.csrf import ensure_csrf_cookie
 from applications.academic_information.models import Student
 from applications.globals.models import *
@@ -755,11 +755,13 @@ def new_session(request):
 			res = "error"
 			message = "Some error occurred"
 
+
 		content = {
 			'status':res,
 			'message':message
 		}
 		content = json.dumps(content)
+		gymkhana_module_notif(request.user, request.user, 'new_session')
 		return HttpResponse(content)
 
 @login_required
