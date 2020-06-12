@@ -42,13 +42,19 @@
         <div class="ui grid header">
 
             <div class="two wide column no-padding no-margin">
+            {% if question.anonymous_ask is False %}
                 <a href="{% url 'feeds:profile' question.user.username%}">
-                    {% if profile.0.profile_picture %}
+            {% endif %}
+                    {% if profile.0.profile_picture and question.anonymous_ask is False%}
                         <img class="ui avatar image" style="height: 40px; width: 40px ;" src="{{profile.0.profile_picture.url}}">
+                    {% elif question.anonymous_ask is True%}
+                        <i class = "ui big user circle icon" ></i>
                     {% else %}
                         <img class="ui avatar image" style="height: 40px; width: 40px ;" src={% static 'globals/img/zlatan.jpg' %}>
                     {% endif %}
+            {% if question.anonymous_ask is False %}
                 </a>
+            {% endif %}
             </div>
 
             <div class="thirteen wide column no-padding no-margin">
