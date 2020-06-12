@@ -102,6 +102,11 @@
         {% csrf_token %}
                 {% for info in c %}
                 <tr>
+                    <td class="collapsing">
+                        <div class="ui fitted checkbox">
+                            <input type="checkbox" name = "box" value = "{{ info.id }}" /> <label></label>
+                        </div>
+                    </td>
 
                     <td>
                         {{ info.pf }}
