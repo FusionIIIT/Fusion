@@ -53,6 +53,7 @@
                 <div class="description">
                     <form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;" enctype="multipart/form-data">
                         {% csrf_token %}
+                        <input type="hidden" id="award" name="award" value="Merit-cum-Means Scholarship">
                 <div class="three fields">
                         <div class="six wide field ">
                                 <label>Category</label>
@@ -420,7 +421,7 @@
 
                                     <div class="six wide field">
                                             <label>Type</label>
-                                            <select class="ui fluid search selection large dropdown" name="award" required>
+                                            <select class="ui fluid search selection large dropdown" name="award-type" required>
                                                     <option value="">Select</option>
                                                     <option value="D&M Proficiency Gold Medal">D&M Proficiency Gold Medal</option>
                                                     <option value="IIITDM Proficiency Prizes">IIITDM Proficiency Prizes</option>
@@ -855,7 +856,7 @@
 
                         <div class="six wide field">
                                 <label>Type</label>
-                                <select class="ui fluid search selection large dropdown" name="award" required>
+                                <select class="ui fluid search selection large dropdown" name="award-type" required>
                                         <option value="">Select</option>
                                         <option value="Director's Silver Medal Games and Sports">Director's Silver Medal Games and Sports</option>
                                         <option value="Director's Silver Medal Cultural">Director's Silver Medal Cultural</option>

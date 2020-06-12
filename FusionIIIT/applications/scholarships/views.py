@@ -594,7 +594,7 @@ def submitMCM(request):
                     status="INCOMPLETE",
                 )
                 messages.success(
-                    request, "Mcm scholarship is successfully Updated"
+                    request, award + ' Application is successfully submitted'
                 )
                 break
             else:
@@ -629,7 +629,7 @@ def submitMCM(request):
                     college_name=college_name,
                 )
                 messages.success(
-                    request, "Mcm scholarship is successfully applied"
+                    request, award + ' Application is successfully submitted'
                 )
                 break
         request.session["last_clicked"] = "Submit_mcm"
@@ -737,6 +737,7 @@ def submitSilver(request):
         x.save()
     relevant_document = request.FILES.get('myfile')
     award, award_id = getAwardId(request)
+    award_type = request.POST.get('award-type')
     student_id = request.user.extrainfo.student
     inside_achievements = request.POST.get('inside_achievements')
     outside_achievements = request.POST.get('outside_achievements')
@@ -754,6 +755,7 @@ def submitSilver(request):
             existingRelease.update(
                 student=student_id,
                 award_id=award_id,
+                award_type=award_type,
                 relevant_document=relevant_document,
                 inside_achievements=inside_achievements,
                 justification=justification,
@@ -771,6 +773,7 @@ def submitSilver(request):
             Director_silver.objects.create(
                 student=student_id,
                 award_id=award_id,
+                award_type=award_type,
                 relevant_document=relevant_document,
                 inside_achievements=inside_achievements,
                 justification=justification,
@@ -795,6 +798,7 @@ def submitDM(request):
     no_of_students = request.POST.get('students')
     relevant_document = request.FILES.get('myfile')
     award, award_id = getAwardId(request)
+    award_type = request.POST.get('award-type')
     student_id = request.user.extrainfo.student
     try:
         roll_no1 = int(request.POST.get('roll_no1'))
@@ -842,6 +846,7 @@ def submitDM(request):
                 no_of_students=no_of_students,
                 student=student_id,
                 award_id=award_id,
+                award_type=award_type,
                 relevant_document=relevant_document,
                 roll_no1=roll_no1,
                 roll_no2=roll_no2,
@@ -866,7 +871,7 @@ def submitDM(request):
                 status='INCOMPLETE'
             )
             messages.success(
-                request, award + 'Application is successfully updated')
+                request, award + ' Application is successfully updated')
             break
         else:
             print(existingRelease)
@@ -875,6 +880,7 @@ def submitDM(request):
                 no_of_students=no_of_students,
                 student=student_id,
                 award_id=award_id,
+                award_type=award_type,
                 relevant_document=relevant_document,
                 roll_no1=roll_no1,
                 roll_no2=roll_no2,
@@ -898,7 +904,7 @@ def submitDM(request):
                 justification=justification
             )
             messages.success(
-                request, award + 'Application is successfully submitted')
+                request, award + ' Application is successfully submitted')
             break
     request.session['last_clicked'] = 'Submit_dm'
     return HttpResponseRedirect('/spacs/student_view')
