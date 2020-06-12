@@ -16,7 +16,7 @@ from django.db import IntegrityError
 from django.core import serializers
 from django.contrib.auth.models import User
 from timeit import default_timer as time
-from notification.views import office_module_notif
+from notification.views import gymkhana_module_notif
 from django.views.decorators.csrf import ensure_csrf_cookie
 from applications.academic_information.models import Student
 from applications.globals.models import *
@@ -417,7 +417,7 @@ def retrun_content(request, roll, name, desig , club__ ):
 	registration_form = Registration_form.objects.all()
 	cpi = Student.objects.get(id__user=request.user).cpi
 	programme = Student.objects.get(id__user=request.user).programme
-	status = Form_available.objects.get(roll=request.user.username).status
+	# status = Form_available.objects.get(roll=request.user.username).status
 
 	# print(registration_form)
 
@@ -477,7 +477,7 @@ def retrun_content(request, roll, name, desig , club__ ):
 		'registration_form': registration_form,
 		'cpi': cpi,
 		'programme': programme,
-		'status': status,
+		# 'status': status,
 	}
 	return content
 
@@ -762,7 +762,7 @@ def new_session(request):
 			if(res == "success"):
 				session = Session_info(club = club_name, venue = venue, date =date, start_time=start_time , end_time = end_time , session_poster=session_poster, details = desc)
 				session.save()
-				message += "Your form has been dispatched for further process"
+				message += "Session booked Successfully"
 			else:
 				message += "The selected time slot for the given date and venue conflicts with already booked session"
 		except Exception as e:
@@ -773,7 +773,9 @@ def new_session(request):
 			'status':res,
 			'message':message
 		}
+		
 		content = json.dumps(content)
+		gymkhana_module_notif(request.user, User.objects.all(), 'new_session')
 		return HttpResponse(content)
 
 @login_required
