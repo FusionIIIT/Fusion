@@ -327,7 +327,7 @@ def previous(request) :
                     'c': c,
 
                 }
-                return render(request, "financeAndAccountsModule/financeAndAccpyhtomountsModuleds.html", context)
+                return render(request, "financeAndAccountsModule/financeAndAccountsModuleds.html", context)
 
             if(str(z.designation) == 'sr dealing assitant'):
                 a = request.POST.get('selectmonth')
@@ -683,7 +683,7 @@ def createBank(request):
     p.save()
     context = {
     }
-    return render(request, "financeAndAccountsModule/financeAndAccountsModulead.html")
+    return render(request, "financeAndAccountsModule/financeAndAccountsModulead.html", context)
 
 def createCompany(request):
     """
