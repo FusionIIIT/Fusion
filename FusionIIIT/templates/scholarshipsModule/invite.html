@@ -3,7 +3,7 @@
 
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
-        <a class="{% if last_clicked == 'Submit' or last_clicked == '' or last_clicked == 'Submit_previous_winner'%} active item {% else %} item {% endif %}" data-tab="inviteapplications">
+        <a class="{% if last_clicked == 'Submit' or last_clicked == '' or last_clicked == 'SubmitPreviousWinner'%} active item {% else %} item {% endif %}" data-tab="inviteapplications">
             Invite Applications
         </a>
         <a class="{% if last_clicked == 'Enddate_updated' %} active item {% else %} item {% endif %}" data-tab="recent_app">
@@ -35,22 +35,63 @@
         </div>
     </div>-->
 
-    <div class="{% if last_clicked == 'Submit' or last_clicked == ''  or last_clicked == 'Submit_previous_winner' %} ui active tab {% else %} ui tab {% endif %}" data-tab="inviteapplications">
+    <div class="{% if last_clicked == 'Submit' or last_clicked == ''  or last_clicked == 'SubmitPreviousWinner' %} ui active tab {% else %} ui tab {% endif %}" data-tab="inviteapplications">
         <div class="ui vertical segment">
             <form method="POST" class="ui form" style="padding-left: 36px; padding-right: 36px;">
                 {% csrf_token %}
                 <div class="three fields">
                     <div class="six wide field">
                         <label>Type</label>
-                        <select class="ui fluid search selection large dropdown" name="type" required>
+                        <select id="award_id" class="ui fluid search selection large dropdown" name="type" required>
                                 <option value="">Select</option>
-                                <option value="Mcm Scholarship">Mcm Scholarship</option>
+                                <option value="Merit-cum-Means Scholarship">Merit-cum-Means Scholarship</option>
                                 <option value="Convocation Medals">Convocation Medals</option>
                             </select>
                     </div>
                     <div class="six wide field">
                         <label>Programme</label>
-                        <select class="ui fluid search selection large dropdown" name="programme">
+                        <script>
+                            function populate_batches_convocation(){
+                                let award_name=document.getElementById("award_id").value.toString();
+                                let prog=document.getElementById("programme_id").value.toString();
+                                if(award_name=="Convocation Medals"){
+                                    let tenure=4;
+                                    if(prog=="PhD"){
+                                        // do nothing 
+                                        return;
+                                    }else if(prog=="B.Tech"){
+                                        tenure=4;
+                                    }else if(prog=="B.Des"){
+                                        tenure=4;
+                                    }else if(prog=="M.Tech"){
+                                        tenure=2;
+                                    }else if(prog=="M.Des"){
+                                        tenure=2;
+                                    }
+                                    let d=new Date();
+                                    let m=parseInt(d.getMonth().toString());
+                                    let yr=parseInt(d.getFullYear().toString());
+                                    
+                                    let batch_year=yr-tenure;
+                                    if(m>7){
+                                        batch_year=batch_year+1;
+                                    }
+                                    var x = document.getElementById("batch_convocation");
+                                    let i,
+                                    L = x.options.length - 1;
+                                    for (i = L; i >= 0; i--) {
+                                        x.remove(i);
+                                    }
+                                    var option = document.createElement("option");
+                                    option.text = batch_year;
+                                    option.value=batch_year;
+                                    x.add(option);
+                                }
+
+                            }
+
+                        </script>
+                        <select class="ui fluid search selection large dropdown" id="programme_id" onchange="populate_batches_convocation()" name="programme">
                                 <option value="">Select</option>
                                 <option value="B.Tech"> B.Tech </option>
                                 <option value="B.Des"> B.Des </option>
@@ -61,15 +102,14 @@
                     </div>
                     <div class="six wide field">
                         <label>Batch</label>
-                        <select class="ui fluid search selection large dropdown" name="batch" required>
+                        <select class="ui fluid search selection large dropdown" id="batch_convocation" name="batch" required>
                                 <option value="">Select</option>
-                                <option value="2014">2014</option>
-                                <option value="2015">2015</option>
-                                <option value="2016">2016</option>
-                                <option value="2017">2017</option>
-                                <option value="all">All Batch</option>
-                            </select>
+                                {% for y in active_batches %}
+                                    <option value="{{ y }}">{{ y }}</option>
+                                {% endfor %}
+                                <option value="all">All</option>
                            <!--<input type="text" value="all" name="batch" placeholder="All Batches"  required>-->
+                        </select>
                     </div>
 
 
@@ -162,7 +202,6 @@
     </div>
   </div>
 
-
 <script>
 
   $(document).on('click','#update_release_btn',function (event) {
@@ -176,7 +215,7 @@
           var x = $('#update_release_id').val();
           var y = $('#enddate_up').val();
           $.ajax({
-              url: '/spacs/update_enddate/',
+              url: '/spacs/updateEndDate/',
               type: 'GET',
               data:{
                   up_id:x,

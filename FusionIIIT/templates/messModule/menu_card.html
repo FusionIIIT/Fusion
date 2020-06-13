@@ -20,8 +20,9 @@
 
     {% endif %}
 
-    {% if info.user_type == 'student' %}
+{% if info.user_type == 'student' %}
         {% if d.designation.name == 'student' %}
+        
 
             <a class="active item"  data-tab="fourth">
             Menu | Bill | Payment Details
@@ -31,16 +32,17 @@
                 Feedback
             </a>
 
-            {% if messinfo.mess_option == 'mess2' %}
-                <a class="item" data-tab="sixth">
-                    Apply For Non-veg | Check History
-                </a>
-            {% endif %}
+            
+            <a class="item" data-tab="sixth">
+                Apply For Non-veg | Check History
+            </a>
+            
 
             <a class="item" data-tab="second">
                 Applications
             </a>
-<!--
+            
+ <!--  
             <a class="item" data-tab="third">
                 Apply For Vacation Food
             </a>
@@ -49,6 +51,7 @@
                 Special Food Request | Choose mess
             </a>
             -->
+            
 
 
         {% endif %}

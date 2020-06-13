@@ -89,7 +89,7 @@
                 </button>-->
                 <div class="ui buttons right floated">
  
-                  <button class="large ui blue toggle right floated button" value="save" onclick="addwork()">Save</button>
+                  <button class="large ui blue toggle right floated button" value="save" name="submit" onclick="addwork(),disabled=true">Save</button>
                   <div class="or"></div>
                   <button class="large ui toggle right floated button" value="cancel">Cancel</button>
                   
@@ -165,4 +165,24 @@
     <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
     <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
     <script type="text/javascript" src="{% static 'complaint_system/js/rating.js' %}"></script>
+    <script type="text/javascript">
+
+        function checkForm(form) // Submit button clicked
+        {
+          //
+          // check form input values
+          //
+      
+          form.myButton.disabled = true;
+          form.myButton.value = "Please wait...";
+          return true;
+        }
+      
+        function resetForm(form) // Reset button clicked
+        {
+          form.myButton.disabled = false;
+          form.myButton.value = "Submit";
+        }
+      
+      </script>
     {%endblock%}
