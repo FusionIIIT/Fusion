@@ -238,14 +238,63 @@ def office_module_DeanS_notif(sender, recipient, type):
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
-def gymkhana_module_notif(sender, recipient, type):
-    url='gymkhana:gymkhana'
-    module='Gymkhana Module'
+
+def gymkhana_voting(sender, recipient, type, title, desc):
+    url = 'gymkhana:gymkhana'
+    module = 'Gymkhana Module'
     sender = sender
     recipient = recipient
+    title = title
+    desc = desc
+    verb = ""
+
+    if type == 'voting_open':
+        verb = "Voting is open for {}".format(title)
+
+    notify.send(sender=sender,
+                recipient=recipient,
+                url=url,
+                module=module,
+                verb=verb,
+                description=desc
+                )
+
+
+def gymkhana_session(sender, recipient, type, club, desc, venue):
+    url = 'gymkhana:gymkhana'
+    module = 'Gymkhana Module'
+    sender = sender
+    recipient = recipient
+    desc = desc
     verb = ""
 
     if type == 'new_session':
-        verb = "A new session has been scheduled."
+        verb = "A session by {} Club will be organised in {}".format(club, venue)
 
-    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
+    notify.send(sender=sender,
+                recipient=recipient,
+                url=url,
+                module=module,
+                verb=verb,
+                description=desc
+                )
+
+
+def gymkhana_event(sender, recipient, type, club, event_name, desc, venue):
+    url = 'gymkhana:gymkhana'
+    module = 'Gymkhana Module'
+    sender = sender
+    recipient = recipient
+    desc = desc
+    verb = ""
+
+    if type == 'new_event':
+        verb = "{} event by {} Club will be organised in {}".format(event_name, club, venue)
+
+    notify.send(sender=sender,
+                recipient=recipient,
+                url=url,
+                module=module,
+                verb=verb,
+                description=desc
+                )

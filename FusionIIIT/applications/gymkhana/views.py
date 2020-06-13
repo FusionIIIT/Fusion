@@ -16,7 +16,7 @@ from django.db import IntegrityError
 from django.core import serializers
 from django.contrib.auth.models import User
 from timeit import default_timer as time
-from notification.views import gymkhana_module_notif
+from notification.views import gymkhana_voting, office_module_notif, gymkhana_session, gymkhana_event
 from django.views.decorators.csrf import ensure_csrf_cookie
 from applications.academic_information.models import Student
 from applications.globals.models import *
@@ -408,8 +408,8 @@ def registration_form(request):
 	# return redirect('/gymkhana/')
 
 def retrun_content(request, roll, name, desig , club__ ):
-	students =ExtraInfo.objects.all().filter(user_type = "student")
-	faculty = ExtraInfo.objects.all().filter(user_type = "faculty")
+	students =ExtraInfo.objects.filter(user_type = "student")
+	faculty = ExtraInfo.objects.filter(user_type = "faculty")
 	club_name = Club_info.objects.all()
 	club_member = Club_member.objects.all()
 	fest_budget = Fest_budget.objects.all()
@@ -770,13 +770,18 @@ def new_session(request):
 			club_name = coordinator_club(request)
 			res = conflict_algorithm_session(date, start_time, end_time, venue)
 			message = ""
+			getstudents = ExtraInfo.objects.filter(user_type = 'student')
+			recipients = User.objects.filter(extrainfo__in=getstudents)
 			if(res == "success"):
 				session = Session_info(club = club_name, venue = venue, date =date, start_time=start_time , end_time = end_time , session_poster=session_poster, details = desc)
 				session.save()
 				message += "Session booked Successfully"
+				gymkhana_session(request.user, recipients, 'new_session', club_name, desc, venue)
+
 			else:
 				message += "The selected time slot for the given date and venue conflicts with already booked session"
 		except Exception as e:
+			print(e)
 			res = "error"
 			message = "Some error occurred"
 
@@ -786,7 +791,6 @@ def new_session(request):
 		}
 		
 		content = json.dumps(content)
-		gymkhana_module_notif(request.user, User.objects.all(), 'new_session')
 		return HttpResponse(content)
 
 @login_required
@@ -808,10 +812,13 @@ def new_event(request):
 			club_name = coordinator_club(request)
 			res = conflict_algorithm_event(date, start_time, end_time, venue)
 			message = ""
+			getstudents = ExtraInfo.objects.filter(user_type = 'student')
+			recipients = User.objects.filter(extrainfo__in=getstudents)
 			if(res == "success"):
 				event = Event_info(club = club_name, event_name=event_name, incharge=incharge, venue = venue, date =date, start_time=start_time , end_time = end_time ,event_poster = event_poster , details = desc)
 				event.save()
 				message += "Your form has been dispatched for further process"
+				gymkhana_event(request.user, recipients, 'new_event', club_name, event_name, desc, venue)
 			else:
 				message += "The selected time slot for the given date and venue conflicts with already booked session"
 		except Exception as e:
@@ -1044,6 +1051,17 @@ def voting_poll(request):
 			for choice in choices:
 				new_choice = Voting_choices(poll_event=new_poll,title=choice)
 				new_choice.save()
+			for i in range(len(groups)):
+				value = groups[i].split(":")
+				batch = value[0]
+				branch = value[1]
+				allbatch = User.objects.filter(username__contains = batch)
+				selbranch = ExtraInfo.objects.filter(department__name = branch)
+				batchbranch = User.objects.filter(username__contains = batch, extrainfo__in=selbranch)
+				if branch == 'All':
+					gymkhana_voting(request.user, allbatch, 'voting_open', title, description)
+				else:
+					gymkhana_voting(request.user, batchbranch, 'voting_open', title, description)
 			return redirect('/gymkhana/')
 		except Exception as e:
 			res = "error"
