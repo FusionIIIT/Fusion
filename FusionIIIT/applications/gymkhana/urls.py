@@ -7,6 +7,7 @@ app_name = 'gymkhana'
 urlpatterns = [
 
     url(r'^$', views.gymkhana, name='gymkhana'),
+    url(r'^delete_requests/$', views.delete_requests, name='delete_requests'),
     url(r'^form_avail/$', views.form_avail, name='form_avail'),
     url(r'^registration_form/$', views.registration_form, name='registration_form'),
     url(r'^new_club/$', views.new_club, name='new_club'),
