@@ -109,3 +109,28 @@ gold_schema={
     "nearest_policestation" : {"anuOf": [{"type": "string", "maxLength": 25}, {"type": "null"}]},
     "nearest_railwaystation" : {"anuOf": [{"type": "string", "maxLength": 25}, {"type": "null"}]}
 }
+
+
+
+silver_schema={
+    "nearest_policestation" : {"anuOf": [{"type": "string", "maxLength": 30}, {"type": "null"}]},
+    "nearest_railwaystation" : {"anuOf": [{"type": "string", "maxLength": 30}, {"type": "null"}]},
+    "correspondence_address" : {"anuOf": [{"type": "string", "maxLength": 150}, {"type": "null"}]},
+    "financial_assistance" : {"anuOf": [{"type": "string", "maxLength": 1000}, {"type": "null"}]},
+    "grand_total" : {"anuOf": [{"type": "number"}, {"type": "null"}]},
+    "inside_achievements" : {"anuOf": [{"type": "string", "maxLength": 1000}, {"type": "null"}]},
+    "justification" : {"anuOf": [{"type": "string", "maxLength": 1000}, {"type": "null"}]},
+    "outside_achievements" : {"anuOf": [{"type": "string", "maxLength": 1000}, {"type": "null"}]}
+}    
+
+silver_list=[
+    "nearest_policestation",
+    "nearest_railwaystation",
+    "correspondence_address",
+    "financial_assistance",
+    "grand_total",
+    "inside_achievements",
+    "justification",
+    "outside_achievements",
+]
+
