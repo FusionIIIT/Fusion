@@ -348,8 +348,6 @@ def form_avail(request):
 				status = True
 			else:
 				status = False
-				rev = Registration_form.objects.all()
-				rev.delete()
 
 			roll = request.user.username
 			#saving data to the database
@@ -369,6 +367,25 @@ def form_avail(request):
 		messages.success(request, "Form available?")
 		return HttpResponse(content)
 		# redirect("/gymkhana/")
+
+@login_required
+def delete_requests(request):
+	if request.method == 'POST':
+		res = "success"
+		message = "Data is Deleted."
+		try:
+			rev = Registration_form.objects.all()
+			rev.delete()
+
+		except Exception as e:
+			res = "error"
+			message = "Some error occured."
+		content = {
+			'status': res,
+			'message': message,
+		}
+		content = json.dumps(content)
+		return HttpResponse(content)
 
 
 @login_required()
