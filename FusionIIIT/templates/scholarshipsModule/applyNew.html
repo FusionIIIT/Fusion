@@ -485,7 +485,7 @@
                             </div>
                             <div class="eight wide field">
                                 <label>Number Of Student</label>
-                                <select class="ui fluid search selection large dropdown" name="students" required>
+                                <select class="ui fluid search selection large dropdown" id="no_of_students_roll" onchange="show_roll_fields()" name="students" required>
                                     <option value="">Select</option>
                                     <option value="1">1</option>
                                     <option value="2">2</option>
@@ -494,33 +494,32 @@
                                     <option value="5">5</option>
                                 </select>
                             </div>
-
                             <div class="five fields">
-                                <div class="three wide field ">
+                                <div class="three wide field " id="student_roll_1">
                                     <label>Student 1 Roll No.</label>
                                     <div class="ui large input">
                                         <input placeholder="Student1" type="number" name="roll_no1" required>
                                     </div>
                                 </div>
-                                <div class="three wide field ">
+                                <div class="three wide field " id="student_roll_2">
                                     <label>Student 2 Roll No.</label>
                                     <div class="ui large input">
                                         <input placeholder="Student2" type="number" name="roll_no2">
                                     </div>
                                 </div>
-                                <div class="three wide field ">
+                                <div class="three wide field " id="student_roll_3">
                                         <label>Student 3 Roll No.</label>
                                         <div class="ui large input">
                                             <input placeholder="Student3" type="number" name="roll_no3">
                                         </div>
                                     </div>
-                                    <div class="three wide field ">
+                                    <div class="three wide field " id="student_roll_4">
                                             <label>Student 4 Roll No.</label>
                                             <div class="ui large input">
                                                 <input placeholder="Student4" type="number" name="roll_no4">
                                             </div>
                                         </div>
-                                        <div class="three wide field ">
+                                        <div class="three wide field " id="student_roll_5"> 
                                                 <label>Student 5 Roll No.</label>
                                                 <div class="ui large input">
                                                     <input placeholder="Student5" type="number" name="roll_no5">
@@ -999,6 +998,18 @@
                     });
             });
             </script>-->
+    <script>
+        function show_roll_fields() {
+            var x = parseInt(document.getElementById("no_of_students_roll").value.toString());
+            let i=1;
+            for(i=1;i<=x;i++){
+                document.getElementById("student_roll_"+i.toString()).style.display="block";
+            }
+            for(i=x+1;i<=5;i++){
+                document.getElementById("student_roll_"+i.toString()).style.display="none";
+            }
+        }
+    </script>
     <script>
     function show(aval) {
                 if (aval == "gold") {
