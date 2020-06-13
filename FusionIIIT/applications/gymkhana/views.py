@@ -340,7 +340,7 @@ def new_club(request):
 def form_avail(request):
 	if request.method == 'POST':
 		res = "success"
-		message = "The form has been dispatched for further process"
+		message = "Form available?"
 		try:
 			#getting form data
 			status = request.POST["available"]
@@ -353,17 +353,20 @@ def form_avail(request):
 
 			roll = request.user.username
 			#saving data to the database
-			reg = Form_available(roll=roll, status=status)
-			reg.save()
+			rob = Form_available.objects.get(roll=roll)
+			rob.status = status
+			rob.save()
+
 		except Exception as e:
 			res = "error"
-			message = "Some error occurred"
+			message = "You've already filled the form."
 
 		content = {
 			'status': res,
 			'message': message,
 		}
 		content = json.dumps(content)
+		messages.success(request, "Form available?")
 		return HttpResponse(content)
 		# redirect("/gymkhana/")
 
@@ -417,8 +420,16 @@ def retrun_content(request, roll, name, desig , club__ ):
 	registration_form = Registration_form.objects.all()
 	cpi = Student.objects.get(id__user=request.user).cpi
 	programme = Student.objects.get(id__user=request.user).programme
-	# status = Form_available.objects.get(roll=request.user.username).status
 
+	try:
+		status = Form_available.objects.get(roll=request.user.username).status
+	except Exception as e:
+		stat = Form_available.objects.all()
+		for i in stat:
+			status = i.status
+			break
+	# print(status)
+	# print(request.user.username)
 	# print(registration_form)
 
 	venue_type = []
@@ -477,7 +488,7 @@ def retrun_content(request, roll, name, desig , club__ ):
 		'registration_form': registration_form,
 		'cpi': cpi,
 		'programme': programme,
-		# 'status': status,
+		'status': status,
 	}
 	return content
 
