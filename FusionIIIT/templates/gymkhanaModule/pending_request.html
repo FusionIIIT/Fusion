@@ -1,12 +1,10 @@
 {% load static %}
-{% block pendingrequest %}
 
-    {% comment %}The tab menu starts here!{% endcomment %}
-    <script>
-        $( function() {
-          $( "#datepicker" ).datepicker();
-        } );
-        </script> 
+{% block css %}
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+{% endblock %}
+
+{% block pendingrequest %}
 
     <div class="ui pointing secondary menu">
 
@@ -331,47 +329,48 @@
                 $(".formErrors").modal("show") ;
             }
         }
+
+        function deleteEvents(){
+            var selectedIds = new Array() ;
+            $.each($("input[name='check']:checked"), function(){            
+                selectedIds.push($(this).val());
+            });
+            if (selectedIds.length > 0){
+                var selectedIds = JSON.stringify(selectedIds);
+                $.ajax({
+                    url: '/gymkhana/delete_events/',
+                    type: "post",
+                    data: {"ids":selectedIds},
+                    success: function(response){
+                        $.each($("input[name='check']"), function(){  
+                            this.checked = false ;          
+                            // console.log($(this).attr("checked", false));
+                        });
+                        if(response == "success"){
+                            location.reload();
+                        }
+                        else
+                        {
+                            $("#errorContent").html("There was a system error. Please contact the admin.");
+                            $(".formErrors").modal("show") ;
+                        }
+                    }
+                });
+            }
+            else{
+                $("#errorContent").html("Please select atleast one session to delete");
+                $(".formErrors").modal("show") ;
+            }
+        }
+
     </script>
 
-<script type="text/javascript">
-    function deleteEvents(){
-        var selectedIds = new Array() ;
-        $.each($("input[name='check']:checked"), function(){            
-            selectedIds.push($(this).val());
-        });
-        if (selectedIds.length > 0){
-            var selectedIds = JSON.stringify(selectedIds);
-            $.ajax({
-                url: '/gymkhana/delete_events/',
-                type: "post",
-                data: {"ids":selectedIds},
-                success: function(response){
-                    $.each($("input[name='check']"), function(){  
-                        this.checked = false ;          
-                        // console.log($(this).attr("checked", false));
-                    });
-                    if(response == "success"){
-                        location.reload();
-                    }
-                    else
-                    {
-                        $("#errorContent").html("There was a system error. Please contact the admin.");
-                        $(".formErrors").modal("show") ;
-                    }
-                }
-            });
-        }
-        else{
-            $("#errorContent").html("Please select atleast one session to delete");
-            $(".formErrors").modal("show") ;
-        }
-    }
-</script>
+    <script>
+        $( function() {
+          $( "#datepicker" ).datepicker();
+        } );
+    </script>
 
-
-    
-    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
 {% endblock %}

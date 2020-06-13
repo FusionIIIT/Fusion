@@ -17,8 +17,8 @@ class Constants:
     )
     
     NAME_OF_DOCTOR = (
-           (0,'Dr. Sharma'),
-           (1,'Dr. Vinay')
+        (0, 'Dr.Sharma'),
+        (1, 'Dr.Vinay'),
 
     )
 
