@@ -1,4 +1,3 @@
-# validation for MCM form
 
 MCM_schema={
     "brother_name" : {"anuOf": [{"type": "string", "maxLength": 30}, {"type": "null"}]},
@@ -28,11 +27,6 @@ MCM_schema={
     "status" : {"anuOf": [{"type": "string", "maxLength": 10}, {"type": "null"}]},
     "annual_income" : {"anuOf": [{"type": "number"}, {"type": "null"}]}
 }
-# income_certificate
-# forms
-# student
-# date
-# award_id
 
 MCM_list = [
     "brother_name",
@@ -85,7 +79,6 @@ gold_list=[
     "nearest_railwaystation"
 ]
 
-
 gold_schema={
     "academic_achievements" : {"anuOf": [{"type": "string", "maxLength": 1000}, {"type": "null"}]},
     "science_inside" : {"anuOf": [{"type": "string", "maxLength": 1000}, {"type": "null"}]},
@@ -110,8 +103,6 @@ gold_schema={
     "nearest_railwaystation" : {"anuOf": [{"type": "string", "maxLength": 25}, {"type": "null"}]}
 }
 
-
-
 silver_schema={
     "nearest_policestation" : {"anuOf": [{"type": "string", "maxLength": 30}, {"type": "null"}]},
     "nearest_railwaystation" : {"anuOf": [{"type": "string", "maxLength": 30}, {"type": "null"}]},
@@ -134,3 +125,52 @@ silver_list=[
     "outside_achievements",
 ]
 
+proficiency_schema={
+    "title_name" : {"anuOf": [{"type": "string", "maxLength": 30}, {"type": "null"}]},
+    "award_type" : {"anuOf": [{"type": "string", "maxLength": 30}, {"type": "null"}]},
+    "nearest_policestation" : {"anuOf": [{"type": "string", "maxLength": 30}, {"type": "null"}]},
+    "nearest_railwaystation" : {"anuOf": [{"type": "string", "maxLength": 30}, {"type": "null"}]},
+    "correspondence_address" : {"anuOf": [{"type": "string", "maxLength": 150}, {"type": "null"}]},
+    "financial_assistance" : {"anuOf": [{"type": "string", "maxLength": 1000}, {"type": "null"}]},
+    "brief_description" : {"anuOf": [{"type": "string", "maxLength": 1000}, {"type": "null"}]},
+    "justification" : {"anuOf": [{"type": "string", "maxLength": 1000}, {"type": "null"}]},
+    "grand_total" : {"anuOf": [{"type": "number"}, {"type": "null"}]},
+    "ece_topic" : {"anuOf": [{"type": "string", "maxLength": 25}, {"type": "null"}]},
+    "cse_topic" : {"anuOf": [{"type": "string", "maxLength": 25}, {"type": "null"}]},
+    "mech_topic" : {"anuOf": [{"type": "string", "maxLength": 25}, {"type": "null"}]},
+    "design_topic" : {"anuOf": [{"type": "string", "maxLength": 25}, {"type": "null"}]},
+    "ece_percentage" : {"anuOf": [{"type": "number"}, {"type": "null"}]},
+    "cse_percentage" : {"anuOf": [{"type": "number"}, {"type": "null"}]},
+    "mech_percentage" : {"anuOf": [{"type": "number"}, {"type": "null"}]},
+    "design_percentage" : {"anuOf": [{"type": "number"}, {"type": "null"}]},
+    "correspondence_address" : {"anuOf": [{"type": "string", "maxLength": 25}, {"type": "null"}]},
+    "financial_assistance" : {"anuOf": [{"type": "string", "maxLength": 1000}, {"type": "null"}]},
+    "grand_total" : {"anuOf": [{"type": "number"}, {"type": "null"}]},
+    "nearest_policestation" : {"anuOf": [{"type": "string", "maxLength": 25}, {"type": "null"}]},
+    "nearest_railwaystation" :{"anuOf": [{"type": "string", "maxLength": 25}, {"type": "null"}]},
+
+}
+proficiency_list=[    
+    "title_name",
+    "award_type",
+    "nearest_policestation",
+    "nearest_railwaystation",
+    "correspondence_address",
+    "financial_assistance",
+    "brief_description",
+    "justification",
+    "grand_total",
+    "ece_topic",
+    "cse_topic",
+    "mech_topic",
+    "design_topic",
+    "ece_percentage",
+    "cse_percentage",
+    "mech_percentage",
+    "design_percentage",
+    "correspondence_address",
+    "financial_assistance",
+    "grand_total",
+    "nearest_policestation",
+    "nearest_railwaystation"
+]
