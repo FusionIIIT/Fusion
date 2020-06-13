@@ -42,7 +42,7 @@
                 <div class="three fields">
                     <div class="six wide field">
                         <label>Type</label>
-                        <select id="award_id" class="ui fluid search selection large dropdown" name="type" required>
+                        <select id="award_id" class="ui fluid search selection large dropdown" onchange="populate_batches_convocation()" name="type" required>
                                 <option value="">Select</option>
                                 <option value="Merit-cum-Means Scholarship">Merit-cum-Means Scholarship</option>
                                 <option value="Convocation Medals">Convocation Medals</option>
@@ -86,6 +86,33 @@
                                     option.text = batch_year;
                                     option.value=batch_year;
                                     x.add(option);
+                                    x.selectedIndex = "0";
+                                }else{
+                                    let d=new Date();
+                                    let tenure=5;
+                                    let m=parseInt(d.getMonth().toString());
+                                    let yr=parseInt(d.getFullYear().toString());
+                                    let batch_year=yr;
+                                    if(m<7){
+                                        batch_year=batch_year-1;
+                                    }
+                                    var x = document.getElementById("batch_convocation");
+                                    let i,
+                                    L = x.options.length - 1;
+                                    for (i = L; i >= 0; i--) {
+                                        x.remove(i);
+                                    }
+                                    for(i=1;i<=tenure;i++){
+                                        var option = document.createElement("option");
+                                        option.text = (batch_year-tenure+i).toString();
+                                        option.value=(batch_year-tenure+i).toString();
+                                        x.add(option);
+                                    }
+                                    var option = document.createElement("option");
+                                    option.text = "All";
+                                    option.value="All";
+                                    x.add(option);
+                                    x.selectedIndex = 0;
                                 }
 
                             }

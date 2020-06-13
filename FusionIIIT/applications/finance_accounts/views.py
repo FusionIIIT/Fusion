@@ -812,7 +812,6 @@ def printSalary(request) :
     c = Paymentscheme.objects.filter(month = month, year = year)
     context = {
         'c' : c,
-        'request' : request
     }
 
     return Render.render('financeAndAccountsModule/payroll_content4.html', context)

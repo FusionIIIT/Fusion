@@ -762,7 +762,7 @@ def new_session(request):
 			if(res == "success"):
 				session = Session_info(club = club_name, venue = venue, date =date, start_time=start_time , end_time = end_time , session_poster=session_poster, details = desc)
 				session.save()
-				message += "Session booked Successfully"
+				message += "Successfully Created"
 			else:
 				message += "The selected time slot for the given date and venue conflicts with already booked session"
 		except Exception as e:
