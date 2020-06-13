@@ -79,7 +79,7 @@ class Club_info(models.Model):
 
 class Form_available(models.Model):
     roll = models.CharField(default=2016001, max_length=7, primary_key=True)
-    status = models.BooleanField(default='True', max_length=5)
+    status = models.BooleanField(default=True, max_length=5)
 
     def __str__(self):
         return str(self.roll)
