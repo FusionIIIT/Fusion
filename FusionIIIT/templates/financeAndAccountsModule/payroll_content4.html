@@ -7,90 +7,90 @@
         <h3>*** Salary Details ***</h3>
     </div>
 
-    <table class="ui very basic collapsing celled sortable table" >
+    <table class="ui celled table" style="width: 50%;">
         <thead>
         <tr>
-            <th>
+            <th style="width: 100px;">
                 PF
             </th>
 
-            <th>
+            <th style="width: 160px;">
                 Name
             </th>
 
-            <th>
+            <th style="width: 200px;">
                 Designation
             </th>
 
-            <th>
+            <th style="width: 120px;">
                 Pay
             </th>
 
-            <th>
+            <th style="width: 100px;">
                 Gr. pay
             </th>
 
-            <th>
+            <th style="width: 100px;" >
                 DA
             </th>
 
-            <th>
+            <th style="width: 100px;">
                 TA
             </th>
 
-            <th>
+            <th style="width: 100px;">
                 HRA
             </th>
 
-            <th>
+            <th style="width: 120px;">
                 FPA
             </th>
 
-            <th>
+            <th style="width: 140px;">
                 Sp. Allowances
             </th>
 
-            <th>
+            <th style="width: 120px;">
                 NPS
             </th>
 
-            <th>
+            <th style="width: 120px;">
                 GPF
             </th>
 
-            <th>
+            <th style="width: 140px;">
                 INCOME TAX
             </th>
 
-            <th>
+            <th style="width: 140px;">
                 P-TAX
             </th>
 
-            <th>
+            <th style="width: 100px;">
                 GSLIS
             </th>
 
-            <th>
+            <th style="width: 100px;">
                 GIS
             </th>
 
-            <th>
-                LICENSE-FEE
+            <th style="width: 100px;">
+                LIC. FEE
             </th>
 
-            <th>
-                ELECTRICITY
+            <th style="width: 270px;">
+                ELECRICITY
             </th>
 
-            <th>
+            <th style="width: 120px;">
                 OTHERS
             </th>
 
-            <th>
-                Gross Reduction
+            <th style="width: 120px;">
+                Gr. Red.
             </th>
 
-            <th>
+            <th style="width: 120px;">
                 Net Payment
             </th>
         </tr>
@@ -101,12 +101,7 @@
         <form action = "/finance/printSalary/" method="post">
         {% csrf_token %}
                 {% for info in c %}
-                <tr>
-                    <td class="collapsing">
-                        <div class="ui fitted checkbox">
-                            <input type="checkbox" name = "box" value = "{{ info.id }}" /> <label></label>
-                        </div>
-                    </td>
+                <tr style="text-align: center;">
 
                     <td>
                         {{ info.pf }}
@@ -190,12 +185,13 @@
 
                     <td>
                         {{ info.net_payment }}
-                    </td>
-
-                    
-            </tr>
+                    </td>    
+                </tr>
                 {% endfor %}
-        
+            </form>
         </tbody>
-
+    </table>
+    </div>
+    </div>
+</html>
 {% endblock %}
