@@ -68,71 +68,33 @@
         </div>
     {% endfor %}
 
-
     {% for i in Club_event %}
-    <div class="ui modal {{ i.club_event }}_" >
-        <i class="close icon"></i>
-        <div class="header">
-            Event Info
-        </div>
-        <div class="image content">
-            <div class="ui medium image">
-
-              <img src="/media/{{ i.event_poster }}">
-            </div>
-            <div class="description">
-                <div class="ui header">
-                <p><H1><u>{{ i.club.club_name }}&nbsp; club </u></H1></p>
-                </div>
-<b>Event Name </b>     : {{ i.event_name }}<br/>
-<b>Incharge </b>   : {{ i.incharge }}<br/>
-<b>Date </b>   : {{ i.date }}<br/>
-
-
-<b>Start Time </b>   : {{ i.start_time }}<br/>
-
-<b>End Time </b> : {{ i.end_time}}<br/>
-
-<b>Description : </b>
-{{ i.details }} <br/>
-
-            </div>
-        </div>
-        <div class="actions">
-            <div class="ui black deny button">
-                Close
-            </div>
-        </div>
-    </div>
-    {% endfor %}
-
-
-{{ i.session_poster }}
-<!-- Modal for the session Info -->
-{% for i in Club_session %}
-<div class="ui modal {{ i.club_session }}_" >
-    <i class="close icon"></i>
+        <div class="ui modal {{ i.id }}_" >
+            <i class="close icon"></i>
             <div class="header">
-                Session Info
+                Event Info
             </div>
             <div class="image content">
                 <div class="ui medium image">
-
-                  <img src="/media/{{ i.session_poster }}">
+                  <img src="/media/{{ i.event_poster }}">
                 </div>
                 <div class="description">
                     <div class="ui header">
-                    <p><H1><u>{{ i.club.club_name }}</u></H1></p>
+                    <p><H1><u>{{ i.club.club_name }}&nbsp; Club</u></H1></p>
                     </div>
-<b>Venue </b>     : {{ i.venue }}<br/>
-
-<b>Start Time </b>   : {{ i.start_time }}<br/>
-
-<b>End Time </b> : {{ i.end_time}}<br/>
-
-<b>Description : </b>
-{{ i.details }} <br/>
-
+                    <p><pre>
+                        <b>Event Name </b>     : {{ i.event_name }}
+                        
+                        <b>Incharge </b>   : {{ i.incharge }}
+                        
+                        <b>Date </b>   : {{ i.date }}
+                        
+                        <b>Start Time </b>   : {{ i.start_time }}
+                        
+                        <b>End Time </b> : {{ i.end_time}}
+                        
+                        <b>Description : </b>{{ i.details }} 
+                    </pre></p>
                 </div>
             </div>
             <div class="actions">
@@ -141,7 +103,7 @@
                 </div>
             </div>
         </div>
-    {% endfor %}
+    {% endfor %} 
 
 
     <script type="text/javascript">
@@ -154,7 +116,7 @@
         }
 
         function view_event_(a) {
-
+            console.log(a);
             var id = '.ui.modal.'+a;
             $(id).modal('show');
         }
@@ -350,19 +312,19 @@
                     <tbody>
                         {% if "Junior Superintendent" in Curr_desig or "Dean_s" in Curr_desig %}
                         {% for i in Club_event%}                            
-                               <tr>
-                                        <td onclick="view_event_('{{ i.club_event }}_')">
+                               <tr id="_{{i.club_event}}">
+                                        <td onclick="view_event_('{{ i.id }}_')">
                                            {{ i.club.club_name }}
                                        </td>
-                                       <td onclick="view_event_('{{ i.club_event }}_')">
+                                       <td onclick="view_event_('{{ i.id }}_')">
                                            {{ i.event_name }}
                                        </td>
    
-                                       <td onclick="view_event_('{{ i.club_event }}_')">
+                                       <td onclick="view_event_('{{ i.id }}_')">
                                            {{ i.incharge }}
                                        </td>
    
-                                       <td onclick="view_event_('{{ i.club_event }}_')">
+                                       <td onclick="view_event_('{{ i.id }}_')">
                                            {{ i.date}}
                                        </td>
                                       </tr>
@@ -375,19 +337,19 @@
                          {% endif %}
                         {% if "co-ordinator" in Curr_desig or "co co-ordinator" in Curr_desig %}
                             {% for i in Club_event%}
-                            <tr>
-                                <td onclick="view_event_('{{ i.club_event }}_')">
+                            <tr id="_{{i.club_event}}">
+                                <td onclick="view_event_('{{ i.id }}_')">
                                     {{ i.club.club_name }}
                                 </td>
-                                <td onclick="view_event_('{{ i.club_event }}_')">
+                                <td onclick="view_event_('{{ i.id }}_')">
                                     {{ i.event_name }}
                                 </td>
 
-                                <td onclick="view_event_('{{ i.club_event }}_')">
+                                <td onclick="view_event_('{{ i.id }}_')">
                                     {{ i.incharge }}
                                 </td>
 
-                                <td onclick="view_event_('{{ i.club_event }}_')">
+                                <td onclick="view_event_('{{ i.id }}_')">
                                     {{ i.date}}
                                 </td>
                                
@@ -401,7 +363,7 @@
                     {% else %}
                 
                     {% for i in Club_event%}
-                    <tr>
+                    <tr id="_{{i.club_event}}">
                         <td onclick="view_event_('{{ i.club_event }}_')">
                             {{ i.club.club_name }}
                         </td>

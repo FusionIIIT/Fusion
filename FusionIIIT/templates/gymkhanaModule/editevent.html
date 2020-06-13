@@ -198,7 +198,52 @@
             });
         });
     </script>
-   
+   <script>
+
+    function showEvents(){
+        var date = $("#events_date").val() ;
+        console.log("Gymkhana.html;date"+date);
+        $.ajax({
+            url: "/gymkhana/date_events/",
+            type: "post",
+            data: {'date': date},
+            success: function(response){
+                // console.log("hello")
+                console.log(response)
+                response = JSON.parse(response);
+                console.log(response)
+                $("#dateDetails").html('<h2>Booked Events</h2>');
+                if (jQuery.isEmptyObject(response) == false){
+                    for(var key in response){
+                        $("#dateDetails").append(
+                            '<table class="ui celled table segment"><thead><tr>\
+                            <th>'+response[key].fields.club+'</th>\
+                            <th>'+response[key].fields.event_name+'</th>\
+                            <th>'+response[key].fields.incharge+'</th>\
+                            <th>'+response[key].fields.start_time+'<br><center>to</center>'+response[key].fields.end_time+'</th>\
+                            <th>'+response[key].fields.venue+'</th>\
+                            </tr></thead><tbody>\
+                            <tr><td colspan="3"><b>'+response[key].fields.status+'</b></td></tr>\
+                            </tbody></table>') ;
+                    }
+                }
+                else
+                {
+                    $("#dateDetails").append('<h5>No booked events for the selected date</h5>');
+                }
+            }
+        })
+    }
+
+
+
+    // $("#events_date").datepicker({
+    //     onSelect: function(dateText, inst) {
+    //         var date = $(this).val() ;
+    //         console.log(date) ;
+    //     }
+    // });
+</script>
 {% endblock %}
 
 
