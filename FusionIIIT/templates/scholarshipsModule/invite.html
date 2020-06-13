@@ -42,7 +42,7 @@
                 <div class="three fields">
                     <div class="six wide field">
                         <label>Type</label>
-                        <select class="ui fluid search selection large dropdown" name="type" required>
+                        <select id="award_id" class="ui fluid search selection large dropdown" name="type" required>
                                 <option value="">Select</option>
                                 <option value="Merit-cum-Means Scholarship">Merit-cum-Means Scholarship</option>
                                 <option value="Convocation Medals">Convocation Medals</option>
@@ -50,7 +50,48 @@
                     </div>
                     <div class="six wide field">
                         <label>Programme</label>
-                        <select class="ui fluid search selection large dropdown" name="programme">
+                        <script>
+                            function populate_batches_convocation(){
+                                let award_name=document.getElementById("award_id").value.toString();
+                                let prog=document.getElementById("programme_id").value.toString();
+                                if(award_name=="Convocation Medals"){
+                                    let tenure=4;
+                                    if(prog=="PhD"){
+                                        // do nothing 
+                                        return;
+                                    }else if(prog=="B.Tech"){
+                                        tenure=4;
+                                    }else if(prog=="B.Des"){
+                                        tenure=4;
+                                    }else if(prog=="M.Tech"){
+                                        tenure=2;
+                                    }else if(prog=="M.Des"){
+                                        tenure=2;
+                                    }
+                                    let d=new Date();
+                                    let m=parseInt(d.getMonth().toString());
+                                    let yr=parseInt(d.getFullYear().toString());
+                                    
+                                    let batch_year=yr-tenure;
+                                    if(m>7){
+                                        batch_year=batch_year+1;
+                                    }
+                                    var x = document.getElementById("batch_convocation");
+                                    let i,
+                                    L = x.options.length - 1;
+                                    for (i = L; i >= 0; i--) {
+                                        x.remove(i);
+                                    }
+                                    var option = document.createElement("option");
+                                    option.text = batch_year;
+                                    option.value=batch_year;
+                                    x.add(option);
+                                }
+
+                            }
+
+                        </script>
+                        <select class="ui fluid search selection large dropdown" id="programme_id" onchange="populate_batches_convocation()" name="programme">
                                 <option value="">Select</option>
                                 <option value="B.Tech"> B.Tech </option>
                                 <option value="B.Des"> B.Des </option>
@@ -61,7 +102,7 @@
                     </div>
                     <div class="six wide field">
                         <label>Batch</label>
-                        <select class="ui fluid search selection large dropdown" name="batch" required>
+                        <select class="ui fluid search selection large dropdown" id="batch_convocation" name="batch" required>
                                 <option value="">Select</option>
                                 {% for y in active_batches %}
                                     <option value="{{ y }}">{{ y }}</option>
@@ -160,7 +201,6 @@
       </div>
     </div>
   </div>
-
 
 <script>
 
