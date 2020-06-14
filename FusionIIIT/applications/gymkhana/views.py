@@ -343,19 +343,27 @@ def form_avail(request):
 		message = "Form available?"
 		try:
 			#getting form data
+			form_name = request.POST["registration"]
 			status = request.POST["available"]
+
 			if(status == "On"):
 				status = True
 			else:
 				status = False
-
+			print(form_name)
 			roll = request.user.username
+			rev = Form_available.objects.get(roll=roll).form_name
+			if rev != form_name:
+				# print("aabracaadaaabra")
+				delete_requests(request)
 			#saving data to the database
 			rob = Form_available.objects.get(roll=roll)
+			rob.form_name = form_name
 			rob.status = status
 			rob.save()
 
 		except Exception as e:
+			print(e)
 			res = "error"
 			message = "You've already filled the form."
 
@@ -412,7 +420,7 @@ def registration_form(request):
 		except Exception as e:
 			print(f"{e}DSANKJDVBJBDAKSCBASKFBasjcbaskjvbaskvaslvbna")
 			res = "error"
-			message = "Some error occurred"
+			message = "You've already filled the form."
 
 		content = {
 			'status':res,
@@ -440,10 +448,13 @@ def retrun_content(request, roll, name, desig , club__ ):
 		programme = Student.objects.get(id__user=request.user).programme
 
 		try:
+			form_name = Form_available.objects.get(roll=request.user.username).form_name
+			print(f'{form_name} MKNCjncknisncs')
 			status = Form_available.objects.get(roll=request.user.username).status
 		except Exception as e:
 			stat = Form_available.objects.all()
 			for i in stat:
+				form_name = i.form_name
 				status = i.status
 				break
 	# print(status)
@@ -510,6 +521,7 @@ def retrun_content(request, roll, name, desig , club__ ):
 			'registration_form': registration_form,
 			'cpi': cpi,
 			'programme': programme,
+			'form_name': form_name,
 			'status': status,
 		}
 		content.update(content1)

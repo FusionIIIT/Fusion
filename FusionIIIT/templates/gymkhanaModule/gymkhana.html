@@ -251,17 +251,41 @@
                 </a>
 
                 {% if "student" in Curr_desig and status == True %}
-                    <a class="item" data-tab="thirteenth">
-                        Senate Registration
-                        <i class="right floated chevron right icon"></i>
-                    </a>
+                    {% if form_name == 'senate_registration' %}
+                        <a class="item" data-tab="thirteenth">
+                            Senate Registration
+                            <i class="right floated chevron right icon"></i>
+                        </a>
+                    {% elif form_name == 'mess_registration' %}
+                        <a class="item" data-tab="thirteenth">
+                            Mess Registration
+                            <i class="right floated chevron right icon"></i>
+                        </a>
+                    {% elif form_name == 'hostel_registration' %}
+                        <a class="item" data-tab="thirteenth">
+                            Hostel Registration
+                            <i class="right floated chevron right icon"></i>
+                        </a>
+                    {% endif %}
                 {% endif %}
 
                 {% if "Convenor" in Curr_desig %}
-                    <a class="item" data-tab="twentyth">
-                        Senate Nomination Details
-                        <i class="right floated chevron right icon"></i>
-                    </a>
+                    {% if form_name == 'senate_registration' %}
+                        <a class="item" data-tab="twentyth">
+                             Senate Nomination Details
+                            <i class="right floated chevron right icon"></i>
+                        </a>
+                    {% elif form_name == 'mess_registration' %}
+                        <a class="item" data-tab="twentyth">
+                             Mess Nomination Details
+                            <i class="right floated chevron right icon"></i>
+                        </a>
+                    {% elif form_name == 'hostel_registration' %}
+                        <a class="item" data-tab="twentyth">
+                             Hostel Nomination Details
+                            <i class="right floated chevron right icon"></i>
+                        </a>
+                    {% endif %}
                 {% endif %}
 
                 {% if "Junior Superintendent" in Curr_desig or request.user.username == "acadadmin" %}
