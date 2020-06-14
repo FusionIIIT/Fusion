@@ -989,8 +989,10 @@ def date_sessions(request):
 		return HttpResponse(dates)
 
 @login_required
+@csrf_exempt
 def date_events(request):
-	if(request.is_ajax()):
+	print("I was here")
+	if(request.method=='POST'):
 		value = request.POST.get('date')
 		print(f"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@{value}")
 		get_events = Event_info.objects.filter(date=value).order_by('start_time')
@@ -999,6 +1001,7 @@ def date_events(request):
 			dates.append(i)
 		dates = serializers.serialize('json', dates)
 		return HttpResponse(dates)
+	return Httpresponse("Hurray")
 
 #this algorithm checks if the passed slot time coflicts with any of already booked sessions
 def conflict_algorithm_session(date, start_time, end_time, venue):
@@ -1124,14 +1127,6 @@ def delete_poll(request, poll_id):
 			return HttpResponse('error')
 
 	return redirect('/gymkhana/')
-
-
-
-
-
-
-
-
 
 #this algorithm checks if the passed slot time coflicts with any of already booked events
 
