@@ -1,7 +1,19 @@
 {% block voting_polls %} {% comment %}The tab menu starts here!{% endcomment %}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
+{% comment %} <div class="ui pointing secondary menu">
+  <a class="active item" data-tab="active">
+    Active Polls
+  </a>
+  {% if "CONVENER" in Curr_desig|upper  %}
+  <a class="item" data-tab="create">
+    Create Poll
+  </a>
+  <a class="item" data-tab="status">
+    Poll Status
+  </a>
+  {% endif %}
+</div> {% endcomment %}
+
   <div class="ui pointing secondary menu">
     <a class="active item" data-tab="active">
       Active Polls
@@ -15,26 +27,6 @@
     </a>
     {% endif %}
   </div>
-=======
-=======
->>>>>>> cf4b74352ba11fbd2f77d44aa16e03509f806fdc
-<div class="ui pointing secondary menu">
-  <a class="active item" data-tab="active">
-    Active Polls
-  </a>
-  {% if "CONVENER" in Curr_desig|upper  %}
-  <a class="item" data-tab="create">
-    Create Poll
-  </a>
-  <a class="item" data-tab="status">
-    Poll Status
-  </a>
-  {% endif %}
-</div>
-<<<<<<< HEAD
->>>>>>> cf4b74352ba11fbd2f77d44aa16e03509f806fdc
-=======
->>>>>>> cf4b74352ba11fbd2f77d44aa16e03509f806fdc
 
 {% block active_poll %}
 {% include 'gymkhanaModule/active_poll.html' %}

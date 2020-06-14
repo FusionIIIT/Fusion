@@ -1181,14 +1181,6 @@ def delete_poll(request, poll_id):
 
 	return redirect('/gymkhana/')
 
-
-
-
-
-
-
-
-
 #this algorithm checks if the passed slot time coflicts with any of already booked events
 
 def conflict_algorithm_event(date, start_time, end_time, venue):
