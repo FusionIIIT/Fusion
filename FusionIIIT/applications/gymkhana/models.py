@@ -80,6 +80,7 @@ class Club_info(models.Model):
 class Form_available(models.Model):
     roll = models.CharField(default=2016001, max_length=7, primary_key=True)
     status = models.BooleanField(default=True, max_length=5)
+    form_name = models.CharField(default='senate_registration', max_length=30)
 
     def __str__(self):
         return str(self.roll)
