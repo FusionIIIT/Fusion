@@ -11,12 +11,12 @@
         <a class="item" data-tab="session">
             Club Sessions
         </a>
-        {%  endif %}
 
    <a class="item" data-tab="event">
             Club Events
         </a>
 
+        {%  endif %}
     </div>
 
     {% for i in Club_name %}
@@ -27,7 +27,7 @@
             </div>
             <div class="image content">
                 <div class="ui medium image">
-                  <img src="/media/{{ i.club_file }}">
+                  <img src="/media/{{ i.club_poster }}">
                 </div>
                 <div class="description">
                     <div class="ui header">
@@ -45,7 +45,6 @@
 <b>Faculty Incharge</b> : {{ i.faculty_incharge.id.user.first_name }} {{ i.faculty_incharge.id.user.last_name }}
                    {{ i.faculty_incharge.id.user }}
                    {{ i.faculty_incharge.id.user.email }}
-
 <b>Description : </b>
 {{i.description}}
 
@@ -68,33 +67,73 @@
         </div>
     {% endfor %}
 
-    {% for i in Club_event %}
-        <div class="ui modal {{ i.id }}_" >
+
+     {% for i in Club_event %}
+    <div class="ui modal {{ i.club_event }}_" >
+        <i class="close icon"></i>
+        <div class="header">
+            Event Info
+        </div>
+        <div class="image content">
+            <div class="ui medium image">
+
+              <img src="/media/{{ i.event_poster }}">
+            </div>
+            <div class="description">
+                <div class="ui header">
+                <p><H1><u>{{ i.club.club_name }}&nbsp; club </u></H1></p>
+                </div>
+<b>Event Name </b>     : {{ i.event_name }}<br/>
+<b>Incharge </b>   : {{ i.incharge }}<br/>
+<b>Date </b>   : {{ i.date }}<br/>
+
+
+<b>Start Time </b>   : {{ i.start_time }}<br/>
+
+<b>End Time </b> : {{ i.end_time}}<br/>
+
+<b>Description : </b>
+{{ i.details }} <br/>
+
+            </div>
+        </div>
+        <div class="actions">
+            <div class="ui black deny button">
+                Close
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+
+
+
+{{ i.session_poster }}
+<!-- Modal for the session Info -->
+{% for i in Club_session %}
+        <div class="ui modal {{ i }}_" >
             <i class="close icon"></i>
             <div class="header">
-                Event Info
+                Session Info
             </div>
             <div class="image content">
                 <div class="ui medium image">
-                  <img src="/media/{{ i.event_poster }}">
+
+                  <img src="/media/{{ i.session_poster }}">
                 </div>
                 <div class="description">
                     <div class="ui header">
-                    <p><H1><u>{{ i.club.club_name }}&nbsp; Club</u></H1></p>
+                    <p><H1><u>{{ i.club.club_name }}</u></H1></p>
                     </div>
-                    <p><pre>
-                        <b>Event Name </b>     : {{ i.event_name }}
-                        
-                        <b>Incharge </b>   : {{ i.incharge }}
-                        
-                        <b>Date </b>   : {{ i.date }}
-                        
-                        <b>Start Time </b>   : {{ i.start_time }}
-                        
-                        <b>End Time </b> : {{ i.end_time}}
-                        
-                        <b>Description : </b>{{ i.details }} 
-                    </pre></p>
+<b>Venue </b>     : {{ i.venue }}<br/>
+
+<b>Start Time </b>   : {{ i.start_time }}<br/>
+
+<b>End Time </b> : {{ i.end_time}}<br/>
+
+<b>Description : </b>
+{{ i.details }} <br/>
+
                 </div>
             </div>
             <div class="actions">
@@ -103,7 +142,7 @@
                 </div>
             </div>
         </div>
-    {% endfor %} 
+    {% endfor %}
 
 
     <script type="text/javascript">
@@ -116,7 +155,7 @@
         }
 
         function view_event_(a) {
-            console.log(a);
+
             var id = '.ui.modal.'+a;
             $(id).modal('show');
         }
@@ -130,7 +169,6 @@
         function display_club_events() {
             var data1 = "_"+document.getElementById('club_event_').value;
             document.getElementById(data1).hidden = false;
-
 
         }
          function display_club_session() {
@@ -151,8 +189,7 @@
 
 
     </script>
-
-    <div class="ui active tab" data-tab="club">
+<div class="ui active tab" data-tab="club">
         <!-- <div class="ui vertical segment"> -->
             <table class="ui very basic collapsing celled sortable table"
                    style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
@@ -203,7 +240,7 @@
                                 </h4>
                             </td>
 
-                            <td> 
+                            <td>
                                 {% comment %}
                                     TODO: Add the attachment here!
                                 {% endcomment %}
@@ -224,16 +261,8 @@
         <!-- <div class="extra content"></div> -->
     </div>
 
-   
-   
-   
-   
-   
-   
-   
-   
     <div class="ui tab" data-tab="session">
-        <!-- <div class="ui vertical segment"> -->
+        <div class="ui vertical segment">
             <form class="ui form" style="padding-left: 32px; padding-right: 32px;">
                 <div class="field">
                     <label>Club</label>
@@ -249,9 +278,7 @@
             </form>
             <br>
             <h4 class="ui dividing header" style="margin-left: 32px; margin-right: 32px;">Club Sessions</h4>
-
-
-           <table class="ui very basic collapsing celled sortable table"
+            <table class="ui very basic collapsing celled sortable table"
                    style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
                 <thead>
                 <tr>
@@ -279,14 +306,14 @@
 
             <br>
             <div class="ui divider"></div>
-        <!-- </div> -->
+        </div>
         <br>
-        <!-- <div class="extra content"></div> -->
+        <div class="extra content"></div>
      </div>
 
-    <div class="ui tab" data-tab="event">
+<div class="ui tab" data-tab="event">
         <div class="ui vertical segment">
-            
+
             <table class="ui very basic collapsing celled sortable table"
                    style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
                 <thead>
@@ -306,25 +333,25 @@
                     <th>
                         Date
                     </th>
-                    
+
                 </tr>
                 </thead>
                     <tbody>
                         {% if "Junior Superintendent" in Curr_desig or "Dean_s" in Curr_desig %}
-                        {% for i in Club_event%}                            
-                               <tr id="_{{i.club_event}}">
-                                        <td onclick="view_event_('{{ i.id }}_')">
+                        {% for i in Club_event%}
+                               <tr>
+                                        <td onclick="view_event_('{{ i.club_event }}_')">
                                            {{ i.club.club_name }}
                                        </td>
-                                       <td onclick="view_event_('{{ i.id }}_')">
+                                       <td onclick="view_event_('{{ i.club_event }}_')">
                                            {{ i.event_name }}
                                        </td>
-   
-                                       <td onclick="view_event_('{{ i.id }}_')">
+
+                                       <td onclick="view_event_('{{ i.club_event }}_')">
                                            {{ i.incharge }}
                                        </td>
-   
-                                       <td onclick="view_event_('{{ i.id }}_')">
+
+                                       <td onclick="view_event_('{{ i.club_event }}_')">
                                            {{ i.date}}
                                        </td>
                                       </tr>
@@ -337,22 +364,22 @@
                          {% endif %}
                         {% if "co-ordinator" in Curr_desig or "co co-ordinator" in Curr_desig %}
                             {% for i in Club_event%}
-                            <tr id="_{{i.club_event}}">
-                                <td onclick="view_event_('{{ i.id }}_')">
+                            <tr>
+                                <td onclick="view_event_('{{ i.club_event }}_')">
                                     {{ i.club.club_name }}
                                 </td>
-                                <td onclick="view_event_('{{ i.id }}_')">
+                                <td onclick="view_event_('{{ i.club_event }}_')">
                                     {{ i.event_name }}
                                 </td>
 
-                                <td onclick="view_event_('{{ i.id }}_')">
+                                <td onclick="view_event_('{{ i.club_event }}_')">
                                     {{ i.incharge }}
                                 </td>
 
-                                <td onclick="view_event_('{{ i.id }}_')">
+                                <td onclick="view_event_('{{ i.club_event }}_')">
                                     {{ i.date}}
                                 </td>
-                               
+
                            </tr>
                            {% empty %}
                            <tr>
@@ -361,9 +388,9 @@
 
                             {% endfor %}
                     {% else %}
-                
+
                     {% for i in Club_event%}
-                    <tr id="_{{i.club_event}}">
+                    <tr>
                         <td onclick="view_event_('{{ i.club_event }}_')">
                             {{ i.club.club_name }}
                         </td>
@@ -378,7 +405,7 @@
                         <td onclick="view_event_('{{ i.club_event }}_')">
                             {{ i.date}}
                         </td>
-                       
+
 
                    </tr>
                    {% empty %}
@@ -397,4 +424,6 @@
         <br>
         <!-- <div class="extra content"></div> -->
     </div>
+</div>
+
 {% endblock %}
