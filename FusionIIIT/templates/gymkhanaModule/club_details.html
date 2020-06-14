@@ -68,9 +68,12 @@
     {% endfor %}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     {% for i in Club_event %}
         <div class="ui modal {{ i.id }}_" >
 =======
+=======
+>>>>>>> cf4b74352ba11fbd2f77d44aa16e03509f806fdc
 
      {% for i in Club_event %}
     <div class="ui modal {{ i.club_event }}_" >
@@ -116,6 +119,9 @@
 <!-- Modal for the session Info -->
 {% for i in Club_session %}
         <div class="ui modal {{ i }}_" >
+<<<<<<< HEAD
+>>>>>>> cf4b74352ba11fbd2f77d44aa16e03509f806fdc
+=======
 >>>>>>> cf4b74352ba11fbd2f77d44aa16e03509f806fdc
             <i class="close icon"></i>
             <div class="header">
@@ -347,10 +353,13 @@
                     <tbody>
                         {% if "Junior Superintendent" in Curr_desig or "Dean_s" in Curr_desig %}
 <<<<<<< HEAD
+<<<<<<< HEAD
                         {% for i in Club_event%}                            
                                <tr id="_{{i.club_event}}">
                                         <td onclick="view_event_('{{ i.id }}_')">
 =======
+=======
+>>>>>>> cf4b74352ba11fbd2f77d44aa16e03509f806fdc
                         {% for i in Club_event%}
                                <tr>
                                         <td onclick="view_event_('{{ i.club_event }}_')">
@@ -361,6 +370,7 @@
                                            {{ i.event_name }}
                                        </td>
 <<<<<<< HEAD
+<<<<<<< HEAD
    
                                        <td onclick="view_event_('{{ i.id }}_')">
                                            {{ i.incharge }}
@@ -368,6 +378,12 @@
    
                                        <td onclick="view_event_('{{ i.id }}_')">
 =======
+=======
+
+                                       <td onclick="view_event_('{{ i.club_event }}_')">
+                                           {{ i.incharge }}
+                                       </td>
+>>>>>>> cf4b74352ba11fbd2f77d44aa16e03509f806fdc
 
                                        <td onclick="view_event_('{{ i.club_event }}_')">
                                            {{ i.incharge }}

@@ -21,7 +21,11 @@ from .models import (Award_and_scholarship, Constants, Director_gold,
 
 from notification.views import scholarship_portal_notif
 <<<<<<< HEAD
+<<<<<<< HEAD
 # from .applications.scholarship.validations import MCM_list
+=======
+from .validations import MCM_list, MCM_schema, gold_list, gold_schema, silver_list, silver_schema, proficiency_list,proficiency_schema
+>>>>>>> cf4b74352ba11fbd2f77d44aa16e03509f806fdc
 =======
 from .validations import MCM_list, MCM_schema, gold_list, gold_schema, silver_list, silver_schema, proficiency_list,proficiency_schema
 >>>>>>> cf4b74352ba11fbd2f77d44aa16e03509f806fdc
