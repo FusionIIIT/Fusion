@@ -434,17 +434,18 @@ def retrun_content(request, roll, name, desig , club__ ):
 	club_session = Session_info.objects.all()
 	club_event = Event_info.objects.all()
 	club_event_report = Club_report.objects.all()
-	registration_form = Registration_form.objects.all()
-	cpi = Student.objects.get(id__user=request.user).cpi
-	programme = Student.objects.get(id__user=request.user).programme
+	if 'student' in desig or 'Convenor' in desig:
+		registration_form = Registration_form.objects.all()
+		cpi = Student.objects.get(id__user=request.user).cpi
+		programme = Student.objects.get(id__user=request.user).programme
 
-	try:
-		status = Form_available.objects.get(roll=request.user.username).status
-	except Exception as e:
-		stat = Form_available.objects.all()
-		for i in stat:
-			status = i.status
-			break
+		try:
+			status = Form_available.objects.get(roll=request.user.username).status
+		except Exception as e:
+			stat = Form_available.objects.all()
+			for i in stat:
+				status = i.status
+				break
 	# print(status)
 	# print(request.user.username)
 	# print(registration_form)
@@ -502,11 +503,16 @@ def retrun_content(request, roll, name, desig , club__ ):
 		'club_details':club__,
 		'voting_polls': voting_polls,
 		'roll' : str(roll),
-		'registration_form': registration_form,
-		'cpi': cpi,
-		'programme': programme,
-		'status': status,
+
 	}
+	if 'student' in desig or 'Convenor' in desig:
+		content1 = {
+			'registration_form': registration_form,
+			'cpi': cpi,
+			'programme': programme,
+			'status': status,
+		}
+		content.update(content1)
 	return content
 
 @login_required
