@@ -365,7 +365,6 @@ def form_avail(request):
 		}
 		content = json.dumps(content)
 		messages.success(request, "Form available?")
-<<<<<<< HEAD
 		return HttpResponse(content)
 		# redirect("/gymkhana/")
 
@@ -387,29 +386,6 @@ def delete_requests(request):
 		}
 		content = json.dumps(content)
 		return HttpResponse(content)
-=======
-		return HttpResponse(content)
-		# redirect("/gymkhana/")
-
-@login_required
-def delete_requests(request):
-	if request.method == 'POST':
-		res = "success"
-		message = "Data is Deleted."
-		try:
-			rev = Registration_form.objects.all()
-			rev.delete()
-
-		except Exception as e:
-			res = "error"
-			message = "Some error occured."
-		content = {
-			'status': res,
-			'message': message,
-		}
-		content = json.dumps(content)
-		return HttpResponse(content)
->>>>>>> cf4b74352ba11fbd2f77d44aa16e03509f806fdc
 
 
 @login_required()
@@ -629,7 +605,6 @@ def core_team(request):
         team = request.POST.get("team")
         pda = request.POST.get("pda")
         year = request.POST.get("year")
-<<<<<<< HEAD
 
         # getting queryset class objects
         USER = user.split(' - ')
@@ -637,15 +612,6 @@ def core_team(request):
         extra = get_object_or_404(ExtraInfo, id=USER[00], user=user_name)
         student = get_object_or_404(Student, id=extra)
 
-=======
-
-        # getting queryset class objects
-        USER = user.split(' - ')
-        user_name = get_object_or_404(User, username=USER[1])
-        extra = get_object_or_404(ExtraInfo, id=USER[00], user=user_name)
-        student = get_object_or_404(Student, id=extra)
-
->>>>>>> cf4b74352ba11fbd2f77d44aa16e03509f806fdc
         # saving data to the database
         core_team = Core_team(student_id=student,
                               fest_name=fest, team=team, pda=pda, year=year)
@@ -742,7 +708,6 @@ def club_report(request):
         extra = get_object_or_404(ExtraInfo, id=USER[0], user=user_name)
 
         club_name = get_object_or_404(Club_info, club_name=club)
-<<<<<<< HEAD
 
         # saving data to the database
         club_report = Club_report(club=club_name, incharge=extra, event_name=event,
@@ -750,15 +715,6 @@ def club_report(request):
         club_report.save()
         messages.success(request, "Successfully updated the report !!!")
 
-=======
-
-        # saving data to the database
-        club_report = Club_report(club=club_name, incharge=extra, event_name=event,
-                                  date=date+" "+time, event_details=report, description=d_d)
-        club_report.save()
-        messages.success(request, "Successfully updated the report !!!")
-
->>>>>>> cf4b74352ba11fbd2f77d44aa16e03509f806fdc
     return redirect('/gymkhana/')
 
 @login_required
@@ -1000,21 +956,12 @@ def reject(request):
 def cancel(request):
 
     lis = list(request.POST.getlist('check'))
-<<<<<<< HEAD
 
     for user in lis:
         #pos = lis.index(user)
         user = user.split(',')
         info = user[0].split(' - ')
 
-=======
-
-    for user in lis:
-        #pos = lis.index(user)
-        user = user.split(',')
-        info = user[0].split(' - ')
-
->>>>>>> cf4b74352ba11fbd2f77d44aa16e03509f806fdc
         # getting queryset class objects
         user_name = get_object_or_404(User, username=info[1])
         extra1 = get_object_or_404(ExtraInfo, id=info[0], user=user_name)
