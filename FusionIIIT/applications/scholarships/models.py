@@ -146,17 +146,15 @@ class Previous_winner(models.Model):
         db_table = 'Previous_winner'
 
 
-#To Do:to reduce the last unused column
 class Release(models.Model):
     date_time = models.DateTimeField(default=datetime.datetime.now, blank=True)
     programme = models.CharField(max_length=10,default='B.Tech')
     startdate = models.DateField(default=datetime.date.today)
     enddate = models.DateField()
-    award = models.CharField(default='',max_length=25)
+    award = models.CharField(default='',max_length=50)
     remarks = models.TextField(max_length=500,default='')
     batch = models.TextField(default='all')
     notif_visible = models.IntegerField(default=1)
-    award_form_visible = models.IntegerField(default=0)
 
     class Meta:
         db_table = 'Release'
@@ -193,6 +191,7 @@ class Director_silver(models.Model):
     correspondence_address = models.TextField(max_length=150, null=True)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     award_id = models.ForeignKey(Award_and_scholarship, on_delete=models.CASCADE)
+    award_type = models.CharField(max_length=50, null=True)
     status = models.CharField(max_length=10, choices=Constants.STATUS_CHOICES,default='INCOMPLETE')
     relevant_document = models.FileField(null=True, blank=True)
     date = models.DateField(default=datetime.date.today)
@@ -201,11 +200,6 @@ class Director_silver(models.Model):
     inside_achievements = models.TextField(max_length=1000, null=True)
     justification = models.TextField(max_length=1000, null=True)
     outside_achievements = models.TextField(max_length=1000, null=True)
-    correspondence_address = models.CharField(max_length=100, null=True)
-    financial_assistance = models.TextField(max_length=1000, null=True)
-    grand_total = models.IntegerField(null=True)
-    nearest_policestation = models.CharField(max_length=25, null=True)
-    nearest_railwaystation = models.CharField(max_length=25, null=True)
 
 
     class Meta:
@@ -217,6 +211,7 @@ class Proficiency_dm(models.Model):
     title_name = models.CharField(max_length=30, null=True)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     award_id = models.ForeignKey(Award_and_scholarship, on_delete=models.CASCADE)
+    award_type = models.CharField(max_length=50, null=True)
     status = models.CharField(max_length=10, choices=Constants.STATUS_CHOICES,default='INCOMPLETE')
     nearest_policestation = models.TextField(max_length=30, default='station')
     nearest_railwaystation = models.TextField(max_length=30, default='station')

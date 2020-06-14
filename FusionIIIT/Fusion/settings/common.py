@@ -103,6 +103,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
+    'django.contrib.humanize',
     'applications.eis',
     'notification',
     'notifications',
@@ -257,3 +258,5 @@ DJANGO_NOTIFICATIONS_CONFIG = {
 CRISPY_TEMPLATE_PACK = 'semantic-ui'
 CRISPY_ALLOWED_TEMPLATE_PACKS = ('semantic-ui')
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240
+YOUTUBE_DATA_API_KEY = 'AIzaSyBnrKSyXlcmko9mKV1LRfAQeS2FGmlsMPc'
+

@@ -104,11 +104,51 @@
 * Use the inbuilt **Source Control** feature for checking out, committing, pushing, pulling changes. You can also use [Github Desktop](https://desktop.github.com/) **_\(Windows/Mac only\)_**.  
 * Refer to below link for best practices regarding commit messages :  
     (<https://gist.github.com/robertpainsi/b632364184e70900af4ab688decf6f53>)
+    
+# Testing Procedure: 
+
+# Selenium-webdriver 
+
+Selenium is a browser automation library. Most often used for testing
+web-applications, Selenium may be used for any task that requires automating
+interaction with the browser.
+
+## Installation
+
+You can visit Selenium Official website and can download the language-specific client drivers(Java in our case)
+
+<https://selenium-release.storage.googleapis.com/3.141/selenium-java-3.141.59.zip>
+
+You will need to download additional components to work with each of the major
+browsers. The drivers for Chrome, Firefox, and Microsoft's IE and Edge web
+browsers are all standalone executables that should be placed on your system
+[PATH]. Apple's safaridriver is shipped with Safari 10 for OS X El Capitan and
+macOS Sierra. You will need to enable Remote Automation in the Develop menu of
+Safari 10 before testing.
+
+
+| Browser           | Component                          |
+| ----------------- | ---------------------------------- |
+| Chrome            | [ChromeDriver](https://chromedriver.storage.googleapis.com/index.html?path=83.0.4103.39/)     |
+| Internet Explorer | [IEDriverServer](http://selenium-release.storage.googleapis.com/index.html?path=2.39/)      |
+| Firefox           | [GeckoDriver](https://chromedriver.storage.googleapis.com/index.html?path=83.0.4103.39/)   |
+
+## Add the Cucumber Eclipse Plugin for BDD testing
+* Install the Cucumber Eclipse Plugin from Eclipse MarketPlace under help
+
+## Getting Started
+* Open the Test folder in Eclipse IDE(You are free to use any IDE)
+  * Open the pom.xml and build the project
+  * Change the driver path in System.setProperty in line 16 of Step_defination.java 
+  
+* Under the src/main/resources we have main.feature file to define Scenarios and Steps
+* Give the step defination of the defined scenarios and steps in Step_Defination.java under src/main/java
+
 
 ## Different modules included
 
 * Academic database management  
-* Academic workflows  
+* Academic workflows
 * Finance and Accounting  
 * Placement Cell  
 * Mess management  

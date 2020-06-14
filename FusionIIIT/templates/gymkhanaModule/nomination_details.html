@@ -3,6 +3,11 @@
 
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
+        {% if "Convenor" in Curr_desig %}
+            <a class="ui item" data-tab="form_available">
+                 Form Availability
+            </a>
+        {% endif %}
 
         {% if "Convenor" in Curr_desig %}
             <a class="ui active item" data-tab="nomination_requests">
@@ -10,10 +15,57 @@
             </a>
         {% endif %}
 
+
+    </div>
+
+    <div class="ui tab" data-tab="form_available">
+        <div class="ui vertical segment">
+            <form method="Post" id="form__available" >
+            {% csrf_token %}
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                        <div class="field">
+                            <label>Form Availability</label>
+                            <select class="ui search fluid dropdown" name="available" id ="available" >
+<!--                                <option value="">Select</option>-->
+                                <option value="On">On </option>
+                                <option value="Off">Off </option>
+
+                            </select>
+
+                        </div>
+                    <div class="field">
+                        <button class="ui primary button right floated" type="submit" onclick="form_submit('form_avail','form__available',event)">
+                            Submit
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <br>
+            <br>
+        </div>
+        <br>
+        <div class="extra content"></div>
     </div>
 
 
     <div class="ui active tab" data-tab="nomination_requests">
+        <div class="ui vertical segment">
+            <form method="Post" id="delete__requests" >
+            {% csrf_token %}
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                    <div class="field">
+                        <button class="ui primary button right floated" type="submit" onclick="form_submit('delete_requests','delete__requests',event)">
+                            Delete Requests
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <br>
+            <br>
+        </div>
+
         <div class="ui vertical segment">
         <form method="post" action="" id="nom_requests">
         {% csrf_token %}

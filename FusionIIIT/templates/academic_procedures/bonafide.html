@@ -21,7 +21,7 @@
 
                 <div class="field">
                     <label for="purpose">Please select the Purpose of Bonafide</label>
-                    <select name="purpose" onchange="checkPurpose(this.value);">
+                    <select name="purpose" onchange="checkPurpose(this.value);" id="selectTag">
                         <option value="Fee Structure">Bonafide for Fee Structure</option>
                         <option value="Sim Card">Bonafide for Sim Card</option>
                         <option value="Passport">Bonafide for Passport</option>
@@ -29,7 +29,7 @@
                         <option value="Other purposes">Other purposes</option>
                     </select>
                     <br>
-                    <textarea name="purpose" id="purpose" rows="2" style="display: none;"></textarea>
+                    <textarea id="purposeText" rows="2" style="display: none;"></textarea>
                 </div>
 
                 <br>
@@ -50,9 +50,14 @@
 
     <script type="text/javascript">
         function checkPurpose(val){
-            var element = document.getElementById('purpose');
-            if(val == "Other purposes")
+            var element = document.getElementById('purposeText');
+            if(val == "Other purposes"){
                 element.style.display = 'block';
-            else element.style.display = 'none';
+                element.setAttribute("name","purpose");
+            }
+            else {
+                element.style.display = 'none';
+                element.removeAttribute("name");
+            }
         }
     </script>

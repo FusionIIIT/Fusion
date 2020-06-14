@@ -19,15 +19,16 @@ django-semanticui-forms = "*"
 django-unused-media = "*"
 html-text = "*"
 numpy = "*"
-pillow = "*"
 psycopg2-binary = "*"
 requests = "*"
 whitenoise = {extras = ["brotli"],version = "*"}
 xhtml2pdf = "*"
 xlrd = "*"
 xlwt = "*"
-xlsxwriter = "*"
 Django = "*"
+jsonschema = "*"
+Pillow = "*"
+XlsxWriter = "*"
 
 [requires]
 python_version = "3.8"

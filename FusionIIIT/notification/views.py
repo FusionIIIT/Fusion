@@ -146,7 +146,7 @@ def scholarship_portal_notif(sender, recipient, type):
     verb = ''
 
     if type.startswith('award'):
-        s = type.split('-')
+        s = type.split('_')
         verb = "Invitation to apply for " + s[1]
     elif type == 'Accept_MCM':
         verb = "Your Mcm form has been accepted "
@@ -169,14 +169,18 @@ def scholarship_portal_notif(sender, recipient, type):
 
 
 
-def complaint_system_notif(sender, recipient, type):
-    url=''
+def complaint_system_notif(sender, recipient, type, complaint_id,student,message):
+    if(student==0):
+        url = ('complaint:detail')
+    else:
+        url=('complaint:detail2')
     module='Complaint System'
     sender = sender
     recipient = recipient
-    verb = ''
+    verb = message
+    description = complaint_id
 
-    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
+    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb,description=description)
 
 def office_dean_PnD_notif(sender, recipient, type):
     url = 'office:officeOfDeanPnD'
@@ -201,7 +205,7 @@ def office_dean_PnD_notif(sender, recipient, type):
     elif type=='assignment_rejected':
         verb = "Assignment has been rejected."
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
-    
+
 def office_module_DeanS_notif(sender, recipient, type):
     url='office:officeOfDeanStudents'
     module='Office Module'
@@ -233,3 +237,64 @@ def office_module_DeanS_notif(sender, recipient, type):
         verb = "Budget has been alloted by Junior Superintendent"
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
+
+
+def gymkhana_voting(sender, recipient, type, title, desc):
+    url = 'gymkhana:gymkhana'
+    module = 'Gymkhana Module'
+    sender = sender
+    recipient = recipient
+    title = title
+    desc = desc
+    verb = ""
+
+    if type == 'voting_open':
+        verb = "Voting is open for {}".format(title)
+
+    notify.send(sender=sender,
+                recipient=recipient,
+                url=url,
+                module=module,
+                verb=verb,
+                description=desc
+                )
+
+
+def gymkhana_session(sender, recipient, type, club, desc, venue):
+    url = 'gymkhana:gymkhana'
+    module = 'Gymkhana Module'
+    sender = sender
+    recipient = recipient
+    desc = desc
+    verb = ""
+
+    if type == 'new_session':
+        verb = "A session by {} Club will be organised in {}".format(club, venue)
+
+    notify.send(sender=sender,
+                recipient=recipient,
+                url=url,
+                module=module,
+                verb=verb,
+                description=desc
+                )
+
+
+def gymkhana_event(sender, recipient, type, club, event_name, desc, venue):
+    url = 'gymkhana:gymkhana'
+    module = 'Gymkhana Module'
+    sender = sender
+    recipient = recipient
+    desc = desc
+    verb = ""
+
+    if type == 'new_event':
+        verb = "{} event by {} Club will be organised in {}".format(event_name, club, venue)
+
+    notify.send(sender=sender,
+                recipient=recipient,
+                url=url,
+                module=module,
+                verb=verb,
+                description=desc
+                )

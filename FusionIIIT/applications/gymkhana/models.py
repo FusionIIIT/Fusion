@@ -18,21 +18,14 @@ register = template.Library()
 
 # # Class for various choices on the enumerations
 class Constants:
+    available = (
+        ('On', 'On'),
+        ('Off', 'Off'),
+    )
     categoryCh = (
         ('Technical', 'Technical'),
         ('Sports', 'Sports'),
         ('Cultural', 'Cultural')
-    )
-    branch = (
-        ('cse', 'CSE'),
-        ('ece', 'ECE'),
-        ('me', 'ME')
-    )
-    programme = (
-        ('B.tech', 'B.tech'),
-        ('B.des', 'B.des'),
-        ('M.tech', 'M.tech'),
-        ('M.des', 'M.des'),
     )
     status = (
         ('open', 'Open'),
@@ -83,6 +76,16 @@ class Club_info(models.Model):
     class Meta:
         db_table = 'Club_info'
 
+
+class Form_available(models.Model):
+    roll = models.CharField(default=2016001, max_length=7, primary_key=True)
+    status = models.BooleanField(default=True, max_length=5)
+
+    def __str__(self):
+        return str(self.roll)
+
+    class Meta:
+        db_table = 'Form_available'
 
 class Registration_form(models.Model):
     roll = models.CharField(max_length=7, default="2016001", primary_key=True)
@@ -161,7 +164,7 @@ class Session_info(models.Model):
     date = models.DateField(default=None, auto_now=False, null=False)
     start_time = models.TimeField(default=None, auto_now=False, null=False)
     end_time = models.TimeField(default=None, auto_now=False, null=True)
-    session_poster = models.FileField(upload_to='gymkhana/session_poster', blank=True)
+    session_poster = models.FileField(upload_to='gymkhana/session_poster', null=True)
     details = models.TextField(max_length=256, null=True)
     status = models.CharField(
         max_length=50, choices=Constants.status, default='open')
