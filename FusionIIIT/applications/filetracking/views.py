@@ -87,8 +87,12 @@ def filetracking(request):
                 current_design = HoldsDesignation.objects.get(id=sender)
 
                 receiver = request.POST.get('receiver')
-                receiver_id = User.objects.get(username=receiver)
-                print("Receiver_id = ")
+                try:
+                    receiver_id = User.objects.get(username=receiver)
+                except Exception as e:
+                    messages.error(request, 'Enter a valid destination')
+                    return redirect('/filetracking/')
+                #print("Receiver_id = ")
                 print(receiver_id)
                 receive = request.POST.get('recieve')
                 print("recieve = ")
