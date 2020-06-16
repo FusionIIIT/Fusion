@@ -4,14 +4,7 @@
 {% block filetracking_tab %}
     {% comment %}the compounder prescription tab starts here {% endcomment %}
 
-    {% if messages %}
-                <ul class = "messages">
-                    {% for message in messages %}
-                    <li> <div class = "alert alert-success"> {{message}} </div>
-                    </li>
-                    {% endfor %}
-                </ul>
-                {% endif %}
+
     <div class="ui pointing secondary menu">
         <h3>
             <a class="active item" data-tab="composefile">
