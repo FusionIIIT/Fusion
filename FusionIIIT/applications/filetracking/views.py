@@ -272,8 +272,21 @@ def forward(request, id):
                 current_design = HoldsDesignation.objects.get(id=sender)
 
                 receiver = request.POST.get('receiver')
-                receiver_id = User.objects.get(username=receiver)
-                print("Receiver_id = ")
+                try:
+                    receiver_id = User.objects.get(username=receiver)
+                except Exception as e:
+                    messages.error(request, 'Enter a valid destination')
+                    designations = HoldsDesignation.objects.filter(user=request.user)
+
+                    context = {
+                        # 'extrainfo': extrainfo,
+                        # 'holdsdesignations': holdsdesignations,
+                        'designations': designations,
+                        'file': file,
+                        'track': track,
+                    }
+                    return render(request, 'filetracking/forward.html', context)
+                #print("Receiver_id = ")
                 print(receiver_id)
                 receive = request.POST.get('recieve')
                 print("recieve = ")
@@ -293,6 +306,7 @@ def forward(request, id):
                     remarks=remarks,
                     upload_file=upload_file,
                 )
+            messages.success(request, 'File sent successfully')
     # start = timer()
     extrainfo = ExtraInfo.objects.all()
     holdsdesignations = HoldsDesignation.objects.all()

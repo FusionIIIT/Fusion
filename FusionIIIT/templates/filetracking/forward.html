@@ -18,7 +18,7 @@
     <div class="ui active tab" data-tab="notesheet">
 
         <div class="ui two item menu">
-            <a class="item"><b>File ID :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.department.name}}/{{file.upload_date.year}}/{{file.upload_date.month}}/#{{file.id}}</b></a>
+            <a class="item"><b>File ID :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.department.name}}-{{file.upload_date.year}}-{{file.upload_date.month}}-#{{file.id}}</b></a>
             <a class="item"><b>Uploader :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.user}}-{{file.designation}}</b></a>
         </div>
 
@@ -51,7 +51,7 @@
                                                  </a>
 
                                                  <div class="right floated" style="font-color: black;">
-                                                     <b>Received by:</b>&nbsp{{t.receive_design}}
+                                                     <b>Received by:</b>&nbsp{{t.receiver_id}}-{{t.receive_design}}
                                                  </div>
 
                                                  <div class="text">
@@ -216,8 +216,8 @@
     <div class="ui tab" data-tab="attachments">
 
         <div class="ui two item menu">
-            <a class="item"><b>File ID :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.department.name}}/{{file.upload_date.year}}/{{file.upload_date.month}}/#{{file.id}}</b></a>
-            <a class="item"><b>Uploader :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.uploader}}</b></a>
+            <a class="item"><b>File ID :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.department.name}}-{{file.upload_date.year}}-{{file.upload_date.month}}-#{{file.id}}</b></a>
+            <a class="item"><b>Uploader :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.user}}-{{file.designation}}</b></a>
         </div>
 
         <div class="ui fluid card">
@@ -232,8 +232,7 @@
                                             <div class="content">
                                     <a class="paperclip icon">
                                                      {% if file.upload_file %}
-                                                     <a href="/media/{{t.upload_file}}" class="header" target="_">
-                                                         <u class="meta" style="color: #1B1C1D">{{file.upload_file}}</u>
+                                                     <a href="/media/{{file.upload_file}}" class="header" target="_"><u class="meta" style="color: #1B1C1D">{{file.upload_file}}</u>
                                                      </a>
                                                      {% else %}
                                                      <span class="meta">No Attachment</span>
@@ -259,8 +258,8 @@
                                             <div class="content">
                                                  <a class="paperclip icon">
                                                      {% if t.upload_file %}
-                                                     <a href="/media/{{file.upload_file}}" class="header" target="_">
-                                                         <u class="meta" style="color: #1B1C1D">{{file.upload_file}}</u>
+                                                     <a href="/media/{{t.upload_file}}" class="header" target="_">
+                                                         <u class="meta" style="color: #1B1C1D">{{t.upload_file}}</u>
                                                      </a>
                                                      {% else %}
                                                      <span class="meta">No Attachment</span>
