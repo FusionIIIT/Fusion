@@ -1,0 +1,23 @@
+{% extends 'filetracking/filetracking.html' %}
+{% load static %}
+
+{% block filetracking_tab %}
+<html>
+
+<div class="container">
+      <h1>Delete file</h1>
+      <p>Are you sure you want to delete?</p>
+
+      <div class="clearfix">
+
+         <a type="button" href="/filetracking/drafts"> <button class="ui positive button">Cancel</button></a>
+
+        <a href="{% url 'filetracking:delete' j.id %}"><button class="ui positive button">Delete</button></a>
+      </div>
+    </div>
+
+
+
+</body>
+</html>
+{% endblock %}

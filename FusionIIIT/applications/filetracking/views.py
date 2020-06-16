@@ -211,7 +211,15 @@ def inward(request):
     }
 
     return render(request, 'filetracking/inward.html', context)
+@login_required(login_url = "/accounts/login")
+def confirmdelete(request,id):
+    file = File.objects.get(pk = id)
 
+    context = {
+
+        'j': file,
+    }
+    return render(request, 'filetracking/confirmdelete.html',context)
 
 @login_required(login_url = "/accounts/login")
 def forward(request, id):
