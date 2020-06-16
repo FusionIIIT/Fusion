@@ -36,9 +36,7 @@
                           View
                 </button></a></td>
 
-             <td><a href="{% url 'filetracking:delete' j.id %}"><button class="ui positive button">
-                          Delete
-            </button></a></td>
+             <td><a href="{% url 'filetracking:confirm_delete' j.id%}"> <button class="ui primary button"> Delete</button></a></td>
         </tr>
 
         {% endfor %}
