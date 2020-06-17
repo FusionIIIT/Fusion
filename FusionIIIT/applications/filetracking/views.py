@@ -52,7 +52,7 @@ def filetracking(request):
                     #ref_id=ref_id,
                     description=description,
                     subject=subject,
-                     designation=designation,
+                    designation=designation,
                     upload_file=upload_file
                 )
 
@@ -185,7 +185,7 @@ def outward(request):
                 out - The Tracking object filtered by current_id i.e, present working user.
                 context - Holds data needed to make necessary changes in the template.
     """
-    out = Tracking.objects.filter(current_id=request.user.extrainfo)
+    out = Tracking.objects.filter(current_id=request.user.extrainfo).order_by('-forward_date')
 
     context = {
         'out': out,
@@ -209,7 +209,7 @@ def inward(request):
                     context - Holds data needed to make necessary changes in the template.
     """
 
-    in_file = Tracking.objects.filter(receiver_id=request.user)
+    in_file = Tracking.objects.filter(receiver_id=request.user).order_by('-receive_date')
 
     context = {
         'in_file': in_file,
