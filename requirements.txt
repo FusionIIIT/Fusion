@@ -21,3 +21,10 @@ xhtml2pdf
 xlrd
 xlwt
 xlsxwriter
+google-api-python-client
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+oauth2client
+-e git://github.com/Schweigi/oauth2client.git@v4.1.3#egg=oauth2client
+jsonpickle

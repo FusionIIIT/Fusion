@@ -11,7 +11,7 @@ import requests
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.files.storage import FileSystemStorage
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import redirect, render
 from django.utils import timezone
 
@@ -25,6 +25,46 @@ from .forms import *
 # from .helpers import create_thumbnail, semester
 from .models import *
 from .helpers import create_thumbnail, semester
+
+from django.views.generic.base import View
+from oauth2client.client import flow_from_clientsecrets, OAuth2WebServerFlow
+from oauth2client.contrib import xsrfutil
+from oauth2client.contrib.django_util.storage import DjangoORMStorage
+from .models import CredentialsModel
+
+
+flow = OAuth2WebServerFlow(
+    client_id=settings.GOOGLE_OAUTH2_CLIENT_ID,
+    client_secret=settings.GOOGLE_OAUTH2_CLIENT_SECRET,
+    scope='https://www.googleapis.com/auth/youtube',
+    redirect_uri='http://127.0.0.1:8000/ocms/oauth2callback/')
+
+
+class AuthorizeView(View):
+
+    def get(self, request, *args, **kwargs):
+        storage = DjangoORMStorage(
+            CredentialsModel, 'id', request.user.id, 'credential')
+        credential = storage.get()
+
+        if credential is None or credential.invalid == True:
+            flow.params['state'] = xsrfutil.generate_token(settings.SECRET_KEY, request.user)
+            authorize_url = flow.step1_get_authorize_url()
+            return redirect(authorize_url)
+        return redirect('/')
+
+
+class Oauth2CallbackView(View):
+
+    def get(self, request, *args, **kwargs):
+        if not xsrfutil.validate_token(
+                settings.SECRET_KEY, request.GET.get('state').encode(), request.user):
+            return HttpResponseBadRequest()
+        credential = flow.step2_exchange(request.GET)
+        storage = DjangoORMStorage(
+            CredentialsModel, 'id', request.user.id, 'credential')
+        storage.put(credential)
+        return redirect('https://studio.youtube.com/')
 
 @login_required
 def viewcourses(request):

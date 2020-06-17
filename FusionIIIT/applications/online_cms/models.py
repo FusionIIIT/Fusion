@@ -1,9 +1,13 @@
-
 from django.db import models
 #import models used from academic procedure and academic information  modules and globals
 from applications.academic_information.models import Course, Student, Curriculum
 from applications.academic_procedures.models import Register
 from applications.globals.models import ExtraInfo
+from oauth2client.contrib.django_util.models import CredentialsField
+
+
+class CredentialsModel(models.Model):
+    credential = CredentialsField()
 
 #the documents in the course (slides , ppt) added by the faculty  and can be downloaded by the students
 class CourseDocuments(models.Model):
