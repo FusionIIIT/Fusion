@@ -1,12 +1,9 @@
 from django.conf.urls import url
-from .views import AuthorizeView, Oauth2CallbackView
 
 from . import views
 app_name = 'online_cms'
 
 urlpatterns = [
-    url(r'^authorize/', AuthorizeView.as_view(), name="authorize"),
-    url(r'^oauth2callback/', Oauth2CallbackView.as_view(), name='oauth2callback'),
 
     url(r'^$', views.viewcourses, name='viewcourses'),
     url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/$', views.course, name='course'),
