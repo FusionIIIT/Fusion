@@ -1,4 +1,3 @@
-
 from django.db import models
 #import models used from academic procedure and academic information  modules and globals
 from applications.academic_information.models import Course, Student, Curriculum

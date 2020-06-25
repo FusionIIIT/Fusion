@@ -11,7 +11,7 @@ import requests
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.files.storage import FileSystemStorage
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import redirect, render
 from django.utils import timezone
 
@@ -26,30 +26,31 @@ from .forms import *
 from .models import *
 from .helpers import create_thumbnail, semester
 
+
 @login_required
 def viewcourses(request):
     '''
     desc: Shows all the courses under the user
     '''
     user = request.user
-    
+
     extrainfo = ExtraInfo.objects.get(user=user)  #get the type of user
     if extrainfo.user_type == 'student':         #if student is using
         print(extrainfo)
-        student = Student.objects.get(id=extrainfo)       
+        student = Student.objects.get(id=extrainfo)
         roll = student.id.id[:4]                       #get the roll no. of the student
         register = Register.objects.filter(student_id=student, semester=semester(roll))  #info of registered student
         courses = collections.OrderedDict()   #courses in which student is registerd
-        for reg in register:   #info of the courses 
+        for reg in register:   #info of the courses
             instructor = Curriculum_Instructor.objects.get(course_id=reg.course_id)
             courses[reg] = instructor
         return render(request, 'coursemanagement/coursemanagement1.html',
                       {'courses': courses,
- 
+
                        'extrainfo': extrainfo})
     else:   #if the user is lecturer
         instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)   #get info of the instructor
-        curriculum_list = []                   
+        curriculum_list = []
         for x in instructor:
             c = Curriculum.objects.get(curriculum_id = x.curriculum_id.curriculum_id)
             curriculum_list.append(c)
@@ -74,7 +75,7 @@ def course(request, course_code):
         roll = student.id.id[:4]
 
         #info about courses he is registered in
-        curriculum = Curriculum.objects.get(course_code=course_code)          
+        curriculum = Curriculum.objects.get(course_code=course_code)
         course = curriculum.course_id
         #instructor of the course
         instructor = Curriculum_Instructor.objects.get(curriculum_id=curriculum)
@@ -138,7 +139,7 @@ def course(request, course_code):
         marks = []
         quizs = []
         marks_pk = []
-        #quizzes details 
+        #quizzes details
         for q in quiz:
             qs = QuizResult.objects.filter(quiz_id=q, student_id=student)
             qs_pk = qs.values_list('quiz_id', flat=True)
@@ -302,7 +303,7 @@ def course(request, course_code):
                        'test_marks': test_marks
                        })
 
-#when student uploads the assignment's solution 
+#when student uploads the assignment's solution
 @login_required
 def upload_assignment(request, course_code):
     extrainfo = ExtraInfo.objects.get(user=request.user)
@@ -310,14 +311,14 @@ def upload_assignment(request, course_code):
         student = Student.objects.get(id=extrainfo)
         try:
             #all details of the assignment
-            doc = request.FILES.get('img')    #the images in the assignment 
-            assi_name = request.POST.get('assignment_topic') 
+            doc = request.FILES.get('img')    #the images in the assignment
+            assi_name = request.POST.get('assignment_topic')
             name = request.POST.get('name')
             assign = Assignment.objects.get(pk=assi_name)
             filename, file_extenstion = os.path.splitext(request.FILES.get('img').name)
-        except:  
+        except:
             return HttpResponse("Please fill each and every field correctly!")
-        filename = name      
+        filename = name
         full_path = settings.MEDIA_ROOT + "/online_cms/" + course_code + "/assi/"  #storing the media files
         full_path = full_path + assign.assignment_name + "/" + student.id.id + "/"
         url = settings.MEDIA_URL + filename
@@ -339,13 +340,13 @@ def upload_assignment(request, course_code):
     else:
         return HttpResponse("not found")
 
-# when faculty uploads the slides, ppt 
+# when faculty uploads the slides, ppt
 @login_required
 def add_document(request, course_code):
     extrainfo = ExtraInfo.objects.get(user=request.user)
     if extrainfo.user_type == "faculty":  #user should be faculty only
-        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)  #get the course information 
-        
+        instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)  #get the course information
+
         for ins in instructor:
             if ins.curriculum_id.course_code == course_code:
                 course = ins.curriculum_id.course_id
@@ -392,7 +393,7 @@ def delete(request, course_code):
         for ins in instructor:
             if ins.curriculum_id.course_code == course_code:
                 course = ins.curriculum_id.course_id
-    
+
     if extrainfo.user_type == 'student':
         curriculum_details = Curriculum.objects.filter(course_code=course_code)
         course = curriculum_details
@@ -421,7 +422,7 @@ def delete(request, course_code):
         lec_assi.delete()
     cmd = "rm "+path
     subprocess.call(cmd, shell=True)
-    data = { 'msg': 'Data Deleted successfully'}   
+    data = { 'msg': 'Data Deleted successfully'}
     return HttpResponse(json.dumps(data), content_type='application/json')
 
 # to upload videos related to the course
@@ -441,7 +442,7 @@ def add_videos(request, course_code):
             filename, file_extenstion = os.path.splitext(request.FILES.get('img').name)
         except:
             return HttpResponse("Please fill each and every field correctly!")
-        #saving the media files 
+        #saving the media files
         filename = name
         full_path = settings.MEDIA_ROOT + "/online_cms/" + course_code + "/vid/"
         url = settings.MEDIA_URL+filename + file_extenstion
@@ -450,8 +451,8 @@ def add_videos(request, course_code):
             subprocess.call(cmd, shell=True)
         fs = FileSystemStorage(full_path, url)
         fs.save(filename+file_extenstion, vid)
-        uploaded_file_url = full_path + filename + file_extenstion 
-        #saving in the 
+        uploaded_file_url = full_path + filename + file_extenstion
+        #saving in the
         video = CourseVideo.objects.create(
             course_id=course,
             upload_time=datetime.datetime.now(),
@@ -501,7 +502,7 @@ def ajax_reply(request, course_code):
     if extrainfo.user_type == "student":
         student = Student.objects.get(id=extrainfo)
         roll = student.id.id[:4]
-        
+
         curriculum_details = Curriculum.objects.filter(course_code=course_code)  #curriculum id
         #print(curriculum_details[0].course_id)
         #print(Curriculum.objects.values_list('curriculum_id'))
@@ -543,7 +544,7 @@ def ajax_new(request, course_code):
         #print(Curriculum.objects.values_list('curriculum_id'))
         course =  curriculum_details[0].course_id
     else:
-        
+
         instructor = Curriculum_Instructor.objects.filter(instructor_id=extrainfo)
         for ins in instructor:
             if ins.curriculum_id.course_code == course_code:
@@ -885,7 +886,7 @@ def create_quiz(request, course_code):
         for ins in instructor:
             if ins.curriculum_id.course_code == course_code:
                 registered_students = Register.objects.filter(curr_id = ins.curriculum_id.curriculum_id)
-                
+
                 course = ins.curriculum_id.course_id
 
         form = QuizForm(request.POST or None)
@@ -1294,7 +1295,7 @@ def add_practice_question(request, course_code, practice_contest_code):
 #         for ins in instructor:
 #             if ins.curriculum_id.course_code == course_code:
 #                 registered_students = Register.objects.filter(curr_id = ins.curriculum_id.curriculum_id)
-               
+
 
 #         exam = request.POST.get('examtype')
 #         score = request.POST.getlist('enteredmarks')
@@ -1321,7 +1322,7 @@ def add_practice_question(request, course_code, practice_contest_code):
 #                 StoreMarks.objects.filter(mid=m_id, exam_type=exam).update(marks=s)
 
 #         #print(registered_students)
-        
+
 
 #         return HttpResponse("Upload successful")  
 #         context= {'m_id':m_id,'registered_students': registered_students, 'record':List}
@@ -1361,14 +1362,14 @@ def submit_attendance(request, course_code):
 
             print(date)
             #mark the attendance according to the student roll no.
-            all_students = request.POST.getlist('Roll')   
+            all_students = request.POST.getlist('Roll')
             present_students = request.POST.getlist('Present_absent')
 
 
             for student in all_students:
 
                 s_id = Student.objects.get(id = student)
-                present = False 
+                present = False
                 if student in present_students:
                     present = True
 

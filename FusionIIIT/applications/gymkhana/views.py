@@ -16,7 +16,7 @@ from django.db import IntegrityError
 from django.core import serializers
 from django.contrib.auth.models import User
 from timeit import default_timer as time
-from notification.views import gymkhana_module_notif
+from notification.views import gymkhana_voting, office_module_notif, gymkhana_session, gymkhana_event
 from django.views.decorators.csrf import ensure_csrf_cookie
 from applications.academic_information.models import Student
 from applications.globals.models import *
@@ -340,32 +340,60 @@ def new_club(request):
 def form_avail(request):
 	if request.method == 'POST':
 		res = "success"
-		message = "The form has been dispatched for further process"
+		message = "Form available?"
 		try:
 			#getting form data
+			form_name = request.POST["registration"]
 			status = request.POST["available"]
+
 			if(status == "On"):
 				status = True
 			else:
 				status = False
-				rev = Registration_form.objects.all()
-				rev.delete()
-
+			print(form_name)
 			roll = request.user.username
+			rev = Form_available.objects.get(roll=roll).form_name
+			if rev != form_name:
+				# print("aabracaadaaabra")
+				delete_requests(request)
 			#saving data to the database
-			reg = Form_available(roll=roll, status=status)
-			reg.save()
+			rob = Form_available.objects.get(roll=roll)
+			rob.form_name = form_name
+			rob.status = status
+			rob.save()
+
 		except Exception as e:
+			print(e)
 			res = "error"
-			message = "Some error occurred"
+			message = "You've already filled the form."
 
 		content = {
 			'status': res,
 			'message': message,
 		}
 		content = json.dumps(content)
+		messages.success(request, "Form available?")
 		return HttpResponse(content)
 		# redirect("/gymkhana/")
+
+@login_required
+def delete_requests(request):
+	if request.method == 'POST':
+		res = "success"
+		message = "Data is Deleted."
+		try:
+			rev = Registration_form.objects.all()
+			rev.delete()
+
+		except Exception as e:
+			res = "error"
+			message = "Some error occured."
+		content = {
+			'status': res,
+			'message': message,
+		}
+		content = json.dumps(content)
+		return HttpResponse(content)
 
 
 @login_required()
@@ -392,7 +420,7 @@ def registration_form(request):
 		except Exception as e:
 			print(f"{e}DSANKJDVBJBDAKSCBASKFBasjcbaskjvbaskvaslvbna")
 			res = "error"
-			message = "Some error occurred"
+			message = "You've already filled the form."
 
 		content = {
 			'status':res,
@@ -405,8 +433,8 @@ def registration_form(request):
 	# return redirect('/gymkhana/')
 
 def retrun_content(request, roll, name, desig , club__ ):
-	students =ExtraInfo.objects.all().filter(user_type = "student")
-	faculty = ExtraInfo.objects.all().filter(user_type = "faculty")
+	students =ExtraInfo.objects.filter(user_type = "student")
+	faculty = ExtraInfo.objects.filter(user_type = "faculty")
 	club_name = Club_info.objects.all()
 	club_member = Club_member.objects.all()
 	fest_budget = Fest_budget.objects.all()
@@ -414,11 +442,23 @@ def retrun_content(request, roll, name, desig , club__ ):
 	club_session = Session_info.objects.all()
 	club_event = Event_info.objects.all()
 	club_event_report = Club_report.objects.all()
-	registration_form = Registration_form.objects.all()
-	cpi = Student.objects.get(id__user=request.user).cpi
-	programme = Student.objects.get(id__user=request.user).programme
-	# status = Form_available.objects.get(roll=request.user.username).status
+	if 'student' in desig or 'Convenor' in desig:
+		registration_form = Registration_form.objects.all()
+		cpi = Student.objects.get(id__user=request.user).cpi
+		programme = Student.objects.get(id__user=request.user).programme
 
+		try:
+			form_name = Form_available.objects.get(roll=request.user.username).form_name
+			print(f'{form_name} MKNCjncknisncs')
+			status = Form_available.objects.get(roll=request.user.username).status
+		except Exception as e:
+			stat = Form_available.objects.all()
+			for i in stat:
+				form_name = i.form_name
+				status = i.status
+				break
+	# print(status)
+	# print(request.user.username)
 	# print(registration_form)
 
 	venue_type = []
@@ -474,11 +514,17 @@ def retrun_content(request, roll, name, desig , club__ ):
 		'club_details':club__,
 		'voting_polls': voting_polls,
 		'roll' : str(roll),
-		'registration_form': registration_form,
-		'cpi': cpi,
-		'programme': programme,
-		# 'status': status,
+
 	}
+	if 'student' in desig or 'Convenor' in desig:
+		content1 = {
+			'registration_form': registration_form,
+			'cpi': cpi,
+			'programme': programme,
+			'form_name': form_name,
+			'status': status,
+		}
+		content.update(content1)
 	return content
 
 @login_required
@@ -759,13 +805,18 @@ def new_session(request):
 			club_name = coordinator_club(request)
 			res = conflict_algorithm_session(date, start_time, end_time, venue)
 			message = ""
+			getstudents = ExtraInfo.objects.filter(user_type = 'student')
+			recipients = User.objects.filter(extrainfo__in=getstudents)
 			if(res == "success"):
 				session = Session_info(club = club_name, venue = venue, date =date, start_time=start_time , end_time = end_time , session_poster=session_poster, details = desc)
 				session.save()
 				message += "Session booked Successfully"
+				gymkhana_session(request.user, recipients, 'new_session', club_name, desc, venue)
+
 			else:
 				message += "The selected time slot for the given date and venue conflicts with already booked session"
 		except Exception as e:
+			print(e)
 			res = "error"
 			message = "Some error occurred"
 
@@ -775,7 +826,6 @@ def new_session(request):
 		}
 		
 		content = json.dumps(content)
-		gymkhana_module_notif(request.user, User.objects.all(), 'new_session')
 		return HttpResponse(content)
 
 @login_required
@@ -797,10 +847,13 @@ def new_event(request):
 			club_name = coordinator_club(request)
 			res = conflict_algorithm_event(date, start_time, end_time, venue)
 			message = ""
+			getstudents = ExtraInfo.objects.filter(user_type = 'student')
+			recipients = User.objects.filter(extrainfo__in=getstudents)
 			if(res == "success"):
 				event = Event_info(club = club_name, event_name=event_name, incharge=incharge, venue = venue, date =date, start_time=start_time , end_time = end_time ,event_poster = event_poster , details = desc)
 				event.save()
 				message += "Your form has been dispatched for further process"
+				gymkhana_event(request.user, recipients, 'new_event', club_name, event_name, desc, venue)
 			else:
 				message += "The selected time slot for the given date and venue conflicts with already booked session"
 		except Exception as e:
@@ -954,8 +1007,10 @@ def date_sessions(request):
 		return HttpResponse(dates)
 
 @login_required
+@csrf_exempt
 def date_events(request):
-	if(request.is_ajax()):
+	print("I was here")
+	if(request.method=='POST'):
 		value = request.POST.get('date')
 		print(f"@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@{value}")
 		get_events = Event_info.objects.filter(date=value).order_by('start_time')
@@ -964,6 +1019,7 @@ def date_events(request):
 			dates.append(i)
 		dates = serializers.serialize('json', dates)
 		return HttpResponse(dates)
+	return Httpresponse("Hurray")
 
 #this algorithm checks if the passed slot time coflicts with any of already booked sessions
 def conflict_algorithm_session(date, start_time, end_time, venue):
@@ -1033,6 +1089,17 @@ def voting_poll(request):
 			for choice in choices:
 				new_choice = Voting_choices(poll_event=new_poll,title=choice)
 				new_choice.save()
+			for i in range(len(groups)):
+				value = groups[i].split(":")
+				batch = value[0]
+				branch = value[1]
+				allbatch = User.objects.filter(username__contains = batch)
+				selbranch = ExtraInfo.objects.filter(department__name = branch)
+				batchbranch = User.objects.filter(username__contains = batch, extrainfo__in=selbranch)
+				if branch == 'All':
+					gymkhana_voting(request.user, allbatch, 'voting_open', title, description)
+				else:
+					gymkhana_voting(request.user, batchbranch, 'voting_open', title, description)
 			return redirect('/gymkhana/')
 		except Exception as e:
 			res = "error"
@@ -1078,14 +1145,6 @@ def delete_poll(request, poll_id):
 			return HttpResponse('error')
 
 	return redirect('/gymkhana/')
-
-
-
-
-
-
-
-
 
 #this algorithm checks if the passed slot time coflicts with any of already booked events
 

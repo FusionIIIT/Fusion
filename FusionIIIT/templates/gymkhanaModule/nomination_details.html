@@ -10,23 +10,45 @@
         {% endif %}
 
         {% if "Convenor" in Curr_desig %}
-            <a class="ui active item" data-tab="nomination_requests">
-                Nomination Requests
-            </a>
+            {% if form_name == 'senate_registration' %}
+                <a class="ui active item" data-tab="nomination_requests">
+                    Senate Nomination Requests
+                </a>
+            {% elif form_name == 'mess_registration' %}
+                <a class="ui active item" data-tab="nomination_requests">
+                    Mess Nomination Requests
+                </a>
+            {% elif form_name == 'hostel_registration' %}
+                <a class="ui active item" data-tab="nomination_requests">
+                    Hostel Nomination Requests
+                </a>
+            {% endif %}
         {% endif %}
+
 
     </div>
 
     <div class="ui tab" data-tab="form_available">
+
         <div class="ui vertical segment">
             <form method="Post" id="form__available" >
             {% csrf_token %}
                 {% comment %}The add a new skill Accordian starts here!{% endcomment %}
                 <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
                         <div class="field">
+                            <label>Registration Type</label>
+                            <select class="ui search fluid dropdown" name="registration" id ="registration" >
+                                <option value="senate_registration">Senate Registration</option>
+                                <option value="mess_registration">Mess Registration</option>
+                                <option value="hostel_registration">Hostel Registration</option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="field">
                             <label>Form Availability</label>
                             <select class="ui search fluid dropdown" name="available" id ="available" >
-<!--                                <option value="">Select</option>-->
                                 <option value="On">On </option>
                                 <option value="Off">Off </option>
 
@@ -48,9 +70,23 @@
     </div>
 
 
-
-
     <div class="ui active tab" data-tab="nomination_requests">
+        <div class="ui vertical segment">
+            <form method="Post" id="delete__requests" >
+            {% csrf_token %}
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+                    <div class="field">
+                        <button class="ui primary button right floated" type="submit" onclick="form_submit('delete_requests','delete__requests',event)">
+                            Delete Requests
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <br>
+            <br>
+        </div>
+
         <div class="ui vertical segment">
         <form method="post" action="" id="nom_requests">
         {% csrf_token %}

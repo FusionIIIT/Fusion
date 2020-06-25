@@ -1,6 +1,6 @@
 {% block voting_polls %} {% comment %}The tab menu starts here!{% endcomment %}
 
-<div class="ui pointing secondary menu">
+{% comment %} <div class="ui pointing secondary menu">
   <a class="active item" data-tab="active">
     Active Polls
   </a>
@@ -12,7 +12,21 @@
     Poll Status
   </a>
   {% endif %}
-</div>
+</div> {% endcomment %}
+
+  <div class="ui pointing secondary menu">
+    <a class="active item" data-tab="active">
+      Active Polls
+    </a>
+    {% if "Convener" in Curr_desig %}
+    <a class="item" data-tab="create">
+      Create Poll
+    </a>
+    <a class="item" data-tab="status">
+      Poll Status
+    </a>
+    {% endif %}
+  </div>
 
 {% block active_poll %}
 {% include 'gymkhanaModule/active_poll.html' %}
