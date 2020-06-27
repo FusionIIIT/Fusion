@@ -26,7 +26,7 @@ pending cpda applications
     <div class="content">
         <div class="description">
             <div class="ui items">
-                {% for app in pending_apps %}
+                {% for app in cpda_pending_apps %}
                     <div class="item">
                         <div class="content">
                             <a class="header">Status : {{app.status}}</a>
@@ -75,7 +75,7 @@ pending cpda applications
                                         {% render_field app.assign_form.remarks %} 
                                     </div>
                                     <br>
-                                    <button type="submit" name="assign_form" class="ui large primary button">
+                                    <button type="submit" name="cpda_assign_form" class="ui large primary button">
                                         Assign Reviewer
                                     </button>
                                 </form>
@@ -101,7 +101,7 @@ under_review cpda applications
     <div class="content">
         <div class="description">
             <div class="ui items">
-                {% for app in under_review_apps %}
+                {% for app in cpda_under_review_apps %}
                     <div class="item">
                         <div class="content">
                             <a class="header">Status : {{app.status}}</a>
@@ -184,7 +184,7 @@ under_review cpda applications
                                         {% render_field app.assign_form.remarks %} 
                                     </div>
                                     <br>
-                                    <button type="submit" name="assign_form" class="ui large primary button">
+                                    <button type="submit" name="cpda_assign_form" class="ui large primary button">
                                         Assign Reviewer
                                     </button>
                                 </form>
@@ -209,7 +209,7 @@ approved cpda applications
     <div class="content">
         <div class="description">
             <div class="ui items">
-                {% for app in approved_apps %}
+                {% for app in cpda_approved_apps %}
                     <div class="item">
                         <div class="content">
                             <a class="header">Status : {{app.status}}</a>
@@ -263,7 +263,7 @@ archived cpda applications
     <div class="content">
         <div class="description">
             <div class="ui items">
-                {% for app in archived_apps %}
+                {% for app in cpda_archived_apps %}
                     <div class="item">
                         <div class="content">
                             <a class="header">Status : {{app.status}}</a>
