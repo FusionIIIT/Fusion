@@ -1,13 +1,12 @@
-{% load static %} {% block addvideo %}
+{% load static %}
+{% block addvideo %}
 
 {% if Lecturer == 1 %}
-
 <div class="ui active tab segment" data-tab="video" id="add_video_refresh">
     <h4 class="ui dividing header">Add a video</h4>
     <a href="http://studio.youtube.com/" class="ui blue button"  target="_blank">Upload Videos</a>
 <br/>
 <br/>
-
     <div style="overflow:scroll;height:35em;overflow-x:hidden;">
     <table class="ui fixed single line sortable celled table">
         <thead>
@@ -18,9 +17,7 @@
                 <th class="" style="width:10%">Action</th>
             </tr>
         </thead>
-
         <tbody>
-
             {% for video in videos %}
             <tr>
                 <td>{{forloop.counter}}</td>
@@ -39,10 +36,17 @@
 </div>
 {% else %}
 
-
-{% if videos %}
-
-<div style="overflow:scroll;height:34em;overflow-x:hidden;">
+    {% if videos %}
+    <br/>
+    <form class="ui form" method="post">
+        {% csrf_token %}
+      <div class="inline field" style="margin-left: 15px;">
+            <input type="search" name="search" placeholder="Search" aria-label="Search" size="110">
+            <button class="ui button" type="submit">Search</button>
+      </div>
+    </form>
+    <br/>
+    <div style="overflow:scroll;height:34em;overflow-x:hidden;">
     <table class="ui fixed single line sortable celled table">
         <thead>
             <tr>
@@ -51,9 +55,7 @@
                 <th> Play </th>
             </tr>
         </thead>
-
         <tbody>
-
             {% for video in videos %}
             <tr>
                 <td>{{forloop.counter}}</td>
@@ -67,11 +69,12 @@
             {% endfor %}
         </tbody>
     </table>
-  </div>
-  {% else %}
-  <div class="row" style="margin-left:20px">
-      <h4 class="ui  header">No videos</h4><br>
-  </div>
-   {% endif %}
+    </div>
+    {% else %}
+    <div class="row" style="margin-left:20px">
+        <br/>
+      <h3 class="ui header">No videos</h3><br>
+    </div>
+    {% endif %}
 {% endif %}
 {% endblock %}
