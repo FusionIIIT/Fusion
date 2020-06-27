@@ -59,7 +59,11 @@
             </div>
             <div class="ui tab segment" data-tab="second">
                 {% block ltc %}
-                    {% include 'establishment/ltc.html' %}
+                    {% if admin %}
+                        {% include 'establishment/ltc_admin.html' %}
+                    {% else %}
+                        {% include 'establishment/ltc.html' %}
+                    {% endif %}
                 {% endblock %}
             </div>
             {% comment %}
