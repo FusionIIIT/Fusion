@@ -207,7 +207,7 @@ def generate_ltc_admin_lists(request):
         # print (app.assign_form.fields['status']._choices)
         
     # approved and rejected
-    archived_apps = (Cpda_application.objects
+    archived_apps = (Ltc_application.objects
                     .exclude(status='requested')
                     .order_by('-request_timestamp'))
 

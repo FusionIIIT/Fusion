@@ -40,7 +40,7 @@ class Ltc_Form(forms.Form):
 
     requested_advance = forms.IntegerField(label='Advance Requested', min_value=0, required=True)
     declaration = forms.BooleanField(label=dec2, required=True)
-    declaration = forms.BooleanField(label=dec3, required=True)
+    declaration2 = forms.BooleanField(label=dec3, required=True)
 
 
 class Assign_Form(forms.Form):
