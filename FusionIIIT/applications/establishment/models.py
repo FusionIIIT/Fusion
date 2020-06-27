@@ -15,6 +15,18 @@ class Constants:
         ('under_review', 'Under Review'),
         ('reviewed', 'Reviewed')
     )
+    LTC_TYPE = (
+        ('hometown', 'Home Town'),
+        ('elsewhere', 'Elsewhere')
+    )
+    LTC_TRAVEL = (
+        ('rail', 'Rail'),
+        ('road', 'Road')
+    )
+    LTC_LEAVE = (
+        ('yes', 'Yes'),
+        ('no', 'No')
+    )
 
 
 class Establishment_variables(models.Model):
@@ -47,10 +59,6 @@ class Cpda_application(models.Model):
 
 class Cpda_tracking(models.Model):
     application = models.OneToOneField(Cpda_application, primary_key=True, related_name='tracking_info',on_delete=models.CASCADE)
-    # current_id : application is currently with
-    # current_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
-    # current_design = models.ForeignKey(HoldsDesignation, null=True, on_delete=models.CASCADE)
-    # forward_to : application will be forwarded to
     reviewer_id = models.ForeignKey(User, null = True, blank=True, on_delete=models.CASCADE)
     reviewer_design = models.ForeignKey(Designation, null=True, blank=True, on_delete=models.CASCADE)
     remarks = models.CharField(max_length=250, null=True, blank=True)
@@ -72,3 +80,55 @@ class Cpda_bill(models.Model):
 
     class Meta:
         db_table = 'Cpda Bills'
+
+
+class Ltc_application(models.Model):
+    status = models.CharField(max_length=20, null=True, choices=Constants.STATUS)
+
+    applicant = models.ForeignKey(User, on_delete=models.CASCADE)
+    pf_number = models.CharField(max_length=50, default='')
+    basic_pay = models.IntegerField(blank=True)
+
+    is_leave_required = models.CharField(choices=Constants.LTC_LEAVE, max_length=50)
+    leave_start = models.DateField()
+    leave_end = models.DateField()
+    family_departure_date = models.DateField()
+    leave_nature = models.CharField(max_length=50, default='')
+    purpose = models.CharField(max_length=500, default='', blank=True)
+    is_hometown_or_elsewhere = models.CharField(choices=Constants.LTC_TYPE, max_length=50)
+    phone_number = models.CharField(max_length=13, default='')
+    address_during_leave = models.CharField(max_length=500, default='', blank=True)
+    travel_mode = models.CharField(choices=Constants.LTC_TRAVEL, max_length=50)
+
+    # details of family members that have already availed LTC
+    ltc_availed = models.CharField(max_length=100, default='', blank=True)
+
+    # details of family members who will avail LTC
+    ltc_to_avail = models.CharField(max_length=200, default='', blank=True)
+
+    # details of family members who are dependents of applicant
+    dependents = models.CharField(max_length=500, default='', blank=True)
+
+    requested_advance = models.IntegerField(blank=True)
+    request_timestamp = models.DateTimeField(auto_now=True, null=True)
+    review_timestamp = models.DateTimeField(auto_now=True, null=True)
+
+    def __str__(self):
+        return 'ltc id ' + str(self.id) + ', applied by ' + self.applicant.username
+
+    class Meta:
+        db_table = 'Ltc Application'
+
+
+class Ltc_tracking(models.Model):
+    application = models.OneToOneField(Ltc_application, primary_key=True, related_name='tracking_info',on_delete=models.CASCADE)
+    reviewer_id = models.ForeignKey(User, null = True, blank=True, on_delete=models.CASCADE)
+    reviewer_design = models.ForeignKey(Designation, null=True, blank=True, on_delete=models.CASCADE)
+    remarks = models.CharField(max_length=250, null=True, blank=True)
+    review_status = models.CharField(max_length=20, null=True, choices=Constants.REVIEW_STATUS)
+
+    def __str__(self):
+        return 'ltc id ' + str(self.application.id) + ' tracking'
+
+    class Meta:
+        db_table = 'Ltc Tracking'

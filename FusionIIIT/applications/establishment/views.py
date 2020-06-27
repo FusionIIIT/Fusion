@@ -103,7 +103,7 @@ def generate_cpda_admin_lists(request):
     for app in unreviewed_apps:
         # if status is requested:to_assign/reviewed
         if app.status == 'requested':
-            temp = Cpda_Assign_Form(initial={'status': 'requested', 'app_id': app.id})
+            temp = Assign_Form(initial={'status': 'requested', 'app_id': app.id})
             temp.fields["status"]._choices = [
                 ('requested', 'Requested'),
                 ('approved', 'Approved'),
@@ -111,7 +111,7 @@ def generate_cpda_admin_lists(request):
             ]
         # if status is adjustments_pending:to_assign/reviewed
         else:
-            temp = Cpda_Assign_Form(initial={'status': 'adjustments_pending', 'app_id': app.id})
+            temp = Assign_Form(initial={'status': 'adjustments_pending', 'app_id': app.id})
             temp.fields["status"]._choices = [
                 ('adjustments_pending', 'Adjustments Pending'),
                 ('finished', 'Finished')
@@ -242,7 +242,7 @@ def generate_cpda_eligible_lists(request):
                     .filter(tracking_info__review_status='under_review')
                     .order_by('-request_timestamp'))
     for app in to_review_apps:
-        app.reviewform = Cpda_Review_Form(initial={'app_id': app.id})
+        app.reviewform = Review_Form(initial={'app_id': app.id})
 
     form = Cpda_Form()
     bill_forms = {}
