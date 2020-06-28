@@ -8,8 +8,11 @@
     <a class="item" data-tab="ltctwo">
         Under Review
     </a>
-    <a class="item" data-tab="ltcfour">
+    <a class="item" data-tab="ltcthree">
         Archived
+    </a>
+    <a class="item" data-tab="ltcfour">
+        Eligible Users
     </a>
 </div>
 
@@ -226,7 +229,7 @@ under_review ltc applications
 <!--
 archived ltc applications 
 -->
-<div class="ui tab segment" data-tab="ltcfour">
+<div class="ui tab segment" data-tab="ltcthree">
     <div class="content">
         <div class="description">
             <div class="ui items">
@@ -283,6 +286,156 @@ archived ltc applications
         </div>
     </div>
 </div>
+
+<!--  eligible users  -->
+<div class="ui tab segment" data-tab="ltcfour">
+    <div class="content">
+        <div class="description">
+            <div class="ui items">
+                <!--  Create new eligible user  -->
+                <button class="ui large primary button" onclick="$('.ui.modal.new-user').modal('show')">
+                    Create New
+                </button>
+                <div class="ui modal new-user">
+                    <i class="close icon"></i>
+                    <div class="header">
+                        Create New LTC Eligible User
+                    </div>
+                    <div class="content">
+                        <div class="description">
+                            <!-- Add form here -->
+                            <form class="ui large form" method="post" enctype="multipart/form-data" id="form_new">
+                                {% csrf_token %}
+                                <div class="field">
+                                    {% render_field ltc_new_eligible_user_form.username %} 
+                                </div>
+                                <br>
+                                <div class="field">
+                                    {% render_field ltc_new_eligible_user_form.joining_date %} 
+                                </div>
+                                <br>
+                                <div class="field">
+                                    {% render_field ltc_new_eligible_user_form.current_block_size %} 
+                                </div>
+                                <br>
+                                <div class="field">
+                                    {% render_field ltc_new_eligible_user_form.total_ltc_allowed %} 
+                                </div>
+                                <br>
+                                <div class="field">
+                                    {% render_field ltc_new_eligible_user_form.hometown_ltc_allowed %} 
+                                </div>
+                                <br>
+                                <div class="field">
+                                    {% render_field ltc_new_eligible_user_form.elsewhere_ltc_allowed %} 
+                                </div>
+                                <br>
+                                <div class="field">
+                                    {% render_field ltc_new_eligible_user_form.hometown_ltc_availed %} 
+                                </div>
+                                <br>
+                                <div class="field">
+                                    {% render_field ltc_new_eligible_user_form.elsewhere_ltc_availed %} 
+                                </div>
+                                <br>
+                                <button type="submit" name="ltc_new_eligible_user" class="ui large primary button">
+                                    Create
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="actions">
+                        <div class="ui black deny button">
+                            Cancel
+                        </div>
+                    </div>
+                </div>
+
+                <!--  Edit/delete existing eligible user  -->
+                {% for user_object in ltc_eligible_users %}
+                    <hr>
+                    <div class="item">
+                        <div class="content">
+                            <a class="header">User : {{user_object.user}}</a>
+                            <div class="meta">
+                                <span>Date of joining : {{user_object.date_of_joining}}</span>
+                            </div>
+                            <div class="meta"> Current Block Size : {{user_object.current_block_size}} years</div>
+                            <div class="meta"> Total LTC Allowed in a Block : {{user_object.total_ltc_allowed}}</div>
+                            <div class="meta"> Hometown LTC already taken : {{user_object.hometown_ltc_availed}}/{{user_object.hometown_ltc_allowed}}</div>
+                            <div class="meta"> Elsewhere LTC already taken : {{user_object.elsewhere_ltc_availed}}/{{user_object.elsewhere_ltc_allowed}}</div>
+                            <div>
+                                <button class="ui large primary button" onclick="$('.ui.modal.edit-user-{{user.id}}').modal('show')">
+                                    Edit
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                
+                    <div class="ui modal edit-user-{{user.id}}">
+                        <i class="close icon"></i>
+                        <div class="header">
+                            Edit Existing LTC Eligible User
+                        </div>
+                        <div class="content">
+                            <div class="description">
+                                <!-- Add form here -->
+                                <form class="ui large form" method="post" enctype="multipart/form-data" id="form_edit">
+                                    {% csrf_token %}
+                                    <!-- NOTE: THIS USERNAME IS EDITABLE BY USER, IT HAS TO BE CHANGED -->
+                                    <div class="field">
+                                        {% render_field user_object.edit_form.username %} 
+                                    </div>
+                                    <br>
+                                    <div class="field">
+                                        {% render_field user_object.edit_form.joining_date %} 
+                                    </div>
+                                    <br>
+                                    <div class="field">
+                                        {% render_field user_object.edit_form.current_block_size %} 
+                                    </div>
+                                    <br>
+                                    <div class="field">
+                                        {% render_field user_object.edit_form.total_ltc_allowed %} 
+                                    </div>
+                                    <br>
+                                    <div class="field">
+                                        {% render_field user_object.edit_form.hometown_ltc_allowed %} 
+                                    </div>
+                                    <br>
+                                    <div class="field">
+                                        {% render_field user_object.edit_form.elsewhere_ltc_allowed %} 
+                                    </div>
+                                    <br>
+                                    <div class="field">
+                                        {% render_field user_object.edit_form.hometown_ltc_availed %} 
+                                    </div>
+                                    <br>
+                                    <div class="field">
+                                        {% render_field user_object.edit_form.elsewhere_ltc_availed %} 
+                                    </div>
+                                    <br>
+                                    <button type="submit" name="ltc_edit_eligible_user" class="ui large primary button">
+                                        Edit
+                                    </button>
+                                    <button type="submit" name="ltc_delete_eligible_user" class="ui large secondary button">
+                                        Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <div class="ui black deny button">
+                                Cancel
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
 
 {% endblock %}
 {% block javascript %}

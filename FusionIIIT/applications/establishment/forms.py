@@ -55,3 +55,15 @@ class Review_Form(forms.Form):
     app_id = forms.IntegerField(widget = forms.HiddenInput(), required=True)
     remarks = forms.CharField(label="Remarks", required=True)
 
+
+class Ltc_Eligible_Form(forms.Form):
+    username = forms.CharField(label="Username", required=True)
+    joining_date = forms.DateField(label='Employee Joining Date', required=True)
+    current_block_size = forms.IntegerField(label="Current LTC Block Size", required=True, min_value=0)
+
+    total_ltc_allowed = forms.IntegerField(label="Total LTC allowed", min_value=0)
+    hometown_ltc_allowed = forms.IntegerField(label="Hometown LTC allowed", min_value=0)
+    elsewhere_ltc_allowed = forms.IntegerField(label="Elsewhere LTC allowed", min_value=0)
+
+    hometown_ltc_availed = forms.IntegerField(label="Hometown LTC availed", min_value=0)
+    elsewhere_ltc_availed = forms.IntegerField(label="Elsewhere LTC availed", min_value=0)

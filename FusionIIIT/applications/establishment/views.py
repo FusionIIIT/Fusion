@@ -81,46 +81,119 @@ def handle_cpda_admin(request):
 
 
 def handle_ltc_admin(request):
-    app_id = request.POST.get('app_id')
-    status = request.POST.get('status')
-    reviewer = request.POST.get('reviewer_id')
-    designation = request.POST.get('reviewer_design')
-    remarks = request.POST.get('remarks')
-    if status == 'requested':
-        if reviewer and designation and app_id:
-            # assign the app to the reviewer
-            reviewer_id = User.objects.get(username=reviewer)
-            reviewer_design = Designation.objects.filter(name=designation)
+    if 'ltc_assign_form' in request.POST:
+        app_id = request.POST.get('app_id')
+        status = request.POST.get('status')
+        reviewer = request.POST.get('reviewer_id')
+        designation = request.POST.get('reviewer_design')
+        remarks = request.POST.get('remarks')
+        if status == 'requested':
+            if reviewer and designation and app_id:
+                # assign the app to the reviewer
+                reviewer_id = User.objects.get(username=reviewer)
+                reviewer_design = Designation.objects.filter(name=designation)
 
-            # check if the reviewer holds the given designation, if not show error
-            if reviewer_design:
-                reviewer_design = reviewer_design[0]
-            # if reviewer_design != HoldsDesignation.objects.get(user=reviewer_id):
-            #     messages.error(request, 'Reviewer doesn\'t holds the designation you specified!')
-            # else:
+                # check if the reviewer holds the given designation, if not show error
+                if reviewer_design:
+                    reviewer_design = reviewer_design[0]
+                # if reviewer_design != HoldsDesignation.objects.get(user=reviewer_id):
+                #     messages.error(request, 'Reviewer doesn\'t holds the designation you specified!')
+                # else:
+                application = Ltc_application.objects.get(id=app_id)
+                application.tracking_info.reviewer_id = reviewer_id
+                application.tracking_info.reviewer_design = reviewer_design
+                application.tracking_info.remarks = remarks
+                application.tracking_info.review_status = 'under_review'
+                application.tracking_info.save()
+                
+                # add notif
+                messages.success(request, 'Reviewer assigned successfully!')
+                # print (reviewer_design, ' ||| ', reviewer_id)
+
+            else:
+                errors = "Please specify a reviewer and their designation."
+                messages.error(request, errors)
+
+        elif app_id:
+            # update the status of app
+            # verify that app_id is not changed, ie untampered
             application = Ltc_application.objects.get(id=app_id)
-            application.tracking_info.reviewer_id = reviewer_id
-            application.tracking_info.reviewer_design = reviewer_design
-            application.tracking_info.remarks = remarks
-            application.tracking_info.review_status = 'under_review'
-            application.tracking_info.save()
-            
+            application.status = status;
+            application.save()
             # add notif
-            messages.success(request, 'Reviewer assigned successfully!')
-            # print (reviewer_design, ' ||| ', reviewer_id)
+            messages.success(request, 'Status updated successfully!')
 
-        else:
-            errors = "Please specify a reviewer and their designation."
-            messages.error(request, errors)
+    elif 'ltc_new_eligible_user' in request.POST:
+        username = request.POST.get('username')
+        if not User.objects.filter(username=username).exists():
+            messages.error(request, 'The given user does not exist')
+            return
 
-    elif app_id:
-        # update the status of app
-        # verify that app_id is not changed, ie untampered
-        application = Ltc_application.objects.get(id=app_id)
-        application.status = status;
-        application.save()
-        # add notif
-        messages.success(request, 'Status updated successfully!')
+        user_id = User.objects.get(username=username)
+        if Ltc_eligible_user.objects.filter(user=user_id).exists():
+            messages.error(request, 'This user is already eligible for availing LTC')
+            return
+
+        joining_date = request.POST.get('joining_date')
+        current_block_size = request.POST.get('current_block_size')
+        total_ltc_allowed = request.POST.get('total_ltc_allowed')
+        hometown_ltc_allowed = request.POST.get('hometown_ltc_allowed')
+        elsewhere_ltc_allowed = request.POST.get('elsewhere_ltc_allowed')
+        hometown_ltc_availed = request.POST.get('hometown_ltc_availed')
+        elsewhere_ltc_availed = request.POST.get('elsewhere_ltc_availed')
+
+        eligible_user = Ltc_eligible_user.objects.create(
+            user = user_id,
+            date_of_joining = joining_date,
+            current_block_size = current_block_size,
+            total_ltc_allowed = total_ltc_allowed,
+            hometown_ltc_allowed = hometown_ltc_allowed,
+            elsewhere_ltc_allowed = elsewhere_ltc_allowed,
+            hometown_ltc_availed = hometown_ltc_availed,
+            elsewhere_ltc_availed = elsewhere_ltc_availed
+        )
+        messages.success(request, 'New LTC eligible user succesfully created')
+
+    elif 'ltc_edit_eligible_user' in request.POST:
+        username = request.POST.get('username')
+        if not User.objects.filter(username=username).exists():
+            messages.error(request, 'The given user does not exist')
+            return
+
+        user_id = User.objects.get(username=username)
+        joining_date = request.POST.get('joining_date')
+        current_block_size = request.POST.get('current_block_size')
+        total_ltc_allowed = request.POST.get('total_ltc_allowed')
+        hometown_ltc_allowed = request.POST.get('hometown_ltc_allowed')
+        elsewhere_ltc_allowed = request.POST.get('elsewhere_ltc_allowed')
+        hometown_ltc_availed = request.POST.get('hometown_ltc_availed')
+        elsewhere_ltc_availed = request.POST.get('elsewhere_ltc_availed')
+
+        eligible_user = Ltc_eligible_user.objects.get(user=user_id)
+        eligible_user.date_of_joining = joining_date
+        eligible_user.current_block_size = current_block_size
+        eligible_user.total_ltc_allowed = total_ltc_allowed
+        eligible_user.hometown_ltc_allowed = hometown_ltc_allowed
+        eligible_user.elsewhere_ltc_allowed = elsewhere_ltc_allowed
+        eligible_user.hometown_ltc_availed = hometown_ltc_availed
+        eligible_user.elsewhere_ltc_availed = elsewhere_ltc_availed
+        eligible_user.save()
+        messages.error(request, 'Eligible LTC user details successfully updated.')
+
+    elif 'ltc_delete_eligible_user' in request.POST:
+        username = request.POST.get('username')
+        if not User.objects.filter(username=username).exists():
+            messages.error(request, 'The given user does not exist')
+            return
+
+        user_id = User.objects.get(username=username)
+        eligible_user = Ltc_eligible_user.objects.get(user=user_id)
+        if not eligible_user:
+            messages.error(request, 'This user already isn\'t eligible for availing LTC')
+            return
+
+        eligible_user.delete()
+        messages.error(request, 'User successfully removed from eligible LTC users')
 
 
 def generate_cpda_admin_lists(request):
@@ -211,8 +284,27 @@ def generate_ltc_admin_lists(request):
                     .exclude(status='requested')
                     .order_by('-request_timestamp'))
 
+    current_eligible_users = Ltc_eligible_user.objects.order_by('user')
+    for user in current_eligible_users:
+        temp = Ltc_Eligible_Form(initial={
+            'username': user.user,
+            'joining_date': user.date_of_joining,
+            'current_block_size': user.current_block_size,
+            'total_ltc_allowed': user.total_ltc_allowed,
+            'hometown_ltc_allowed': user.hometown_ltc_allowed,
+            'elsewhere_ltc_allowed': user.elsewhere_ltc_allowed,
+            'hometown_ltc_availed': user.hometown_ltc_availed,
+            'elsewhere_ltc_availed': user.elsewhere_ltc_availed
+        })
+        # temp.fields['username'].widget.attrs['readonly'] = True
+        user.edit_form = temp
+
+    new_ltc_eligible_user =  Ltc_Eligible_Form()
+
     response = {
         'admin': True,
+        'ltc_eligible_users': current_eligible_users,
+        'ltc_new_eligible_user_form': new_ltc_eligible_user,
         'ltc_pending_apps': pending_apps,
         'ltc_under_review_apps': under_review_apps,
         'ltc_archived_apps': archived_apps
@@ -247,7 +339,7 @@ def handle_cpda_eligible(request):
         # add notif here
         messages.success(request, 'Request sent successfully!')
 
-    if 'cpda_adjust' in request.POST:
+    elif 'cpda_adjust' in request.POST:
         # add multiple files
         # get application object here DONE
         app_id = request.POST.get('app_id')
@@ -278,7 +370,7 @@ def handle_cpda_eligible(request):
         # add notif here
         messages.success(request, 'Bills submitted successfully!')
         
-    if 'cpda_review' in request.POST:
+    elif 'cpda_review' in request.POST:
         print(" *** CPDA Review submit *** ")
         app_id = request.POST.get('app_id')
         # verify that app_id is not changed, ie untampered
@@ -432,7 +524,7 @@ def generate_ltc_eligible_lists(request):
 def establishment(request):
     response = {}
     # Check if establishment variables exist, if not create some fields or ask for them
-    response.update(initial_checks(request))
+    response.update(initial_checks(request))    
 
     if is_admin(request) and request.method == "POST": 
         if is_cpda(request.POST):

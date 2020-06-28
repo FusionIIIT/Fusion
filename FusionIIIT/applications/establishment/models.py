@@ -134,7 +134,7 @@ class Ltc_tracking(models.Model):
         db_table = 'Ltc Tracking'
 
 class Ltc_eligible_user(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, primary_key=True, on_delete=models.CASCADE)
     date_of_joining = models.DateField(default='2005-04-01')
     current_block_size = models.IntegerField(default=4)
 
