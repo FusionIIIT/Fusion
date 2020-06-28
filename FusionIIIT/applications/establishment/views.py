@@ -178,7 +178,7 @@ def handle_ltc_admin(request):
         eligible_user.hometown_ltc_availed = hometown_ltc_availed
         eligible_user.elsewhere_ltc_availed = elsewhere_ltc_availed
         eligible_user.save()
-        messages.error(request, 'Eligible LTC user details successfully updated.')
+        messages.success(request, 'Eligible LTC user details successfully updated.')
 
     elif 'ltc_delete_eligible_user' in request.POST:
         username = request.POST.get('username')
@@ -187,13 +187,13 @@ def handle_ltc_admin(request):
             return
 
         user_id = User.objects.get(username=username)
-        eligible_user = Ltc_eligible_user.objects.get(user=user_id)
-        if not eligible_user:
+        if not Ltc_eligible_user.objects.filter(user=user_id).exists():
             messages.error(request, 'This user already isn\'t eligible for availing LTC')
             return
 
+        eligible_user = Ltc_eligible_user.objects.get(user=user_id)
         eligible_user.delete()
-        messages.error(request, 'User successfully removed from eligible LTC users')
+        messages.success(request, 'User successfully removed from eligible LTC users')
 
 
 def generate_cpda_admin_lists(request):
@@ -493,15 +493,28 @@ def generate_cpda_eligible_lists(request):
 
 
 def generate_ltc_eligible_lists(request):
-    active_apps = (Ltc_application.objects
-                    .filter(applicant=request.user)
-                    .filter(status='requested')
-                    .order_by('-request_timestamp'))
+    ltc_info = {}
+    ltc_queryset = Ltc_eligible_user.objects.filter(user=request.user)
+    ltc_info['eligible'] = ltc_queryset.exists()
 
-    archive_apps = (Ltc_application.objects
-                    .filter(applicant=request.user)
-                    .exclude(status='requested')
-                    .order_by('-request_timestamp'))
+    if ltc_info['eligible']:
+        ltc_info['years_of_job'] = ltc_queryset.first().get_years_of_job()
+        ltc_info['total_ltc_remaining'] = ltc_queryset.first().total_ltc_remaining()
+        ltc_info['hometown_ltc_remaining'] = ltc_queryset.first().hometown_ltc_remaining()
+        ltc_info['elsewhere_ltc_remaining'] = ltc_queryset.first().elsewhere_ltc_remaining()
+        # print (ltc_info)
+
+        active_apps = (Ltc_application.objects
+                        .filter(applicant=request.user)
+                        .filter(status='requested')
+                        .order_by('-request_timestamp'))
+
+        archive_apps = (Ltc_application.objects
+                        .filter(applicant=request.user)
+                        .exclude(status='requested')
+                        .order_by('-request_timestamp'))
+        form = Ltc_Form()
+
     to_review_apps = (Ltc_application.objects
                     .filter(tracking_info__reviewer_id=request.user)
                     .filter(status='requested')
@@ -510,13 +523,16 @@ def generate_ltc_eligible_lists(request):
     for app in to_review_apps:
         app.reviewform = Review_Form(initial={'app_id': app.id})
 
-    form = Ltc_Form()
     response = {
-        'ltc_form': form,
-        'ltc_active_apps': active_apps,
-        'ltc_archive_apps': archive_apps,
+        'ltc_info': ltc_info,
         'ltc_to_review_apps': to_review_apps
     }
+    if ltc_info['eligible']:
+        response.update({
+            'ltc_form': form,
+            'ltc_active_apps': active_apps,
+            'ltc_archive_apps': archive_apps
+        })
     return response
 
 

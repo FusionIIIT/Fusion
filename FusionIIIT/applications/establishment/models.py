@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 
 class Constants:
@@ -133,6 +135,7 @@ class Ltc_tracking(models.Model):
     class Meta:
         db_table = 'Ltc Tracking'
 
+
 class Ltc_eligible_user(models.Model):
     user = models.OneToOneField(User, primary_key=True, on_delete=models.CASCADE)
     date_of_joining = models.DateField(default='2005-04-01')
@@ -144,6 +147,10 @@ class Ltc_eligible_user(models.Model):
 
     hometown_ltc_availed = models.IntegerField(default=0)
     elsewhere_ltc_availed = models.IntegerField(default=0)
+
+    def get_years_of_job(self):
+        ret = relativedelta(datetime.today().date(), self.date_of_joining)
+        return "{:.2f}".format(ret.years + ret.months/12 + ret.days/365)
 
     def total_ltc_remaining(self):
         return (self.total_ltc_allowed

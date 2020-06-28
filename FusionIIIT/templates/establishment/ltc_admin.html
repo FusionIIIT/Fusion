@@ -365,14 +365,14 @@ archived ltc applications
                             <div class="meta"> Hometown LTC already taken : {{user_object.hometown_ltc_availed}}/{{user_object.hometown_ltc_allowed}}</div>
                             <div class="meta"> Elsewhere LTC already taken : {{user_object.elsewhere_ltc_availed}}/{{user_object.elsewhere_ltc_allowed}}</div>
                             <div>
-                                <button class="ui large primary button" onclick="$('.ui.modal.edit-user-{{user.id}}').modal('show')">
+                                <button class="ui large primary button" onclick="$('.ui.modal.edit-user-{{user_object.user}}').modal('show')">
                                     Edit
                                 </button>
                             </div>
                         </div>
                     </div>
                 
-                    <div class="ui modal edit-user-{{user.id}}">
+                    <div class="ui modal edit-user-{{user_object.user}}">
                         <i class="close icon"></i>
                         <div class="header">
                             Edit Existing LTC Eligible User
@@ -415,12 +415,15 @@ archived ltc applications
                                         {% render_field user_object.edit_form.elsewhere_ltc_availed %} 
                                     </div>
                                     <br>
-                                    <button type="submit" name="ltc_edit_eligible_user" class="ui large primary button">
-                                        Edit
-                                    </button>
-                                    <button type="submit" name="ltc_delete_eligible_user" class="ui large secondary button">
-                                        Delete
-                                    </button>
+                                    <div class="ui buttons">
+                                        <button type="submit" name="ltc_edit_eligible_user" class="ui large primary button">
+                                            Edit
+                                        </button>
+                                        <div class="or"></div>
+                                        <button type="submit" name="ltc_delete_eligible_user" class="ui large negative button">
+                                            Delete
+                                        </button>
+                                      </div>
                                 </form>
                             </div>
                         </div>

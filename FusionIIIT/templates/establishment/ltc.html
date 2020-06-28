@@ -2,20 +2,43 @@
 {% load static %}
 {% block ltc %}
 <div class="ui top attached tabular menu">
-    <a class="item active" data-tab="ltcone">
-        LTC Request
+    <a class="item active" data-tab="ltczero">
+        LTC Info
     </a>
-    <a class="item" data-tab="ltctwo">
-        Active Applications
-    </a>
-    <a class="item" data-tab="ltcthree">
-        Archived Applications
-    </a>
+    {% if ltc_info.eligible %}
+        <a class="item" data-tab="ltcone">
+            LTC Request
+        </a>
+        <a class="item" data-tab="ltctwo">
+            Active Applications
+        </a>
+        <a class="item" data-tab="ltcthree">
+            Archived Applications
+        </a>
+    {% endif %}
     <a class="item" data-tab="ltcfour">
         Review Applications
     </a>
 </div>
 
+
+<!--    LTC INFORMATION   -->
+<div class="ui bottom attached tab segment active" data-tab="ltczero">
+    <div class="content">
+        <div class="description">
+            <h2>
+                You are {% if not ltc_info.eligible %}<u>not</u>{% endif %} eligible for 
+                availing LTC.
+            </h2>
+            {% if ltc_info.eligible %}
+                <h2>Years of job : {{ ltc_info.years_of_job }} years</h2>
+                <h2>Total LTC remaining : {{ ltc_info.total_ltc_remaining }} </h2>
+                <h2>"Hometown" LTC remaining : {{ ltc_info.hometown_ltc_remaining }} </h2>
+                <h2>"Anywhere in India" LTC remaining : {{ ltc_info.elsewhere_ltc_remaining }} </h2>
+            {% endif %}
+        </div>
+    </div>
+</div>
 
 
 
@@ -27,7 +50,9 @@
    LTC        88 `88. 88.     `8P  d8' 88b  d88 88.     db   8D    88    
    LTC        88   YD Y88888P  `Y88'Y8 ~Y8888P' Y88888P `8888Y'    YP    
 -->
-<div class="ui bottom attached tab segment active" data-tab="ltcone">
+
+{% if ltc_info.eligible %}
+<div class="ui bottom attached tab segment" data-tab="ltcone">
     <div class="content">
         <div class="description">
             <form class="ui large form" method="post" enctype="multipart/form-data" id="form1">
@@ -251,6 +276,8 @@
         </div>
     </div>
 </div>
+{% endif %}
+
 
 <!-- ltc Review -->
 <div class="ui tab segment" data-tab="ltcfour">
