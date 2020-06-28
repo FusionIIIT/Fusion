@@ -18,5 +18,6 @@ admin.site.register(Cpda_bill)
 
 admin.site.register(Ltc_application)
 admin.site.register(Ltc_tracking)
+admin.site.register(Ltc_eligible_user)
 
 admin.site.register(Establishment_variables)

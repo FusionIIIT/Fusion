@@ -132,3 +132,32 @@ class Ltc_tracking(models.Model):
 
     class Meta:
         db_table = 'Ltc Tracking'
+
+class Ltc_eligible_user(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    date_of_joining = models.DateField(default='2005-04-01')
+    current_block_size = models.IntegerField(default=4)
+
+    total_ltc_allowed = models.IntegerField(default=2)
+    hometown_ltc_allowed = models.IntegerField(default=1)
+    elsewhere_ltc_allowed = models.IntegerField(default=1)
+
+    hometown_ltc_availed = models.IntegerField(default=0)
+    elsewhere_ltc_availed = models.IntegerField(default=0)
+
+    def total_ltc_remaining(self):
+        return (self.total_ltc_allowed
+            - self.hometown_ltc_availed 
+            - self.elsewhere_ltc_availed)
+    
+    def hometown_ltc_remaining(self):
+        return (self.hometown_ltc_allowed
+            - self.hometown_ltc_availed)
+
+    def elsewhere_ltc_remaining(self):
+        return (self.elsewhere_ltc_allowed
+            - self.elsewhere_ltc_availed)
+
+    def __str__(self):
+        return str(self.user.username) + ' - joined on ' + str(self.date_of_joining)
+        

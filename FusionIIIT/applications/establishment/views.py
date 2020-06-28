@@ -432,7 +432,7 @@ def generate_ltc_eligible_lists(request):
 def establishment(request):
     response = {}
     # Check if establishment variables exist, if not create some fields or ask for them
-    response = initial_checks(request)
+    response.update(initial_checks(request))
 
     if is_admin(request) and request.method == "POST": 
         if is_cpda(request.POST):
