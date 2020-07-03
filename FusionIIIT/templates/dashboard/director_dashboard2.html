@@ -660,7 +660,7 @@
             The central-rail segment starts here!
         {% endcomment %}
 
-        <div class="eight wide column">
+        <div class="eight wide column" id = "centre-rail">
             {% comment %} <div class="ui top attached tabular large menu">
                 <a class="active item" data-tab="first">Notifications</a>
                 <a class="item" data-tab="second">News</a>
@@ -1420,7 +1420,7 @@
 
         
         {% comment %}The right-rail segment starts here!{% endcomment %}
-        <div class="three wide column">
+        <div class="three wide column" id="right-rail">
             <div class="row">
                 {% comment %}The Modules:{% endcomment %}
                 {% block modules %}
@@ -1580,7 +1580,8 @@
 
                     $('#design_16').append('<li>' + response.top_16_design[0] +    '&nbsp; &nbsp; -- &nbsp;' + response.top_16_design[1]  + '</li>'+'<li>' + response.top_16_design[2] +   '&nbsp; &nbsp; -- &nbsp;' + response.top_16_design[3]  + '</li>' + '<li>' + response.top_16_design[4] +   '&nbsp; &nbsp; -- &nbsp;' + response.top_16_design[5]  +  '</li>');
 
-                    $('#cse_17').append('<li>' + response.top_17_cse[0] + '&nbsp; &nbsp; -- &nbsp;' + response.top_17_cse[1] + '</li>' + '<li>' + response.top_17_cse[2] + '&nbsp; &nbsp; -- &nbsp;' +response.top_17_cse[3] + '</li>' + '<li>' + response.top_17_cse[4] + '&nbsp; &nbsp; -- &nbsp;' + response.top_17_cse[5] + '</li>');
+                    $('#cse_17').append('<li>' + response
+                    .top_17_cse[0] + '&nbsp; &nbsp; -- &nbsp;' + response.top_17_cse[1] + '</li>' + '<li>' + response.top_17_cse[2] + '&nbsp; &nbsp; -- &nbsp;' +response.top_17_cse[3] + '</li>' + '<li>' + response.top_17_cse[4] + '&nbsp; &nbsp; -- &nbsp;' + response.top_17_cse[5] + '</li>');
 
                     $('#ece_17').append('<li>' + response.top_17_ece[0] + '&nbsp; &nbsp; -- &nbsp;' + response.top_17_ece[1] + '</li>' + '<li>' + response.top_17_ece[2] + '&nbsp; &nbsp; -- &nbsp;' +response.top_17_ece[3] + '</li>' + '<li>' + response.top_17_ece[4] + '&nbsp; &nbsp; -- &nbsp;' + response.top_17_ece[5] + '</li>');
 
@@ -1770,6 +1771,16 @@
         $("#stud").css("display", "none");
         $("#purchase").css("display", "none");
         $("#registrar").css("display", "none");
+        $("#gymkhana_stats").css("display", "none");
+        $("#faculty_stats").css("display", "none");
+        $("#student_stats").css("display", "none");
+        $("#project_stats").css("display", "none");
+        $("#faculty_stats_graph").css("display", "none");
+        $("#meeting_div").css("display", "none");
+        $("#HOD_info").css("display", "none");
+        $("#centre-rail").css("display", "none");
+        $("#right-rail").css("display", "none");
+        
 
     
         
@@ -1881,8 +1892,16 @@
         $("#stud").css("display", "none");
         $("#purchase").css("display", "none");
         $("#registrar").css("display", "none");
-       
-        
+        $("#gymkhana_stats").css("display", "none");
+        $("#faculty_stats").css("display", "none");
+        $("#student_stats").css("display", "none");
+        $("#project_stats").css("display", "none");
+        $("#faculty_stats_graph").css("display", "none");
+        $("#meeting_div").css("display", "none");
+        $("#HOD_info").css("display", "none");
+        $("#centre-rail").css("display", "none");
+        $("#right-rail").css("display", "none");
+
         
         $.ajax({
             type: 'POST',
@@ -1992,6 +2011,16 @@
         $("#stud").css("display", "none");
         $("#purchase").css("display", "none");
         $("#registrar").css("display", "none");
+        $("#gymkhana_stats").css("display", "none");
+        $("#faculty_stats").css("display", "none");
+        $("#student_stats").css("display", "none");
+        $("#project_stats").css("display", "none");
+        $("#faculty_stats_graph").css("display", "none");
+        $("#meeting_div").css("display", "none");
+        $("#HOD_info").css("display", "none");
+        $("#centre-rail").css("display", "none");
+        $("#right-rail").css("display", "none");
+
    
         
     });
@@ -2022,6 +2051,9 @@
         $("#stud").css("display", "none");
         $("#purchase").css("display", "none");
         $("#registrar").css("display", "none");
+        $("#centre-rail").css("display", "none");
+        $("#right-rail").css("display", "none");
+
      
         
         $.ajax({
@@ -2092,6 +2124,16 @@
         $("#stud").css("display", "none");
         $("#purchase").css("display", "none");
         $("#registrar").css("display", "none");
+        $("#gymkhana_stats").css("display", "none");
+        $("#faculty_stats").css("display", "none");
+        $("#student_stats").css("display", "none");
+        $("#project_stats").css("display", "none");
+        $("#faculty_stats_graph").css("display", "none");
+        $("#meeting_div").css("display", "none");
+        $("#HOD_info").css("display", "none");
+        $("#centre-rail").css("display", "none");
+        $("#right-rail").css("display", "none");
+
      
         $.ajax({
             type: 'GET',
@@ -2218,7 +2260,16 @@
         $("#stud").css("display", "none");
         $("#purchase").css("display", "none");
         $("#registrar").css("display", "none");
-    
+        $("#gymkhana_stats").css("display", "none");
+        $("#faculty_stats").css("display", "none");
+        $("#student_stats").css("display", "none");
+        $("#project_stats").css("display", "none");
+        $("#faculty_stats_graph").css("display", "none");
+        $("#meeting_div").css("display", "none");
+        $("#HOD_info").css("display", "none");
+        $("#centre-rail").css("display", "none");
+        $("#right-rail").css("display", "none");
+
         
 
         $.ajax({
