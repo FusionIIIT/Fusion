@@ -309,7 +309,7 @@ def course(request, course_code):
             qs = QuizResult.objects.filter(quiz_id=q)
             if q.end_time > timezone.now():
                 quizs.append(q)
-            if len(qs) is not 0:
+            if len(qs) != 0:
                 marks.append(qs)
         comments = Forum.objects.filter(course_id=course).order_by('comment_time')
         answers = collections.OrderedDict()
