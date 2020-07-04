@@ -333,6 +333,7 @@ def update_post(request, id):
         #if request.POST.get("anonymous")== True:
         return redirect ('/feeds/')
 
+@login_required
 def TagsBasedView(request, string):
     print('Tag based View')
     questions = AskaQuestion.objects.order_by('-uploaded_at')
@@ -359,18 +360,23 @@ def TagsBasedView(request, string):
     askqus_subtags = AllTags.objects.all()
     ques = []
     result = paginator.page(current_page)
+    hid = hidden.objects.all()
     for q in result:
         isliked = 0
         isdisliked = 0
+        hidd = 0
         profi = Profile.objects.all().filter(user=q.user)
         if(q.likes.all().filter(username=request.user.username).count()==1):
             isliked = 1
+        if(hid.all().filter(user=request.user, question = q).count()==1):
+            hidd = 1
         if(q.dislikes.all().filter(username=request.user.username).count()==1):
             isdisliked = 1
         temp = {
             'profile':profi,
             'ques' : q,
             'isliked':isliked,
+            'hidd' : hidd,
             'disliked': isdisliked,
             'votes':q.total_likes() - q.total_dislikes(),
         }
@@ -417,7 +423,7 @@ def RemoveTag(request):
         print(request.POST.get('id'))
         userTags = tags.objects.all().filter(Q(user=request.user))
         tagto_delete = AllTags.objects.all().filter(Q(subtag=request.POST.get('id')))
-        userTags.filter(Q(my_subtag=tagto_delete)).delete()
+        userTags.filter(Q(my_subtag__in=tagto_delete)).delete()
         return JsonResponse({"done":"1"})
     else:
         return JsonResponse({"done":"0"})
@@ -525,6 +531,7 @@ def ParticularQuestion(request, id):
 
     return render(request, 'feeds/single_question.html', context)
 
+@login_required
 def profile(request, string):
     if request.method == "POST":
         profile = Profile.objects.all().filter(user=request.user)
