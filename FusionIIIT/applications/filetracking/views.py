@@ -103,11 +103,12 @@ def filetracking(request):
                     messages.error(request, 'Enter a valid Designation')
                     return redirect('/filetracking/')
 
-                # print("receive_designation = ")
+                print("receive_designation = ")
                 # print(receive_designation)
                 # receive_design = receive_designation[0]
                 upload_file = request.FILES.get('myfile')
                 # return HttpResponse ("success")
+
                 Tracking.objects.create(
                     file_id=file,
                     current_id=current_id,
