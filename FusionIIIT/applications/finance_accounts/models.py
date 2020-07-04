@@ -24,6 +24,8 @@ class Paymentscheme(models.Model):
     license_fee = models.IntegerField()
     electricity_charges = models.IntegerField()
     others = models.IntegerField()
+    gr_reduction = models.IntegerField(default=0);
+    net_payment = models.IntegerField(default=0);
     senior_verify = models.BooleanField(default = False)
     ass_registrar_verify = models.BooleanField(default = False)
     ass_registrar_aud_verify = models.BooleanField(default = False)
@@ -50,7 +52,7 @@ class Payments(models.Model):
 
 class Bank(models.Model):
         bank_id = models.AutoField(primary_key=True)
-        account_no = models.IntegerField(default=0)
+        Account_no = models.IntegerField(default=0)
         Bank_Name = models.CharField(max_length=50)
         IFSC_Code = models.CharField(max_length=20)
         Branch_Name = models.CharField(max_length=80)
@@ -61,3 +63,4 @@ class Company(models.Model):
         Start_Date = models.DateField()
         End_Date = models.DateField()
         Description = models.CharField(max_length=200)
+        Status = models.CharField(max_length=200)

@@ -3,7 +3,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from .models import File, Tracking
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 from django.template.defaulttags import csrf_token
-from django.http import HttpResponse,HttpResponseRedirect,JsonResponse
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.core import serializers
@@ -87,16 +87,25 @@ def filetracking(request):
                 current_design = HoldsDesignation.objects.get(id=sender)
 
                 receiver = request.POST.get('receiver')
-                receiver_id = User.objects.get(username=receiver)
-                print("Receiver_id = ")
+                try:
+                    receiver_id = User.objects.get(username=receiver)
+                except Exception as e:
+                    messages.error(request, 'Enter a valid Username')
+                    return redirect('/filetracking/')
+                #print("Receiver_id = ")
                 print(receiver_id)
                 receive = request.POST.get('recieve')
                 print("recieve = ")
                 print(receive)
-                receive_designation = Designation.objects.filter(name=receive)
-                print("receive_designation = ")
-                print(receive_designation)
-                receive_design = receive_designation[0]
+                try:
+                    receive_design = Designation.objects.get(name=receive)
+                except Exception as e:
+                    messages.error(request, 'Enter a valid Designation')
+                    return redirect('/filetracking/')
+
+                # print("receive_designation = ")
+                # print(receive_designation)
+                # receive_design = receive_designation[0]
                 upload_file = request.FILES.get('myfile')
                 # return HttpResponse ("success")
                 Tracking.objects.create(
@@ -176,7 +185,7 @@ def outward(request):
                 out - The Tracking object filtered by current_id i.e, present working user.
                 context - Holds data needed to make necessary changes in the template.
     """
-    out = Tracking.objects.filter(current_id=request.user.extrainfo)
+    out = Tracking.objects.filter(current_id=request.user.extrainfo).order_by('-forward_date')
 
     context = {
         'out': out,
@@ -200,14 +209,22 @@ def inward(request):
                     context - Holds data needed to make necessary changes in the template.
     """
 
-    in_file = Tracking.objects.filter(receiver_id=request.user)
+    in_file = Tracking.objects.filter(receiver_id=request.user).order_by('-receive_date')
 
     context = {
         'in_file': in_file,
     }
 
     return render(request, 'filetracking/inward.html', context)
+@login_required(login_url = "/accounts/login")
+def confirmdelete(request,id):
+    file = File.objects.get(pk = id)
 
+    context = {
+
+        'j': file,
+    }
+    return render(request, 'filetracking/confirmdelete.html',context)
 
 @login_required(login_url = "/accounts/login")
 def forward(request, id):
@@ -260,16 +277,43 @@ def forward(request, id):
                 current_design = HoldsDesignation.objects.get(id=sender)
 
                 receiver = request.POST.get('receiver')
-                receiver_id = User.objects.get(username=receiver)
-                print("Receiver_id = ")
+                try:
+                    receiver_id = User.objects.get(username=receiver)
+                except Exception as e:
+                    messages.error(request, 'Enter a valid destination')
+                    designations = HoldsDesignation.objects.filter(user=request.user)
+
+                    context = {
+                        # 'extrainfo': extrainfo,
+                        # 'holdsdesignations': holdsdesignations,
+                        'designations': designations,
+                        'file': file,
+                        'track': track,
+                    }
+                    return render(request, 'filetracking/forward.html', context)
+                #print("Receiver_id = ")
                 print(receiver_id)
                 receive = request.POST.get('recieve')
                 print("recieve = ")
                 print(receive)
-                receive_designation = Designation.objects.filter(name=receive)
-                print("receive_designation = ")
-                print(receive_designation)
-                receive_design = receive_designation[0]
+                try:
+                    receive_design = Designation.objects.get(name=receive)
+                except Exception as e:
+                    messages.error(request, 'Enter a valid Designation')
+                    designations = HoldsDesignation.objects.filter(user=request.user)
+
+                    context = {
+                        # 'extrainfo': extrainfo,
+                        # 'holdsdesignations': holdsdesignations,
+                        'designations': designations,
+                        'file': file,
+                        'track': track,
+                    }
+                    return render(request, 'filetracking/forward.html', context)
+
+                # print("receive_designation = ")
+                # print(receive_designation)
+                # receive_design = receive_designation[0]
                 upload_file = request.FILES.get('myfile')
                 # return HttpResponse ("success")
                 Tracking.objects.create(
@@ -281,6 +325,7 @@ def forward(request, id):
                     remarks=remarks,
                     upload_file=upload_file,
                 )
+            messages.success(request, 'File sent successfully')
     # start = timer()
     extrainfo = ExtraInfo.objects.all()
     holdsdesignations = HoldsDesignation.objects.all()

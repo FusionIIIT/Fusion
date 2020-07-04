@@ -11,9 +11,11 @@ django-semanticui-forms
 django-unused-media
 # gunicorn
 html_text
+jsonschema
 numpy
 pillow
 psycopg2-binary
+python-dateutil
 requests
 whitenoise[brotli]
 xhtml2pdf

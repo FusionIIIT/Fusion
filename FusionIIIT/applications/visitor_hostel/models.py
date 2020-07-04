@@ -154,3 +154,5 @@ class InventoryBill(models.Model):
 
     def __str__(self):
         return str(self.bill_number)
+
+

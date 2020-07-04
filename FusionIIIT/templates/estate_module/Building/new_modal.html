@@ -1,0 +1,82 @@
+{% with 'new_'|add:menuitem|add:'_form' as form_id %}
+<div class="ui modal new_{{ menuitem|slugify }}">
+    <div class="header">
+        New {{ menuitem }}
+    </div>
+    <div class="scrolling content">
+        <h4 class="ui horizontal divider header">
+            <i class="info circle icon"></i>
+            Main Information
+        </h4>
+
+        <form action="{% url 'new_building' %}" id="{{ form_id }}" class="ui form" method="POST" novalidate>
+            {% include 'estate_module/'|add:menuitem|add:'/form.html' %}
+        </form>
+
+    </div>
+    <div class="actions">
+        <button type="submit" form="{{ form_id }}" class="ui large right labeled icon green button">Create
+            <i class="checkmark icon"></i></button>
+        <div class="ui black deny large button">
+            Cancel
+        </div>
+
+
+    </div>
+</div>
+{% endwith %}
+
+<script type='module'>
+    $('.new_{{ menuitem|slugify }}.modal')
+        .modal({
+            centered: false
+        })
+        .modal('setting', 'closable', false)
+        .modal('attach events', '.new_{{ menuitem|slugify }}.button', 'show');
+</script>
+
+{% comment %}
+
+<div class="ui modal new">
+    <i class="close icon"></i>
+    <div class="header">
+        New Building
+    </div>
+    <div class="ui vertical segment">
+        <form class="ui form" method="POST" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+            {% include 'estate/estate_form.html' %}
+
+            <input type="button" id="amb_submit" name="amb_submit" value="Create"
+                class="ui submit large primary button" />
+
+        </form>
+        <script type="text/javascript">
+        </script>
+
+    </div>
+</div>
+
+{{ buildings|json_script:"buildings-data" }}
+
+<script>
+    $('.new.button').on('click', function () {
+        //const id = Number($(this).attr("data-id"));
+        //const id = e.target.attributes["data-id"].nodeValue;
+        //const estate = JSON.parse(document.getElementById('buildings-data').textContent)[id];
+
+        $('.new.modal')
+            .modal({
+                onShow: function () {
+                    /*
+                    $('.edit.modal .header')
+                        .text(estate.name);
+                    $('.edit.modal #building_name').val(estate.name);
+                    $('.edit.modal #estd_cost').val(estate.amount);
+                    */
+                }
+            })
+            .modal('show');
+    });
+</script>
+
+{% endcomment %}
