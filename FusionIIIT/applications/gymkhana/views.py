@@ -372,7 +372,7 @@ def form_avail(request):
 			'message': message,
 		}
 		content = json.dumps(content)
-		messages.success(request, "Form available?")
+		# messages.success(request, "Form available?")
 		return HttpResponse(content)
 		# redirect("/gymkhana/")
 
