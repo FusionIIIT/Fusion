@@ -348,12 +348,9 @@ def stats(request): #  This view is created for the rest of audience excluding s
     if request.method == 'POST':
         if "SubmitPreviousWinner" in request.POST:
             winners_list = submitPreviousWinner(request)
-            awards = Award_and_scholarship.objects.all()
-            return render(request, 'scholarshipsModule/stats.html',
-                {'awards': awards, 'winners_list': winners_list})
+            return sendStatsRenderRequest(request, {'winners_list':winners_list})
     else:
-        awards = Award_and_scholarship.objects.all()
-        return render(request, 'scholarshipsModule/stats.html', {'awards': awards})
+        return sendStatsRenderRequest(request)
 
 def convenerCatalogue(request):
     if request.method == 'POST':
@@ -1075,6 +1072,11 @@ def sendStaffRenderRequest(request, additionalParams={}):
     context = getCommonParams(request)
     context.update(additionalParams)
     return render(request, 'scholarshipsModule/scholarships_staff.html', context)
+
+def sendStatsRenderRequest(request, additionalParams={}):
+    context = getCommonParams(request)
+    context.update(additionalParams)
+    return render(request, 'scholarshipsModule/stats.html', context)
 
 def getCommonParams(request):
     student = Student.objects.all()
