@@ -34,11 +34,12 @@ def feeds(request):
     if request.GET.get("search") and request.GET.get('keyword') :
         print("searching")
         q = request.GET.get('keyword')
-        keyword = q
         questions = AskaQuestion.objects.all()
         result = questions.filter(Q(subject__icontains=q) | Q(description__icontains=q)).order_by('-uploaded_at')
         query = result
         paginator = Paginator(query, PAGE_SIZE)
+        keyword = q.split(" ")
+        keyword = "+".join(keyword)
         total_page = math.ceil(query.count()/PAGE_SIZE)
 
     if request.method == 'POST':
