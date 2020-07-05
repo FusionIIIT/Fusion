@@ -30,7 +30,7 @@ def coordinator_club(request):
 	for i in Club_info.objects.all():
 		co = (str(i.co_ordinator)).split(" ")
 		co_co = (str(i.co_coordinator)).split(" ")
-		if co[0] == str(request.user):
+		if co[0] == str(request.user) or co_co[0] == str(request.user) :
 			return(i)
 
 @csrf_exempt
