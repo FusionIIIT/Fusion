@@ -160,3 +160,4 @@ Safari 10 before testing.
 * Health Centre Mangement  
 * Visitor's Hostel Management  
 * Leave Module
+* Establishment Module
