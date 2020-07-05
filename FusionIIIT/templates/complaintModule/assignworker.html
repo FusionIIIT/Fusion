@@ -206,9 +206,13 @@ Complaint
                                 {% else %}
                                 <label>Choose particular caretaker from a drop down box :</label>
                                 <select name="assign_caretaker">
+                                    {% if total_caretakers_in_area %}
                                     {% for i in total_caretakers_in_area %}
                                     <option value="{{ i.id }}">{{ i.id }}-{{ i.staff_id }}-{{ i.area }}</option>
                                     {% endfor %}
+                                    {% else %}
+                                    <option ></option>
+                                    {% endif %}
                                 </select>
                                 <br><br>
                                 <a href="javascript:history.go(-1)">
@@ -217,10 +221,12 @@ Complaint
                                     </button>
                                 </a>
 
+                                {% if total_caretakers_in_area %}
                                 <button class="ui large primary button right floated" type="submit" name="submit"
                                         value="redirect" onclick="redirectsubmit()">
                                     Submit
                                 </button>
+                                {% endif %}
                                 {% endif %}
                             </div>
                         </div>
