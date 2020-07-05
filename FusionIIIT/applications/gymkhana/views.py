@@ -7,7 +7,7 @@ from django.utils.dateparse import parse_date
 from django.db.models import Q
 from bisect import bisect
 from django.contrib import messages
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import *
 from applications.filetracking.models import  File, Tracking
 from django.template.defaulttags import csrf_token
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
@@ -770,49 +770,49 @@ def change_head(request):
 		date = request.POST.get("date")
 		time = request.POST.get("time")
 		desc = "co-ordinator and co co-ordinator changed on "+date+" at "+time
+		message = ""
 
-		club_name = get_object_or_404(Club_info, club_name=club)
+		# club_name = get_object_or_404(Club_info, club_name=club)
 
-		# getting queryset class objects
-		CO = co.split(' - ')
-		user_name = get_object_or_404(User, username=CO[1])
-		extra = get_object_or_404(ExtraInfo, id=CO[0], user=user_name)
-		co_student = get_object_or_404(Student, id=extra)
+		co_student = get_object_or_404(Student, id__user__username=co)
+		print(co_student)
 
-		# getting queryset class objects
-		COCO = coco.split(' - ')
-		user_name1 = get_object_or_404(User, username=COCO[1])
-		extra1 = get_object_or_404(ExtraInfo, id=COCO[0], user=user_name1)
-		coco_student = get_object_or_404(Student, id=extra1)
+		coco_student = get_object_or_404(Student, id__user__username=coco)
+		print(coco_student)
 
-		club_info = get_object_or_404(Club_info, club_name=club_name)
+		club_info = get_object_or_404(Club_info, club_name=club)
 
-		old_co = ""
-		old_coco = ""
+		old_co = club_info.co_ordinator
+		old_coco = club_info.co_coordinator
 		#    print "--------111"
-		#    print old_coco, old_co
+		print (old_coco, old_co)
 
 		club_info.co_ordinator = co_student
 		club_info.co_coordinator = coco_student
 		club_info.save()
 
-		designation = get_object_or_404(Designation, name="co-ordinator")
-		get_object_or_404(HoldsDesignation, user=old_co,
-						  designation=designation).delete()
-		HoldsDesig = HoldsDesignation(
-			user=user_name, working=user_name, designation=designation)
-		HoldsDesig.save()
+		message += "Successfully changed !!!"
+		
+		new_co = HoldsDesignation(user=User.objects.get(username=co), working=User.objects.get(username=co), designation=Designation.objects.get(name="co-ordinator"))
+		new_co.save()
+		new_coco = HoldsDesignation(user=User.objects.get(username=coco), working=User.objects.get(username=coco), designation=Designation.objects.get(name="co co-ordinator"))
+		new_coco.save()
 
-		designation = get_object_or_404(Designation, name="co co-ordinator")
-		get_object_or_404(HoldsDesignation, user=old_coco,
-						  designation=designation).delete()
-		HoldsDesig = HoldsDesignation(
-			user=user_name1, working=user_name1, designation=designation)
-		HoldsDesig.save()
+		old_co = HoldsDesignation.objects.filter(user__username=old_co, designation__name="co-ordinator")
+		old_co.delete()
+		old_coco = HoldsDesignation.objects.filter(user__username=old_coco, designation__name="co co-ordinator")
+		old_coco.delete()
 
-		messages.success(request, "Successfully changed the club heads !!!")
+		content = {
+				'status':"success",
+				'message':message,
+			}
 
-	return redirect('/gymkhana/')
+		content = json.dumps(content)
+		return HttpResponse(content)
+
+		# return redirect('/gymkhana/')
+
 
 
 @login_required

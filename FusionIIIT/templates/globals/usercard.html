@@ -38,7 +38,11 @@
             <div class="meta">
                 {% for i in Curr_desig %}
                 <span> {% comment %}Should this be inside if else?{% endcomment %}
-                    {{ i }}
+                    {% if i == "co-ordinator" or  i == "co co-ordinator" %}
+                        {{ i }} of {{ club_details }} club
+                    {% else %}
+                        {{ i }}
+                    {% endif %}
                 </span>
                 <br>
                 {% endfor %}

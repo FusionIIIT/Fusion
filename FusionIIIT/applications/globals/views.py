@@ -14,6 +14,7 @@ from applications.academic_information.models import Student
 from applications.globals.forms import IssueForm, WebFeedbackForm
 from applications.globals.models import (ExtraInfo, Feedback, HoldsDesignation,
                                          Issue, IssueImage, DepartmentInfo)
+from applications.gymkhana.views import coordinator_club
 from applications.placement_cell.forms import (AddAchievement, AddCourse,
                                                AddEducation, AddExperience,
                                                AddPatent, AddProfile,
@@ -714,6 +715,7 @@ def dashboard(request):
     context={
         'notifications':notifs,
         'Curr_desig' : roll_,
+        'club_details' : coordinator_club(request),
     }
     if(request.user.get_username() == 'director'):
         return render(request, "dashboard/director_dashboard2.html", data)
