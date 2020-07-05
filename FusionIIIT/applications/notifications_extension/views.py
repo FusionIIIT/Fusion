@@ -4,12 +4,7 @@ from notifications.utils import id2slug, slug2id
 from django.shortcuts import get_object_or_404, redirect
 from notifications.models import Notification
 
-def RepresentsInt(s):
-    try: 
-        int(s)
-        return True
-    except ValueError:
-        return False
+
         
 def mark_as_read_and_redirect(request, slug=None):
     notification_id = slug2id(slug)
@@ -20,11 +15,8 @@ def mark_as_read_and_redirect(request, slug=None):
     # This conditional statement is True only in
     # case of complaint_module.
 
-    if(notification.description):
+    if(notification.data['module'] == 'Complaint System'):
         complaint_id=notification.description
-        if(RepresentsInt(complaint_id) is True):
-            print('Yes it is an id')
-            return HttpResponseRedirect(reverse(notification.data['url'],kwargs={'detailcomp_id1':complaint_id}))
+        return HttpResponseRedirect(reverse(notification.data['url'],kwargs={'detailcomp_id1':complaint_id}))
     else:
         return HttpResponseRedirect(reverse(notification.data['url']))
-

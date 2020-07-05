@@ -29,7 +29,18 @@ def feeds(request):
         current_page = 1    
     previous_page = current_page - 1
     next_page = current_page + 1
+    keyword = ""
     # query = paginator.page(current_page)
+    if request.GET.get("search") and request.GET.get('keyword') :
+        print("searching")
+        q = request.GET.get('keyword')
+        questions = AskaQuestion.objects.all()
+        result = questions.filter(Q(subject__icontains=q) | Q(description__icontains=q)).order_by('-uploaded_at')
+        query = result
+        paginator = Paginator(query, PAGE_SIZE)
+        keyword = q.split(" ")
+        keyword = "+".join(keyword)
+        total_page = math.ceil(query.count()/PAGE_SIZE)
 
     if request.method == 'POST':
 
@@ -87,7 +98,11 @@ def feeds(request):
     a_tags = tags.objects.values('my_subtag').filter(Q(user__username=request.user.username))
     # print(tags.objects.all().filter(Q(my_tag__icontains='CSE')))
     ques = []
-    query = paginator.page(current_page)
+    try:
+        query = paginator.page(current_page)
+    except:
+        query = []
+
     hid = hidden.objects.all()
     for q in query:
         isliked = 0
@@ -125,6 +140,7 @@ def feeds(request):
             'previous_page' : previous_page,
             'next_page' : next_page,
         },
+        "keyword": keyword, 
         'a': u_tags.filter(Q(my_tag__icontains='CSE')),
         'b' : u_tags.filter(Q(my_tag__icontains='ECE')),
         'c' : u_tags.filter(Q(my_tag__icontains='Mechanical')),
@@ -333,14 +349,15 @@ def update_post(request, id):
         #if request.POST.get("anonymous")== True:
         return redirect ('/feeds/')
 
+@login_required
 def TagsBasedView(request, string):
     print('Tag based View')
     questions = AskaQuestion.objects.order_by('-uploaded_at')
     
     result = questions.filter(Q(select_tag__subtag__icontains=string))
     
-    paginator = Paginator(result, 2) # Show 25 contacts per page.
-    total_page = math.ceil(result.count()/2)
+    paginator = Paginator(result, PAGE_SIZE) # Show 25 contacts per page.
+    total_page = math.ceil(result.count()/PAGE_SIZE)
     if request.GET.get("page_number") :
         current_page = int(request.GET.get("page_number"))
     else:
@@ -359,18 +376,23 @@ def TagsBasedView(request, string):
     askqus_subtags = AllTags.objects.all()
     ques = []
     result = paginator.page(current_page)
+    hid = hidden.objects.all()
     for q in result:
         isliked = 0
         isdisliked = 0
+        hidd = 0
         profi = Profile.objects.all().filter(user=q.user)
         if(q.likes.all().filter(username=request.user.username).count()==1):
             isliked = 1
+        if(hid.all().filter(user=request.user, question = q).count()==1):
+            hidd = 1
         if(q.dislikes.all().filter(username=request.user.username).count()==1):
             isdisliked = 1
         temp = {
             'profile':profi,
             'ques' : q,
             'isliked':isliked,
+            'hidd' : hidd,
             'disliked': isdisliked,
             'votes':q.total_likes() - q.total_dislikes(),
         }
@@ -417,7 +439,7 @@ def RemoveTag(request):
         print(request.POST.get('id'))
         userTags = tags.objects.all().filter(Q(user=request.user))
         tagto_delete = AllTags.objects.all().filter(Q(subtag=request.POST.get('id')))
-        userTags.filter(Q(my_subtag=tagto_delete)).delete()
+        userTags.filter(Q(my_subtag__in=tagto_delete)).delete()
         return JsonResponse({"done":"1"})
     else:
         return JsonResponse({"done":"0"})
@@ -525,6 +547,7 @@ def ParticularQuestion(request, id):
 
     return render(request, 'feeds/single_question.html', context)
 
+@login_required
 def profile(request, string):
     if request.method == "POST":
         profile = Profile.objects.all().filter(user=request.user)

@@ -2,10 +2,19 @@
 {% comment %}The tab menu starts here!{% endcomment %}
 
     <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="registration">
-            Senate Registration
-        </a>
-
+        {% if form_name == 'senate_registration' %}
+            <a class="active item" data-tab="registration">
+                Senate Registration
+            </a>
+        {% elif form_name == 'mess_registration' %}
+            <a class="active item" data-tab="registration">
+                Mess Registration
+            </a>
+        {% elif form_name == 'hostel_registration' %}
+            <a class="active item" data-tab="registration">
+                Hostel Registration
+            </a>
+        {% endif %}
     </div>
 <!--roll , email, branch, cpi , batch-->
     <div class="ui active tab" data-tab="registration">

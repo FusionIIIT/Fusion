@@ -15,6 +15,7 @@ jsonschema
 numpy
 pillow
 psycopg2-binary
+python-dateutil
 requests
 whitenoise[brotli]
 xhtml2pdf

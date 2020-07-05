@@ -1,5 +1,4 @@
 # FusionIIIT
-[![Maintainability](https://api.codeclimate.com/v1/badges/f82b80eb18f62f88fbfe/maintainability)](https://codeclimate.com/github/sdhiman99/Fusion/maintainability)
 
 **FusionIIIT** is the automation of various functionalities, modules and tasks of/for **PDPM Indian Institute of Information Technology, Design and Manufacturing, Jabalpur** being developed in `python3.8` and using `Django` Webframework.
 

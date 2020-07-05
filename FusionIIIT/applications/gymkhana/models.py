@@ -79,7 +79,8 @@ class Club_info(models.Model):
 
 class Form_available(models.Model):
     roll = models.CharField(default=2016001, max_length=7, primary_key=True)
-    status = models.BooleanField(default='True', max_length=5)
+    status = models.BooleanField(default=True, max_length=5)
+    form_name = models.CharField(default='senate_registration', max_length=30)
 
     def __str__(self):
         return str(self.roll)
@@ -164,7 +165,7 @@ class Session_info(models.Model):
     date = models.DateField(default=None, auto_now=False, null=False)
     start_time = models.TimeField(default=None, auto_now=False, null=False)
     end_time = models.TimeField(default=None, auto_now=False, null=True)
-    session_poster = models.FileField(upload_to='gymkhana/session_poster', null=True)
+    session_poster = models.ImageField(upload_to='gymkhana/session_poster', null=True)
     details = models.TextField(max_length=256, null=True)
     status = models.CharField(
         max_length=50, choices=Constants.status, default='open')

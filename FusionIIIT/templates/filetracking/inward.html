@@ -16,23 +16,22 @@
     <table class="ui very basic celled sortable table">
         <thead>
         <tr>
-            <th>From</th>
             <th>Received as</th>
+            <th>Send by</th>
             <th>File ID</th>
-            <th>Title</th>
+            <th>Subject</th>
             <th>Date</th>
             <th>View File</th>
-            <th>R/UnR</th>
+<!--            <th>R/UnR</th>-->
         </tr>
         </thead>
 
         <tbody>
         {% for j in in_file %}
         <tr>
-
+            <td>{{request.user.extrainfo.user}}-{{j.receive_design}}</td>
             <td>{{j.current_design}}</td>
-            <td>{{j.receive_design}}</td>
-            <td>{{j.file_id.uploader.department.name}}/{{j.file_id.upload_date.year}}/{{j.file_id.upload_date.month}}/#{{j.file_id.id}}  </td>
+            <td>{{j.file_id.uploader.department.name}}-{{j.file_id.upload_date.year}}-{{j.file_id.upload_date.month}}-#{{j.file_id.id}}  </td>
             <td>{{j.file_id.subject}}</td>
             <td>{{j.receive_date}}</td>
             <td><a href="{% url 'filetracking:forward' j.file_id.id %}"><button class="ui primary button">

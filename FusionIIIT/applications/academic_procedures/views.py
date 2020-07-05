@@ -28,7 +28,7 @@ from .models import (BranchChange, CoursesMtech, InitialRegistrations, StudentRe
                      Constants, FeePayment, TeachingCreditRegistration, SemesterMarks, MarkSubmissionCheck, Dues)
 
 from notification.views import academics_module_notif
-#from .forms import BonafideForm
+from .forms import BranchChangeForm
 
 
 
@@ -206,7 +206,7 @@ def academic_procedures_student(request):
 
         else :
             return HttpResponse("Student has no record")
-
+        masters_flag=True
         current_date = demo_date.date()
         year = demo_date.year
         
@@ -217,6 +217,10 @@ def academic_procedures_student(request):
         student_registration_check_final = get_student_registrtion_check(obj,user_sem)
         cpi = get_cpi(user_details.id)
 
+        # branch change flag
+        branchchange_flag=True  # True for testing, to be initialised as False
+        if user_sem==2:
+            branchchange_flag=True
 
         pre_registration_date_flag = get_pre_registration_eligibility(current_date)
         final_registration_date_flag = get_final_registration_eligibility(current_date)
@@ -259,7 +263,8 @@ def academic_procedures_student(request):
             #Student.objects.filter(id = user_details.id).update(cpi = 9.2)
             #FeePayment.objects.all().delete()
             #print(FeePayment.objects.all().first().transaction_id)
-
+        print(user_sem)
+        cur_cpi=0.0
         details = {
                 'current_user': current_user,
                 'year': acad_year,
@@ -267,7 +272,7 @@ def academic_procedures_student(request):
                 'user_branch' : str(user_branch),
                 'cpi' : cpi,
                 }
-
+        cur_cpi=details['cpi']
 
 
         try:
@@ -332,6 +337,9 @@ def academic_procedures_student(request):
             faculty_list = get_faculty_list()    
             thesis_request_list = ThesisTopicProcess.objects.all().filter(student_id = obj)
             pre_existing_thesis_flag = get_thesis_flag(obj)
+            print('PG module')
+            print(faculty_list)
+            print(thesis_request_list)
         if phd_flag:
             pre_existing_thesis_flag = get_thesis_flag(obj)
             teaching_credit_registration_course = Curriculum.objects.all().filter(batch = 2016, sem =6)
@@ -370,6 +378,20 @@ def academic_procedures_student(request):
                 ab += len(absents)
             attendence.append((i,pr,pr+ab))
         print(attendence)
+        cur_spi='Sem results not available' # To be fetched from db if result uploaded
+
+        # Branch Change Form save
+        if request.method=='POST':
+            print('Branch Change submitted')
+            if True:
+                # Processing Branch Change form
+                print('Branch Change submitted')
+                objb = BranchChange()
+                form=BranchChangeForm(request.POST, instance=objb)
+                print(request.POST)
+                objb = BranchChange()
+                objb.branches=request.POST['branches']
+                objb.save()
         return render(
                           request, '../templates/academic_procedures/academic.html',
                           {'details': details,
@@ -412,7 +434,8 @@ def academic_procedures_student(request):
                            # 'final_r': final_register_1,
                             
                             'teaching_credit_registration_course' : teaching_credit_registration_course,
-                            
+                            'cur_cpi': cur_cpi,
+                           'cur_spi': cur_spi,
                            # 'mincr': minimum_credit,
                            'lib_d':lib_d,
                            'acad_d':acad_d,
@@ -421,6 +444,8 @@ def academic_procedures_student(request):
                            'hos_d':hos_d,
                             'tot_d':tot_d,
                            'attendence':attendence,
+                           'BranchChangeForm': BranchChangeForm(),
+                           'BranchFlag':branchchange_flag,
                            }
                 )
 

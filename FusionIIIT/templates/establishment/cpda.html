@@ -33,22 +33,22 @@ Y8b  d8 88      88  .8D 88   88      88 `88. 88.     `8P  d8' 88b  d88 88.     d
             <form class="ui large form" method="post" enctype="multipart/form-data" id="form1">
                 {% csrf_token %}
                 <div class="field">
-                    {% render_field form.pf_number %} 
+                    {% render_field cpda_form.pf_number %} 
                 </div>
                 <br>
                 <div class="field">
-                    {% render_field form.purpose %} 
+                    {% render_field cpda_form.purpose %} 
                 </div>
                 <br>
                 <div class="field">
-                    {% render_field form.requested_advance %} 
+                    {% render_field cpda_form.requested_advance %} 
                 </div>
                 <br>
                 <div class="field">
-                    {% render_field form.declaration %} 
+                    {% render_field cpda_form.declaration %} 
                 </div>
                 <br>
-                <button type="submit" name="request" class="ui large primary button">
+                <button type="submit" name="cpda_request" class="ui large primary button">
                     Submit Request
                 </button>
             </form>
@@ -69,7 +69,7 @@ Y8b  d8 88      88  .8D 88   88      88   88 Y8b  d8    88      .88.    `8bd8'  
     <div class="content">
         <div class="description">
             <div class="ui items">
-                {% for app in active_apps %}
+                {% for app in cpda_active_apps %}
                     <div class="item">
                         <div class="content">
                             <div class="header">Status : {{app.status}}</div>
@@ -93,7 +93,7 @@ Y8b  d8 88      88  .8D 88   88      88   88 Y8b  d8    88      .88.    `8bd8'  
                     </div>
                 {% endfor %}
 
-                {% for app_id, billform in billforms.items %}
+                {% for app_id, billform in cpda_billforms.items %}
                     <div class="ui modal form-{{app_id}}">
                         <i class="close icon"></i>
                         <div class="header">
@@ -134,7 +134,7 @@ Y8b  d8 88      88  .8D 88   88      88   88 Y8b  d8    88      .88.    `8bd8'  
                                     {% render_field billform.total_bills_amount %} 
                                 </div>
                                 <br>
-                                <button type="submit" name="adjust" class="ui large primary button">
+                                <button type="submit" name="cpda_adjust" class="ui large primary button">
                                     Submit Bills
                                 </button>
                             </form>
@@ -168,7 +168,7 @@ Y8b  d8 88      88  .8D 88   88      88   88 88 `88. Y8b  d8 88   88   .88.    `
     <div class="content">
         <div class="description">
             <div class="ui items">
-                {% for app in archive_apps %}
+                {% for app in cpda_archive_apps %}
                     <div class="item">
                         <div class="content">
                             <a class="header">Status : {{app.status}}</a>
@@ -220,7 +220,7 @@ Y8b  d8 88      88  .8D 88   88      88   88 88 `88. Y8b  d8 88   88   .88.    `
     <div class="content">
         <div class="description">
             <div class="ui items">
-                {% for app in to_review_apps %}
+                {% for app in cpda_to_review_apps %}
                     <div class="item">
                         <div class="content">
                             <div class="header">Applicant : {{app.applicant}}</div>
@@ -274,7 +274,7 @@ Y8b  d8 88      88  .8D 88   88      88   88 88 `88. Y8b  d8 88   88   .88.    `
                                     {% render_field app.reviewform.remarks %} 
                                 </div>
                                 <br>
-                                <button type="submit" name="review" class="ui large primary button">
+                                <button type="submit" name="cpda_review" class="ui large primary button">
                                     Submit Review
                                 </button>
                             </form>

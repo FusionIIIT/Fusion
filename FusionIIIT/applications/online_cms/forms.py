@@ -39,7 +39,7 @@ class QuizForm(forms.Form):
                                   widget=forms.Textarea(attrs={'placeholder': 'Description'}))
     rules = forms.CharField(label='rules', max_length=1000,
                             widget=forms.Textarea(attrs={'placeholder': 'Description'}))
-    number_of_questions = forms.IntegerField(label='Number Of Questions')
+    number_of_questions = forms.IntegerField(label='Number Of Questions', min_value = 0)
 
     def clean(self):
 
