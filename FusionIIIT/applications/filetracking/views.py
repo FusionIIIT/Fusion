@@ -202,6 +202,26 @@ def fileview(request,id):
     }
     return render(request, 'filetracking/fileview.html', context)
 @login_required(login_url = "/accounts/login")
+def fileview1(request,id):
+
+
+
+    out = Tracking.objects.filter(current_id=request.user.extrainfo).order_by('-forward_date')
+
+
+
+
+    #print (File.designation)
+    abcd = HoldsDesignation.objects.get(pk=id)
+
+
+    context = {
+
+        'out': out,
+        'abcd': abcd,
+    }
+    return render(request, 'filetracking/fileview1.html', context)
+@login_required(login_url = "/accounts/login")
 def outward(request):
     """
         The function is used to get all the files sent by user(employee) to other employees
@@ -216,10 +236,10 @@ def outward(request):
                 out - The Tracking object filtered by current_id i.e, present working user.
                 context - Holds data needed to make necessary changes in the template.
     """
-    out = Tracking.objects.filter(current_id=request.user.extrainfo).order_by('-forward_date')
+    designation = HoldsDesignation.objects.filter(user=request.user)
 
     context = {
-        'out': out,
+        'designation': designation,
     }
     return render( request, 'filetracking/outward.html', context)
 

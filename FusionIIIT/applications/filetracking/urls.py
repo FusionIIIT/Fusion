@@ -9,6 +9,7 @@ urlpatterns = [
     url(r'^$', views.filetracking, name='filetracking'),
     url(r'^drafts/$', views.drafts, name='drafts'),
     url(r'^fileview/(?P<id>\d+)$', views.fileview, name='fileview'),
+    url(r'^fileview1/(?P<id>\d+)$', views.fileview1, name='fileview1'),
     url(r'^outward/$', views.outward, name='outward'),
     url(r'^inward/$', views.inward, name='inward'),
     url(r'^confirmdelete/(?P<id>\d+)$', views.confirmdelete, name='confirm_delete'),
