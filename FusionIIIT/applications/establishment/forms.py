@@ -18,7 +18,43 @@ class Cpda_Bills_Form(forms.Form):
     bills = forms.FileField(label='Bills')
     total_bills_amount = forms.IntegerField(label='Total Bills Amount', min_value=0, required=True)
 
+class Employee_registration_form(forms.Form):
+    username = forms.CharField(label='Username', required=True)
+    pf_number = forms.CharField(label='PF Number', required=True)
+    email = forms.CharField(label='E-Mail', required=True)
+    first_name= forms.CharField(label='First Name', required=True)
+    last_name = forms.CharField(label='Last Name', required=True)
+    
+    # constants problem
+    title = forms.ChoiceField(label='title', choices=Constants.Constants.??, required=True)
+    gender = forms.ChoiceField(label='Gender', choices=Constants.Constants.??, required=True)
+    dob = forms.DateField(label='Joining Date',required=True)
+    address = forms.CharField(label='Address', required=True)
+    address city = forms.CharField(label='Address City', required=True)
+    address state = forms.CharField(label='Address State', required=True)
+    phone_no = forms.IntegerField(label='Phone Number', required=True)
+    
+    #constants problem
+    department = forms.ChoiceField(label='department', choices=Constants.Constants.??, required=True)
+    date_of_joining = forms.DateField(label='Joining Date',required=True)
+    joining_payscale = forms.ChoiceField(label='Joining Payscale', choices=Constants.Constants.??, required=True)
+    isVacational = forms.BooleanField(label='vacational', required=True)
+    
+    #constants problem
+    category = forms.ChoiceField(label='Category', choices=Constants.Constants.??, required=True)
 
+    #fields not mandatory
+    pan_number = forms.CharField(label='PAN Number', required=false)
+    aadhar_number = forms.CharField(label='Aadhar Number', required=false)
+    local address = forms.CharField(label='Last Name', required=false)
+    
+    #Where to add constants from ??
+    marital_status = forms.ChoiceField(label='Maritial status', choices=Constants.??, required=False)
+    spouse name = forms.CharField(label='Spouse Name', required=false)
+    children_info = forms.CharField(label='Children Info', required=false)
+    persoanl_email_id = forms.CharField(label='Last Name', required=false) 
+
+    
 class Ltc_Form(forms.Form):
     pf_number = forms.CharField(label='PF Number', required=True)
     basic_pay = forms.IntegerField(label='Basic Pay', min_value=0, required=True)
