@@ -34,6 +34,37 @@ class Constants:
 class Establishment_variables(models.Model):
     est_admin = models.ForeignKey(User, on_delete=models.CASCADE)
 
+class Employee(models.Model): 
+    name = models.CharField(max_length=200,default='')
+	pf_number = models.CharField(primary_key = True,max_length=50)
+    joining_date = models.DateField()
+    gender = models.CharField(choices=Constants.EMPLOYEE_GENDER, max_length=50)
+    
+	# change it to drop down if needed
+	department = models.CharField(max_length=50, default='')
+	designation = models.CharField(choices=Constants.EMPLOYEE_DESIGNATION, max_length=50)
+	joining_payscale = models.CharField(choices=Constants.EMPLOYEE_PAYSCALES, max_length=50)
+	isVacational = models.BooleanField(default=False)
+	hometown_address = models.CharField(max_length=250, default='')
+	date_of_birth = models.DateField()
+    category = models.CharField(max_length=50, default='')
+	institute_email_id = models.EmailField(max_length=200)
+
+	pan_number = models.CharField(max_length=200, default='')
+	aadhar_number = models.CharField(max_length=200, default='')
+	local_address = models.CharField(max_length=200, default='')
+	marital_status = models.CharField(choices=Constants.EMPLOYEE_MARITIAL_STATUS, max_length=50) 
+	wife_name = models.CharField(max_length=200, default=null)
+	phone_no = models.CharField(max_length=20, default='')
+	personal_email_id = models.EmailField(max_length=200)
+
+    
+    def __str__(self):
+        return 'Employee ' + str(self.id) + 'registered'
+
+    class Meta:
+        db_table = 'Employee Table'
+        
 
 class Cpda_application(models.Model):
     status = models.CharField(max_length=20, null=True, choices=Constants.STATUS)
