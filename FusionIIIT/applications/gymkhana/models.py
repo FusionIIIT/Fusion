@@ -165,7 +165,7 @@ class Session_info(models.Model):
     date = models.DateField(default=None, auto_now=False, null=False)
     start_time = models.TimeField(default=None, auto_now=False, null=False)
     end_time = models.TimeField(default=None, auto_now=False, null=True)
-    session_poster = models.FileField(upload_to='gymkhana/session_poster', null=True)
+    session_poster = models.ImageField(upload_to='gymkhana/session_poster', null=True)
     details = models.TextField(max_length=256, null=True)
     status = models.CharField(
         max_length=50, choices=Constants.status, default='open')
