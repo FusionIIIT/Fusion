@@ -29,7 +29,17 @@ def feeds(request):
         current_page = 1    
     previous_page = current_page - 1
     next_page = current_page + 1
+    keyword = ""
     # query = paginator.page(current_page)
+    if request.GET.get("search") and request.GET.get('keyword') :
+        print("searching")
+        q = request.GET.get('keyword')
+        keyword = q
+        questions = AskaQuestion.objects.all()
+        result = questions.filter(Q(subject__icontains=q) | Q(description__icontains=q)).order_by('-uploaded_at')
+        query = result
+        paginator = Paginator(query, PAGE_SIZE)
+        total_page = math.ceil(query.count()/PAGE_SIZE)
 
     if request.method == 'POST':
 
@@ -87,7 +97,11 @@ def feeds(request):
     a_tags = tags.objects.values('my_subtag').filter(Q(user__username=request.user.username))
     # print(tags.objects.all().filter(Q(my_tag__icontains='CSE')))
     ques = []
-    query = paginator.page(current_page)
+    try:
+        query = paginator.page(current_page)
+    except:
+        query = []
+
     hid = hidden.objects.all()
     for q in query:
         isliked = 0
@@ -125,6 +139,7 @@ def feeds(request):
             'previous_page' : previous_page,
             'next_page' : next_page,
         },
+        "keyword": keyword, 
         'a': u_tags.filter(Q(my_tag__icontains='CSE')),
         'b' : u_tags.filter(Q(my_tag__icontains='ECE')),
         'c' : u_tags.filter(Q(my_tag__icontains='Mechanical')),
@@ -340,8 +355,8 @@ def TagsBasedView(request, string):
     
     result = questions.filter(Q(select_tag__subtag__icontains=string))
     
-    paginator = Paginator(result, 2) # Show 25 contacts per page.
-    total_page = math.ceil(result.count()/2)
+    paginator = Paginator(result, PAGE_SIZE) # Show 25 contacts per page.
+    total_page = math.ceil(result.count()/PAGE_SIZE)
     if request.GET.get("page_number") :
         current_page = int(request.GET.get("page_number"))
     else:

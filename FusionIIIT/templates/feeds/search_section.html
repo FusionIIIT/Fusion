@@ -15,8 +15,8 @@
         <span style="color: teal;"> {{request.user.first_name}}</span>
     </a>
     <div class="ui large left icon input">
-        <form method="post" action="{% url 'feeds:feeds' %}">
-            {% csrf_token %}
+        <form method="get" action="{% url 'feeds:feeds' %}">
+            {% comment %} {% csrf_token %} {% endcomment %}
         <input type="search" name="keyword" style="min-width: 250px;"  placeholder="Search in feeds...">
         <button type="submit" name="search" value="search" class="ui search button">
         <i class="ui search icon"></i></button>
