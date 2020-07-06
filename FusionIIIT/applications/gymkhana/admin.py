@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import (Club_budget,Club_info,Club_member,Club_report,Core_team,Fest_budget,Other_report,Session_info,Voting_choices,Voting_polls,Voting_voters,Event_info,Registration_form,Form_available)
+from .models import (Club_budget,Club_info,Club_member,Club_report,Core_team,Fest_budget,Other_report,Session_info,Voting_choices,Voting_polls,Voting_voters,Event_info,Registration_form,Form_available,Past_records)
 
 
 # Register your models here.
@@ -11,6 +11,11 @@ class ClubInfoAdmin(admin.ModelAdmin):
 
 class ClubMemberAdmin(admin.ModelAdmin):
     raw_id_fields = ("member",)
+
+
+class PastAdmin(admin.ModelAdmin):
+    list_display = ('past_co', 'past_coco', 'club_name', 'year')
+    raw_id_fields = ("past_co", "past_coco")
 
 
 admin.site.register(Club_info, ClubInfoAdmin)
@@ -27,3 +32,4 @@ admin.site.register(Voting_choices)
 admin.site.register(Voting_voters)
 admin.site.register(Registration_form)
 admin.site.register(Form_available)
+admin.site.register(Past_records, PastAdmin)
