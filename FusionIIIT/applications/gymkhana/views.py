@@ -771,11 +771,7 @@ def change_head(request):
 			co = request.POST.get('co')
 			coco = request.POST.get('coco')
 			# date = request.POST.get("date")
-			# time = request.POST.get("time")
-			# desc = "co-ordinator and co co-ordinator changed on "+date+" at "+time
 			message = ""
-
-			# club_name = get_object_or_404(Club_info, club_name=club)
 
 			co_student = get_object_or_404(Student, id__user__username=co)
 			print(co_student)
@@ -787,40 +783,31 @@ def change_head(request):
 
 			old_co = club_info.co_ordinator
 			old_coco = club_info.co_coordinator
-			#    print "--------111"
 			print (old_co, old_coco)
-
-			club_info.co_ordinator = co_student
-			club_info.co_coordinator = coco_student
-			club_info.save()
 
 			past_user = Past_records(past_co = old_co, past_coco = old_coco, club_name = club_info)
 			past_user.save()
 			old_co = HoldsDesignation.objects.filter(user__username=old_co, designation__name="co-ordinator")
 			print(old_co)
-			if old_co.exists():
-				old_co.delete()
 			old_coco = HoldsDesignation.objects.filter(user__username=old_coco, designation__name="co co-ordinator")
 			print(old_coco)
+			if old_co.exists():
+					old_co.delete()
 			if old_coco.exists():
 				old_coco.delete()
 
-			if HoldsDesignation.objects.filter(user__username=co, designation__name="co-ordinator").exists() or HoldsDesignation.objects.filter(user__username=co, designation__name="co co-ordinator").exists():
+			if HoldsDesignation.objects.filter(user__username=co, designation__name__iendswith="co-ordinator").exists() or HoldsDesignation.objects.filter(user__username=coco, designation__name__iendswith="co-ordinator").exists():
 				print("error")
 				res = "error"
-				message = "The Coordinator chosen is already a Coordinator / Co-Coordinator of another club !!!"
+				message = "The Student is already a Coordinator / Co-Coordinator of another club !!!"
 			else:
 				print("success")
 				res = "success"
+				club_info.co_ordinator = co_student
+				club_info.co_coordinator = coco_student
+				club_info.save()
 				new_co = HoldsDesignation(user=User.objects.get(username=co), working=User.objects.get(username=co), designation=Designation.objects.get(name="co-ordinator"))
 				new_co.save()
-			if HoldsDesignation.objects.filter(user__username=coco, designation__name="co-ordinator").exists() or HoldsDesignation.objects.filter(user__username=coco, designation__name="co co-ordinator").exists():
-				print("error")
-				res = "error"
-				message += "The Co-Coordinator chosen is already a Coordinator / Co-Coordinator of another club !!!"
-			else:
-				print("success")
-				res = "success"
 				new_coco = HoldsDesignation(user=User.objects.get(username=coco), working=User.objects.get(username=coco), designation=Designation.objects.get(name="co co-ordinator"))
 				new_coco.save()
 
