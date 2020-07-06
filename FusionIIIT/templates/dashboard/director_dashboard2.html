@@ -1,5 +1,7 @@
 {% extends 'globals/base.html' %}
 {% load static %}
+{% load static semanticui %}
+
 
 
 {% block title %}
@@ -9,6 +11,7 @@
 {% block css %}
 
  <link href="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.css" rel="stylesheet" type="text/css" />
+ <link rel="stylesheet" type="text/css" href="semantic/dist/semantic.min.css">
 
 {% endblock %}
 
@@ -688,8 +691,7 @@
                 Work in Progress, coming soon!
             </div> {% endcomment %}
            
-        
-<br/><br/>
+            
         
             <div class="ui two column stackable doubling grid">
                 {% comment %}A single modules row starts here!{% endcomment %}
@@ -698,7 +700,60 @@
 
                 {% comment %}A single modules row starts here!{% endcomment %}
                 <div class="row">
+
+                <div class="column">
+                    <div class="ui special cards">
+                        <div class="card">
+                          <div class="blurring dimmable image">
+                            <div class="ui dimmer">
+                              <div class="content">
+                                <div class="center">
+                                  <div class="ui inverted button">More Info</div>
+                                </div>
+                              </div>
+                            </div>
+                            <img src="{% static 'globals/img/publications.jpg' %}">
+                          </div>
+                          <div class="content">
+                            <a class="header">Paper Publications</a>
+                          </div>
+                          <div class="extra content">
+                            <a>
+                              <i class="book icon"></i>
+                              Recent paper publications
+                            </a>
+                          </div>
+                        </div>
+                    </div>
+                </div>
+
                     <div class="column">
+                    <div class="ui special cards">
+                        <div class="card">
+                          <div class="blurring dimmable image">
+                            <div class="ui dimmer">
+                              <div class="content">
+                                <div class="center">
+                                  <div class="ui inverted button">More Info</div>
+                                </div>
+                              </div>
+                            </div>
+                            <img src="{% static 'globals/img/projects.jpg' %}">
+                          </div>
+                          <div class="content">
+                            <a class="header">Projects</a>
+                          </div>
+                          <div class="extra content">
+                            <a>
+                              <i class="laptop icon"></i>
+                              Projects and Consultation
+                            </a>
+                          </div>
+                        </div>
+                    </div>
+                    </div>
+
+                    <!-- <div class="column">
                         <div class="ui large label" id="faculty_info" style="height:100px; width:150px;">
                             <div class="ui centered grid"  style ="background-color:#34eb9e;">
                                 <div class="row" style = "color: teal">
@@ -710,9 +765,9 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div> -->
                     
-                    <div class="column">
+                    <!-- <div class="column">
                         <div class="ui large label" id="Student_info" style="height:100px; width:150px;">
                             <div class="ui centered grid" style ="background-color:#34eb9e;">
                                 <div class="row" style = "color: teal">
@@ -724,7 +779,7 @@
                                 </div>
                             </div>
                         </div>
-                   </div>
+                   </div> -->
 
                    {% comment %} <div class="column">
                          <div id="PnD" class="ui large label" style="height:100px; width:150px;"> 
@@ -742,8 +797,62 @@
                 </div>  
 
                 <div class="row">
-                    <!-- HOD Info -->
+
                     <div class="column">
+                        <div class="ui special cards">
+                            <div class="card">
+                              <div class="blurring dimmable image">
+                                <div class="ui dimmer">
+                                  <div class="content">
+                                    <div class="center">
+                                      <div class="ui inverted button">More Info</div>
+                                    </div>
+                                  </div>
+                                </div>
+                                <img src="{% static 'globals/img/leave.jpg' %}">
+                              </div>
+                              <div class="content">
+                                <a class="header">Upcoming Leaves</a>
+                              </div>
+                              <div class="extra content">
+                                <a>
+                                  <i class="bed icon"></i>
+                                  Upcoming leaves by Faculty
+                                </a>
+                              </div>
+                            </div>
+                        </div>
+                        </div>
+
+
+                        <div class="column">
+                            <div class="ui special cards">
+                                <div class="card">
+                                  <div class="blurring dimmable image">
+                                    <div class="ui dimmer">
+                                      <div class="content">
+                                        <div class="center">
+                                          <div class="ui inverted button">More Info</div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <img src="{% static 'globals/img/events.jpg' %}">
+                                  </div>
+                                  <div class="content">
+                                    <a class="header">News and Events</a>
+                                  </div>
+                                  <div class="extra content">
+                                    <a>
+                                      <i class="newspaper icon"></i>
+                                      News and Upcoming Events
+                                    </a>
+                                  </div>
+                                </div>
+                            </div>
+                            </div>
+
+
+                    <!-- <div class="column">
                         <div id="HOD" class="ui large label" href="" style="height:100px; width:150px;">
                             <div class="ui centered grid" style ="background-color:#34eb9e;">
                                 <div class="row" style = "color: teal">
@@ -755,11 +864,10 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <!-- End of HOD Info -->
+                    </div> -->
 
 
-                    <div class="column">
+                    <!-- <div class="column">
                         <div id="gymkhana_info" class="ui large label" style="height:100px; width:150px;">
                             <div class="ui centered grid" style ="background-color:#34eb9e;">
                                 <div class="row" style = "color: teal">
@@ -771,7 +879,7 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div> -->
 
                     {% comment %} <div class="column">
                         <div id="meetings" class="ui large label" style="height:100px; width:150px;">
@@ -1473,6 +1581,12 @@
             $("#loader").removeClass("active");
             $("#loader").addClass("disabled");
         }*/
+    </script>
+
+    <script>
+        $('.special.cards .image').dimmer({
+          on: 'hover'
+        });
     </script>
 
 <!-- Script for faculty count -->
