@@ -21,7 +21,7 @@ class Cpda_Bills_Form(forms.Form):
     total_bills_amount = forms.IntegerField(label='Total Bills Amount', min_value=0, required=True)
 
 
-class Employee_registration_form(forms.Form):
+class Employee_Registration_Form(forms.Form):
     username = forms.CharField(label='Username', required=True)
     password = forms.CharField(label='Enter Password',widget=forms.PasswordInput(), required=True)
     password2 = forms.CharField(label='Re-enter Password',widget=forms.PasswordInput(), required=True)

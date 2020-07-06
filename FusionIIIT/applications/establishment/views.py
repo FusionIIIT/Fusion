@@ -26,6 +26,13 @@ def is_eligible(request):
     return True
 
 
+def is_fm(dictx):
+    for key in dictx.keys():
+        if 'fa' in key:
+            return True
+    return False
+
+
 def is_cpda(dictx):
     for key in dictx.keys():
         if 'cpda' in key:
@@ -38,6 +45,44 @@ def is_ltc(dictx):
         if 'ltc' in key:
             return True
     return False
+
+
+# TODO THIS
+def handle_fm_admin(request):
+    if 'fm_new_faculty' in request.POST:
+        username = request.POST.get('username')
+        if not User.objects.filter(username=username).exists():
+            messages.error(request, 'The given user does not exist')
+            return
+
+        user_id = User.objects.get(username=username)
+        if Ltc_eligible_user.objects.filter(user=user_id).exists():
+            messages.error(request, 'This user is already eligible for availing LTC')
+            return
+
+        joining_date = request.POST.get('joining_date')
+        current_block_size = request.POST.get('current_block_size')
+        total_ltc_allowed = request.POST.get('total_ltc_allowed')
+        hometown_ltc_allowed = request.POST.get('hometown_ltc_allowed')
+        elsewhere_ltc_allowed = request.POST.get('elsewhere_ltc_allowed')
+        hometown_ltc_availed = request.POST.get('hometown_ltc_availed')
+        elsewhere_ltc_availed = request.POST.get('elsewhere_ltc_availed')
+
+        eligible_user = Ltc_eligible_user.objects.create(
+            user = user_id,
+            date_of_joining = joining_date,
+            current_block_size = current_block_size,
+            total_ltc_allowed = total_ltc_allowed,
+            hometown_ltc_allowed = hometown_ltc_allowed,
+            elsewhere_ltc_allowed = elsewhere_ltc_allowed,
+            hometown_ltc_availed = hometown_ltc_availed,
+            elsewhere_ltc_availed = elsewhere_ltc_availed
+        )
+        messages.success(request, 'New LTC eligible user succesfully created')
+
+    # elif 'fm_edit_faculty' in request.POST:
+
+    # elif 'fm_delete_faculty' in request.POST:
 
 
 def handle_cpda_admin(request):
@@ -211,6 +256,65 @@ def handle_ltc_admin(request):
         eligible_user = Ltc_eligible_user.objects.get(user=user_id)
         eligible_user.delete()
         messages.success(request, 'User successfully removed from eligible LTC users')
+
+
+# TODO THIS
+def generate_fm_admin_lists(request):
+
+    # only requested and adjustment_pending
+    unreviewed_apps = (Cpda_application.objects
+                .exclude(status='rejected')
+                .exclude(status='finished')
+                .exclude(status='approved')
+                .order_by('-request_timestamp'))
+    pending_apps = []
+    under_review_apps = []
+    for app in unreviewed_apps:
+        if app.tracking_info.review_status == 'under_review':
+            under_review_apps.append(app)
+        else:
+            pending_apps.append(app)
+
+    # combine assign_form object into unreviewed_app object respectively
+    for app in unreviewed_apps:
+        # if status is requested:to_assign/reviewed
+        if app.status == 'requested':
+            temp = Assign_Form(initial={'status': 'requested', 'app_id': app.id})
+            temp.fields["status"]._choices = [
+                ('requested', 'Requested'),
+                ('approved', 'Approved'),
+                ('rejected', 'Rejected')
+            ]
+        # if status is adjustments_pending:to_assign/reviewed
+        else:
+            temp = Assign_Form(initial={'status': 'adjustments_pending', 'app_id': app.id})
+            temp.fields["status"]._choices = [
+                ('adjustments_pending', 'Adjustments Pending'),
+                ('finished', 'Finished')
+            ]
+        app.assign_form = temp
+        # print (app.assign_form.fields['status']._choices)
+        
+    # only approved
+    approved_apps = (Cpda_application.objects
+                    .filter(status='approved')
+                    .order_by('-request_timestamp'))
+
+    # only rejected and finished
+    archived_apps = (Cpda_application.objects
+                    .exclude(status='approved')
+                    .exclude(status='requested')
+                    .exclude(status='adjustments_pending')
+                    .order_by('-request_timestamp'))
+
+    response = {
+        'admin': True,
+        'cpda_pending_apps': pending_apps,
+        'cpda_under_review_apps': under_review_apps,
+        'cpda_approved_apps': approved_apps,
+        'cpda_archived_apps': archived_apps
+    }
+    return response
 
 
 def generate_cpda_admin_lists(request):
@@ -568,6 +672,8 @@ def establishment(request):
     response.update(initial_checks(request))    
 
     if is_admin(request) and request.method == "POST": 
+        if is_fm(request.POST):
+            handle_fm_admin(request)
         if is_cpda(request.POST):
             handle_cpda_admin(request)
         if is_ltc(request.POST):
@@ -582,6 +688,7 @@ def establishment(request):
     ############################################################################
 
     if is_admin(request):
+        response.update(generate_fm_admin_lists(request))
         response.update(generate_cpda_admin_lists(request))
         response.update(generate_ltc_admin_lists(request))
         return render(request, 'establishment/establishment.html', response)
