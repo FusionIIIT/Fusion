@@ -13,6 +13,25 @@ from notification.views import office_module_notif
 
 
 @login_required(login_url = "/accounts/login/")
+def predict(request):
+  name = request.POST.get('roll_no')
+  user = User.objects.filter(username=name).first()
+  designations = HoldsDesignation.objects.filter(user=user)
+
+
+  lst =[]
+  for desig in designations:
+      lst.append(desig.designation.name)
+  # data = serializers.serialize('json', {'data':lst})
+  return JsonResponse({'data':lst})
+
+
+
+
+
+
+
+@login_required(login_url = "/accounts/login/")
 def filetracking(request):
     """
         The function is used to create files by current user(employee).
