@@ -57,23 +57,27 @@
 
               
                 <div class="two fields">
-                    <div class="eight wide field">
-                        <label>Co-ordinator</label>
-                        <select class="ui search fluid dropdown" id="co" name="co" required>
-                            <option value="">Select</option>
-
-                        </select>
-                    </div>
-
-                    <div class="eight wide field">
-                        <label>Co Co-ordinator</label>
-                            <select class="ui search fluid dropdown" id="coco" name="coco" required>
+                        <div class="eight wide field">
+                            <label>Co-ordinator</label>
+                            <input list="dropdown-menu1" name="co" id="co_Search" />
+                                <datalist class="dropdown-menu" id="dropdown-menu1"></datalist>
+                            <!-- <select class="ui search fluid dropdown" id="co" name="co" required>
                                 <option value="">Select</option>
 
-                            </select>
-                    </div>
+                            </select> -->
+                        </div>
 
-                </div>
+                        <div class="eight wide field">
+                            <label>Co Co-ordinator</label>
+                            <input list="dropdown-menu2" name="coco" id="co_co_Search" />
+                                <datalist class="dropdown-menu" id="dropdown-menu2"></datalist>
+                                <!-- <select class="ui search fluid dropdown" id="coco" name="coco" required>
+                                    <option value="">Select</option>
+
+                                </select> -->
+                        </div>
+
+                    </div>
 
                 <div class="three fields">
                     <div class="eight wide field">
@@ -90,7 +94,7 @@
                 </div>
 
                 <div class="field">
-                    <button class="ui primary button right floated" type="submit" onclick="form_submit('changehead','change_head_form',event)">
+                    <button class="ui primary button right floated" type="submit" onclick="form_submit('change_head','change_head_form',event)">
                         Submit
                     </button>
                 </div>
@@ -101,4 +105,64 @@
     </div>
     <br>
     <div class="extra content"></div>
+{% endblock %}
+
+{% block javascript %}
+    <script type="text/javascript">
+
+        $('#co_Search').on('input', function(){
+            current_value = $('#co_Search').val();
+            if(current_value.length > 4){
+            // console.log("keyup function");
+            $.ajax({
+                type: 'POST',
+                url: '/gymkhana/students_data/',
+                data: {
+                    'current_value': current_value,
+                },
+                success: function(response){
+                    response = JSON.parse(response);
+                    // console.log(response);
+                    $('#dropdown-menu1').html('');
+                    for(var i=0;i<response.length;i++){
+                        // console.log(response[i].pk);
+                        $('#dropdown-menu1').append('<option value="'+response[i].pk+'">'+response[i].pk+'</option>');
+                    }
+                },
+                error: function(rs, e){
+                    console.log('error');
+                },
+            });
+        }
+        });
+
+        $('#co_co_Search').on('input', function(){
+            current_value = $('#co_co_Search').val();
+            // console.log("keyup function");
+            if(current_value.length > 4 ) {
+            $.ajax({
+                type: 'POST',
+                url: '/gymkhana/students_data/',
+                data: {
+                    'current_value': current_value,
+                },
+                success: function(response){
+                    response = JSON.parse(response);
+                    // console.log(response);
+                    $('#dropdown-menu2').html('');
+                    for(var i=0;i<response.length;i++){
+                        // console.log(response[i].pk);
+                        $('#dropdown-menu2').append('<option value="'+response[i].pk+'">'+response[i].pk+'</option>');
+                    }
+                },
+                error: function(rs, e){
+                    console.log('error');
+                },
+            });
+        }
+        });
+
+    </script>
+
+
 {% endblock %}

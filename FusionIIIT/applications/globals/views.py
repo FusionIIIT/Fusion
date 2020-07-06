@@ -14,6 +14,7 @@ from applications.academic_information.models import Student
 from applications.globals.forms import IssueForm, WebFeedbackForm
 from applications.globals.models import (ExtraInfo, Feedback, HoldsDesignation,
                                          Issue, IssueImage, DepartmentInfo)
+from applications.gymkhana.views import coordinator_club
 from applications.placement_cell.forms import (AddAchievement, AddCourse,
                                                AddEducation, AddExperience,
                                                AddPatent, AddProfile,
@@ -677,31 +678,31 @@ def about(request):
 
 @login_required(login_url=LOGIN_URL)
 def dashboard(request):
-    cse_faculty = ExtraInfo.objects.filter(user_type = 'faculty', department = DepartmentInfo.objects.get(name = 'CSE'))
-    ece_faculty = ExtraInfo.objects.filter(user_type = 'faculty', department = DepartmentInfo.objects.get(name = 'ECE'))
-    me_faculty = ExtraInfo.objects.filter(user_type = 'faculty', department = DepartmentInfo.objects.get(name = 'ME'))
-    des_faculty = ExtraInfo.objects.filter(user_type = 'faculty', department = DepartmentInfo.objects.get(name = 'Design'))
-    ns_faculty = ExtraInfo.objects.filter(user_type = 'faculty', department = DepartmentInfo.objects.get(name = 'Natural Science'))
+    # cse_faculty = ExtraInfo.objects.filter(user_type = 'faculty', department = DepartmentInfo.objects.get(name = 'CSE'))
+    # ece_faculty = ExtraInfo.objects.filter(user_type = 'faculty', department = DepartmentInfo.objects.get(name = 'ECE'))
+    # me_faculty = ExtraInfo.objects.filter(user_type = 'faculty', department = DepartmentInfo.objects.get(name = 'ME'))
+    # des_faculty = ExtraInfo.objects.filter(user_type = 'faculty', department = DepartmentInfo.objects.get(name = 'Design'))
+    # ns_faculty = ExtraInfo.objects.filter(user_type = 'faculty', department = DepartmentInfo.objects.get(name = 'Natural Science'))
     # cse_students = ExtraInfo.objects.filter(user_type = 'student', department = DepartmentInfo.objects.get(name = 'CSE'))
     # ece_students = ExtraInfo.objects.filter(user_type = 'student', department = DepartmentInfo.objects.get(name = 'ECE'))
     # me_students = ExtraInfo.objects.filter(user_type = 'student', department = DepartmentInfo.objects.get(name = 'ME'))
     # des_students = ExtraInfo.objects.filter(user_type = 'student', department = DepartmentInfo.objects.get(name = 'Design'))
     # ns_students = ExtraInfo.objects.filter(user_type = 'student', department = DepartmentInfo.objects.get(name = 'Natural Science'))
-    students_2017 = Student.objects.filter(batch = 2017)
-    students_2016 = Student.objects.filter(batch = 2016)
-    students_2015 = Student.objects.filter(batch = 2015)
-    students_2019 = Student.objects.filter(batch = 2019)
-    students_2018 = Student.objects.filter(batch = 2018) 
-    data = {'cse': cse_faculty, 
-            'ece': ece_faculty, 
-            'me': me_faculty, 
-            'des': des_faculty, 
-            'ns': ns_faculty,
-            'students_2019': students_2019,
-            'students_2018': students_2018, 
-            'students_2017': students_2017,
-            'students_2016': students_2016,
-            'students_2015': students_2015}
+    # students_2017 = Student.objects.filter(batch = 2017)
+    # students_2016 = Student.objects.filter(batch = 2016)
+    # students_2015 = Student.objects.filter(batch = 2015)
+    # students_2019 = Student.objects.filter(batch = 2019)
+    # students_2018 = Student.objects.filter(batch = 2018) 
+    # data = {'cse': cse_faculty, 
+    #         'ece': ece_faculty, 
+    #         'me': me_faculty, 
+    #         'des': des_faculty, 
+    #         'ns': ns_faculty,
+    #         'students_2019': students_2019,
+    #         'students_2018': students_2018, 
+    #         'students_2017': students_2017,
+    #         'students_2016': students_2016,
+    #         'students_2015': students_2015}
     user=request.user
     notifs=request.user.notifications.all()
     name = request.user.first_name +"_"+ request.user.last_name
@@ -714,9 +715,10 @@ def dashboard(request):
     context={
         'notifications':notifs,
         'Curr_desig' : roll_,
+        'club_details' : coordinator_club(request),
     }
     if(request.user.get_username() == 'director'):
-        return render(request, "dashboard/director_dashboard2.html", data)
+        return render(request, "dashboard/director_dashboard2.html", {})
     else:
         return render(request, "dashboard/dashboard.html", context)
 
