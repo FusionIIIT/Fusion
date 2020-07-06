@@ -84,7 +84,7 @@
                                 <div class="field">
                                     <label>Send as:
                                         <select required class="ui fluid search selection dropdown" name="sender">
-                                            <option selected hidden>Select</option>
+{#                                            <option selected hidden>Select</option>#}
 
                                             {% for designations in designations %}
                                             <option value="{{designations.id}}">{{designations}}</option>
@@ -128,7 +128,7 @@
                         <div class="field">
                             <label>Forward To:
 
-                                    <input type ="search" id="input_search" list = "input_list" name = "receiver">
+                                    <input type ="search" id="input_search" list = "input_list" name = "receiver" onchange="getDesignation();">
                                     <datalist  id="input_list">
 
                                     </datalist>
@@ -204,7 +204,7 @@
 
             <br>
             <br>
-             <button type="submit" name="send" class="ui large right floated primary button" style = "float: right;">
+             <button type="submit" name="send" class="ui large right floated primary button" style = "float: right; margin-bottom: 25px">
                                 Send<i class="ui send icon right floated"></i>
                             </button>
 
@@ -289,6 +289,37 @@
 
 
     <script type="text/javascript">
+        function getDesignation() {
+        var roll_no = document.getElementById('input_search').value;
+
+        $.ajax({
+            type: 'POST',
+            url: '/filetracking/predict/',
+            data: {
+                'roll_no': roll_no,
+                'csrfmiddlewaretoken': '{{csrf_token}}'
+            },
+            success: function(data){
+
+                console.log('coming-----------------------');
+                console.log(data);
+                var desig = data.data;
+                 $('#input_list1').empty();
+                for(let i=0;i<desig.length;i++){
+                    $('#input_list1').append('<option value="'+desig[i]+'">'+desig[i]+'</option>');
+                }
+
+            },
+            error: function(rs, e){
+                console.log('error-------');
+            },
+        });
+    }
+
+
+
+
+
         $('#input_search1').keyup(function(){
 
             console.log('asdasd');

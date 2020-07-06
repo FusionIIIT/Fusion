@@ -22,4 +22,5 @@ urlpatterns = [
     url(r'^test/$',views.test, name='test'),
     url(r'^delete/(?P<id>\d+)$',views.delete, name='delete'),
     url(r'^forward_inward/(?P<id>\d+)/$', views.forward_inward, name='forward_inward'),
+    url(r'^predict/$',views.predict,name='predict'),
 ]
