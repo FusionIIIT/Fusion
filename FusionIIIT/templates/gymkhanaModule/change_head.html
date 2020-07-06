@@ -17,7 +17,7 @@
             });
         });
     </script> -->
-    <script type="text/javascript">
+    {% comment %} <script type="text/javascript">
         function setDate(){
         var today = new Date();
         var dd = today.getDate();
@@ -36,7 +36,7 @@
         dateControl.value = today;
         }
 
-    </script>
+    </script> {% endcomment %}
     <div class="ui vertical segment">
         <form method="post" id="change_head_form">
         {% csrf_token %}
@@ -79,7 +79,7 @@
 
                     </div>
 
-                <div class="three fields">
+                {% comment %} <div class="three fields">
                     <div class="eight wide field">
                         <label>Date</label>
                         <input class="ui input date" type="date" data-date-format="DD/MM/YYYY" placeholder="From" name="date" id="datefield" min="01/04/2018" required></input>
@@ -91,7 +91,7 @@
                         <label>Time</label>
                         <input class="ui input" type="time" name="time" required></input>
                     </div>
-                </div>
+                </div> {% endcomment %}
 
                 <div class="field">
                     <button class="ui primary button right floated" type="submit" onclick="form_submit('change_head','change_head_form',event)">

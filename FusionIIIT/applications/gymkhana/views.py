@@ -764,47 +764,74 @@ def club_report(request):
 @login_required
 def change_head(request):
 	if request.method == "POST":
-		club = request.POST.get("club")
-		co = request.POST.get('co')
-		coco = request.POST.get('coco')
-		date = request.POST.get("date")
-		time = request.POST.get("time")
-		desc = "co-ordinator and co co-ordinator changed on "+date+" at "+time
-		message = ""
+		res =None
+		message = None
+		try:
+			club = request.POST.get("club")
+			co = request.POST.get('co')
+			coco = request.POST.get('coco')
+			# date = request.POST.get("date")
+			# time = request.POST.get("time")
+			# desc = "co-ordinator and co co-ordinator changed on "+date+" at "+time
+			message = ""
 
-		# club_name = get_object_or_404(Club_info, club_name=club)
+			# club_name = get_object_or_404(Club_info, club_name=club)
 
-		co_student = get_object_or_404(Student, id__user__username=co)
-		print(co_student)
+			co_student = get_object_or_404(Student, id__user__username=co)
+			print(co_student)
 
-		coco_student = get_object_or_404(Student, id__user__username=coco)
-		print(coco_student)
+			coco_student = get_object_or_404(Student, id__user__username=coco)
+			print(coco_student)
 
-		club_info = get_object_or_404(Club_info, club_name=club)
+			club_info = get_object_or_404(Club_info, club_name=club)
 
-		old_co = club_info.co_ordinator
-		old_coco = club_info.co_coordinator
-		#    print "--------111"
-		print (old_coco, old_co)
+			old_co = club_info.co_ordinator
+			old_coco = club_info.co_coordinator
+			#    print "--------111"
+			print (old_co, old_coco)
 
-		club_info.co_ordinator = co_student
-		club_info.co_coordinator = coco_student
-		club_info.save()
+			club_info.co_ordinator = co_student
+			club_info.co_coordinator = coco_student
+			club_info.save()
 
-		message += "Successfully changed !!!"
-		
-		new_co = HoldsDesignation(user=User.objects.get(username=co), working=User.objects.get(username=co), designation=Designation.objects.get(name="co-ordinator"))
-		new_co.save()
-		new_coco = HoldsDesignation(user=User.objects.get(username=coco), working=User.objects.get(username=coco), designation=Designation.objects.get(name="co co-ordinator"))
-		new_coco.save()
+			past_user = Past_records(past_co = old_co, past_coco = old_coco, club_name = club_info)
+			past_user.save()
+			old_co = HoldsDesignation.objects.filter(user__username=old_co, designation__name="co-ordinator")
+			print(old_co)
+			if old_co.exists():
+				old_co.delete()
+			old_coco = HoldsDesignation.objects.filter(user__username=old_coco, designation__name="co co-ordinator")
+			print(old_coco)
+			if old_coco.exists():
+				old_coco.delete()
 
-		old_co = HoldsDesignation.objects.filter(user__username=old_co, designation__name="co-ordinator")
-		old_co.delete()
-		old_coco = HoldsDesignation.objects.filter(user__username=old_coco, designation__name="co co-ordinator")
-		old_coco.delete()
+			if HoldsDesignation.objects.filter(user__username=co, designation__name="co-ordinator").exists() or HoldsDesignation.objects.filter(user__username=co, designation__name="co co-ordinator").exists():
+				print("error")
+				res = "error"
+				message = "The Coordinator chosen is already a Coordinator / Co-Coordinator of another club !!!"
+			else:
+				print("success")
+				res = "success"
+				new_co = HoldsDesignation(user=User.objects.get(username=co), working=User.objects.get(username=co), designation=Designation.objects.get(name="co-ordinator"))
+				new_co.save()
+			if HoldsDesignation.objects.filter(user__username=coco, designation__name="co-ordinator").exists() or HoldsDesignation.objects.filter(user__username=coco, designation__name="co co-ordinator").exists():
+				print("error")
+				res = "error"
+				message += "The Co-Coordinator chosen is already a Coordinator / Co-Coordinator of another club !!!"
+			else:
+				print("success")
+				res = "success"
+				new_coco = HoldsDesignation(user=User.objects.get(username=coco), working=User.objects.get(username=coco), designation=Designation.objects.get(name="co co-ordinator"))
+				new_coco.save()
 
+		except Exception as e:
+			print(e)
+			res = "error"
+			message = "Some error occurred"
+
+		print(message)
 		content = {
-				'status':"success",
+				'status': res,
 				'message':message,
 			}
 

@@ -84,7 +84,7 @@
                                 <div class="field">
                                     <label>Send as:
                                         <select required class="ui fluid search selection dropdown" name="sender">
-                                            <option selected hidden>Select</option>
+                                            {% comment %} <option selected hidden>Select</option> {% endcomment %}
 
                                             {% for designations in designations %}
                                             <option value="{{designations.id}}">{{designations}}</option>
