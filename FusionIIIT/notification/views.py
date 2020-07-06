@@ -298,3 +298,36 @@ def gymkhana_event(sender, recipient, type, club, event_name, desc, venue):
                 verb=verb,
                 description=desc
                 )
+
+
+def establishment_notif(sender, recipient, type):
+    url='establishment:establishment'
+    module='Establishment Module'
+    verb = ""
+
+    if type == 'cpda_review_pending':
+        verb = "A CPDA application is pending for you to review."
+    elif type == 'cpda_request_approved':
+        verb = "Your CPDA request application has been approved."
+    elif type == 'cpda_request_rejected':
+        verb = "Your CPDA request application has been rejected."
+    elif type == 'cpda_adjustment_finished':
+        verb = "Your CPDA bills application has been accepted."
+    elif type == 'ltc_review_pending':
+        verb = "A LTC application is pending for you to review."
+    elif type == 'ltc_request_approved':
+        verb = "Your LTC request application has been approved."
+    elif type == 'ltc_request_rejected':
+        verb = "Your LTC request application has been approved."
+    elif type == 'cpda_application_submit':
+        verb = sender.username + " has submitted a CPDA application. Please assign it to required reviewer."
+    elif type == 'cpda_bills_submit':
+        verb = sender.username + " has submitted CPDA bills. Please assign it to required reviewer."
+    elif type == 'cpda_review_submit':
+        verb = sender.username + " has submitted a review for a CPDA application. Please take further action."
+    elif type == 'ltc_application_submit':
+        verb = sender.username + " has submitted a LTC application. Please assign it to required reviewer."
+    elif type == 'ltc_review_submit':
+        verb = sender.username + " has submitted a review for a LTC application. Please take further action."
+
+    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)

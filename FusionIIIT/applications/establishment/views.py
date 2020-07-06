@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
+from notification.views import establishment_notif
 
 from datetime import datetime
 from .models import *
@@ -15,6 +16,10 @@ def initial_checks(request):
 
 def is_admin(request):
     return request.user == Establishment_variables.objects.first().est_admin
+
+
+def get_admin():
+    return Establishment_variables.objects.first().est_admin
 
 
 def is_eligible(request):
@@ -60,7 +65,8 @@ def handle_cpda_admin(request):
             application.tracking_info.review_status = 'under_review'
             application.tracking_info.save()
             
-            # add notif
+            # The reviewer is notified about the pending review
+            establishment_notif(request.user, reviewer_id, 'cpda_review_pending')
             messages.success(request, 'Reviewer assigned successfully!')
             # print (reviewer_design, ' ||| ', reviewer_id)
 
@@ -76,7 +82,13 @@ def handle_cpda_admin(request):
         application.save()
         # print (application)
 
-        # add notif
+        # Send notification to the cpda applicant
+        if status == 'approved':
+            establishment_notif(request.user, application.applicant, 'cpda_request_approved')
+        elif status == 'rejected':
+            establishment_notif(request.user, application.applicant, 'cpda_request_rejected')
+        elif status == 'finished':
+            establishment_notif(request.user, application.applicant, 'cpda_adjustment_finished')
         messages.success(request, 'Status updated successfully!')
 
 
@@ -106,7 +118,8 @@ def handle_ltc_admin(request):
                 application.tracking_info.review_status = 'under_review'
                 application.tracking_info.save()
                 
-                # add notif
+                # The reviewer is notified about the pending review
+                establishment_notif(request.user, reviewer_id, 'ltc_review_pending')
                 messages.success(request, 'Reviewer assigned successfully!')
                 # print (reviewer_design, ' ||| ', reviewer_id)
 
@@ -120,7 +133,11 @@ def handle_ltc_admin(request):
             application = Ltc_application.objects.get(id=app_id)
             application.status = status;
             application.save()
-            # add notif
+            # Send notification to the cpda applicant
+            if status == 'approved':
+                establishment_notif(request.user, application.applicant, 'ltc_request_approved')
+            elif status == 'rejected':
+                establishment_notif(request.user, application.applicant, 'ltc_request_rejected')
             messages.success(request, 'Status updated successfully!')
 
     elif 'ltc_new_eligible_user' in request.POST:
@@ -336,7 +353,8 @@ def handle_cpda_eligible(request):
         )
         # print (application.tracking_info.application)
 
-        # add notif here
+        # Send notification to admin that new cpda application is created
+        establishment_notif(request.user, get_admin(), 'cpda_application_submit')
         messages.success(request, 'Request sent successfully!')
 
     elif 'cpda_adjust' in request.POST:
@@ -367,7 +385,9 @@ def handle_cpda_eligible(request):
         # get tracking info of a particular application
         application.tracking_info.review_status = 'to_assign'
         application.tracking_info.save()
-        # add notif here
+
+        # Send notification to admin that new cpda bills are submitted
+        establishment_notif(request.user, get_admin(), 'cpda_bills_submit')
         messages.success(request, 'Bills submitted successfully!')
         
     elif 'cpda_review' in request.POST:
@@ -379,7 +399,8 @@ def handle_cpda_eligible(request):
         application.tracking_info.remarks = review_comment
         application.tracking_info.review_status = 'reviewed'
         application.tracking_info.save()
-        # add notif here
+        # Send notification to admin that new cpdaapplication is created
+        establishment_notif(request.user, get_admin(), 'cpda_review_submit')
         messages.success(request, 'Review submitted successfully!')
 
 
@@ -437,7 +458,9 @@ def handle_ltc_eligible(request):
             review_status = 'to_assign'
         )
         # print (application.tracking_info.application)
-        # add notif here
+
+        # Send notification to admin that new cpda bills are submitted
+        establishment_notif(request.user, get_admin(), 'ltc_application_submit')
         messages.success(request, 'Request sent successfully!')
 
     if 'ltc_review' in request.POST:
@@ -449,7 +472,9 @@ def handle_ltc_eligible(request):
         application.tracking_info.remarks = review_comment
         application.tracking_info.review_status = 'reviewed'
         application.tracking_info.save()
-        # add notif here
+
+        # Send notification to admin that new cpda bills are submitted
+        establishment_notif(request.user, get_admin(), 'ltc_review_submit')
         messages.success(request, 'Review submitted successfully!')
 
 
