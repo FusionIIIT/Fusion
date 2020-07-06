@@ -20,25 +20,33 @@
 		{% include 'dashboard/navbar.html' %}
 	{% endblock %}
 
-	<div class="sixteen wide column">
-		<!-- Search Bar Section -->
-		{% include 'feeds/search_section.html' %}
-		<!-- Search Bar Section ends here-->
-	</div>
-	
-	<div class='ui grid red segment' style="padding: 50px;">
+	<div class='ui stackable doubling grid'>
+
+		<div class="sixteen wide column">
+			<!-- Search Bar Section -->
+			{% include 'feeds/search_section.html' %}
+			<!-- Search Bar Section ends here-->
+		</div>
+		<div  class="column"></div>
 		<!-- First section of the page starts here -->
-		{% include 'feeds/first_section.html' %}
+		<div  class="three wide column">
+			{% include 'feeds/first_section.html' %}
+		</div>
 		<!-- First section of the page ends here -->
 
-
 		<!-- Middle section of the page -->
-		{% include 'feeds/middle_section.html' %}
+		<div class="eight wide column">
+			{% include 'feeds/middle_section.html' %}
+		</div>
 		<!-- First section of the page ends here -->
 
 		<!-- Third section of the page starts here -->
-		{% include 'feeds/third_section.html' %}
+		<div class="three wide column">
+			{% include 'feeds/third_section.html' %}
+		</div>
 		<!-- Third section of the page ends here -->
+		<div  class="column"></div>
+		<div class="sixteen wide column"></div>
 	</div>
 {% endblock %}
 

@@ -1,4 +1,4 @@
-<div class="three wide column" style="min-width:200px; padding:0 0 0 50px;">
+<div>
 	<form action="{% url 'feeds:feeds' %}" method="POST" class="ui form" onsubmit = "return tag_validate()">
 		{% csrf_token %}
 		<div class="field">

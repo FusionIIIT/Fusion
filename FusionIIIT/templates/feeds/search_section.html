@@ -6,12 +6,12 @@
     </style>
 {% endblock css %}
 
-<div class="ui center aligned container search-margin">
+<div class="ui clearing center aligned container search-margin">
     <a href="/feeds" style="font-size: 15px; text-decoration: none; float: left; padding-top: 5px;">
         <i class="ui big newspaper outline icon" style="color: teal;"></i>
     </a>
-    <a href="{% url 'feeds:profile' request.user.username %}" style="font-size: 15px; text-decoration: none; float: left; padding-top: 5px;">
-        <i class="ui big user circle outline icon" style="color: teal;"></i>
+    <a href="{% url 'feeds:profile' request.user.username %}" style="font-size: 22px; text-decoration: none; float: left; padding-top: 5px;">
+        <i class="ui big list alternate outline icon" style="color: teal;"></i>
         <span style="color: teal;"> {{request.user.first_name}}</span>
     </a>
     <div class="ui large left icon input">
