@@ -1,5 +1,7 @@
 from django import forms
 from .models import Constants
+from applications.globals.models import Constants as GConstants
+from applications.globals.models import DepartmentInfo
 
 dec = 'I hereby declare that I have uploaded & updated all my achievements (including publications, visits, projects etc.) on Institute\'s website and EIS module.'
 dec2 = 'I hereby declare that the family members for whom the L.T.C. is claimed are residing with me and are wholly dependent upon me.'
@@ -18,41 +20,37 @@ class Cpda_Bills_Form(forms.Form):
     bills = forms.FileField(label='Bills')
     total_bills_amount = forms.IntegerField(label='Total Bills Amount', min_value=0, required=True)
 
+
 class Employee_registration_form(forms.Form):
     username = forms.CharField(label='Username', required=True)
+    password = forms.CharField(label='Enter Password',widget=forms.PasswordInput(), required=True)
+    password2 = forms.CharField(label='Re-enter Password',widget=forms.PasswordInput(), required=True)
     pf_number = forms.CharField(label='PF Number', required=True)
     email = forms.CharField(label='E-Mail', required=True)
     first_name= forms.CharField(label='First Name', required=True)
     last_name = forms.CharField(label='Last Name', required=True)
     
-    # constants problem
-    title = forms.ChoiceField(label='title', choices=Constants.Constants.??, required=True)
-    gender = forms.ChoiceField(label='Gender', choices=Constants.Constants.??, required=True)
-    dob = forms.DateField(label='Joining Date',required=True)
+    title = forms.ChoiceField(label='Title', choices=GConstants.TITLE_CHOICES, required=True)
+    gender = forms.ChoiceField(label='Gender', choices=GConstants.SEX_CHOICES, required=True)
+    dob = forms.DateField(label='Date Of Birth', required=True)
     address = forms.CharField(label='Address', required=True)
-    address city = forms.CharField(label='Address City', required=True)
-    address state = forms.CharField(label='Address State', required=True)
+    address_city = forms.CharField(label='Address City', required=True)
+    address_state = forms.CharField(label='Address State', required=True)
     phone_no = forms.IntegerField(label='Phone Number', required=True)
-    
-    #constants problem
-    department = forms.ChoiceField(label='department', choices=Constants.Constants.??, required=True)
+    department = forms.ModelChoiceField(label='Department', queryset=DepartmentInfo.objects.all(), required=True)
     date_of_joining = forms.DateField(label='Joining Date',required=True)
-    joining_payscale = forms.ChoiceField(label='Joining Payscale', choices=Constants.Constants.??, required=True)
-    isVacational = forms.BooleanField(label='vacational', required=True)
-    
-    #constants problem
-    category = forms.ChoiceField(label='Category', choices=Constants.Constants.??, required=True)
+    joining_payscale = forms.CharField(label='Joining Payscale', required=True)
+    isVacational = forms.BooleanField(label='Is Vacational?', required=True)    
+    category = forms.ChoiceField(label='Category', choices=Constants.CATEGORY, required=True)
 
-    #fields not mandatory
-    pan_number = forms.CharField(label='PAN Number', required=false)
-    aadhar_number = forms.CharField(label='Aadhar Number', required=false)
-    local address = forms.CharField(label='Last Name', required=false)
+    pan_number = forms.CharField(label='PAN Number', required=False)
+    aadhar_number = forms.CharField(label='Aadhar Number', required=False)
+    local_address = forms.CharField(label='Local Address', required=False)
     
-    #Where to add constants from ??
-    marital_status = forms.ChoiceField(label='Maritial status', choices=Constants.??, required=False)
-    spouse name = forms.CharField(label='Spouse Name', required=false)
-    children_info = forms.CharField(label='Children Info', required=false)
-    persoanl_email_id = forms.CharField(label='Last Name', required=false) 
+    marital_status = forms.ChoiceField(label='Marital status', choices=Constants.MARITAL_STATUS, required=False)
+    spouse_name = forms.CharField(label='Spouse Name', required=False)
+    children_info = forms.CharField(label='Children Details', required=False)
+    personal_email_id = forms.CharField(label='Personal E-Mail ID', required=False) 
 
     
 class Ltc_Form(forms.Form):

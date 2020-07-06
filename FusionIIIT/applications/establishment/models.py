@@ -2,7 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
+from applications.globals.models import ExtraInfo, HoldsDesignation, Designation, Faculty
+from applications.globals.models import Constants as Global_Const
 
 class Constants:
     STATUS = (
@@ -29,42 +30,23 @@ class Constants:
         ('yes', 'Yes'),
         ('no', 'No')
     )
-
+    MARITAL_STATUS = (
+        ('single', 'Single'),
+        ('married', 'Married'),
+        ('divorced', 'Divorced'),
+        ('widowed', 'Widowed'),
+        ('seperated', 'Seperated')
+    )
+    CATEGORY = (
+        ('general', 'General'),
+        ('obc', 'OBC'),
+        ('sc', 'SC'),
+        ('st', 'ST')
+    )
 
 class Establishment_variables(models.Model):
     est_admin = models.ForeignKey(User, on_delete=models.CASCADE)
-
-class Employee(models.Model): 
-    name = models.CharField(max_length=200,default='')
-	pf_number = models.CharField(primary_key = True,max_length=50)
-    joining_date = models.DateField()
-    gender = models.CharField(choices=Constants.EMPLOYEE_GENDER, max_length=50)
-    
-	# change it to drop down if needed
-	department = models.CharField(max_length=50, default='')
-	designation = models.CharField(choices=Constants.EMPLOYEE_DESIGNATION, max_length=50)
-	joining_payscale = models.CharField(choices=Constants.EMPLOYEE_PAYSCALES, max_length=50)
-	isVacational = models.BooleanField(default=False)
-	hometown_address = models.CharField(max_length=250, default='')
-	date_of_birth = models.DateField()
-    category = models.CharField(max_length=50, default='')
-	institute_email_id = models.EmailField(max_length=200)
-
-	pan_number = models.CharField(max_length=200, default='')
-	aadhar_number = models.CharField(max_length=200, default='')
-	local_address = models.CharField(max_length=200, default='')
-	marital_status = models.CharField(choices=Constants.EMPLOYEE_MARITIAL_STATUS, max_length=50) 
-	wife_name = models.CharField(max_length=200, default=null)
-	phone_no = models.CharField(max_length=20, default='')
-	personal_email_id = models.EmailField(max_length=200)
-
-    
-    def __str__(self):
-        return 'Employee ' + str(self.id) + 'registered'
-
-    class Meta:
-        db_table = 'Employee Table'
-        
+ 
 
 class Cpda_application(models.Model):
     status = models.CharField(max_length=20, null=True, choices=Constants.STATUS)
@@ -199,3 +181,28 @@ class Ltc_eligible_user(models.Model):
     def __str__(self):
         return str(self.user.username) + ' - joined on ' + str(self.date_of_joining)
         
+
+class Faculty_Info(models.Model): 
+    faculty_user = models.ForeignKey(Faculty, on_delete=models.CASCADE)
+    pf_number = models.CharField(primary_key = True, max_length=50)
+    joining_date = models.DateField()
+
+    # THIS DESIGNATION MAPPING ALREADY EXISTS IN GLOBALS/HOLDS_DESIGNATION TABLE
+    # TODO: find a way to use that table
+    designation = models.ForeignKey(Designation, on_delete=models.CASCADE)
+    joining_payscale = models.CharField(max_length=50)
+    is_vacational = models.BooleanField(default=False)
+    category = models.CharField(choices=Constants.CATEGORY, max_length=50, default='')
+    pan_number = models.CharField(max_length=200, default='', blank=True, null=True)
+    aadhar_number = models.CharField(max_length=200, default='', blank=True, null=True)
+    local_address = models.CharField(max_length=200, default='', blank=True, null=True)
+    marital_status = models.CharField(choices=Constants.MARITAL_STATUS, max_length=50, blank=True, null=True) 
+    wife_name = models.CharField(max_length=200, default='', blank=True, null=True)
+    personal_email_id = models.EmailField(max_length=200, blank=True, null=True)
+    
+    def __str__(self):
+        return str(self.id) + ' - ' + str(self.faculty_user.id.user.username) + ' info'
+
+    class Meta:
+        db_table = 'Faculty Information'
+       
