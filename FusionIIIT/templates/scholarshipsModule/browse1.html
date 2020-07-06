@@ -3,18 +3,18 @@
 {% block viewstatus %}
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
-        <a class="{% if last_clicked == 'Accept_mcm' or last_clicked == 'Reject_mcm' or last_clicked == '' or last_clicked == 'Submit_previous_winner' or last_clicked == 'Enddate_updated' or last_clicked == 'Submit' %} active item {% else %} item {% endif %}" data-tab="mcm">
-            Mcm Scholarship
+        <a class="{% if last_clicked == 'Accept_MCM' or last_clicked == 'Reject_MCM' or last_clicked == '' or last_clicked == 'SubmitPreviousWinner' or last_clicked == 'Enddate_updated' or last_clicked == 'Submit' %} active item {% else %} item {% endif %}" data-tab="mcm">
+            Merit-cum-Means Scholarship
         </a>
 
-        <a class="{% if last_clicked == 'Accept_gold' or last_clicked == 'Reject_gold' or last_clicked == 'Accept_silver' or last_clicked == 'Reject_silver' or last_clicked == 'Accept_dm' or last_clicked == 'Reject_dm' %} active item {% else %} item {% endif %}" data-tab="convo">
+        <a class="{% if last_clicked == 'Accept_Gold' or last_clicked == 'Reject_Gold' or last_clicked == 'Accept_Silver' or last_clicked == 'Reject_Silver' or last_clicked == 'Accept_DM' or last_clicked == 'Reject_DM' %} active item {% else %} item {% endif %}" data-tab="convo">
             Convocation Medals
         </a>
     </div>
-<div class="{% if last_clicked == 'Accept_mcm' or last_clicked == 'Reject_mcm' or last_clicked == '' or last_clicked == 'Submit_previous_winner' or last_clicked == 'Enddate_updated' or last_clicked == 'Submit'  %} ui active tab {% else %} ui tab {% endif %}" data-tab="mcm">
+<div class="{% if last_clicked == 'Accept_MCM' or last_clicked == 'Reject_MCM' or last_clicked == '' or last_clicked == 'SubmitPreviousWinner' or last_clicked == 'Enddate_updated' or last_clicked == 'Submit'  %} ui active tab {% else %} ui tab {% endif %}" data-tab="mcm">
         <div class="ui vertical segment">
             <div class="ui header">
-                Mcm ScholarShip
+                Merit-cum-Means Scholarship
             </div>
             <div class="content">
                 <div class="description">
@@ -54,14 +54,14 @@
                             <form method='POST'>
                                 {% csrf_token %}
                                 <input type="hidden" name="id" value="{{winner.id}}"/>
-                            <button class="mini ui blue button" name="Accept_mcm" value="{{winner.id}}">Accept</button>
+                            <button class="mini ui blue button" name="Accept_MCM" value="{{winner.id}}">Accept</button>
                                 </form>
                         </td>
                         <td>
                             <form method='POST'>
                                 {%csrf_token %}
                                 <input type="hidden" name="id" value="{{winner.id}}"/>
-                            <button class="mini ui blue button" name="Reject_mcm" value="{{winner.id}}">Reject</button>
+                            <button class="mini ui blue button" name="Reject_MCM" value="{{winner.id}}">Reject</button>
                             </form>
                         </td>
 
@@ -76,7 +76,7 @@
     </div>
 </div>
 
-<div class="{% if last_clicked == 'Accept_gold' or last_clicked == 'Reject_gold' or last_clicked == 'Accept_silver' or last_clicked == 'Reject_silver' or last_clicked == 'Accept_dm' or last_clicked == 'Reject_dm' %} ui active tab {% else %} ui tab {% endif %}" data-tab="convo">
+<div class="{% if last_clicked == 'Accept_Gold' or last_clicked == 'Reject_Gold' or last_clicked == 'Accept_Silver' or last_clicked == 'Reject_Silver' or last_clicked == 'Accept_DM' or last_clicked == 'Reject_DM' %} ui active tab {% else %} ui tab {% endif %}" data-tab="convo">
     <div class="ui vertical segment">
         <div class="ui header">
             Convocation Medals
@@ -88,9 +88,9 @@
                     <label> Awards </label>
                     <select class="ui fluid search large dropdown" id="award_name" required onchange="java_script_:show(this.options[this.selectedIndex].value)">
                         <option value="">Select</option>
-                        <option value="gold">Director Gold Medal</option>
-                        <option value="silver">Director Silver Medal</option>
-                        <option value="dandm">D&M Proficiency Medal & Prize</option>
+                        <option value="gold">Director's Gold Medal</option>
+                        <option value="silver">Director's Silver Medal</option>
+                        <option value="dandm">D&M Proficiency Gold Medal</option>
                     </select>
                 </div>
 
@@ -136,14 +136,14 @@
                                     <form method='POST'>
                                         {% csrf_token %}
                                         <input type="hidden" name="id" value="{{winner.id}}"/>
-                                    <button class="ui blue button" name="Accept_dm" value="{{winner.id}}">Accept</button>
+                                    <button class="ui blue button" name="Accept_DM" value="{{winner.id}}">Accept</button>
                                         </form>
                                 </td>
                                 <td>
                                     <form method='POST'>
                                         {%csrf_token %}
                                         <input type="hidden" name="id" value="{{winner.id}}"/>
-                                    <button class="ui blue button" name="Reject_dm" value="{{winner.id}}">Reject</button>
+                                    <button class="ui blue button" name="Reject_DM" value="{{winner.id}}">Reject</button>
                                     </form>
                                 </td>
 
@@ -196,14 +196,14 @@
                                 <form method='POST'>
                                     {% csrf_token %}
                                     <input type="hidden" name="id" value="{{winner.id}}"/>
-                                <button class="ui blue button" name="Accept_silver" value="{{winner.id}}">Accept</button>
+                                <button class="ui blue button" name="Accept_Silver" value="{{winner.id}}">Accept</button>
                                     </form>
                             </td>
                             <td>
                                 <form method='POST'>
                                     {%csrf_token %}
                                     <input type="hidden" name="id" value="{{winner.id}}"/>
-                                <button class="ui blue button" name="Reject_silver"  value="{{winner.id}}">Reject</button>
+                                <button class="ui blue button" name="Reject_Silver"  value="{{winner.id}}">Reject</button>
                                 </form>
                             </td>
 
@@ -254,14 +254,14 @@
                                 <form method='POST'>
                                     {% csrf_token %}
                                     <input type="hidden" name="id" value="{{winner.id}}"/>
-                                <button class="ui blue button" name="Accept_gold" value="{{winner.id}}">Accept</button>
+                                <button class="ui blue button" name="Accept_Gold" value="{{winner.id}}">Accept</button>
                                     </form>
                             </td>
                             <td>
                                 <form method='POST'>
                                     {%csrf_token %}
                                     <input type="hidden" name="id" value="{{winner.id}}"/>
-                                <button class="ui blue button" name="Reject_gold" value="{{winner.id}}">Reject</button>
+                                <button class="ui blue button" name="Reject_Gold" value="{{winner.id}}">Reject</button>
                                 </form>
                             </td>
 

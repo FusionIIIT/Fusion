@@ -264,7 +264,7 @@
 
     </div>
 
-    <div class="ui tab" data-tab="appointmenthistory">
+  <!--  <div class="ui tab" data-tab="appointmenthistory">
         <div class="ui vertical segment" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
             <table class="ui very basic collapsing celled small fluid sortable table"
                    style="padding-left: 2.5%;padding-right: 2.5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
@@ -318,6 +318,62 @@
                     <td>
                       {{appointment.schedule.to_time}}
                     </td>
+					<td>
+
+                        <input type="button" onclick="rm({{appointment.pk}})" id="{{appointment.pk}}" name="cancel" value="Cancel"class="ui red button" />
+
+                    </td> 
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div> -->
+    <div class="ui tab" data-tab="appointmenthistory">
+        <div class="ui vertical segment" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+            <table class="ui very basic collapsing celled large sortable table"
+                   style="padding-left: 2.5%;
+                                                          padding-right: 2.5%;
+                                                          padding-top: 1%;
+                                                          padding-bottom: 1.5%;
+                                                          margin: auto;">
+                <thead>
+                <tr>
+
+                    <th class="three wide">
+                        Doctor
+                    </th>
+
+                    <th>
+                      Description
+                    </th>
+
+                    <th>
+                     Date
+                    </th>
+
+                  
+
+
+                </tr>
+                </thead>
+
+                <tbody>
+                {% for appointment in appointments %}
+                <tr>
+                    <td>
+                        {{appointment.doctor_id}}
+                    </td>
+
+                    <td>
+                        {{appointment.description}}
+                    </td>
+
+                    <td style="white-space:nowrap;">
+                        {{appointment.date}}
+                    </td>
+
+                   
 					<td>
 
                         <input type="button" onclick="rm({{appointment.pk}})" id="{{appointment.pk}}" name="cancel" value="Cancel"class="ui red button" />

@@ -1,6 +1,7 @@
 from django.conf.urls import url
 
 from . import views
+app_name = 'online_cms'
 
 urlpatterns = [
 
@@ -22,8 +23,8 @@ urlpatterns = [
         name='add_document'),
     url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/add_assignment$',
         views.add_assignment, name='add_assignment'),
-    url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/add_video$', views.add_videos,
-        name='add_videos'),
+    # url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/add_video$', views.add_videos,
+    #     name='add_videos'),
     url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/delete/$', views.delete,
         name='delete'),
     url(r'^(?P<course_code>[A-z]+[0-9]+[A-z]?)/ajax_assess$', views.ajax_assess,

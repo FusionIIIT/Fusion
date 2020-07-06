@@ -1,0 +1,392 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+    Gymkhana Module
+{% endblock %}
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+ <script type="text/javascript">
+
+
+        function form_submit(b,event){
+            $("#dateDetails").html('');
+
+
+            // alert(b);
+            event.preventDefault();
+            var form = document.getElementById(b); // You need to use standard javascript object here
+            console.log(b);
+
+            var i ;
+            for(i=0 ; i<form.length ; i++){
+                console.log(form.elements[i].name) ;
+                console.log(form.elements[i].value) ;
+            }
+            var status = 1 ;
+
+            if (b == 'new_session_form'){
+                status = validateNewSessionForm(form);
+            }
+
+
+
+        function validateNewSessionForm(form){
+            var i, startTime, endTime ;
+            var empty = new Array() ;
+            for (i=0 ; i<form.length; i++){
+                if(form.elements[i].value == "" && form.elements[i].name != ""){
+                    empty.push(form.elements[i].name);
+                }
+                else if (form.elements[i].name=="start_time"){
+                    startTime = form.elements[i].value ;
+                }
+                else if (form.elements[i].name=="end_time"){
+                    endTime = form.elements[i].value ;
+                }
+            }
+            var ret = 0 ;
+            //this array contains names of all the input fields included in newsession form
+            if(empty && empty.length && !(empty.length == 1 && empty[0] == "session_poster")){
+                // code to be executed if some fields are empty except session poster field
+                console.log("empty") ;
+                if (endTime <= startTime)
+                    $("#errorContent").append("<p><b>Start Time should be strictly less than end time.</b></p>");
+                $(".formErrors").modal('show') ;
+                ret = 1 ;
+                // form.reset();-
+                // setTimeout(function(){ location.reload(); }, 5000);
+            }
+            else if (endTime <= startTime)
+            {
+                console.log("time problem") ;
+                $("#errorContent").html("<p><b>Start Time should be strictly less than end time.</b></p>");
+                $(".formErrors").modal('show') ;
+                ret = 1 ;
+                // setTimeout(function(){ location.reload(); }, 5000);
+            }
+            return ret ;
+        }
+
+
+
+
+
+        }
+
+    </script>
+
+
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+        {% comment %}
+            The left-rail segment starts here!
+        {% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+
+            <div class="ui divider"></div>
+
+        </div>
+
+
+
+
+        {% comment %}
+            The central-rail segment starts here!
+        {% endcomment %}
+        <div class="eight wide column">
+            {% comment %}The Details start here!{% endcomment %}
+  <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="newsession">
+            Edit Session
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="newsession" >
+        <div class="ui vertical segment">
+            <form method="post" action='/gymkhana/{{form.id}}/editsession/' id="new_session_form" enctype="multipart/form-data">
+            {% csrf_token %}
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+             <div class="column"></div>
+
+                         <div class="eleven wide column">
+                    <div class="field">
+                        <label> {{ club_details }} </label>
+                    </div>
+                             <div class="field">
+                          <label>Old Venue</label>
+                      <textarea disabled id="wreview" name="w3review" rows="1" cols="10">{{form.venue}}</textarea>
+                      </div>
+                   <div class="field" id="dest_choices">
+                        <label>New Venue </label>
+                        {{ choice }}
+                    </div>
+
+                    <div class="field venueType">
+                        <div class="ui selection dropdown">
+                            <input  type="hidden" name="venue_type" id="venue_type" >
+                            <i class="dropdown icon" ></i>
+                            <div class="default text">select</div>
+                            <div class="menu">
+                                {% for i in form.Venue %}
+                                    <div class="item" data-value="{{i}}">{{i}}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                     </div>
+                         <div class="Two fields">
+                      <div class="field">
+                        <label>Date</label>
+                        <div class="ui input left icon">
+                            <i class="calendar icon"></i>
+                            <input type="date" value="{{form.date}}" data-date-format="YYYY-MM-DD" placeholder="From" id = "sessions_date" name="date" oninput="showSessions()" required>
+                        </div>
+                      </div>
+
+                   </div>
+                      <div class="Two fields">
+                      <div class="field">
+                          <label>Old Start Time</label>
+                          <textarea disabled id="review" name="w3review" rows="1" cols="5">{{form.start_time}}</textarea>
+                      </div>
+
+                        <div class="field">
+                            <label>Old End Time</label>
+                            <textarea disabled id="myTextArea"  style="font-weight: bold" name="w3review" rows="1" cols="4">{{form.end_time}}</textarea>
+                        </div>
+                    </div>
+
+
+                    <div class="Two fields">
+                      <div class="field">
+                          <label>New Start Time</label>
+                          <input type="time" class="ui large input" name="start_time" required>
+                      </div>
+
+                        <div class="field">
+                            <label>New End Time</label>
+                            <input type="time"  class="ui large input" name="end_time" required>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Poster (if any)</label>
+                        <input class="ui input" id="fileUpload1" onchange="return ValidateExtension1();" type="file" accept="image/*" name="session_poster" ></input>
+                    </div>
+                    <div class="field">
+                        <label>Details & Description</label>
+                        <textarea rows="2" name="d_d" required>{{form.desc}}</textarea>
+                    </div>
+                             <div><span id="output"></span></div>
+
+                    <div class="field">
+                        <button class="ui primary button right floated" type="submit" onclick="form_submit('{{form.id}}/editsession','new_session_form',event)">
+                            Submit
+                        </button>
+                    </div>
+                </div>
+                </div>
+            </form>
+            <br>
+            <br>
+        </div>
+        <br>
+        <div class="extra content"></div>
+    </div>
+        </div>
+
+        {% comment %}The central-rail segment ends here!{% endcomment %}
+
+
+
+
+
+        {% comment %}The right-rail segment starts here!{% endcomment %}
+        <div class="three wide column " id="dateDetails">
+            <div class="row">
+                {% comment %}
+                    TODO: the right rail!
+                {% endcomment %}
+            </div>
+        </div>
+        {% comment %}The right-rail segment ends here!{% endcomment %}
+
+        {% comment %}The right-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+    </div>
+
+
+
+    {% comment %}The grid ends here!{% endcomment %}
+
+    <!-- time slot error modal -->
+    <div class="ui basic modal err">
+      <div class="ui icon header">
+        <i class="bell icon"></i>
+        <a class="ui orange label">Time Slot Fault</a>
+      </div>
+      <div class="content">
+        <p><center><b>The selected time slot for the given date and venue conflicts with already booked session.</b></center></p>
+      </div>
+      <div class="actions">
+        <div class="ui red basic cancel inverted button">
+          <i class="remove icon"></i>
+          Try Again
+        </div>
+      </div>
+    </div>
+    <!-- form successfull submission modal -->
+    <div class="ui basic modal succ">
+      <div class="ui icon header">
+        <i class="bell icon"></i>
+        <a class="ui green label">Success</a>
+      </div>
+      <div class="content" id="modalBody">
+        <p><center><b>The form has been dispatched for further process</b></center></p>
+      </div>
+      <div class="actions">
+        <div class="ui red basic cancel inverted button">
+          <i class="remove icon"></i>
+          Cancel
+        </div>
+      </div>
+    </div>
+    <!-- form errors modal -->
+    <div class="ui basic modal formErrors">
+      <div class="ui icon header">
+        <i class="bell icon"></i>
+        <a class="ui red label">Error</a>
+      </div>
+      <div class="content">
+        <center>
+            <div id="errorContent">
+                <!-- This content will change based on type of error -->
+                <p><b>All the fields are required except session poster</b></p>
+            </div>
+        </center>
+      </div>
+      <div class="actions">
+        <div class="ui red basic cancel inverted button">
+          <i class="remove icon"></i>
+          Cancel
+        </div>
+      </div>
+    </div>
+
+
+{% endblock %}
+
+
+{% block javascript %}
+<script>
+function Bold() {
+    document.getElementById("myTextArea").style.fontWeight = 'bold';
+}
+</script>
+
+
+    <script>
+
+        $(document).ready(function() {
+            $("div.venueType").find("div.dropdown").find("div.text").html('');
+        });
+        function showSessions(){
+            var date = $("#sessions_date").val() ;
+            $.ajax({
+                url: "/gymkhana/date_sessions/",
+                type: "post",
+                data: {'date':date},
+                success: function(response){
+                    // console.log("hello")
+                    // console.log(response)
+                    response = JSON.parse(response);
+                    $("#dateDetails").html('<h2>Booked Sessions</h2>');
+                    if (jQuery.isEmptyObject(response) == false){
+                        for(var key in response){
+                            $("#dateDetails").append(
+                                '<table class="ui celled table segment"><thead><tr>\
+                                <th>'+response[key].fields.club+'</th>\
+                                <th>'+response[key].fields.start_time+'<br><center>to</center>'+response[key].fields.end_time+'</th>\
+                                <th>'+response[key].fields.venue+'</th>\
+                                </tr></thead><tbody>\
+                                <tr><td colspan="3"><b>'+response[key].fields.status+'</b></td></tr>\
+                                </tbody></table>') ;
+                        }
+                    }
+                    else
+                    {
+                        $("#dateDetails").append('<h5>No booked sessions for the selected date</h5>');
+                    }
+                }
+            })
+        }
+        // $("#sessions_date").datepicker({
+        //     onSelect: function(dateText, inst) {
+        //         var date = $(this).val() ;
+        //         console.log(date) ;
+        //     }
+        // });
+    </script>
+
+        <script>
+
+            function getDifference(a, b)
+                {
+                    var i = 0;
+                    var j = 0;
+                    var result = "";
+
+                    while (j < b.length)
+                    {
+                        if (a[i] != b[j] || i == a.length)
+                            result += b[j];
+                        else
+                            i++;
+                        j++;
+                    }
+                    return result;
+                }
+        $('#venue_type').change(function(){
+            $("#venue_details").val('') ;
+            $("div.venueDetails").find("div.dropdown").find("div.text").html('');
+            var venueType = $('#venue_type option:selected').text() ;
+            $.ajax({
+                url: "/gymkhana/get_venue/",
+                type: "post",
+                data: {'venueType':venueType},
+                success: function(response){
+                    // console.log("Hii")
+                    response = JSON.parse(response);
+                    var i ;
+                    $('#set_choices').empty();
+                    for(i=0 ; i<response.length ; i++){
+                        console.log(response[i])
+                        $('#set_choices').append($('<option>', {
+                            value: response[i],
+                            text: response[i]
+                        }));
+                    }
+                }
+            });
+        });
+
+    </script>
+
+
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+{% endblock %}

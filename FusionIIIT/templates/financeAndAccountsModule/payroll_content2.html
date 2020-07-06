@@ -44,43 +44,41 @@
             <table class="ui very basic collapsing celled sortable table"
                    style="padding-left: 2.5%;padding-right: 2.5%;padding-top: 1%;padding-bottom: 1.5%;margin: auto;">
                 <thead>
-                <tr>
-                    
+                    <tr>
+                        
 
-                    <th>
-                        PF
-                    </th>
+                        <th>
+                            PF
+                        </th>
 
 
-                    <th>
-                        Name
-                    </th>
+                        <th>
+                            Name
+                        </th>
 
-                    <th>
-                        Designation
-                    </th>
+                        <th>
+                            Designation
+                        </th>
 
-                    <th>
-                        Gross Reduction
-                    </th>
+                        <th>
+                            Gross Reduction
+                        </th>
 
-                    <th>
-                        Net Payment
-                    </th>
-                </tr>
+                        <th>
+                            Net Payment
+                        </th>
+                    </tr>
                 </thead>
 
                 <tbody>
                 
-                        {% for info in c %}
-                        <tr>
+                    {% for info in c %}
+                    <tr>
                             
 
                             <td>
                                 {{ info.pf }}
                             </td>
-
-                            
 
                             <td>
                                 {{ info.name }}
@@ -91,21 +89,19 @@
                             </td>
 
                             <td>
-                                {{ info.pf }}
+                                {{ info.gr_reduction }}
                             </td>
 
                             <td>
-                                {{ info.pf }}
+                                {{ info.net_payment }}
                             </td>
 
                             
                     </tr>
-                        {% endfor %}
+                    {% endfor %}
                 
                 </tbody>
             </table>
-
-
 
         </div>
     </div>

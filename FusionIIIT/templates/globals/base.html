@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Fusion!
@@ -7,6 +8,8 @@
     </title>
 
     {% load static %}
+
+    {% block override_base_links %}
     <link rel="stylesheet" type="text/css" href="{% static 'globals/semantic-ui/components/reset.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'globals/semantic-ui/components/icon.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'globals/css/semantic.min.css' %}">
@@ -21,36 +24,40 @@
     <script type="text/javascript" src="{% static 'globals/js/semantic-notify.js' %}"> </script>
     <script type="text/javascript" src="{% static 'globals/js/ajax-post.js' %}"></script>
     <script type="text/javascript" src="{% static 'globals/js/notify.js' %}"></script>
+    {% endblock override_base_links %}
+
     {% block css %}
-    {% endblock %}
+    {% endblock css %}
 
 </head>
 
 {% comment %}style="background-color: rgba(189, 189, 189, 0.1);"{% endcomment %}
+
 <body id="body">
 
     {% block body %}
-        {% block navBar %}
-        {% endblock %}
-    {% endblock %}
+    {% block navBar %}
+    {% endblock navBar %}
+    {% endblock body %}
 
     <div id="messages">
         {% for message in messages %}
-            <div class="message" tag="{% if 'success' in message.tags %}green{% elif 'error' in message.tags %}red{% else %} blue {% endif %}" message="{{ message|safe }}"></div>
+        <div class="message"
+            tag="{% if 'success' in message.tags %}green{% elif 'error' in message.tags %}red{% else %} blue {% endif %}"
+            message="{{ message|safe }}"></div>
         {% endfor %}
     </div>
 
     <script>
+        $(document).ready(function () {
 
-        $(document).ready(function() {
-
-            $('#messages').find('.message').each(function(){
+            $('#messages').find('.message').each(function () {
                 $.uiAlert({
                     textHead: $(this).attr('message'), // header
                     text: '',
                     bgcolor: $(this).attr('tag'), // background-color
                     textcolor: '#fff', // color
-                    position: 'bottom-left',// position . top And bottom ||  left / center / right
+                    position: 'bottom-left', // position . top And bottom ||  left / center / right
                     time: 3, // time
                 });
             });
@@ -66,29 +73,26 @@
                         show: 250,
                         hide: 500
                     }
-                })
-            ;
+                });
         });
     </script>
 
     <script>
-        $(document).ready(function(){
+        $(document).ready(function () {
             newNotification();
             newNotification();
             newNotification();
 
             $('.ui.accordion').accordion('refresh');
             $('.ui.sidebar')
-            //.sidebar('toggle')
+                //.sidebar('toggle')
                 .sidebar('attach events', '#navbar #sidebartrigger')
-                .sidebar('setting', 'transition', 'overlay')
-            ;
+                .sidebar('setting', 'transition', 'overlay');
         });
-
     </script>
 
     <script>
-        function newNotification(){
+        function newNotification() {
 
             console.log('A new Notification added!');
 
@@ -136,4 +140,5 @@
     {% endblock %}
 
 </body>
+
 </html>

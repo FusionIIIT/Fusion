@@ -68,8 +68,11 @@ def mess(request):
         monthly_bill = Monthly_bill.objects.filter(student_id=student)
         payments = Payments.objects.filter(student_id=student)
         rebates = Rebate.objects.filter(student_id=student).order_by('-app_date')
-        splrequest = Special_request.objects.filter(student_id=student).order_by('-app_date')
+        splrequest = Special_request.objects.filter(student_id=student).order_by('-app_date') 
         mess_optn = Messinfo.objects.get(student_id=student)
+        print(student)
+        print(33333333333333333333333333333333333)
+        
         if student.programme == 'B.Tech' or student.programme == 'B.Des':
             programme = 1
         else:

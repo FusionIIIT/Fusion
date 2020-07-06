@@ -83,7 +83,8 @@ input:checked + .slider:before {
 <div class="ui active tab segment" id="refresh_attend_tab" data-tab="view">
 
 	<p> Total Attendance = {{total_attendance}} </p>
-    <table class="ui fixed sortable celled table table">
+	<div style="overflow:scroll;height:38em;overflow-x:hidden;">
+    <table class="ui fixed single line sortable celled table">
         <thead>
             <tr>
                 <th style="width: 30%;">Roll No.</th>
@@ -112,7 +113,7 @@ input:checked + .slider:before {
         </tbody>
     </table>  
 </div>
-
+</div>
 <div class="ui tab segment" id="refresh_submit_tab" data-tab="submit">
     <form class="ui form" id="attendance_submit" method="post" action="/ocms/{{curriculum.course_code}}/attendance">
     {% csrf_token %}
@@ -123,8 +124,8 @@ input:checked + .slider:before {
          </div>
 
 
-
-	    <table class="ui fixed sortable celled table table">
+	<div style="overflow:scroll;height:38em;overflow-x:hidden;">
+    <table class="ui fixed single line sortable celled table">
 	        <thead>
 	            <tr>
 	                <th style="width: 30%;">Roll No.</th>
@@ -148,6 +149,7 @@ input:checked + .slider:before {
                
             </tbody>
 	    </table>
+	</div>
 
 	   <!--  <div class="one wide field">
             <label><br></label>

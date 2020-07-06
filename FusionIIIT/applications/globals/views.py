@@ -24,6 +24,7 @@ from applications.placement_cell.models import (Achievement, Course, Education,
                                                 Project, Publication, Skill, PlacementStatus)
 from Fusion.settings.common import LOGIN_URL
 from notifications.models import Notification
+from .models import *
 
 def index(request):
     context = {}
@@ -703,8 +704,16 @@ def dashboard(request):
             'students_2015': students_2015}
     user=request.user
     notifs=request.user.notifications.all()
+    name = request.user.first_name +"_"+ request.user.last_name
+    desig = list(HoldsDesignation.objects.all().filter(working = request.user).values_list('designation'))
+    b = [i for sub in desig for i in sub]
+    roll_ = []
+    for i in b :
+        name_ = get_object_or_404(Designation, id = i)
+        roll_.append(str(name_.name))
     context={
-        'notifications':notifs
+        'notifications':notifs,
+        'Curr_desig' : roll_,
     }
     if(request.user.get_username() == 'director'):
         return render(request, "dashboard/director_dashboard2.html", data)

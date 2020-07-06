@@ -1,6 +1,8 @@
-{% load static %} {% block comments %}
+{% load static %}
+{% load humanize %}
+{% block comments %}
 
-<div class="ui segment comments" style="height:47em;overflow:scroll;overflow-x:hidden;">
+<div class="ui segment comments" style="height:45em;overflow:scroll;overflow-x:hidden;">
     <h3 class="ui dividing header">Comments</h3>
     {% for key, value in answers.items %}
     <div class="question" id="question{{key.pk}}">
@@ -11,14 +13,14 @@
             <div class="content" data-pk="{{key.pk}}" id="question{{key.pk}}">
                 <a class="author">{{key.commenter_id.user.get_full_name}}</a>
                 <div class="metadata">
-                    <span class="date">{{key.comment_time}}</span>
+                    <span class="date">{{key.comment_time | naturaltime }}</span>
                 </div>
 
                 <div class="text">
                     <p>{{key.comment}}</p>
                 </div>
                 <div class="actions">
-                    <a class="reply remove_q" data-user="{{key.commenter_id.user.pk}}" data-pk="{{key.pk}}" id="remove{{key.pk}}" name="remove{{key.pk}}">remove</a>
+                    <a class="reply remove_q" data-user="{{key.commenter_id.user.pk}}" data-pk="{{key.pk}}" id="remove{{key.pk}}" name="remove{{key.pk}}">Remove</a>
                 </div>
             </div>
         </div>
@@ -37,7 +39,7 @@
                         {{v.forum_reply.comment}}
                     </div>
                     <div class="actions">
-                        <a class="reply remove_r" data-user="{{v.forum_reply.commenter_id.user.pk}}" data-pk="{{v.forum_reply.pk}}" id="remove{{v.forum_reply.pk}}" name="remove{{v.forum_reply.pk}}">remove</a>
+                        <a class="reply remove_r" data-user="{{v.forum_reply.commenter_id.user.pk}}" data-pk="{{v.forum_reply.pk}}" id="remove{{v.forum_reply.pk}}" name="remove{{v.forum_reply.pk}}">Remove</a>
                     </div>
                 </div>
             </div>

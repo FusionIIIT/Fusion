@@ -9,7 +9,6 @@
             });
         });
         console.log(color)
-
     </script> -->
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="newsession">
@@ -45,7 +44,6 @@
                         <!-- <select  class="ui search dropdown" name="venue_type" id="venue_type" onchange="display_club_session()" required>
                             <option value="">Select</option>
                                   {% for i in venue_type  %}
-
                                         <option id="selected_value" value="{{ i }}">{{ i }} </option>
                                 {% endfor %}
                         </select> -->
@@ -74,8 +72,7 @@
                     </div>
                     <div class="field">
                         <label>Poster (if any)</label>
-                        <input class="ui input" id="fileUpload1" onchange="return ValidateExtension1();" type="file" name="session_poster" required></input>
-                        <span id="lblError1" style="color: red;"></span>
+                        <input class="ui input" id="fileUpload1" onchange="return ValidateExtension1();" type="file" accept="image/*" name="session_poster" required></input>
                     </div>
                     <div class="field">
                         <label>Details & Description</label>
@@ -141,9 +138,4 @@
         });
 
     </script>
-
-
-
-
-
 {% endblock %}

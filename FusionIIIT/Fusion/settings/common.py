@@ -103,6 +103,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
+    'django.contrib.humanize',
     'applications.eis',
     'notification',
     'notifications',
@@ -123,6 +124,7 @@ INSTALLED_APPS = [
     'applications.placement_cell',
     'applications.scholarships',
     'applications.visitor_hostel',
+    'applications.establishment',
     'applications.estate_module',
     'allauth',
     'allauth.account',
@@ -152,7 +154,7 @@ ROOT_URLCONF = 'Fusion.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['templates'],
+        'DIRS': [os.path.join(BASE_DIR, '..', 'templates/'),],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -236,9 +238,9 @@ SITE_ID = 1
 
 # os.path.join(BASE_DIR, 'static/')
 STATIC_URL = '/static/'
-STATIC_ROOT = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, '..', 'static/')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-MEDIA_ROOT = 'media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, '..', 'media/')
 MEDIA_URL = '/media/'
 
 ACCOUNT_USERNAME_REQUIRED = False
@@ -256,3 +258,4 @@ DJANGO_NOTIFICATIONS_CONFIG = {
 CRISPY_TEMPLATE_PACK = 'semantic-ui'
 CRISPY_ALLOWED_TEMPLATE_PACKS = ('semantic-ui')
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240
+YOUTUBE_DATA_API_KEY = 'AIzaSyBnrKSyXlcmko9mKV1LRfAQeS2FGmlsMPc'
