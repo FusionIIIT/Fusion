@@ -322,53 +322,6 @@ def handle_ltc_admin(request):
 
 # TODO THIS
 def generate_fm_admin_lists(request):
-
-    # # only requested and adjustment_pending
-    # unreviewed_apps = (Cpda_application.objects
-    #             .exclude(status='rejected')
-    #             .exclude(status='finished')
-    #             .exclude(status='approved')
-    #             .order_by('-request_timestamp'))
-    # pending_apps = []
-    # under_review_apps = []
-    # for app in unreviewed_apps:
-    #     if app.tracking_info.review_status == 'under_review':
-    #         under_review_apps.append(app)
-    #     else:
-    #         pending_apps.append(app)
-
-    # # combine assign_form object into unreviewed_app object respectively
-    # for app in unreviewed_apps:
-    #     # if status is requested:to_assign/reviewed
-    #     if app.status == 'requested':
-    #         temp = Assign_Form(initial={'status': 'requested', 'app_id': app.id})
-    #         temp.fields["status"]._choices = [
-    #             ('requested', 'Requested'),
-    #             ('approved', 'Approved'),
-    #             ('rejected', 'Rejected')
-    #         ]
-    #     # if status is adjustments_pending:to_assign/reviewed
-    #     else:
-    #         temp = Assign_Form(initial={'status': 'adjustments_pending', 'app_id': app.id})
-    #         temp.fields["status"]._choices = [
-    #             ('adjustments_pending', 'Adjustments Pending'),
-    #             ('finished', 'Finished')
-    #         ]
-    #     app.assign_form = temp
-    #     # print (app.assign_form.fields['status']._choices)
-        
-    # # only approved
-    # approved_apps = (Cpda_application.objects
-    #                 .filter(status='approved')
-    #                 .order_by('-request_timestamp'))
-
-    # # only rejected and finished
-    # archived_apps = (Cpda_application.objects
-    #                 .exclude(status='approved')
-    #                 .exclude(status='requested')
-    #                 .exclude(status='adjustments_pending')
-    #                 .order_by('-request_timestamp'))
-
     new_employee_form = Employee_Registration_Form()
     response = {
         'admin': True,
