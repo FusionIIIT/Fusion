@@ -30,16 +30,12 @@
                     LTC Management
                     <i class="right floated chevron right icon"></i>
                 </a>
-                {% comment %}
+                {% if admin %}
                 <a class="item" data-tab="third">
-                    APR / Appraisals
+                    Faculty Management
                     <i class="right floated chevron right icon"></i>
                 </a>
-                {% endcomment %}
-                <a class="item" data-tab="fourth">
-                    Create Payroll Slip
-                    <i class="right floated chevron right icon"></i>
-                </a>
+                {% endif %}
             </div>
         </div>
         {% comment %}The left-rail segment ends here!{% endcomment %}
@@ -48,7 +44,7 @@
 
         {% comment %}The central-rail segment starts here!{% endcomment %}
         <div class="eight wide column">
-            <div class="ui active  tab segment" data-tab="first">
+            <div class="ui active tab segment" data-tab="first">
                 {% block cpda %}
                     {% if admin %}
                         {% include 'establishment/cpda_admin.html' %}
@@ -66,16 +62,11 @@
                     {% endif %}
                 {% endblock %}
             </div>
-            {% comment %}
             <div class="ui tab segment" data-tab="third">
-                {% block appraisal %}
-                    {% include 'establishment/appraisal.html' %}
-                {% endblock %}
-            </div>
-            {% endcomment %}
-            <div class="ui tab segment" data-tab="fourth">
-                {% block payroll_slip %}
-                    {% include 'establishment/payroll_slip.html' %}
+                {% block fm %}
+                    {% if admin %}
+                        {% include 'establishment/fm_admin.html' %}
+                    {% endif %}
                 {% endblock %}
             </div>
         </div>

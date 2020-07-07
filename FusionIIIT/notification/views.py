@@ -329,5 +329,7 @@ def establishment_notif(sender, recipient, type):
         verb = sender.username + " has submitted a LTC application. Please assign it to required reviewer."
     elif type == 'ltc_review_submit':
         verb = sender.username + " has submitted a review for a LTC application. Please take further action."
+    elif type == 'fm_new_faculty':
+        verb = "Welcome to Fusion!"
 
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)

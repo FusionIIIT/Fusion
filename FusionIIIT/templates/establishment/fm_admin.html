@@ -1,0 +1,85 @@
+{% load semanticui %}
+{% load static %}
+{% block fm %}
+<div class="ui top attached tabular menu">
+    <a class="item active" data-tab="fmone">
+        New Registration
+    </a>
+    <a class="item" data-tab="fmtwo">
+        Edit Employee Details
+    </a>
+    <a class="item" data-tab="fmthree">
+        Archive Employee 
+    </a>
+</div>
+
+<!-- fm faculty management new faculty form -->
+<div class="ui bottom attached tab segment active" data-tab="fmone">
+    <div class="content">
+        <div class="description">
+            <form class="ui large form" method="post" enctype="multipart/form-data" id="form1">
+                {% csrf_token %}
+                <div class="field">
+                    {% render_field fm_add_employee_form.username  %} 
+                    {% render_field fm_add_employee_form.password  %} 
+                    {% render_field fm_add_employee_form.password2  %} 
+                    {% render_field fm_add_employee_form.pf_number  %} 
+                    {% render_field fm_add_employee_form.email  %} 
+                    {% render_field fm_add_employee_form.first_name  %} 
+                    {% render_field fm_add_employee_form.last_name  %} 
+                    {% render_field fm_add_employee_form.title  %} 
+                    {% render_field fm_add_employee_form.gender  %} 
+                    {% render_field fm_add_employee_form.dob  %} 
+                    {% render_field fm_add_employee_form.address  %} 
+                    {% render_field fm_add_employee_form.address_city  %} 
+                    {% render_field fm_add_employee_form.address_state  %} 
+                    {% render_field fm_add_employee_form.phone_no  %} 
+                    {% render_field fm_add_employee_form.department  %} 
+                    {% render_field fm_add_employee_form.designation  %} 
+                    {% render_field fm_add_employee_form.date_of_joining  %} 
+                    {% render_field fm_add_employee_form.joining_payscale  %} 
+                    {% render_field fm_add_employee_form.isVacational  %} 
+                    {% render_field fm_add_employee_form.category  %} 
+                    {% render_field fm_add_employee_form.pan_number  %} 
+                    {% render_field fm_add_employee_form.aadhar_number  %} 
+                    {% render_field fm_add_employee_form.local_address  %} 
+                    {% render_field fm_add_employee_form.marital_status  %} 
+                    {% render_field fm_add_employee_form.spouse_name  %} 
+                    {% render_field fm_add_employee_form.children_info  %} 
+                    {% render_field fm_add_employee_form.personal_email_id  %} 
+                </div>
+                <br>
+                <button type="submit" name="fm_new_employee" class="ui large primary button">
+                    Register New Employee
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- fm edit employee details -->
+<div class="ui bottom attached tab segment" data-tab="fmtwo">
+    <div class="content">
+        <div class="description">
+            Coming soon...
+        </div>
+    </div>
+</div>
+
+<!-- fm archive employee -->
+<div class="ui bottom attached tab segment" data-tab="fmthree">
+    <div class="content">
+        <div class="description">
+            Coming soon...
+        </div>
+    </div>
+</div>
+
+
+
+{% endblock %}
+{% block javascript %}
+<script>
+
+</script>
+{% endblock %}

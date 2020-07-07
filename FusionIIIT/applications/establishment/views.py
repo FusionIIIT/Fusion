@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
+from applications.globals.models import ExtraInfo, HoldsDesignation, Designation, DepartmentInfo
 from notification.views import establishment_notif
 
 from datetime import datetime
@@ -28,7 +28,7 @@ def is_eligible(request):
 
 def is_fm(dictx):
     for key in dictx.keys():
-        if 'fa' in key:
+        if 'fm_' in key:
             return True
     return False
 
@@ -49,36 +49,98 @@ def is_ltc(dictx):
 
 # TODO THIS
 def handle_fm_admin(request):
-    if 'fm_new_faculty' in request.POST:
+    if 'fm_new_employee' in request.POST:
+        # print (request.POST)
         username = request.POST.get('username')
-        if not User.objects.filter(username=username).exists():
-            messages.error(request, 'The given user does not exist')
+        if User.objects.filter(username=username).exists():
+            messages.error(request, 'The given user ALREADY exists')
             return
 
-        user_id = User.objects.get(username=username)
-        if Ltc_eligible_user.objects.filter(user=user_id).exists():
-            messages.error(request, 'This user is already eligible for availing LTC')
+        password = request.POST.get('password')
+        password2 = request.POST.get('password2')
+        if password != password2:
+            messages.error(request, 'The given passwords do not match.')
             return
 
-        joining_date = request.POST.get('joining_date')
-        current_block_size = request.POST.get('current_block_size')
-        total_ltc_allowed = request.POST.get('total_ltc_allowed')
-        hometown_ltc_allowed = request.POST.get('hometown_ltc_allowed')
-        elsewhere_ltc_allowed = request.POST.get('elsewhere_ltc_allowed')
-        hometown_ltc_availed = request.POST.get('hometown_ltc_availed')
-        elsewhere_ltc_availed = request.POST.get('elsewhere_ltc_availed')
-
-        eligible_user = Ltc_eligible_user.objects.create(
-            user = user_id,
-            date_of_joining = joining_date,
-            current_block_size = current_block_size,
-            total_ltc_allowed = total_ltc_allowed,
-            hometown_ltc_allowed = hometown_ltc_allowed,
-            elsewhere_ltc_allowed = elsewhere_ltc_allowed,
-            hometown_ltc_availed = hometown_ltc_availed,
-            elsewhere_ltc_availed = elsewhere_ltc_availed
+        email = request.POST.get('email')
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        user = User.objects.create(
+            username = username,
+            first_name = first_name,
+            last_name = last_name,
+            email = email
         )
-        messages.success(request, 'New LTC eligible user succesfully created')
+        user.set_password(password)
+        user.save()
+        
+        title = request.POST.get('title')
+        gender = request.POST.get('gender')
+        dob = request.POST.get('dob')
+        address = request.POST.get('address')
+        phone_no = request.POST.get('phone_no')
+        dept = request.POST.get('department')
+        department = DepartmentInfo.objects.filter(id=dept).first()
+        # I'm using username as an id for Extra_info
+        extra_info = ExtraInfo.objects.create(
+            id = username,
+            user = user,
+            title = title,
+            sex = gender,
+            date_of_birth = dob,
+            address = address,
+            phone_no = phone_no,
+            user_type = 'faculty',
+            department = department,
+        )
+        faculty = Faculty.objects.create(
+            id = extra_info
+        )
+
+        pf_number = request.POST.get('pf_number')
+        date_of_joining = request.POST.get('date_of_joining')
+        joining_payscale = request.POST.get('joining_payscale')
+        isVac = request.POST.get('isVacational')
+        if isVac == 'on':
+            isVacational = True
+        else:
+            isVacational = False
+        category = request.POST.get('category')
+        desig = request.POST.get('designation')
+        designation = Designation.objects.filter(id=desig).first()
+        pan_number = request.POST.get('pan_number')
+        aadhar_number = request.POST.get('aadhar_number')
+        local_address = request.POST.get('local_address')
+        marital_status = request.POST.get('marital_status')
+        spouse_name = request.POST.get('spouse_name')
+        children_info = request.POST.get('children_info')
+        personal_email_id = request.POST.get('personal_email_id')
+
+        faculty_info = Faculty_Info.objects.create(
+            faculty_user = faculty,
+            pf_number = pf_number,
+            joining_date = date_of_joining,
+            designation = designation,
+            joining_payscale = joining_payscale,
+            is_vacational = isVacational,
+            category = category,
+            pan_number = pan_number,
+            aadhar_number = aadhar_number,
+            local_address = local_address,
+            marital_status = marital_status,
+            spouse_name = spouse_name,
+            children_info = children_info,
+            personal_email_id = personal_email_id,
+            is_archived = False
+        )
+        HoldsDesignation.objects.create(
+            user = user,
+            working = user,
+            designation = designation,
+            held_at = datetime.now()
+        )
+        establishment_notif(user, user, 'fm_new_faculty')
+        messages.success(request, 'New Faculty user succesfully created')
 
     # elif 'fm_edit_faculty' in request.POST:
 
@@ -261,58 +323,56 @@ def handle_ltc_admin(request):
 # TODO THIS
 def generate_fm_admin_lists(request):
 
-    # only requested and adjustment_pending
-    unreviewed_apps = (Cpda_application.objects
-                .exclude(status='rejected')
-                .exclude(status='finished')
-                .exclude(status='approved')
-                .order_by('-request_timestamp'))
-    pending_apps = []
-    under_review_apps = []
-    for app in unreviewed_apps:
-        if app.tracking_info.review_status == 'under_review':
-            under_review_apps.append(app)
-        else:
-            pending_apps.append(app)
+    # # only requested and adjustment_pending
+    # unreviewed_apps = (Cpda_application.objects
+    #             .exclude(status='rejected')
+    #             .exclude(status='finished')
+    #             .exclude(status='approved')
+    #             .order_by('-request_timestamp'))
+    # pending_apps = []
+    # under_review_apps = []
+    # for app in unreviewed_apps:
+    #     if app.tracking_info.review_status == 'under_review':
+    #         under_review_apps.append(app)
+    #     else:
+    #         pending_apps.append(app)
 
-    # combine assign_form object into unreviewed_app object respectively
-    for app in unreviewed_apps:
-        # if status is requested:to_assign/reviewed
-        if app.status == 'requested':
-            temp = Assign_Form(initial={'status': 'requested', 'app_id': app.id})
-            temp.fields["status"]._choices = [
-                ('requested', 'Requested'),
-                ('approved', 'Approved'),
-                ('rejected', 'Rejected')
-            ]
-        # if status is adjustments_pending:to_assign/reviewed
-        else:
-            temp = Assign_Form(initial={'status': 'adjustments_pending', 'app_id': app.id})
-            temp.fields["status"]._choices = [
-                ('adjustments_pending', 'Adjustments Pending'),
-                ('finished', 'Finished')
-            ]
-        app.assign_form = temp
-        # print (app.assign_form.fields['status']._choices)
+    # # combine assign_form object into unreviewed_app object respectively
+    # for app in unreviewed_apps:
+    #     # if status is requested:to_assign/reviewed
+    #     if app.status == 'requested':
+    #         temp = Assign_Form(initial={'status': 'requested', 'app_id': app.id})
+    #         temp.fields["status"]._choices = [
+    #             ('requested', 'Requested'),
+    #             ('approved', 'Approved'),
+    #             ('rejected', 'Rejected')
+    #         ]
+    #     # if status is adjustments_pending:to_assign/reviewed
+    #     else:
+    #         temp = Assign_Form(initial={'status': 'adjustments_pending', 'app_id': app.id})
+    #         temp.fields["status"]._choices = [
+    #             ('adjustments_pending', 'Adjustments Pending'),
+    #             ('finished', 'Finished')
+    #         ]
+    #     app.assign_form = temp
+    #     # print (app.assign_form.fields['status']._choices)
         
-    # only approved
-    approved_apps = (Cpda_application.objects
-                    .filter(status='approved')
-                    .order_by('-request_timestamp'))
+    # # only approved
+    # approved_apps = (Cpda_application.objects
+    #                 .filter(status='approved')
+    #                 .order_by('-request_timestamp'))
 
-    # only rejected and finished
-    archived_apps = (Cpda_application.objects
-                    .exclude(status='approved')
-                    .exclude(status='requested')
-                    .exclude(status='adjustments_pending')
-                    .order_by('-request_timestamp'))
+    # # only rejected and finished
+    # archived_apps = (Cpda_application.objects
+    #                 .exclude(status='approved')
+    #                 .exclude(status='requested')
+    #                 .exclude(status='adjustments_pending')
+    #                 .order_by('-request_timestamp'))
 
+    new_employee_form = Employee_Registration_Form()
     response = {
         'admin': True,
-        'cpda_pending_apps': pending_apps,
-        'cpda_under_review_apps': under_review_apps,
-        'cpda_approved_apps': approved_apps,
-        'cpda_archived_apps': archived_apps
+        'fm_add_employee_form' : new_employee_form
     }
     return response
 

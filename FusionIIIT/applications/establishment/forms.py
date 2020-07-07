@@ -1,7 +1,7 @@
 from django import forms
 from .models import Constants
 from applications.globals.models import Constants as GConstants
-from applications.globals.models import DepartmentInfo
+from applications.globals.models import DepartmentInfo, Designation
 
 dec = 'I hereby declare that I have uploaded & updated all my achievements (including publications, visits, projects etc.) on Institute\'s website and EIS module.'
 dec2 = 'I hereby declare that the family members for whom the L.T.C. is claimed are residing with me and are wholly dependent upon me.'
@@ -38,6 +38,7 @@ class Employee_Registration_Form(forms.Form):
     address_state = forms.CharField(label='Address State', required=True)
     phone_no = forms.IntegerField(label='Phone Number', required=True)
     department = forms.ModelChoiceField(label='Department', queryset=DepartmentInfo.objects.all(), required=True)
+    designation = forms.ModelChoiceField(label='Designation', queryset=Designation.objects.all(), required=True)
     date_of_joining = forms.DateField(label='Joining Date',required=True)
     joining_payscale = forms.CharField(label='Joining Payscale', required=True)
     isVacational = forms.BooleanField(label='Is Vacational?', required=True)    

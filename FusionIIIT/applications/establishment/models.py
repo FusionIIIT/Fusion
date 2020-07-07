@@ -197,11 +197,13 @@ class Faculty_Info(models.Model):
     aadhar_number = models.CharField(max_length=200, default='', blank=True, null=True)
     local_address = models.CharField(max_length=200, default='', blank=True, null=True)
     marital_status = models.CharField(choices=Constants.MARITAL_STATUS, max_length=50, blank=True, null=True) 
-    wife_name = models.CharField(max_length=200, default='', blank=True, null=True)
+    spouse_name = models.CharField(max_length=200, default='', blank=True, null=True)
+    children_info = models.CharField(max_length=200, default='', blank=True, null=True)
     personal_email_id = models.EmailField(max_length=200, blank=True, null=True)
+    is_archived = models.BooleanField(default=False)
     
     def __str__(self):
-        return str(self.id) + ' - ' + str(self.faculty_user.id.user.username) + ' info'
+        return str(self.faculty_user.id.user.username) + ' info'
 
     class Meta:
         db_table = 'Faculty Information'
