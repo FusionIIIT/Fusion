@@ -40,7 +40,7 @@
               -->
                 </form>
 
-
+            </div>
 
         <form method="POST" action="/profile/" class="ui form" role="form">
                     {% csrf_token %}
@@ -51,7 +51,8 @@
                   .modal() onclick='javascript:editStudent()
                 ; -->
                   <input type="submit" value="Save" class="ui red mini button right floated" name="profilesubmit" id="saveButton" style="display: none">
-            </div>
+
+
 
 
 
@@ -85,24 +86,22 @@
                             <td>
                                 Date Of Birth
                             </td>
-
                             <td>
                               <div class="ui fluid input">
-                                <span id="ageSpan">{{ profile.dob }}</span>
-                                <div class="ui calendar select_date" id="rangestart">
-                                  <div class="ui input left icon"><i class="calendar icon"></i>
+                                <span id="ageSpan">{{ profile.date_of_birth }}</span>
                                   <input name="age"
                                             id="ageInput"
                                             rows=5
-                                            type="text"
-                                            disabled
-                                            class="datepicker"
-                                            style="width: 100%;"
-                                            value="{{ profile.date_of_birth }}" />
-                                          </div>
-                                    </div>
+                                            type="date"
+                                            style="width:100;"
+                                            value="{{ profile.date_of_birth }}" hidden />
+
                               </div>
+
+
+
                             </td>
+
                         </tr>
 
                         <!--<tr>
@@ -174,7 +173,7 @@
                                 <div class="ui large fluid input">
                                     <a><i class="phone icon" id="contactIcon"></i>
                                     <span id="contactSpan">{{ profile.phone_no }}</span>
-                                    <input name=contact type="text" value="{{ profile.phone_no }}" id="contactInput" hidden>
+                                    <input name=contact type="text" value="{{ profile.phone_no }}" id="contactInput" pattern="[1-9]{1}[0-9]{9}" oninvalid="alert('Contact must contain 10 digita');" hidden>
                                     </a>
                                 </div>
                             </td>

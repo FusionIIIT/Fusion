@@ -153,7 +153,8 @@ def assign_worker(request, comp_id1):
         try:
             detail = StudentComplain.objects.filter(id=comp_id1).first()
             total_caretaker = Caretaker.objects.all()
-            total_caretakers_in_area = Caretaker.objects.filter(area=b)
+            total_caretakers_in_area = Caretaker.objects.filter(area=b and id!=a.id)
+            print(total_caretakers_in_area)
             workertemp = []
             worker = []
             flag = ''

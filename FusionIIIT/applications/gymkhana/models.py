@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
 from django.urls import reverse
+from datetime import date
 
 from applications.academic_information.models import Student
 from applications.globals.models import ExtraInfo, Faculty
@@ -37,6 +38,10 @@ class Constants:
         ('Gusto', 'Gusto'),
         ('Tarang', 'Tarang')
     )
+    typech = (
+        ('co_ordinator', 'co_ordinator'),
+        ('co_coordinator', 'co_coordinator')
+    )
     venue = (
         ('Classroom', (
             ('CR101', 'CR101'),
@@ -48,7 +53,6 @@ class Constants:
         )),
 
     )
-
 
 class Club_info(models.Model):
     club_name = models.CharField(max_length=50, null=False, primary_key=True)
@@ -76,6 +80,11 @@ class Club_info(models.Model):
     class Meta:
         db_table = 'Club_info'
 
+class Past_records(models.Model):
+    past_co = models.ForeignKey(Student, on_delete=models.CASCADE, null=False, related_name='pastco')
+    past_coco = models.ForeignKey(Student, on_delete=models.CASCADE, null=False, related_name='pastcoco')
+    club_name = models.ForeignKey(Club_info, on_delete=models.CASCADE, related_name='club_held', null=False)
+    year = models.DateField(default=date.today)
 
 class Form_available(models.Model):
     roll = models.CharField(default=2016001, max_length=7, primary_key=True)
@@ -165,7 +174,7 @@ class Session_info(models.Model):
     date = models.DateField(default=None, auto_now=False, null=False)
     start_time = models.TimeField(default=None, auto_now=False, null=False)
     end_time = models.TimeField(default=None, auto_now=False, null=True)
-    session_poster = models.FileField(upload_to='gymkhana/session_poster', null=True)
+    session_poster = models.ImageField(upload_to='gymkhana/session_poster', null=True)
     details = models.TextField(max_length=256, null=True)
     status = models.CharField(
         max_length=50, choices=Constants.status, default='open')

@@ -13,6 +13,25 @@ from notification.views import office_module_notif
 
 
 @login_required(login_url = "/accounts/login/")
+def predict(request):
+  name = request.POST.get('roll_no')
+  user = User.objects.filter(username=name).first()
+  designations = HoldsDesignation.objects.filter(user=user)
+
+
+  lst =[]
+  for desig in designations:
+      lst.append(desig.designation.name)
+  # data = serializers.serialize('json', {'data':lst})
+  return JsonResponse({'data':lst})
+
+
+
+
+
+
+
+@login_required(login_url = "/accounts/login/")
 def filetracking(request):
     """
         The function is used to create files by current user(employee).
@@ -103,11 +122,12 @@ def filetracking(request):
                     messages.error(request, 'Enter a valid Designation')
                     return redirect('/filetracking/')
 
-                # print("receive_designation = ")
+                print("receive_designation = ")
                 # print(receive_designation)
                 # receive_design = receive_designation[0]
                 upload_file = request.FILES.get('myfile')
                 # return HttpResponse ("success")
+
                 Tracking.objects.create(
                     file_id=file,
                     current_id=current_id,
@@ -158,18 +178,89 @@ def drafts(request):
     """
 
     # draft = File.objects.filter(uploader=request.user.extrainfo)
-    draft = File.objects.filter(uploader=request.user.extrainfo).order_by('-upload_date')
+    # draft = File.objects.filter(uploader=request.user.extrainfo).order_by('-upload_date')
 
     # print(File.objects)
-    extrainfo = ExtraInfo.objects.all()
-
+    # extrainfo = ExtraInfo.objects.all()
+    # designation = Designation.objects.get(id=HoldsDesignation.objects.get(user=request.user).designation_id)
+    designation = HoldsDesignation.objects.filter(user=request.user)
     context = {
-        'draft': draft,
-        'extrainfo': extrainfo,
+        # 'draft': draft,
+        # 'extrainfo': extrainfo,
+        'designation': designation,
     }
     return render(request, 'filetracking/drafts.html', context)
 
+@login_required(login_url = "/accounts/login")
+def fileview(request,id):
 
+
+
+    draft = File.objects.filter(uploader=request.user.extrainfo).order_by('-upload_date')
+
+
+    extrainfo = ExtraInfo.objects.all()
+    # designations = Designation.objects.filter(upload_designation=extrainfo.id)
+    #print (File.designation)
+    abcd = HoldsDesignation.objects.get(pk=id)
+    s = str(abcd).split(" - ")
+    designations = s[1]
+    #designations = HoldsDesignation.objects.filter(user=request.user)
+    # for x in designations:
+    #  if abcd==x:
+    #      print (abcd)
+    #      print ("dcdsdcsd ")
+    #      designations=abcd
+    #      print (designations)
+
+    context = {
+
+        'draft': draft,
+        'extrainfo': extrainfo,
+        'designations': designations,
+    }
+    return render(request, 'filetracking/fileview.html', context)
+@login_required(login_url = "/accounts/login")
+def fileview1(request,id):
+
+
+
+    out = Tracking.objects.filter(current_id=request.user.extrainfo).order_by('-forward_date')
+
+
+
+
+    #print (File.designation)
+    abcd = HoldsDesignation.objects.get(pk=id)
+
+
+    context = {
+
+        'out': out,
+        'abcd': abcd,
+    }
+    return render(request, 'filetracking/fileview1.html', context)
+@login_required(login_url = "/accounts/login")
+def fileview2(request,id):
+
+
+
+    in_file = Tracking.objects.filter(receiver_id=request.user).order_by('-receive_date')
+
+
+
+
+    #print (File.designation)
+    abcd = HoldsDesignation.objects.get(pk=id)
+    s = str(abcd).split(" - ")
+    designations = s[1]
+
+    context = {
+
+        'in_file': in_file,
+        'designations': designations,
+    }
+    return render(request, 'filetracking/fileview2.html', context)
 @login_required(login_url = "/accounts/login")
 def outward(request):
     """
@@ -185,10 +276,10 @@ def outward(request):
                 out - The Tracking object filtered by current_id i.e, present working user.
                 context - Holds data needed to make necessary changes in the template.
     """
-    out = Tracking.objects.filter(current_id=request.user.extrainfo).order_by('-forward_date')
+    designation = HoldsDesignation.objects.filter(user=request.user)
 
     context = {
-        'out': out,
+        'designation': designation,
     }
     return render( request, 'filetracking/outward.html', context)
 
@@ -208,11 +299,12 @@ def inward(request):
                     in_file - The Tracking object filtered by receiver_id i.e, present working user.
                     context - Holds data needed to make necessary changes in the template.
     """
-
+    designation = HoldsDesignation.objects.filter(user=request.user)
     in_file = Tracking.objects.filter(receiver_id=request.user).order_by('-receive_date')
 
     context = {
         'in_file': in_file,
+        'designation': designation,
     }
 
     return render(request, 'filetracking/inward.html', context)

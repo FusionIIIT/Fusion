@@ -8,6 +8,9 @@ urlpatterns = [
 
     url(r'^$', views.filetracking, name='filetracking'),
     url(r'^drafts/$', views.drafts, name='drafts'),
+    url(r'^fileview/(?P<id>\d+)$', views.fileview, name='fileview'),
+    url(r'^fileview1/(?P<id>\d+)$', views.fileview1, name='fileview1'),
+    url(r'^fileview2/(?P<id>\d+)$', views.fileview2, name='fileview2'),
     url(r'^outward/$', views.outward, name='outward'),
     url(r'^inward/$', views.inward, name='inward'),
     url(r'^confirmdelete/(?P<id>\d+)$', views.confirmdelete, name='confirm_delete'),
@@ -19,4 +22,5 @@ urlpatterns = [
     url(r'^test/$',views.test, name='test'),
     url(r'^delete/(?P<id>\d+)$',views.delete, name='delete'),
     url(r'^forward_inward/(?P<id>\d+)/$', views.forward_inward, name='forward_inward'),
+    url(r'^predict/$',views.predict,name='predict'),
 ]

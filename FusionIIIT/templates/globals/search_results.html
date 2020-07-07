@@ -19,6 +19,8 @@
                 <img class="right floated mini ui image" src="{% static 'globals/img/zlatan.jpg' %}">
                 <div class="header">{{user.first_name}} {{user.last_name}}</div>
                 <div class="meta">{{user.extrainfo.user_type}} in {{user.extrainfo.department.name}}</div>
+                                <div class="meta">{{user.email}} </div>
+
             </div>
         </a>
         {% endfor %}

@@ -7,7 +7,7 @@ from django.utils.dateparse import parse_date
 from django.db.models import Q
 from bisect import bisect
 from django.contrib import messages
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import *
 from applications.filetracking.models import  File, Tracking
 from django.template.defaulttags import csrf_token
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
@@ -48,59 +48,68 @@ def delete_sessions(request):
 
 
 def editsession(request, session_id):
-    event = Session_info.objects.get(pk=session_id)
+	
+	if request.method == 'POST':
+		try:
+			body = request.POST
+			venue = body.get('venue_type')
+			session_poster = request.FILES.get('session_poster')
+			date = body.get('date')
+			start_time = body.get('start_time')
+			end_time = body.get('end_time')
+			desc = body.get('d_d')
+			club_name = coordinator_club(request)
+			res = conflict_algorithm_session(date, start_time, end_time, venue)
+			message = ""
+			print("in the post body")
+			print(res)
+			if (res == 'success'):
+				event = Session_info.objects.get(id=session_id)
+				event.club = club_name
+				event.venue = venue
+				event.date = date
+				event.start_time = start_time
+				event.end_time = end_time
+				event.session_poster = session_poster
+				event.details = desc
+				event.save()
+				# e = Session_info.objects.filter(id=session_id).update(club=club_name,venue=venue, date=date,start_time=start_time, end_time=end_time, session_poster=session_poster, details=desc)
+				message += "Your form has been dispatched for further process"
+				print(message)
+				return redirect('/gymkhana/')
+			else:
+				message += "The selected time slot for the given date and venue conflicts with already booked session"
+				print(message)
+		except Exception as e:
+			res = "error"
+			message = "Some error occurred"
+			print(message, e)
 
-    if request.method == 'POST':
-        try:
-            body = request.POST
-            venue = body.get('venue_type')
-            session_poster = request.FILES.get('session_poster')
-            date = body.get('date')
-            start_time = body.get('start_time')
-            end_time = body.get('end_time')
-            desc = body.get('d_d')
-            club_name = coordinator_club(request)
-            res = conflict_algorithm_session(date, start_time, end_time, venue)
-            message = ""
-            print("in the post body")
-            print(res)
-            if (res == 'success'):
-                e = Session_info.objects.filter(id=session_id).update(club=club_name,venue=venue, date=date,start_time=start_time, end_time=end_time, session_poster=session_poster, details=desc)
-                message += "Your form has been dispatched for further process"
-                print(message)
-                return redirect('/gymkhana/')
-            else:
-                message += "The selected time slot for the given date and venue conflicts with already booked session"
-                print(message)
-        except Exception as e:
-            res = "error"
-            message = "Some error occurred"
-            print(message, e)
+	##Get Request
+	#  Session_info.objects(club=club_name,venue=venue,date=date,start_time=start_time,end_time=end_time,session_poster=session_poster, details=desc)
+	venue = []
+	event = Session_info.objects.get(pk=session_id)
 
-    ##Get Request
-    #  Session_info.objects(club=club_name,venue=venue,date=date,start_time=start_time,end_time=end_time,session_poster=session_poster, details=desc)
-    venue = []
+	for i in Constants.venue:
+		for j in i[1]:
+			venue.append(j[0])
+	context = {
+		'form': {
+			"venue": event.venue,
+			"session_poster": event.session_poster,
+			"date": datetime.datetime.strftime(event.date, '%Y-%m-%d'),
+			"start_time": event.start_time,
+			"end_time": event.end_time,
+			"desc": event.details,
+			"club_name": event.club,
+			"Venue": venue,
+			"id": session_id
+		}
+	}
+	# res = conflict_algorithm_event(date, start_time, end_time, venue)
+	template = 'gymkhanaModule/editsession.html'
 
-    for i in Constants.venue:
-        for j in i[1]:
-            venue.append(j[0])
-    context = {
-        'form': {
-            "venue": event.venue,
-            "session_poster": event.session_poster,
-            "date": datetime.datetime.strftime(event.date, '%Y-%m-%d'),
-            "start_time": event.start_time,
-            "end_time": event.end_time,
-            "desc": event.details,
-            "club_name": event.club,
-            "Venue": venue,
-            "id": session_id
-        }
-    }
-    # res = conflict_algorithm_event(date, start_time, end_time, venue)
-    template = 'gymkhanaModule/editsession.html'
-
-    return render(request, template, context)
+	return render(request, template, context)
 
 
 @csrf_exempt
@@ -118,7 +127,7 @@ def delete_events(request):
 		return HttpResponse("error")
 
 def edit_event(request,event_id):
-	event = Event_info.objects.get(pk=event_id)
+	# event = Event_info.objects.get(pk=event_id)
 
 
 	if request.method == 'POST':
@@ -138,7 +147,18 @@ def edit_event(request,event_id):
 			print("in the post body")
 			print(res)
 			if(res == 'success'):
-				e = Event_info.objects.filter(id=event_id).update(club = club_name, event_name=event_name, incharge=incharge, venue = venue, date =date, start_time=start_time , end_time = end_time ,event_poster = event_poster , details = desc)
+				event = Event_info.objects.get(id=event_id)
+				event.club = club_name
+				event.event_name = event_name
+				event.incharge = incharge
+				event.venue = venue
+				event.date = date
+				event.start_time = start_time
+				event.end_time = end_time
+				event.event_poster = event_poster
+				event.details = desc
+				event.save()
+				# e = Event_info.objects.filter(id=event_id).update(club = club_name, event_name=event_name, incharge=incharge, venue = venue, date =date, start_time=start_time , end_time = end_time ,event_poster = event_poster , details = desc)
 				message += "Your form has been dispatched for further process"
 				print(message)
 				return redirect('/gymkhana/')
@@ -154,7 +174,7 @@ def edit_event(request,event_id):
 	##Get Request
 	#  Event_info(club = club_name, event_name=event_name, incharge=incharge, venue = venue, date =date, start_time=start_time , end_time = end_time ,event_poster = event_poster , details = desc)
 	venue = []
-
+	event = Event_info.objects.get(pk=event_id)
 
 	for i in Constants.venue:
 		for j in i[1]:
@@ -214,14 +234,14 @@ def facultyData(request):
 
 
 def studentsData(request):
-    current_value = request.POST['current_value']
-    try:
-        students = ExtraInfo.objects.all().filter(
-            user_type="student").filter(id__startswith=current_value)
-        students = serializers.serialize('json', students)
-        return HttpResponse(students)
-    except Exception as e:
-        return HttpResponse("error")
+	current_value = request.POST['current_value']
+	try:
+		students = ExtraInfo.objects.all().filter(
+			user_type="student").filter(id__startswith=current_value)
+		students = serializers.serialize('json', students)
+		return HttpResponse(students)
+	except Exception as e:
+		return HttpResponse("error")
 
 
 @login_required
@@ -372,7 +392,7 @@ def form_avail(request):
 			'message': message,
 		}
 		content = json.dumps(content)
-		messages.success(request, "Form available?")
+		# messages.success(request, "Form available?")
 		return HttpResponse(content)
 		# redirect("/gymkhana/")
 
@@ -529,31 +549,31 @@ def retrun_content(request, roll, name, desig , club__ ):
 
 @login_required
 def getVenue(request):
-    selected = request.POST.get('venueType')
-    selected = selected.strip()
-    # print(id(selected))
-    venue_type = []
-    venue_details = {}
-    idd = 0
-    for i in Constants.venue:
-        for j in i:
-            if(idd % 2 == 0):
-                venue_type.append(j)
-            else:
-                lt = [k[0] for k in j]
-                venue_details[venue_type[int(idd/2)]] = lt
-            idd = idd+1
-    # print(selected)
-    # print(len(selected))
-    content = []
-    for key, value in venue_details.items():
-        if key == selected:
-            for val in value:
-                val = val.strip()
-                content.append(val)
-    print(content)
-    content = json.dumps(content)
-    return HttpResponse(content)
+	selected = request.POST.get('venueType')
+	selected = selected.strip()
+	# print(id(selected))
+	venue_type = []
+	venue_details = {}
+	idd = 0
+	for i in Constants.venue:
+		for j in i:
+			if(idd % 2 == 0):
+				venue_type.append(j)
+			else:
+				lt = [k[0] for k in j]
+				venue_details[venue_type[int(idd/2)]] = lt
+			idd = idd+1
+	# print(selected)
+	# print(len(selected))
+	content = []
+	for key, value in venue_details.items():
+		if key == selected:
+			for val in value:
+				val = val.strip()
+				content.append(val)
+	print(content)
+	content = json.dumps(content)
+	return HttpResponse(content)
 
 @login_required
 def gymkhana(request):
@@ -575,218 +595,238 @@ def gymkhana(request):
 
 @login_required
 def club_membership(request):
-    if request.method == 'POST':
-        res = "success"
-        message = "The form has been dispatched for further process"
-        try:
-            # getting form data
-            user = request.POST.get("user_name")
-            club = request.POST.get("club")
-            pda = request.POST.get("achievements")
+	if request.method == 'POST':
+		res = "success"
+		message = "The form has been dispatched for further process"
+		try:
+			# getting form data
+			user = request.POST.get("user_name")
+			club = request.POST.get("club")
+			pda = request.POST.get("achievements")
 
-            # getting queryset class objects
-            #user_name = User.objects.get(username = user[-7:])
-            USER = user.split(' - ')
-            user_name = get_object_or_404(User, username=USER[1])
-            extra = get_object_or_404(ExtraInfo, id=USER[0], user=user_name)
-            student = get_object_or_404(Student, id=extra)
-            #extra = ExtraInfo.objects.get(id = user[:-10], user = user_name)
-            #student = Student.objects.get(id = extra)
+			# getting queryset class objects
+			#user_name = User.objects.get(username = user[-7:])
+			USER = user.split(' - ')
+			user_name = get_object_or_404(User, username=USER[1])
+			extra = get_object_or_404(ExtraInfo, id=USER[0], user=user_name)
+			student = get_object_or_404(Student, id=extra)
+			#extra = ExtraInfo.objects.get(id = user[:-10], user = user_name)
+			#student = Student.objects.get(id = extra)
 
-            club_name = get_object_or_404(Club_info, club_name=club)
+			club_name = get_object_or_404(Club_info, club_name=club)
 
-            # saving data to the database
-            club_member = Club_member(
-                member=student, club=club_name, description=pda)
-            club_member.save()
-        except Exception as e:
-            res = "error"
-            message = "Some error occurred"
+			# saving data to the database
+			club_member = Club_member(
+				member=student, club=club_name, description=pda)
+			club_member.save()
+		except Exception as e:
+			res = "error"
+			message = "Some error occurred"
 
-        content = {
-            'status': res,
-            'message': message
-        }
-        content = json.dumps(content)
-        return HttpResponse(content)
-        # messages.success(request,"Successfully sent the application !!!")
+		content = {
+			'status': res,
+			'message': message
+		}
+		content = json.dumps(content)
+		return HttpResponse(content)
+		# messages.success(request,"Successfully sent the application !!!")
 
-    # return redirect('/gymkhana/')
+	# return redirect('/gymkhana/')
 
 
 @login_required
 def core_team(request):
-    if request.method == 'POST':
-        # getting form data
-        user = request.POST.get("user_name")
-        fest = request.POST.get("fest")
-        team = request.POST.get("team")
-        pda = request.POST.get("pda")
-        year = request.POST.get("year")
+	if request.method == 'POST':
+		# getting form data
+		user = request.POST.get("user_name")
+		fest = request.POST.get("fest")
+		team = request.POST.get("team")
+		pda = request.POST.get("pda")
+		year = request.POST.get("year")
 
-        # getting queryset class objects
-        USER = user.split(' - ')
-        user_name = get_object_or_404(User, username=USER[1])
-        extra = get_object_or_404(ExtraInfo, id=USER[00], user=user_name)
-        student = get_object_or_404(Student, id=extra)
+		# getting queryset class objects
+		USER = user.split(' - ')
+		user_name = get_object_or_404(User, username=USER[1])
+		extra = get_object_or_404(ExtraInfo, id=USER[00], user=user_name)
+		student = get_object_or_404(Student, id=extra)
 
-        # saving data to the database
-        core_team = Core_team(student_id=student,
-                              fest_name=fest, team=team, pda=pda, year=year)
-        core_team.save()
-        messages.success(request, "Successfully applied for the post !!!")
+		# saving data to the database
+		core_team = Core_team(student_id=student,
+							  fest_name=fest, team=team, pda=pda, year=year)
+		core_team.save()
+		messages.success(request, "Successfully applied for the post !!!")
 
-    return redirect('/gymkhana/')
+	return redirect('/gymkhana/')
 
 @login_required
 def event_report(request):
-    if request.method == 'POST':
-        # getting form data
-        ##    print(request.POST, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-        user = request.POST.get("st_inc")
-        event = request.POST.get("event")
-        d_d = request.POST.get("d_d")
-        date = request.POST.get("date")
-        time = request.POST.get("time")
-        report = request.FILES["report"]
-        report.name = event+"_report"
+	if request.method == 'POST':
+		# getting form data
+		##    print(request.POST, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+		user = request.POST.get("st_inc")
+		event = request.POST.get("event")
+		d_d = request.POST.get("d_d")
+		date = request.POST.get("date")
+		time = request.POST.get("time")
+		report = request.FILES["report"]
+		report.name = event+"_report"
 
-        # getting queryset class objects
-        USER = user.split(' - ')
-        user_name = get_object_or_404(User, username=USER[1])
-        extra = get_object_or_404(ExtraInfo, id=USER[0], user=user_name)
+		# getting queryset class objects
+		USER = user.split(' - ')
+		user_name = get_object_or_404(User, username=USER[1])
+		extra = get_object_or_404(ExtraInfo, id=USER[0], user=user_name)
 
-        # saving data to the database
-        other_report = Other_report(incharge=extra, event_name=event,
-                                    date=date+" "+time, event_details=report, description=d_d)
-        other_report.save()
-        messages.success(request, "Successfully saved the report !!!")
+		# saving data to the database
+		other_report = Other_report(incharge=extra, event_name=event,
+									date=date+" "+time, event_details=report, description=d_d)
+		other_report.save()
+		messages.success(request, "Successfully saved the report !!!")
 
-    return redirect('/gymkhana/')
+	return redirect('/gymkhana/')
 
 
 @login_required
 def club_budget(request):
-    if request.method == 'POST' and request.FILES['budget_file']:
-        club = request.POST.get("club")
-        budget_for = request.POST.get("budget_for")
-        budget_amt = request.POST.get('amount')
-        budget_file = request.FILES['budget_file']
-        desc = request.POST.get('d_d')
-        budget_file.name = club+"_budget"
-        club_name = get_object_or_404(Club_info, club_name=club)
+	if request.method == 'POST' and request.FILES['budget_file']:
+		club = request.POST.get("club")
+		budget_for = request.POST.get("budget_for")
+		budget_amt = request.POST.get('amount')
+		budget_file = request.FILES['budget_file']
+		desc = request.POST.get('d_d')
+		budget_file.name = club+"_budget"
+		club_name = get_object_or_404(Club_info, club_name=club)
 
-        club_budget = Club_budget(club=club_name, budget_amt=budget_amt,
-                                  budget_file=budget_file, budget_for=budget_for, description=desc)
-        club_budget.save()
-        messages.success(request, "Successfully requested for the budget !!!")
+		club_budget = Club_budget(club=club_name, budget_amt=budget_amt,
+								  budget_file=budget_file, budget_for=budget_for, description=desc)
+		club_budget.save()
+		messages.success(request, "Successfully requested for the budget !!!")
 
-    return redirect('/gymkhana/')
+	return redirect('/gymkhana/')
 
 
 @login_required
 def act_calender(request):
-    if request.method == "POST":
-        #    print "-------------------"
-        #    print request.FILES['act_file']
-        club = request.POST.get("club")
-        act_calender = request.FILES['act_file']
-        act_calender.name = club+"_act_calender"
+	if request.method == "POST":
+		message = ""
+		#    print "-------------------"
+		#    print request.FILES['act_file']
+		club = request.POST.get("club")
+		act_calender = request.FILES['act_file']
+		act_calender.name = club+"_act_calender.pdf"
 
-        #club_name = get_object_or_404(Club_info, club_name = club)
+		#club_name = get_object_or_404(Club_info, club_name = club)
 
-        club_info = get_object_or_404(Club_info, club_name=club)
-        club_info.activity_calender = act_calender
-        #    print "---------------"
-        #    print club_info.activity_calender
-        club_info.save()
-        messages.success(request, "Successfully uploaded the calender !!!")
+		club_info = get_object_or_404(Club_info, club_name=club)
+		club_info.activity_calender = act_calender
+		#    print "---------------"
+		#    print club_info.activity_calender
+		club_info.save()
+		message += "Successfully uploaded the calender !!!"
 
-    return redirect('/gymkhana/')
-    # return HttpResponse("success")
+		content = {
+				'status':"success",
+				'message':message,
+			}
+		content = json.dumps(content)
+		return HttpResponse(content)
+
 
 
 @login_required
 def club_report(request):
-    if request.method == 'POST' and request.FILES['report']:
-        # getting form data
-        ##    print(request.POST, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-        club = request.POST.get('club')
-        user = request.POST.get("s_inc")
-        event = request.POST.get("event")
-        d_d = request.POST.get("d_d")
-        date = request.POST.get("date")
-        time = request.POST.get("time")
-        report = request.FILES["report"]
-        report.name = club+"_"+event+"_report"
+	if request.method == 'POST' and request.FILES['report']:
+		# getting form data
+		##    print(request.POST, ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+		club = request.POST.get('club')
+		user = request.POST.get("s_inc")
+		event = request.POST.get("event")
+		d_d = request.POST.get("d_d")
+		date = request.POST.get("date")
+		time = request.POST.get("time")
+		report = request.FILES["report"]
+		report.name = club+"_"+event+"_report"
 
-        # getting queryset class objects
-        USER = user.split(' - ')
-        user_name = get_object_or_404(User, username=USER[1])
-        extra = get_object_or_404(ExtraInfo, id=USER[0], user=user_name)
+		# getting queryset class objects
+		USER = user.split(' - ')
+		user_name = get_object_or_404(User, username=USER[1])
+		extra = get_object_or_404(ExtraInfo, id=USER[0], user=user_name)
 
-        club_name = get_object_or_404(Club_info, club_name=club)
+		club_name = get_object_or_404(Club_info, club_name=club)
 
-        # saving data to the database
-        club_report = Club_report(club=club_name, incharge=extra, event_name=event,
-                                  date=date+" "+time, event_details=report, description=d_d)
-        club_report.save()
-        messages.success(request, "Successfully updated the report !!!")
+		# saving data to the database
+		club_report = Club_report(club=club_name, incharge=extra, event_name=event,
+								  date=date+" "+time, event_details=report, description=d_d)
+		club_report.save()
+		messages.success(request, "Successfully updated the report !!!")
 
-    return redirect('/gymkhana/')
+	return redirect('/gymkhana/')
 
 @login_required
 def change_head(request):
-    if request.method == "POST":
-        club = request.POST.get("club")
-        co = request.POST.get('co')
-        coco = request.POST.get('coco')
-        date = request.POST.get("date")
-        time = request.POST.get("time")
-        desc = "co-ordinator and co co-ordinator changed on "+date+" at "+time
+	if request.method == "POST":
+		res =None
+		message = None
+		try:
+			club = request.POST.get("club")
+			co = request.POST.get('co')
+			coco = request.POST.get('coco')
+			# date = request.POST.get("date")
+			message = ""
 
-        club_name = get_object_or_404(Club_info, club_name=club)
+			co_student = get_object_or_404(Student, id__user__username=co)
+			print(co_student)
 
-        # getting queryset class objects
-        CO = co.split(' - ')
-        user_name = get_object_or_404(User, username=CO[1])
-        extra = get_object_or_404(ExtraInfo, id=CO[0], user=user_name)
-        co_student = get_object_or_404(Student, id=extra)
+			coco_student = get_object_or_404(Student, id__user__username=coco)
+			print(coco_student)
 
-        # getting queryset class objects
-        COCO = coco.split(' - ')
-        user_name1 = get_object_or_404(User, username=COCO[1])
-        extra1 = get_object_or_404(ExtraInfo, id=COCO[0], user=user_name1)
-        coco_student = get_object_or_404(Student, id=extra1)
+			club_info = get_object_or_404(Club_info, club_name=club)
 
-        club_info = get_object_or_404(Club_info, club_name=club_name)
+			old_co = club_info.co_ordinator
+			old_coco = club_info.co_coordinator
+			print (old_co, old_coco)
 
-        old_co = ""
-        old_coco = ""
-        #    print "--------111"
-        #    print old_coco, old_co
+			past_user = Past_records(past_co = old_co, past_coco = old_coco, club_name = club_info)
+			past_user.save()
+			old_co = HoldsDesignation.objects.filter(user__username=old_co, designation__name="co-ordinator")
+			print(old_co)
+			old_coco = HoldsDesignation.objects.filter(user__username=old_coco, designation__name="co co-ordinator")
+			print(old_coco)
+			if old_co.exists():
+					old_co.delete()
+			if old_coco.exists():
+				old_coco.delete()
 
-        club_info.co_ordinator = co_student
-        club_info.co_coordinator = coco_student
-        club_info.save()
+			if HoldsDesignation.objects.filter(user__username=co, designation__name__iendswith="co-ordinator").exists() or HoldsDesignation.objects.filter(user__username=coco, designation__name__iendswith="co-ordinator").exists():
+				print("error")
+				res = "error"
+				message = "The Student is already a Coordinator / Co-Coordinator of another club !!!"
+			else:
+				print("success")
+				res = "success"
+				club_info.co_ordinator = co_student
+				club_info.co_coordinator = coco_student
+				club_info.save()
+				new_co = HoldsDesignation(user=User.objects.get(username=co), working=User.objects.get(username=co), designation=Designation.objects.get(name="co-ordinator"))
+				new_co.save()
+				new_coco = HoldsDesignation(user=User.objects.get(username=coco), working=User.objects.get(username=coco), designation=Designation.objects.get(name="co co-ordinator"))
+				new_coco.save()
 
-        designation = get_object_or_404(Designation, name="co-ordinator")
-        get_object_or_404(HoldsDesignation, user=old_co,
-                          designation=designation).delete()
-        HoldsDesig = HoldsDesignation(
-            user=user_name, working=user_name, designation=designation)
-        HoldsDesig.save()
+		except Exception as e:
+			print(e)
+			res = "error"
+			message = "Some error occurred"
 
-        designation = get_object_or_404(Designation, name="co co-ordinator")
-        get_object_or_404(HoldsDesignation, user=old_coco,
-                          designation=designation).delete()
-        HoldsDesig = HoldsDesignation(
-            user=user_name1, working=user_name1, designation=designation)
-        HoldsDesig.save()
+		print(message)
+		content = {
+				'status': res,
+				'message':message,
+			}
 
-        messages.success(request, "Successfully changed the club heads !!!")
+		content = json.dumps(content)
+		return HttpResponse(content)
 
-    return redirect('/gymkhana/')
+		# return redirect('/gymkhana/')
+
 
 
 @login_required
@@ -869,129 +909,129 @@ def new_event(request):
 
 @login_required
 def fest_budget(request):
-    if request.method == 'POST' and request.FILES['file']:
-        fest = request.POST.get("fest")
-        budget_amt = request.POST.get('amount')
-        budget_file = request.FILES['file']
-        desc = request.POST.get('d_d')
-        year = request.POST.get('year')
-        budget_file.name = fest+"_budget_"+year
+	if request.method == 'POST' and request.FILES['file']:
+		fest = request.POST.get("fest")
+		budget_amt = request.POST.get('amount')
+		budget_file = request.FILES['file']
+		desc = request.POST.get('d_d')
+		year = request.POST.get('year')
+		budget_file.name = fest+"_budget_"+year
 
-        fest_budget = Fest_budget(fest=fest, budget_amt=budget_amt,
-                                  budget_file=budget_file, description=desc, year=year)
-        fest_budget.save()
-        messages.success(request, "Successfully uploaded the budget !!!")
+		fest_budget = Fest_budget(fest=fest, budget_amt=budget_amt,
+								  budget_file=budget_file, description=desc, year=year)
+		fest_budget.save()
+		messages.success(request, "Successfully uploaded the budget !!!")
 
-    return redirect('/gymkhana/')
+	return redirect('/gymkhana/')
 
 
 @login_required
 def approve(request):
-    lis = list(request.POST.getlist('check'))
-    print(lis)
-    for user in lis:
-        # pos = lis.index(user)
-        re = "remarks" + user
-        print(re)
-        remarks = request.POST.getlist(re)
-        print(remarks)
-        user = user.split(',')
-        print(user)
-        info = user[0].split(' - ')
-        print(info)
+	lis = list(request.POST.getlist('check'))
+	print(lis)
+	for user in lis:
+		# pos = lis.index(user)
+		re = "remarks" + user
+		print(re)
+		remarks = request.POST.getlist(re)
+		print(remarks)
+		user = user.split(',')
+		print(user)
+		info = user[0].split(' - ')
+		print(info)
 
-        # getting queryset class objects
-        user_name = get_object_or_404(User, username=info[1])
-        print(user_name)
-        extra1 = get_object_or_404(ExtraInfo, id=info[0], user=user_name)
-        print(extra1)
-        student = get_object_or_404(Student, id=extra1)
-        print(student)
+		# getting queryset class objects
+		user_name = get_object_or_404(User, username=info[1])
+		print(user_name)
+		extra1 = get_object_or_404(ExtraInfo, id=info[0], user=user_name)
+		print(extra1)
+		student = get_object_or_404(Student, id=extra1)
+		print(student)
 
-        club_member = get_object_or_404(Club_member, club=user[1], member=student)
-        print(club_member)
-        club_member.status = "confirmed"
-        club_member.remarks = remarks[0]
-        club_member.save()
-        messages.success(request, "Successfully Approved !!!")
+		club_member = get_object_or_404(Club_member, club=user[1], member=student)
+		print(club_member)
+		club_member.status = "confirmed"
+		club_member.remarks = remarks[0]
+		club_member.save()
+		messages.success(request, "Successfully Approved !!!")
 
-    return redirect('/gymkhana/')
+	return redirect('/gymkhana/')
 
 @login_required
 def club_approve(request):
-    lisx = list(request.POST.getlist('check'))
-    print(lisx)
-    for club in lisx:
-        print(club)
-        club_name = get_object_or_404(Club_info, club_name=club)
-        club_name.status = "confirmed"
-        club_name.save()
-        messages.success(request, "Successfully Approved !!!")
+	lisx = list(request.POST.getlist('check'))
+	print(lisx)
+	for club in lisx:
+		print(club)
+		club_name = get_object_or_404(Club_info, club_name=club)
+		club_name.status = "confirmed"
+		club_name.save()
+		messages.success(request, "Successfully Approved !!!")
 
-    return redirect('/gymkhana/')
+	return redirect('/gymkhana/')
 
 
 @login_required
 def club_reject(request):
-    lisx = list(request.POST.getlist('check'))
-    print(lisx)
-    for club in lisx:
-        print(club)
-        club_name = get_object_or_404(Club_info, club_name=club)
-        club_name.status = "rejected"
-        club_name.save()
-        messages.success(request, "Successfully Rejected !!!")
+	lisx = list(request.POST.getlist('check'))
+	print(lisx)
+	for club in lisx:
+		print(club)
+		club_name = get_object_or_404(Club_info, club_name=club)
+		club_name.status = "rejected"
+		club_name.save()
+		messages.success(request, "Successfully Rejected !!!")
 
-    return redirect('/gymkhana/')
+	return redirect('/gymkhana/')
 
 @login_required
 def reject(request):
-    lis = list(request.POST.getlist('check'))
+	lis = list(request.POST.getlist('check'))
 
-    for user in lis:
-        # pos = lis.index(user)
-        re = "remarks" + user
-        remarks = request.POST.getlist(re)
-        user = user.split(',')
-        info = user[0].split(' - ')
+	for user in lis:
+		# pos = lis.index(user)
+		re = "remarks" + user
+		remarks = request.POST.getlist(re)
+		user = user.split(',')
+		info = user[0].split(' - ')
 
-        # getting queryset class objects
-        user_name = get_object_or_404(User, username=info[1])
-        extra1 = get_object_or_404(ExtraInfo, id=info[0], user=user_name)
-        student = get_object_or_404(Student, id=extra1)
+		# getting queryset class objects
+		user_name = get_object_or_404(User, username=info[1])
+		extra1 = get_object_or_404(ExtraInfo, id=info[0], user=user_name)
+		student = get_object_or_404(Student, id=extra1)
 
-    club_member = get_object_or_404(Club_member, club=user[1], member=student)
-    club_member.status = "rejected"
-    club_member.remarks = remarks[0]
-    club_member.save()
-    messages.success(request, "Successfully Rejected !!!")
+	club_member = get_object_or_404(Club_member, club=user[1], member=student)
+	club_member.status = "rejected"
+	club_member.remarks = remarks[0]
+	club_member.save()
+	messages.success(request, "Successfully Rejected !!!")
 
-    return redirect('/gymkhana/')
+	return redirect('/gymkhana/')
 
-    return redirect('/gymkhana/')
+	return redirect('/gymkhana/')
 
 @login_required
 def cancel(request):
 
-    lis = list(request.POST.getlist('check'))
+	lis = list(request.POST.getlist('check'))
 
-    for user in lis:
-        #pos = lis.index(user)
-        user = user.split(',')
-        info = user[0].split(' - ')
+	for user in lis:
+		#pos = lis.index(user)
+		user = user.split(',')
+		info = user[0].split(' - ')
 
-        # getting queryset class objects
-        user_name = get_object_or_404(User, username=info[1])
-        extra1 = get_object_or_404(ExtraInfo, id=info[0], user=user_name)
-        student = get_object_or_404(Student, id=extra1)
+		# getting queryset class objects
+		user_name = get_object_or_404(User, username=info[1])
+		extra1 = get_object_or_404(ExtraInfo, id=info[0], user=user_name)
+		student = get_object_or_404(Student, id=extra1)
 
-        club_member = get_object_or_404(
-            Club_member, club=user[1], member=student)
+		club_member = get_object_or_404(
+			Club_member, club=user[1], member=student)
 
-        club_member.delete()
-        messages.success(request, "Successfully deleted !!!")
+		club_member.delete()
+		messages.success(request, "Successfully deleted !!!")
 
-    return redirect('/gymkhana/')
+	return redirect('/gymkhana/')
 
 
 @login_required
@@ -1182,207 +1222,207 @@ def conflict_algorithm_event(date, start_time, end_time, venue):
 
 @login_required(login_url = "/accounts/login/")
 def filetracking(request):
-    """
-        The function is used to create files by current user(employee).
-        It adds the employee(uploader) and file datails to a file(table) of filetracking(model)
-        if he intends to create file.
+	"""
+		The function is used to create files by current user(employee).
+		It adds the employee(uploader) and file datails to a file(table) of filetracking(model)
+		if he intends to create file.
 
-        @param:
-                request - trivial.
+		@param:
+				request - trivial.
 
-        @variables:
-
-
-                uploader - Employee who creates file.
-                subject - Title of the file.
-                description - Description of the file.
-                upload_file - Attachment uploaded while creating file.
-                file - The file object.
-                exations - The HoldsDesignation object.
-                context - Hotrainfo - The Extrainfo object.
-                holdsdesignlds data needed to make necessary changes in the template.
-    """
-    if request.method =="POST":
-        try:
-            if 'save' in request.POST:
-                print("********************")
-                uploader = request.user.extrainfo
-                print(uploader)
-                #ref_id = request.POST.get('fileid')
-                subject = request.POST.get('title')
-                description = request.POST.get('desc')
-                design = request.POST.get('design')
-                designation = Designation.objects.get(id=design)
-                upload_file = request.FILES.get('myfile')
-
-                File.objects.create(
-                    uploader=uploader,
-                    #ref_id=ref_id,
-                    description=description,
-                    subject=subject,
-                     designation=designation,
-                    upload_file=upload_file
-                )
-
-            if 'send' in request.POST:
+		@variables:
 
 
-                uploader = request.user.extrainfo
-                print(uploader)
-                #ref_id = request.POST.get('fileid')
-                subject = request.POST.get('title')
-                description = request.POST.get('desc')
-                design = request.POST.get('design')
-                print("designation is ", design)
-                designation = Designation.objects.get(id = HoldsDesignation.objects.get(id = design).designation_id)
+				uploader - Employee who creates file.
+				subject - Title of the file.
+				description - Description of the file.
+				upload_file - Attachment uploaded while creating file.
+				file - The file object.
+				exations - The HoldsDesignation object.
+				context - Hotrainfo - The Extrainfo object.
+				holdsdesignlds data needed to make necessary changes in the template.
+	"""
+	if request.method =="POST":
+		try:
+			if 'save' in request.POST:
+				print("********************")
+				uploader = request.user.extrainfo
+				print(uploader)
+				#ref_id = request.POST.get('fileid')
+				subject = request.POST.get('title')
+				description = request.POST.get('desc')
+				design = request.POST.get('design')
+				designation = Designation.objects.get(id=design)
+				upload_file = request.FILES.get('myfile')
 
-                upload_file = request.FILES.get('myfile')
+				File.objects.create(
+					uploader=uploader,
+					#ref_id=ref_id,
+					description=description,
+					subject=subject,
+					 designation=designation,
+					upload_file=upload_file
+				)
 
-                file = File.objects.create(
-                    uploader=uploader,
-                    #ref_id=ref_id,
-                    description=description,
-                    subject=subject,
-                    designation=designation,
-                    upload_file=upload_file
-                )
-
-
-                current_id = request.user.extrainfo
-                remarks = request.POST.get('remarks')
-
-                sender = request.POST.get('design')
-                current_design = HoldsDesignation.objects.get(id=sender)
-
-                receiver = request.POST.get('receiver')
-                receiver_id = User.objects.get(username=receiver)
-                print("Receiver_id = ")
-                print(receiver_id)
-                receive = request.POST.get('recieve')
-                print("recieve = ")
-                print(receive)
-                receive_designation = Designation.objects.filter(name=receive)
-                print("receive_designation = ")
-                print(receive_designation)
-                receive_design = receive_designation[0]
-                upload_file = request.FILES.get('myfile')
-                # return HttpResponse ("success")
-                Tracking.objects.create(
-                    file_id=file,
-                    current_id=current_id,
-                    current_design=current_design,
-                    receive_design=receive_design,
-                    receiver_id=receiver_id,
-                    remarks=remarks,
-                    upload_file=upload_file,
-                )
-                office_module_notif(request.user, receiver_id)
-                messages.success(request,'File sent successfully')
-
-        except IntegrityError:
-            message = "FileID Already Taken.!!"
-            return HttpResponse(message)
+			if 'send' in request.POST:
 
 
+				uploader = request.user.extrainfo
+				print(uploader)
+				#ref_id = request.POST.get('fileid')
+				subject = request.POST.get('title')
+				description = request.POST.get('desc')
+				design = request.POST.get('design')
+				print("designation is ", design)
+				designation = Designation.objects.get(id = HoldsDesignation.objects.get(id = design).designation_id)
 
-    file = File.objects.all()
-    extrainfo = ExtraInfo.objects.all()
-    holdsdesignations = HoldsDesignation.objects.all()
-    designations = HoldsDesignation.objects.filter(user = request.user)
+				upload_file = request.FILES.get('myfile')
 
-    context = {
-        'file': file,
-        'extrainfo': extrainfo,
-        'holdsdesignations': holdsdesignations,
-        'designations': designations,
-    }
-    return render(request, 'filetracking/composefile.html', context)
+				file = File.objects.create(
+					uploader=uploader,
+					#ref_id=ref_id,
+					description=description,
+					subject=subject,
+					designation=designation,
+					upload_file=upload_file
+				)
+
+
+				current_id = request.user.extrainfo
+				remarks = request.POST.get('remarks')
+
+				sender = request.POST.get('design')
+				current_design = HoldsDesignation.objects.get(id=sender)
+
+				receiver = request.POST.get('receiver')
+				receiver_id = User.objects.get(username=receiver)
+				print("Receiver_id = ")
+				print(receiver_id)
+				receive = request.POST.get('recieve')
+				print("recieve = ")
+				print(receive)
+				receive_designation = Designation.objects.filter(name=receive)
+				print("receive_designation = ")
+				print(receive_designation)
+				receive_design = receive_designation[0]
+				upload_file = request.FILES.get('myfile')
+				# return HttpResponse ("success")
+				Tracking.objects.create(
+					file_id=file,
+					current_id=current_id,
+					current_design=current_design,
+					receive_design=receive_design,
+					receiver_id=receiver_id,
+					remarks=remarks,
+					upload_file=upload_file,
+				)
+				office_module_notif(request.user, receiver_id)
+				messages.success(request,'File sent successfully')
+
+		except IntegrityError:
+			message = "FileID Already Taken.!!"
+			return HttpResponse(message)
+
+
+
+	file = File.objects.all()
+	extrainfo = ExtraInfo.objects.all()
+	holdsdesignations = HoldsDesignation.objects.all()
+	designations = HoldsDesignation.objects.filter(user = request.user)
+
+	context = {
+		'file': file,
+		'extrainfo': extrainfo,
+		'holdsdesignations': holdsdesignations,
+		'designations': designations,
+	}
+	return render(request, 'filetracking/composefile.html', context)
 
 @login_required(login_url = "/accounts/login")
 def forward(request, id):
-    """
-            The function is used to forward files received by user(employee) from other
-            employees which are filtered from Tracking(table) objects by current user
-            i.e. receiver_id to other employees.
-            It also gets track of file created by uploader through all users involved in file
-            along with their remarks and attachments
-            It displays details file of a File(table) and remarks and attachments of user involved
-            in file of Tracking(table) of filetracking(model) in the template.
+	"""
+			The function is used to forward files received by user(employee) from other
+			employees which are filtered from Tracking(table) objects by current user
+			i.e. receiver_id to other employees.
+			It also gets track of file created by uploader through all users involved in file
+			along with their remarks and attachments
+			It displays details file of a File(table) and remarks and attachments of user involved
+			in file of Tracking(table) of filetracking(model) in the template.
 
-            @param:
-                    request - trivial.
-                    id - id of the file object which the user intends to forward to other employee.
+			@param:
+					request - trivial.
+					id - id of the file object which the user intends to forward to other employee.
 
-            @variables:
-                    file - The File object.
-                    track - The Tracking object.
-                    remarks = Remarks posted by user.
-                    receiver = Receiver to be selected by user for forwarding file.
-                    receiver_id = Receiver_id who has been selected for forwarding file.
-                    upload_file = File attached by user.
-                    extrainfo = ExtraInfo object.
-                    holdsdesignations = HoldsDesignation objects.
-                    context - Holds data needed to make necessary changes in the template.
-    """
-    # start = timer()
-    file = get_object_or_404(File, id=id)
-    # end = timer()
-    # print (end-start)
+			@variables:
+					file - The File object.
+					track - The Tracking object.
+					remarks = Remarks posted by user.
+					receiver = Receiver to be selected by user for forwarding file.
+					receiver_id = Receiver_id who has been selected for forwarding file.
+					upload_file = File attached by user.
+					extrainfo = ExtraInfo object.
+					holdsdesignations = HoldsDesignation objects.
+					context - Holds data needed to make necessary changes in the template.
+	"""
+	# start = timer()
+	file = get_object_or_404(File, id=id)
+	# end = timer()
+	# print (end-start)
 
-    # start = timer()
-    track = Tracking.objects.filter(file_id=file)
-    # end = timer()
-    # print (end-start)
+	# start = timer()
+	track = Tracking.objects.filter(file_id=file)
+	# end = timer()
+	# print (end-start)
 
-    if request.method == "POST":
-            if 'finish' in request.POST:
-                file.complete_flag = True
-                file.save()
+	if request.method == "POST":
+			if 'finish' in request.POST:
+				file.complete_flag = True
+				file.save()
 
-            if 'send' in request.POST:
-                current_id = request.user.extrainfo
-                remarks = request.POST.get('remarks')
+			if 'send' in request.POST:
+				current_id = request.user.extrainfo
+				remarks = request.POST.get('remarks')
 
-                sender = request.POST.get('sender')
-                current_design = HoldsDesignation.objects.get(id=sender)
+				sender = request.POST.get('sender')
+				current_design = HoldsDesignation.objects.get(id=sender)
 
-                receiver = request.POST.get('receiver')
-                receiver_id = User.objects.get(username=receiver)
-                print("Receiver_id = ")
-                print(receiver_id)
-                receive = request.POST.get('recieve')
-                print("recieve = ")
-                print(receive)
-                receive_designation = Designation.objects.filter(name=receive)
-                print("receive_designation = ")
-                print(receive_designation)
-                receive_design = receive_designation[0]
-                upload_file = request.FILES.get('myfile')
-                # return HttpResponse ("success")
-                Tracking.objects.create(
-                    file_id=file,
-                    current_id=current_id,
-                    current_design=current_design,
-                    receive_design=receive_design,
-                    receiver_id=receiver_id,
-                    remarks=remarks,
-                    upload_file=upload_file,
-                )
-    # start = timer()
+				receiver = request.POST.get('receiver')
+				receiver_id = User.objects.get(username=receiver)
+				print("Receiver_id = ")
+				print(receiver_id)
+				receive = request.POST.get('recieve')
+				print("recieve = ")
+				print(receive)
+				receive_designation = Designation.objects.filter(name=receive)
+				print("receive_designation = ")
+				print(receive_designation)
+				receive_design = receive_designation[0]
+				upload_file = request.FILES.get('myfile')
+				# return HttpResponse ("success")
+				Tracking.objects.create(
+					file_id=file,
+					current_id=current_id,
+					current_design=current_design,
+					receive_design=receive_design,
+					receiver_id=receiver_id,
+					remarks=remarks,
+					upload_file=upload_file,
+				)
+	# start = timer()
 
-    extrainfo = ExtraInfo.objects.all()
-    holdsdesignations = HoldsDesignation.objects.all()
-    designations = HoldsDesignation.objects.filter(user=request.user)
+	extrainfo = ExtraInfo.objects.all()
+	holdsdesignations = HoldsDesignation.objects.all()
+	designations = HoldsDesignation.objects.filter(user=request.user)
 
-    context = {
-        # 'extrainfo': extrainfo,
-        # 'holdsdesignations': holdsdesignations,
-        'designations':designations,
-        'file': file,
-        'track': track,
-    }
+	context = {
+		# 'extrainfo': extrainfo,
+		# 'holdsdesignations': holdsdesignations,
+		'designations':designations,
+		'file': file,
+		'track': track,
+	}
 
-    return render(request, 'filetracking/forward.html', context)
+	return render(request, 'filetracking/forward.html', context)
 
 
 	

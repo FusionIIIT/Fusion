@@ -168,7 +168,7 @@
 {% block javascript %}
     <script type="text/javascript">
 
-        $('#co_Search').keyup(function(){
+        $('#co_Search').on('input', function(){
             current_value = $('#co_Search').val();
             if(current_value.length > 4){
             // console.log("keyup function");
@@ -194,7 +194,7 @@
         }
         });
 
-        $('#co_co_Search').keyup(function(){
+        $('#co_co_Search').on('input', function(){
             current_value = $('#co_co_Search').val();
             // console.log("keyup function");
             if(current_value.length > 4 ) {
@@ -220,7 +220,7 @@
         }
         });
 
-        $('#faculty_Search').keyup(function(){
+        $('#faculty_Search').on('input', function(){
             current_value = $('#faculty_Search').val();
             // console.log("keyup function");
             $.ajax({

@@ -3,6 +3,8 @@ from django.http import (Http404, HttpResponse, HttpResponseNotFound,
                          HttpResponseRedirect)
 from django.shortcuts import render, reverse
 
+from django.contrib import messages
+
 from applications.globals.models import HoldsDesignation, Designation
 
 from .models import Bank, Company, Payments, Paymentscheme, Receipts
@@ -109,10 +111,8 @@ def previewing(request):
     print("asdasd")
     flag = 0
     for z in k:
-        print(str(z.designation))
         if(str(z.designation) == 'dealing assistant'):
             flag = 1
-            print(request.POST.get("month"))
             month = request.POST.get("month")
             year = request.POST.get("number1")
             pf = request.POST.get("number2")
@@ -699,7 +699,7 @@ def createCompany(request):
 
     c_name = request.POST.get("c_name")
     start_date = request.POST.get("start_date")
-    end_date = request.POST.get("end_date")
+    end_date = request.POST.get("end_date") or None
     description = request.POST.get("description")
     status = request.POST.get("status")
 
@@ -708,22 +708,6 @@ def createCompany(request):
     context = {
     }
     return render(request ,"financeAndAccountsModule/financeAndAccountsModulead.html",context)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 # def alterBank(request):
 #     """
@@ -748,12 +732,14 @@ def createCompany(request):
 #         for i in range(len(a)) :
 #             if "update" in request.POST :
 #                 p = Bank.objects.get(bank_id = a[i])
-#                 p.Account_no = acc_no
-#                 p.Bank_Name = bank_Name
-#                 p.IFSC_Code = IFSC_code
-#                 p.Branch = branch
-#                 p.save()
-            
+#                 if(p.Account_no == acc_no and p.Bank_Name == bank_Name):
+#                     p.Account_no = acc_no
+#                     p.Bank_Name = bank_Name
+#                     p.IFSC_Code = IFSC_code
+#                     p.Branch = branch
+#                     p.save()
+#                 else:
+#                     messeges.success(request, "Please Add the curresponding bank first!")
 #     context = {
 #     }
 #     return render(request, "financeAndAccountsModule/financeAndAccountsModulead.html")

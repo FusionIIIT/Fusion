@@ -18,8 +18,8 @@
     <div class="ui active tab" data-tab="notesheet">
 
         <div class="ui two item menu">
+            <a class="item"><b>Created By :-</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.user}}-{{file.designation}}</b></a>
             <a class="item"><b>File ID :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.department.name}}-{{file.upload_date.year}}-{{file.upload_date.month}}-#{{file.id}}</b></a>
-            <a class="item"><b>Uploader :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.user}}-{{file.designation}}</b></a>
         </div>
 
             <form class="ui large form" method="POST" enctype="multipart/form-data" id="form1">
@@ -28,7 +28,7 @@
 
                     <div class="ui fluid card">
                         <div class="content">
-                            <center><span class="ui header"><b>{{file.subject}}</b></span></center>
+                            <center><span class="ui header"><b>Subject-  {{file.subject}}</b></span></center>
                             <div class="ui divider"></div>
 
                             <div class="content" style=" padding-left: 18px; padding-top: 0.1px; height: auto; overflow-y: auto;">
@@ -44,7 +44,7 @@
                                     <div class="ui comments">
                                         <div class="comment">
                                              <div class="content">
-                                                 <a class="author">{{t.current_id.user}}
+                                                 <a class="author">{{t.current_design}}
                                                      <a class="metadata">
                                                          <span class="date">{{t.forward_date}}</span>
                                                      </a>
@@ -84,11 +84,11 @@
                                 <div class="field">
                                     <label>Send as:
                                         <select required class="ui fluid search selection dropdown" name="sender">
-<!--                                            <option selected hidden>Select</option>-->
 
-<!--                                            {% for designations in designations %}-->
+
+                                            {% for designations in designations %}
                                             <option value="{{designations.id}}">{{designations}}</option>
-<!--                                            {% endfor %}-->
+                                            {% endfor %}
 
                                         </select>
                                     </label>
@@ -128,7 +128,7 @@
                         <div class="field">
                             <label>Forward To:
 
-                                    <input type ="search" id="input_search" list = "input_list" name = "receiver">
+                                    <input type ="search" id="input_search" list = "input_list" name = "receiver" onchange="getDesignation();">
                                     <datalist  id="input_list">
 
                                     </datalist>
@@ -204,7 +204,7 @@
 
             <br>
             <br>
-             <button type="submit" name="send" class="ui large right floated primary button" style = "float: right;">
+             <button type="submit" name="send" class="ui large right floated primary button" style = "float: right; margin-bottom: 25px">
                                 Send<i class="ui send icon right floated"></i>
                             </button>
 
@@ -216,8 +216,8 @@
     <div class="ui tab" data-tab="attachments">
 
         <div class="ui two item menu">
+            <a class="item"><b>Created By :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.user}}-{{file.designation}}</b></a>
             <a class="item"><b>File ID :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.department.name}}-{{file.upload_date.year}}-{{file.upload_date.month}}-#{{file.id}}</b></a>
-            <a class="item"><b>Uploader :</b><b class="meta" style="text-indent: 1em; color: #1B1C1D;">{{file.uploader.user}}-{{file.designation}}</b></a>
         </div>
 
         <div class="ui fluid card">
@@ -267,7 +267,7 @@
                                                  </a>
 
                                                  <div class="right floated content">
-                                                     <a class="author">{{t.current_id.user}}
+                                                     <a class="author">{{t.current_design}}
                                                          <a class="metadata">
                                                             <span class="date">{{t.forward_date}}</span>
                                                          </a>
@@ -289,6 +289,37 @@
 
 
     <script type="text/javascript">
+        function getDesignation() {
+        var roll_no = document.getElementById('input_search').value;
+
+        $.ajax({
+            type: 'POST',
+            url: '/filetracking/predict/',
+            data: {
+                'roll_no': roll_no,
+                'csrfmiddlewaretoken': '{{csrf_token}}'
+            },
+            success: function(data){
+
+                console.log('coming-----------------------');
+                console.log(data);
+                var desig = data.data;
+                 $('#input_list1').empty();
+                for(let i=0;i<desig.length;i++){
+                    $('#input_list1').append('<option value="'+desig[i]+'">'+desig[i]+'</option>');
+                }
+
+            },
+            error: function(rs, e){
+                console.log('error-------');
+            },
+        });
+    }
+
+
+
+
+
         $('#input_search1').keyup(function(){
 
             console.log('asdasd');

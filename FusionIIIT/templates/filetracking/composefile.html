@@ -53,15 +53,15 @@
                 <div class="field">
                     <label>Create as:
                         <select required class="ui fluid search selection dropdown" name="design">
-<!--                           <option selected hidden>Select</option>-->
 
-                           <!--  {% for designations in designations %}
-                            <option value="{{designations.designation.name}}">{{designations.designation.name}}</option>
-                            {% endfor %} -->
 
-<!--                             {% for designations in designations %}-->
+{#                           <!--  {% for designations in designations %}#}
+{#                            <option value="{{designations.designation.name}}">{{designations.designation.name}}</option>#}
+{#                            {% endfor %} -->#}
+
+                             {% for designations in designations %}
                             <option value="{{designations.id}}">{{designations}}</option>
-<!--                            {% endfor %}-->
+                            {% endfor %}
 
                         </select>
                     </label>
@@ -94,7 +94,7 @@
                 <div class="field">
                             <label>Forward To:
 
-                                    <input type ="search" id="input_search" list = "input_list" name = "receiver">
+                                    <input type ="search" id="input_search" list = "input_list" name = "receiver" onchange="getDesignation();">
                                     <datalist  id="input_list">
 
                                     </datalist>
@@ -139,6 +139,34 @@
 
 
 <script type="text/javascript">
+
+
+        function getDesignation() {
+        var roll_no = document.getElementById('input_search').value;
+
+        $.ajax({
+            type: 'POST',
+            url: '/filetracking/predict/',
+            data: {
+                'roll_no': roll_no,
+                'csrfmiddlewaretoken': '{{csrf_token}}'
+            },
+            success: function(data){
+
+                console.log('coming-----------------------');
+                console.log(data);
+                var desig = data.data;
+                 $('#input_list1').empty();
+                for(let i=0;i<desig.length;i++){
+                    $('#input_list1').append('<option value="'+desig[i]+'">'+desig[i]+'</option>');
+                }
+
+            },
+            error: function(rs, e){
+                console.log('error-------');
+            },
+        });
+    }
 
 
         $('#input_search1').keyup(function(){
