@@ -775,6 +775,7 @@ def admin(request):
     role_data = Roles.objects.all()
     context = {
         "error" : error,
+        "success" : success,
         "role" : role_data
     }
     return render(request, 'feeds/admin.html', context)
