@@ -1,6 +1,31 @@
 <div>
+    {% ifnotequal request.path "/feeds/admin" %}
     <div class="ui success message">
         Filters:
-        
+        {{ request.path }}
+    </div>
+    {% endifnotequal%}
+    <div class="ui success message">
+    More Options:
+    {% ifequal request.path "/feeds/admin" %}
+        <div class="ui left labeled button" tabindex="0">
+            <a class="ui basic right pointing label" href={% url 'feeds:feeds' %}>
+                Feed Home
+            </a>
+            <div class="ui button">
+                <i class="newspaper  outline icon"></i>
+            </div>
+        </div>
+    {% else %}
+        <div class="ui left labeled button" tabindex="0">
+            <a class="ui basic right pointing label" href={% url 'feeds:feeds_admin' %}>
+                Admin Panel
+            </a>
+            <div class="ui button">
+                <i class="shield alternate icon"></i>
+            </div>
+        </div>
+    {% endifequal %}
+    </div>
     </div>
 </div>

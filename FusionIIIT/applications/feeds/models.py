@@ -302,3 +302,7 @@ class Profile(models.Model):
 	profile_view = models.IntegerField(default=0)
 	def __str__(self):
 		return '%s\'s Bio is  ----> %s' % (self.user, self.bio)
+
+class Roles(models.Model):
+	user = models.ForeignKey(User, default=1, on_delete=models.CASCADE)
+	role = models.CharField(max_length=100, blank=False)

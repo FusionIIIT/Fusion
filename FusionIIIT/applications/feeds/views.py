@@ -11,7 +11,7 @@ from django.core.files.storage import default_storage
 
 from .forms import AnswerForm, ProfileForm
 from .models import (AllTags, AnsweraQuestion, AskaQuestion, Comments, Reply,
-                     hidden, report, tags, Profile)
+                     hidden, report, tags, Profile, Roles)
 from applications.globals.models import ExtraInfo
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
@@ -745,3 +745,36 @@ def get_page_info(current_page, query):
             'previous_page' : previous_page,
             'next_page' : next_page,
         }
+
+def admin(request):
+    error = {
+        "user":"",
+        "role" : ""
+        }
+    success = {
+        "user":"",
+        }
+    if request.method == 'POST' :
+        user = request.POST.get("user")
+        role = request.POST.get("role").upper()
+        try:
+            user_check = User.objects.get(username=user)
+            print(user_check)
+            role_check = Roles.objects.filter(user=user_check)
+            if(len(role_check)==0):
+                role_check_role = Roles.objects.filter(role=role)
+                if(len(role_check_role)==0):
+                    role = Roles.objects.create(user=user_check, role=role)
+                    success["user"] = "Role added."
+                else:
+                    error["role"] = "This role is assigned to different person."
+            else:
+                error["user"] = "User already assigned a role."
+        except User.DoesNotExist:
+            error["user"] = "User Does not exist."
+    role_data = Roles.objects.all()
+    context = {
+        "error" : error,
+        "role" : role_data
+    }
+    return render(request, 'feeds/admin.html', context)
