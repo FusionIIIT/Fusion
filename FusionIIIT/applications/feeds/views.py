@@ -126,7 +126,9 @@ def feeds(request):
         ques.append(temp)
     add_tag_list = AllTags.objects.all()
     add_tag_list = add_tag_list.exclude(pk__in=a_tags)
+    role_data = Roles.objects.all()
     context ={
+        'role' : role_data,
         'hidden' : hid,
         'form_answer': AnswerForm(),
         'Tags': user_tags,
@@ -397,8 +399,9 @@ def TagsBasedView(request, string):
             'votes':q.total_likes() - q.total_dislikes(),
         }
         ques.append(temp)
-    
+    role_data = Roles.objects.all()
     context = {
+        "role":role_data,
         'form_answer': AnswerForm(),
         'Tags': user_tags,
         'questions': ques,
@@ -475,8 +478,9 @@ def ParticularQuestion(request, id):
                 instance.question = result
                 instance.user = request.user
                 instance.save()
-
+                role_data = Roles.objects.all()
                 context = {
+                    'role' : role_data,
                     'isliked':isliked,
                     'disliked': isdisliked,
                     'votes':result.total_likes() - result.total_dislikes(),
@@ -513,8 +517,10 @@ def ParticularQuestion(request, id):
         form = AnswerForm()
         # instance = AnsweraQuestion.objects.get(question__id=id)
         # print(instance.content)
-
+    
+    role_data = Roles.objects.all()
     context = {
+        "role" : role_data,
         'isliked':isliked,
         'disliked': isdisliked,
         'votes':result.total_likes() - result.total_dislikes(),
@@ -754,15 +760,16 @@ def admin(request):
     success = {
         "user":"",
         }
-    if request.method == 'POST' :
+    if request.method == 'POST' and request.POST.get("addrole"):
+        print(request.POST.get("addrole"))
         user = request.POST.get("user")
-        role = request.POST.get("role").upper()
+        role = request.POST.get("role")
         try:
             user_check = User.objects.get(username=user)
             print(user_check)
             role_check = Roles.objects.filter(user=user_check)
             if(len(role_check)==0):
-                role_check_role = Roles.objects.filter(role=role)
+                role_check_role = Roles.objects.filter(role__iexact=role)
                 if(len(role_check_role)==0):
                     role = Roles.objects.create(user=user_check, role=role)
                     success["user"] = "Role added."

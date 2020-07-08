@@ -54,6 +54,19 @@
         {{ request.path }}
     </div>
     {% endifnotequal%}
+    <div class="ui success message">
+        <h3 class="ui header">Feeds by Administration:</h3>
+        <div class="ui middle  aligned divided list"  style="max-height: 180px; overflow-y: scroll;">
+            {% for r in role %}
+            <div class="item">
+                <img class="ui avatar image" src="https://semantic-ui.com/images/avatar2/small/lena.png">
+                <div class="content">
+                <a class="header">{{r.role}}</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
 
 </div>
 
