@@ -68,7 +68,7 @@ def feeds(request):
             question.save()
             role_check = Roles.objects.filter(user=request.user)
             if len(role_check) > 0 and request.POST.get("from_admin"):
-                access = QuestionAccessControl.objects.create(question=question, canVote=True, canAnswer=True, canComment = True)
+                access = QuestionAccessControl.objects.create(question=question, canVote=True, canAnswer=True, canComment = True, posted_by = role_check[0])
                 if request.POST.get("RestrictVote"):
                     access.canVote = False
                 if request.POST.get("RestrictAnswer"):
@@ -840,3 +840,98 @@ def admin(request):
         'subtags': askqus_subtags,
     }
     return render(request, 'feeds/admin.html', context)
+
+@login_required
+def administrativeView(request, string):
+    print('administrative View')
+    # questions = AskaQuestion.objects.order_by('-uploaded_at')
+    role_user = Roles.objects.filter(role=string)
+    try :
+        role_user = role_user[0]
+    except:
+        redirect("/feeds")
+    # print(QuestionAccessControl.objects.select_related('posted_by').filter(posted_by=role_user))
+    result = QuestionAccessControl.objects.select_related('posted_by').filter(posted_by=role_user).order_by('-created_at')
+    paginator = Paginator(result, PAGE_SIZE) # Show 25 contacts per page.
+    total_page = math.ceil(result.count()/PAGE_SIZE)
+    if request.GET.get("page_number") :
+        current_page = int(request.GET.get("page_number"))
+    else:
+        current_page = 1    
+    previous_page = current_page - 1
+    next_page = current_page + 1
+    # result = paginator.page(current_page)
+    
+    user_tags = tags.objects.values("my_tag").distinct().filter(Q(user__username=request.user.username))
+    u_tags = tags.objects.all().filter(Q(user__username=request.user.username))
+    a_tags = tags.objects.values('my_subtag').filter(Q(user__username=request.user.username))
+    
+    add_tag_list = AllTags.objects.all()
+    add_tag_list = add_tag_list.exclude(pk__in=a_tags)
+
+    askqus_subtags = AllTags.objects.all()
+    ques = []
+    result = paginator.page(current_page)
+    hid = hidden.objects.all()
+    for q in result:
+        isliked = 0
+        isdisliked = 0
+        hidd = 0
+        isSpecial = 0
+        profi = Profile.objects.all().filter(user=q.question.user)
+        if(q.question.likes.all().filter(username=request.user.username).count()==1):
+            isliked = 1
+        if(hid.all().filter(user=request.user, question = q.question).count()==1):
+            hidd = 1
+        if(q.question.dislikes.all().filter(username=request.user.username).count()==1):
+            isdisliked = 1
+        access_check = q
+        isSpecial = 1
+        temp = {
+            'access' : access_check,
+            'isSpecial' : isSpecial,
+            'profile':profi,
+            'ques' : q.question,
+            'isliked':isliked,
+            'hidd' : hidd,
+            'disliked': isdisliked,
+            'votes':q.question.total_likes() - q.question.total_dislikes(),
+        }
+        ques.append(temp)
+    role_data = Roles.objects.all()
+    context = {
+        "role":role_data,
+        'form_answer': AnswerForm(),
+        'Tags': user_tags,
+        'questions': ques,
+        'username': request.user.username,
+        'subtags': askqus_subtags,
+        'add_tag_list' : add_tag_list,
+        'pages' : {
+            'current_page' : current_page,
+            'total_page' : total_page,
+            'previous_page' : previous_page,
+            'next_page' : next_page,
+            },
+
+        'a':   u_tags.filter(Q(my_tag__icontains='CSE')),
+        'b' :   u_tags.filter(Q(my_tag__icontains='ECE')),
+        'c' :   u_tags.filter(Q(my_tag__icontains='Mechanical')),
+        'd' :   u_tags.filter(Q(my_tag__icontains='Technical-Clubs')),
+        'e' :   u_tags.filter(Q(my_tag__icontains='Cultural-Clubs')),
+        'f' :   u_tags.filter(Q(my_tag__icontains='Sports-Clubs')),
+        'g' :   u_tags.filter(Q(my_tag__icontains='Business-and-Career')),
+        'h' :   u_tags.filter(Q(my_tag__icontains='Entertainment')),
+        'i' :   u_tags.filter(Q(my_tag__icontains='IIITDMJ-Campus')),
+        'j' :   u_tags.filter(Q(my_tag__icontains='Jabalpur-city')),
+        'k' :   u_tags.filter(Q(my_tag__icontains='IIITDMJ-Rules-and-Regulations')),
+        'l' :   u_tags.filter(Q(my_tag__icontains='Academics')),
+        'm' :   u_tags.filter(Q(my_tag__icontains='IIITDMJ')),
+        'n' :   u_tags.filter(Q(my_tag__icontains='Life-Relationship-and-Self')),
+        'o' :   u_tags.filter(Q(my_tag__icontains='Technology-and-Education')),
+        'p' :   u_tags.filter(Q(my_tag__icontains='Programmes')),
+        'q' :   u_tags.filter(Q(my_tag__icontains='Others')),
+        'r' :   u_tags.filter(Q(my_tag__icontains='Design')),
+    }
+
+    return render(request, 'feeds/feeds_main.html', context)

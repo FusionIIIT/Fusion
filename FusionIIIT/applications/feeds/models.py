@@ -310,10 +310,12 @@ class Roles(models.Model):
 	 return '%s is assigned %s role' % (self.user, self.role)
 
 class QuestionAccessControl(models.Model):
-	question = models.ForeignKey(AskaQuestion, default=1, on_delete=models.CASCADE)
+	question = models.ForeignKey(AskaQuestion, related_name='question_list', default=1, on_delete=models.CASCADE)
 	canVote = models.BooleanField()
 	canAnswer = models.BooleanField()
 	canComment = models.BooleanField()
+	posted_by = models.ForeignKey(Roles, default=1, on_delete=models.CASCADE)
+	created_at = models.DateTimeField(auto_now_add=False, auto_now=False, default=timezone.now)
 	def __str__(self):
 		return "question number " + str(self.question.id)
 	
