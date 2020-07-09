@@ -314,3 +314,6 @@ class QuestionAccessControl(models.Model):
 	canVote = models.BooleanField()
 	canAnswer = models.BooleanField()
 	canComment = models.BooleanField()
+	def __str__(self):
+		return "question number " + str(self.question.id)
+	

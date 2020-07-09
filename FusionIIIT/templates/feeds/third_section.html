@@ -2,7 +2,15 @@
     <div class="ui success message center aligned">
         {% comment %} <div class="ui vertical buttons"> {% endcomment %}
             <button class="ui inverted  red button" id="modal-script">
+            {% ifequal request.path "/feeds/admin" %}
+                {% if isAdmin or administrativeRole %}
+                Post update
+                {% else %}
                 Ask a Question?
+                {% endif %}
+            {% else %}
+                Ask a Question?
+            {% endifequal %}
             </button>
             <h3 class="ui header" style="margin:5px 0px">More Options:</h3>
             <div class="ui left labeled button" tabindex="0">
@@ -124,6 +132,29 @@
                         <label>Ask Anonymously</label>
                     </div>
                 </div>
+                {% ifequal request.path "/feeds/admin" %}
+                    {% if isAdmin or administrativeRole %}
+                        <input type="text" id="from_admin" name="from_admin" value="from_admin" hidden>
+                        <div class="field">
+                            <div class="ui black checkbox">
+                                <input type="checkbox" id="RestrictVote" name="RestrictVote">
+                                <label>Restrict Vote?</label>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="ui black checkbox">
+                                <input type="checkbox" id="RestrictAnswer" name="RestrictAnswer">
+                                <label>Restrict Answer?</label>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="ui black checkbox">
+                                <input type="checkbox" id="RestrictComment" name="RestrictComment">
+                                <label>Restrict Comment?</label>
+                            </div>
+                        </div>
+                    {% endif %}
+                {%endifequal%}
                 <div class="ui hidden divider"></div>
 
                 <div class="actions">

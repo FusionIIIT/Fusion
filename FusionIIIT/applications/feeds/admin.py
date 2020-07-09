@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from .models import (AllTags, AnsweraQuestion, AskaQuestion, Comments, hidden,
-                     report, tags, Profile, Roles)
+                     report, tags, Profile, Roles, QuestionAccessControl)
 
 admin.site.register(AskaQuestion)
 admin.site.register(Comments)
@@ -12,3 +12,4 @@ admin.site.register(report)
 admin.site.register(AnsweraQuestion)
 admin.site.register(Profile)
 admin.site.register(Roles)
+admin.site.register(QuestionAccessControl)
