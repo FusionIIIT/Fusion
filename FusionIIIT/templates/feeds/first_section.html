@@ -1,4 +1,4 @@
-<div class="three wide column" style="min-width:200px; padding:0 0 0 50px;">
+<div>
 	<form action="{% url 'feeds:feeds' %}" method="POST" class="ui form" onsubmit = "return tag_validate()">
 		{% csrf_token %}
 		<div class="field">
@@ -23,13 +23,13 @@
 	</form>
 
 	{% comment %}The Tab-Menu starts here!{% endcomment %}
-	<div class="ui fluid vertical pointing menu" style="max-width: 320px;">
+	<div class="ui fluid vertical menu" style="max-width: 320px;">
 		<a href="" class="active item" data-tab="life" id="Top-Stories" onclick="tags_based(id);">
 			Top Stories
 			<i class="right floated chevron right icon"></i>
 		</a>
 		{% for Tag in Tags %}
-			<div class="ui dropdown item" data-tab="first" id= {{ Tag.my_tag }}>
+			<div class="ui left compact pointing scrolling dropdown link item" data-tab="first" id= {{ Tag.my_tag }}>
 			{{ Tag.my_tag }}<i class="dropdown icon"></i>
 
 			{% if Tag.my_tag == 'CSE' %}

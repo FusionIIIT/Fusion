@@ -21,27 +21,51 @@
 		{% include 'dashboard/navbar.html' %}
 	{% endblock %}
 
-	<div class="sixteen wide column">
-		<!-- Search Bar Section -->
-		{% include 'feeds/search_section.html' %}
-		<!-- Search Bar Section ends here-->
-	</div>
+	<div class='ui stackable doubling grid'>
 
-	<div class='ui grid red segment' style="padding: 50px;">
+		{% comment %} <div class="sixteen wide column">
+			<!-- Search Bar Section -->
+			{% include 'feeds/search_section.html' %}
+			<!-- Search Bar Section ends here-->
+		</div> {% endcomment %}
 
+		<div class="column"></div>
 		<!-- First section of the page starts here -->
-		{% include 'feeds/first_section.html' %}
+		<div class="three wide column">
+			{% comment %} {% include 'feeds/first_section.html' %} {% endcomment %}
+			{% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+			<div class="ui divider"></div>
+			{% include 'feeds/first_section.html' %}
+
+            {% comment %}The Tab-Menu starts here!{% endcomment %}
+            {% comment %} <div class="ui huge fluid vertical pointing menu"
+                 style="max-width: 320px;">
+
+                <a class="item" href="{% url 'globals:profile' %}">
+                    View Profile
+                    <i class="right floated chevron right icon"></i>
+                </a>
+
+            </div> {% endcomment %}
+		</div>
 		<!-- First section of the page ends here -->
 
 
 		<!-- Middle section of the page -->
-		{% include 'feeds/single_middle_section.html' %}
+		<div class="eight wide column">
+			{% include 'feeds/single_middle_section.html' %}
+		</div>
 		<!-- First section of the page ends here -->
 
 		<!-- Third section of the page starts here -->
-		{% include 'feeds/third_section.html' %}
+		<div class="three wide column">
+			{% include 'feeds/third_section.html' %}
+		</div>
 		<!-- Third section of the page ends here -->
 
+		<div class="column"></div>
 	</div>
 
 {% endblock %}

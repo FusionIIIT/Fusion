@@ -11,7 +11,7 @@
     </style>
 {% endblock css %}
 
-<div class="ten wide column" style="padding: 0 50px;">
+<div>
     {% include 'feeds/pagination.html' %}
 
     {% if not questions %}
@@ -22,7 +22,11 @@
 
     {% for question in questions %}
     {% if question.hidd == 0 %}
+    {% if question.isSpecial == 1 %}
+    <div class="ui clearing segment tertiary red inverted" style="margin-bottom: 30px;">
+    {% else %}
     <div class="ui clearing segment blue" style="margin-bottom: 30px;">
+    {% endif %}
         <div class="ui grid header">
 
             <div class="two wide column no-padding no-margin">
@@ -201,17 +205,27 @@
             <div class="row grid">
                 <div class="grid one wide column">
                     <div class="row">
+                    {% if question.isSpecial == 1 and not question.access.0.canVote%}
+                    <i id="upcaret{{question.ques.id}}" class="icon big arrow alternate circle up {% if question.isliked == 1 %}{%else%}outline{% endif %}" 
+                            style="cursor:not-allowed"></i>
+                    {% else %}
                         <i id="upcaret{{question.ques.id}}" class="icon big arrow alternate circle up {% if question.isliked == 1 %}{%else%}outline{% endif %}" 
                             onclick='upvote_post({{question.ques.id}})' 
                             style="cursor:pointer"></i>
+                    {% endif %}
                     </div>
                     <div class="row center aligned container ui" id="upvoteCount{{question.ques.id}}">
                         <i style="margin-left: 10px;">{{question.votes}}</i>
                     </div>
                     <div class="row">
+                    {% if question.isSpecial == 1 and not question.access.0.canVote%}
+                    <i id="downcaret{{question.ques.id}}" class="icon big arrow alternate circle down {% if question.disliked == 1 %}{%else%}outline{% endif %}"
+                            style="cursor:not-allowed"></i>
+                    {% else %}
                         <i id="downcaret{{question.ques.id}}" class="icon big arrow alternate circle down {% if question.disliked == 1 %}{%else%}outline{% endif %}"
                             onclick='downvote_post({{question.ques.id}})' 
                             style="cursor:pointer"></i>
+                    {% endif %}
                     </div>
                 </div>
 

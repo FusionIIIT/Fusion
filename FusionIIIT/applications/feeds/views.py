@@ -11,7 +11,7 @@ from django.core.files.storage import default_storage
 
 from .forms import AnswerForm, ProfileForm
 from .models import (AllTags, AnsweraQuestion, AskaQuestion, Comments, Reply,
-                     hidden, report, tags, Profile)
+                     hidden, report, tags, Profile, Roles, QuestionAccessControl)
 from applications.globals.models import ExtraInfo
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
@@ -66,6 +66,17 @@ def feeds(request):
             else:
                 question.anonymous_ask = False;
             question.save()
+            role_check = Roles.objects.filter(user=request.user)
+            if len(role_check) > 0 and request.POST.get("from_admin"):
+                access = QuestionAccessControl.objects.create(question=question, canVote=True, canAnswer=True, canComment = True)
+                if request.POST.get("RestrictVote"):
+                    access.canVote = False
+                if request.POST.get("RestrictAnswer"):
+                    access.canAnswer = False
+                if request.POST.get("RestrictComment"):
+                    access.canComment = False
+                access.save()
+                return redirect("/feeds/admin")
             query = AskaQuestion.objects.order_by('-uploaded_at')
 
         if request.POST.get('search'):
@@ -108,6 +119,7 @@ def feeds(request):
         isliked = 0
         isdisliked = 0
         hidd = 0
+        isSpecial = 0
         profi = Profile.objects.all().filter(user=q.user)
         if(q.likes.all().filter(username=request.user.username).count()==1):
             isliked = 1
@@ -115,7 +127,12 @@ def feeds(request):
             hidd = 1
         if(q.dislikes.all().filter(username=request.user.username).count()==1):
             isdisliked = 1
+        access_check = QuestionAccessControl.objects.filter(question=q)
+        if len(access_check)>0:
+            isSpecial = 1
         temp = {
+            'access' : access_check,
+            'isSpecial' : isSpecial,
             'profile':profi,
             'ques' : q,
             'isliked':isliked,
@@ -126,7 +143,9 @@ def feeds(request):
         ques.append(temp)
     add_tag_list = AllTags.objects.all()
     add_tag_list = add_tag_list.exclude(pk__in=a_tags)
+    role_data = Roles.objects.all()
     context ={
+        'role' : role_data,
         'hidden' : hid,
         'form_answer': AnswerForm(),
         'Tags': user_tags,
@@ -381,6 +400,7 @@ def TagsBasedView(request, string):
         isliked = 0
         isdisliked = 0
         hidd = 0
+        isSpecial = 0
         profi = Profile.objects.all().filter(user=q.user)
         if(q.likes.all().filter(username=request.user.username).count()==1):
             isliked = 1
@@ -388,7 +408,12 @@ def TagsBasedView(request, string):
             hidd = 1
         if(q.dislikes.all().filter(username=request.user.username).count()==1):
             isdisliked = 1
+        access_check = QuestionAccessControl.objects.filter(question=q)
+        if len(access_check)>0:
+            isSpecial = 1
         temp = {
+            'access' : access_check,
+            'isSpecial' : isSpecial,
             'profile':profi,
             'ques' : q,
             'isliked':isliked,
@@ -397,8 +422,9 @@ def TagsBasedView(request, string):
             'votes':q.total_likes() - q.total_dislikes(),
         }
         ques.append(temp)
-    
+    role_data = Roles.objects.all()
     context = {
+        "role":role_data,
         'form_answer': AnswerForm(),
         'Tags': user_tags,
         'questions': ques,
@@ -465,6 +491,10 @@ def ParticularQuestion(request, id):
     a_tags = tags.objects.values('my_subtag').filter(Q(user__username=request.user.username))
     add_tag_list = AllTags.objects.all()
     add_tag_list = add_tag_list.exclude(pk__in=a_tags)
+    isSpecial = 0
+    access_check = QuestionAccessControl.objects.filter(question=result)
+    if len(access_check)>0:
+        isSpecial = 1
 
     if request.method == 'POST':
         if request.POST.get("answer_button"):
@@ -475,8 +505,11 @@ def ParticularQuestion(request, id):
                 instance.question = result
                 instance.user = request.user
                 instance.save()
-
+                role_data = Roles.objects.all()
                 context = {
+                    'access' : access_check,
+                    'isSpecial' : isSpecial,
+                    'role' : role_data,
                     'isliked':isliked,
                     'disliked': isdisliked,
                     'votes':result.total_likes() - result.total_dislikes(),
@@ -513,8 +546,12 @@ def ParticularQuestion(request, id):
         form = AnswerForm()
         # instance = AnsweraQuestion.objects.get(question__id=id)
         # print(instance.content)
-
+    
+    role_data = Roles.objects.all()
     context = {
+        'access' : access_check,
+        'isSpecial' : isSpecial,
+        "role" : role_data,
         'isliked':isliked,
         'disliked': isdisliked,
         'votes':result.total_likes() - result.total_dislikes(),
@@ -745,3 +782,61 @@ def get_page_info(current_page, query):
             'previous_page' : previous_page,
             'next_page' : next_page,
         }
+
+@login_required
+def admin(request):
+    error = {
+        "user":"",
+        "role" : ""
+        }
+    success = {
+        "user":"",
+        }
+    if request.method == 'POST' and request.POST.get("addrole"):
+        print(request.POST.get("addrole"))
+        user = request.POST.get("user")
+        role = request.POST.get("role")
+        try:
+            user_check = User.objects.get(username=user)
+            print(user_check)
+            role_check = Roles.objects.filter(user=user_check)
+            if(len(role_check)==0):
+                role_check_role = Roles.objects.filter(role__iexact=role)
+                if(len(role_check_role)==0):
+                    role = Roles.objects.create(user=user_check, role=role)
+                    success["user"] = "Role added."
+                else:
+                    error["role"] = "This role is assigned to different person."
+            else:
+                error["user"] = "User already assigned a role."
+        except User.DoesNotExist:
+            error["user"] = "User Does not exist."
+    role_data = Roles.objects.all()
+    role_user = ""
+    askqus_subtags = AllTags.objects.all()
+    isAdmin = False
+    administrativeRole = False
+    try:
+        admin = User.objects.get(username = "siddharth")
+        if admin == request.user: 
+            isAdmin = True
+    except:
+        isAdmin = False
+    try:
+        admin_role = Roles.objects.filter(user = request.user)
+        if len(admin_role) >0 :
+            role_user = admin_role[0].role
+            administrativeRole = True
+    except:
+        administrativeRole = False
+    context = {
+        "role_user" : role_user, 
+        "administrativeRole" : administrativeRole,
+        "isAdmin" : isAdmin,
+        'form_answer': AnswerForm(),
+        "error" : error,
+        "success" : success,
+        "role" : role_data,
+        'subtags': askqus_subtags,
+    }
+    return render(request, 'feeds/admin.html', context)
