@@ -7,6 +7,7 @@ app_name = 'feeds'
 urlpatterns=[
 	url(r'^$', views.feeds, name= 'feeds'),
 	url(r'^profile/(?P<string>[-\w]+)/$', views.profile, name= 'profile'),
+	url(r'^administrative/(?P<string>[-\w]+)/$', views.administrativeView, name= 'administrative_view'),
 	url(r'^admin',views.admin, name='feeds_admin'),
 	url(r'^request/$', views.Request, name= 'request'),
 	url(r'^comment_text/$', views.Comment_Text, name='comment_text'),

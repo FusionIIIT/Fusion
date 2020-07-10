@@ -1,3 +1,4 @@
+{% load static %}
 <div>
     <div class="ui success message center aligned">
         {% comment %} <div class="ui vertical buttons"> {% endcomment %}
@@ -37,7 +38,7 @@
             
             <div class="ui left labeled button" tabindex="0">
                 <a class="ui basic right pointing label" href={% url 'feeds:profile' request.user.username %}>
-                    show Activity
+                    Show Activity
                 </a>
                 <div class="ui button">
                     <i class="clipboard check icon"></i>
@@ -67,9 +68,9 @@
         <div class="ui middle  aligned divided list"  style="max-height: 180px; overflow-y: scroll;">
             {% for r in role %}
             <div class="item">
-                <img class="ui avatar image" src="https://semantic-ui.com/images/avatar2/small/lena.png">
+                <img class="ui avatar image" src={% static 'admin-settings-male.png' %}>
                 <div class="content">
-                <a class="header">{{r.role}}</a>
+                <a class="header" href={% url 'feeds:administrative_view' r.role %}>{{r.role}}</a>
                 </div>
             </div>
             {% endfor %}
@@ -183,8 +184,9 @@
     </script>
 
     <script>
-        function update_ques_validate(){
-            var da = $(".update_Add_Tag").val();
+        function update_ques_validate(id){
+            var da = $(".update_Add_Tag"+id).val();
+            console.log(da)
             if(da == "Add_Tag")
                 return false;
             else

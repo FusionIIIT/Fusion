@@ -3,8 +3,8 @@
     <form class="ui form"  method ="post" action={% url 'feeds:feeds_admin' %}>
         {% csrf_token %}
         <div class="field">
-            <label>Give a name to role (like: CCAdmin)</label>
-            <input type="text" name="role" placeholder="Role" required>
+            <label>Give a name to role (like: CCAdmin) Do not use whitespace</label>
+            <input type="text" name="role" placeholder="Role" required pattern="^[a-zA-Z0-9]*$">
         </div>
         {% if error.role %}
         <div class="ui red message">{{error.role}} Retry</div>
@@ -41,6 +41,12 @@
 </div>
 
 <div class="ui success message">
+    {% if success.update %}
+    <div class="ui green message">{{success.update}}</div>
+    {% endif %}
+    {% if error.update %}
+    <div class="ui green message">{{error.update}}</div>
+    {% endif %}
     <h3 class="ui header">Assigned Roles </h3><i class="big dropdown icon toggleDiv" style="cursor:pointer"></i>
     <div>
         <table class="ui celled padded table inverted">
@@ -48,11 +54,12 @@
                 <tr><th class="single line">I'd</th>
                 <th>Name</th>
                 <th>Role</th>
-                <th></th>
+                <th>Update</th>
                 <th></th>
             </tr></thead>
             <tbody>
                 {% for r in role %}
+                {% if r.active %}
                 <tr>
                     <td class="single line">
                         {{r.user.username}}
@@ -64,30 +71,73 @@
                         {{r.role}}
                     </td>
                     <td>
-                        <button class="ui inverted green button">Update</button>
+                        <div class="ui mini input inline fields">
+                            <form action={% url 'feeds:feeds_admin' %} method="post">
+                            {% csrf_token %}
+                                <input id="unassignrole" name="unassignrole_value" value={{r.role}} hidden>
+                                <input id="unassignrole_update" name="unassignrole_update"placeholder="Username" required>
+                                <button class="ui mini inverted green button" type="submit" >
+                                <i class="ui paper plane icon"></i></button>
+                                </button>
+                            </form>
+                        </div>
                     </td>
                     <td>
-                    <button class="ui red inverted button">Delete</button>
+                    <form action={% url 'feeds:feeds_admin' %} method="post">
+                    {% csrf_token %}
+                        <input id="unassignrole" name="unassignrole_value" value={{r.role}} hidden>
+                        <button class="ui red inverted button" name="unassignrole" value="unassignrole" type="submit">Delete</button>
+                    </form>
                     </td>
                 </tr>
+                {% endif %}
                 {% endfor %}
             </tbody>
-            <tfoot>
-                <tr><th colspan="5">
-                <div class="ui right floated pagination menu">
-                    <a class="icon item">
-                    <i class="left chevron icon"></i>
-                    </a>
-                    <a class="item">1</a>
-                    <a class="item">2</a>
-                    <a class="item">3</a>
-                    <a class="item">4</a>
-                    <a class="icon item">
-                    <i class="right chevron icon"></i>
-                    </a>
-                </div>
-                </th>
-            </tr></tfoot>
+        </table>
+    </div>
+</div>
+
+
+<div class="ui success message">
+    {% if success.updatere %}
+    <div class="ui green message">{{success.updatere}}</div>
+    {% endif %}
+    {% if error.updatere %}
+    <div class="ui green message">{{error.updatere}}</div>
+    {% endif %}
+    <h3 class="ui header">Unassigned Roles </h3><i class="big dropdown icon toggleDiv" style="cursor:pointer"></i>
+    <div>
+        <table class="ui celled padded table inverted">
+            <thead>
+                <tr><th class="single line">I'd</th>
+                <th>Previous Name</th>
+                <th>Role</th>
+                <th></th>
+            </tr></thead>
+            <tbody>
+                {% for r in role %}
+                {% if not r.active %}
+                <tr>
+                    <td class="single line">
+                        {{r.user.username}}
+                    </td>
+                    <td class="single line">
+                        {{r.user.first_name}}
+                    </td>
+                    <td class="single line">
+                        {{r.role}}
+                    </td>
+                    <td>
+                        <form action={% url 'feeds:feeds_admin' %} method="post">
+                        {% csrf_token %}
+                        <input id="reassignrole" name="reassignrole_value" value={{r.role}} hidden>
+                        <button class="ui blue inverted button" name="reassignrole" value="reassignrole" type="submit">Reassign</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
         </table>
     </div>
 </div>

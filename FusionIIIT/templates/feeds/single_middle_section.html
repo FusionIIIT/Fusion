@@ -4,12 +4,18 @@
 		.wmd-panel{
 			margin-left: 7% !important;
 		}
-
+        .glowing-border {
+            border: 2px solid #dadada !important;
+            border-radius: 7px !important;
+            outline: none !important;
+            border-color: #d12626 !important;
+            box-shadow: 0 0 10px #d12626 !important;
+        }
 		.scrollbar
 		{
 			overflow-y: scroll;
 			overflow-x: hidden;
-			height: 500px;
+			max-height: 500px;
 		}
 		
 		#style-1::-webkit-scrollbar-track
@@ -37,7 +43,7 @@
 <!-- Middle section of the page -->
 <div>
     {% if isSpecial == 1 %}
-    <div class="ui clearing segment inverted tertiary red" style="margin-bottom: 30px;">
+    <div class="ui segment glowing-border" style="margin-bottom: 30px;">
     {% else %}
     <div class="ui clearing segment blue" style="margin-bottom: 30px;">
     {% endif %}
@@ -47,13 +53,15 @@
             {% if question.anonymous_ask is False %}
                 <a href="{% url 'feeds:profile' question.user.username%}">
             {% endif %}
-                    {% if profile.0.profile_picture and question.anonymous_ask is False%}
-                        <img class="ui avatar image" style="height: 40px; width: 40px ;" src="{{profile.0.profile_picture.url}}">
-                    {% elif question.anonymous_ask is True%}
-                        <i class = "ui big user circle icon" ></i>
-                    {% else %}
-                        <img class="ui avatar image" style="height: 40px; width: 40px ;" src={% static 'globals/img/zlatan.jpg' %}>
-                    {% endif %}
+            {% if isSpecial == 1 %}
+                <img class="ui avatar image" style="height: 40px; width: 40px ;" src={% static 'admin-settings-male.png' %}>
+            {% elif profile.0.profile_picture and question.anonymous_ask is False%}
+                <img class="ui avatar image" style="height: 40px; width: 40px ;" src="{{profile.0.profile_picture.url}}">
+            {% elif question.anonymous_ask is True%}
+                <i class = "ui big user circle icon" ></i>
+            {% else %}
+                <img class="ui avatar image" style="height: 40px; width: 40px ;" src={% static 'globals/img/zlatan.jpg' %}>
+            {% endif %}
             {% if question.anonymous_ask is False %}
                 </a>
             {% endif %}
@@ -123,7 +131,7 @@
                                         </ul>
                                     </div>
 
-                                    <form method="post" onsubmit="return update_ques_validate()" action="{% url 'feeds:update_post' question.id %}">{% csrf_token %}
+                                    <form method="post" onsubmit="return update_ques_validate({{question.id}})" action="{% url 'feeds:update_post' question.id %}">{% csrf_token %}
                                         <div class="ui large form">
                                             <div class="field">
                                                 <label>Subject</label>
@@ -138,7 +146,7 @@
                                             <div class="field">
                                                 <label>Add Tag</label>
                                                 <div class='ui multiple search selection dropdown seasons'>
-                                                    <input name="Add_Tag" class="update_Add_Tag" id="Add_Tag" value="Add_Tag" type="hidden">
+                                                    <input name="Add_Tag" class="update_Add_Tag{{question.id}}" id="Add_Tag" value="Add_Tag" type="hidden">
                                                     <i class="dropdown icon"></i>
                                                     <div class="default text"><i class="tags icon"></i>Select</div>
                                                     <div class="menu">
@@ -161,6 +169,40 @@
                                                     {% endif %}
                                                 </div>
                                             </div>
+                                            <input type="text" id="from_url" name="from_url" value={{request.path}} hidden>
+                                            {% if isSpecial %}
+                                            <input type="text" id="isSpecial" name="isSpecial" value="isSpecial" hidden>
+                                            <div class="field">
+                                                <div class="ui black checkbox">
+                                                    {% if access.0.canVote %}
+                                                        <input type="checkbox" id="RestrictVote" name="RestrictVote">
+                                                    {% else %}
+                                                        <input type="checkbox" id="RestrictVote" name="RestrictVote" checked>
+                                                    {% endif %}
+                                                    <label>Restrict Vote?</label>
+                                                </div>
+                                            </div>
+                                            <div class="field">
+                                                <div class="ui black checkbox">
+                                                {% if access.0.canAnswer %}
+                                                    <input type="checkbox" id="RestrictAnswer" name="RestrictAnswer">
+                                                {% else %}
+                                                    <input type="checkbox" id="RestrictAnswer" name="RestrictAnswer" checked>
+                                                {% endif %}
+                                                    <label>Restrict Answer?</label>
+                                                </div>
+                                            </div>
+                                            <div class="field">
+                                                <div class="ui black checkbox">
+                                                {% if access.0.canComment %}
+                                                    <input type="checkbox" id="RestrictComment" name="RestrictComment">
+                                                {% else %}
+                                                    <input type="checkbox" id="RestrictComment" name="RestrictComment" checked>
+                                                {% endif %}
+                                                    <label>Restrict Comment?</label>
+                                                </div>
+                                            </div>
+                                            {% endif %}
 
                                             <div class="actions">
                                                 <button type="submit" name="update" value="update_qus" class="ui submit positive button" style="float: right;">
@@ -245,7 +287,9 @@
                     </h2>
                     <div class="row">
                         <a href="" style="color: rgba(0,0,0,.6);">
-                            {% if question.anonymous_ask is True %}
+                            {% if isSpecial %}
+                                {{access.0.posted_by.role}}
+                            {% elif question.anonymous_ask is True %}
                                 <a href="" style="color: rgba(0,0,0,.6);">Anonymous</a><br>
                             {% else %}
                                 <a href="{% url 'feeds:profile' question.user.username%}">{{ question.user.username }}</a>

@@ -35,7 +35,7 @@
             <div class="ui divider"></div>
 
             {% comment %}The Tab-Menu starts here!{% endcomment %}
-            <div class="ui huge fluid vertical pointing menu"
+            {% comment %} <div class="ui huge fluid vertical pointing menu"
                  style="max-width: 320px;">
 
                 <a class="item" href="{% url 'globals:profile' %}">
@@ -43,7 +43,7 @@
                     <i class="right floated chevron right icon"></i>
                 </a>
 
-            </div>
+            </div> {% endcomment %}
             {% comment %}The Tab-Menu ends here!{% endcomment %}
 
         </div>
@@ -53,13 +53,13 @@
                 <div class="ui success message">
                     <h3 class="ui header"> You are assigned {{role_user}} role. You can start posting updates from right side panel.</h3>
                 </div>
+            {% else %}
+                <div class="ui success message">
+                    <h3 class="ui header"> You are not assigned to any role.</h3>
+                </div>
             {% endif %}
             {% if isAdmin %}
                 {% include 'feeds/admin_middle.html'%}
-            {% else %}
-            <div class="ui warning message">
-                <h3 class="ui header"> You are not admin. Please login again with admin account to access Admin Panel.</h3>
-            </div>
             {% endif %}
         </div>
 

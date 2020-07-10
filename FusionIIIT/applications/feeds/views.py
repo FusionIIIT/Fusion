@@ -68,7 +68,7 @@ def feeds(request):
             question.save()
             role_check = Roles.objects.filter(user=request.user)
             if len(role_check) > 0 and request.POST.get("from_admin"):
-                access = QuestionAccessControl.objects.create(question=question, canVote=True, canAnswer=True, canComment = True)
+                access = QuestionAccessControl.objects.create(question=question, canVote=True, canAnswer=True, canComment = True, posted_by = role_check[0])
                 if request.POST.get("RestrictVote"):
                     access.canVote = False
                 if request.POST.get("RestrictAnswer"):
@@ -340,6 +340,7 @@ def unhide_post(request, id):
     return redirect ('/feeds/')
 
 def update_post(request, id):
+    redirect_to = "/feeds"
     if request.method == 'POST' and request.POST.get("update"):
         print(request.POST.get('anonymous_update'))
         question= AskaQuestion.objects.get(pk=id)
@@ -362,11 +363,27 @@ def update_post(request, id):
             question.anonymous_ask=False
         else :
             question.anonymous_ask=True
-        #question.anonymous_ask = request.POST.get('anonymous_update')
-        #print(request.POST.get('anonymous_update'))
+        
+        if request.POST.get("isSpecial"):
+            access = QuestionAccessControl.objects.filter(question = question)[0]
+            print(access)
+            if request.POST.get("RestrictVote"):
+                access.canVote = False
+            else:
+                access.canVote = True
+            if request.POST.get("RestrictAnswer"):
+                access.canAnswer = False
+            else:
+                access.canAnswer = True
+            if request.POST.get("RestrictComment"):
+                access.canComment = False
+            else:
+                access.canComment = True
+            access.save()
+        if request.POST.get("from_url"):
+            redirect_to = request.POST.get("from_url")
         question.save()
-        #if request.POST.get("anonymous")== True:
-        return redirect ('/feeds/')
+        return redirect (redirect_to)
 
 @login_required
 def TagsBasedView(request, string):
@@ -811,6 +828,38 @@ def admin(request):
                 error["user"] = "User already assigned a role."
         except User.DoesNotExist:
             error["user"] = "User Does not exist."
+        
+    if request.method == 'POST' and request.POST.get("unassignrole"):
+        if request.POST.get("unassignrole_value"):
+            try:
+                role_unassign = Roles.objects.get(role = request.POST.get("unassignrole_value"))
+                role_unassign.active = False
+                role_unassign.save()
+                success["update"] = "Role Unassigned."
+            except :
+                error["update"] = "Incorrect Username provided."
+    
+    if request.method == 'POST' and request.POST.get("reassignrole"):
+        if request.POST.get("reassignrole_value"):
+            try:
+                role_unassign = Roles.objects.get(role = request.POST.get("reassignrole_value"))
+                role_unassign.active = True
+                role_unassign.save()
+                success["updatere"] = "Role Reassigned."
+            except :
+                error["updatere"] = "Error occurred."
+
+    
+    if request.method == 'POST' and request.POST.get("unassignrole_update"):
+        try:
+            role_unassign = Roles.objects.get(role = request.POST.get("unassignrole_value"))
+            user_check = User.objects.get(username=request.POST.get("unassignrole_update"))
+            role_unassign.user = user_check
+            role_unassign.save()
+            success["update"] = "Role Reassigned."
+        except :
+            error["updateerror"] = "Incorrect Username provided."
+
     role_data = Roles.objects.all()
     role_user = ""
     askqus_subtags = AllTags.objects.all()
@@ -822,13 +871,18 @@ def admin(request):
             isAdmin = True
     except:
         isAdmin = False
+        
     try:
         admin_role = Roles.objects.filter(user = request.user)
         if len(admin_role) >0 :
-            role_user = admin_role[0].role
-            administrativeRole = True
+            if admin_role[0].active == True:
+                role_user = admin_role[0].role
+                administrativeRole = True
+            else:
+                role_user = ""
     except:
         administrativeRole = False
+    print(role_user)
     context = {
         "role_user" : role_user, 
         "administrativeRole" : administrativeRole,
@@ -840,3 +894,98 @@ def admin(request):
         'subtags': askqus_subtags,
     }
     return render(request, 'feeds/admin.html', context)
+
+@login_required
+def administrativeView(request, string):
+    print('administrative View')
+    # questions = AskaQuestion.objects.order_by('-uploaded_at')
+    role_user = Roles.objects.filter(role=string)
+    try :
+        role_user = role_user[0]
+    except:
+        redirect("/feeds")
+    # print(QuestionAccessControl.objects.select_related('posted_by').filter(posted_by=role_user))
+    result = QuestionAccessControl.objects.select_related('posted_by').filter(posted_by=role_user).order_by('-created_at')
+    paginator = Paginator(result, PAGE_SIZE) # Show 25 contacts per page.
+    total_page = math.ceil(result.count()/PAGE_SIZE)
+    if request.GET.get("page_number") :
+        current_page = int(request.GET.get("page_number"))
+    else:
+        current_page = 1    
+    previous_page = current_page - 1
+    next_page = current_page + 1
+    # result = paginator.page(current_page)
+    
+    user_tags = tags.objects.values("my_tag").distinct().filter(Q(user__username=request.user.username))
+    u_tags = tags.objects.all().filter(Q(user__username=request.user.username))
+    a_tags = tags.objects.values('my_subtag').filter(Q(user__username=request.user.username))
+    
+    add_tag_list = AllTags.objects.all()
+    add_tag_list = add_tag_list.exclude(pk__in=a_tags)
+
+    askqus_subtags = AllTags.objects.all()
+    ques = []
+    result = paginator.page(current_page)
+    hid = hidden.objects.all()
+    for q in result:
+        isliked = 0
+        isdisliked = 0
+        hidd = 0
+        isSpecial = 0
+        profi = Profile.objects.all().filter(user=q.question.user)
+        if(q.question.likes.all().filter(username=request.user.username).count()==1):
+            isliked = 1
+        if(hid.all().filter(user=request.user, question = q.question).count()==1):
+            hidd = 1
+        if(q.question.dislikes.all().filter(username=request.user.username).count()==1):
+            isdisliked = 1
+        access_check = q
+        isSpecial = 1
+        temp = {
+            'access' : access_check,
+            'isSpecial' : isSpecial,
+            'profile':profi,
+            'ques' : q.question,
+            'isliked':isliked,
+            'hidd' : hidd,
+            'disliked': isdisliked,
+            'votes':q.question.total_likes() - q.question.total_dislikes(),
+        }
+        ques.append(temp)
+    role_data = Roles.objects.all()
+    context = {
+        "role":role_data,
+        'form_answer': AnswerForm(),
+        'Tags': user_tags,
+        'questions': ques,
+        'username': request.user.username,
+        'subtags': askqus_subtags,
+        'add_tag_list' : add_tag_list,
+        'pages' : {
+            'current_page' : current_page,
+            'total_page' : total_page,
+            'previous_page' : previous_page,
+            'next_page' : next_page,
+            },
+
+        'a':   u_tags.filter(Q(my_tag__icontains='CSE')),
+        'b' :   u_tags.filter(Q(my_tag__icontains='ECE')),
+        'c' :   u_tags.filter(Q(my_tag__icontains='Mechanical')),
+        'd' :   u_tags.filter(Q(my_tag__icontains='Technical-Clubs')),
+        'e' :   u_tags.filter(Q(my_tag__icontains='Cultural-Clubs')),
+        'f' :   u_tags.filter(Q(my_tag__icontains='Sports-Clubs')),
+        'g' :   u_tags.filter(Q(my_tag__icontains='Business-and-Career')),
+        'h' :   u_tags.filter(Q(my_tag__icontains='Entertainment')),
+        'i' :   u_tags.filter(Q(my_tag__icontains='IIITDMJ-Campus')),
+        'j' :   u_tags.filter(Q(my_tag__icontains='Jabalpur-city')),
+        'k' :   u_tags.filter(Q(my_tag__icontains='IIITDMJ-Rules-and-Regulations')),
+        'l' :   u_tags.filter(Q(my_tag__icontains='Academics')),
+        'm' :   u_tags.filter(Q(my_tag__icontains='IIITDMJ')),
+        'n' :   u_tags.filter(Q(my_tag__icontains='Life-Relationship-and-Self')),
+        'o' :   u_tags.filter(Q(my_tag__icontains='Technology-and-Education')),
+        'p' :   u_tags.filter(Q(my_tag__icontains='Programmes')),
+        'q' :   u_tags.filter(Q(my_tag__icontains='Others')),
+        'r' :   u_tags.filter(Q(my_tag__icontains='Design')),
+    }
+
+    return render(request, 'feeds/feeds_main.html', context)
