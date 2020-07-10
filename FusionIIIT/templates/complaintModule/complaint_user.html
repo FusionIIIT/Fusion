@@ -65,7 +65,7 @@
         {% comment %}
             The central-rail segment starts here!
         {% endcomment %}
-        <div class="eight wide column">
+        <div class="seven wide column">
             {% comment %}The ... start here!{% endcomment %}
             <div class="ui active tab segment" data-tab="first">
                 {% block lodgecomplaint %}
@@ -94,12 +94,14 @@
         {% comment %}The central-rail segment ends here!{% endcomment %}
 
         {% comment %}The right-rail segment starts here!{% endcomment %}
-        <div class="three wide column">
-            <div class="row">
-                {% comment %}
-                    TODO: the right rail!
-                {% endcomment %}
+        
+        <div class="four wide column">
+            <div class="column">
+                {% block complaint_notification %}
+                    {%  include 'complaintModule/complaint_notification.html' %}
+                {%  endblock %}
             </div>
+            
         </div>
         {% comment %}The right-rail segment ends here!{% endcomment %}
 

@@ -9,6 +9,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from applications.globals.models import User , ExtraInfo, HoldsDesignation
 
+from notifications.models import Notification
 from .models import Caretaker, StudentComplain, Supervisor, Workers
 from notification.views import  complaint_system_notif
 #function for reassign to another worker
@@ -415,9 +416,24 @@ def user(request):
     else:
         print("oooo!!!")
         a = get_object_or_404(User, username=request.user.username)
+        print(a.id)
         y = ExtraInfo.objects.all().filter(user=a).first()
+        print(y)
         historytemp = StudentComplain.objects.filter(complainer=y).order_by('-id')
         history=[]
+
+        student_notification = Notification.objects.filter(recipient=a.id)
+        # print(student_notification)
+        x = student_notification.filter(data__exact={'url':'complaint:detail','module':'Complaint System'})
+        notification_message = []
+        for notification in x:
+            to = User.objects.get(id=notification.actor_object_id).username
+            from django.utils.timesince import timesince as timesince_
+            duration = timesince_(notification.timestamp,None)
+            notification_message.append(notification.verb+' by '+ to + ' ' + duration + ' ago ')
+        
+
+
 
         j = 1
         for i in historytemp:
@@ -452,7 +468,7 @@ def user(request):
         
         # complaint_system_notif(request.user, caretaker_name.user,'lodge_comp_alert')
         return render(request, "complaintModule/complaint_user.html",
-                      {'history': history, 'comp_id': y.id})
+                      {'history': history,'notification_message':notification_message, 'comp_id': y.id})
 
     return render(request, "complaintModule/complaint_user.html",
                       {'history': history, 'comp_id': comp_id })
@@ -640,10 +656,25 @@ def caretaker(request):
                 if i.complaint_finish < date.today():
                     i.delay = date.today() - i.complaint_finish
                     overduecomplaint.append(i)
+        
+        caretaker_notification = Notification.objects.filter(recipient=current_user.id)
+        print(caretaker_notification)
+        x = caretaker_notification.filter(data__exact={'url':'complaint:detail2','module':'Complaint System'})
+        
+        notification_message = []
+        for notification in x:
+            to = User.objects.get(id=notification.actor_object_id).username
+            from django.utils.timesince import timesince as timesince_
+            duration = timesince_(notification.timestamp,None)
+            notification_message.append(notification.verb+' by '+ to + ' ' + duration + ' ago ')
+        print(notification_message)
+        
 
+        
         return render(request, "complaintModule/complaint_caretaker.html",
                       { 'history': history, 'comp_id': y.id, 'total_worker': total_worker,
                         'complaint_assign_no': total_worker,
+                        'notification_message':notification_message,
                         'overduecomplaint': overduecomplaint, 'care_id': a})
 
 @login_required

@@ -1,0 +1,26 @@
+{% load static %}
+{% block complaint_notification %}
+
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="notification">
+            Notifications
+        </a>
+    </div>
+    
+    <div class="ui active tab segment" data-tab="notification">
+        <div class="ui vertical segment">
+            {% if notification_message %}
+            {% for message in notification_message %}
+            <b>{{ message }}</b><br><hr style="border: 1px solid black;" /><br>
+            {% endfor %}
+            {% else %}
+            <div>No notification to display</div>
+            {% endif %}
+        </div>
+    </div>
+
+
+
+
+
+{% endblock %}
