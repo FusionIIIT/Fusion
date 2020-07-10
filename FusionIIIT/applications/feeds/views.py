@@ -340,6 +340,7 @@ def unhide_post(request, id):
     return redirect ('/feeds/')
 
 def update_post(request, id):
+    redirect_to = "/feeds"
     if request.method == 'POST' and request.POST.get("update"):
         print(request.POST.get('anonymous_update'))
         question= AskaQuestion.objects.get(pk=id)
@@ -362,11 +363,27 @@ def update_post(request, id):
             question.anonymous_ask=False
         else :
             question.anonymous_ask=True
-        #question.anonymous_ask = request.POST.get('anonymous_update')
-        #print(request.POST.get('anonymous_update'))
+        
+        if request.POST.get("isSpecial"):
+            access = QuestionAccessControl.objects.filter(question = question)[0]
+            print(access)
+            if request.POST.get("RestrictVote"):
+                access.canVote = False
+            else:
+                access.canVote = True
+            if request.POST.get("RestrictAnswer"):
+                access.canAnswer = False
+            else:
+                access.canAnswer = True
+            if request.POST.get("RestrictComment"):
+                access.canComment = False
+            else:
+                access.canComment = True
+            access.save()
+        if request.POST.get("from_url"):
+            redirect_to = request.POST.get("from_url")
         question.save()
-        #if request.POST.get("anonymous")== True:
-        return redirect ('/feeds/')
+        return redirect (redirect_to)
 
 @login_required
 def TagsBasedView(request, string):
@@ -811,6 +828,38 @@ def admin(request):
                 error["user"] = "User already assigned a role."
         except User.DoesNotExist:
             error["user"] = "User Does not exist."
+        
+    if request.method == 'POST' and request.POST.get("unassignrole"):
+        if request.POST.get("unassignrole_value"):
+            try:
+                role_unassign = Roles.objects.get(role = request.POST.get("unassignrole_value"))
+                role_unassign.active = False
+                role_unassign.save()
+                success["update"] = "Role Unassigned."
+            except :
+                error["update"] = "Incorrect Username provided."
+    
+    if request.method == 'POST' and request.POST.get("reassignrole"):
+        if request.POST.get("reassignrole_value"):
+            try:
+                role_unassign = Roles.objects.get(role = request.POST.get("reassignrole_value"))
+                role_unassign.active = True
+                role_unassign.save()
+                success["updatere"] = "Role Reassigned."
+            except :
+                error["updatere"] = "Error occurred."
+
+    
+    if request.method == 'POST' and request.POST.get("unassignrole_update"):
+        try:
+            role_unassign = Roles.objects.get(role = request.POST.get("unassignrole_value"))
+            user_check = User.objects.get(username=request.POST.get("unassignrole_update"))
+            role_unassign.user = user_check
+            role_unassign.save()
+            success["update"] = "Role Reassigned."
+        except :
+            error["updateerror"] = "Incorrect Username provided."
+
     role_data = Roles.objects.all()
     role_user = ""
     askqus_subtags = AllTags.objects.all()
@@ -822,13 +871,18 @@ def admin(request):
             isAdmin = True
     except:
         isAdmin = False
+        
     try:
         admin_role = Roles.objects.filter(user = request.user)
         if len(admin_role) >0 :
-            role_user = admin_role[0].role
-            administrativeRole = True
+            if admin_role[0].active == True:
+                role_user = admin_role[0].role
+                administrativeRole = True
+            else:
+                role_user = ""
     except:
         administrativeRole = False
+    print(role_user)
     context = {
         "role_user" : role_user, 
         "administrativeRole" : administrativeRole,

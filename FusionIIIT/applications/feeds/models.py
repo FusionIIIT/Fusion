@@ -306,6 +306,7 @@ class Profile(models.Model):
 class Roles(models.Model):
 	user = models.ForeignKey(User, default=1, on_delete=models.CASCADE)
 	role = models.CharField(max_length=100, blank=False)
+	active = models.BooleanField(default=True)
 	def __str__(self):
 	 return '%s is assigned %s role' % (self.user, self.role)
 
