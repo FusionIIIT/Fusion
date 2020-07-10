@@ -53,13 +53,13 @@
                 <div class="ui success message">
                     <h3 class="ui header"> You are assigned {{role_user}} role. You can start posting updates from right side panel.</h3>
                 </div>
+            {% else %}
+                <div class="ui success message">
+                    <h3 class="ui header"> You are not assigned to any role.</h3>
+                </div>
             {% endif %}
             {% if isAdmin %}
                 {% include 'feeds/admin_middle.html'%}
-            {% else %}
-            <div class="ui warning message">
-                <h3 class="ui header">To manage roles. Please login with Feeds Admin account.</h3>
-            </div>
             {% endif %}
         </div>
 

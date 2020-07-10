@@ -3,8 +3,8 @@
     <form class="ui form"  method ="post" action={% url 'feeds:feeds_admin' %}>
         {% csrf_token %}
         <div class="field">
-            <label>Give a name to role (like: CCAdmin)</label>
-            <input type="text" name="role" placeholder="Role" required>
+            <label>Give a name to role (like: CCAdmin) Do not use whitespace</label>
+            <input type="text" name="role" placeholder="Role" required pattern="^[a-zA-Z0-9]*$">
         </div>
         {% if error.role %}
         <div class="ui red message">{{error.role}} Retry</div>
