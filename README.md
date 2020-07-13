@@ -160,3 +160,33 @@ Safari 10 before testing.
 * Health Centre Mangement  
 * Visitor's Hostel Management  
 * Leave Module
+
+## Notifications Support
+
+The project now supports notifications across all modules. To implement notifications in your module refer to the instructions below.
+
+* Create your notification class in [**`./FusionIIIT/notifications/views.py`**](https://github.com/FusionIIIT/Fusion/blob/master/FusionIIIT/notification/views.py) 
+  ```
+  def module_notif(sender, recipient, type):
+    url='slug:slug'
+    module='ModuleName'
+    sender = sender
+    recipient = recipient
+    verb = ''
+
+    // Type conditioned verb
+    if type == 'A':
+        verb = "A Verb"
+    elif type == 'B':
+        verb = "B Verb "
+    notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
+  ```
+* Import your Notification class in your module into **`your_module/views.py`**
+  ```
+  from notification.views import module_notif
+  ```
+* To create a Notification, simply call the class and pass user objects for sender, receiver and a string type.
+  ```
+  module_notif(sender, receiver, type)
+  ```
+* The Notifications should then appear in the dashboard for the recipient
