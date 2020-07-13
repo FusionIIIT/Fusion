@@ -6,7 +6,7 @@
     <div class="scrolling content">
         <form action="{% url 'new_inventory_non_consumable' %}" id="{{ form_id }}" class="ui form" method="POST"
             novalidate>
-            {% include xyz_data.non_consumable.template_dir|add:'/form.html' %}
+            {% include inventory_data.non_consumable.template_dir|add:'/form.html' %}
         </form>
 
     </div>

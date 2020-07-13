@@ -1,5 +1,5 @@
 from django.forms import ModelForm, Textarea, TextInput, DateInput, NumberInput
-from .models import Building, Work, SubWork, InventoryType, Inventory, InventoryConsumable, InventoryNonConsumable
+from .models import Building, Work, SubWork, InventoryType, InventoryConsumable, InventoryNonConsumable
 
 
 class BuildingForm(ModelForm):
@@ -185,36 +185,6 @@ class InventoryTypeForm(ModelForm):
             'manufacuter': 'Manufactuer name',
             'model': 'Model name',
             'rate': 'Rate',
-            'remarks': 'Remarks',
-        }
-
-
-class InventoryForm(ModelForm):
-    class Meta:
-        model = Inventory
-        fields = '__all__'
-        widgets = {
-            'quantity': NumberInput(attrs={
-                'placeholder': 'Enter quantity',
-                'type': 'text',
-            }),
-            'dateOrdered': DateInput(attrs={
-                'placeholder': 'Enter date',
-            }),
-            'dateReceived': DateInput(attrs={
-                'placeholder': 'Enter date',
-            }),
-            'remarks': Textarea(attrs={
-                'placeholder': 'Enter remarks'
-            }),
-        }
-        labels = {
-            'inventoryType': 'Inventory Type',
-            'building': 'Building',
-            'work': 'Work',
-            'quantity': 'Quantity',
-            'dateOrdered': 'Date Ordered',
-            'dateReceived': 'Date Received',
             'remarks': 'Remarks',
         }
 

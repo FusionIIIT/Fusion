@@ -32,11 +32,14 @@
                     $('.edit_inventory_non_consumable.modal form')
                         .form('set values', {
                             inventoryType: '{% if inventory.inventoryType %}{{ inventory.inventoryType.id }}{% endif %}',
+                            serial_no: '{% if inventory.serial_no %}{{ inventory.serial_no }}{% endif %}',
                             building: '{% if inventory.building %}{{ inventory.building.id }}{% endif %}',
                             work: '{% if inventory.work %}{{ inventory.work.id }}{% endif %}',
+                            issued_to: '{% if inventory.issued_to %}{{ inventory.issued_to.id }}{% endif %}',
                             quantity: '{% if inventory.quantity %}{{ inventory.quantity }}{% endif %}',
                             dateOrdered: '{% if inventory.dateOrdered %}{{ inventory.dateOrdered }}{% endif %}',
                             dateReceived: '{% if inventory.dateReceived %}{{ inventory.dateReceived }}{% endif %}',
+                            dateLastVerified: '{% if inventory.dateLastVerified %}{{ inventory.dateLastVerified }}{% endif %}',
                             remarks: '{% if inventory.remarks %}{{ inventory.remarks }}{% endif %}',
                         });
                 }

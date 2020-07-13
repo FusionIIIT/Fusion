@@ -27,18 +27,24 @@
                                         {{ inventory.inventoryType }}
                                         {% endif %}</td>
                                 </tr>
+
+                                {% if inventory.inventoryType.manufacturer %}
                                 <tr>
                                     <td>Manufacturer</td>
                                     <td class="manufacturer">
                                         {{ inventory.inventoryType.manufacturer }}
                                     </td>
                                 </tr>
+                                {% endif %}
+
+                                {% if inventory.inventoryType.model %}
                                 <tr>
                                     <td>Model</td>
                                     <td class="model">
                                         {{ inventory.inventoryType.model }}
                                     </td>
                                 </tr>
+                                {% endif %}
 
                                 <tr>
                                     <td>Building</td>

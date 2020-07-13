@@ -238,8 +238,8 @@
 
             <div class="ui tab basic segment" data-tab="{{ menuitem|slugify }}_{{ building.id }}_inventory">
                 <div class="ui pointing secondary menu">
-                    <a class="item active" data-tab="consumable"><i class="cube icon"></i>Consumable</a>
-                    <a class="item" data-tab="non_consumable"><i class="cube icon"></i>Non Consumable</a>
+                    <a class="item active" data-tab="consumable">Consumable</a>
+                    <a class="item" data-tab="non_consumable">Non-Consumable</a>
                 </div>
 
                 <div class="ui tab basic segment active" data-tab="consumable">
@@ -274,7 +274,7 @@
                                     ₹&nbsp;{{ inventory.cost|intcomma }}
                                 </td>
                                 <td class="center aligned">
-                                    {% include xyz_data.consumable.template_dir|add:'/edit_button.html' %}
+                                    {% include inventory_data.consumable.template_dir|add:'/edit_button.html' %}
 
                                 </td>
                                 <td class="center aligned">
@@ -373,7 +373,7 @@
                                     ₹&nbsp;{{ inventory.cost|intcomma }}
                                 </td>
                                 <td class="center aligned">
-                                    {% include xyz_data.non_consumable.template_dir|add:'/edit_button.html' %}
+                                    {% include inventory_data.non_consumable.template_dir|add:'/edit_button.html' %}
 
                                 </td>
                                 <td class="center aligned">

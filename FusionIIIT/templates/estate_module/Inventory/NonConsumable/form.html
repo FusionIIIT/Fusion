@@ -1,26 +1,44 @@
 {% csrf_token %}
 <div class="ui error message"></div>
 
-{% with xyz_data.non_consumable.form as form %}
+{% with inventory_data.non_consumable.form as form %}
 
 <div class="three fields">
     <div class="required field">
         {{ form.inventoryType.label_tag }}
         {{ form.inventoryType }}
     </div>
+
+    <div class="required field">
+        {{ form.serial_no.label_tag }}
+        {{ form.serial_no }}
+    </div>
+
     <div class="required field">
         {{ form.quantity.label_tag }}
         {{ form.quantity }}
     </div>
-
-    <div class="required field">
-        {{ form.presentQuantity.label_tag }}
-        {{ form.presentQuantity }}
-    </div>
-
 </div>
 
-<div class="four fields">
+
+<div class="three fields">
+    <div class="field">
+        {{ form.issued_to.label_tag }}
+        {{ form.issued_to }}
+    </div>
+
+    <div class="field">
+        {{ form.building.label_tag }}
+        {{ form.building }}
+    </div>
+
+    <div class="field">
+        {{ form.work.label_tag }}
+        {{ form.work }}
+    </div>
+</div>
+
+<div class="three fields">
     <div class="required field">
         {{ form.dateOrdered.label_tag }}
 
@@ -41,14 +59,15 @@
             </div>
         </div>
     </div>
-    <div class="field">
-        {{ form.building.label_tag }}
-        {{ form.building }}
-    </div>
+    <div class="required field">
+        {{ form.dateLastVerified.label_tag }}
 
-    <div class="field">
-        {{ form.work.label_tag }}
-        {{ form.work }}
+        <div class="ui calendar">
+            <div class="ui input left icon">
+                <i class="calendar icon"></i>
+                {{ form.dateLastVerified }}
+            </div>
+        </div>
     </div>
 
 </div>
@@ -72,11 +91,25 @@
                         prompt: 'Inventory name cannot be blank'
                     }]
                 },
+                serial_no: {
+                    identifier: 'serial_no',
+                    rules: [{
+                        type: 'empty',
+                        prompt: 'Serial Number cannot be blank'
+                    }]
+                },
                 dateOrdered: {
                     identifier: 'dateOrdered',
                     rules: [{
                         type: 'empty',
                         prompt: 'Date Ordered cannot be blank'
+                    }]
+                },
+                dateLastVerified: {
+                    identifier: 'dateLastVerified',
+                    rules: [{
+                        type: 'empty',
+                        prompt: 'Date Last Verified cannot be blank'
                     }]
                 },
                 quantity: {

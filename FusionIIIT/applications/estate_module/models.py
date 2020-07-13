@@ -111,27 +111,6 @@ class InventoryType(models.Model):
         return self.name
 
 
-class Inventory(models.Model):
-    inventoryType = models.ForeignKey(InventoryType, on_delete=models.CASCADE)
-    building = models.ForeignKey(
-        Building, on_delete=models.CASCADE, null=True, blank=True)
-    work = models.ForeignKey(
-        Work, on_delete=models.CASCADE, null=True, blank=True)
-    quantity = models.IntegerField()
-    dateOrdered = models.DateField()
-    dateReceived = models.DateField(null=True, blank=True)
-    remarks = models.TextField(null=True, blank=True)
-
-    def cost(self):
-        return self.quantity * self.inventoryType.rate
-
-    class Meta:
-        ordering = ['-id']
-
-    def __str__(self):
-        return self.inventoryType.name
-
-
 class InventoryCommon(models.Model):
 
     inventoryType = models.ForeignKey(InventoryType, on_delete=models.CASCADE)

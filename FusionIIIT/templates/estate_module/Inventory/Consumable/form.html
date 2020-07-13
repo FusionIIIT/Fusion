@@ -1,7 +1,7 @@
 {% csrf_token %}
 <div class="ui error message"></div>
 
-{% with xyz_data.consumable.form as form %}
+{% with inventory_data.consumable.form as form %}
 
 <div class="three fields">
     <div class="required field">
@@ -87,6 +87,16 @@
                     }, {
                         type: 'integer',
                         prompt: 'Quantity must be an integer'
+                    }]
+                },
+                presentQuantity: {
+                    identifier: 'presentQuantity',
+                    rules: [{
+                        type: 'empty',
+                        prompt: 'Present Quantity cannot be blank'
+                    }, {
+                        type: 'integer',
+                        prompt: 'Present Quantity must be an integer'
                     }]
                 },
             }

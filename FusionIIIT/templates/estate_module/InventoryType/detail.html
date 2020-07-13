@@ -72,20 +72,25 @@
             </div>
 
             <div class="ui tab basic segment" data-tab="{{ menuitem|slugify }}_{{ inventoryType.id }}_list">
-                {% if inventoryType.inventory_set.all|length > 0 %}
+                {% if inventoryType.inventoryconsumable_set.all|length > 0 or inventoryType.inventorynonconsumable_set.all|length > 0 %}
+
+                {% if inventoryType.inventoryconsumable_set.all|length > 0 %}
+                <h3 class="ui header">
+                    Consumable Inventory
+                </h3>
                 <table class="ui selectable celled sortable table">
                     <thead>
                         <tr>
                             <th class="three wide column">Building</th>
                             <th class="right aligned">Date Ordered</th>
-                            <th class="right aligned">Date Received</th>
                             <th class="right aligned">Quantity</th>
+                            <th class="right aligned">Present Quantity</th>
                             <th class="right aligned">Cost</th>
                             <th colspan="2" class="two wide column"></th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for inventory in inventoryType.inventory_set.all %}
+                        {% for inventory in inventoryType.inventoryconsumable_set.all %}
                         <tr>
                             <td>
                                 {% if inventory.building %}
@@ -98,21 +103,21 @@
                                 {{ inventory.dateOrdered|date:'j-m-Y' }}
                             </td>
                             <td class="right aligned">
-                                {{ inventory.dateReceived|date:'j-m-Y' }}
+                                {{ inventory.quantity|intcomma }}
                             </td>
                             <td class="right aligned">
-                                {{ inventory.quantity|intcomma }}
+                                {{ inventory.presentQuantity|intcomma }}
                             </td>
                             <td class="right aligned">
                                 ₹&nbsp;{{ inventory.cost|intcomma }}
                             </td>
                             <td class="center aligned">
-                                {% include inventory_data.template_dir|add:'/edit_button.html' %}
+                                {% include inventory_data.consumable.template_dir|add:'/edit_button.html' %}
 
                             </td>
                             <td class="center aligned">
                                 <button
-                                    class="ui secondary button details inventory_{{ inventory.id }}">Details</button>
+                                    class="ui secondary button details inventory_consumable_{{ inventory.id }}">Details</button>
 
                             </td>
                         </tr>
@@ -122,7 +127,7 @@
                         <tr>
                             <th colspan="7">
                                 <button
-                                    class="ui right floated right labeled icon blue new_inventory_inventoryType_{{ inventoryType.id }} button">
+                                    class="ui right floated right labeled icon blue new_inventory_consumable_inventoryType_{{ inventoryType.id }} button">
                                     <i class="plus icon"></i>
                                     New
                                 </button>
@@ -130,6 +135,70 @@
                         </tr>
                     </tfoot>
                 </table>
+                {% endif %}
+
+                {% if inventoryType.inventorynonconsumable_set.all|length > 0 %}
+                <h3 class="ui header">
+                    Non-Consumable Inventory
+                </h3>
+                <table class="ui selectable celled sortable table">
+                    <thead>
+                        <tr>
+                            <th class="three wide column">Building</th>
+                            <th class="right aligned">Date Ordered</th>
+                            <th class="right aligned">Last Verified</th>
+                            <th class="right aligned">Quantity</th>
+                            <th class="right aligned">Cost</th>
+                            <th colspan="2" class="two wide column"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for inventory in inventoryType.inventorynonconsumable_set.all %}
+                        <tr>
+                            <td>
+                                {% if inventory.building %}
+                                {{ inventory.building }}
+                                {% else %}
+                                IIITDMJ
+                                {% endif %}
+                            </td>
+                            <td class="right aligned">
+                                {{ inventory.dateOrdered|date:'j-m-Y' }}
+                            </td>
+                            <td class="right aligned">
+                                {{ inventory.dateLastVerified|date:'j-m-Y' }}
+                            </td>
+                            <td class="right aligned">
+                                {{ inventory.quantity|intcomma }}
+                            </td>
+                            <td class="right aligned">
+                                ₹&nbsp;{{ inventory.cost|intcomma }}
+                            </td>
+                            <td class="center aligned">
+                                {% include inventory_data.non_consumable.template_dir|add:'/edit_button.html' %}
+
+                            </td>
+                            <td class="center aligned">
+                                <button
+                                    class="ui secondary button details inventory_non_consumable_{{ inventory.id }}">Details</button>
+
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="7">
+                                <button
+                                    class="ui right floated right labeled icon blue new_inventory_non_consumable_inventoryType_{{ inventoryType.id }} button">
+                                    <i class="plus icon"></i>
+                                    New
+                                </button>
+                            </th>
+                        </tr>
+                    </tfoot>
+                </table>
+                {% endif %}
 
                 {% else %}
                 <div class="ui two column centered grid">
@@ -146,24 +215,46 @@
                     </div>
                     <div class="row">
                         <button
-                            class="ui right floated right labeled icon blue new_inventory_inventoryType_{{ inventoryType.id }} button">
+                            class="ui right floated right labeled icon blue new_inventory_consumable_inventoryType_{{ inventoryType.id }} button">
                             <i class="plus icon"></i>
-                            New
+                            Add Consumable Inventory
+                        </button>
+                        <button
+                            class="ui right floated right labeled icon blue new_inventory_non_consumable_inventoryType_{{ inventoryType.id }} button">
+                            <i class="plus icon"></i>
+                            Add Non-Consumable Inventory
                         </button>
                     </div>
                 </div>
                 {% endif %}
 
                 <script type='module'>
-                    $('.new_inventory_inventoryType_{{ inventoryType.id }}.button').on('click', function () {
-                        $('.new_inventory.modal')
+                    $('.new_inventory_consumable_inventoryType_{{ inventoryType.id }}.button').on('click', function () {
+                        $('.new_inventory_consumable.modal')
                             .modal({
                                 centered: false
                             })
                             .modal({
                                 onShow: function () {
                                     // prefill form
-                                    $('.new_inventory.modal form')
+                                    $('.new_inventory_consumable.modal form')
+                                        .form('set values', {
+                                            inventoryType: '{{ inventoryType.id }}',
+                                        });
+                                }
+                            })
+                            .modal('setting', 'closable', false)
+                            .modal('show');
+                    });
+                    $('.new_inventory_non_consumable_inventoryType_{{ inventoryType.id }}.button').on('click', function () {
+                        $('.new_inventory_non_consumable.modal')
+                            .modal({
+                                centered: false
+                            })
+                            .modal({
+                                onShow: function () {
+                                    // prefill form
+                                    $('.new_inventory_non_consumable.modal form')
                                         .form('set values', {
                                             inventoryType: '{{ inventoryType.id }}',
                                         });
