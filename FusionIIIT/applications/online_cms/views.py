@@ -90,7 +90,7 @@ def course(request, course_code):
                 'q': request.POST['search'],
                 'key': settings.YOUTUBE_DATA_API_KEY,
                 'type': 'video',
-                'channelId': 'UCdGQeihs84hyCssI2KuAPmA'
+                'channelId': 'channel_id'
             }
             videos_ids = []
             r = requests.get(search_url, params=search_params)
@@ -127,7 +127,7 @@ def course(request, course_code):
             videos_list = []
             channel_params = {
                 'part': 'contentDetails',
-                'id': 'UCdGQeihs84hyCssI2KuAPmA',
+                'id': 'channel_id',
                 'key': settings.YOUTUBE_DATA_API_KEY,
             }
             r = requests.get(channel_url, params=channel_params)

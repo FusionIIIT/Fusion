@@ -1,0 +1,116 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    RESEARCH
+{% endblock %}
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}
+
+    <!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+  margin: 0;
+  font-family: "Lato", sans-serif;
+}
+
+.sidebar {
+  margin: 0;
+  padding: 0px;
+  width: 200px;
+  position: absolute;
+  height: 100%;
+  overflow: auto;
+  font-size: 20px;
+}
+
+.sidebar a {
+  display: block;
+  color: black;
+  padding: 16px;
+  text-decoration: none;
+}
+ 
+
+
+.sidebar a:hover:not(.active) {
+  background-color: #555;
+  color: white;
+}
+
+div.content {
+  margin-left: 400px;
+  padding: 1px 16px;
+  height: 1000px;
+}
+
+@media screen and (max-width: 700px) {
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+  }
+  .sidebar a {float: left;}
+  div.content {margin-left: 0;}
+}
+
+@media screen and (max-width: 400px) {
+  .sidebar a {
+    text-align: center;
+    float: none;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <a href="#nirf",>NIRF</a>
+  <a href="#researchgroups">Research Groups</a>
+  <a href="#publications">Publications</a>
+  <a href="#rspc">RSPC</a>
+</div>
+
+<div class="content">
+  <h2>Recent Research </h2>
+  <br><br>
+  <div class="list-group">
+    <a href="#" class="list-group-item list-group-item-action active" aria-current="true">
+      <div class="d-flex w-100 justify-content-between">
+        <h5 class="mb-1">Name Of the paper1</h5>
+        <small>3 days ago</small>
+      </div>
+      <p class="mb-0">Some Content of paper1</p></a>
+      <b>Department</b>
+    <br><br><br><br>
+    <a href="#" class="list-group-item list-group-item-action">
+      <div class="d-flex w-100 justify-content-between">
+        <h5 class="mb-1">Name Of the Paper2</h5>
+        <small class="text-muted">3 days ago</small>
+      </div>
+      <p class="mb-0">Some Content of Paper2.</p></a>
+      <b class="text-muted">Department</b><br><br><br>
+    
+    <a href="#" class="list-group-item list-group-item-action">
+      <div class="d-flex w-100 justify-content-between">
+        <h5 class="mb-1">Name Of the paper3</h5>
+        <small class="text-muted">3 days ago</small>
+      </div>
+      <p class="mb-1">Some Content of the Paper3.</p></a>
+      <b class="text-muted">Department</b>
+    
+  </div>
+  
+</div>
+
+</body>
+</html>
+
+        {% endblock %}
