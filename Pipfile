@@ -21,7 +21,7 @@ html-text = "*"
 numpy = "*"
 psycopg2-binary = "*"
 requests = "*"
-whitenoise = {extras = ["brotli"],version = "*"}
+whitenoise = {extras = ["brotli"], version = "*"}
 xhtml2pdf = "*"
 xlrd = "*"
 xlwt = "*"
@@ -29,6 +29,7 @@ Django = "*"
 jsonschema = "*"
 Pillow = "*"
 XlsxWriter = "*"
+python-dateutil = "*"
 
 [requires]
 python_version = "3.8"

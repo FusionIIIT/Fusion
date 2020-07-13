@@ -82,7 +82,9 @@ Estate
             New Inventory
         </button> {% endcomment %}
 
-        {% include inventory_data.template_dir|add:'/edit_modal.html' %}
+        {% comment %} {% include inventory_data.template_dir|add:'/edit_modal.html' %} {% endcomment %}
+        {% include xyz_data.consumable.template_dir|add:'/edit_modal.html' %}
+        {% include xyz_data.non_consumable.template_dir|add:'/edit_modal.html' %}
         {% include subWork_data.template_dir|add:'/edit_modal.html' %}
 
 
@@ -95,11 +97,22 @@ Estate
 
     </div>
 
-    {% include inventory_data.template_dir|add:'/new_modal.html' with menuitem='Inventory' %}
+    {% comment %} {% include inventory_data.template_dir|add:'/new_modal.html' with menuitem='Inventory' %}
+    {% endcomment %}
+    {% include xyz_data.consumable.template_dir|add:'/new_modal.html' %}
+    {% include xyz_data.non_consumable.template_dir|add:'/new_modal.html' %}
     {% include subWork_data.template_dir|add:'/new_modal.html' %}
 
-    {% for inventory in inventory_data.all %}
+    {% comment %} {% for inventory in inventory_data.all %}
     {% include inventory_data.template_dir|add:'/detail.html' with menuitem='Inventory' %}
+    {% endfor %} {% endcomment %}
+
+    {% for inventory in xyz_data.consumable.all %}
+    {% include xyz_data.consumable.template_dir|add:'/detail.html' with menuitem='Consumable Inventory' %}
+    {% endfor %}
+
+    {% for inventory in xyz_data.non_consumable.all %}
+    {% include xyz_data.non_consumable.template_dir|add:'/detail.html' with menuitem='Non Consumable Inventory' %}
     {% endfor %}
 
     {% for subWork in subWork_data.all %}

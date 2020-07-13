@@ -1,7 +1,7 @@
 {% csrf_token %}
 <div class="ui error message"></div>
 
-{% with xyz_data.non_consumable.form as form %}
+{% with xyz_data.consumable.form as form %}
 
 <div class="three fields">
     <div class="required field">
@@ -14,6 +14,14 @@
     </div>
 
     <div class="required field">
+        {{ form.presentQuantity.label_tag }}
+        {{ form.presentQuantity }}
+    </div>
+
+</div>
+
+<div class="four fields">
+    <div class="required field">
         {{ form.dateOrdered.label_tag }}
 
         <div class="ui calendar">
@@ -23,19 +31,6 @@
             </div>
         </div>
     </div>
-</div>
-
-<div class="three fields">
-    <div class="field">
-        {{ form.building.label_tag }}
-        {{ form.building }}
-    </div>
-
-    <div class="field">
-        {{ form.work.label_tag }}
-        {{ form.work }}
-    </div>
-
     <div class="field">
         {{ form.dateReceived.label_tag }}
 
@@ -46,6 +41,16 @@
             </div>
         </div>
     </div>
+    <div class="field">
+        {{ form.building.label_tag }}
+        {{ form.building }}
+    </div>
+
+    <div class="field">
+        {{ form.work.label_tag }}
+        {{ form.work }}
+    </div>
+
 </div>
 
 <div class="field">

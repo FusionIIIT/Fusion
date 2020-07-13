@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Building, Work, SubWork, Inventory, InventoryType
+from .models import Building, Work, SubWork, Inventory, InventoryType, InventoryConsumable, InventoryNonConsumable
 
 # Register your models here.
 
@@ -8,3 +8,5 @@ admin.site.register(Work)
 admin.site.register(SubWork)
 admin.site.register(InventoryType)
 admin.site.register(Inventory)
+admin.site.register(InventoryConsumable)
+admin.site.register(InventoryNonConsumable)
