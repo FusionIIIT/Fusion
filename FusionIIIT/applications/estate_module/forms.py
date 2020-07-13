@@ -1,5 +1,5 @@
 from django.forms import ModelForm, Textarea, TextInput, DateInput, NumberInput
-from .models import Building, Work, SubWork, InventoryType, Inventory
+from .models import Building, Work, SubWork, InventoryType, InventoryConsumable, InventoryNonConsumable
 
 
 class BuildingForm(ModelForm):
@@ -189,13 +189,17 @@ class InventoryTypeForm(ModelForm):
         }
 
 
-class InventoryForm(ModelForm):
+class InventoryConsumableForm(ModelForm):
     class Meta:
-        model = Inventory
+        model = InventoryConsumable
         fields = '__all__'
         widgets = {
             'quantity': NumberInput(attrs={
                 'placeholder': 'Enter quantity',
+                'type': 'text',
+            }),
+            'presentQuantity': NumberInput(attrs={
+                'placeholder': 'Enter present quantity',
                 'type': 'text',
             }),
             'dateOrdered': DateInput(attrs={
@@ -213,7 +217,47 @@ class InventoryForm(ModelForm):
             'building': 'Building',
             'work': 'Work',
             'quantity': 'Quantity',
+            'presentQuantity': 'Present Quantity',
             'dateOrdered': 'Date Ordered',
             'dateReceived': 'Date Received',
+            'remarks': 'Remarks',
+        }
+
+
+class InventoryNonConsumableForm(ModelForm):
+    class Meta:
+        model = InventoryNonConsumable
+        fields = '__all__'
+        widgets = {
+            'serial_no': TextInput(attrs={
+                'placeholder': 'Enter Serial Number'
+            }),
+            'quantity': NumberInput(attrs={
+                'placeholder': 'Enter quantity',
+                'type': 'text',
+            }),
+            'dateOrdered': DateInput(attrs={
+                'placeholder': 'Enter date',
+            }),
+            'dateReceived': DateInput(attrs={
+                'placeholder': 'Enter date',
+            }),
+            'dateLastVerified': DateInput(attrs={
+                'placeholder': 'Enter date',
+            }),
+            'remarks': Textarea(attrs={
+                'placeholder': 'Enter remarks'
+            }),
+        }
+        labels = {
+            'inventoryType': 'Inventory Type',
+            'serial_no': 'Serial Number',
+            'building': 'Building',
+            'work': 'Work',
+            'issued_to': 'Issued to',
+            'quantity': 'Quantity',
+            'dateOrdered': 'Date Ordered',
+            'dateReceived': 'Date Received',
+            'dateLastVerified': 'Date Last Verified',
             'remarks': 'Remarks',
         }

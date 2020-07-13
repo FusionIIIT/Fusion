@@ -237,103 +237,209 @@
             {% endfor %}
 
             <div class="ui tab basic segment" data-tab="{{ menuitem|slugify }}_{{ building.id }}_inventory">
-                {% if building.inventory_set.all|length > 0 %}
-                <table class="ui selectable celled sortable table">
-                    <thead>
-                        <tr>
-                            <th class="four wide column">Inventory Name</th>
-                            <th class="right aligned">Date Ordered</th>
-                            <th class="right aligned">Quantity</th>
-                            <th class="right aligned">Rate</th>
-                            <th class="right aligned">Cost</th>
-                            <th colspan="2" class="two wide column"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for inventory in building.inventory_set.all %}
-                        <tr>
-                            <td>
-                                {{ inventory.inventoryType }}
-                            </td>
-                            <td class="right aligned">
-                                {{ inventory.dateOrdered|date:'j-m-Y' }}
-                            </td>
-                            <td class="right aligned">
-                                {{ inventory.quantity|intcomma }}
-                            </td>
-                            <td class="right aligned">
-                                ₹&nbsp;{{ inventory.inventoryType.rate|intcomma }}
-                            </td>
-                            <td class="right aligned">
-                                ₹&nbsp;{{ inventory.cost|intcomma }}
-                            </td>
-                            <td class="center aligned">
-                                {% include inventory_data.template_dir|add:'/edit_button.html' %}
+                <div class="ui pointing secondary menu">
+                    <a class="item active" data-tab="consumable">Consumable</a>
+                    <a class="item" data-tab="non_consumable">Non-Consumable</a>
+                </div>
 
-                            </td>
-                            <td class="center aligned">
-                                <button
-                                    class="ui secondary button details inventory_{{ inventory.id }}">Details</button>
+                <div class="ui tab basic segment active" data-tab="consumable">
+                    {% if building.inventoryconsumable_set.all|length > 0 %}
+                    <table class="ui selectable celled sortable table">
+                        <thead>
+                            <tr>
+                                <th class="four wide column">Inventory Name</th>
+                                <th class="right aligned">Date Ordered</th>
+                                <th class="right aligned">Quantity</th>
+                                <th class="right aligned">Rate</th>
+                                <th class="right aligned">Cost</th>
+                                <th colspan="2" class="two wide column"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for inventory in building.inventoryconsumable_set.all %}
+                            <tr>
+                                <td>
+                                    {{ inventory.inventoryType }}
+                                </td>
+                                <td class="right aligned">
+                                    {{ inventory.dateOrdered|date:'j-m-Y' }}
+                                </td>
+                                <td class="right aligned">
+                                    {{ inventory.quantity|intcomma }}
+                                </td>
+                                <td class="right aligned">
+                                    ₹&nbsp;{{ inventory.inventoryType.rate|intcomma }}
+                                </td>
+                                <td class="right aligned">
+                                    ₹&nbsp;{{ inventory.cost|intcomma }}
+                                </td>
+                                <td class="center aligned">
+                                    {% include inventory_data.consumable.template_dir|add:'/edit_button.html' %}
 
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <th colspan="7">
-                                <button
-                                    class="ui right floated right labeled icon blue new_inventory_building_{{ building.id }} button">
-                                    <i class="plus icon"></i>
-                                    New
-                                </button>
-                            </th>
-                        </tr>
-                    </tfoot>
-                </table>
+                                </td>
+                                <td class="center aligned">
+                                    <button
+                                        class="ui secondary button details inventory_consumable_{{ inventory.id }}">Details</button>
 
-                {% else %}
-                <div class="ui two column centered grid">
-                    <div class="row">
-                        <div class="ui icon warning compact message">
-                            <i class="database icon"></i>
-                            <div class="content">
-                                <div class="header">
-                                    No Inventory found for {{ building.name }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="7">
+                                    <button
+                                        class="ui right floated right labeled icon blue new_inventory_consumable_building_{{ building.id }} button">
+                                        <i class="plus icon"></i>
+                                        New
+                                    </button>
+                                </th>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    {% else %}
+                    <div class="ui two column centered grid">
+                        <div class="row">
+                            <div class="ui icon warning compact message">
+                                <i class="database icon"></i>
+                                <div class="content">
+                                    <div class="header">
+                                        No Inventory found for {{ building.name }}
+                                    </div>
                                 </div>
                             </div>
+
                         </div>
+                        <div class="row">
+                            <button
+                                class="ui right floated right labeled icon blue new_inventory_consumable_building_{{ building.id }} button">
+                                <i class="plus icon"></i>
+                                New
+                            </button>
+                        </div>
+                    </div>
+                    {% endif %}
 
-                    </div>
-                    <div class="row">
-                        <button
-                            class="ui right floated right labeled icon blue new_inventory_building_{{ building.id }} button">
-                            <i class="plus icon"></i>
-                            New
-                        </button>
-                    </div>
+                    <script type='module'>
+                        $('.new_inventory_consumable_building_{{ building.id }}.button').on('click', function () {
+                            $('.new_inventory_consumable.modal')
+                                .modal({
+                                    centered: false
+                                })
+                                .modal({
+                                    onShow: function () {
+                                        // prefill form
+                                        $('.new_inventory_consumable.modal form')
+                                            .form('set values', {
+                                                building: '{{ building.id }}',
+                                            });
+                                    }
+                                })
+                                .modal('setting', 'closable', false)
+                                .modal('show');
+                        });
+                    </script>
                 </div>
-                {% endif %}
+                <div class="ui tab basic segment" data-tab="non_consumable">
+                    {% if building.inventorynonconsumable_set.all|length > 0 %}
+                    <table class="ui selectable celled sortable table">
+                        <thead>
+                            <tr>
+                                <th class="four wide column">Inventory Name</th>
+                                <th class="right aligned">Date Ordered</th>
+                                <th class="right aligned">Quantity</th>
+                                <th class="right aligned">Rate</th>
+                                <th class="right aligned">Cost</th>
+                                <th colspan="2" class="two wide column"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for inventory in building.inventorynonconsumable_set.all %}
+                            <tr>
+                                <td>
+                                    {{ inventory.inventoryType }}
+                                </td>
+                                <td class="right aligned">
+                                    {{ inventory.dateOrdered|date:'j-m-Y' }}
+                                </td>
+                                <td class="right aligned">
+                                    {{ inventory.quantity|intcomma }}
+                                </td>
+                                <td class="right aligned">
+                                    ₹&nbsp;{{ inventory.inventoryType.rate|intcomma }}
+                                </td>
+                                <td class="right aligned">
+                                    ₹&nbsp;{{ inventory.cost|intcomma }}
+                                </td>
+                                <td class="center aligned">
+                                    {% include inventory_data.non_consumable.template_dir|add:'/edit_button.html' %}
 
-                <script type='module'>
-                    $('.new_inventory_building_{{ building.id }}.button').on('click', function () {
-                        $('.new_inventory.modal')
-                            .modal({
-                                centered: false
-                            })
-                            .modal({
-                                onShow: function () {
-                                    // prefill form
-                                    $('.new_inventory.modal form')
-                                        .form('set values', {
-                                            building: '{{ building.id }}',
-                                        });
-                                }
-                            })
-                            .modal('setting', 'closable', false)
-                            .modal('show');
-                    });
-                </script>
+                                </td>
+                                <td class="center aligned">
+                                    <button
+                                        class="ui secondary button details inventory_non_consumable_{{ inventory.id }}">Details</button>
+
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="7">
+                                    <button
+                                        class="ui right floated right labeled icon blue new_inventory_non_consumable_building_{{ building.id }} button">
+                                        <i class="plus icon"></i>
+                                        New
+                                    </button>
+                                </th>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    {% else %}
+                    <div class="ui two column centered grid">
+                        <div class="row">
+                            <div class="ui icon warning compact message">
+                                <i class="database icon"></i>
+                                <div class="content">
+                                    <div class="header">
+                                        No Inventory found for {{ building.name }}
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="row">
+                            <button
+                                class="ui right floated right labeled icon blue new_inventory_non_consumable_building_{{ building.id }} button">
+                                <i class="plus icon"></i>
+                                New
+                            </button>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <script type='module'>
+                        $('.new_inventory_non_consumable_building_{{ building.id }}.button').on('click', function () {
+                            $('.new_inventory_non_consumable.modal')
+                                .modal({
+                                    centered: false
+                                })
+                                .modal({
+                                    onShow: function () {
+                                        // prefill form
+                                        $('.new_inventory_non_consumable.modal form')
+                                            .form('set values', {
+                                                building: '{{ building.id }}',
+                                            });
+                                    }
+                                })
+                                .modal('setting', 'closable', false)
+                                .modal('show');
+                        });
+                    </script>
+                </div>
             </div>
 
             {% if building.remarks %}

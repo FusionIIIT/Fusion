@@ -3,8 +3,8 @@ from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
-from .forms import BuildingForm, WorkForm, SubWorkForm, InventoryTypeForm, InventoryForm
-from .models import Building, Work, SubWork, Inventory, InventoryType
+from .forms import BuildingForm, WorkForm, SubWorkForm, InventoryTypeForm, InventoryConsumableForm, InventoryNonConsumableForm
+from .models import Building, Work, SubWork, InventoryType, InventoryConsumable, InventoryNonConsumable
 
 
 @login_required(login_url='/accounts/login/')
@@ -62,6 +62,7 @@ def estate(request):
     inventoryType_tabs = {
         'All': InventoryType.objects.all()
     }
+
     inventoryType_data = {
         'tabs': inventoryType_tabs,
         'form': InventoryTypeForm(),
@@ -75,10 +76,21 @@ def estate(request):
         'Inventory List': inventoryType_data,
     }
 
+    inventory_consumable_data = {
+        'all': InventoryConsumable.objects.all(),
+        'form': InventoryConsumableForm(),
+        'template_dir': 'estate_module/Inventory/Consumable'
+    }
+
+    inventory_non_consumable_data = {
+        'all': InventoryNonConsumable.objects.all(),
+        'form': InventoryNonConsumableForm(),
+        'template_dir': 'estate_module/Inventory/NonConsumable'
+    }
+
     inventory_data = {
-        'all': Inventory.objects.all(),
-        'form': InventoryForm(),
-        'template_dir': 'estate_module/Inventory'
+        'consumable': inventory_consumable_data,
+        'non_consumable': inventory_non_consumable_data,
     }
 
     subWork_data = {
@@ -284,46 +296,100 @@ def deleteInventoryType(request, inventoryType_id):
 
 
 @require_POST
-def newInventory(request):
+def newInventoryConsumable(request):
 
-    newInventoryForm = InventoryForm(request.POST)
+    newInventoryConsumableForm = InventoryConsumableForm(request.POST)
 
-    if newInventoryForm.is_valid():
-        new_Inventory = newInventoryForm.save()
+    if newInventoryConsumableForm.is_valid():
+        new_InventoryConsumable = newInventoryConsumableForm.save()
         messages.success(
-            request, f'New Inventory Created: { new_Inventory }')
+            request, f'New Consumable Inventory Created: { new_InventoryConsumable }')
         return redirect('estate_module_home')
 
-    for label, errors in newInventoryForm.errors.items():
+    for label, errors in newInventoryConsumableForm.errors.items():
         for error in errors:
             messages.error(request, f'{ label }: { error }')
     return redirect('estate_module_home')
 
 
 @require_POST
-def editInventory(request, inventory_id):
+def editInventoryConsumable(request, inventory_consumable_id):
 
-    inventory = Inventory.objects.get(pk=inventory_id)
+    inventory_consumable = InventoryConsumable.objects.get(
+        pk=inventory_consumable_id)
 
-    editInventoryForm = InventoryForm(request.POST, instance=inventory)
+    editInventoryConsumableForm = InventoryConsumableForm(
+        request.POST, instance=inventory_consumable)
 
-    if editInventoryForm.is_valid():
-        editedInventory = editInventoryForm.save()
+    if editInventoryConsumableForm.is_valid():
+        editedInventoryConsumable = editInventoryConsumableForm.save()
         messages.success(
-            request, f'Inventory Updated: { editedInventory }')
+            request, f'Consumable Inventory Updated: { editedInventoryConsumable }')
         return redirect('estate_module_home')
 
-    for label, errors in editInventoryForm.errors.items():
+    for label, errors in editInventoryConsumableForm.errors.items():
         for error in errors:
             messages.error(request, f'{ label }: { error }')
     return redirect('estate_module_home')
 
 
 @require_POST
-def deleteInventory(request, inventory_id):
+def deleteInventoryConsumable(request, inventory_consumable_id):
 
-    inventory = Inventory.objects.get(pk=inventory_id)
-    inventory_name = inventory.inventoryType
-    inventory.delete()
-    messages.success(request, f'Inventory Deleted: { inventory_name }')
+    inventory_consumable = InventoryConsumable.objects.get(
+        pk=inventory_consumable_id)
+    inventory_consumable_name = inventory_consumable.inventoryType
+    inventory_consumable.delete()
+    messages.success(
+        request, f'Consumable Inventory Deleted: { inventory_consumable_name }')
+    return redirect('estate_module_home')
+
+
+@require_POST
+def newInventoryNonConsumable(request):
+
+    newInventoryNonConsumableForm = InventoryNonConsumableForm(request.POST)
+
+    if newInventoryNonConsumableForm.is_valid():
+        new_InventoryNonConsumable = newInventoryNonConsumableForm.save()
+        messages.success(
+            request, f'New Non-Consumable Inventory Created: { new_InventoryNonConsumable }')
+        return redirect('estate_module_home')
+
+    for label, errors in newInventoryNonConsumableForm.errors.items():
+        for error in errors:
+            messages.error(request, f'{ label }: { error }')
+    return redirect('estate_module_home')
+
+
+@require_POST
+def editInventoryNonConsumable(request, inventory_non_consumable_id):
+
+    inventory_non_consumable = InventoryNonConsumable.objects.get(
+        pk=inventory_non_consumable_id)
+
+    editInventoryNonConsumableForm = InventoryNonConsumableForm(
+        request.POST, instance=inventory_non_consumable)
+
+    if editInventoryNonConsumableForm.is_valid():
+        editedInventoryNonConsumable = editInventoryNonConsumableForm.save()
+        messages.success(
+            request, f'Non-Consumable Inventory Updated: { editedInventoryNonConsumable }')
+        return redirect('estate_module_home')
+
+    for label, errors in editInventoryNonConsumableForm.errors.items():
+        for error in errors:
+            messages.error(request, f'{ label }: { error }')
+    return redirect('estate_module_home')
+
+
+@require_POST
+def deleteInventoryNonConsumable(request, inventory_non_consumable_id):
+
+    inventory_non_consumable = InventoryNonConsumable.objects.get(
+        pk=inventory_non_consumable_id)
+    inventory_non_consumable_name = inventory_non_consumable.inventoryType
+    inventory_non_consumable.delete()
+    messages.success(
+        request, f'Non-Consumable Inventory Deleted: { inventory_non_consumable_name }')
     return redirect('estate_module_home')

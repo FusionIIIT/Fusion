@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 
 # Create your models here.
@@ -110,7 +111,8 @@ class InventoryType(models.Model):
         return self.name
 
 
-class Inventory(models.Model):
+class InventoryCommon(models.Model):
+
     inventoryType = models.ForeignKey(InventoryType, on_delete=models.CASCADE)
     building = models.ForeignKey(
         Building, on_delete=models.CASCADE, null=True, blank=True)
@@ -124,8 +126,20 @@ class Inventory(models.Model):
     def cost(self):
         return self.quantity * self.inventoryType.rate
 
-    class Meta:
-        ordering = ['-id']
-
     def __str__(self):
         return self.inventoryType.name
+
+    class Meta:
+        abstract = True
+        ordering = ['-id']
+
+
+class InventoryConsumable(InventoryCommon):
+    presentQuantity = models.IntegerField()
+
+
+class InventoryNonConsumable(InventoryCommon):
+    serial_no = models.CharField(max_length=20)
+    dateLastVerified = models.DateField()
+    issued_to = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
