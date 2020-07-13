@@ -1,0 +1,127 @@
+{% csrf_token %}
+<div class="ui error message"></div>
+
+{% with inventory_data.non_consumable.form as form %}
+
+<div class="three fields">
+    <div class="required field">
+        {{ form.inventoryType.label_tag }}
+        {{ form.inventoryType }}
+    </div>
+
+    <div class="required field">
+        {{ form.serial_no.label_tag }}
+        {{ form.serial_no }}
+    </div>
+
+    <div class="required field">
+        {{ form.quantity.label_tag }}
+        {{ form.quantity }}
+    </div>
+</div>
+
+
+<div class="three fields">
+    <div class="field">
+        {{ form.issued_to.label_tag }}
+        {{ form.issued_to }}
+    </div>
+
+    <div class="field">
+        {{ form.building.label_tag }}
+        {{ form.building }}
+    </div>
+
+    <div class="field">
+        {{ form.work.label_tag }}
+        {{ form.work }}
+    </div>
+</div>
+
+<div class="three fields">
+    <div class="required field">
+        {{ form.dateOrdered.label_tag }}
+
+        <div class="ui calendar">
+            <div class="ui input left icon">
+                <i class="calendar icon"></i>
+                {{ form.dateOrdered }}
+            </div>
+        </div>
+    </div>
+    <div class="field">
+        {{ form.dateReceived.label_tag }}
+
+        <div class="ui calendar">
+            <div class="ui input left icon">
+                <i class="calendar icon"></i>
+                {{ form.dateReceived }}
+            </div>
+        </div>
+    </div>
+    <div class="required field">
+        {{ form.dateLastVerified.label_tag }}
+
+        <div class="ui calendar">
+            <div class="ui input left icon">
+                <i class="calendar icon"></i>
+                {{ form.dateLastVerified }}
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="field">
+    {{ form.remarks.label_tag }}
+    {{ form.remarks }}
+</div>
+<p></p>
+
+{% endwith %}
+
+<script type='module'>
+    $('#{{ form_id }}')
+        .form({
+            fields: {
+                inventoryType: {
+                    identifier: 'inventoryType',
+                    rules: [{
+                        type: 'empty',
+                        prompt: 'Inventory name cannot be blank'
+                    }]
+                },
+                serial_no: {
+                    identifier: 'serial_no',
+                    rules: [{
+                        type: 'empty',
+                        prompt: 'Serial Number cannot be blank'
+                    }]
+                },
+                dateOrdered: {
+                    identifier: 'dateOrdered',
+                    rules: [{
+                        type: 'empty',
+                        prompt: 'Date Ordered cannot be blank'
+                    }]
+                },
+                dateLastVerified: {
+                    identifier: 'dateLastVerified',
+                    rules: [{
+                        type: 'empty',
+                        prompt: 'Date Last Verified cannot be blank'
+                    }]
+                },
+                quantity: {
+                    identifier: 'quantity',
+                    rules: [{
+                        type: 'empty',
+                        prompt: 'Quantity cannot be blank'
+                    }, {
+                        type: 'integer',
+                        prompt: 'Quantity must be an integer'
+                    }]
+                },
+            }
+        });
+</script>

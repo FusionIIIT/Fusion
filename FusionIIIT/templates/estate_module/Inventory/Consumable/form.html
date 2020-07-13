@@ -1,56 +1,65 @@
 {% csrf_token %}
 <div class="ui error message"></div>
 
+{% with inventory_data.consumable.form as form %}
+
 <div class="three fields">
     <div class="required field">
-        {{ inventory_data.form.inventoryType.label_tag }}
-        {{ inventory_data.form.inventoryType }}
+        {{ form.inventoryType.label_tag }}
+        {{ form.inventoryType }}
     </div>
     <div class="required field">
-        {{ inventory_data.form.quantity.label_tag }}
-        {{ inventory_data.form.quantity }}
+        {{ form.quantity.label_tag }}
+        {{ form.quantity }}
     </div>
 
     <div class="required field">
-        {{ inventory_data.form.dateOrdered.label_tag }}
-
-        <div class="ui calendar">
-            <div class="ui input left icon">
-                <i class="calendar icon"></i>
-                {{ inventory_data.form.dateOrdered }}
-            </div>
-        </div>
+        {{ form.presentQuantity.label_tag }}
+        {{ form.presentQuantity }}
     </div>
+
 </div>
 
-<div class="three fields">
-    <div class="field">
-        {{ inventory_data.form.building.label_tag }}
-        {{ inventory_data.form.building }}
-    </div>
-
-    <div class="field">
-        {{ inventory_data.form.work.label_tag }}
-        {{ inventory_data.form.work }}
-    </div>
-
-    <div class="field">
-        {{ inventory_data.form.dateReceived.label_tag }}
+<div class="four fields">
+    <div class="required field">
+        {{ form.dateOrdered.label_tag }}
 
         <div class="ui calendar">
             <div class="ui input left icon">
                 <i class="calendar icon"></i>
-                {{ inventory_data.form.dateReceived }}
+                {{ form.dateOrdered }}
             </div>
         </div>
     </div>
+    <div class="field">
+        {{ form.dateReceived.label_tag }}
+
+        <div class="ui calendar">
+            <div class="ui input left icon">
+                <i class="calendar icon"></i>
+                {{ form.dateReceived }}
+            </div>
+        </div>
+    </div>
+    <div class="field">
+        {{ form.building.label_tag }}
+        {{ form.building }}
+    </div>
+
+    <div class="field">
+        {{ form.work.label_tag }}
+        {{ form.work }}
+    </div>
+
 </div>
 
 <div class="field">
-    {{ inventory_data.form.remarks.label_tag }}
-    {{ inventory_data.form.remarks }}
+    {{ form.remarks.label_tag }}
+    {{ form.remarks }}
 </div>
 <p></p>
+
+{% endwith %}
 
 <script type='module'>
     $('#{{ form_id }}')
@@ -78,6 +87,16 @@
                     }, {
                         type: 'integer',
                         prompt: 'Quantity must be an integer'
+                    }]
+                },
+                presentQuantity: {
+                    identifier: 'presentQuantity',
+                    rules: [{
+                        type: 'empty',
+                        prompt: 'Present Quantity cannot be blank'
+                    }, {
+                        type: 'integer',
+                        prompt: 'Present Quantity must be an integer'
                     }]
                 },
             }

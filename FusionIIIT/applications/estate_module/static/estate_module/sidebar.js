@@ -60,7 +60,7 @@ function newNotification() {
     headerAnchor.className = 'ui header';
 
     var userAvatar = document.createElement('img');
-    userAvatar.src = "{% static 'globals/img/zlatan.jpg' %}";
+    userAvatar.src = '/static/globals/img/zlatan.jpg';
     userAvatar.className = 'ui circular image right floated';
 
     var dividerDiv = document.createElement('div');

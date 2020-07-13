@@ -82,7 +82,9 @@ Estate
             New Inventory
         </button> {% endcomment %}
 
-        {% include inventory_data.template_dir|add:'/edit_modal.html' %}
+        {% comment %} {% include inventory_data.template_dir|add:'/edit_modal.html' %} {% endcomment %}
+        {% include inventory_data.consumable.template_dir|add:'/edit_modal.html' %}
+        {% include inventory_data.non_consumable.template_dir|add:'/edit_modal.html' %}
         {% include subWork_data.template_dir|add:'/edit_modal.html' %}
 
 
@@ -95,11 +97,22 @@ Estate
 
     </div>
 
-    {% include inventory_data.template_dir|add:'/new_modal.html' with menuitem='Inventory' %}
+    {% comment %} {% include inventory_data.template_dir|add:'/new_modal.html' with menuitem='Inventory' %}
+    {% endcomment %}
+    {% include inventory_data.consumable.template_dir|add:'/new_modal.html' %}
+    {% include inventory_data.non_consumable.template_dir|add:'/new_modal.html' %}
     {% include subWork_data.template_dir|add:'/new_modal.html' %}
 
-    {% for inventory in inventory_data.all %}
+    {% comment %} {% for inventory in inventory_data.all %}
     {% include inventory_data.template_dir|add:'/detail.html' with menuitem='Inventory' %}
+    {% endfor %} {% endcomment %}
+
+    {% for inventory in inventory_data.consumable.all %}
+    {% include inventory_data.consumable.template_dir|add:'/detail.html' with menuitem='Consumable Inventory' %}
+    {% endfor %}
+
+    {% for inventory in inventory_data.non_consumable.all %}
+    {% include inventory_data.non_consumable.template_dir|add:'/detail.html' with menuitem='Non Consumable Inventory' %}
     {% endfor %}
 
     {% for subWork in subWork_data.all %}
@@ -110,8 +123,14 @@ Estate
 
 {% block javascript %}
 <script type='module'>
-    $('select')
-        .dropdown();
+    $('select:not(#id_issued_to)')
+        .addClass('search selection dropdown');
+    $('select:not(#id_issued_to)')
+        .dropdown({
+            clearable: true,
+            fullTextSearch: true,
+            forceSelection: false
+        });
     $('.ui.calendar')
         .calendar({
             type: 'date',
