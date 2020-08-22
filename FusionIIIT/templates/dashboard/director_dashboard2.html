@@ -97,9 +97,11 @@
                     <i class="right floated chevron right icon"></i>
                 </div>
 
-                <div  id="view_meetings" class="item" >
+                <div  id="view_meetings" >
+                <a class="item">
                     Cancel Meetings
                     <i class="right floated chevron right icon"></i>
+                </a>
                 </div>
 
                 <a class="item" data-tab="tab1content1" onclick="pnd()">
@@ -708,7 +710,7 @@
                             <div class="ui dimmer">
                               <div class="content">
                                 <div class="center">
-                                  <div class="ui inverted button">More Info</div>
+                                  <div id="faculty_info" class="ui inverted button">More Info</div>
                                 </div>
                               </div>
                             </div>
@@ -734,7 +736,7 @@
                             <div class="ui dimmer">
                               <div class="content">
                                 <div class="center">
-                                  <div class="ui inverted button">More Info</div>
+                                  <div id="Student_info" class="ui inverted button">More Info</div>
                                 </div>
                               </div>
                             </div>
@@ -805,7 +807,7 @@
                                 <div class="ui dimmer">
                                   <div class="content">
                                     <div class="center">
-                                      <div class="ui inverted button">More Info</div>
+                                      <div id="HOD" class="ui inverted button">More Info</div>
                                     </div>
                                   </div>
                                 </div>
@@ -832,7 +834,7 @@
                                     <div class="ui dimmer">
                                       <div class="content">
                                         <div class="center">
-                                          <div class="ui inverted button">More Info</div>
+                                          <div id="meetings" class="ui inverted button">More Info</div>
                                         </div>
                                       </div>
                                     </div>
@@ -952,8 +954,38 @@
 
 
                 <div id="faculty_stats" style="display: none">
+
+                    <h3>Paper Publications</h3>
+                    <table class="ui celled table">
+                        <thead>
+                          <tr><th>Paper By</th>
+                          <th>Publication Title</th>
+                        </tr></thead>
+                        <tbody>
+                          <tr>
+                            <td data-label="Name">Sunil Sharma</td>
+                            <td data-label="Age">
+                                <a href="https://www.sciencedirect.com/science/article/abs/pii/S1574013719302825">Big networks: A survey</a>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td data-label="Name">Sumita Goel</td>
+                            <td data-label="Age">
+                                <a href="https://www.sciencedirect.com/science/article/abs/pii/S1574013720303865">Community detection in node-attributed social networks: A survey</a>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td data-label="Name">Pankaj Kumar</td>
+                            <td data-label="Age">
+                                <a href="https://www.sciencedirect.com/science/article/abs/pii/S157401372030126X">
+                                    When machine learning meets medical world: Current status and future challenges
+                                </a>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
                 
-                    <h3>Dept Wise Faculty</h3>
+                    <!-- <h3>Dept Wise Faculty</h3>
                     <div class="ui top attached tabular menu">
                         <a class="item active" data-tab="first">CSE</a>
                         <a class="item" data-tab="second">ECE</a>
@@ -1020,7 +1052,7 @@
                             </div>
                             {% endfor %}
                         </div>
-                      </div>
+                      </div> -->
 
                 </div>
 
@@ -1105,6 +1137,36 @@
                 </div> -->
 
                 <div id="student_stats" style="display: none;">
+
+                    <h3>Projects</h3>
+                    <table class="ui celled table">
+                        <thead>
+                          <tr><th>Project By</th>
+                          <th>Project Title</th>
+                        </tr></thead>
+                        <tbody>
+                          <tr>
+                            <td data-label="Name">Sunil Sharma</td>
+                            <td data-label="Age">
+                                <a>Gesture recognition using AI</a>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td data-label="Name">Sumita Goel</td>
+                            <td data-label="Age">
+                                <a>Communications of the ACM</a>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td data-label="Name">Pankaj Kumar</td>
+                            <td data-label="Age">
+                                <a>
+                                    IEEE Transactions on Evolutionary Computation
+                                </a>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
                 
                     <!-- <div class="ui pointing secondary menu">
                         <a class="item active" data-tab="first">2017</a>
@@ -1154,7 +1216,7 @@
                         <div class="ui bottom attached tab segment" data-tab="third/e">ns_2015</div>
                       </div> -->
 
-                      <h3>Students</h3>
+                      <!-- <h3>Students</h3>
 
                       <div class="ui top attached tabular menu">
                         <a class="item active" data-tab="first">2019</a>
@@ -1242,7 +1304,7 @@
                                 </tbody>
                               </table>
                         </div>
-                      </div>
+                      </div> -->
                 
                 </div>
 
@@ -1443,7 +1505,34 @@
 
                 <!-- div section for display of HOD data -->
                 <div id="HOD_info" style="display: none;">
-                    <table style="border: 1px solid lightblue" class="ui very basic collapsing celled sortable table" style="padding-left: 5%;
+
+                    <h3>Upcoming Leaves</h3>
+                    <table class="ui celled table">
+                        <thead>
+                          <tr><th>Leave by</th>
+                          <th>From</th>
+                          <th>Till</th>
+                        </tr></thead>
+                        <tbody>
+                          <tr>
+                            <td data-label="Leave by">Manoj Singh</td>
+                            <td data-label="From">24-8-2020</td>
+                            <td data-label="Till">28-8-2020</td>
+                          </tr>
+                          <tr>
+                            <td data-label="Leave by">Rajat Kumar</td>
+                            <td data-label="From">27-8-2020</td>
+                            <td data-label="Till">23-9-2020</td>
+                          </tr>
+                          <tr>
+                            <td data-label="Leave by">Archana Garg</td>
+                            <td data-label="From">6-9-2020</td>
+                            <td data-label="Till">9-9-2020</td>
+                          </tr>
+                        </tbody>
+                      </table>
+
+                    <!-- <table style="border: 1px solid lightblue" class="ui very basic collapsing celled sortable table" style="padding-left: 5%;
                                                        padding-right: 5%;
                                                        padding-top: 1%;
                                                        padding-bottom: 1.5%;
@@ -1462,7 +1551,7 @@
                                 </td>
                             </tr>
                         </tbody>
-                    </table>
+                    </table> -->
                       
                 </div>
 
@@ -1475,9 +1564,13 @@
                 <!-- div for meetings --> 
                 <div id="meeting_div" style="display: none">
                 
-                    <h3>Scheduled Meetings</h3>
+                    <h3>News and Events</h3>
+                    <div class="ui two item menu">
+                        <a class="item active">News</a>
+                        <a class="item ">Upcoming Events</a>
+                      </div>
 
-                    <table id="meeting_table" style='border: 1px solid lightblue' class="ui very basic collapsing celled sortable table" style="padding-left: 5%;
+                    <!-- <table id="meeting_table" style='border: 1px solid lightblue' class="ui very basic collapsing celled sortable table" style="padding-left: 5%;
                                                            padding-right: 5%;
                                                            padding-top: 1%;
                                                            padding-bottom: 1.5%;
@@ -1507,7 +1600,7 @@
                             
                         </tbody>
 
-                    </table>
+                    </table> -->
                 </div>
 
 
