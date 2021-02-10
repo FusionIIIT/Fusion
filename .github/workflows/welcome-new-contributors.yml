@@ -10,7 +10,7 @@ jobs:
   greet-the-contributor:
     runs-on: ubuntu-latest
     steps:
-    - uses: garg3133/welcome-new-contributors@v1.0
+    - uses: garg3133/welcome-new-contributors@v1.1
       with:
         token: ${{ secrets.BOT_ACCESS_TOKEN }}
         is-oauth-token: true
