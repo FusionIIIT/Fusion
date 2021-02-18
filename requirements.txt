@@ -4,6 +4,7 @@ django
 django-allauth
 django-cleanup
 django-debug-toolbar
+django-extensions
 django-markdown-deux
 django-notifications-hq
 django-pagedown
@@ -11,6 +12,8 @@ django-semanticui-forms
 django-unused-media
 # gunicorn
 html_text
+ipython
+ipython-genutils
 jsonschema
 numpy
 pillow
