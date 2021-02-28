@@ -1,6 +1,6 @@
 import json
 
-from django.contrib.auth import logout
+from django.contrib.auth import logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.files.storage import FileSystemStorage
@@ -8,7 +8,14 @@ from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
 from PIL import Image
+
+from rest_framework import status
+from rest_framework.authtoken.models import Token
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
 
 from applications.academic_information.models import Student
 from applications.globals.forms import IssueForm, WebFeedbackForm
@@ -448,6 +455,34 @@ def about(request):
     return render(request, "globals/about.html", context)
 
 
+# It returns the token generated for the user.
+@csrf_exempt
+@api_view(["POST"])
+@permission_classes((AllowAny,))
+def loginApiView(request):
+    username = request.data.get("username")
+    password = request.data.get("password")
+    if username is None or password is None:
+        return Response(
+            {'error': 'Please provide both username and password'},
+            status = status.HTTP_400_BAD_REQUEST
+        )
+    user = authenticate(username = username, password = password)
+    if user is None:
+        return Response(
+            {'error' : 'Invalid Credentials'},
+            status = status.HTTP_404_NOT_FOUND
+        )
+    token, _ = Token.objects.get_or_create(user=user)
+    return Response(
+        {
+            'success' : 'True',
+            'message' : 'User logged in successfully',
+            'token': token.key
+        },
+        status = status.HTTP_200_OK
+    )
+
 def login(request):
     context = {}
     return render(request, "globals/login.html", context)
@@ -692,14 +727,14 @@ def dashboard(request):
     # students_2016 = Student.objects.filter(batch = 2016)
     # students_2015 = Student.objects.filter(batch = 2015)
     # students_2019 = Student.objects.filter(batch = 2019)
-    # students_2018 = Student.objects.filter(batch = 2018) 
-    # data = {'cse': cse_faculty, 
-    #         'ece': ece_faculty, 
-    #         'me': me_faculty, 
-    #         'des': des_faculty, 
+    # students_2018 = Student.objects.filter(batch = 2018)
+    # data = {'cse': cse_faculty,
+    #         'ece': ece_faculty,
+    #         'me': me_faculty,
+    #         'des': des_faculty,
     #         'ns': ns_faculty,
     #         'students_2019': students_2019,
-    #         'students_2018': students_2018, 
+    #         'students_2018': students_2018,
     #         'students_2017': students_2017,
     #         'students_2016': students_2016,
     #         'students_2015': students_2015}
