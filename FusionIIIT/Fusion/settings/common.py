@@ -126,6 +126,7 @@ INSTALLED_APPS = [
     'applications.visitor_hostel',
     'applications.establishment',
     'applications.estate_module',
+    'applications.department',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
