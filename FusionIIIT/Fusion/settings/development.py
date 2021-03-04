@@ -42,7 +42,7 @@ if DEBUG:
         'django_extensions',
         )
 
-    
+
     ###############################
     # DJANGO_EXTENSIONS SETTINGS: #
     ###############################
