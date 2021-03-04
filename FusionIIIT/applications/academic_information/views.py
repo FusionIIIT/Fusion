@@ -53,7 +53,7 @@ def user_check(request):
         k = str(user_details).split()
         final_user = k[2]
     except Exception as e:
-        print(e)
+        #print(e)
         acadadmin=""
         final_user=""
         pass
@@ -110,14 +110,14 @@ def get_context(request):
         examTtForm = ExamTimetableForm()
         acadTtForm = AcademicTimetableForm()
         calendar = Calendar.objects.all()
-        this_sem_courses = Curriculum.objects.all().filter(sem__in=course_list).filter(floated=True)
-        next_sem_courses = Curriculum.objects.all().filter(sem__in=course_list_2).filter(floated=True)
+        this_sem_courses = Curriculum.objects.all().select_related().filter(sem__in=course_list).filter(floated=True)
+        next_sem_courses = Curriculum.objects.all().select_related().filter(sem__in=course_list_2).filter(floated=True)
         courses = Course.objects.all()
         course_type = Constants.COURSE_TYPE
         timetable = Timetable.objects.all()
         exam_t = Exam_timetable.objects.all()
     except Exception as e:
-        print(e)
+        #print(e)
         examTtForm = ""
         acadTtForm = ""
         calendar = ""
@@ -228,14 +228,14 @@ def curriculum(request):
     context['tab_id'][0]='6'
 
     if request.method == 'POST':
-        print(request.POST)
+        #print(request.POST)
         try:
             request_batch = request.POST['batch']
             request_branch = request.POST['branch']
             request_programme = request.POST['programme']
             request_sem = request.POST['sem']
         except Exception as e:
-            print(e)
+            #print(e)
             request_batch = ""
             request_branch = ""
             request_programme = ""
@@ -249,10 +249,10 @@ def curriculum(request):
             # print(request_programme,end=" ")
             # print(request_sem)
             if int(request_sem) == 0:
-                curriculum = Curriculum.objects.filter(branch = request_branch).filter(batch = request_batch).filter(programme= request_programme).order_by('sem')
+                curriculum = Curriculum.objects.select_related().filter(branch = request_branch).filter(batch = request_batch).filter(programme= request_programme).order_by('sem')
             else:
-                curriculum = Curriculum.objects.filter(branch = request_branch).filter(batch = request_batch).filter(programme= request_programme).filter(sem= request_sem)
-        print(curriculum)
+                curriculum = Curriculum.objects.select_related().filter(branch = request_branch).filter(batch = request_batch).filter(programme= request_programme).filter(sem= request_sem)
+        #print(curriculum)
         # context={
         #     'courses' : courses,
         #     'course_type' : course_type,
@@ -302,8 +302,8 @@ def add_curriculum(request):
             'tab_id' :['3','2']
         }
     if request.method == 'POST':
-        print(request.POST)
-        print(type(request.POST))
+        #print(request.POST)
+        #print(type(request.POST))
         i=0
         while True:
             if "semester_"+str(i) in request.POST:
@@ -322,7 +322,7 @@ def add_curriculum(request):
                         optional=False
                     course_type=request.POST["course_type_"+str(i)]
                 except Exception as e:
-                    print(e)
+                    #print(e)
                     programme=""
                     batch=""
                     branch=""
@@ -334,7 +334,7 @@ def add_curriculum(request):
                     optional=""
                     course_type=""
                     pass
-                print(programme,batch,branch,sem,course_code,course_id,credits,optional,course_type)
+                #print(programme,batch,branch,sem,course_code,course_id,credits,optional,course_type)
                 ins=Curriculum.objects.create(
                     programme=programme,
                     batch=batch,
@@ -347,10 +347,10 @@ def add_curriculum(request):
                     course_type=course_type,
                 )
             else:
-                print("Khatam")
+                #print("Khatam")
                 break
             i+=1
-        curriculum = Curriculum.objects.filter(branch = branch).filter(batch = batch).filter(programme= programme)
+        curriculum = Curriculum.objects.select.related().filter(branch = branch).filter(batch = batch).filter(programme= programme)
         courses = Course.objects.all()
         course_type = Constants.COURSE_TYPE
         context= {
@@ -396,8 +396,8 @@ def edit_curriculum(request):
             'tab_id' :['3','1']
         }
     if request.method == 'POST':
-        print("edit_curriculum")
-        print(request.POST)
+        #print("edit_curriculum")
+        #print(request.POST)
         try:
             id=request.POST['id']
             programme=request.POST['programme']
@@ -414,7 +414,7 @@ def edit_curriculum(request):
                 optional=False
             course_type=request.POST["course_type"]
         except Exception as e:
-            print(e)
+            #print(e)
             id=""
             programme=""
             batch=""
@@ -428,7 +428,7 @@ def edit_curriculum(request):
             course_type=""
             pass
 
-        entry=Curriculum.objects.all().filter(curriculum_id=id).first()
+        entry=Curriculum.objects.all().select_related().filter(curriculum_id=id).first()
         entry.programme=programme
         entry.batch=batch
         entry.branch=branch
@@ -439,7 +439,7 @@ def edit_curriculum(request):
         entry.optional=optional
         entry.course_type=course_type
         entry.save()
-        curriculum = Curriculum.objects.filter(branch = branch).filter(batch = batch).filter(programme= programme)
+        curriculum = Curriculum.objects.select_related().filter(branch = branch).filter(batch = batch).filter(programme= programme)
         courses = Course.objects.all()
         course_type = Constants.COURSE_TYPE
         context= {
@@ -475,11 +475,11 @@ def delete_curriculum(request):
             'tab_id' :['3','1']
         }
     if request.method == "POST":
-        print("delete_curriculum")
-        print (request.POST)
-        dele = Curriculum.objects.filter(curriculum_id=request.POST['id'])
+        #print("delete_curriculum")
+        #print (request.POST)
+        dele = Curriculum.objects.select_related().filter(curriculum_id=request.POST['id'])
         dele.delete()
-        curriculum = Curriculum.objects.filter(branch = request.POST['branch']).filter(batch = request.POST['batch']).filter(programme= request.POST['programme'])
+        curriculum = Curriculum.objects.select_related().filter(branch = request.POST['branch']).filter(batch = request.POST['batch']).filter(programme= request.POST['programme'])
         courses = Course.objects.all()
         course_type = Constants.COURSE_TYPE
         context= {
@@ -515,13 +515,13 @@ def next_curriculum(request):
         return HttpResponseRedirect('/academic-procedures/')
         
     if request.method == 'POST':
-        print (request.POST)
+        #print (request.POST)
         programme = request.POST['programme']
         now = datetime.datetime.now()
         year = int(now.year)
         batch = year-1
-        curriculum = Curriculum.objects.all().filter(batch = batch).filter(programme = programme)
-        print(curriculum)
+        curriculum = Curriculum.objects.all().select_related().filter(batch = batch).filter(programme = programme)
+        #print(curriculum)
         if request.POST['option'] == '1':
             for i in curriculum:
                 # print(i.programme,end=" ")
@@ -559,7 +559,7 @@ def next_curriculum(request):
                     course_type=i.course_type,
                 )
             batch=batch+1
-            curriculum = Curriculum.objects.all().filter(batch = batch).filter(programme = programme)
+            curriculum = Curriculum.objects.all().select_related().filter(batch = batch).filter(programme = programme)
             context= {
                 'curriculumm' :curriculum,
                 'tab_id' :['3','3']
@@ -635,11 +635,11 @@ def add_exam_timetable(request):
     }
     examTtForm = ExamTimetableForm()
     if request.method == 'POST' and request.FILES:
-        print(request.POST)
-        print(request.FILES)
+        #print(request.POST)
+        #print(request.FILES)
         examTtForm = ExamTimetableForm(request.POST, request.FILES)
         if examTtForm.is_valid():
-            print("kkk")
+            #print("kkk")
             examTtForm.save()
         return render(request, "ais/ais.html", context)
     else:
@@ -714,12 +714,12 @@ def add_calendar(request):
         'tab_id' :['4','1']
     }
     if request.method == "POST":
-        print("Requested Method: ", request.POST)
+        #print("Requested Method: ", request.POST)
         try:
             from_date = request.POST.getlist('from_date')
             to_date = request.POST.getlist('to_date')
             desc = request.POST.getlist('description')[0]
-            print(from_date, to_date, desc)
+            #print(from_date, to_date, desc)
             from_date = from_date[0].split('-')
             from_date = [int(i) for i in from_date]
             from_date = datetime.datetime(*from_date).date()
@@ -727,12 +727,12 @@ def add_calendar(request):
             to_date = [int(i) for i in to_date]
             to_date = datetime.datetime(*to_date).date()
         except Exception as e:
-            print(e)
+            #print(e)
             from_date=""
             to_date=""
             desc=""
             pass
-        print(from_date, to_date, desc)
+        #print(from_date, to_date, desc)
         c = Calendar(
             from_date=from_date,
             to_date=to_date,
@@ -769,13 +769,13 @@ def update_calendar(request):
         'tab_id' :['4','1']
     }
     if request.method == "POST":
-        print("Requested Method: ", request.POST)
+        #print("Requested Method: ", request.POST)
         try:
             from_date = request.POST.getlist('from_date')
             to_date = request.POST.getlist('to_date')
             desc = request.POST.getlist('description')[0]
             prev_desc = request.POST.getlist('prev_desc')[0]
-            print(from_date, to_date, desc, prev_desc)
+            #print(from_date, to_date, desc, prev_desc)
             from_date = from_date[0].split('-')
             from_date = [int(i) for i in from_date]
             from_date = datetime.datetime(*from_date).date()
@@ -788,7 +788,7 @@ def update_calendar(request):
             get_calendar_details.to_date = to_date
             get_calendar_details.save()
         except Exception as e:
-            print(e)
+            #print(e)
             from_date=""
             to_date=""
             desc=""
@@ -844,20 +844,20 @@ def generatexlsheet(request):
     if user_check(request):
         return HttpResponseRedirect('/academic-procedures/')
         
-    print(request.POST)
+    #print(request.POST)
     try:
         batch = request.POST['batch']
         curr_key = Curriculum.objects.get(course_code = request.POST['course'])
         course = curr_key.course_id
         obj = Register.objects.all().filter(curr_id = curr_key).filter(year=batch)
     except Exception as e:
-        print(e)
+        #print(e)
         batch=""
         course=""
         curr_key=""
         obj=""
     ans = []
-    print(obj)
+    #print(obj)
     for i in obj:
         k = []
         k.append(i.student_id.id.id)
@@ -956,9 +956,9 @@ def generate_preregistration_report(request):
         return HttpResponseRedirect('/academic-procedures/')
         
     if request.method == "POST":
-        print(request.POST)    
+        #print(request.POST)    
         sem = sem_for_generate_sheet()
-        print(sem)
+        #print(sem)
         now = datetime.datetime.now()
         year = int(now.year)
         batch=request.POST['batch']
@@ -968,9 +968,9 @@ def generate_preregistration_report(request):
             sem = sem[year-int(batch)]
         sem+=1
         sem=6
-        print(sem)
-        obj = InitialRegistrations.objects.filter(batch=batch).filter(semester=sem)
-        print(obj)
+        #print(sem)
+        obj = InitialRegistrations.objects.select_related().filter(batch=batch).filter(semester=sem)
+        #print(obj)
         data = []
         m = 1
         for i in obj:
@@ -1028,7 +1028,7 @@ def generate_preregistration_report(request):
         for i in data:
             sheet.write_number('A'+str(k),num,normaltext)
             num+=1
-            print(i)
+            #print(i)
             z,b,c = str(i[0]),i[1],i[2]
             a,b,c,d,e,f,g = str(i[0]),str(i[1]),str(i[2]),str(i[3]),str(i[4]),str(i[5]),str(i[6])
             name = str(b)+" "+str(c)
@@ -1095,7 +1095,7 @@ def add_new_profile(request):
     }
     if request.method == 'POST' and request.FILES:
         profiles=request.FILES['profiles']
-        print (profiles)
+        #print (profiles)
         excel = xlrd.open_workbook(file_contents=profiles.read())
         sheet=excel.sheet_by_index(0)
         for i in range(6,sheet.nrows):
@@ -1110,8 +1110,8 @@ def add_new_profile(request):
                 title='Mr.'
             dob_tmp=sheet.cell(i,5).value
             dob_tmp=sheet.cell_value(rowx=i,colx=5)
-            print(dob_tmp)
-            print(type(dob_tmp))
+            #print(dob_tmp)
+            #print(type(dob_tmp))
             dob=datetime.datetime(*xlrd.xldate_as_tuple(dob_tmp,excel.datemode))
             fathers_name=str(sheet.cell(i,6).value)
             mothers_name=str(sheet.cell(i,7).value)
@@ -1186,7 +1186,7 @@ def add_new_profile(request):
             # print(specialization)
             # print(hall_no)
             sem=1
-            currs = Curriculum.objects.filter(batch=batch).filter(sem=sem)
+            currs = Curriculum.objects.select_related().filter(batch=batch).filter(sem=sem)
             for c in currs:
                 reg=Register.objects.create(
                     curr_id=c,
@@ -1214,11 +1214,11 @@ def get_faculty_list():
 
     """
     try:
-        f1 = HoldsDesignation.objects.filter(designation=Designation.objects.get(name = "Assistant Professor"))
-        f2 = HoldsDesignation.objects.filter(designation=Designation.objects.get(name = "Professor"))
-        f3 = HoldsDesignation.objects.filter(designation=Designation.objects.get(name = "Associate Professor"))
+        f1 = HoldsDesignation.objects.select_related().filter(designation=Designation.objects.get(name = "Assistant Professor"))
+        f2 = HoldsDesignation.objects.select_related().filter(designation=Designation.objects.get(name = "Professor"))
+        f3 = HoldsDesignation.objects.select_related().filter(designation=Designation.objects.get(name = "Associate Professor"))
     except Exception as e:
-        print(e)
+        #print(e)
         f1=f2=f3=""
         pass
     faculty = list(chain(f1,f2,f3))
@@ -1250,14 +1250,14 @@ def float_course(request):
         'tab_id' :['5','1']
     }
     if request.method == 'POST':
-        print("float_course")
-        print(request.POST)
+        #print("float_course")
+        #print(request.POST)
         try:
             request_batch = request.POST['batch']
             request_branch = request.POST['branch']
             request_programme = request.POST['programme']
         except Exception as e:
-            print(e)
+            #print(e)
             request_batch = ""
             request_branch = ""
             request_programme = ""
@@ -1274,14 +1274,14 @@ def float_course(request):
             else:
                 sem = sem[year-int(request_batch)]
             sem+=1
-            print(request_branch,end=" ")
-            print(request_batch,end=" ")
-            print(request_programme)
-            curriculum = Curriculum.objects.filter(branch = request_branch).filter(batch = request_batch).filter(programme= request_programme).filter(sem=sem).order_by('course_code')
+            #print(request_branch,end=" ")
+            #print(request_batch,end=" ")
+            #print(request_programme)
+            curriculum = Curriculum.objects.select_related().filter(branch = request_branch).filter(batch = request_batch).filter(programme= request_programme).filter(sem=sem).order_by('course_code')
         faculty_list = get_faculty_list()
         courses = Course.objects.all()
         course_type = Constants.COURSE_TYPE
-        print(curriculum)
+        #print(curriculum)
         context= {
             'courses': courses,
             'course_type': course_type,
@@ -1318,18 +1318,18 @@ def float_course_submit(request):
         'tab_id' :['5','1']
     }
     if request.method == "POST":
-        print("float_course_submit")
-        print(request.POST)
+        #print("float_course_submit")
+        #print(request.POST)
         i=1
-        print (str(i)+"_ccode")
+        #print (str(i)+"_ccode")
         while True:
             if str(i)+"_ccode" in request.POST:
                 if str(i)+"_fac" in request.POST:
                     if request.POST[str(i)+"_fac"] == "" :
                         print("No faculty")
                     else:
-                        print(request.POST[str(i)+"_fac"],end=" ")
-                        flot = Curriculum.objects.get(curriculum_id=request.POST[str(i)+"_ccode"])
+                        #print(request.POST[str(i)+"_fac"],end=" ")
+                        flot = Curriculum.objects.select_related().get(curriculum_id=request.POST[str(i)+"_ccode"])
                         flot.floated = True
                         flot.save()
                         for c,i in enumerate(request.POST.getlist(str(i)+'_fac')):
@@ -1347,9 +1347,9 @@ def float_course_submit(request):
                                     instructor_id=inst,
                                     chief_inst=False,
                                 )
-                print (request.POST[str(i)+"_ccode"])
+                #print (request.POST[str(i)+"_ccode"])
             else:
-                print("break")
+                #print("break")
                 break
             i+=1
     return render(request, "ais/ais.html", context)
@@ -1389,7 +1389,7 @@ def senator(request):
 #     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
 #     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
     temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
-    print (temp)
+    #print (temp)
 #     print (current_user)
 #     acadadmin = temp.working
 #     k = str(user_details).split()
