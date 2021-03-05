@@ -1,8 +1,8 @@
-from rest_framework import routers
+from django.conf.urls import url
 
-from .views import AuthViewSet
+from . import views
 
-router = routers.DefaultRouter(trailing_slash=False)
-router.register('', AuthViewSet, basename='api')
+urlpatterns = [
 
-urlpatterns = router.urls
+    url(r'^login/', views.login, name='login-api'),
+]
