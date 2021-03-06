@@ -156,8 +156,8 @@ def academic_procedures_student(request):
 
     current_user = get_object_or_404(User, username=request.user.username)
 
-    user_details = ExtraInfo.objects.get(id = request.user)
-    des = HoldsDesignation.objects.all().filter(user = request.user).first()
+    user_details = ExtraInfo.objects.select_related().get(id = request.user)
+    des = HoldsDesignation.objects.all().select_related().filter(user = request.user).first()
 
     if str(des.designation) == "student":
         obj = Student.objects.get(id = user_details.id)
@@ -276,13 +276,13 @@ def academic_procedures_student(request):
 
 
         try:
-            pre_registered_courses = InitialRegistrations.objects.all().filter(student_id = obj,semester = user_sem)
-            pre_registered_courses_show = InitialRegistrations.objects.all().filter(student_id = obj,semester = user_sem+1)
+            pre_registered_courses = InitialRegistrations.objects.all().select_related().filter(student_id = obj,semester = user_sem)
+            pre_registered_courses_show = InitialRegistrations.objects.all().select_related().filter(student_id = obj,semester = user_sem+1)
         except Exception as e:
             print(e)
             pre_registered_courses =  None
         try:
-            final_registered_courses = FinalRegistrations.objects.all().filter(student_id = obj,semester = user_sem)
+            final_registered_courses = FinalRegistrations.objects.all().select_related().filter(student_id = obj,semester = user_sem)
             add_courses_options = get_add_course_options(current_sem_branch_courses, currently_registered_courses)
             added_course_count = get_added_course_count(currently_registered_courses, final_registered_courses)
             added_courses_list = get_added_courses_list(currently_registered_courses, final_registered_courses)
@@ -309,14 +309,14 @@ def academic_procedures_student(request):
         result_announced = False
         for i in currently_registered_courses:
             try:
-                performance_obj = SemesterMarks.objects.all().filter(student_id = obj, curr_id = i).first()
+                performance_obj = SemesterMarks.objects.all().select_related().filter(student_id = obj, curr_id = i).first()
             except Exception as e:
                 print(e)
                 performance_obj = None
             performance_list.append(performance_obj)
         for i in currently_registered_courses:
             try:
-                result_announced_obj = MarkSubmissionCheck.objects.get(curr_id = i)
+                result_announced_obj = MarkSubmissionCheck.objects.select_related().get(curr_id = i)
                 if result_announced_obj:
                     print(result_announced_obj.announced)
                     if result_announced_obj.announced == True:
@@ -335,14 +335,14 @@ def academic_procedures_student(request):
         teaching_credit_registration_course = None
         if masters_flag:
             faculty_list = get_faculty_list()    
-            thesis_request_list = ThesisTopicProcess.objects.all().filter(student_id = obj)
+            thesis_request_list = ThesisTopicProcess.objects.all().select_related().filter(student_id = obj)
             pre_existing_thesis_flag = get_thesis_flag(obj)
             print('PG module')
             print(faculty_list)
             print(thesis_request_list)
         if phd_flag:
             pre_existing_thesis_flag = get_thesis_flag(obj)
-            teaching_credit_registration_course = Curriculum.objects.all().filter(batch = 2016, sem =6)
+            teaching_credit_registration_course = Curriculum.objects.all().select_related().filter(batch = 2016, sem =6)
 
         # Dues Check
 
@@ -350,7 +350,7 @@ def academic_procedures_student(request):
         if student_flag:
             try:
 
-                obj = Dues.objects.get(student_id=Student.objects.get(id=request.user.username))
+                obj = Dues.objects.select_related().get(student_id=Student.objects.get(id=request.user.username))
 
                 lib_d = obj.library_due
                 pc_d = obj.placement_cell_due
@@ -361,19 +361,20 @@ def academic_procedures_student(request):
                 print("entry in DB not found for student")
 
         tot_d = lib_d + acad_d + pc_d + hos_d + mess_d
-        obj = Student.objects.get(id=request.user.username)
+        obj = Student.objects.select_related().get(id=request.user.username)
         course_list = []
         for i in registers:
             course_list.append(i.curr_id)
         attendence = []
         for i in course_list:
 
-            instructors = Curriculum_Instructor.objects.filter(curriculum_id=i)
+            instructors = Curriculum_Instructor.objects.select_related().filter(curriculum_id=i)
             pr,ab=0,0
             for j in list(instructors):
 
-                presents = Student_attendance.objects.filter(student_id=obj,instructor_id=j, present=True)
-                absents = Student_attendance.objects.filter(student_id=obj,instructor_id=j, present=False)
+                presents = Student_attendance.objects.select_related().filter(student_id=obj,instructor_id=j, present=True)
+
+                absents = Student_attendance.objects.select_related().filter(student_id=obj,instructor_id=j, present=False)
                 pr += len(presents)
                 ab += len(absents)
             attendence.append((i,pr,pr+ab))
@@ -1036,7 +1037,7 @@ def phd_details(request):
 #
 #
 def get_student_register(id):
-    return Register.objects.all().filter(student_id = id)
+    return Register.objects.all().select_related().filter(student_id = id)
 
 def get_pre_registration_eligibility(current_date):
     try:
@@ -1146,7 +1147,7 @@ def pre_registration(request):
 
 
 def get_student_registrtion_check(obj, sem):
-    return StudentRegistrationCheck.objects.all().filter(student = obj, semester = sem).first()
+    return StudentRegistrationCheck.objects.all().select_related().filter(student = obj, semester = sem).first()
 
 
 def final_registration(request):
@@ -1339,7 +1340,7 @@ def add_thesis(request):
 
                 try:
                     curr_id = request.POST.get('curr_id')
-                    curr_id = Curriculum.objects.get(curriculum_id = curr_id)
+                    curr_id = Curriculum.objects.select_related().get(curriculum_id = curr_id)
                 except Exception as e:
                     print(e)
                     curr_id = None
@@ -1472,7 +1473,7 @@ def get_user_semester(roll_no, ug_flag, masters_flag, phd_flag):
 def get_branch_courses(roll_no, user_sem, branch):
     roll = str(roll_no)
     year = int(roll[:4])
-    courses = Curriculum.objects.all().filter(batch=(year))
+    courses = Curriculum.objects.all().select_related().filter(batch=(year))
     courses = courses.filter(sem = user_sem)
     courses = courses.filter(floated = True)
     course_list = []
@@ -1485,10 +1486,10 @@ def get_branch_courses(roll_no, user_sem, branch):
 
 
 def get_currently_registered_courses(id, user_sem):
-    obj = Register.objects.all().filter(student_id=id, semester=user_sem)
+    obj = Register.objects.all().select_related().filter(student_id=id, semester=user_sem)
     ans = []
     for i in obj:
-        course = Curriculum.objects.get(curriculum_id=i.curr_id.curriculum_id)
+        course = Curriculum.objects.select_related().get(curriculum_id=i.curr_id.curriculum_id)
         ans.append(course)
     return ans
 
@@ -1524,7 +1525,7 @@ def get_faculty_list():
 
 
 def get_thesis_flag(student):
-    obj = ThesisTopicProcess.objects.all().filter(student_id = student)
+    obj = ThesisTopicProcess.objects.all().select_related().filter(student_id = student)
     if(obj):
         return True
     else:
@@ -1608,7 +1609,7 @@ def acad_person(request):
         # print(context)
 
         submitted_course_list = []
-        obj_list = MarkSubmissionCheck.objects.all().filter(verified= False,submitted = True)
+        obj_list = MarkSubmissionCheck.objects.all().select_related().filter(verified= False,submitted = True)
         for i in obj_list:
             if int(i.curr_id.batch)+int(i.curr_id.sem)/2 == int(demo_date.year):
                 submitted_course_list.append(i.curr_id)
@@ -1682,7 +1683,7 @@ def acad_proced_global_context():
     # print(context)
 
     submitted_course_list = []
-    obj_list = MarkSubmissionCheck.objects.all().filter(verified= False,submitted = True)
+    obj_list = MarkSubmissionCheck.objects.all().select_related().filter(verified= False,submitted = True)
     for i in obj_list:
         if int(i.curr_id.batch)+int(i.curr_id.sem)/2 == int(demo_date.year):
             submitted_course_list.append(i.curr_id)
@@ -1735,11 +1736,11 @@ def announce_results(request):
     #     academics_module_notif(acad, obj.id.user, 'result_announced')
 
 
-    courses_list = Curriculum.objects.all().filter(batch = year[i-1])
+    courses_list = Curriculum.objects.all().select_related().filter(batch = year[i-1])
     print(courses_list)
     for obj in courses_list:
         try :
-            o = MarkSubmissionCheck.objects.get(curr_id = obj)
+            o = MarkSubmissionCheck.objects.select_related().get(curr_id = obj)
             o.announced = True
             o.save()
         except Exception as e:
@@ -1772,7 +1773,7 @@ def get_batch_grade_verification_data(list):
     batch_4_list_ME = []
 
     print(list[0])
-    c = Curriculum.objects.all().filter(batch = list[0]).filter(floated = True)
+    c = Curriculum.objects.all().select_related().filter(batch = list[0]).filter(floated = True)
     c_cse = c.filter(branch = 'CSE')
     c_me = c.filter(branch = 'ME')
     c_ece = c.filter(branch = 'ECE')
@@ -1784,7 +1785,7 @@ def get_batch_grade_verification_data(list):
         batch_1_list_ECE.append(i)
     for i in c:
         try:
-            obj_sem = MarkSubmissionCheck.objects.get(curr_id = i)
+            obj_sem = MarkSubmissionCheck.objects.select_related().get(curr_id = i)
             if obj_sem:
                 semester_marks.append(obj_sem)
             else:
@@ -1794,7 +1795,7 @@ def get_batch_grade_verification_data(list):
             continue
     print(c)
 
-    c = Curriculum.objects.all().filter(batch = list[1]).filter(floated = True)
+    c = Curriculum.objects.all().select_related().filter(batch = list[1]).filter(floated = True)
     c_cse = c.filter(branch = 'CSE')
     c_me = c.filter(branch = 'ME')
     c_ece = c.filter(branch = 'ECE')
@@ -1806,7 +1807,7 @@ def get_batch_grade_verification_data(list):
         batch_2_list_ECE.append(i)
     for i in c:
         try:
-            obj_sem = MarkSubmissionCheck.objects.get(curr_id = i)
+            obj_sem = MarkSubmissionCheck.objects.select_related().get(curr_id = i)
             if obj_sem:
                 semester_marks.append(obj_sem)
             else:
@@ -1816,7 +1817,7 @@ def get_batch_grade_verification_data(list):
             continue
     print(c)
 
-    c = Curriculum.objects.all().filter(batch = list[2]).filter(floated = True)
+    c = Curriculum.objects.all().select_related().filter(batch = list[2]).filter(floated = True)
     c_cse = c.filter(branch = 'CSE')
     c_me = c.filter(branch = 'ME')
     c_ece = c.filter(branch = 'ECE')
@@ -1828,7 +1829,7 @@ def get_batch_grade_verification_data(list):
         batch_3_list_ECE.append(i)
     for i in c:
         try:
-            obj_sem = MarkSubmissionCheck.objects.get(curr_id = i)
+            obj_sem = MarkSubmissionCheck.objects.select_related().get(curr_id = i)
             if obj_sem:
                 semester_marks.append(obj_sem)
             else:
@@ -1838,7 +1839,7 @@ def get_batch_grade_verification_data(list):
             continue
     print(c)
 
-    c = Curriculum.objects.all().filter(batch = list[3]).filter(floated = True)
+    c = Curriculum.objects.all().select_related().filter(batch = list[3]).filter(floated = True)
     c_cse = c.filter(branch = 'CSE')
     c_me = c.filter(branch = 'ME')
     c_ece = c.filter(branch = 'ECE')
@@ -1850,7 +1851,7 @@ def get_batch_grade_verification_data(list):
         batch_4_list_ECE.append(i)
     for i in c:
         try:
-            obj_sem = MarkSubmissionCheck.objects.get(curr_id = i)
+            obj_sem = MarkSubmissionCheck.objects.select_related().get(curr_id = i)
             if obj_sem:
                 semester_marks.append(obj_sem)
             else:
@@ -2094,11 +2095,11 @@ def teaching_credit_register(request) :
             student_id = ExtraInfo.objects.all().filter(user=student_id).first()
             student_id = Student.objects.all().filter(id=student_id.id).first()
 
-            course1 = Curriculum.objects.get(curriculum_id = request.POST.get('course1'))
+            course1 = Curriculum.objects.select_related().get(curriculum_id = request.POST.get('course1'))
             print(course1.course_code)
-            course2 = Curriculum.objects.get(curriculum_id = request.POST.get('course2'))
-            course3 = Curriculum.objects.get(curriculum_id = request.POST.get('course3'))
-            course4 = Curriculum.objects.get(curriculum_id = request.POST.get('course4'))
+            course2 = Curriculum.objects.select_related().get(curriculum_id = request.POST.get('course2'))
+            course3 = Curriculum.objects.select_related().get(curriculum_id = request.POST.get('course3'))
+            course4 = Curriculum.objects.select_related().get(curriculum_id = request.POST.get('course4'))
 
             p = TeachingCreditRegistration(
                 student_id = student_id,
@@ -2123,7 +2124,7 @@ def teaching_credit_register(request) :
 def course_marks_data(request):
     try:
         curriculum_id = request.POST.get('curriculum_id')
-        course = Curriculum.objects.get(curriculum_id = curriculum_id)
+        course = Curriculum.objects.select_related().get(curriculum_id = curriculum_id)
         student_list = Register.objects.all().filter(curr_id = course)
         # print("shurru")
         for obj in student_list:
@@ -2186,7 +2187,7 @@ def submit_marks(request):
         values_length = len(request.POST.getlist('user'))
 
 
-        curr_id = Curriculum.objects.get(curriculum_id = request.POST.get('curriculum_id'))
+        curr_id = Curriculum.objects.select_related().get(curriculum_id = request.POST.get('curriculum_id'))
         print(curr_id)
         print("submit")
         print(request.POST.get('final_submit'))
@@ -2231,7 +2232,7 @@ def submit_marks(request):
                 
             if request.POST.get('final_submit') == "True":
                 try:
-                    o_sub = MarkSubmissionCheck.objects.get(curr_id = curr_id)
+                    o_sub = MarkSubmissionCheck.objects.select_related().get(curr_id = curr_id)
                 except Exception as e:
                     print(e)
                     o_sub = None
@@ -2247,7 +2248,7 @@ def submit_marks(request):
                     o_sub_create.save()
             if request.POST.get('final_submit') == "False":
                 try:
-                    sub_obj = MarkSubmissionCheck.objects.get(curr_id = curr_id)
+                    sub_obj = MarkSubmissionCheck.objects.select_related().get(curr_id = curr_id)
                 except Exception as e:
                     print(e)
                     sub_obj = None
@@ -2273,7 +2274,7 @@ def submit_marks(request):
 def verify_course_marks_data(request):
     try:
         curriculum_id = request.POST.get('curriculum_id')
-        course = Curriculum.objects.get(curriculum_id = curriculum_id)
+        course = Curriculum.objects.select_related().get(curriculum_id = curriculum_id)
 
 
         enrolled_student_list = SemesterMarks.objects.all().filter(curr_id = course)
@@ -2315,7 +2316,7 @@ def verify_marks(request):
         verified_marks_students_curr = None
 
         user = request.POST.getlist('user')
-        curr_id = Curriculum.objects.get(curriculum_id = request.POST.get('curriculum_id'))
+        curr_id = Curriculum.objects.select_related().get(curriculum_id = request.POST.get('curriculum_id'))
 
         grade = request.POST.getlist('grade')
 
@@ -2337,7 +2338,7 @@ def verify_marks(request):
         verified_marks_students_curr = curr_id
 
 
-        obj = MarkSubmissionCheck.objects.get(curr_id = curr_id)
+        obj = MarkSubmissionCheck.objects.select_related().get(curr_id = curr_id)
         obj.verified = True
         obj.save()
         return HttpResponseRedirect('/aims/')
@@ -2408,8 +2409,8 @@ def generate_result_pdf(request):
 
 
 
-    curriculum_obj = Curriculum.objects.all().filter(batch = int(batch)).filter(branch = str(branch)).filter(programme = programme)
-    curriculum_obj_common = Curriculum.objects.all().filter(batch = int(batch)).filter(branch = 'Common').filter(programme = programme)
+    curriculum_obj = Curriculum.objects.all().select_related().filter(batch = int(batch)).filter(branch = str(branch)).filter(programme = programme)
+    curriculum_obj_common = Curriculum.objects.all().select_related().filter(batch = int(batch)).filter(branch = 'Common').filter(programme = programme)
 
     for i in curriculum_obj:
         curriculum_list.append(i)
@@ -2486,8 +2487,8 @@ def generate_grade_sheet_pdf(request):
 
 
 
-    curriculum_obj = Curriculum.objects.all().filter(batch = int(batch)).filter(branch = str(branch)).filter(programme = programme)
-    curriculum_obj_common = Curriculum.objects.all().filter(batch = int(batch)).filter(branch = 'Common').filter(programme = programme)
+    curriculum_obj = Curriculum.objects.all().select_related().filter(batch = int(batch)).filter(branch = str(branch)).filter(programme = programme)
+    curriculum_obj_common = Curriculum.objects.all().select_related().filter(batch = int(batch)).filter(branch = 'Common').filter(programme = programme)
 
     for i in curriculum_obj:
         curriculum_list.append(i)
@@ -2629,7 +2630,7 @@ def manual_grade_submission(request):
         print(branch)
         print(programme)
 
-        curriculum_obj = Curriculum.objects.all().filter(course_code = course_code).filter(batch = batch).filter(programme = programme).first()
+        curriculum_obj = Curriculum.objects.all().select_related().filter(course_code = course_code).filter(batch = batch).filter(programme = programme).first()
         
         if not curriculum_obj:
             course_obj = Course.objects.all().filter(course_name = course_name).first()
@@ -2651,9 +2652,9 @@ def manual_grade_submission(request):
                 sem = sem,
                 floated = True)
             curriculum_obj_create.save()
-        curriculum_obj = Curriculum.objects.all().filter(course_code = course_code).filter(batch = batch).filter(programme = programme).first()
+        curriculum_obj = Curriculum.objects.all().select_related().filter(course_code = course_code).filter(batch = batch).filter(programme = programme).first()
 
-        marks_check_obj = MarkSubmissionCheck.objects.all().filter(curr_id = curriculum_obj).first()
+        marks_check_obj = MarkSubmissionCheck.objects.select_related().all().filter(curr_id = curriculum_obj).first()
         if marks_check_obj :
             marks_check_obj.submitted = True
             marks_check_obj.verified = True
