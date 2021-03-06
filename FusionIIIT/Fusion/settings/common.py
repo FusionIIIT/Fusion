@@ -137,6 +137,8 @@ INSTALLED_APPS = [
     'markdown_deux',
     'django_cleanup.apps.CleanupConfig',
     'django_unused_media',
+    'rest_framework',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
