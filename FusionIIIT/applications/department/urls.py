@@ -6,5 +6,5 @@ app_name = 'dep'
 
 urlpatterns = [
 
-    url(r'^dep/$', views.hod, name='dep')
+    url(r'^$', views.hod, name='dep')
     ]
