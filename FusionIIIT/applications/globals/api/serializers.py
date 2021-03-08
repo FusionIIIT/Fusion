@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
 from rest_framework import serializers
+from notifications.models import Notification
 
 User = get_user_model()
 
@@ -19,6 +20,13 @@ class AuthUserSerializer(serializers.ModelSerializer):
     def get_auth_token(self, obj):
         token, _ = Token.objects.get_or_create(user=obj)
         return token.key
+
+class NotificationSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model=Notification
+        fields=('__all__')
+
 
 class EmptySerializer(serializers.Serializer):
     pass
