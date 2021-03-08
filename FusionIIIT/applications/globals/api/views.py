@@ -1,15 +1,16 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
+from applications.globals.models import (HoldsDesignation,Designation)
+from applications.gymkhana.api.views import coordinator_club
+from django.shortcuts import get_object_or_404
+
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
-from applications.globals.models import (HoldsDesignation,Designation)
-from django.shortcuts import get_object_or_404
-from applications.gymkhana.views import coordinator_club
-
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes,authentication_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+
 
 from . import serializers
 from .utils import get_and_authenticate_user
@@ -31,26 +32,29 @@ def login(request):
     return Response(data=resp, status=status.HTTP_200_OK)
 
 
-@api_view(['POST'])
+@api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def dashboard(request):
     user=request.user
-    notifs=request.user.notifications.all()
-    name = request.user.first_name +"_"+ request.user.last_name
-    desig = list(HoldsDesignation.objects.all().filter(working = request.user).values_list('designation'))
-    b = [i for sub in desig for i in sub]
-    roll_ = []
-    for i in b :
-        name_ = get_object_or_404(Designation, id = i)
-        roll_.append(str(name_.name))
     
-    notifsData=serializers.NotificationSerializer(notifs,many=True).data
+    name = request.user.first_name +"_"+ request.user.last_name
 
-    context={
-        'notifications':notifsData,
-        'Curr_desig' : roll_,
-        'club_details' : coordinator_club(request)
+    designation_list = list(HoldsDesignation.objects.all().filter(working = request.user).values_list('designation'))
+    designation_id = [designation for designations in designation_list for designation in designations]
+    designation_info = []
+    for id in designation_id :
+        name_ = get_object_or_404(Designation, id = id)
+        designation_info.append(str(name_.name))
+    
+    notifications=serializers.NotificationSerializer(request.user.notifications.all(),many=True).data
+    club_details= coordinator_club(request)
+
+    resp={
+        'notifications':notifications,
+        'desgination_info' :  designation_info,
+        'club_details' : club_details
     }
 
-    return Response(data=context,status=status.HTTP_200_OK)
+    return Response(data=resp,status=status.HTTP_200_OK)
+
