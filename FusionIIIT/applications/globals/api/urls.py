@@ -6,4 +6,5 @@ urlpatterns = [
 
     url(r'^auth/login/', views.login, name='login-api'),
     url(r'^auth/logout/', views.logout, name='logout-api'),
+    url(r'^dashboard/',views.dashboard,name='dashboard-api'),
 ]
