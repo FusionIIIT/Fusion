@@ -1,5 +1,202 @@
 {% load static %}
 
-{% block ME_Dep %}
-    hello this is me department
+{% block CSE_Dep %}
+
+    <h1><center> Welcome to ME Department </center></h1>
+
+    {% comment %} tabs ui {% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="about-us">
+            About Us
+        </a>
+        
+        <a class="item" data-tab="facilities">
+            Facilities
+        </a>
+        
+        <a class="item" data-tab="faculty">
+            Faculty
+        </a>
+
+        <a class="item" data-tab="students">
+            Students
+        </a>
+    </div>
+
+
+    {% comment %} active tab content {% endcomment %}
+    <div class="ui active tab" data-tab="about-us">
+        <div class="ui vertical segment">
+            <div class="content">
+                <div class="description">
+                    <span>
+                        <h3>
+                            Our Mission :
+                        </h3>
+                        <p>
+                            The primary focus of our pedagogy is to impart technical know-how to students, promote their problem solving and innovation skills and make them abreast with new technologies. The department offers a wide spectrum of optional courses to the students to pursue their interest. The course contents are periodically updated to keep them inline with the global developments. Undergraduate students are encouraged for hands-on-training, in the form of course projects and participate in various sponsored research projects.
+                        </p>
+                        <h3>
+                            Our Vision :
+                        </h3>
+                        <p>
+                            The vision of the mechanical Engineering Department is to recognize itself as renowned department in the field of Research and technical education in Mechanical Engineering and strives to carry out the superior level of research based on the quality, innovation and excellence; with the help of its stakeholders viz. the students, research scholars, faculty members, the support staff and the alumni.
+                        </p>
+                    </span>
+                    <div class="ui divider"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% comment %} tabs content facilities {% endcomment %}
+    <div class="ui tab" data-tab="facilities">
+        <div class="ui vertical segment">
+            <div class="content">
+                <div class="description">
+                    <span>
+                        <h3>
+                            Central Library :
+                        </h3>
+                        <p>
+                            Institute library has e-resources through INDEST, Science Direct, IEEE, ACM, Springger Link, Nature and ASME. The Institute also has access to various online research journals & articles like following resources SIAm, AMS, ACS, Kluwer, APS, Palgrave, INFORMS, Rev.of Scientific Instruments, Appl.Physics Letters and the search engine Scopus. Total number of books in the Institute library by the year 2009-10 are approximately 6742.
+                        </p>
+                        <p>
+                            High Performance Computing Labortory : Specification of Parallel Cluster (for Central Computing Facility)- JS22 Blade No.3, 16GB(2*8GB) DDR2 533 Mhz DiMMs, IBM 146GB SAS 10K SFF HDD, IBM blade center JS22 4-core 4.0 Ghz Processor and WiFi Campus etc.
+                        </p>
+                        <h3>
+                            Lab Infrastructure :
+                        </h3>
+                        <ol>
+                            <li>
+                                <p>
+                                    <b>Health Monitoring, Measurement and Instrumentation Lab:</b> 
+                                </p>
+                            </li>
+                            <br>
+                            <li>
+                                <p>
+                                    <b>Kinematics and Dynamics Lab :</b> 
+                                </p>
+                            </li>
+                            <br>
+                            <li>
+                                <p>
+                                    <b>PG Research Lab :</b>
+                                 </p>
+                            </li>
+                            <br>
+                            <li>
+                                <p>
+                                    <b>Fluid Mechaniccs Lab :</b> 
+                                </p>
+                            </li>
+                            <br>
+                            <li>
+                                <p>
+                                    <b>Automobile Lab :</b> 
+                                </p>
+                            </li>
+                            <br>
+                            <li>
+                                <p>
+                                    <b>IT Workshop/Computational Lab:</b> 
+                                </p>
+                            </li>
+                            <br>
+                            <li>
+                                <p>
+                                    <b>Material Characterization Lab :</b> 
+                                </p>
+                            </li>
+                            <br>
+                            <li>
+                                <p>
+                                    <b>Machine Dynamics and Vibrations Lab :</b> 
+                               </p>
+                            </li>
+                            <br>
+                            <li>
+                                <p>
+                                    <b>Mechatronics Lab:</b> 
+                              </p>
+                            </li>
+                            <br>
+                            <li>
+                                <p>
+                                    <b>Robotics Lab:</b> 
+                                 </p>
+                            </li>
+                            <br>
+                            <li>
+                                <p>
+                                    <b>Biomedical Engineering and Technology Lab:</b> 
+                                </p>
+                            </li>
+                            <br>
+                            <li>
+                                <p>
+                                    <b>CFD Lab :</b> 
+                                 </p>
+                            </li>
+                            <br>
+                            <li>
+                                <p>
+                                    <b>Dieless Manufacturing Center:</b> 
+                               </p>
+                            </li>
+                            <br>
+                            <li>
+                                <p>
+                                    <b>Manufacturing Innovation Center:</b> 
+                                </p>
+                            </li>
+                        </ol>
+                    </span>
+                    <div class="ui divider"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% comment %} tabs content faculty {% endcomment %}
+    <div class="ui tab" data-tab="faculty">
+        <div class="ui vertical segment">
+            <div class="content">
+                <div class="description">
+                    <span>
+                        <p>
+                            The primary focus of our pedagogy is to impart technical know-how to students, promote their problem solving and innovation skills and make them abreast with new technologies. The department offers a wide spectrum of optional courses to the students to pursue their interest. The course contents are periodically updated to keep them inline with the global developments. Undergraduate students are encouraged for hands-on-training, in the form of course projects and participate in various sponsored research projects.
+                        </p>
+                    
+                        <p>
+                            The vision of the mechanical Engineering Department is to recognize itself as renowned department in the field of Research and technical education in Mechanical Engineering and strives to carry out the superior level of research based on the quality, innovation and excellence; with the help of its stakeholders viz. the students, research scholars, faculty members, the support staff and the alumni.
+                        </p>
+                    </span>
+                    <div class="ui divider"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% comment %} tabs content students {% endcomment %}
+    <div class="ui tab" data-tab="students">
+        <div class="ui vertical segment">
+            <div class="content">
+                <div class="description">
+                    <span>
+                        
+                        <p>
+                            The primary focus of our pedagogy is to impart technical know-how to students, promote their problem solving and innovation skills and make them abreast with new technologies. The department offers a wide spectrum of optional courses to the students to pursue their interest. The course contents are periodically updated to keep them inline with the global developments. Undergraduate students are encouraged for hands-on-training, in the form of course projects and participate in various sponsored research projects.
+                        </p>
+                        <p>
+                            The vision of the mechanical Engineering Department is to recognize itself as renowned department in the field of Research and technical education in Mechanical Engineering and strives to carry out the superior level of research based on the quality, innovation and excellence; with the help of its stakeholders viz. the students, research scholars, faculty members, the support staff and the alumni.
+                        </p>
+                    </span>
+                    <div class="ui divider"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 {% endblock %}
