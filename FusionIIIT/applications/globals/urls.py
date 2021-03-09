@@ -21,5 +21,5 @@ urlpatterns = [
     url(r'^support_issue/(?P<id>\d+)/$', views.support_issue, name="support_issue"),
     url(r'^logout/$', views.logout_view, name="logout_view"),
     # API urls
-    url(r'^api/auth/', include('applications.globals.api.urls')),
+    url(r'^api/', include('applications.globals.api.urls')),
 ]

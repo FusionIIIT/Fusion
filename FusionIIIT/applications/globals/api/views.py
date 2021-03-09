@@ -23,3 +23,11 @@ def login(request):
         'token' : data['auth_token']
     }
     return Response(data=resp, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+def logout(request):
+    request.user.auth_token.delete()
+    resp = {
+        'message' : 'User logged out successfully'
+    }
+    return Response(data=resp, status=status.HTTP_200_OK)
