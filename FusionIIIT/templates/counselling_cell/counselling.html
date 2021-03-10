@@ -35,7 +35,7 @@ Counselling cell
         <div class="ui huge fluid vertical pointing menu"
              style="max-width: 320px;">
             {% block menucard %}
-                {% include 'counselling_cell/menucard.html' %}
+                {% include 'counselling_cell/menu_card.html' %}
             {% endblock %}
 
         </div>
@@ -53,8 +53,8 @@ Counselling cell
     <div class="eight wide column">
         {% comment %}The ... start here!{% endcomment %}
         <div class="ui tab segment" data-tab="first">
-            {% block feedback %}
-            {% include 'messModule/feedback.html' %}
+            {% block faq %}
+            {% include 'counselling_cell/faq.html' %}
             {% endblock %}
         </div>
         {% comment %}The ... end here!{% endcomment %}

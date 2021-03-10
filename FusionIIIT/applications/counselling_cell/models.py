@@ -53,7 +53,6 @@ class CounsellingInfo(models.Model):
     def __str__(self):
         return f"{self.student_id} - {self.student_position}"
     
-
 class Issues(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     issue_category = models.CharField(max_length=20, choices=ISSUE_CATEGORY,default="category1")
