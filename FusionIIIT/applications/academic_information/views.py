@@ -46,9 +46,9 @@ def user_check(request):
     """
     try:
         current_user = get_object_or_404(User, username=request.user.username)
-        user_details = ExtraInfo.objects.all().filter(user=current_user).first()
+        user_details = ExtraInfo.objects.all().select_related().filter(user=current_user).first()
         desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
-        temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
+        temp = HoldsDesignation.objects.all().select_related().filter(designation = desig_id).first()
         acadadmin = temp.working
         k = str(user_details).split()
         final_user = k[2]
@@ -305,6 +305,7 @@ def add_curriculum(request):
         #print(request.POST)
         #print(type(request.POST))
         i=0
+        new_curr=[]
         while True:
             if "semester_"+str(i) in request.POST:
                 try:
@@ -335,7 +336,7 @@ def add_curriculum(request):
                     course_type=""
                     pass
                 #print(programme,batch,branch,sem,course_code,course_id,credits,optional,course_type)
-                ins=Curriculum.objects.create(
+                ins=Curriculum(
                     programme=programme,
                     batch=batch,
                     branch=branch,
@@ -346,10 +347,11 @@ def add_curriculum(request):
                     optional=optional,
                     course_type=course_type,
                 )
+                new_curr.append(ins)
             else:
-                #print("Khatam")
                 break
             i+=1
+        Curriculum.objects.bulk_create(new_curr)
         curriculum = Curriculum.objects.select.related().filter(branch = branch).filter(batch = batch).filter(programme= programme)
         courses = Course.objects.all()
         course_type = Constants.COURSE_TYPE
@@ -396,7 +398,6 @@ def edit_curriculum(request):
             'tab_id' :['3','1']
         }
     if request.method == 'POST':
-        #print("edit_curriculum")
         #print(request.POST)
         try:
             id=request.POST['id']
@@ -475,7 +476,6 @@ def delete_curriculum(request):
             'tab_id' :['3','1']
         }
     if request.method == "POST":
-        #print("delete_curriculum")
         #print (request.POST)
         dele = Curriculum.objects.select_related().filter(curriculum_id=request.POST['id'])
         dele.delete()
@@ -523,6 +523,7 @@ def next_curriculum(request):
         curriculum = Curriculum.objects.all().select_related().filter(batch = batch).filter(programme = programme)
         #print(curriculum)
         if request.POST['option'] == '1':
+            new_curriculum=[]
             for i in curriculum:
                 # print(i.programme,end=" ")
                 # print(i.batch+1,end=" ")
@@ -533,7 +534,7 @@ def next_curriculum(request):
                 # print(i.credits,end=" ")
                 # print(i.optional,end=" ")
                 # print(i.course_type)
-                ins=Curriculum.objects.create(
+                ins=Curriculum(
                     programme=i.programme,
                     batch=i.batch+1,
                     branch=i.branch,
@@ -544,10 +545,14 @@ def next_curriculum(request):
                     optional=i.optional,
                     course_type=i.course_type,
                 )
+                new_curriculum.append(ins)
+            Curriculum.objects.bulk_create(new_curriculum)
+            
 
         elif request.POST['option'] == '2':
+             new_curriculum=[]
             for i in curriculum:
-                ins=Curriculum.objects.create(
+                ins=Curriculum(
                     programme=i.programme,
                     batch=i.batch+1,
                     branch=i.branch,
@@ -558,6 +563,8 @@ def next_curriculum(request):
                     optional=i.optional,
                     course_type=i.course_type,
                 )
+                new_curriculum.append(ins)
+            Curriculum.objects.bulk_create(new_curriculum)
             batch=batch+1
             curriculum = Curriculum.objects.all().select_related().filter(batch = batch).filter(programme = programme)
             context= {
@@ -639,7 +646,6 @@ def add_exam_timetable(request):
         #print(request.FILES)
         examTtForm = ExamTimetableForm(request.POST, request.FILES)
         if examTtForm.is_valid():
-            #print("kkk")
             examTtForm.save()
         return render(request, "ais/ais.html", context)
     else:
@@ -737,7 +743,7 @@ def add_calendar(request):
             from_date=from_date,
             to_date=to_date,
             description=desc)
-        print(c)
+        # print(c)
         c.save()
         HttpResponse("Calendar Added")
 
@@ -969,7 +975,8 @@ def generate_preregistration_report(request):
         sem+=1
         sem=6
         #print(sem)
-        obj = InitialRegistrations.objects.select_related().filter(batch=batch).filter(semester=sem)
+        obj = InitialRegistrations.objects.select_related('curr_id','curr_id__course_id','student_id','student_id__id','student_id__id__user','student_id__id__department'
+).filter(batch=batch).filter(semester=sem)
         #print(obj)
         data = []
         m = 1
@@ -1187,13 +1194,16 @@ def add_new_profile(request):
             # print(hall_no)
             sem=1
             currs = Curriculum.objects.select_related().filter(batch=batch).filter(sem=sem)
+            new_reg=[]
             for c in currs:
-                reg=Register.objects.create(
+                reg=Register(
                     curr_id=c,
                     year=batch,
                     semester=1,
-                    student_id=stud_data,
+                    student_id=stud_data
                 )
+                new_reg.append(reg)
+            Register.objects.bulk_create(new_reg)
 
     else:
         return render(request, "ais/ais.html", context)
@@ -1266,7 +1276,7 @@ def float_course(request):
             curriculum = None   #Curriculum.objects.all()
         else:
             sem = sem_for_generate_sheet()
-            print(sem)
+            # print(sem)
             now = datetime.datetime.now()
             year = int(now.year)
             if sem[0] == 2:
@@ -1318,7 +1328,6 @@ def float_course_submit(request):
         'tab_id' :['5','1']
     }
     if request.method == "POST":
-        #print("float_course_submit")
         #print(request.POST)
         i=1
         #print (str(i)+"_ccode")
@@ -1326,30 +1335,33 @@ def float_course_submit(request):
             if str(i)+"_ccode" in request.POST:
                 if str(i)+"_fac" in request.POST:
                     if request.POST[str(i)+"_fac"] == "" :
-                        print("No faculty")
+                        # print("No faculty")
                     else:
                         #print(request.POST[str(i)+"_fac"],end=" ")
                         flot = Curriculum.objects.select_related().get(curriculum_id=request.POST[str(i)+"_ccode"])
                         flot.floated = True
                         flot.save()
+                        new_curr_inst=[]
                         for c,i in enumerate(request.POST.getlist(str(i)+'_fac')):
                             inst = get_object_or_404(User, username = i)
-                            inst = ExtraInfo.objects.get(user=inst)
+                            inst = ExtraInfo.objects.select_related().get(user=inst)
                             if c==0:
-                                Curriculum_Instructor.objects.create(
+                                ins=Curriculum_Instructor(
                                     curriculum_id=flot,
                                     instructor_id=inst,
                                     chief_inst=True,
                                 )
+                                new_curr_inst.append(ins)
                             else:
-                                Curriculum_Instructor.objects.create(
+                                ins=Curriculum_Instructor(
                                     curriculum_id=flot,
                                     instructor_id=inst,
                                     chief_inst=False,
                                 )
+                                new_curr_inst.append(ins)
+                        Curriculum_Instructor.objects.bulk_create(new_curr_inst)
                 #print (request.POST[str(i)+"_ccode"])
             else:
-                #print("break")
                 break
             i+=1
     return render(request, "ais/ais.html", context)
@@ -1388,7 +1400,7 @@ def senator(request):
 #     current_user = get_object_or_404(User, username=request.user.username)
 #     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
 #     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
-    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
+    temp = HoldsDesignation.objects.all().select_related().filter(designation = desig_id).first()
     #print (temp)
 #     print (current_user)
 #     acadadmin = temp.working
@@ -1547,7 +1559,7 @@ def addMinute(request):
 #     current_user = get_object_or_404(User, username=request.user.username)
 #     user_details = ExtraInfo.objects.all().filter(user=current_user).first()
 #     desig_id = Designation.objects.all().filter(name='Upper Division Clerk')
-    temp = HoldsDesignation.objects.all().filter(designation = desig_id).first()
+    temp = HoldsDesignation.objects.all().select_related().filter(designation = desig_id).first()
 #     print (temp)
 #     print (current_user)
 #     acadadmin = temp.working
