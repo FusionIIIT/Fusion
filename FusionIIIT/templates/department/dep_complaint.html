@@ -1,0 +1,118 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+
+{% block title %}
+    Department - File Complaint
+{% endblock %}
+
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %}    
+
+    {% comment %}The grid starts here!{% endcomment %}
+    <div class="ui stackable doubling grid">
+
+        {% comment %}The left-margin segment!{% endcomment %}
+        <div class="column"></div>
+
+        {% comment %}
+            The left-rail segment starts here!
+        {% endcomment %}
+        <div class="three wide column">
+
+            {% comment %}The user image card starts here!{% endcomment %}
+            {% block usercard %}
+                {% include 'globals/usercard.html' %}
+            {% endblock %}
+            {% comment %}The user image card ends here!{% endcomment %}
+            
+            
+
+            <div class="ui divider"></div>
+
+                {% comment %}The Tab-Menu starts here!{% endcomment %}
+                <div class="ui huge fluid vertical pointing menu"
+                    style="max-width: 320px;">
+
+                    <a class="active item" data-tab="first" id="complaint">
+                        File a Complaint
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    <a class="item" data-tab="second" id="complaint_status">
+                        Complaint Status
+                        <i class="right floated chevron right icon"></i>
+                    </a>
+
+                    
+                </div>
+                {% comment %}The Tab-Menu ends here!{% endcomment %}
+
+        </div>
+            {% comment %}
+                The left-rail segment ends here!
+            {% endcomment %}
+
+        
+
+            {% comment %}
+                The central-rail segment starts here!
+            {% endcomment %}
+            <div class="eight wide column">
+
+                
+                {% comment %}File a complaint section!{% endcomment %}
+                <div class="ui active tab segment" data-tab="first">
+                    {% block file-complaint %}
+                        {% include "department/fileComplaint.html" %}
+                    {% endblock %}
+                </div>
+                {% comment %}File a complaint section!{% endcomment %}
+
+
+
+                {% comment %}status of complaint!{% endcomment %}
+                <div class="ui tab segment" data-tab="second">
+                    {% block seeStatus %}
+                        {% include "department/seeComplaintStatus.html" %}
+                    {% endblock %}
+                </div>
+                {% comment %}status of complaint!{% endcomment %}
+
+            </div>
+            {% comment %}The central-rail segment ends here!{% endcomment %}
+            <div class="three wide column">
+                <div class="row">
+                    <div class="ui styled accordion">
+                        <a class="active item" href="{% url 'dep:file_complaint' %}">
+                            <!--   <button style="border: none; float: right; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                            <button style="border: none; float: right; display: block;" class="ui inverted right floated small red button">
+                                Complaint to Department
+                            </button>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% comment %}The right-rail segment starts here!{% endcomment %}
+            <div class="three wide column">
+                <div class="row">
+                    {% comment %}
+                        TODO: the right rail!
+                    {% endcomment %}
+                </div>
+            </div>
+            {% comment %}The right-rail segment ends here!{% endcomment %}
+            
+            {% comment %}The right-margin segment!{% endcomment %}
+            <div class="column"></div>
+
+
+    </div>
+        {% comment %}The grid ends here!{% endcomment %}
+
+
+{% include 'department/alert.html' %}
+{% endblock %}

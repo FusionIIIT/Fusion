@@ -1,0 +1,134 @@
+{% load static %}
+
+{% block file-complaint %}
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="complaint">
+            Complaint
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="complaint">
+        <div class="ui vertical segment">
+            <form class="ui form" style="padding-left: 24px; padding-right: 24px;">
+                <div class="ui header">
+                    Add a new Complaint:
+                </div>
+
+                <br>
+
+                <div class="fields">
+
+                    <div class="eight wide field">
+                        <label>Complaint for Department</label>
+                        <div class="ui fluid search selection dropdown">
+                            <input name="Department" type="hidden">
+                            <i class="dropdown icon"></i>
+
+                            <div class="default text">Select Department</div>
+
+                            <div class="menu">
+                                <div class="item" data-value="type1">
+                                    CSE Department
+                                </div>
+
+                                <div class="item" data-value="type2">
+                                    ECE Department
+                                </div>
+
+                                <div class="item" data-value="type3">
+                                    ME Department
+                                </div>
+
+                                <div class="item" data-value="type4">
+                                    SM Department
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="eight wide field">
+                        <label>Location</label>
+                        <div class="ui fluid search selection dropdown">
+                            <input name="Location" type="hidden">
+                            <i class="dropdown icon"></i>
+
+                            <div class="default text">Select Location</div>
+
+                            <div class="menu">
+                                <div class="item" data-value="location1">
+                                    CC Lab 1
+                                </div>
+
+                                <div class="item" data-value="location2">
+                                    CC Lab 2
+                                </div>
+
+                                <div class="item" data-value="location3">
+                                    Other CSE Lab
+                                </div>
+
+                                <div class="item" data-value="location4">
+                                    Basic Electronics Lab
+                                </div>
+
+                                <div class="item" data-value="location5">
+                                    Circuits and Innovation Lab
+                                </div>
+
+                                <div class="item" data-value="location6">
+                                    Other ECE Lab
+                                </div>
+
+                                <div class="item" data-value="location7">
+                                    AutoMobile Lab
+                                </div>
+
+                                <div class="item" data-value="location8">
+                                    Robotics Lab
+                                </div>
+
+                                <div class="item" data-value="location9">
+                                    Mechatronics Lab
+                                </div>
+
+                                <div class="item" data-value="location10">
+                                    Other Me Lab
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>Specific Location</label>
+                    <div class="ui large input">
+                        <input placeholder="Specific Location">
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>Complaint Details</label>
+                    <textarea placeholder="Complaint Details" rows="2"></textarea>
+                </div>
+
+                <br>
+
+                <button class="ui large primary button right floated">
+                    Submit
+                </button>
+
+                <br>
+                <br>
+
+            </form>
+
+            <br>
+            <div class="ui divider"></div>
+        </div>
+    </div>
+
+
+{% endblock %}
