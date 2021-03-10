@@ -32,3 +32,8 @@ def admin(request):
 
 def hod(request):
     return render(request,"department/index.html")
+
+def file_complaint(request):
+    #return render(request, "department/dep_complaint.html")
+    return render(request, 'department/dep_complaint.html')
+    
