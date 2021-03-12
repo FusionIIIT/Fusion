@@ -45,13 +45,13 @@ def profile(request, username=None):
     chairs = serializers.EmpSessionChairSerializer(emp_session_chair.objects.filter(pf_no=pf).order_by('-date_entry'),many=True).data
     keynotes = serializers.EmpKeynoteAddressSerializer(emp_keynote_address.objects.filter(pf_no=pf).order_by('-date_entry'),many=True).data
     events = serializers.EmpEventOrganizedSerializer(emp_event_organized.objects.filter(pf_no=pf).order_by('-start_date'),many=True).data
-    y=[]
+    year_range = []
     for r in range(1995, (datetime.datetime.now().year + 1)):
-        y.append(r)
+        year_range.append(r)
     try:
-        pers = serializers.FacultyAboutSerializer(user.faculty_about).data
+        faculty_about = serializers.FacultyAboutSerializer(user.faculty_about).data
     except:
-        pers = None
+        faculty_about = None
 
     holds_desig = user.current_designation.all()
     flag_rspc = 0
@@ -61,29 +61,29 @@ def profile(request, username=None):
 
     designation = serializers.HoldsDesignationSerializer(holds_desig,many=True).data
 
-    resp = {'user': user_detail,
+    resp = {'user' : user_detail,
             'profile' : extra_info,
-           'designation':designation,
-           'pf':pf,
-           'flag_rspc':flag_rspc,
-           'journal':journal,
-           'conference': conference,
-           'books': books,
-           'projects': projects,
-           'consultancy':consultancy,
-           'patents':patents,
-           'techtransfers':techtransfers,
-           'mtechs':mtechs,
-           'phds':phds,
-           'fvisits':fvisits,
-           'ivisits': ivisits,
-           'consymps':consymps,
-           'awards':awards,
-           'talks':talks,
-           'chairs':chairs,
-           'keynotes':keynotes,
-           'events':events,
-           'year_range':y,
-           'pers':pers
-           }
+            'designation' : designation,
+            'pf' : pf,
+            'flag_rspc' : flag_rspc,
+            'journal' : journal,
+            'conference' : conference,
+            'books' : books,
+            'projects' : projects,
+            'consultancy' : consultancy,
+            'patents' : patents,
+            'techtransfers' : techtransfers,
+            'mtechs' : mtechs,
+            'phds' : phds,
+            'fvisits' : fvisits,
+            'ivisits' : ivisits,
+            'consymps' : consymps,
+            'awards' : awards,
+            'talks' : talks,
+            'chairs' : chairs,
+            'keynotes' : keynotes,
+            'events' : events,
+            'year_range' : year_range,
+            'faculty_about' : faculty_about
+    }
     return Response(data=resp, status=status.HTTP_200_OK)

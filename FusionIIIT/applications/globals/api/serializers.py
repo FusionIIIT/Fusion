@@ -1,11 +1,16 @@
 from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
 from rest_framework import serializers
+
 from notifications.models import Notification
-from applications.globals.models import ExtraInfo, HoldsDesignation
-from applications.placement_cell.models import (Achievement, Course, Education,
-                                                Experience, Has, Patent,
-                                                Project, Publication)
+
+from applications.globals.models import (ExtraInfo, HoldsDesignation, DepartmentInfo,
+                                        Designation)
+
+from applications.placement_cell.api.serializers import (SkillSerializer, HasSerializer,
+                                                        EducationSerializer, CourseSerializer, ExperienceSerializer,
+                                                        ProjectSerializer, AchievementSerializer, PublicationSerializer,
+                                                        PatentSerializer)
 
 User = get_user_model()
 
@@ -31,11 +36,18 @@ class NotificationSerializer(serializers.ModelSerializer):
         model=Notification
         fields=('__all__')
 
-class ExtraInfoSerializer(serializers.ModelSerializer):
+class DepartmentInfoSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = ExtraInfo
+        model = DepartmentInfo
         fields = ('__all__')
+
+class ExtraInfoSerializer(serializers.ModelSerializer):
+    department = DepartmentInfoSerializer()
+    class Meta:
+        model = ExtraInfo
+        fields = ('department','id','title','sex','date_of_birth',
+                'address','phone_no','user_type','about_me')
 
 class UserSerializer(serializers.ModelSerializer):
 
@@ -43,56 +55,15 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         exclude = ('password',)
 
-class HasSerializer(serializers.ModelSerializer):
+class DesignationSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Has
-        fields = ('__all__')
-
-class EducationSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Education
-        fields = ('__all__')
-
-class CourseSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Course
-        fields = ('__all__')
-
-class ExperienceSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Experience
-        fields = ('__all__')
-
-class ProjectSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Project
-        fields = ('__all__')
-
-class AchievementSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Achievement
-        fields = ('__all__')
-
-class PublicationSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Publication
-        fields = ('__all__')
-
-class PatentSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Patent
+        model = Designation
         fields = ('__all__')
 
 class HoldsDesignationSerializer(serializers.ModelSerializer):
+    designation = DesignationSerializer()
 
     class Meta:
         model = HoldsDesignation
-        fields = ('__all__')
+        fields = ('designation','held_at')

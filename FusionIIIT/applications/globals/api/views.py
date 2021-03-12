@@ -14,6 +14,7 @@ from rest_framework.response import Response
 
 
 from . import serializers
+
 from .utils import get_and_authenticate_user
 
 User = get_user_model()
@@ -45,7 +46,7 @@ def logout(request):
 @authentication_classes([TokenAuthentication])
 def dashboard(request):
     user=request.user
-    
+
     name = request.user.first_name +"_"+ request.user.last_name
 
     designation_list = list(HoldsDesignation.objects.all().filter(working = request.user).values_list('designation'))
@@ -54,7 +55,7 @@ def dashboard(request):
     for id in designation_id :
         name_ = get_object_or_404(Designation, id = id)
         designation_info.append(str(name_.name))
-    
+
     notifications=serializers.NotificationSerializer(request.user.notifications.all(),many=True).data
     club_details= coordinator_club(request)
 
@@ -73,7 +74,7 @@ def profile(request, username=None):
     profile = serializers.ExtraInfoSerializer(user.extrainfo).data
     if profile['user_type'] == 'student':
         student = user.extrainfo.student
-        skills = serializers.HasSerializer(student.has_set.all(), many=True).data
+        skills = serializers.HasSerializer(student.has_set.all(),many=True).data
         education = serializers.EducationSerializer(student.education_set.all(), many=True).data
         course = serializers.CourseSerializer(student.course_set.all(), many=True).data
         experience = serializers.ExperienceSerializer(student.experience_set.all(), many=True).data
