@@ -21,6 +21,7 @@ from applications.globals.models import (DepartmentInfo, ExtraInfo,
 from .forms import *
 from .models import *
 from django.core.files.storage import FileSystemStorage
+import logging
 
 countries = {
         'AF': 'Afghanistan',
@@ -741,7 +742,7 @@ def editjournal(request):
         print(uploaded_file_url)
         eis.paper=uploaded_file_url
     except:
-        pass
+        logging.warning('No New Journal Found for Update, Older one will be kept.')
     eis.co_authors = request.POST.get('co_author')
     eis.name = request.POST.get('name')
     eis.doc_id = request.POST.get('doc_id')
@@ -888,7 +889,7 @@ def conference_insert(request):
         uploaded_file_url = fs.url(filename)
         eis.paper=uploaded_file_url
     except:
-        pass
+        logging.warning('Journal file not Uploaded')
     
     eis.name = request.POST.get('name3')
     eis.venue = request.POST.get('venue3')
@@ -965,7 +966,7 @@ def editconference(request):
         uploaded_file_url = fs.url(filename)
         eis.paper=uploaded_file_url
     except:
-        pass
+        logging.warning('Journal File not Uploaded.')
 
     eis.name = request.POST.get('name3')
     eis.venue = request.POST.get('venue3')
