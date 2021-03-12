@@ -14,10 +14,8 @@ from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from xhtml2pdf import pisa
 
 from applications.eis import admin
-from applications.globals.models import ExtraInfo, HoldsDesignation
+from applications.globals.models import ExtraInfo, HoldsDesignation, DepartmentInfo
 from django.http.response import JsonResponse
-from applications.globals.models import (DepartmentInfo, ExtraInfo,
-                                         HoldsDesignation)
 from .forms import *
 from .models import *
 from django.core.files.storage import FileSystemStorage
@@ -418,13 +416,10 @@ def rspc_profile(request):
 def persinfo(request):
     if request.method == 'POST':
         try:
-            print(request.user)
             faculty = get_object_or_404(faculty_about, user = request.user)
-       
             contact = request.POST['contact']
             contact = contact[6:]
             faculty.contact = contact
-            print(contact)
             faculty.about = request.POST['about']
             faculty.interest = request.POST['interest']
             faculty.education = request.POST['education']
@@ -459,7 +454,6 @@ def emp_consymDelete(request, pk, sr, mark):
     if mark== '13':
         url = '/profile/?page13='+str(page)
     
-    print(url)
     instance.delete()
     return redirect(url)
 
@@ -479,7 +473,6 @@ def emp_event_organizedDelete(request, pk, sr, mark):
     if mark== '12':
         url = '/profile/?page12='+str(page)
     
-    print(url)
     instance.delete()
     return redirect(url)
 
@@ -518,7 +511,6 @@ def emp_published_booksDelete(request, pk, sr, mark):
     page = int(sr)//10
     page = page+1
     url = '/profile/?page2='+str(page)
-    print("-------------"+url)
     instance.delete()
     return redirect(url)
 
@@ -531,7 +523,6 @@ def emp_research_papersDelete(request, pk, sr,mark):
         url = '/profile/?page='+str(page)
     if mark== '2':
         url = '/profile/?page3='+str(page)
-    print(url)
     instance.delete()
     return redirect(url)
 
@@ -565,7 +556,6 @@ def emp_visitsDelete(request, pk, sr, mark):
         url = '/profile/?page10='+str(page)
     if mark== '11':
         url = '/profile/?page11='+str(page)
-    print(url)
     instance.delete()
     return redirect(url)
 
@@ -648,7 +638,6 @@ def ivisit_insert(request):
     eis.country = request.POST.get('country2')
     eis.place = request.POST.get('place2')
     eis.purpose = request.POST.get('purpose2')
-    print(".............",request.POST.get('start_date2'))
     try:
         eis.start_date = datetime.datetime.strptime(request.POST.get('start_date2'), "%B %d, %Y")
     except:
@@ -674,7 +663,6 @@ def journal_insert(request):
         fs = FileSystemStorage()
         filename = fs.save(myfile.name, myfile)
         uploaded_file_url = fs.url(filename)
-        print(uploaded_file_url)
         eis.paper=uploaded_file_url
     except:
         eis.paper = None
@@ -739,7 +727,6 @@ def editjournal(request):
         fs = FileSystemStorage()
         filename = fs.save(myfile.name, myfile)
         uploaded_file_url = fs.url(filename)
-        print(uploaded_file_url)
         eis.paper=uploaded_file_url
     except:
         logging.warning('No New Journal Found for Update, Older one will be kept.')
@@ -798,7 +785,6 @@ def editjournal(request):
                 x, "%b. %d, %Y")
     if (request.POST.get('dos') != None and request.POST.get('dos') != '' and request.POST.get('dos') != 'None'):
         x = request.POST.get('dos')
-        print(x[-10:])
         if x[-10:] == ', midnight':
             x = x[0:-10]
         if x[:5] == "Sept." :
@@ -813,7 +799,6 @@ def editjournal(request):
     page = int(request.POST.get('index'))//10
     page = page+1
     url = "/profile/?page="+str(page)
-    print(url)
     return redirect(url)
 
 def editforeignvisit(request):
@@ -836,12 +821,10 @@ def editforeignvisit(request):
         eis.end_date = datetime.datetime.strptime(x, "%B %d, %Y")
     except:
         eis.end_date = datetime.datetime.strptime(x, "%b. %d, %Y")
-    #eis.end_date = request.POST.get('end_date')
     eis.save()
     page = int(request.POST.get('index10'))//10
     page = page+1
     url = "/profile/?page10="+str(page)
-    print(url)
     return redirect(url)
 
 def editindianvisit(request):
@@ -863,12 +846,10 @@ def editindianvisit(request):
         eis.end_date = datetime.datetime.strptime(x, "%B %d, %Y")
     except:
         eis.end_date = datetime.datetime.strptime(x, "%b. %d, %Y")
-    #eis.end_date = request.POST.get('end_date')
     eis.save()
     page = int(request.POST.get('index11'))//10
     page = page+1
     url = "/profile/?page11="+str(page)
-    print(url)
     return redirect(url)
 
 
@@ -1026,7 +1007,6 @@ def editconference(request):
     page = int(request.POST.get('index3'))//10
     page = page+1
     url = "/profile/?page3="+str(page)
-    print(url)
     return redirect(url)
 
 
@@ -1044,8 +1024,6 @@ def book_insert(request):
     return redirect('/profile/?page2=1')
 
 def editbooks(request):
-    print("++++++++++++++"+ request.POST.get('bookspk2'))
-    print("--------------"+ str(request))
     eis = emp_published_books.objects.get(pk=request.POST.get('bookspk2'))
     eis.p_type = request.POST.get('book_p_type')
     eis.title = request.POST.get('book_title')
@@ -1056,7 +1034,6 @@ def editbooks(request):
     page = int(request.POST.get('index15'))//10
     page = page+1
     url = "/profile/?page2="+str(page)
-    print(url)
     return redirect(url)
 
 def consym_insert(request):
@@ -1127,12 +1104,10 @@ def editconsym(request):
     page = int(request.POST.get('index13'))//10
     page = page+1
     url = "/profile/?page13="+str(page)
-    print(url)
 
     return redirect('/profile/?page13=1')
 
 def event_insert(request):
-    print(request)
     user = get_object_or_404(ExtraInfo, user=request.user)
     pf = user.id
 
