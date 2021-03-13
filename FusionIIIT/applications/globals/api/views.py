@@ -1,8 +1,9 @@
 from django.contrib.auth import get_user_model
-from django.contrib.auth.decorators import login_required
+from applications.academic_information.models import Student
+from applications.eis.api.views import profile as eis_profile
 from applications.globals.models import (HoldsDesignation,Designation)
 from applications.gymkhana.api.views import coordinator_club
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
@@ -13,6 +14,7 @@ from rest_framework.response import Response
 
 
 from . import serializers
+
 from .utils import get_and_authenticate_user
 from notifications.models import Notification
 
@@ -32,13 +34,20 @@ def login(request):
     }
     return Response(data=resp, status=status.HTTP_200_OK)
 
+@api_view(['POST'])
+def logout(request):
+    request.user.auth_token.delete()
+    resp = {
+        'message' : 'User logged out successfully'
+    }
+    return Response(data=resp, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def dashboard(request):
     user=request.user
-    
+
     name = request.user.first_name +"_"+ request.user.last_name
 
     designation_list = list(HoldsDesignation.objects.all().filter(working = request.user).values_list('designation'))
@@ -47,7 +56,7 @@ def dashboard(request):
     for id in designation_id :
         name_ = get_object_or_404(Designation, id = id)
         designation_info.append(str(name_.name))
-    
+
     notifications=serializers.NotificationSerializer(request.user.notifications.all(),many=True).data
     club_details= coordinator_club(request)
 
@@ -59,6 +68,39 @@ def dashboard(request):
 
     return Response(data=resp,status=status.HTTP_200_OK)
 
+@api_view(['GET'])
+def profile(request, username=None):
+    user = get_object_or_404(User, username=username) if username else request.user
+    user_detail = serializers.UserSerializer(user).data
+    profile = serializers.ExtraInfoSerializer(user.extrainfo).data
+    if profile['user_type'] == 'student':
+        student = user.extrainfo.student
+        skills = serializers.HasSerializer(student.has_set.all(),many=True).data
+        education = serializers.EducationSerializer(student.education_set.all(), many=True).data
+        course = serializers.CourseSerializer(student.course_set.all(), many=True).data
+        experience = serializers.ExperienceSerializer(student.experience_set.all(), many=True).data
+        project = serializers.ProjectSerializer(student.project_set.all(), many=True).data
+        achievement = serializers.AchievementSerializer(student.achievement_set.all(), many=True).data
+        publication = serializers.PublicationSerializer(student.publication_set.all(), many=True).data
+        patent = serializers.PatentSerializer(student.patent_set.all(), many=True).data
+        current = serializers.HoldsDesignationSerializer(user.current_designation.all(), many=True).data
+        resp = {
+            'user' : user_detail,
+            'profile' : profile,
+            'skills' : skills,
+            'education' : education,
+            'course' : course,
+            'experience' : experience,
+            'project' : project,
+            'achievement' : achievement,
+            'publication' : publication,
+            'patent' : patent,
+            'current' : current
+        }
+        return Response(data=resp, status=status.HTTP_200_OK)
+    elif profile['user_type'] == 'faculty':
+        return redirect('/eis/api/profile/' + (username+'/' if username else ''))
+      
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -79,6 +121,3 @@ def NotificationRead(request):
         }
         return Response(response,status=status.HTTP_404_NOT_FOUND)
         
-
-
-
