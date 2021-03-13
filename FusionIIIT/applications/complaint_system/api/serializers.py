@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
 from rest_framework import serializers
 from notifications.models import Notification
-from .models import Caretaker, StudentComplain, Supervisor, Workers
+from applications.complaint_system.models import Caretaker, StudentComplain, Supervisor, Workers
 
 class StudentComplainSerializers(serializers.ModelSerializer):
 
