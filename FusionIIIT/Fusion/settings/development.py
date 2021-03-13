@@ -16,6 +16,15 @@ DATABASES = {
     }
 }
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    )
+}
+
 #DATABASES = {
  #   'default': {
  #        'ENGINE': 'django.db.backends.sqlite3',
@@ -27,10 +36,27 @@ if DEBUG:
     MIDDLEWARE += (
         'debug_toolbar.middleware.DebugToolbarMiddleware',
     )
+
     INSTALLED_APPS += (
         'debug_toolbar',
+        'django_extensions',
         )
-    INTERNAL_IPS = ('127.0.0.1',)
+
+
+    ###############################
+    # DJANGO_EXTENSIONS SETTINGS: #
+    ###############################
+    INTERNAL_IPS = [
+        '127.0.0.1',
+    ]
+
+    ###############################
+    # DJANGO_EXTENSIONS SETTINGS: #
+    ###############################
+    SHELL_PLUS = "ipython"
+
+    SHELL_PLUS_PRINT_SQL = True
+
     DEBUG_TOOLBAR_CONFIG = {
         'INTERCEPT_REDIRECTS': False,
     }

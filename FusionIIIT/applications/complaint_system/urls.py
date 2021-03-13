@@ -1,6 +1,6 @@
 from django.conf.urls import url
 
-from . import views
+from . import views,api_view
 
 app_name = 'complaint'
 
@@ -35,5 +35,10 @@ urlpatterns = [
     url(r'^caretaker/(?P<comp_id>[0-9]+)/$', views.assign_worker),
     url(r'^caretaker/(?P<complaint_id>[0-9]+)/(?P<status>[0-9]+)/$', views.changestatus),
 
+    url(r'^api/user/detail/(?P<detailcomp_id1>[0-9]+)/$', api_view.complaint_details,name='detail-api'),
+    url(r'^api/studentcomplain',api_view.StudentComplainApi,name='StudentComplain-api'),
+    url(r'^api/caretakers',api_view.CaretakerApi,name='StudentComplain-api'),
+    url(r'^api/supervisors',api_view.SupervisorApi,name='StudentComplain-api'),
+    url(r'^api/workers',api_view.WorkerApi,name='StudentComplain-api')
 
 ]
