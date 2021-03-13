@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from applications.globals.models import (HoldsDesignation,Designation)
 from django.shortcuts import get_object_or_404
-
+from django.forms.models import model_to_dict
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from rest_framework import status
@@ -17,36 +17,23 @@ from . import serializers
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
-def complaint_details(request,detailcomp_id1):
-    detail = StudentComplain.objects.get(id=detailcomp_id1)
-    if(detail.worker_id is None):
-        worker_name = None
-        worker_id = detail.worker_id  
-    else:
-        worker_id = detail.worker_id.id
-        worker = Workers.objects.get(id=worker_id)
-        worker_name = worker.name
-    a=User.objects.get(username=detail.complainer.user.username)           
-    y=ExtraInfo.objects.get(user=a)
-    temp=StudentComplain.objects.filter(complainer=y).first()                                                                  
-    comp_id=temp.id
-
-    complainer_name = detail.complainer.user.first_name + ' ' + detail.complainer.user.last_name
-    complainer_id = detail.complainer.id
-    complaint_details = comp_id
-    complaint_id = detail.details
-    if detail.upload_complaint != "":
-        image = detail.upload_complaint
+def ComplaintDetailsApi(request,detailcomp_id1):
+    ComplaintDetail = StudentComplain.objects.get(id=detailcomp_id1)
+    ComplaintDetailSerialized = serializers.StudentComplainSerializers(instance=ComplaintDetail).data
+    if ComplaintDetail.worker_id is None:
+        WorkerDetailSerialized = {}
     else :
-        image = ""
-
+        WorkerDetail = WorkerDetail.objects.get(id=ComplaintDetail.worker_id)
+        WorkerDetailSerialized = serializers.WorkersSerializers(instance=WorkerDetail).data
+    Complainer = User.objects.get(username=ComplaintDetail.complainer.user.username)
+    ComplainerSerialized = serializers.UserSerializers(instance=Complainer).data
+    ComplainerExtraInfo = ExtraInfo.objects.get(user = Complainer)
+    ComplainerExtraInfoSerialized = serializers.ExtraInfoSerializers(instance=ComplainerExtraInfo).data
     response = {
-        "complainer_name": complainer_name, 
-        "complainer_id": complainer_id,
-        "complaint_details":complaint_details,
-        "complaint_id":complaint_id,
-        "worker_name":worker_name,
-        "image":image
+        'Complainer' : ComplainerSerialized,
+        'ComplainerExtraInfo':ComplainerExtraInfoSerialized,
+        'ComplaintDetails' : ComplaintDetailSerialized,
+        'WorkerDetails' : WorkerDetailSerialized
     }
     return Response(data=response,status=status.HTTP_200_OK)
 
