@@ -1,0 +1,71 @@
+{% extends 'globals/base.html' %}
+{% load static %}
+
+{% block title %}
+    B_Tech_First_Year_Students_List
+{% endblock %}
+
+{% block body %}
+    {% block navBar %}
+        {% include 'dashboard/navbar.html' %}
+    {% endblock %} 
+	
+{% comment %} {% block B_Tech_First_Year_Students_List %} {% endcomment %}
+
+
+    {% comment %}The tab menu starts here!{% endcomment %}
+    <div class="ui pointing secondary menu">
+        <a class="active item" data-tab="complaint">
+            B.Tech {{ batch }} Year Students List
+        </a>
+    </div>
+
+    <div class="ui active tab" data-tab="complaint">
+        {% comment %} <div class=""> {% endcomment %}
+           
+		   {% if student_list %}
+          <table class="ui very basic collapsing celled sortable table"
+       style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
+            <thead>
+              <th>Id</th>
+              <th>Programme</th>
+			   <th>Batch</th>
+              <th>Cpi</th>
+			   <th>Category</th>
+              <th>Father Name</th>
+			   <th>Mother Name</th>
+              <th>Hall No.</th>
+			   <th>Room No.</th>
+              <th>Specialization</th>
+            </thead>
+
+            {% for stu in student_list %}
+              <tr>
+                <td>{{ stu.id }}</td>
+                <td>{{ stu.programme }}</td>
+				<td>{{ stu.batch }}</td>
+                <td>{{ stu.cpi }}</td>
+				<td>{{ stu.category }}</td>
+                <td>{{ stu.father_name }}</td>
+				<td>{{ stu.mother_name }}</td>
+                <td>{{ stu.hall_no }}</td>
+				<td>{{ stu.room_no }}</td>
+                <td>{{ stu.specialization }}</td>
+              </tr>
+            {% endfor %}
+        </table>
+
+      {% else %}
+        <p>No Students Records. Table Not Created.</p>
+      {% endif %}
+
+            
+            <div class="ui divider"></div>
+        {% comment %} </div> {% endcomment %}
+    </div>
+
+
+{% comment %} {% endblock %} {% endcomment %}
+
+{% include 'department/alert.html' %}
+{% endblock %}
