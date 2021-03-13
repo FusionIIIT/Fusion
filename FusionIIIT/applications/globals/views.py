@@ -447,7 +447,6 @@ def about(request):
                }
     return render(request, "globals/about.html", context)
 
-
 def login(request):
     context = {}
     return render(request, "globals/login.html", context)
@@ -692,14 +691,14 @@ def dashboard(request):
     # students_2016 = Student.objects.filter(batch = 2016)
     # students_2015 = Student.objects.filter(batch = 2015)
     # students_2019 = Student.objects.filter(batch = 2019)
-    # students_2018 = Student.objects.filter(batch = 2018) 
-    # data = {'cse': cse_faculty, 
-    #         'ece': ece_faculty, 
-    #         'me': me_faculty, 
-    #         'des': des_faculty, 
+    # students_2018 = Student.objects.filter(batch = 2018)
+    # data = {'cse': cse_faculty,
+    #         'ece': ece_faculty,
+    #         'me': me_faculty,
+    #         'des': des_faculty,
     #         'ns': ns_faculty,
     #         'students_2019': students_2019,
-    #         'students_2018': students_2018, 
+    #         'students_2018': students_2018,
     #         'students_2017': students_2017,
     #         'students_2016': students_2016,
     #         'students_2015': students_2015}
