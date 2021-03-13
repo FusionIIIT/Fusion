@@ -13,5 +13,5 @@ urlpatterns = [
   
     url(r'^dashboard/',views.dashboard,name='dashboard-api'),
     url(r'^notification/read',views.NotificationRead,name='notifications-read')
-
+    
 ]
