@@ -14,6 +14,7 @@ from rest_framework.response import Response
 
 from . import serializers
 from .utils import get_and_authenticate_user
+from notifications.models import Notification
 
 User = get_user_model()
 
@@ -57,4 +58,25 @@ def dashboard(request):
     }
 
     return Response(data=resp,status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def NotificationRead(request):
+    try:
+        notifId=int(request.data['id'])
+        user=request.user
+        notification = get_object_or_404(Notification, recipient=request.user, id=notifId)
+        notification.mark_as_read()
+        response ={
+            'message':'notfication successfully marked as seen.'
+        }
+        return Response(response,status=status.HTTP_200_OK)
+    except:
+        response ={
+            'error':'Failed, notification is not marked as seen.'
+        }
+        return Response(response,status=status.HTTP_404_NOT_FOUND)
+        
 
