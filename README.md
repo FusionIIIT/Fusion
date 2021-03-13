@@ -189,4 +189,4 @@ The project now supports notifications across all modules. To implement notifica
   ```
   module_notif(sender, receiver, type)
   ```
-* The Notifications should then appear in the dashboard for the recipient_v
+* The Notifications should then appear in the dashboard for the recipient
