@@ -17,30 +17,30 @@ from . import serializers
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
-def ComplaintDetailsApi(request,detailcomp_id1):
-    ComplaintDetail = StudentComplain.objects.get(id=detailcomp_id1)
-    ComplaintDetailSerialized = serializers.StudentComplainSerializers(instance=ComplaintDetail).data
-    if ComplaintDetail.worker_id is None:
-        WorkerDetailSerialized = {}
+def complaint_details_api(request,detailcomp_id1):
+    complaint_detail = StudentComplain.objects.get(id=detailcomp_id1)
+    complaint_detail_serialized = serializers.StudentComplainSerializers(instance=complaint_detail).data
+    if complaint_detail.worker_id is None:
+        worker_detail_serialized = {}
     else :
-        WorkerDetail = WorkerDetail.objects.get(id=ComplaintDetail.worker_id)
-        WorkerDetailSerialized = serializers.WorkersSerializers(instance=WorkerDetail).data
-    Complainer = User.objects.get(username=ComplaintDetail.complainer.user.username)
-    ComplainerSerialized = serializers.UserSerializers(instance=Complainer).data
-    ComplainerExtraInfo = ExtraInfo.objects.get(user = Complainer)
-    ComplainerExtraInfoSerialized = serializers.ExtraInfoSerializers(instance=ComplainerExtraInfo).data
+        worker_detail = worker_detail.objects.get(id=complaint_detail.worker_id)
+        worker_detail_serialized = serializers.WorkersSerializers(instance=worker_detail).data
+    complainer = User.objects.get(username=complaint_detail.complainer.user.username)
+    complainer_serialized = serializers.UserSerializers(instance=complainer).data
+    complainer_extra_info = ExtraInfo.objects.get(user = complainer)
+    complainer_extra_info_serialized = serializers.ExtraInfoSerializers(instance=complainer_extra_info).data
     response = {
-        'Complainer' : ComplainerSerialized,
-        'ComplainerExtraInfo':ComplainerExtraInfoSerialized,
-        'ComplaintDetails' : ComplaintDetailSerialized,
-        'WorkerDetails' : WorkerDetailSerialized
+        'complainer' : complainer_serialized,
+        'complainer_extra_info':complainer_extra_info_serialized,
+        'complaint_details' : complaint_detail_serialized,
+        'worker_details' : worker_detail_serialized
     }
     return Response(data=response,status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
-def StudentComplainApi(request):
+def student_complain_api(request):
     user = get_object_or_404(User,username = request.user.username)
     user = ExtraInfo.objects.all().filter(user = user).first()
     if user.user_type == 'student':
@@ -55,42 +55,72 @@ def StudentComplainApi(request):
         complain = StudentComplain.objects.filter(location = faculty.area)
     complains = serializers.StudentComplainSerializers(complain,many=True).data
     resp = {
-        'StudentComplain' : complains,
+        'student_complain' : complains,
     }
     return Response(data=resp,status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
-def WorkerApi(request):
+def worker_api(request):
     worker = Workers.objects.all()
     workers = serializers.WorkersSerializers(worker,many=True).data
 
     resp = {
-        'Workers' : workers,
+        'workers' : workers,
     }
     return Response(data=resp,status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
-def CaretakerApi(request):
+def caretaker_api(request):
     caretaker = Caretaker.objects.all()
     caretakers = serializers.CaretakerSerializers(caretaker,many=True).data
     resp = {
-        'Caretakers' : caretakers,
+        'waretakers' : caretakers,
     }
     return Response(data=resp,status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
-def SupervisorApi(request):
+def supervisor_api(request):
     supervisor = Supervisor.objects.all()
     supervisors = serializers.SupervisorSerializers(supervisor,many=True).data
 
     resp = {
-        'Supervisors' : supervisors,
+        'supervisors' : supervisors,
     }
     return Response(data=resp,status=status.HTTP_200_OK)
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def create_complain_api(request):
+    serializer = serializers.StudentComplainSerializers(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def add_worker_api(request):
+    serializer = serializers.WorkersSerializers(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def remove_worker_api(request,w_id):
+    if Workers.objects.filter(id=w_id).exists():
+        worker = Workers.objects.get(id = w_id)
+        worker.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    else :
+        return Response(status=status.HTTP_404_NOT_FOUND)
