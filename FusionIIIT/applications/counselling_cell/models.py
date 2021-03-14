@@ -5,43 +5,14 @@ from applications.academic_information.models import Student
 
 
 POSTIONS= (
-    ('pos1', 'Student'),
-    ('pos2', 'Student_Guide'),
-    ('pos3', 'Student_Coordinator'),
+    ('student_guide', 'Student_Guide'),
+    ('student_coordinator', 'Student_Coordinator'),
 )
 STATUS= (
-    ('status1', 'Unresolved'),
-    ('status2', 'Resolved'),
-    ('status3', 'InProgress'),
+    ('status_unresolved', 'Unresolved'),
+    ('status_resolved', 'Resolved'),
+    ('status_inprogress', 'InProgress'),
 )
-
-ISSUE_CATEGORY= (
-    ('category1', 'Academics'),
-    ('category2', 'Personal'),
-    ('category3', 'Others'),
-)
-
-FAQ_CATEGORY= (
-    ('category1', 'Academics'),
-    ('category2', 'Personal'),
-    ('category3', 'Others'),
-)
-
-TIME = (
-    ('10', '10 a.m.'),
-    ('11', '11 a.m.'),
-    ('12', '12 p.m.'),
-    ('13', '1 p.m.'),
-    ('14', '2 p.m.'),
-    ('15', '3 p.m.'),
-    ('16', '4 p.m.'),
-    ('17', '5 p.m.'),
-    ('18', '6 p.m.'),
-    ('19', '7 p.m.'),
-    ('20', '8 p.m.'),
-    ('21', '9 p.m.')
-)
-
 
 class CounsellingInfo(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
@@ -52,30 +23,34 @@ class CounsellingInfo(models.Model):
 
     def __str__(self):
         return f"{self.student_id} - {self.student_position}"
-    
+
+class CounsellingCategory(models.Model):
+    counselling_category_id = models.AutoField(primary_key=True)
+    counselling_category_id = models.CharField(max_length=40)
+
 class Issues(models.Model):
-    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
-    issue_category = models.CharField(max_length=20, choices=ISSUE_CATEGORY,default="category1")
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    issue_category = models.ForeignKey(CounsellingCategory,on_delete=models.CASCADE)
     issue = models.TextField(max_length=500,)
-    status = models.CharField(max_length=20,choices=STATUS,default="status1")
+    issue_status = models.CharField(max_length=20,choices=STATUS,default="status1")
 
 class FAQ(models.Model):
-    question = models.TextField(max_length=400)
-    answer = models.TextField(max_length=1000)
-    category = models.CharField(max_length=20,choices=FAQ_CATEGORY,default="category1")
+    counselling_question = models.TextField(max_length=400)
+    counselling_answer = models.TextField(max_length=1000)
+    counseliing_category = models.ForeignKey(CounsellingCategory,on_delete=models.CASCADE)
 
-class Counselling_meeting(models.Model):
-    meet_date = models.DateField()
+class CounsellingMeeting(models.Model):
+    counselling_meeting = models.AutoField(primary_key=True)
+    meeting = models.DateTimeField()
     agenda = models.TextField()
     venue = models.TextField()
-    meeting_time = models.CharField(max_length=20, choices=TIME)
 
     def __str__(self):
         return '{} - {}'.format(self.meet_date, self.agenda)
 
 
-class Counselling_minutes(models.Model):
-    meeting_date = models.OneToOneField(Counselling_meeting, on_delete=models.CASCADE)
+class CounsellingMinutes(models.Model):
+    counselling_meeting_id = models.ForeignKey(CounsellingMeeting, on_delete=models.CASCADE)
     counselling_minutes = models.FileField(upload_to='central_mess/')
 
     def __str__(self):

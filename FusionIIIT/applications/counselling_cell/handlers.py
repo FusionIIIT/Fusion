@@ -1,4 +1,5 @@
 from  .models import FAQ
+
 def add_counselling_faq(request, student):
     """
     This function is to record the feedback submitted
@@ -19,11 +20,11 @@ def add_counselling_faq(request, student):
     category = request.POST.get('category')
     question = request.POST.get('question')
     print(answer)
-    faq_object = FAQ(answer=answer,question=question,category=category)
+    # faq_object = FAQ(answer=answer,question=question,category=category)
 
-    faq_object.save()
-    data = {
-        'status': 1
-    }
+    # faq_object.save()
+    # data = {
+    #     'status': 1
+    # }
     return data
 
