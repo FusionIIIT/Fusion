@@ -59,41 +59,6 @@ def student_complain_api(request):
     }
     return Response(data=resp,status=status.HTTP_200_OK)
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-@authentication_classes([TokenAuthentication])
-def worker_api(request):
-    worker = Workers.objects.all()
-    workers = serializers.WorkersSerializers(worker,many=True).data
-
-    resp = {
-        'workers' : workers,
-    }
-    return Response(data=resp,status=status.HTTP_200_OK)
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-@authentication_classes([TokenAuthentication])
-def caretaker_api(request):
-    caretaker = Caretaker.objects.all()
-    caretakers = serializers.CaretakerSerializers(caretaker,many=True).data
-    resp = {
-        'waretakers' : caretakers,
-    }
-    return Response(data=resp,status=status.HTTP_200_OK)
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-@authentication_classes([TokenAuthentication])
-def supervisor_api(request):
-    supervisor = Supervisor.objects.all()
-    supervisors = serializers.SupervisorSerializers(supervisor,many=True).data
-
-    resp = {
-        'supervisors' : supervisors,
-    }
-    return Response(data=resp,status=status.HTTP_200_OK)
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
@@ -104,23 +69,135 @@ def create_complain_api(request):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['POST'])
+@api_view(['DELETE','PUT'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
-def add_worker_api(request):
-    serializer = serializers.WorkersSerializers(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+def edit_complain_api(request,c_id):
+    try: 
+        complain = StudentComplain.objects.get(id = c_id) 
+    except StudentComplain.DoesNotExist: 
+        return Response({'message': 'The Complain does not exist'}, status=status.HTTP_404_NOT_FOUND)
+    if request.method == 'DELETE':
+        complain.delete()
+        return Response({'message': 'Complain deleted'},status=status.HTTP_404_NOT_FOUND)
+    elif request.method == 'PUT':
+        serializer = serializers.StudentComplainSerializers(complain,data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['DELETE'])
+@api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
-def remove_worker_api(request,w_id):
-    if Workers.objects.filter(id=w_id).exists():
-        worker = Workers.objects.get(id = w_id)
+def worker_api(request):
+
+    if request.method == 'GET':
+        worker = Workers.objects.all()
+        workers = serializers.WorkersSerializers(worker,many=True).data
+        resp = {
+            'workers' : workers,
+        }
+        return Response(data=resp,status=status.HTTP_200_OK)
+
+    elif request.method =='POST':
+        serializer = serializers.WorkersSerializers(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['DELETE','PUT'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def edit_worker_api(request,w_id):
+    try: 
+        worker = Workers.objects.get(id = w_id) 
+    except Workers.DoesNotExist: 
+        return Response({'message': 'The worker does not exist'}, status=status.HTTP_404_NOT_FOUND)
+    if request.method == 'DELETE':
         worker.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-    else :
-        return Response(status=status.HTTP_404_NOT_FOUND)
+        return Response({'message': 'Worker deleted'},status=status.HTTP_404_NOT_FOUND)
+    elif request.method == 'PUT':
+        serializer = serializers.WorkersSerializers(worker,data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET','POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def caretaker_api(request):
+
+    if request.method == 'GET':
+        caretaker = Caretaker.objects.all()
+        caretakers = serializers.CaretakerSerializers(caretaker,many=True).data
+        resp = {
+            'caretakers' : caretakers,
+        }
+        return Response(data=resp,status=status.HTTP_200_OK)
+    
+    elif request.method == 'POST':
+        serializer = serializers.CaretakerSerializers(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,status=status.HTTP_201_CREATED)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST) 
+
+@api_view(['DELETE','PUT'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def edit_caretaker_api(request,c_id):
+    try: 
+        caretaker = Caretaker.objects.get(id = c_id) 
+    except Caretaker.DoesNotExist: 
+        return Response({'message': 'The Caretaker does not exist'}, status=status.HTTP_404_NOT_FOUND)
+    if request.method == 'DELETE':
+        caretaker.delete()
+        return Response({'message': 'Caretaker deleted'},status=status.HTTP_404_NOT_FOUND)
+    elif request.method == 'PUT':
+        serializer = serializers.CaretakerSerializers(caretaker,data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET','POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def supervisor_api(request):
+
+    if request.method == 'GET':
+        supervisor = Supervisor.objects.all()
+        supervisors = serializers.SupervisorSerializers(supervisor,many=True).data
+        resp = {
+            'supervisors' : supervisors,
+        }
+        return Response(data=resp,status=status.HTTP_200_OK)
+    
+    elif request.method == 'POST':
+        serializer = serializers.SupervisorSerializers(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,status=status.HTTP_201_CREATED)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+   
+@api_view(['DELETE','PUT'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def edit_supervisor_api(request,s_id):
+    try: 
+        supervisor = Supervisor.objects.get(id = s_id) 
+    except Supervisor.DoesNotExist: 
+        return Response({'message': 'The Caretaker does not exist'}, status=status.HTTP_404_NOT_FOUND)
+    if request.method == 'DELETE':
+        supervisor.delete()
+        return Response({'message': 'Caretaker deleted'},status=status.HTTP_404_NOT_FOUND)
+    elif request.method == 'PUT':
+        serializer = serializers.SupervisorSerializers(supervisor,data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
