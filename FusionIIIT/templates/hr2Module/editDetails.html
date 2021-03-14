@@ -1,0 +1,96 @@
+<div style="margin: 2rem;">
+    <div class="ui vertical segment">
+        <form method="post" id="editDetail" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+            <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                <div class="three fields">
+                    <div class="eight wide field">
+                        <label>Personel details</label>
+                        <input type="text" placeholder="Name" class="ui large input" name="club_name" required>
+                    </div>
+                    <div class="eight wide field">
+                        <label>Department</label>
+                        <div class="ui selection dropdown">
+                            <input type="hidden" name="category">
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Select</div>
+                            <div class="menu">
+                                <div class="item" data-value="Technical">Mechanical</div>
+                                <div class="item" data-value="Cultural">Computer Science</div>
+                                <div class="item" data-value="Sports">Electronics and Communication</div>
+                                <div class="item" data-value="others">Natural Science and Design</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="two fields">
+                    <div class="eight wide field">
+                        <label>Gender</label>
+                        <input list="dropdown-menu1" name="co" id="co_Search" type="text" />
+                        <datalist class="dropdown-menu" id="dropdown-menu1"></datalist>
+                        <!-- <select class="ui search fluid dropdown" id="co" name="co" required>
+                            <option value="">Select</option>
+
+                        </select> -->
+                    </div>
+
+                    <div class="eight wide field">
+                        <label>Phone Number</label>
+                        <input list="dropdown-menu2" name="coco" id="co_co_Search" type="text" />
+                        <datalist class="dropdown-menu" id="dropdown-menu2"></datalist>
+                        <!-- <select class="ui search fluid dropdown" id="coco" name="coco" required>
+                                <option value="">Select</option>
+
+                            </select> -->
+                    </div>
+
+                </div>
+
+                <div class="eight wide field">
+                    <label>Address</label>
+                    <input list="dropdown-menu3" name="faculty" id="faculty_Search" type="text" />
+                    <datalist class="dropdown-menu" id="dropdown-menu3"></datalist>
+                    <!-- <select class="ui search fluid dropdown" id="faculty" name="faculty" required>
+                            <option value="">Select</option>
+                
+                        </select> -->
+                </div>
+
+
+                <div class="field">
+                    <label>Profile Picture</label>
+                    <input class="ui input" id="fileUpload" onchange="return ValidateExtension()" type="file"
+                        name="file" accept=".pdf" required></input>
+                    <span id="lblError" style="color: red;"></span>
+                </div>
+
+                <div class="field">
+                    <label>Goverment ID Proof</label>
+                    <input class="ui input" id="fileUpload" onchange="return ValidateExtension()" type="file"
+                        name="file" accept=".pdf" required></input>
+                    <span id="lblError" style="color: red;"></span>
+                </div>
+
+                <div class="field">
+                    <label>Awards</label>
+                    <textarea rows="2" name="d_d" required></textarea>
+                </div>
+
+                <div class="field">
+                    <button class="ui primary button right floated" type="submit"
+                        onclick="form_submit('new_club','new_club_form',event);">
+                        Submit
+                    </button>
+                </div>
+            </div>
+        </form>
+        <br>
+        <br>
+    </div>
+    <br>
+    <div class="extra content"></div>
+</div>
