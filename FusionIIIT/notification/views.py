@@ -54,7 +54,7 @@ def academics_module_notif(sender, recipient, type):
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
 def office_module_notif(sender, recipient):
-    url='office:officeOfRegistrar'
+    url='office_module:officeOfRegistrar'
     module="Academic's Module"
     sender = sender
     recipient = recipient
@@ -183,7 +183,7 @@ def complaint_system_notif(sender, recipient, type, complaint_id,student,message
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb,description=description)
 
 def office_dean_PnD_notif(sender, recipient, type):
-    url = 'office:officeOfDeanPnD'
+    url = 'office_module:officeOfDeanPnD'
     module = 'Office of Dean PnD Module'
     sender=sender
     recipient=recipient
@@ -207,7 +207,7 @@ def office_dean_PnD_notif(sender, recipient, type):
     notify.send(sender=sender, recipient=recipient, url=url, module=module, verb=verb)
 
 def office_module_DeanS_notif(sender, recipient, type):
-    url='office:officeOfDeanStudents'
+    url='office_module:officeOfDeanStudents'
     module='Office Module'
     sender = sender
     recipient = recipient
