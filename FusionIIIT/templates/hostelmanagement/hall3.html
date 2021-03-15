@@ -1,0 +1,53 @@
+{% block hall3 %}
+ <table class="ui very basic collapsing celled sortable table"
+       style="padding-left: 5%;
+            padding-right: 5%;
+            padding-top: 1%;
+            padding-bottom: 1.5%;
+            margin: auto;">
+    <thead>
+    <tr>
+
+        <th class="one wide column">
+            Roll No
+        </th>
+
+        <th class="six wide column">
+            Name
+        </th>
+
+        <th class="four wide column">
+            Program
+        </th>
+
+        <th class="four wide column">
+            Room No
+        </th>
+
+    </tr>
+    </thead>
+
+    <tbody>
+    {% for student in hall_3_student %}
+    <tr>
+        <td>
+            {{student.id}}
+        </td>
+
+        <td>
+            {{student.id.user.username}}
+        </td>
+
+        <td>
+            {{student.programme}}
+        </td>
+
+        <td>
+            {{student.room_no}}
+        </td>
+
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
