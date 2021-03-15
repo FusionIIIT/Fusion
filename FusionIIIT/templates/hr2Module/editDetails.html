@@ -7,8 +7,33 @@
 
                 <div class="three fields">
                     <div class="eight wide field">
-                        <label>Personel details</label>
-                        <input type="text" placeholder="Name" class="ui large input" name="club_name" required>
+                        <label>First Name</label>
+                        <input type="text" placeholder="First Name" class="ui large input" name="club_name" required>
+                    </div>
+                    <div class="eight wide field">
+                        <label>Middle Name</label>
+                        <input type="text" placeholder="Middle Name" class="ui large input" name="club_name" required>
+                    </div>
+                    <div class="eight wide field">
+                        <label>Last Name</label>
+                        <input type="text" placeholder="Last Name" class="ui large input" name="club_name" required>
+                    </div>
+                    
+                </div>
+
+                <div class="two fields"> 
+                    <div class="eight wide field">
+                        <label>Gender</label>
+                        <div class="ui selection dropdown">
+                            <input type="hidden" name="category">
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Select</div>
+                            <div class="menu">
+                                <div class="item" data-value="Technical">Male</div>
+                                <div class="item" data-value="Cultural">Female</div>
+                                <div class="item" data-value="Cultural">Other</div>
+                            </div>
+                        </div>
                     </div>
                     <div class="eight wide field">
                         <label>Department</label>
@@ -25,19 +50,11 @@
                         </div>
                     </div>
 
+    
                 </div>
 
+                
                 <div class="two fields">
-                    <div class="eight wide field">
-                        <label>Gender</label>
-                        <input list="dropdown-menu1" name="co" id="co_Search" type="text" />
-                        <datalist class="dropdown-menu" id="dropdown-menu1"></datalist>
-                        <!-- <select class="ui search fluid dropdown" id="co" name="co" required>
-                            <option value="">Select</option>
-
-                        </select> -->
-                    </div>
-
                     <div class="eight wide field">
                         <label>Phone Number</label>
                         <input list="dropdown-menu2" name="coco" id="co_co_Search" type="text" />
@@ -47,18 +64,18 @@
 
                             </select> -->
                     </div>
-
+                    <div class="eight wide field">
+                        <label>Address</label>
+                        <input list="dropdown-menu3" name="faculty" id="faculty_Search" type="text" />
+                        <datalist class="dropdown-menu" id="dropdown-menu3"></datalist>
+                        <!-- <select class="ui search fluid dropdown" id="faculty" name="faculty" required>
+                                <option value="">Select</option>
+                    
+                            </select> -->
+                    </div>
                 </div>
 
-                <div class="eight wide field">
-                    <label>Address</label>
-                    <input list="dropdown-menu3" name="faculty" id="faculty_Search" type="text" />
-                    <datalist class="dropdown-menu" id="dropdown-menu3"></datalist>
-                    <!-- <select class="ui search fluid dropdown" id="faculty" name="faculty" required>
-                            <option value="">Select</option>
                 
-                        </select> -->
-                </div>
 
 
                 <div class="field">
@@ -78,6 +95,69 @@
                 <div class="field">
                     <label>Awards</label>
                     <textarea rows="2" name="d_d" required></textarea>
+                    <button>Add Award</button> 
+                </div>
+
+                <div class="field">
+                    <label>Training</label>
+                    <textarea rows="2" name="d_d" required></textarea>
+                    <button>Add Training</button> 
+                </div>
+
+                <div class="field">
+                    <label>Education</label>
+                    <textarea rows="2" name="d_d" required></textarea>
+                    <button>Add Education</button> 
+                </div>
+
+                <hr>
+                
+                <h4>Personal Details</h4>
+                
+                <div class="two fields"> 
+                    <div class="eight wide field">
+                        <label>Aadhar Card Number</label>
+                        <input type="text" placeholder="Middle Name" class="ui large input" name="club_name" required>
+                    </div>
+                    <div class="eight wide field">
+                        <label>Salary</label>
+                        <input type="text" placeholder="Middle Name" class="ui large input" name="club_name" required>
+                    </div>
+                </div>
+
+                <div class="two fields"> 
+                    <div class="eight wide field">
+                        <label>Bank Account Number</label>
+                        <input type="text" placeholder="Middle Name" class="ui large input" name="club_name" required>
+                    </div>
+                    <div class="eight wide field">
+                        <label>Marital Status</label>
+                        <div class="ui selection dropdown">
+                            <input type="hidden" name="category">
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Select</div>
+                            <div class="menu">
+                                <div class="item" data-value="Technical">Married</div>
+                                <div class="item" data-value="Cultural">Un-Married</div>
+                                <div class="item" data-value="Cultural">Widow</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="two fields"> 
+                    <div class="field">
+                        <label>Medical Cirtificate</label>
+                        <input class="ui input" id="fileUpload" onchange="return ValidateExtension()" type="file"
+                            name="file" accept=".pdf" required></input>
+                        <span id="lblError" style="color: red;"></span>
+                    </div>
+                    <div class="field">
+                        <label>Caste Cirtificate</label>
+                        <input class="ui input" id="fileUpload" onchange="return ValidateExtension()" type="file"
+                            name="file" accept=".pdf" required></input>
+                        <span id="lblError" style="color: red;"></span>
+                    </div>
                 </div>
 
                 <div class="field">
