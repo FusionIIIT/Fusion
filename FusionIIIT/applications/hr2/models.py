@@ -55,9 +55,7 @@ class Constants:
 class Employee(models.Model):
 
     extra_info = models.OneToOneField(ExtraInfo, on_delete=models.CASCADE)
-    first_name = models.CharField(max_length=40, default='')
-    middle_name = models.CharField(max_length=40, default='')
-    last_name = models.CharField(max_length=40, default='')
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     father_name = models.CharField(max_length=40, default='')
     mother_name = models.CharField(max_length=40, default='')
     hire_date = models.DateTimeField(max_length=6, null=True)

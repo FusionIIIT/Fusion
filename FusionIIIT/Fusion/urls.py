@@ -47,6 +47,5 @@ urlpatterns = [
     url(r'^estate/', include('applications.estate_module.urls')),
     url(r'^accounts/', include('allauth.urls')),
     url(r'^__debug__/', include(debug_toolbar.urls)),
-    # new 
     url(r'^hr2/', include('applications.hr2.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
