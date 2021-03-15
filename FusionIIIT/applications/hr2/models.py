@@ -32,24 +32,35 @@ class Constants:
 
     )
 
+    BLOOD_GROUP = (
+        ('AB+', 'AB+'),
+        ('O+', 'O+'),
+        ('AB-', 'AB-'),
+        ('B+', 'B+'),
+        ('B-', 'B-'),
+        ('O-', 'O-'),
+        ('A+', 'A+'),
+        ('A-', 'A-'),
+        
+
+    )
+    
+
 
 
 
 
 # table for employee details
 # Employee model
-def employee(models.Model):
-    id = models.OneToOneField(ExtraInfo, on_delete=models.CASCADE, primary_key=True)
+class Employee(models.Model):
+
+    extra_info = models.OneToOneField(ExtraInfo, on_delete=models.CASCADE)
     first_name = models.CharField(max_length=40, default='')
     middle_name = models.CharField(max_length=40, default='')
     last_name = models.CharField(max_length=40, default='')
     father_name = models.CharField(max_length=40, default='')
     mother_name = models.CharField(max_length=40, default='')
-    gender = models.CharField(max_length=1, choices=Constants.GENDER_CHOICES)
     hire_date = models.DateTimeField(max_length=6, null=True)
-    dept_name = models.CharField(
-        max_length=50, null=False, choices=Constants.DEPARTMENT)
-    phone_no = models.BigIntegerField(null=True, default=9999999999)
     religion = models.CharField(max_length=40, default='')
     category  = models.CharField(
         max_length=50, null=False, choices=Constants.CATEGORY)
@@ -58,21 +69,19 @@ def employee(models.Model):
     home_district =  models.CharField(max_length=40, default='')
     identification_mark =  models.CharField(max_length=40, default='')
     height  =  models.IntegerField(default=0)
-    dob =  models.DateTimeField(max_length=6, null=True)
     date_of_joining =  models.DateTimeField(max_length=6, null=True)
     designation =  models.CharField(max_length=40, default='')
-    blood_group =  models.CharField(max_length=40, default='')
+    blood_group =   models.CharField(max_length=1, choices=Constants.BLOOD_GROUP)
 
-    @property
-    def age(self):
-        timedelta = timezone.now().date() - self.date_of_birth
-        return int(timedelta.days / 365)
+    def __str__(self):
+        return self.first_name
+    
 
 
     
 # table for employee  confidential details
-def emp_confidential_details(models.Model):
-    id = models.OneToOneField(ExtraInfo, on_delete=models.CASCADE, primary_key=True)
+class Emp_confidential_details(models.Model):
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     aadhar_no = models.IntegerField(default=0)
     medical_certificate =  models.FileField(blank=True)
     age_certificate =  models.FileField(blank=True)
@@ -83,16 +92,16 @@ def emp_confidential_details(models.Model):
     salary =  models.IntegerField(default=0)
 
 # table for employee's dependent details
-def emp_dependents(model.Model):
-    id = models.OneToOneField(ExtraInfo, on_delete=models.CASCADE, primary_key=True)
+class Emp_dependents(model.Model):
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     name = models.CharField(max_length=40, default='')
     gender = models.CharField(max_length=1, choices=Constants.GENDER_CHOICES)
     dob =  models.DateTimeField(max_length=6, null=True)
     relationship = models.CharField(max_length=40, default='')
 
 # table for  details about employee training
-def emp_training(models.Model):
-      id = models.OneToOneField(ExtraInfo, on_delete=models.CASCADE, primary_key=True)
+class Emp_training(models.Model):
+      employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
       training_type =  models.CharField(max_length=40, default='')
       name =  models.CharField(max_length=40, default='')
       description =  models.CharField(max_length=40, default='')
