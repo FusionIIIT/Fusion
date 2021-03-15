@@ -143,6 +143,8 @@ class Staff(models.Model):
 class Faculty(models.Model):
     id = models.OneToOneField(ExtraInfo, on_delete=models.CASCADE, primary_key=True)
 
+    
+
     def __str__(self):
         return str(self.id)
 
