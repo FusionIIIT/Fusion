@@ -2064,7 +2064,7 @@ def submit_marks(request):
         for x in range(values_length):
 
             student_id = get_object_or_404(User, username = user[x])
-            student_id = ExtraInfo.objects.select_related().select_related('user','department').get(id = student_id)
+            student_id = ExtraInfo.objects.select_related('user','department').get(id = student_id)
             student_id = Student.objects.select_related('id','id__user','id__department').get(id = student_id)
 
             if grade:
@@ -2183,7 +2183,7 @@ def verify_marks(request):
         ver_gr = []
         for x in range(values_length):
             student_id = get_object_or_404(User, username = user[x])
-            student_id = ExtraInfo.objects.select_related().select_related('user','department').get(id = student_id)
+            student_id = ExtraInfo.objects.select_related('user','department').get(id = student_id)
             student_id = Student.objects.select_related('id','id__user','id__department').get(id = student_id)
             if grade:
                 g = grade[x]
