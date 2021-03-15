@@ -101,6 +101,12 @@ def worker_api(request):
         return Response(data=resp,status=status.HTTP_200_OK)
 
     elif request.method =='POST':
+        user = get_object_or_404(User ,username=request.user.username)
+        user = ExtraInfo.objects.all().filter(user = user).first()
+        try :
+            caretaker = Caretaker.objects.get(staff_id=user)
+        except Caretaker.DoesNotExist:
+            return Response({'message':'Logged in user does not have the permissions'},status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
         serializer = serializers.WorkersSerializers(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -111,6 +117,12 @@ def worker_api(request):
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def edit_worker_api(request,w_id):
+    user = get_object_or_404(User ,username=request.user.username)
+    user = ExtraInfo.objects.all().filter(user = user).first()
+    try :
+        caretaker = Caretaker.objects.get(staff_id=user)
+    except Caretaker.DoesNotExist:
+        return Response({'message':'Logged in user does not have the permissions'},status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
     try: 
         worker = Workers.objects.get(id = w_id) 
     except Workers.DoesNotExist: 
@@ -139,6 +151,12 @@ def caretaker_api(request):
         return Response(data=resp,status=status.HTTP_200_OK)
     
     elif request.method == 'POST':
+        user = get_object_or_404(User ,username=request.user.username)
+        user = ExtraInfo.objects.all().filter(user = user).first()
+        try :
+            supervisor = Supervisor.objects.get(staff_id=user)
+        except Supervisor.DoesNotExist:
+            return Response({'message':'Logged in user does not have the permissions'},status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
         serializer = serializers.CaretakerSerializers(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -149,6 +167,12 @@ def caretaker_api(request):
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def edit_caretaker_api(request,c_id):
+    user = get_object_or_404(User ,username=request.user.username)
+    user = ExtraInfo.objects.all().filter(user = user).first()
+    try :
+        supervisor = Supervisor.objects.get(staff_id=user)
+    except Supervisor.DoesNotExist:
+        return Response({'message':'Logged in user does not have the permissions'},status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
     try: 
         caretaker = Caretaker.objects.get(id = c_id) 
     except Caretaker.DoesNotExist: 
@@ -177,6 +201,9 @@ def supervisor_api(request):
         return Response(data=resp,status=status.HTTP_200_OK)
     
     elif request.method == 'POST':
+        user = get_object_or_404(User,username=request.user.username)
+        if user.is_superuser == False:
+            return Response({'message':'Logged in user does not have permission'},status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
         serializer = serializers.SupervisorSerializers(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -187,6 +214,9 @@ def supervisor_api(request):
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def edit_supervisor_api(request,s_id):
+    user = get_object_or_404(User,username=request.user.username)
+    if user.is_superuser == False:
+        return Response({'message':'Logged in user does not have permission'},status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
     try: 
         supervisor = Supervisor.objects.get(id = s_id) 
     except Supervisor.DoesNotExist: 
