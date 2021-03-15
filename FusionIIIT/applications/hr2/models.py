@@ -36,7 +36,7 @@ class Constants:
 
 
 
-
+# table for employee details
 # Employee model
 def employee(models.Model):
     id = models.OneToOneField(ExtraInfo, on_delete=models.CASCADE, primary_key=True)
@@ -70,7 +70,7 @@ def employee(models.Model):
 
 
     
-
+# table for employee  confidential details
 def emp_confidential_details(models.Model):
     id = models.OneToOneField(ExtraInfo, on_delete=models.CASCADE, primary_key=True)
     aadhar_no = models.IntegerField(default=0)
@@ -82,6 +82,7 @@ def emp_confidential_details(models.Model):
     bank_account_no = models.IntegerField(default=0)
     salary =  models.IntegerField(default=0)
 
+# table for employee's dependent details
 def emp_dependents(model.Model):
     id = models.OneToOneField(ExtraInfo, on_delete=models.CASCADE, primary_key=True)
     name = models.CharField(max_length=40, default='')
@@ -89,7 +90,7 @@ def emp_dependents(model.Model):
     dob =  models.DateTimeField(max_length=6, null=True)
     relationship = models.CharField(max_length=40, default='')
 
-
+# table for  details about employee training
 def emp_training(models.Model):
       id = models.OneToOneField(ExtraInfo, on_delete=models.CASCADE, primary_key=True)
       training_type =  models.CharField(max_length=40, default='')
