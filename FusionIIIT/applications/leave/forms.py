@@ -560,7 +560,7 @@ class AcademicReplacementFormOffline(forms.Form):
 
 class BaseLeaveFormSetOffline(BaseFormSet):
 
-    """def __init__(self, *args, **kwargs):
+    """de               f __init__(self, *args, **kwargs):
         if 'user' in kwargs:
             self.user = kwargs.pop('user')
         

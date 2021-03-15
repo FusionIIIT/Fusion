@@ -2817,4 +2817,6 @@ def Bonafide_form(request):
 #         form = BonafideForm()
 
 #     return render(request, 'bonafide.html', {'form': form})
-    
+
+def View1(request):
+     return render(request, 'assistantshipClaim.html')

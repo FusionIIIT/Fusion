@@ -35,6 +35,7 @@ urlpatterns = [
     url(r'^test/$', views.test),
     url(r'^bonafide_pdf/$',views.Bonafide_form),
     url(r'^test_ret/$', views.test_ret),
+    url(r'^')
     
     
 
