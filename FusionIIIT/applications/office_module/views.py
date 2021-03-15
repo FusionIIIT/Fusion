@@ -29,12 +29,12 @@ from django.template.defaulttags import register
 
 
 def officeOfDeanRSPC(request):
-    project=Project_Registration.objects.all()
-    project1=Project_Extension.objects.all()
-    project2=Project_Closure.objects.all()
-    project3=Project_Reallocation.objects.all()
+    project=Project_Registration.objects.select_related('PI_id__user','PI_id__department').all()
+    project1=Project_Extension.objects.select_related('project_id__PI_id__user','project_id__PI_id__department').all()
+    project2=Project_Closure.objects.select_related('project_id__PI_id__user','project_id__PI_id__department').all()
+    project3=Project_Reallocation.objects.select_related('project_id__PI_id__user','project_id__PI_id__department').all()
 
-    design = HoldsDesignation.objects.filter(working=request.user)
+    design = HoldsDesignation.objects.select_related('user','designation').filter(working=request.user)
     print(design)
     desig=[]
     for i in design:
@@ -94,12 +94,12 @@ def officeOfDeanPnD(request):
                 outgoing assignments. Allows performing actions on incoming assignments.
     """
     user = request.user
-    extrainfo = ExtraInfo.objects.get(user=user)
+    extrainfo = ExtraInfo.objects.select_related('user','department').get(user=user)
 
 
-
+    
     holds=HoldsDesignation.objects.filter(working=user)
-    designations=[d.designation for d in HoldsDesignation.objects.filter(working=user)]
+    designations=[d.designation for d in HoldsDesignation.objects.select_related('user','designation','working').filter(working=user)]
 
     # handle createassignment POST request
     if 'createassign' in request.POST:
@@ -115,13 +115,13 @@ def officeOfDeanPnD(request):
                 if requisition.department != "civil":
                     return HttpResponse('Unauthorized', status=401)
                 sender_design=hold
-                receive=HoldsDesignation.objects.get(designation__name="Civil_AE")
+                receive=HoldsDesignation.objects.select_related('user','designation','working').get(designation__name="Civil_AE")
                 #fdate = datetime.dat
             elif str(hold.designation.name)=="Electrical_JE":
                 if requisition.department != "electrical":
                     return HttpResponse('Unauthorized', status=401)
                 sender_design=hold
-                receive=HoldsDesignation.objects.get(designation__name="Electrical_AE")
+                receive=HoldsDesignation.objects.select_related('user','designation','working').get(designation__name="Electrical_AE")
                 #fdate = datetime.datetime.now().date()
         if not sender_design:
             return HttpResponse('Unauthorized', status=401)
@@ -156,7 +156,7 @@ def officeOfDeanPnD(request):
     # kept in the database for record-keeping reasons.
     elif 'delete_requisition' in request.POST:
         print('delete requisition')
-        hold = HoldsDesignation.objects.get(working=user, designation__name__in=_pnd_deslist)
+        hold = HoldsDesignation.objects.select_related('user','designation','working').get(working=user,designation__name__in=_pnd_deslist)
         if hold:
             req_id=request.POST.get('req_id')
             try:
@@ -249,7 +249,7 @@ def submitRequest(request):
         Endpoint used to create requisition
     """
     user = request.user
-    extrainfo = ExtraInfo.objects.get(user=user)
+    extrainfo = ExtraInfo.objects.select_related('user','department').get(user=user)
     fdate = datetime.datetime.now().date()
     dept=request.POST.get('department')
     building = request.POST.get('building')
@@ -273,7 +273,7 @@ def action(request):
     """
     # deslist=['Civil_JE','Civil_AE','EE','DeanPnD','Electrical_JE','Electrical_AE']
     user = request.user
-    extrainfo = ExtraInfo.objects.get(user=user)
+    extrainfo = ExtraInfo.objects.select_related('user','department').get(user=user)
     req_id=request.POST.get('req_id')
     requisition = Requisitions.objects.get(pk=req_id)
     description=request.POST.get('description')
@@ -282,7 +282,7 @@ def action(request):
     
     # current, previous and next Designation and HoldsDesignation found out
     current_design = track.receive_design
-    current_hold_design = HoldsDesignation.objects.filter(user=user).get(designation=current_design)
+    current_hold_design = HoldsDesignation.objects.select_related('user','designation','working').filter(user=User.objects.all().first()).get(designation=current_design)
     # prev_design = track.current_design.designation
     # prev_hold_design = track.current_design
     
@@ -309,7 +309,7 @@ def action(request):
     if 'Send' in request.POST:
         sent_design=request.POST.get('sent_design')
         sent_design = Designation.objects.get(name=sent_design)
-        sent_hold_design = HoldsDesignation.objects.get(designation=sent_design)
+        sent_hold_design = HoldsDesignation.select_related('user','designation','working').objects.get(designation=sent_design)
         Tracking.objects.create(
                 file_id=requisition.assign_file,
                 current_id=extrainfo,
@@ -391,12 +391,12 @@ def frequest(request):
 
 
 def eisModulenew(request):
-    project=Project_Registration.objects.all()
-    project1=Project_Extension.objects.all()
-    project2=Project_Closure.objects.all()
-    project3=Project_Reallocation.objects.all()
+    project=Project_Registration.objects.select_related('PI_id__user','PI_id__department').all()
+    project1=Project_Extension.objects.select_related('project_id__PI_id__user','project_id__PI_id__department').all()
+    project2=Project_Closure.objects.select_related('project_id__PI_id__user','project_id__PI_id__department').all()
+    project3=Project_Reallocation.objects.select_related('project_id__PI_id__user','project_id__PI_id__department').all()
 
-    design = HoldsDesignation.objects.filter(working=request.user)
+    design = HoldsDesignation.objects.select_related('user','designation').filter(working=request.user)
     print(design)
     desig=[]
     for i in design:
@@ -491,7 +491,7 @@ def officeOfRegistrar_forward_submit(request):
                 return HttpResponse("Cannot find user")
             receiver_design = Designation.objects.filter(name=receiver_design_text)[0]
             current_id = request.user.extrainfo
-            current_design = HoldsDesignation.objects.filter(user = request.user)[0]
+            current_design = HoldsDesignation.objects.select_related('user','designation','working').filter(user = request.user)[0]
             t_id = Tracking.objects.get(id = track_id)
             up_file = Tracking.objects.get(id = track_id)
             remarks = ""
