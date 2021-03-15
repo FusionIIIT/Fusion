@@ -3,7 +3,7 @@ from django.conf.urls import url
 from . import views
 
 urlpatterns = [
-
+    
     url(r'^user/detail/(?P<detailcomp_id1>[0-9]+)/$', views.complaint_details_api,name='complain-detail-get-api'),
     url(r'^studentcomplain',views.student_complain_api,name='complain-detail2-get-api'),
     url(r'^newcomplain',views.create_complain_api,name='complain-post-api'),
