@@ -1,5 +1,4 @@
 from django.db import models
-
 from applications.academic_information.models import Student
 from applications.globals.models import Faculty
 # Create your models here.
@@ -94,6 +93,7 @@ class CounsellingMinutes(models.Model):
 
     def __str__(self):
         return '{} - {}'.format(self.meeting_date.meet_date, self.mess_minutes)
+
 
 
 
