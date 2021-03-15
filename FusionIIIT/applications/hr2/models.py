@@ -80,7 +80,7 @@ class Employee(models.Model):
 
     
 # table for employee  confidential details
-class Emp_confidential_details(models.Model):
+class EmpConfidentialDetails(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     aadhar_no = models.IntegerField(default=0)
     medical_certificate =  models.FileField(blank=True)
@@ -92,7 +92,7 @@ class Emp_confidential_details(models.Model):
     salary =  models.IntegerField(default=0)
 
 # table for employee's dependent details
-class Emp_dependents(model.Model):
+class EmpDependents(model.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     name = models.CharField(max_length=40, default='')
     gender = models.CharField(max_length=1, choices=Constants.GENDER_CHOICES)
@@ -100,7 +100,7 @@ class Emp_dependents(model.Model):
     relationship = models.CharField(max_length=40, default='')
 
 # table for  details about employee training
-class Emp_training(models.Model):
+class EmpTraining(models.Model):
       employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
       training_type =  models.CharField(max_length=40, default='')
       name =  models.CharField(max_length=40, default='')
