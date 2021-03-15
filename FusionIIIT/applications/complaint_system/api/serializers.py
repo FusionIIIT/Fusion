@@ -6,7 +6,6 @@ from applications.complaint_system.models import Caretaker, StudentComplain, Sup
 from applications.globals.models import ExtraInfo,User
 
 class StudentComplainSerializers(serializers.ModelSerializer):
-
     class Meta:
         model=StudentComplain
         fields=('__all__')
