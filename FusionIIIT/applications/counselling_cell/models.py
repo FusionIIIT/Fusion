@@ -16,7 +16,7 @@ STATUS= (
 
 class CounsellingInfo(models.Model):
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
-    student_position = models.CharField(max_length=50,choices=POSTIONS,default="pos1")
+    student_position = models.CharField(max_length=50,choices=POSTIONS,required=True)
 
     class Meta:
         unique_together = (('student_id', 'student_position'),)
@@ -25,33 +25,31 @@ class CounsellingInfo(models.Model):
         return f"{self.student_id} - {self.student_position}"
 
 class CounsellingCategory(models.Model):
-    counselling_category_id = models.AutoField(primary_key=True)
     counselling_category_id = models.CharField(max_length=40)
 
 class Issues(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     issue_category = models.ForeignKey(CounsellingCategory,on_delete=models.CASCADE)
     issue = models.TextField(max_length=500,)
-    issue_status = models.CharField(max_length=20,choices=STATUS,default="status1")
+    issue_status = models.CharField(max_length=20,choices=STATUS,default="status_unresolved")
 
 class FAQ(models.Model):
-    counselling_question = models.TextField(max_length=400)
-    counselling_answer = models.TextField(max_length=1000)
+    counselling_question = models.TextField(max_length=1000)
+    counselling_answer = models.TextField(max_length=5000)
     counseliing_category = models.ForeignKey(CounsellingCategory,on_delete=models.CASCADE)
 
 class CounsellingMeeting(models.Model):
-    counselling_meeting = models.AutoField(primary_key=True)
-    meeting = models.DateTimeField()
-    agenda = models.TextField()
-    venue = models.TextField()
+    counselling_meeting_time = models.DateTimeField()
+    counselling_agenda = models.TextField()
+    counselling_venue = models.CharField(max_length=20)
 
     def __str__(self):
-        return '{} - {}'.format(self.meet_date, self.agenda)
+        return '{} - {}'.format(self.meeting, self.agenda)
 
 
 class CounsellingMinutes(models.Model):
-    counselling_meeting_id = models.ForeignKey(CounsellingMeeting, on_delete=models.CASCADE)
-    counselling_minutes = models.FileField(upload_to='central_mess/')
+    counselling_meeting_time = models.ForeignKey(CounsellingMeeting, on_delete=models.CASCADE)
+    counselling_minutes = models.FileField(upload_to='counselling_cell/')
 
     def __str__(self):
         return '{} - {}'.format(self.meeting_date.meet_date, self.mess_minutes)
