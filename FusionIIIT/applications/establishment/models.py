@@ -185,7 +185,7 @@ class Ltc_eligible_user(models.Model):
         return str(self.user.username) + ' - joined on ' + str(self.date_of_joining)
 
 class Appraisal(models.Model):
-    """ Stores a single Appraisal application information of a person related to :model:`auth.User`."""
+    """ Stores a single Appraisal application information of a person related to :model:`auth.User`. """
     applicant = models.ForeignKey(User, related_name='all_appraisals',
                                   on_delete=models.CASCADE)
     designation =models.ForeignKey(Designation, null=True,
@@ -206,7 +206,7 @@ class Appraisal(models.Model):
     
 
 class CoursesInstructed(models.Model):
-    """Stores the courses instructed by the user related to :model:'establishment.Appraisal' """
+    """ Stores the courses instructed by the user related to :model:'establishment.Appraisal' """
     appraisal = models.ForeignKey(Appraisal, related_name='applicant_courses',
                                     on_delete=models.CASCADE)
     semester=models.IntegerField(blank=True, null=True)
@@ -220,7 +220,7 @@ class CoursesInstructed(models.Model):
                                     on_delete=models.CASCADE)
 
 class NewCoursesOffered(models.Model):
-    """Stores the new courses offered by the user related to :model:'establishment.Appraisal' """
+    """ Stores the new courses offered by the user related to :model:'establishment.Appraisal' """
     appraisal = models.ForeignKey(Appraisal, related_name='applicants_offered_new_courses',
                                   on_delete=models.CASCADE)
     course_name = models.CharField(max_length=30)
@@ -231,7 +231,7 @@ class NewCoursesOffered(models.Model):
     semester=models.IntegerField()
 
 class NewCourseMaterial(models.Model):
-    """Stores the new course material prepared by the user related to :model:'establishment.Appraisal' """
+    """ Stores the new course material prepared by the user related to :model:'establishment.Appraisal' """
     appraisal = models.ForeignKey(Appraisal, related_name='applicant_new_courses_material',
                                   on_delete=models.CASCADE)
     course_name = models.CharField(max_length=30)
@@ -241,7 +241,7 @@ class NewCourseMaterial(models.Model):
     availiability=models.CharField(max_length=10,blank=True, null=True)
 
 class ThesisResearchSupervision(models.Model):
-    """Stores the thesis/research of students supervised by the user related to :model:'establishment.Appraisal' """
+    """ Stores the thesis/research of students supervised by the user related to :model:'establishment.Appraisal' """
     appraisal = models.ForeignKey(Appraisal, related_name='applicants_supervised_stud',
                                   on_delete=models.CASCADE)
     stud_name = models.CharField(max_length=30)
@@ -252,7 +252,7 @@ class ThesisResearchSupervision(models.Model):
     co_supervisors=models.ForeignKey(User, related_name='all_supervisors',
                                   on_delete=models.CASCADE)
 class SponsoredProjects(models.Model):
-    """Stores the projects sponsored by the user related to :model:'establishment.Appraisal' """
+    """ Stores the projects sponsored by the user related to :model:'establishment.Appraisal' """
     appraisal = models.ForeignKey(Appraisal, related_name='applicant_sponsored_projects',
                                   on_delete=models.CASCADE)
     project_title=models.CharField(max_length=30)
@@ -265,7 +265,7 @@ class SponsoredProjects(models.Model):
     remarks=models.CharField(max_length=30)
 
 class AppraisalRequest(models.Model):
-    """Stores the appraisal request info of the user related to :model:'establishment.Appraisal' """
+    """ Stores the appraisal request info of the user related to :model:'establishment.Appraisal' """
     appraisal=models.ForeignKey(Appraisal, related_name='appraisal_requests', on_delete=models.CASCADE)
     requested_from = models.ForeignKey(User, related_name='all_appraisal_requests',
                                        on_delete=models.CASCADE)
@@ -275,7 +275,7 @@ class AppraisalRequest(models.Model):
     status = models.CharField(max_length=20, default='pending', choices=Constants.STATUS)
 
 class AppraisalAdministrators(models.Model):
-    """Stores the appraisal administrators info and permissions related to :model:'auth.User' and :model:'globals.Designation' """
+    """ Stores the appraisal administrators info and permissions related to :model:'auth.User' and :model:'globals.Designation' """
     user = models.OneToOneField(User, related_name='apprasial_admins', on_delete=models.CASCADE)
     authority = models.ForeignKey(Designation, null=True,
                                   related_name='sanc_authority_of_ap', on_delete=models.SET_NULL)
