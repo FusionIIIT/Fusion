@@ -204,7 +204,7 @@ class Appraisal(models.Model):
     faculty_comments= models.CharField(max_length=200, blank=True, null=True, default='')
     
 
-class courses_instructed(models.Model):
+class CoursesInstructed(models.Model):
     appraisal = models.ForeignKey(Appraisal, related_name='applicant_courses',
                                     on_delete=models.CASCADE)
     semester=models.IntegerField(blank=True, null=True)
@@ -232,7 +232,7 @@ class NewCourseMaterial(models.Model):
                                   on_delete=models.CASCADE)
     course_name = models.CharField(max_length=30)
     course_num=models.IntegerField(blank=True, null=True)
-    UGorPG=models.CharField(max_length=2,blank=True, null=True)
+    ug_or_pg=models.CharField(max_length=2,blank=True, null=True)
     activity_type=models.CharField(max_length=10,blank=True, null=True)
     availiability=models.CharField(max_length=10,blank=True, null=True)
 
@@ -255,7 +255,7 @@ class SponsoredProjects(models.Model):
     duration=models.IntegerField()
     co_investigators=models.ForeignKey(User, related_name='all_co_investigators',
                                   on_delete=models.CASCADE)
-    status= models.CharField(max_length=30)
+    status=models.CharField(max_length=30)
     remarks=models.CharField(max_length=30)
 
 class AppraisalRequest(models.Model):
