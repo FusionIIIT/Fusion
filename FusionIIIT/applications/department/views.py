@@ -14,6 +14,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from applications.academic_information.models import Spi, Student
 from applications.globals.models import (Designation, ExtraInfo,
                                          HoldsDesignation)
+from applications.eis.models import (faculty_about, emp_research_projects)
 
 #from .models import ()
 from jsonschema import validate
@@ -53,6 +54,11 @@ def BtechThirdYear_Students(request):
     return render(request, 'department/BTechStudents.html',context=id_dict)
 
 def BtechFinalYear_Students(request):
-    student_list4=Student.objects.filter(batch=2016)
+    student_list4=Student.objects.filter(batch=2016)[:11]
     id_dict={'student_list':student_list4,'batch':"Final"}
     return render(request, 'department/BTechStudents.html',context=id_dict)
+
+def cse_faculty(request):
+    cse_f=ExtraInfo.objects.filter(department__name='ECE').filter(user_type='faculty')[:5]
+    id_dict={'fac_list':cse_f,'department':'CSE'}
+    return render(request,'department/faculty.html',context=id_dict)
