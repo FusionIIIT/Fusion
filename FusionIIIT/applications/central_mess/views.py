@@ -85,12 +85,11 @@ def mess(request):
         y = Menu.objects.filter(mess_option=mess_optn.mess_option)
         x = Nonveg_menu.objects.all()
 
-
-        for item in rebates:
-            d1 = item.start_date
-            d2 = item.end_date
-            item.duration = abs((d2 - d1).days)+1
-            item.save()
+        # for item in rebates:
+        #     d1 = item.start_date
+        #     d2 = item.end_date
+        #     item.duration = abs((d2 - d1).days)+1
+        #     item.save()
 
         # for items in rebates:
         #     if items.leave_type == 'casual' and (items.status == '1' or items.status == '2'):
@@ -547,16 +546,20 @@ def regsubmit(request):
         else:
 
             if mess_reg.end_reg.strftime("%B") in month_1:
+                mess_monthly_bill = []
                 while i<=5:
                     monthly_bill_obj = Monthly_bill(student_id=student, month=month_1[i], year=year_last_g)
-                    monthly_bill_obj.save()
+                    mess_monthly_bill.append(monthly_bill_obj)
                     i = i+1
+                Monthly_bill.objects.bulk_create(mess_monthly_bill)
 
             else:
+                mess_monthly_bill = []
                 while j<=5:
                     monthly_bill_obj = Monthly_bill(student_id=student, month=month_2[j], year=year_last_g)
-                    monthly_bill_obj.save()
+                    mess_monthly_bill.append(monthly_bill_obj)
                     j = j+1
+                Monthly_bill.objects.bulk_create(mess_monthly_bill)
 
         return HttpResponseRedirect("/mess")
 
