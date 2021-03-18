@@ -1,5 +1,4 @@
 from django.db import models
-
 from applications.academic_information.models import Student
 from django.contrib.auth.models import User
 from applications.globals.models import Faculty
@@ -113,6 +112,7 @@ class StudentMeetingRequest(models.Model):
 
     def __str__(self):
         return f"{self.student} - {self.requested_time}"
+
 
 
 
