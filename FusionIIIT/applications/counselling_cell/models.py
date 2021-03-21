@@ -10,8 +10,8 @@ class CounsellingCellConstants :
         ('student_coordinator', 'Student Coordinator'),
     )
     FACULTY_POSTIONS= (
+        ('head_counsellor', 'Head Counsellor'),
         ('faculty_counsellor', 'Faculty Counsellor'),
-        ('counsellor', 'Counsellor'),
     )
     
     ISSUE_STATUS= (
@@ -45,8 +45,8 @@ class StudentCounsellingTeam(models.Model):
     def __str__(self):
         return f"{self.student} - {self.student_position}"
 
-class StudentCounseliingInfo(models.Model):
-    faculty = models.ForeignKey(FacultyCounsellingInfo ,on_delete=models.CASCADE)
+class StudentCounsellingInfo(models.Model):
+    faculty_counsellor = models.ForeignKey(FacultyCounsellingInfo ,on_delete=models.CASCADE)
     student_guide = models.ForeignKey(StudentCounsellingInfo,on_delete=models.CASCADE)
     student = models.ForeignKey(Student,on_delete=models.CASCADE)
 
@@ -57,6 +57,7 @@ class StudentCounseliingInfo(models.Model):
         return f"{self.faculty} - {self.student_guide} - {self.student}"
 
 class CounsellingIssueCategory(models.Model):
+    category_id = models.CharField(max_length=40)
     category = models.CharField(max_length=40)
 
     def __str__(self):
