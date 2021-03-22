@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from applications.globals.models import Staff
 from applications.filetracking.models import File
 
-class Indent_File(models.Model):
+class IndentFile(models.Model):
     indent_id=models.OneToOneField(File, on_delete=models.CASCADE,primary_key=True)
     item_name=models.CharField(max_length=250,blank=False)
     quantity= models.IntegerField(blank=False)
@@ -17,7 +17,7 @@ class Indent_File(models.Model):
     replaced =models.BooleanField(default = False)
     budgetary_head=models.CharField(max_length=250)
     expected_delivery=models.DateField(blank=False)
-    souces_of_supply=models.CharField(max_length=250)
+    sources_of_supply=models.CharField(max_length=250)
     head_approval=models.BooleanField(default=False)
     director_approval=models.BooleanField(default = False)
     financial_approval=models.BooleanField(default = False)
