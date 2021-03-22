@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block title %}
-    CSE_faculty_List
+    Faculty List Department Wise
 {% endblock %}
 
 {% block body %}
@@ -41,8 +41,9 @@
 
             {% for fcu in fac_list %}
               <tr>
+                {% with "127.0.0.1:8000/eis/profile/"|add:fcu.user as link %}
                 <td>{{ fcu.id }}</td>
-                <td>{{ fcu.user }}</td>
+                <td><a href = {{ link }}>{{ fcu.user }}</a></td>
 				<td>{{ fcu.title }}</td>
                 <td>{{ fcu.sex }}</td>
 				<td>{{ fcu.date_of_birth }}</td>
@@ -50,7 +51,9 @@
 				<td>{{ fcu.phone_no }}</td>
                 <td>{{ fcu.user_type }}</td>
 				<td>{{ fcu.department }}</td>
+                {% endwith %}
               </tr>
+              
             {% endfor %}
         </table>
 
