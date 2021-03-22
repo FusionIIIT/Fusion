@@ -56,7 +56,7 @@ def hod(request):
     
     if user_designation == "student":
         return render(request,"department/index.html")
-    elif user_designation == "faculty":
+    elif(str(user.extrainfo.user_type)=='faculty')
         return render(request, 'department/dep_complaint.html')
 
 def file_complaint(request):
