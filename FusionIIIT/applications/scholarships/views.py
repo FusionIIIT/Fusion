@@ -134,7 +134,7 @@ def convener_view(request):
             spi = request.POST.get('spi')
             cpi = request.POST.get('cpi')
             award, award_id = getAwardId(request)
-            Notional_prize.objects.select_related('award_id').create(
+            Notional_prize.objects.create(
                 year=year, spi=spi, cpi=cpi, award_id=award_id)
             messages.success(request, award+' are invited successfully')
             return HttpResponseRedirect('/spacs/convener_view')
@@ -146,7 +146,7 @@ def convener_view(request):
             year = datetime.datetime.now().year
             Mcm.objects.select_related('award_id','student').filter(id=pk).update(status='Accept')
             request.session['last_clicked'] = 'Accept_MCM'
-            Previous_winner.objects.select_related('student','award_id').create(
+            Previous_winner.objects.create(
                 student=student_id, year=year, award_id=award)
             convenor = request.user
             recipient = student_id
@@ -171,7 +171,7 @@ def convener_view(request):
             student_id = Director_gold.objects.select_related('student','award_id').get(id=pk).student
             year = datetime.datetime.now().year
             Director_gold.objects.select_related('student','award_id').filter(id=pk).update(status='Accept')
-            Previous_winner.objects.select_related('student','award_id').create(
+            Previous_winner.objects.create(
                 student=student_id, year=year, award_id=award)
             convenor = request.user
             recipient = student_id
@@ -199,7 +199,7 @@ def convener_view(request):
             student_id = Director_silver.objects.select_related('student','award_id').get(id=pk).student
             year = datetime.datetime.now().year
             Director_silver.objects.select_related('student','award_id').filter(id=pk).update(status='Accept')
-            Previous_winner.objects.select_related('student','award_id').create(
+            Previous_winner.objects.create(
                 student=student_id, year=year, award_id=award)
             convenor = request.user
             recipient = student_id
@@ -227,7 +227,7 @@ def convener_view(request):
             student_id = Proficiency_dm.objects.select_related('student','award_id').get(id=pk).student
             year = datetime.datetime.now().year
             Proficiency_dm.objects.select_related('student','award_id').filter(id=pk).update(status='Accept')
-            Previous_winner.objects.select_related('student','award_id').create(
+            Previous_winner.objects.create(
                 student=student_id, year=year, award_id=award)
             convenor = request.user
             recipient = student_id
@@ -721,7 +721,7 @@ def submitGold(request):
                 messages.success(request, award + ' Application is successfully updated')
                 break
             else:
-                Director_gold.objects.select_related('student','award_id').create(
+                Director_gold.objects.create(
                     student=student_id,
                     relevant_document=relevant_document,
                     award_id=award_id,
@@ -806,7 +806,7 @@ def submitSilver(request):
                 messages.success(request, award + ' Application is successfully updated')
                 break
             else:
-                Director_silver.objects.select_related('student','award_id').create(
+                Director_silver.objects.create(
                     student=student_id,
                     award_id=award_id,
                     award_type=award_type,
@@ -938,7 +938,7 @@ def submitDM(request):
                     request, award + ' Application is successfully updated')
                 break
             else:
-                Proficiency_dm.objects.select_related('student','award_id').create(
+                Proficiency_dm.objects.create(
                     title_name=title_name,
                     no_of_students=no_of_students,
                     student=student_id,
