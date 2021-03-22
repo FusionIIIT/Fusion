@@ -4,6 +4,7 @@ import datetime
 import decimal
 import zipfile
 import xlwt
+import logging
 
 from html import escape
 from datetime import date
@@ -141,6 +142,7 @@ from .models import (Achievement, ChairmanVisit, Course, Education, Experience, 
             skillcheck - checking for skill to be shown in cv
 '''
 
+logger = logging.getLogger('django.server')
 
 def get_reference_list(request):
     if request.method == 'POST':
@@ -509,8 +511,7 @@ def delete_invitation_status(request):
             PlacementStatus.objects.get(pk=delete_invit_status_key).delete()
             messages.success(request, 'Invitation Deleted Successfully')
         except Exception as e:
-
-            print('---- \n\n record not found')
+            logger.error(e)
 
     if 'pbi_tab_active' in request.POST:
         mnpbi_tab = 1
