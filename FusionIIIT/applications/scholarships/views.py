@@ -47,7 +47,7 @@ def spacs(request):
             award = request.POST.get('studentDeclineSubmit')
             release_id = request.POST.get('release_id')
             release = Release.objects.get(id=release_id)
-            x = Notification.objects.get(
+            x = Notification.objects.select_related('student_id','release_id').get(
                 student_id=request.user.extrainfo.id, release_id=release)
             if award == 'Merit-cum-Means Scholarship':
                 request.session['last_clicked'] = 'studentApproveSubmit_MCM'
@@ -111,14 +111,14 @@ def convener_view(request):
                 scholarship_portal_notif(convenor, student.id.user, 'award_' + award)  # Notification
             if award == 'Merit-cum-Means Scholarship':
                 rel = Release.objects.get(date_time=d_time)
-                Notification.objects.bulk_create([Notification(
+                Notification.objects.select_related('student_id','release_id').bulk_create([Notification(
                     release_id=rel,
                     student_id=student,
                     notification_mcm_flag=True,
                     invite_mcm_accept_flag=False) for student in recipient])
             else:
                 rel = Release.objects.get(date_time=d_time)
-                Notification.objects.bulk_create([Notification(
+                Notification.objects.select_related('student_id','release_id').bulk_create([Notification(
                     release_id=rel,
                     student_id=student,
                     notification_convocation_flag=True,
@@ -134,19 +134,19 @@ def convener_view(request):
             spi = request.POST.get('spi')
             cpi = request.POST.get('cpi')
             award, award_id = getAwardId(request)
-            Notional_prize.objects.create(
+            Notional_prize.objects.select_related('award_id').create(
                 year=year, spi=spi, cpi=cpi, award_id=award_id)
             messages.success(request, award+' are invited successfully')
             return HttpResponseRedirect('/spacs/convener_view')
 
         elif 'Accept_MCM' in request.POST:
             pk = request.POST.get('id')
-            award = Mcm.objects.get(id=pk).award_id
-            student_id = Mcm.objects.get(id=pk).student
+            award = Mcm.objects.select_related('award_id','student').get(id=pk).award_id
+            student_id = Mcm.objects.select_related('award_id','student').get(id=pk).student
             year = datetime.datetime.now().year
-            Mcm.objects.filter(id=pk).update(status='Accept')
+            Mcm.objects.select_related('award_id','student').filter(id=pk).update(status='Accept')
             request.session['last_clicked'] = 'Accept_MCM'
-            Previous_winner.objects.create(
+            Previous_winner.objects.select_related('student','award_id').create(
                 student=student_id, year=year, award_id=award)
             convenor = request.user
             recipient = student_id
@@ -156,8 +156,8 @@ def convener_view(request):
 
         elif 'Reject_MCM' in request.POST:
             pk = request.POST.get('id')
-            student_id = Mcm.objects.get(id=pk).student
-            Mcm.objects.filter(id=pk).update(status='Reject')
+            student_id = Mcm.objects.select_related('award_id','student').get(id=pk).student
+            Mcm.objects.select_related('award_id','student').filter(id=pk).update(status='Reject')
             convenor = request.user
             recipient = student_id
             scholarship_portal_notif(convenor, recipient.id.user, 'Reject_MCM')
@@ -167,11 +167,11 @@ def convener_view(request):
 
         elif 'Accept_Gold' in request.POST:
             pk = request.POST.get('id')
-            award = Director_gold.objects.get(id=pk).award_id
-            student_id = Director_gold.objects.get(id=pk).student
+            award = Director_gold.objects.select_related('student','award_id').get(id=pk).award_id
+            student_id = Director_gold.objects.select_related('student','award_id').get(id=pk).student
             year = datetime.datetime.now().year
-            Director_gold.objects.filter(id=pk).update(status='Accept')
-            Previous_winner.objects.create(
+            Director_gold.objects.select_related('student','award_id').filter(id=pk).update(status='Accept')
+            Previous_winner.objects.select_related('student','award_id').create(
                 student=student_id, year=year, award_id=award)
             convenor = request.user
             recipient = student_id
@@ -183,8 +183,8 @@ def convener_view(request):
 
         elif 'Reject_Gold' in request.POST:
             pk = request.POST.get('id')
-            student_id = Director_gold.objects.get(id=pk).student
-            Director_gold.objects.filter(id=pk).update(status='Reject')
+            student_id = Director_gold.objects.select_related('student','award_id').get(id=pk).student
+            Director_gold.objects.select_related('student','award_id').filter(id=pk).update(status='Reject')
             convenor = request.user
             recipient = student_id
             scholarship_portal_notif(
@@ -196,10 +196,10 @@ def convener_view(request):
         elif 'Accept_Silver' in request.POST:
             pk = request.POST.get('id')
             award = Director_silver.objects.get(id=pk).award_id
-            student_id = Director_silver.objects.get(id=pk).student
+            student_id = Director_silver.objects.select_related('student','award_id').get(id=pk).student
             year = datetime.datetime.now().year
-            Director_silver.objects.filter(id=pk).update(status='Accept')
-            Previous_winner.objects.create(
+            Director_silver.objects.select_related('student','award_id').filter(id=pk).update(status='Accept')
+            Previous_winner.objects.select_related('student','award_id').create(
                 student=student_id, year=year, award_id=award)
             convenor = request.user
             recipient = student_id
@@ -211,8 +211,8 @@ def convener_view(request):
 
         elif 'Reject_Silver' in request.POST:
             pk = request.POST.get('id')
-            student_id = Director_silver.objects.get(id=pk).student
-            Director_silver.objects.filter(id=pk).update(status='Reject')
+            student_id = Director_silver.objects.select_related('student','award_id').get(id=pk).student
+            Director_silver.objects.select_related('student','award_id').filter(id=pk).update(status='Reject')
             convenor = request.user
             recipient = student_id
             scholarship_portal_notif(
@@ -223,11 +223,11 @@ def convener_view(request):
 
         elif 'Accept_DM' in request.POST:
             pk = request.POST.get('id')
-            award = Proficiency_dm.objects.get(id=pk).award_id
-            student_id = Proficiency_dm.objects.get(id=pk).student
+            award = Proficiency_dm.objects.select_related('student','award_id').get(id=pk).award_id
+            student_id = Proficiency_dm.objects.select_related('student','award_id').get(id=pk).student
             year = datetime.datetime.now().year
-            Proficiency_dm.objects.filter(id=pk).update(status='Accept')
-            Previous_winner.objects.create(
+            Proficiency_dm.objects.select_related('student','award_id').filter(id=pk).update(status='Accept')
+            Previous_winner.objects.select_related('student','award_id').create(
                 student=student_id, year=year, award_id=award)
             convenor = request.user
             recipient = student_id
@@ -238,8 +238,8 @@ def convener_view(request):
 
         elif 'Reject_DM' in request.POST:
             pk = request.POST.get('id')
-            Proficiency_dm.objects.filter(id=pk).update(status='Reject')
-            student_id = Proficiency_dm.objects.get(id=pk).student
+            Proficiency_dm.objects.select_related('student','award_id').filter(id=pk).update(status='Reject')
+            student_id = Proficiency_dm.objects.select_related('student','award_id').get(id=pk).student
             convenor = request.user
             recipient = student_id
             scholarship_portal_notif(convenor, recipient.id.user, 'Reject_DM')
@@ -287,53 +287,53 @@ def staff_view(request):
     if request.method == 'POST':
         if 'Verify_MCM' in request.POST:
             pk = request.POST.get('id')
-            Mcm.objects.filter(id=pk).update(status='COMPLETE')
+            Mcm.objects.select_related('award_id','student').filter(id=pk).update(status='COMPLETE')
             request.session['last_clicked'] = 'Verify_MCM'
             messages.success(request, 'Verified successfully')
             return HttpResponseRedirect('/spacs/staff_view')
 
         elif 'Reject_MCM' in request.POST:
             pk = request.POST.get('id')
-            Mcm.objects.filter(id=pk).update(status='Reject')
+            Mcm.objects.select_related('award_id','student').filter(id=pk).update(status='Reject')
             request.session['last_clicked'] = 'Reject_MCM'
             messages.success(request, 'Rejected successfully')
             return HttpResponseRedirect('/spacs/staff_view')
 
         elif 'Verify_Gold' in request.POST:
             pk = request.POST.get('id')
-            Director_gold.objects.filter(id=pk).update(status='COMPLETE')
+            Director_gold.objects.select_related('student','award_id').filter(id=pk).update(status='COMPLETE')
             request.session['last_clicked'] = 'Verify_Gold'
             messages.success(request, 'Verified successfully')
             return HttpResponseRedirect('/spacs/staff_view')
         elif 'Reject_Gold' in request.POST:
             pk = request.POST.get('id')
-            Director_gold.objects.filter(id=pk).update(status='Reject')
+            Director_gold.objects.select_related('student','award_id').filter(id=pk).update(status='Reject')
             request.session['last_clicked'] = 'Reject_Gold'
             messages.success(request, 'Rejected successfully')
             return HttpResponseRedirect('/spacs/staff_view')
 
         elif 'Verify_Silver' in request.POST:
             pk = request.POST.get('id')
-            Director_silver.objects.filter(id=pk).update(status='COMPLETE')
+            Director_silver.objects.select_related('student','award_id').filter(id=pk).update(status='COMPLETE')
             request.session['last_clicked'] = 'Verify_Silver'
             messages.success(request, 'Verified successfully')
             return HttpResponseRedirect('/spacs/staff_view')
         elif 'Reject_Silver' in request.POST:
             pk = request.POST.get('id')
-            Director_silver.objects.filter(id=pk).update(status='Reject')
+            Director_silver.objects.select_related('student','award_id').filter(id=pk).update(status='Reject')
             request.session['last_clicked'] = 'Reject_Silver'
             messages.success(request, 'Rejected successfully')
             return HttpResponseRedirect('/spacs/staff_view')
 
         elif 'Verify_DM' in request.POST:
             pk = request.POST.get('id')
-            Proficiency_dm.objects.filter(id=pk).update(status='COMPLETE')
+            Proficiency_dm.objects.select_related('student','award_id').filter(id=pk).update(status='COMPLETE')
             request.session['last_clicked'] = 'Verify_DM'
             messages.success(request, 'Verified successfully')
             return HttpResponseRedirect('/spacs/staff_view')
         elif 'Reject_DM' in request.POST:
             pk = request.POST.get('id')
-            Proficiency_dm.objects.filter(id=pk).update(status='Reject')
+            Proficiency_dm.objects.select_related('student','award_id').filter(id=pk).update(status='Reject')
             request.session['last_clicked'] = 'Reject_DM'
             messages.success(request, 'Rejected successfully')
             return HttpResponseRedirect('/spacs/staff_view')
@@ -381,7 +381,7 @@ def getWinners(request):
     batch_year = int(request.GET.get('batch'))
     programme_name = request.GET.get('programme')
     award = Award_and_scholarship.objects.get(award_name=award_name)
-    winners = Previous_winner.objects.filter(
+    winners = Previous_winner.objects.select_related('student','award_id').filter(
         year=batch_year, award_id=award, programme=programme_name)
     context = {}
     context['student_name'] = []
@@ -409,7 +409,7 @@ def getWinners(request):
     return HttpResponse(json.dumps(context), content_type='getWinners/json')
 
 def get_MCM_Flag(request):  # Here we are extracting mcm_flag
-    x = Notification.objects.filter(student_id=request.user.extrainfo.id)
+    x = Notification.objects.select_related('student_id','release_id').filter(student_id=request.user.extrainfo.id)
     for i in x:
         i.invite_mcm_accept_flag = True
         i.save()
@@ -479,7 +479,7 @@ def getAwardId(request):
     return award, award_id
 
 def submitMCM(request):
-    i = Notification.objects.filter(student_id=request.user.extrainfo.id)
+    i = Notification.objects.select_related('student_id','release_id').filter(student_id=request.user.extrainfo.id)
     for x in i:
         x.invite_mcm_accept_flag = False
         x.save()
@@ -549,11 +549,11 @@ def submitMCM(request):
             )
         ).filter(award="Merit-cum-Means Scholarship")
         for release in releases:
-            if Mcm.objects.filter(
+            if Mcm.objects.select_related('award_id','student').filter(
                 Q(date__gte=release.startdate, date__lte=release.enddate)
             ).filter(student=request.user.extrainfo.student):
                 # if len(Mcm.objects.filter(student = request.user.extrainfo.student)) > 0:
-                Mcm.objects.filter(
+                Mcm.objects.select_related('award_id','student').filter(
                     Q(
                         date__gte=release.startdate,
                         date__lte=release.enddate,
@@ -635,7 +635,7 @@ def submitMCM(request):
     return HttpResponseRedirect('/spacs/student_view')
 
 def submitGold(request):
-    i = Notification.objects.filter(
+    i = Notification.objects.select_related('student_id','release_id').filter(
                 student_id=request.user.extrainfo.id)
     for x in i:
         x.invite_convocation_accept_flag = False
@@ -691,7 +691,7 @@ def submitGold(request):
         releases = Release.objects.filter(Q(startdate__lte=datetime.datetime.today().strftime(
             '%Y-%m-%d'), enddate__gte=datetime.datetime.today().strftime('%Y-%m-%d'))).filter(award="Convocation Medals")
         for release in releases:
-            existingRelease = Director_gold.objects.filter(Q(date__gte=release.startdate, date__lte=release.enddate)).filter(student=request.user.extrainfo.student)
+            existingRelease = Director_gold.objects.select_related('student','award_id').filter(Q(date__gte=release.startdate, date__lte=release.enddate)).filter(student=request.user.extrainfo.student)
             if existingRelease:
                 existingRelease.update(
                     student=student_id,
@@ -721,7 +721,7 @@ def submitGold(request):
                 messages.success(request, award + ' Application is successfully updated')
                 break
             else:
-                Director_gold.objects.create(
+                Director_gold.objects.select_related('student','award_id').create(
                     student=student_id,
                     relevant_document=relevant_document,
                     award_id=award_id,
@@ -753,7 +753,7 @@ def submitGold(request):
     return HttpResponseRedirect('/spacs/student_view')
 
 def submitSilver(request):
-    i = Notification.objects.filter(
+    i = Notification.objects.select_related('student_id','release_id').filter(
                 student_id=request.user.extrainfo.id)
     for x in i:
         x.invite_convocation_accept_flag = False
@@ -786,7 +786,7 @@ def submitSilver(request):
         releases = Release.objects.filter(Q(startdate__lte=datetime.datetime.today().strftime(
             '%Y-%m-%d'), enddate__gte=datetime.datetime.today().strftime('%Y-%m-%d'))).filter(award="Convocation Medals")
         for release in releases:
-            existingRelease = Director_silver.objects.filter(Q(date__gte=release.startdate, date__lte=release.enddate)).filter(student=request.user.extrainfo.student)
+            existingRelease = Director_silver.objects.select_related('student','award_id').filter(Q(date__gte=release.startdate, date__lte=release.enddate)).filter(student=request.user.extrainfo.student)
             if existingRelease:
                 existingRelease.update(
                     student=student_id,
@@ -806,7 +806,7 @@ def submitSilver(request):
                 messages.success(request, award + ' Application is successfully updated')
                 break
             else:
-                Director_silver.objects.create(
+                Director_silver.objects.select_related('student','award_id').create(
                     student=student_id,
                     award_id=award_id,
                     award_type=award_type,
@@ -828,7 +828,7 @@ def submitSilver(request):
     return HttpResponseRedirect('/spacs/student_view')
 
 def submitDM(request):
-    i = Notification.objects.filter(student_id=request.user.extrainfo.id)
+    i = Notification.objects.select_related('student_id','release_id').filter(student_id=request.user.extrainfo.id)
     for x in i:
         x.invite_convocation_accept_flag = False
         x.save()
@@ -903,9 +903,8 @@ def submitDM(request):
         releases = Release.objects.filter(Q(startdate__lte=datetime.datetime.today().strftime(
             '%Y-%m-%d'), enddate__gte=datetime.datetime.today().strftime('%Y-%m-%d'))).filter(award="Convocation Medals")
         for release in releases:
-            existingRelease = Proficiency_dm.objects.filter(Q(date__gte=release.startdate, date__lte=release.enddate)).filter(student=request.user.extrainfo.student)
+            existingRelease = Proficiency_dm.objects.select_related('student','award_id').filter(Q(date__gte=release.startdate, date__lte=release.enddate)).filter(student=request.user.extrainfo.student)
             if existingRelease:
-                print(existingRelease)
                 existingRelease.update(
                     title_name=title_name,
                     no_of_students=no_of_students,
@@ -939,8 +938,7 @@ def submitDM(request):
                     request, award + ' Application is successfully updated')
                 break
             else:
-                print(existingRelease)
-                Proficiency_dm.objects.create(
+                Proficiency_dm.objects.select_related('student','award_id').create(
                     title_name=title_name,
                     no_of_students=no_of_students,
                     student=student_id,
@@ -986,7 +984,7 @@ def submitPreviousWinner(request):
     request.session["PreviousWinnerProgramme"] = PreviousWinnerProgramme
 
     award = Award_and_scholarship.objects.get(award_name=PreviousWinnerAward)
-    winners = Previous_winner.objects.filter(year=PreviousWinnerAcadYear, award_id=award, programme=PreviousWinnerProgramme)
+    winners = Previous_winner.objects.select_related('student','award_id').filter(year=PreviousWinnerAcadYear, award_id=award, programme=PreviousWinnerProgramme)
 
     paginator = Paginator(winners, 10)
     page = 1
@@ -1005,7 +1003,7 @@ def sendConvenerRenderRequest(request, additionalParams={}):
     source = Constants.FATHER_OCC_CHOICE
     time = Constants.TIME
     release = Release.objects.all()
-    notification = Notification.objects.all()
+    notification = Notification.objects.select_related('student_id','release_id').all()
     spi = Spi.objects.all()
     context.update({ 'source': source, 'time': time, 'ch': ch, 'spi': spi, 'release': release})
     context.update(additionalParams)
@@ -1020,10 +1018,10 @@ def sendStudentRenderRequest(request, additionalParams={}):
     release = Release.objects.all()
     release_count = release.count()
     spi = Spi.objects.all()
-    no_of_mcm_filled = len(Mcm.objects.filter(
+    no_of_mcm_filled = len(Mcm.objects.select_related('award_id','student').filter(
         student=request.user.extrainfo.student))
-    no_of_con_filled = len(Director_silver.objects.filter(student=request.user.extrainfo.student)) + len(Director_gold.objects.filter(
-        student=request.user.extrainfo.student)) + len(Proficiency_dm.objects.filter(student=request.user.extrainfo.student))
+    no_of_con_filled = len(Director_silver.objects.select_related('student','award_id').filter(student=request.user.extrainfo.student)) + len(Director_gold.objects.select_related('student','award_id').filter(
+        student=request.user.extrainfo.student)) + len(Proficiency_dm.objects.select_related('student','award_id').filter(student=request.user.extrainfo.student))
     #  Here we are fetching the flags from the Notification table of student
     # end of database queries
 
@@ -1044,13 +1042,13 @@ def sendStudentRenderRequest(request, additionalParams={}):
                     update_con_flag = True
         else:
             if dates.award == "Merit-cum-Means Scholarship" and dates.batch == str(request.user.extrainfo.student)[0:4]:
-                x = Notification.objects.get(
+                x = Notification.objects.select_related('student_id','release_id').get(
                     student_id=request.user.extrainfo.id, release_id=dates.id).delete()
             elif dates.award == 'Convocation Medals' and dates.batch == str(request.user.extrainfo.student)[0:4]:
-                x = Notification.objects.get(
+                x = Notification.objects.select_related('student_id','release_id').get(
                     student_id=request.user.extrainfo.id, release_id=dates.id).delete()
 
-    x = Notification.objects.filter(student_id=request.user.extrainfo.id).order_by('-release_id__date_time')
+    x = Notification.objects.select_related('student_id','release_id').filter(student_id=request.user.extrainfo.id).order_by('-release_id__date_time')
     show_mcm_flag = False
     show_convocation_flag = False
     for i in x:
@@ -1080,10 +1078,10 @@ def sendStatsRenderRequest(request, additionalParams={}):
 
 def getCommonParams(request):
     student = Student.objects.all()
-    mcm = Mcm.objects.all()
-    gold = Director_gold.objects.all()
-    silver = Director_silver.objects.all()
-    dandm = Proficiency_dm.objects.all()
+    mcm = Mcm.objects.select_related('award_id','student').all()
+    gold = Director_gold.objects.select_related('student','award_id').all()
+    silver = Director_silver.objects.select_related('student','award_id').all()
+    dandm = Proficiency_dm.objects.select_related('student','award_id').all()
     awards = Award_and_scholarship.objects.all()
     con = Designation.objects.get(name='spacsconvenor')
     assis = Designation.objects.get(name='spacsassistant')
