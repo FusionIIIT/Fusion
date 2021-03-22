@@ -27,7 +27,7 @@ class CounsellingCellConstants :
 
 class FacultyCounsellingTeam(models.Model):
     faculty = models.ForeignKey(Faculty, on_delete=models.CASCADE)
-    faculty_position = models.CharField(max_length=50,choices=CounsellingCellConstants.FACULTY_POSTIONS,required=True)
+    faculty_position = models.CharField(max_length=50,choices=CounsellingCellConstants.FACULTY_POSTIONS)
 
     class Meta:
         unique_together = (('faculty', 'faculty_position'))
@@ -37,7 +37,7 @@ class FacultyCounsellingTeam(models.Model):
 
 class StudentCounsellingTeam(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    student_position = models.CharField(max_length=50,choices=CounsellingCellConstants.STUDENT_POSTIONS,required=True)
+    student_position = models.CharField(max_length=50,choices=CounsellingCellConstants.STUDENT_POSTIONS)
 
     class Meta:
         unique_together = (('student_id', 'student_position'))
@@ -46,12 +46,9 @@ class StudentCounsellingTeam(models.Model):
         return f"{self.student} - {self.student_position}"
 
 class StudentCounsellingInfo(models.Model):
-    faculty_counsellor = models.ForeignKey(FacultyCounsellingInfo ,on_delete=models.CASCADE)
-    student_guide = models.ForeignKey(StudentCounsellingInfo,on_delete=models.CASCADE)
-    student = models.ForeignKey(Student,on_delete=models.CASCADE)
-
-    class Meta:
-        unique_together = (('faculty', 'student_guide','student'))
+    faculty_counsellor = models.ForeignKey(FacultyCounsellingTeam ,on_delete=models.CASCADE)
+    student_guide = models.ForeignKey(StudentCounsellingTeam,on_delete=models.CASCADE)
+    student = models.OneToOneField(Student,on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.faculty} - {self.student_guide} - {self.student}"
@@ -65,7 +62,7 @@ class CounsellingIssueCategory(models.Model):
 
 class CounsellingIssue(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    issue_category = models.ForeignKey(CounsellingCategory,on_delete=models.CASCADE)
+    issue_category = models.ForeignKey(CounsellingIssueCategory,on_delete=models.CASCADE)
     issue = models.TextField(max_length=500,)
     issue_status = models.CharField(max_length=20,choices=CounsellingCellConstants.ISSUE_STATUS,default="status_unresolved")
 
@@ -76,7 +73,7 @@ class CounsellingFAQ(models.Model):
     
     counselling_question = models.TextField(max_length=1000)
     counselling_answer = models.TextField(max_length=5000)
-    counseliing_category = models.ForeignKey(CounsellingCategory,on_delete=models.CASCADE)
+    counseliing_category = models.ForeignKey(CounsellingIssueCategory,on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.counselling_question}"
@@ -87,7 +84,7 @@ class CounsellingMeeting(models.Model):
     agenda = models.TextField()
     venue = models.CharField(max_length=20)
     student_invities = models.ManyToManyField(Student)
-    faculty_invities = models.ManyToManyField(FacultyCounsellingInfo)
+    faculty_invities = models.ManyToManyField(FacultyCounsellingTeam)
 
     def __str__(self):
         return '{} - {}'.format(self.meeting_time, self.agenda)

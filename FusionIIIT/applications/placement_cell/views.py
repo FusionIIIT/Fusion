@@ -151,7 +151,7 @@ def get_reference_list(request):
         profile = get_object_or_404(ExtraInfo, Q(user=user))
         student = get_object_or_404(Student, Q(id=profile.id))
         print(student)
-        reference_objects = Reference.objects.filter(unique_id=student)
+        reference_objects = Reference.select_related('unique_id').objects.filter(unique_id=student)
         reference_objects = serializers.serialize('json', list(reference_objects))
 
         context = {
@@ -218,12 +218,12 @@ def placement(request):
         # Student view for showing accepted or declined schedule
         if request.method == 'POST':
             if 'studentapprovesubmit' in request.POST:
-                status = PlacementStatus.objects.filter(
+                status = PlacementStatus.objects.select_related('unique_id','notify_id').filter(
                     pk=request.POST['studentapprovesubmit']).update(
                     invitation='ACCEPTED',
                     timestamp=timezone.now())
             if 'studentdeclinesubmit' in request.POST:
-                status = PlacementStatus.objects.filter(
+                status = PlacementStatus.objects.select_related('unique_id','notify_id').filter(
                     Q(pk=request.POST['studentdeclinesubmit'])).update(
                     invitation='REJECTED',
                     timestamp=timezone.now())
@@ -237,7 +237,7 @@ def placement(request):
                     stream = form.cleaned_data['stream']
                     sdate = form.cleaned_data['sdate']
                     edate = form.cleaned_data['edate']
-                    education_obj = Education.objects.create(
+                    education_obj = Education.objects.select_related('unique_id').create(
                         unique_id=student, degree=degree,
                         grade=grade, institute=institute,
                         stream=stream, sdate=sdate, edate=edate)
@@ -271,7 +271,7 @@ def placement(request):
                 if form.is_valid():
                     skill = form.cleaned_data['skill']
                     skill_rating = form.cleaned_data['skill_rating']
-                    has_obj = Has.objects.create(unique_id=student,
+                    has_obj = Has.objects.select_related('skill_id','unique_id').create(unique_id=student,
                                                  skill_id=Skill.objects.get(skill=skill),
                                                  skill_rating = skill_rating)
                     has_obj.save()
@@ -283,7 +283,7 @@ def placement(request):
                     description = form.cleaned_data['description']
                     issuer = form.cleaned_data['issuer']
                     date_earned = form.cleaned_data['date_earned']
-                    achievement_obj = Achievement.objects.create(unique_id=student,
+                    achievement_obj = Achievement.objects.select_related('unique_id').create(unique_id=student,
                                                                  achievement=achievement,
                                                                  achievement_type=achievement_type,
                                                                  description=description,
@@ -297,7 +297,7 @@ def placement(request):
                     description = form.cleaned_data['description']
                     publisher = form.cleaned_data['publisher']
                     publication_date = form.cleaned_data['publication_date']
-                    publication_obj = Publication.objects.create(unique_id=student,
+                    publication_obj = Publication.objects.select_related('unique_id').create(unique_id=student,
                                                                  publication_title=
                                                                  publication_title,
                                                                  publisher=publisher,
@@ -311,7 +311,7 @@ def placement(request):
                     description = form.cleaned_data['description']
                     patent_office = form.cleaned_data['patent_office']
                     patent_date = form.cleaned_data['patent_date']
-                    patent_obj = Patent.objects.create(unique_id=student, patent_name=patent_name,
+                    patent_obj = Patent.objects.select_related('unique_id').create(unique_id=student, patent_name=patent_name,
                                                        patent_office=patent_office,
                                                        description=description,
                                                        patent_date=patent_date)
@@ -324,7 +324,7 @@ def placement(request):
                     license_no = form.cleaned_data['license_no']
                     sdate = form.cleaned_data['sdate']
                     edate = form.cleaned_data['edate']
-                    course_obj = Course.objects.create(unique_id=student, course_name=course_name,
+                    course_obj = Course.objects.select_related('unique_id').create(unique_id=student, course_name=course_name,
                                                        license_no=license_no,
                                                        description=description,
                                                        sdate=sdate, edate=edate)
@@ -354,7 +354,7 @@ def placement(request):
                     description = form.cleaned_data['description']
                     sdate = form.cleaned_data['sdate']
                     edate = form.cleaned_data['edate']
-                    experience_obj = Experience.objects.create(unique_id=student, title=title,
+                    experience_obj = Experience.objects.select_related('unique_id').create(unique_id=student, title=title,
                                                                company=company, location=location,
                                                                status=status,
                                                                description=description,
@@ -363,11 +363,11 @@ def placement(request):
 
             if 'deleteskill' in request.POST:
                 hid = request.POST['deleteskill']
-                hs = Has.objects.get(Q(pk=hid))
+                hs = Has.objects.select_related('skill_id','unique_id').get(Q(pk=hid))
                 hs.delete()
             if 'deleteedu' in request.POST:
                 hid = request.POST['deleteedu']
-                hs = Education.objects.get(Q(pk=hid))
+                hs = Education.objects.select_related('unique_id').get(Q(pk=hid))
                 hs.delete()
             if 'deletecourse' in request.POST:
                 hid = request.POST['deletecourse']
@@ -387,21 +387,20 @@ def placement(request):
                 hs.delete()
             if 'deletepub' in request.POST:
                 hid = request.POST['deletepub']
-                hs = Publication.objects.get(Q(pk=hid))
+                hs = Publication.objects.select_related('unique_id').get(Q(pk=hid))
                 hs.delete()
             if 'deletepat' in request.POST:
                 hid = request.POST['deletepat']
                 hs = Patent.objects.get(Q(pk=hid))
                 hs.delete()
 
-        placementschedule = PlacementSchedule.objects.filter(
+        placementschedule = PlacementSchedule.objects.select_related('notify_id').filter(
             Q(placement_date__gte=date.today())).values_list('notify_id', flat=True)
 
-        placementstatus = PlacementStatus.objects.filter(
+        placementstatus = PlacementStatus.objects.select_related('unique_id','notify_id').filter(
             Q(unique_id=student,
             notify_id__in=placementschedule)).order_by('-timestamp')
 
-        print(type(placementstatus),'-----------------\n\n')
 
         check_invitation_date(placementstatus)
 
@@ -411,22 +410,19 @@ def placement(request):
 
     # delete the schedule
     if 'deletesch' in request.POST:
-        print('coming--deletesch---\n\n')
         delete_sch_key = request.POST['delete_sch_key']
         try:
-            placement_schedule = PlacementSchedule.objects.get(pk = delete_sch_key)
+            placement_schedule = PlacementSchedule.objects.select_related('notify_id').get(pk = delete_sch_key)
             NotifyStudent.objects.get(pk=placement_schedule.notify_id.id).delete()
             placement_schedule.delete()
             messages.success(request, 'Schedule Deleted Successfully')
         except Exception as e:
             messages.error(request, 'Problem Occurred for Schedule Delete!!!')
-            print('---- \n\n record not found')
 
     # saving all the schedule details
     if 'schedulesubmit' in request.POST:
         form5 = AddSchedule(request.POST, request.FILES)
         if form5.is_valid():
-            print('valid')
             company_name = form5.cleaned_data['company_name']
             placement_date = form5.cleaned_data['placement_date']
             location = form5.cleaned_data['location']
@@ -455,7 +451,7 @@ def placement(request):
                                                   ctc=ctc,
                                                   timestamp=timezone.now())
 
-            schedule = PlacementSchedule.objects.create(notify_id=notify,
+            schedule = PlacementSchedule.objects.select_related('notify_id').create(notify_id=notify,
                                                         title=company_name,
                                                         description=description,
                                                         placement_date=placement_date,
@@ -468,7 +464,7 @@ def placement(request):
             messages.success(request, "Schedule Added Successfull!!")
 
 
-    schedules = PlacementSchedule.objects.all()
+    schedules = PlacementSchedule.objects.select_related('notify_id').all()
 
 
     context = {
@@ -506,11 +502,10 @@ def delete_invitation_status(request):
         delete_invit_status_key = request.POST['deleteinvitationstatus']
 
         try:
-            PlacementStatus.objects.get(pk=delete_invit_status_key).delete()
+            PlacementStatus.objects.select_related('unique_id','notify_id').get(pk=delete_invit_status_key).delete()
             messages.success(request, 'Invitation Deleted Successfully')
         except Exception as e:
 
-            print('---- \n\n record not found')
 
     if 'pbi_tab_active' in request.POST:
         mnpbi_tab = 1
@@ -597,7 +592,7 @@ def invitation_status(request):
             request.session['mn_cname'] = cname
             request.session['mn_rollno'] = rollno
 
-            placementstatus_placement = PlacementStatus.objects.filter(Q(notify_id__in=NotifyStudent.objects.filter
+            placementstatus_placement = PlacementStatus.objects.select_related('unique_id','notify_id').filter(Q(notify_id__in=NotifyStudent.objects.filter
                                                        (Q(placement_type="PLACEMENT",
                                                           company_name__icontains=cname,
                                                           ctc__gte=ctc)),
@@ -642,7 +637,7 @@ def invitation_status(request):
             mnpbi_post = 0
             no_pagination = 1
             try:
-                placementstatus_placement = PlacementStatus.objects.filter(Q(notify_id__in=NotifyStudent.objects.filter
+                placementstatus_placement = PlacementStatus.objects.select_related('unique_id','notify_id').filter(Q(notify_id__in=NotifyStudent.objects.filter
                                                        (Q(placement_type="PLACEMENT",
                                                           company_name__icontains=request.session['mn_cname'],
                                                           ctc__gte=request.session['mn_ctc'])),
@@ -692,7 +687,6 @@ def invitation_status(request):
         mnplacement_post = 0
         form = ManagePbiRecord(request.POST)
         if form.is_valid():
-            print(form.cleaned_data['company'])
             if form.cleaned_data['stuname']:
                 stuname = form.cleaned_data['stuname']
             else:
@@ -713,7 +707,7 @@ def invitation_status(request):
             request.session['mn_pbi_ctc'] = ctc
             request.session['mn_pbi_cname'] = cname
             request.session['mn_pbi_rollno'] = rollno
-            placementstatus_pbi = PlacementStatus.objects.filter(
+            placementstatus_pbi = PlacementStatus.objects.select_related('unique_id','notify_id').filter(
                 Q(notify_id__in=NotifyStudent.objects.filter(
                 Q(placement_type="PBI",
                 company_name__icontains=cname,
@@ -725,13 +719,11 @@ def invitation_status(request):
                 id__icontains=rollno))))))).order_by('id')
 
             total_query = placementstatus_pbi.count()
-            print(total_query)
 
             if total_query > 30:
                 no_pagination = 1
                 paginator = Paginator(placementstatus_pbi, 30)
                 page = request.GET.get('pbi_page', 1)
-                print(page)
                 placementstatus_pbi = paginator.page(page)
                 page = int(page)
                 total_page = int(page + 3)
@@ -759,7 +751,7 @@ def invitation_status(request):
             mnpbi_post = 1
             no_pagination = 1
             try:
-                placementstatus_pbi = PlacementStatus.objects.filter(
+                placementstatus_pbi = PlacementStatus.objects.select_related('unique_id','notify_id').filter(
                     Q(notify_id__in=NotifyStudent.objects.filter(
                     Q(placement_type="PBI",
                     company_name__icontains=request.session['mn_pbi_cname'],
@@ -804,7 +796,6 @@ def invitation_status(request):
 
 
     if 'pdf_gen_invitation_status' in request.POST:
-        print('coming--generate--pdf')
 
         placementstatus = None
         if 'pdf_gen_invitation_status_placement' in request.POST:
@@ -813,7 +804,7 @@ def invitation_status(request):
             cname = request.session['mn_cname']
             rollno = request.session['mn_rollno']
 
-            placementstatus = PlacementStatus.objects.filter(Q(notify_id__in=NotifyStudent.objects.filter
+            placementstatus = PlacementStatus.objects.select_related('unique_id','notify_id').filter(Q(notify_id__in=NotifyStudent.objects.filter
                                                            (Q(placement_type="PLACEMENT",
                                                               company_name__icontains=cname,
                                                               ctc__gte=ctc)),
@@ -830,7 +821,7 @@ def invitation_status(request):
             cname = request.session['mn_pbi_cname']
             rollno = request.session['mn_pbi_rollno']
 
-            placementstatus = PlacementStatus.objects.filter(
+            placementstatus = PlacementStatus.objects.select_related('unique_id','notify_id').filter(
                 Q(notify_id__in=NotifyStudent.objects.filter(
                 Q(placement_type="PBI",
                 company_name__icontains=cname,
@@ -845,11 +836,9 @@ def invitation_status(request):
             'placementstatus' : placementstatus
         }
 
-        print('rendering the pdf--student record')
         return render_to_pdf('placementModule/pdf_invitation_status.html', context)
 
     if 'excel_gen_invitation_status' in request.POST:
-        print('coming--generate--excel')
 
         placementstatus = None
         if 'excel_gen_invitation_status_placement' in request.POST:
@@ -858,7 +847,7 @@ def invitation_status(request):
             cname = request.session['mn_cname']
             rollno = request.session['mn_rollno']
 
-            placementstatus = PlacementStatus.objects.filter(Q(notify_id__in=NotifyStudent.objects.filter
+            placementstatus = PlacementStatus.objects.select_related('unique_id','notify_id').filter(Q(notify_id__in=NotifyStudent.objects.filter
                                                            (Q(placement_type="PLACEMENT",
                                                               company_name__icontains=cname,
                                                               ctc__gte=ctc)),
@@ -875,7 +864,7 @@ def invitation_status(request):
             cname = request.session['mn_pbi_cname']
             rollno = request.session['mn_pbi_rollno']
 
-            placementstatus = PlacementStatus.objects.filter(
+            placementstatus = PlacementStatus.objects.select_related('unique_id','notify_id').filter(
                 Q(notify_id__in=NotifyStudent.objects.filter(
                 Q(placement_type="PBI",
                 company_name__icontains=cname,
@@ -890,7 +879,6 @@ def invitation_status(request):
             'placementstatus' : placementstatus
         }
 
-        print('rendering the excel--student record')
 
         return export_to_xls_invitation_status(placementstatus)
 
@@ -930,7 +918,6 @@ def student_records(request):
     '''
         function for searching the records of student
     '''
-    print('starts', request.GET.get('page'))
     user = request.user
     strecord_tab = 1
     no_pagination = 0
@@ -948,11 +935,9 @@ def student_records(request):
 
     # querying the students details a/c to the input data
     if 'recordsubmit' in request.POST:
-        print('search')
         student_record_check = 1
         form1 = SearchStudentRecord(request.POST)
         if form1.is_valid():
-            print('search form for student record valid')
             if form1.cleaned_data['name']:
                 name = form1.cleaned_data['name']
             else:
@@ -991,8 +976,6 @@ def student_records(request):
             request.session['debar'] = debar
             request.session['placed_type'] = placed_type
 
-            print(department)
-            print('before request --- students')
 
             students = Student.objects.filter(
                 Q(id__in=ExtraInfo.objects.filter(Q(
@@ -1013,11 +996,8 @@ def student_records(request):
                 paginator = Paginator(students, 30)
                 page = request.GET.get('page', 1)
                 students = paginator.page(page)
-                print(paginator.num_pages)
-                print(page)
                 page = int(page)
                 total_page = int(page + 3)
-                print(students.has_previous)
 
                 if page<(paginator.num_pages-3):
                     if total_query > 30 and total_query <=60:
@@ -1059,8 +1039,6 @@ def student_records(request):
 
             if students != '':
                 total_query = students.count()
-                print(students)
-                print('total_query=', total_query)
             else:
                 total_query = 0
 
@@ -1094,8 +1072,6 @@ def student_records(request):
 
             if 'debar' in request.POST:
                 spid = request.POST['debar']
-                print('spid')
-                print(spid)
                 sr = StudentPlacement.objects.get(Q(pk=spid))
                 sr.debar = "DEBAR"
                 sr.save()
@@ -1107,7 +1083,6 @@ def student_records(request):
 
     # pdf generation logic
     if 'pdf_gen_std_record' in request.POST:
-        print('coming--generate--pdf')
 
         name = request.session['name']
         rollno = request.session['rollno']
@@ -1130,13 +1105,11 @@ def student_records(request):
             'students' : students
         }
 
-        print('rendering the pdf--student record')
 
         return render_to_pdf('placementModule/pdf_student_record.html', context)
 
     # excel generation logic
     if 'excel_gen_std_record' in request.POST:
-        print('coming--generate--excel')
 
         name = request.session['name']
         rollno = request.session['rollno']
@@ -1159,7 +1132,6 @@ def student_records(request):
             'students' : students
         }
 
-        print('rendering the excel--student record')
 
         return export_to_xls_std_records(students)
 
@@ -1167,13 +1139,11 @@ def student_records(request):
     # for sending the invite to students for particular schedule
     if 'sendinvite' in request.POST:
         # invitecheck=1;
-        print('send invitation coming')
 
         form13 = SendInvite(request.POST)
 
         if form13.is_valid():
             if form13.cleaned_data['company']:
-                print('valid')
                 if form13.cleaned_data['rollno']:
                     rollno = form13.cleaned_data['rollno']
                 else:
@@ -1204,7 +1174,6 @@ def student_records(request):
                 else:
                     no_of_days = 10
 
-                print('\n\n\n  coming ', no_of_days)
 
                 comp = form13.cleaned_data['company']
 
@@ -1222,7 +1191,7 @@ def student_records(request):
                         programme = programme,
                         cpi__gte = cpi
                     )
-                ).exclude(id__in = PlacementStatus.objects.filter(
+                ).exclude(id__in = PlacementStatus.objects.select_related('unique_id','notify_id').filter(
                     notify_id=notify).values_list('unique_id', flat=True))
 
                 PlacementStatus.objects.bulk_create( [PlacementStatus(notify_id=notify,
@@ -1237,7 +1206,6 @@ def student_records(request):
             else:
                 messages.error(request, 'Problem Occurred!! Please Try Again!!')
 
-    print(students)
     context = {
         'form1': form1,
         'form9': form9,
@@ -1254,7 +1222,6 @@ def student_records(request):
         'is_disabled': is_disabled,
     }
 
-    print('send invitation last checkpoint')
     return render(request, 'placementModule/studentrecords.html', context)
 
 
@@ -1315,7 +1282,7 @@ def manage_records(request):
                                                                   placement_type="HIGHER STUDIES",
                                                                   test_type=test_type,
                                                                   test_score=test_score)
-                studentr = StudentRecord.objects.create(record_id=placementr,
+                studentr = StudentRecord.objects.select_related('unique_id','record_id').create(record_id=placementr,
                                                              unique_id=Student.objects.get
                                                              ((Q(id=ExtraInfo.objects.get
                                                                  (Q(id=rollno))))))
@@ -1335,7 +1302,7 @@ def manage_records(request):
                 placementr = PlacementRecord.objects.create(year=year, ctc=ctc,
                                                                   placement_type="PBI",
                                                                   name=cname)
-                studentr = StudentRecord.objects.create(record_id=placementr,
+                studentr = StudentRecord.objects.select_related('unique_id','record_id').create(record_id=placementr,
                                                              unique_id=Student.objects.get
                                                              ((Q(id=ExtraInfo.objects.get
                                                                  (Q(id=rollno))))))
@@ -1355,7 +1322,7 @@ def manage_records(request):
                 placementr = PlacementRecord.objects.create(year=year, ctc=ctc,
                                                                   placement_type="PLACEMENT",
                                                                   name=cname)
-                studentr = StudentRecord.objects.create(record_id=placementr,
+                studentr = StudentRecord.objects.select_related('unique_id','record_id').create(record_id=placementr,
                                                              unique_id=Student.objects.get
                                                              ((Q(id=ExtraInfo.objects.get
                                                                  (Q(id=rollno))))))
@@ -1385,7 +1352,6 @@ def manage_records(request):
                 else:
                     rollno = ''
                 if form.cleaned_data['year']:
-                    print('yeayryeayryeayr')
                     year = form.cleaned_data['year']
                     s = Student.objects.filter((Q(id__in=ExtraInfo.objects.filter
                         (Q(user__in=User.objects.filter
@@ -1395,9 +1361,8 @@ def manage_records(request):
 
                     p = PlacementRecord.objects.filter(Q(placement_type="PLACEMENT", name__icontains=cname, ctc__gte=ctc, year=year))
 
-                    placementrecord = StudentRecord.objects.filter(Q(record_id__in=PlacementRecord.objects.filter(Q(placement_type="PLACEMENT", name__icontains=cname, ctc__gte=ctc, year=year)), unique_id__in=Student.objects.filter((Q(id__in=ExtraInfo.objects.filter(Q(user__in=User.objects.filter(Q(first_name__icontains=stuname)),id__icontains=rollno)))))))
+                    placementrecord = StudentRecord.objects.select_related('unique_id','record_id').select_related('unique_id','record_id').filter(Q(record_id__in=PlacementRecord.objects.filter(Q(placement_type="PLACEMENT", name__icontains=cname, ctc__gte=ctc, year=year)), unique_id__in=Student.objects.filter((Q(id__in=ExtraInfo.objects.filter(Q(user__in=User.objects.filter(Q(first_name__icontains=stuname)),id__icontains=rollno)))))))
                 else:
-                    print('dfd')
                     s = Student.objects.filter((Q(id__in=ExtraInfo.objects.filter
                         (Q(user__in=User.objects.filter
                            (Q(first_name__icontains=stuname)),
@@ -1406,7 +1371,7 @@ def manage_records(request):
 
                     p = PlacementRecord.objects.filter(Q(placement_type="PLACEMENT", name__icontains=cname, ctc__gte=ctc))
 
-                    placementrecord = StudentRecord.objects.filter(
+                    placementrecord = StudentRecord.objects.select_related('unique_id','record_id').filter(
                         Q(record_id__in=PlacementRecord.objects.filter(
                         Q(placement_type="PLACEMENT", name__icontains=cname, ctc__gte=ctc)),
                         unique_id__in=Student.objects.filter(
@@ -1427,11 +1392,8 @@ def manage_records(request):
                     paginator = Paginator(placementrecord, 30)
                     page = request.GET.get('page', 1)
                     placementrecord = paginator.page(page)
-                    print(paginator.num_pages)
-                    print(page)
                     page = int(page)
                     total_page = int(page + 3)
-                    print(placementrecord.has_previous)
 
                     if page<(paginator.num_pages-3):
                         if total_query > 30 and total_query <=60:
@@ -1452,10 +1414,8 @@ def manage_records(request):
                     pagination_placement = 0
         else:
             if request.GET.get('page') != None:
-                print('--------------------page value none')
                 try:
                     if request.session['year']:
-                        print('lololololol')
                         s = Student.objects.filter(
                             (Q(id__in=ExtraInfo.objects.filter(
                             Q(user__in=User.objects.filter(
@@ -1469,7 +1429,7 @@ def manage_records(request):
                             ctc__gte=request.session['ctc'],
                             year=request.session['year']))
 
-                        placementrecord = StudentRecord.objects.filter(
+                        placementrecord = StudentRecord.objects.select_related('unique_id','record_id').filter(
                             Q(record_id__in=PlacementRecord.objects.filter(
                                 Q(placement_type="PLACEMENT",
                                 name__icontains=request.session['cname'],
@@ -1492,7 +1452,7 @@ def manage_records(request):
                                 name__icontains=request.session['cname'],
                                 ctc__gte=request.session['ctc']))
 
-                        placementrecord = StudentRecord.objects.filter(
+                        placementrecord = StudentRecord.objects.select_related('unique_id','record_id').filter(
                             Q(record_id__in=PlacementRecord.objects.filter(
                             Q(placement_type="PLACEMENT",
                                 name__icontains=request.session['cname'],
@@ -1503,7 +1463,6 @@ def manage_records(request):
                             Q(first_name__icontains=request.session['stuname'])),
                             id__icontains=request.session['rollno'])))))))
                 except:
-                    print('except')
                     placementrecord = ''
 
                 if placementrecord != '':
@@ -1562,7 +1521,7 @@ def manage_records(request):
                     rollno = ''
                 if form.cleaned_data['year']:
                     year = form.cleaned_data['year']
-                    pbirecord = StudentRecord.objects.filter(Q(record_id__in=PlacementRecord.objects.filter
+                    pbirecord = StudentRecord.objects.select_related('unique_id','record_id').filter(Q(record_id__in=PlacementRecord.objects.filter
                                                            (Q(placement_type="PBI",
                                                               name__icontains=cname,
                                                               ctc__gte=ctc, year=year)),
@@ -1573,7 +1532,7 @@ def manage_records(request):
                                                                   id__icontains=rollno))
                                                                )))))
                 else:
-                    pbirecord = StudentRecord.objects.filter(Q(record_id__in=PlacementRecord.objects.filter
+                    pbirecord = StudentRecord.objects.select_related('unique_id','record_id').filter(Q(record_id__in=PlacementRecord.objects.filter
                                                            (Q(placement_type="PBI",
                                                               name__icontains=cname,
                                                               ctc__gte=ctc)),
@@ -1618,10 +1577,9 @@ def manage_records(request):
                     pagination_pbi = 0
         else:
             if request.GET.get('page') != None:
-                print('--------------------page value none')
                 try:
                     if request.session['year']:
-                        pbirecord = StudentRecord.objects.filter(
+                        pbirecord = StudentRecord.objects.select_related('unique_id','record_id').filter(
                             Q(record_id__in=PlacementRecord.objects.filter(
                             Q(placement_type="PBI",
                             name__icontains=request.session['cname'],
@@ -1632,7 +1590,7 @@ def manage_records(request):
                             Q(first_name__icontains=request.session['stuname'])),
                             id__icontains=request.session['rollno'])))))))
                     else:
-                        pbirecord = StudentRecord.objects.filter(
+                        pbirecord = StudentRecord.objects.select_related('unique_id','record_id').filter(
                             Q(record_id__in=PlacementRecord.objects.filter(Q(placement_type="PBI",
                                                                   name__icontains=request.session['cname'],
                                                                   ctc__gte=request.session['ctc'])),
@@ -1705,7 +1663,7 @@ def manage_records(request):
                     rollno = ''
                 if form.cleaned_data['year']:
                     year = form.cleaned_data['year']
-                    higherrecord = StudentRecord.objects.filter(Q(record_id__in=PlacementRecord.objects.filter
+                    higherrecord = StudentRecord.objects.select_related('unique_id','record_id').filter(Q(record_id__in=PlacementRecord.objects.filter
                                                            (Q(placement_type="HIGHER STUDIES",
                                                               test_type__icontains=test_type,
                                                               name__icontains=uname, year=year,
@@ -1717,7 +1675,7 @@ def manage_records(request):
                                                                   id__icontains=rollno))
                                                                )))))
                 else:
-                    higherrecord = StudentRecord.objects.filter(
+                    higherrecord = StudentRecord.objects.select_related('unique_id','record_id').filter(
                         Q(record_id__in=PlacementRecord.objects.filter
                                                            (Q(placement_type="HIGHER STUDIES",
                                                               test_type__icontains=test_type,
@@ -1765,10 +1723,9 @@ def manage_records(request):
                     pagination_higher = 0
         else:
             if request.GET.get('page') != None:
-                print('--------------------page value none')
                 try:
                     if request.session['year']:
-                        higherrecord = StudentRecord.objects.filter(
+                        higherrecord = StudentRecord.objects.select_related('unique_id','record_id').filter(
                             Q(record_id__in=PlacementRecord.objects.filter(
                                 Q(placement_type="HIGHER STUDIES",
                                                               test_type__icontains=request.session['test_type'],
@@ -1782,7 +1739,7 @@ def manage_records(request):
                                                                 id__icontains=request.session['rollno']))
                                                                )))))
                     else:
-                        higherrecord = StudentRecord.objects.filter(
+                        higherrecord = StudentRecord.objects.select_related('unique_id','record_id').filter(
                             Q(record_id__in=PlacementRecord.objects.filter
                                                                (Q(placement_type="HIGHER STUDIES",
                                                                   test_type__icontains=request.session['test_type'],
@@ -1884,7 +1841,7 @@ def placement_statistics(request):
     officer_statistics_past_higher_search = 0
 
     profile = get_object_or_404(ExtraInfo, Q(user=user))
-    studentrecord = StudentRecord.objects.all()
+    studentrecord = StudentRecord.objects.select_related('unique_id','record_id').all()
 
     years = PlacementRecord.objects.filter(~Q(placement_type="HIGHER STUDIES")).values('year').annotate(Count('year'))
     records = PlacementRecord.objects.values('name', 'year', 'ctc', 'placement_type').annotate(Count('name'), Count('year'), Count('placement_type'), Count('ctc'))
@@ -1928,7 +1885,6 @@ def placement_statistics(request):
     if len(current1)!=0 or len(current2)!=0:
         delete_operation = 1
 
-    print('\n\n\n\n-----------------', delete_operation)
 
     if len(current) == 0:
         current = None
@@ -1974,7 +1930,7 @@ def placement_statistics(request):
 
                 p = PlacementRecord.objects.filter(Q(placement_type="PLACEMENT", name__icontains=cname, ctc__gte=ctc, year=year))
 
-                placementrecord = StudentRecord.objects.filter(
+                placementrecord = StudentRecord.objects.select_related('unique_id','record_id').filter(
                     Q(record_id__in=PlacementRecord.objects.filter(
                         Q(placement_type="PLACEMENT", name__icontains=cname, ctc__gte=ctc, year=year)),
                     unique_id__in=Student.objects.filter(
@@ -1992,7 +1948,7 @@ def placement_statistics(request):
                     )))
 
                 p = PlacementRecord.objects.filter(Q(placement_type="PLACEMENT", name__icontains=cname, ctc__gte=ctc))
-                placementrecord = StudentRecord.objects.filter(
+                placementrecord = StudentRecord.objects.select_related('unique_id','record_id').filter(
                     Q(record_id__in=PlacementRecord.objects.filter(
                     Q(placement_type="PLACEMENT", name__icontains=cname, ctc__gte=ctc)),
                     unique_id__in=Student.objects.filter(
@@ -2016,11 +1972,8 @@ def placement_statistics(request):
                 paginator = Paginator(placementrecord, 30)
                 page = request.GET.get('page', 1)
                 placementrecord = paginator.page(page)
-                print(paginator.num_pages)
-                print(page)
                 page = int(page)
                 total_page = int(page + 3)
-                print(placementrecord.has_previous)
 
                 if page<(paginator.num_pages-3):
                     if total_query > 30 and total_query <=60:
@@ -2041,10 +1994,8 @@ def placement_statistics(request):
                 pagination_placement = 0
     else:
         if request.GET.get('page') != None:
-            print('--------------------page value none')
             try:
                 if request.session['year']:
-                    print('lololololol')
                     s = Student.objects.filter(
                         (Q(id__in=ExtraInfo.objects.filter(
                         Q(user__in=User.objects.filter(
@@ -2059,7 +2010,7 @@ def placement_statistics(request):
                         ctc__gte=request.session['ctc'],
                         year=request.session['year']))
 
-                    placementrecord = StudentRecord.objects.filter(
+                    placementrecord = StudentRecord.objects.select_related('unique_id','record_id').filter(
                         Q(record_id__in=PlacementRecord.objects.filter(
                             Q(placement_type="PLACEMENT",
                             name__icontains=request.session['cname'],
@@ -2084,7 +2035,7 @@ def placement_statistics(request):
                             name__icontains=request.session['cname'],
                             ctc__gte=request.session['ctc']))
 
-                    placementrecord = StudentRecord.objects.filter(
+                    placementrecord = StudentRecord.objects.select_related('unique_id','record_id').filter(
                         Q(record_id__in=PlacementRecord.objects.filter(
                         Q(placement_type="PLACEMENT",
                             name__icontains=request.session['cname'],
@@ -2163,7 +2114,7 @@ def placement_statistics(request):
                 rollno = ''
             if form.cleaned_data['year']:
                 year = form.cleaned_data['year']
-                pbirecord = StudentRecord.objects.filter(Q(record_id__in=PlacementRecord.objects.filter
+                pbirecord = StudentRecord.objects.select_related('unique_id','record_id').filter(Q(record_id__in=PlacementRecord.objects.filter
                                                        (Q(placement_type="PBI",
                                                           name__icontains=cname,
                                                           ctc__gte=ctc, year=year)),
@@ -2175,7 +2126,7 @@ def placement_statistics(request):
                                                               id__icontains=rollno))
                                                            )))))
             else:
-                pbirecord = StudentRecord.objects.filter(Q(record_id__in=PlacementRecord.objects.filter
+                pbirecord = StudentRecord.objects.select_related('unique_id','record_id').filter(Q(record_id__in=PlacementRecord.objects.filter
                                                        (Q(placement_type="PBI",
                                                           name__icontains=cname,
                                                           ctc__gte=ctc)),
@@ -2222,10 +2173,9 @@ def placement_statistics(request):
                 pagination_pbi = 0
     else:
         if request.GET.get('page') != None:
-            print('--------------------page value none')
             try:
                 if request.session['year']:
-                    pbirecord = StudentRecord.objects.filter(
+                    pbirecord = StudentRecord.objects.select_related('unique_id','record_id').filter(
                         Q(record_id__in=PlacementRecord.objects.filter(
                         Q(placement_type="PBI",
                         name__icontains=request.session['cname'],
@@ -2237,7 +2187,7 @@ def placement_statistics(request):
                         last_name__icontains=request.session['last_name'])),
                         id__icontains=request.session['rollno'])))))))
                 else:
-                    pbirecord = StudentRecord.objects.filter(
+                    pbirecord = StudentRecord.objects.select_related('unique_id','record_id').filter(
                         Q(record_id__in=PlacementRecord.objects.filter(Q(placement_type="PBI",
                                                               name__icontains=request.session['cname'],
                                                               ctc__gte=request.session['ctc'])),
@@ -2321,7 +2271,7 @@ def placement_statistics(request):
             if form.cleaned_data['year']:
                 year = form.cleaned_data['year']
                 # result of the query when year is given
-                higherrecord = StudentRecord.objects.filter(Q(record_id__in=PlacementRecord.objects.filter
+                higherrecord = StudentRecord.objects.select_related('unique_id','record_id').filter(Q(record_id__in=PlacementRecord.objects.filter
                                                        (Q(placement_type="HIGHER STUDIES",
                                                           test_type__icontains=test_type,
                                                           name__icontains=uname, year=year,
@@ -2335,7 +2285,7 @@ def placement_statistics(request):
                                                            )))))
             else:
                 # result of the query when year is not given
-                higherrecord = StudentRecord.objects.filter(
+                higherrecord = StudentRecord.objects.select_related('unique_id','record_id').filter(
                     Q(record_id__in=PlacementRecord.objects.filter
                                                        (Q(placement_type="HIGHER STUDIES",
                                                           test_type__icontains=test_type,
@@ -2387,7 +2337,7 @@ def placement_statistics(request):
         if request.GET.get('page') != None:
             try:
                 if request.session['year']:
-                    higherrecord = StudentRecord.objects.filter(
+                    higherrecord = StudentRecord.objects.select_related('unique_id','record_id').filter(
                         Q(record_id__in=PlacementRecord.objects.filter(
                             Q(placement_type="HIGHER STUDIES",
                               test_type__icontains=request.session['test_type'],
@@ -2402,7 +2352,7 @@ def placement_statistics(request):
                                 id__icontains=request.session['rollno']))
                                )))))
                 else:
-                    higherrecord = StudentRecord.objects.filter(
+                    higherrecord = StudentRecord.objects.select_related('unique_id','record_id').filter(
                         Q(record_id__in=PlacementRecord.objects.filter(
                             Q(placement_type="HIGHER STUDIES",
                           test_type__icontains=request.session['test_type'],
@@ -2488,7 +2438,6 @@ def delete_placement_statistics(request):
     @variables:
             record_id = stores current StudentRecord Id.
     """
-    print('coming delete request')
     if 'deleterecord' in request.POST or 'deleterecordmanaged' in request.POST:
         try:
             if 'deleterecord' in request.POST:
@@ -2496,11 +2445,7 @@ def delete_placement_statistics(request):
             elif 'deleterecordmanaged' in request.POST:
                 record_id = int(request.POST['deleterecordmanaged'])
 
-            print('------------------------\n\n\n')
-            print(record_id)
-            print(StudentRecord.objects.get(pk = record_id))
             student_record =  StudentRecord.objects.get(pk=record_id)
-            print('-asdasdasda', PlacementRecord.objects.get(pk=student_record.record_id.id))
             PlacementRecord.objects.get(id=student_record.record_id.id).delete()
             student_record.delete()
             messages.success(request, 'Placement Statistics deleted Successfully!!')
@@ -2508,7 +2453,6 @@ def delete_placement_statistics(request):
         except Exception as e:
             messages.error(request, 'Problem Occurred!! Please Try Again!!')
             print(e)
-            print('------------problem in deleting the record of statistics-------------')
 
 
     if 'deleterecordmanaged' in request.POST:
@@ -2518,7 +2462,6 @@ def delete_placement_statistics(request):
 
 
 def cv(request, username):
-    print('first coming to function ---------------------\n\n\n')
     # Retrieve data or whatever you need
     """
     The function is used to generate the cv in the pdf format.
@@ -2600,17 +2543,17 @@ def cv(request, username):
           roll = (now.year)-int("20"+str(profile.id)[0:2])
 
     student = get_object_or_404(Student, Q(id=profile.id))
-    skills = Has.objects.filter(Q(unique_id=student))
-    education = Education.objects.filter(Q(unique_id=student))
+    skills = Has.objects.select_related('skill_id','unique_id').filter(Q(unique_id=student))
+    education = Education.objects.select_related('unique_id').filter(Q(unique_id=student))
     reference = Reference.objects.filter(id__in=reference_list)
-    course = Course.objects.filter(Q(unique_id=student))
-    experience = Experience.objects.filter(Q(unique_id=student))
-    project = Project.objects.filter(Q(unique_id=student))
-    achievement = Achievement.objects.filter(Q(unique_id=student))
-    extracurricular = Extracurricular.objects.filter(Q(unique_id=student))
-    conference = Conference.objects.filter(Q(unique_id=student))
-    publication = Publication.objects.filter(Q(unique_id=student))
-    patent = Patent.objects.filter(Q(unique_id=student))
+    course = Course.objects.select_related('unique_id').filter(Q(unique_id=student))
+    experience = Experience.objects.select_related('unique_id').filter(Q(unique_id=student))
+    project = Project.objects.select_related('unique_id').filter(Q(unique_id=student))
+    achievement = Achievement.objects.select_related('unique_id').filter(Q(unique_id=student))
+    extracurricular = Extracurricular.objects.select_related('unique_id').filter(Q(unique_id=student))
+    conference = Conference.objects.select_related('unique_id').filter(Q(unique_id=student))
+    publication = Publication.objects.select_related('unique_id').filter(Q(unique_id=student))
+    patent = Patent.objects.select_related('unique_id').filter(Q(unique_id=student))
     today = datetime.date.today()
 
     if len(reference) == 0:
