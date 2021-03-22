@@ -62,3 +62,4 @@ def cse_faculty(request):
     cse_f=ExtraInfo.objects.filter(department__name='ECE').filter(user_type='faculty')[:5]
     id_dict={'fac_list':cse_f,'department':'CSE'}
     return render(request,'department/faculty.html',context=id_dict)
+
