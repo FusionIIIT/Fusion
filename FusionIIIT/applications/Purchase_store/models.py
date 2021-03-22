@@ -4,7 +4,7 @@ from applications.globals.models import Staff
 from applications.filetracking.models import File
 
 class IndentFile(models.Model):
-    indent_id=models.OneToOneField(File, on_delete=models.CASCADE,primary_key=True)
+    file_info=models.OneToOneField(File, on_delete=models.CASCADE,primary_key=True)
     item_name=models.CharField(max_length=250,blank=False)
     quantity= models.IntegerField(blank=False)
     present_stock=models.IntegerField(blank=False)
