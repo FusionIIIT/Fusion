@@ -12,5 +12,7 @@ urlpatterns = [
     url(r'^BtechSecondYear_Students/$', views.BtechSecondYear_Students, name='BtechSecondYear_Students'),
     url(r'^BtechThirdYear_Students/$', views.BtechThirdYear_Students, name='BtechThirdYear_Students'),
     url(r'^BtechFinalYear_Students/$', views.BtechFinalYear_Students, name='BtechFinalYear_Students'),
-    url(r'^cse_faculty/$', views.cse_faculty, name='cse_faculty')
+    url(r'^cse_faculty/$', views.cse_faculty, name='cse_faculty'),
+    url(r'^ece_faculty/$', views.ece_faculty, name='ece_faculty'),
+    url(r'^me_faculty/$', views.me_faculty, name='me_faculty')
 ]
