@@ -217,7 +217,7 @@ class CoursesInstructed(models.Model):
     lab_hrs_wk=models.FloatField(blank=True, null=True)
     reg_students=models.IntegerField(blank=True, null=True)
     co_instructor=models.ForeignKey(User, related_name='co_inst',
-                                    on_delete=models.CASCADE)
+                                    on_delete=models.CASCADE,blank=True,null=True)
 
 class NewCoursesOffered(models.Model):
     """ Stores the new courses offered by the user related to :model:'establishment.Appraisal' """
@@ -225,7 +225,7 @@ class NewCoursesOffered(models.Model):
                                   on_delete=models.CASCADE)
     course_name = models.CharField(max_length=30)
     course_num=models.IntegerField(blank=True, null=True)
-    UGorPG=models.CharField(max_length=2,blank=True, null=True)
+    ug_or_pg=models.CharField(max_length=2,blank=True, null=True)
     tutorial_hrs_wk=models.FloatField(blank=True, null=True)
     year=models.IntegerField(blank=True, null=True)
     semester=models.IntegerField()
