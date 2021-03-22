@@ -32,7 +32,32 @@ def admin(request):
 
 
 def hod(request):
-    return render(request,"department/index.html")
+    ###### not working need to find another way to implement
+    user = request.user
+    
+    #cse_hod = request.user.holds_designations.filter(designation__name='hod').exists()
+    fac_view = request.user.holds_designations.filter(designation__name='faculty').exists() ## main part
+    student = request.user.holds_designations.filter(designation__name='student').exists()
+
+    # finding designation of user
+    user_designation = ""
+    # if cse_hod:
+    #     user_designation = "hod"
+    # elif fac_view:
+    #     user_designation = "faculty"
+    # elif student:
+    #     user_designation = "student"
+    
+    print(fac_view, student) #### Both false for Faculties... maybe error in database need to confirm
+    if fac_view:
+        user_designation = "faculty"
+    else:
+        user_designation = "student"
+    
+    if user_designation == "student":
+        return render(request,"department/index.html")
+    elif user_designation == "faculty":
+        return render(request, 'department/dep_complaint.html')
 
 def file_complaint(request):
     #return render(request, "department/dep_complaint.html")
