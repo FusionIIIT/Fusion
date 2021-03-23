@@ -38,3 +38,16 @@ def course_api(request):
             'courses' : course_serialized,
         }
         return Response(data=resp,status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def curriculum_api(request):
+
+    if request.method == 'GET':
+        curriculum = Curriculum.objects.all()
+        curriculum_serialized = serializers.CourseSerializers(course,many=True).data
+        resp = {
+            'curriculum' : curriculum_serialized,
+        }
+        return Response(data=resp,status=status.HTTP_200_OK)

@@ -8,4 +8,6 @@ urlpatterns = [
 
     url(r'^courses',views.course_api,name='course-get-api'),
 
+    url(r'^curriculum',views.curriculum_api,name='curriculum-get-api'),
+
 ]
