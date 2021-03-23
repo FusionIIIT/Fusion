@@ -37,19 +37,15 @@ def filetracking(request):
     if request.method =="POST":
         try:
             if 'save' in request.POST:
-                print("********************")
                 uploader = request.user.extrainfo
-                print(uploader)
-                #ref_id = request.POST.get('fileid')
                 subject = request.POST.get('title')
                 description = request.POST.get('desc')
                 design = request.POST.get('design')
-                designation = Designation.objects.get(id = HoldsDesignation.objects.get(id = design).designation_id)
+                designation = Designation.objects.get(id = HoldsDesignation.objects.select_related('user','working','designation').get(id = design).designation_id)
                 upload_file = request.FILES.get('myfile')
 
                 File.objects.create(
                     uploader=uploader,
-                    #ref_id=ref_id,
                     description=description,
                     subject=subject,
                     designation=designation,
@@ -57,22 +53,16 @@ def filetracking(request):
                 )
 
             if 'send' in request.POST:
-
-
                 uploader = request.user.extrainfo
-                print(uploader)
-                #ref_id = request.POST.get('fileid')
                 subject = request.POST.get('title')
                 description = request.POST.get('desc')
                 design = request.POST.get('design')
-                print("designation is ", design)
-                designation = Designation.objects.get(id = HoldsDesignation.objects.get(id = design).designation_id)
+                designation = Designation.objects.get(id = HoldsDesignation.objects.select_related('user','working','designation').get(id = design).designation_id)
 
                 upload_file = request.FILES.get('myfile')
 
                 file = File.objects.create(
                     uploader=uploader,
-                    #ref_id=ref_id,
                     description=description,
                     subject=subject,
                     designation=designation,
@@ -84,7 +74,7 @@ def filetracking(request):
                 remarks = request.POST.get('remarks')
 
                 sender = request.POST.get('design')
-                current_design = HoldsDesignation.objects.get(id=sender)
+                current_design = HoldsDesignation.objects.select_related('user','working','designation').get(id=sender)
 
                 receiver = request.POST.get('receiver')
                 try:
@@ -92,22 +82,14 @@ def filetracking(request):
                 except Exception as e:
                     messages.error(request, 'Enter a valid Username')
                     return redirect('/filetracking/')
-                #print("Receiver_id = ")
-                print(receiver_id)
                 receive = request.POST.get('recieve')
-                print("recieve = ")
-                print(receive)
                 try:
                     receive_design = Designation.objects.get(name=receive)
                 except Exception as e:
                     messages.error(request, 'Enter a valid Designation')
                     return redirect('/filetracking/')
 
-                print("receive_designation = ")
-                # print(receive_designation)
-                # receive_design = receive_designation[0]
                 upload_file = request.FILES.get('myfile')
-                # return HttpResponse ("success")
 
                 Tracking.objects.create(
                     file_id=file,
@@ -127,10 +109,10 @@ def filetracking(request):
 
 
 
-    file = File.objects.all()
-    extrainfo = ExtraInfo.objects.all()
-    holdsdesignations = HoldsDesignation.objects.all()
-    designations = HoldsDesignation.objects.filter(user = request.user)
+    file = File.objects.select_related('uploader__user','uploader__department','designation').all()
+    extrainfo = ExtraInfo.objects.select_related('user','department').all()
+    holdsdesignations = HoldsDesignation.objects.select_related('user','working','designation').all()
+    designations = HoldsDesignation.objects.select_related('user','working','designation').filter(user = request.user)
 
     context = {
         'file': file,
@@ -161,10 +143,9 @@ def drafts(request):
     # draft = File.objects.filter(uploader=request.user.extrainfo)
     # draft = File.objects.filter(uploader=request.user.extrainfo).order_by('-upload_date')
 
-    # print(File.objects)
     # extrainfo = ExtraInfo.objects.all()
     # designation = Designation.objects.get(id=HoldsDesignation.objects.get(user=request.user).designation_id)
-    designation = HoldsDesignation.objects.filter(user=request.user)
+    designation = HoldsDesignation.objects.select_related('user','working','designation').filter(user=request.user)
     context = {
         # 'draft': draft,
         # 'extrainfo': extrainfo,
@@ -177,22 +158,18 @@ def fileview(request,id):
 
 
 
-    draft = File.objects.filter(uploader=request.user.extrainfo).order_by('-upload_date')
+    draft = File.objects.select_related('uploader__user','uploader__department','designation').filter(uploader=request.user.extrainfo).order_by('-upload_date')
 
 
-    extrainfo = ExtraInfo.objects.all()
+    extrainfo = ExtraInfo.objects.select_related('user','department').all()
     # designations = Designation.objects.filter(upload_designation=extrainfo.id)
-    #print (File.designation)
-    abcd = HoldsDesignation.objects.get(pk=id)
+    abcd = HoldsDesignation.objects.select_related('user','working','designation').get(pk=id)
     s = str(abcd).split(" - ")
     designations = s[1]
     #designations = HoldsDesignation.objects.filter(user=request.user)
     # for x in designations:
     #  if abcd==x:
-    #      print (abcd)
-    #      print ("dcdsdcsd ")
     #      designations=abcd
-    #      print (designations)
 
     context = {
 
@@ -206,13 +183,13 @@ def fileview1(request,id):
 
 
 
-    out = Tracking.objects.filter(current_id=request.user.extrainfo).order_by('-forward_date')
+    out = Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department',
+    'current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').filter(current_id=request.user.extrainfo).order_by('-forward_date')
 
 
 
 
-    #print (File.designation)
-    abcd = HoldsDesignation.objects.get(pk=id)
+    abcd = HoldsDesignation.objects.select_related('user','working','designation').objects.get(pk=id)
 
 
     context = {
@@ -226,13 +203,13 @@ def fileview2(request,id):
 
 
 
-    in_file = Tracking.objects.filter(receiver_id=request.user).order_by('-receive_date')
+    in_file = Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department',
+'current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').filter(receiver_id=request.user).order_by('-receive_date')
 
 
 
 
-    #print (File.designation)
-    abcd = HoldsDesignation.objects.get(pk=id)
+    abcd = HoldsDesignation.objects.select_related('user','working','designation').get(pk=id)
     s = str(abcd).split(" - ")
     designations = s[1]
 
@@ -257,7 +234,7 @@ def outward(request):
                 out - The Tracking object filtered by current_id i.e, present working user.
                 context - Holds data needed to make necessary changes in the template.
     """
-    designation = HoldsDesignation.objects.filter(user=request.user)
+    designation = HoldsDesignation.objects.select_related('user','working','designation').filter(user=request.user)
 
     context = {
         'designation': designation,
@@ -280,8 +257,9 @@ def inward(request):
                     in_file - The Tracking object filtered by receiver_id i.e, present working user.
                     context - Holds data needed to make necessary changes in the template.
     """
-    designation = HoldsDesignation.objects.filter(user=request.user)
-    in_file = Tracking.objects.filter(receiver_id=request.user).order_by('-receive_date')
+    designation = HoldsDesignation.objects.select_related('user','working','designation').filter(user=request.user)
+    in_file = Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department',
+'current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').filter(receiver_id=request.user).order_by('-receive_date')
 
     context = {
         'in_file': in_file,
@@ -291,7 +269,7 @@ def inward(request):
     return render(request, 'filetracking/inward.html', context)
 @login_required(login_url = "/accounts/login")
 def confirmdelete(request,id):
-    file = File.objects.get(pk = id)
+    file = File.objects.select_related('uploader__user','uploader__department','designation').get(pk = id)
 
     context = {
 
@@ -328,12 +306,11 @@ def forward(request, id):
     # start = timer()
     file = get_object_or_404(File, id=id)
     # end = timer()
-    # print (end-start)
 
     # start = timer()
-    track = Tracking.objects.filter(file_id=file)
+    track = Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department',
+'current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').filter(file_id=file)
     # end = timer()
-    # print (end-start)
 
 
 
@@ -347,14 +324,14 @@ def forward(request, id):
                 remarks = request.POST.get('remarks')
 
                 sender = request.POST.get('sender')
-                current_design = HoldsDesignation.objects.get(id=sender)
+                current_design = HoldsDesignation.objects.select_related('user','working','designation').get(id=sender)
 
                 receiver = request.POST.get('receiver')
                 try:
                     receiver_id = User.objects.get(username=receiver)
                 except Exception as e:
                     messages.error(request, 'Enter a valid destination')
-                    designations = HoldsDesignation.objects.filter(user=request.user)
+                    designations = HoldsDesignation.objects.select_related('user','working','designation').filter(user=request.user)
 
                     context = {
                         # 'extrainfo': extrainfo,
@@ -364,16 +341,12 @@ def forward(request, id):
                         'track': track,
                     }
                     return render(request, 'filetracking/forward.html', context)
-                #print("Receiver_id = ")
-                print(receiver_id)
                 receive = request.POST.get('recieve')
-                print("recieve = ")
-                print(receive)
                 try:
                     receive_design = Designation.objects.get(name=receive)
                 except Exception as e:
                     messages.error(request, 'Enter a valid Designation')
-                    designations = HoldsDesignation.objects.filter(user=request.user)
+                    designations = HoldsDesignation.objects.select_related('user','working','designation').filter(user=request.user)
 
                     context = {
                         # 'extrainfo': extrainfo,
@@ -384,8 +357,6 @@ def forward(request, id):
                     }
                     return render(request, 'filetracking/forward.html', context)
 
-                # print("receive_designation = ")
-                # print(receive_designation)
                 # receive_design = receive_designation[0]
                 upload_file = request.FILES.get('myfile')
                 # return HttpResponse ("success")
@@ -400,9 +371,9 @@ def forward(request, id):
                 )
             messages.success(request, 'File sent successfully')
     # start = timer()
-    extrainfo = ExtraInfo.objects.all()
-    holdsdesignations = HoldsDesignation.objects.all()
-    designations = HoldsDesignation.objects.filter(user=request.user)
+    extrainfo = ExtraInfo.objects.select_related('user','department').all()
+    holdsdesignations = HoldsDesignation.objects.select_related('user','working','designation').all()
+    designations = HoldsDesignation.objects.select_related('user','working','designation').filter(user=request.user)
 
     context = {
         # 'extrainfo': extrainfo,
@@ -427,15 +398,10 @@ def finish(request, id):
     return render(request, 'filetracking/finish.html', {'file': file, 'track': track})
 
 def AjaxDropdown1(request):
-    print('brefore post')
     if request.method == 'POST':
         value = request.POST.get('value')
-        # print(value)
 
         hold = Designation.objects.filter(name__startswith=value)
-        # for h in hold:
-        #     print(h)
-        print('secnod method')
         holds = serializers.serialize('json', list(hold))
         context = {
         'holds' : holds
@@ -445,7 +411,6 @@ def AjaxDropdown1(request):
 
 
 def AjaxDropdown(request):
-    print('asdasdasdasdasdasdasdas---------------\n\n')
     # Name = ['student','co-ordinator','co co-ordinator']
     # design = Designation.objects.filter(~Q(name__in=(Name)))
     # hold = HoldsDesignation.objects.filter(Q(designation__in=(design)))
@@ -457,7 +422,7 @@ def AjaxDropdown(request):
 
     if request.method == 'POST':
         value = request.POST.get('value')
-        # print(value)
+
 
         users = User.objects.filter(username__startswith=value)
         users = serializers.serialize('json', list(users))
@@ -492,10 +457,11 @@ def delete(request,id):
 def forward_inward(request,id):
     file = get_object_or_404(File, id=id)
     file.is_read = True
-    track = Tracking.objects.filter(file_id=file)
-    extrainfo = ExtraInfo.objects.all()
-    holdsdesignations = HoldsDesignation.objects.all()
-    designations = HoldsDesignation.objects.filter(user=request.user)
+    track = Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department',
+'current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').filter(file_id=file)
+    extrainfo = ExtraInfo.objects.select_related('user','department').all()
+    holdsdesignations = HoldsDesignation.objects.select_related('user','working','designation').all()
+    designations = HoldsDesignation.objects.select_related('user','working','designation').filter(user=request.user)
 
     context = {
         # 'extrainfo': extrainfo,
@@ -504,7 +470,6 @@ def forward_inward(request,id):
         'file': file,
         'track': track,
     }
-    print(file.is_read)
     return render(request, 'filetracking/forward.html', context)
 
 

@@ -13,8 +13,8 @@ from django.views.generic import (
 )
 from .models import (
     CounsellingInfo,
-    Counselling_meeting,
-    Counselling_minutes,
+    CounsellingMeeting,
+    CounsellingMinutes,
     FAQ,
     Issues
 )
@@ -32,14 +32,14 @@ print(extra_info.user_type)
 
 # faq = FAQ(question="dsds",answer="dsdsd",category="Academics")
 # faq.save()
-faq = FAQ.objects.all()
-print(faq) 
+# faq = FAQ.objects.all()
+# print(faq) 
 def counselling_cell(request):
     faqs = FAQ.objects.all()
     context = {
         "faqs":faqs
     }
-    return render(request, "counselling_cell/counselling.html",context)
+    return render(request, "counselling_cell/counselling.html")
     
 def raise_issue(request):
     return render(request, "counselling_cell/issues.html")
