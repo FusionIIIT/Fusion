@@ -27,9 +27,9 @@ class IncomeSource(models.Model):
 class Income(models.Model):
 	source = models.ForeignKey(IncomeSource, related_name="incomeSource", on_delete=models.PROTECT)
 	amount = models.IntegerField(null=False)
-	source_account = models.BigIntegerField(null=False)
+	source_account = models.CharField(null=True)
 	date_added = models.DateTimeField(auto_now_add=True)
-	granted_by = models.CharField(max_length=100, blank=False)
+	granted_by = models.CharField(max_length=100, blank=True)
 	receipt = models.FileField(blank=False, upload_to = 'iemodule/income_receipts')
 
 	def __str__(self):
