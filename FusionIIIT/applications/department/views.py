@@ -36,7 +36,7 @@ def hod(request):
     user = request.user
     
     #cse_hod = request.user.holds_designations.filter(designation__name='hod').exists()
-    fac_view = request.user.holds_designations.filter(designation__name='faculty').exists() ## main part
+    fac_view = request.user.holds_designations.filter(designation__name='faculty').exists() 
     print(request.user.holds_designations.filter(designation__name='faculty'))
     student = request.user.holds_designations.filter(designation__name='student').exists()
 
@@ -49,16 +49,15 @@ def hod(request):
     # elif student:
     #     user_designation = "student"
     
-    print(fac_view, student) #### Both false for Faculties... maybe error in database need to confirm
+    print(fac_view, student) 
     if fac_view:
         user_designation = "faculty"
     elif student:
         user_designation = "student"
-    
     if user_designation == "student":
         return render(request,"department/index.html")
     elif(str(user.extrainfo.user_type)=='faculty'):
-        return render(request, 'department/dep_complaint.html')
+        return render(request, 'department/dep_complaint.html', {"user_designation":'faculty'})
 
 def file_complaint(request):
     #return render(request, "department/dep_complaint.html")

@@ -47,6 +47,12 @@
                         <i class="right floated chevron right icon"></i>
                     </a>
 
+                    {% if user_designation == 'faculty'%}
+                        <a class="item" data-tab="third" id="announcement">
+                            Make Announcement
+                            <i class="right floated chevron right icon"></i>
+                        </a>
+                    {% endif %}
                     
                 </div>
                 {% comment %}The Tab-Menu ends here!{% endcomment %}
@@ -67,17 +73,23 @@
                 {% comment %}File a complaint section!{% endcomment %}
                 <div class="ui active tab segment" data-tab="first">
                     {% block file-complaint %}
-                        {% include "department/fileComplaint.html" %}
+                        {% include "department/fileComplaint.html" %}  
                     {% endblock %}
                 </div>
                 {% comment %}File a complaint section!{% endcomment %}
 
-
-
                 {% comment %}status of complaint!{% endcomment %}
                 <div class="ui tab segment" data-tab="second">
                     {% block seeStatus %}
-                        {% include "department/seeComplaintStatus.html" %}
+                        {% include "department/seeComplaintStatus.html" %} 
+                    {% endblock %}
+                </div>
+                {% comment %}status of complaint!{% endcomment %}
+
+                {% comment %}status of complaint!{% endcomment %}
+                <div class="ui tab segment" data-tab="third">
+                    {% block make_announcement %}
+                        
                     {% endblock %}
                 </div>
                 {% comment %}status of complaint!{% endcomment %}
