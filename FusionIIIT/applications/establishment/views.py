@@ -14,7 +14,7 @@ def initial_checks(request):
 
 
 def is_admin(request):
-    return request.user == Establishment_variables.objects.first().est_admin
+    return request.user == Establishment_variables.objects.select_related('est_admin').first().est_admin
 
 
 def is_eligible(request):
@@ -53,7 +53,7 @@ def handle_cpda_admin(request):
             # if reviewer_design != HoldsDesignation.objects.get(user=reviewer_id):
             #     messages.error(request, 'Reviewer doesn\'t holds the designation you specified!')
             # else:
-            application = Cpda_application.objects.get(id=app_id)
+            application = Cpda_application.objects.select_related('applicant').get(id=app_id)
             application.tracking_info.reviewer_id = reviewer_id
             application.tracking_info.reviewer_design = reviewer_design
             application.tracking_info.remarks = remarks
@@ -62,7 +62,7 @@ def handle_cpda_admin(request):
             
             # add notif
             messages.success(request, 'Reviewer assigned successfully!')
-            # print (reviewer_design, ' ||| ', reviewer_id)
+            
 
         else:
             errors = "Please specify a reviewer and their designation."
@@ -71,10 +71,10 @@ def handle_cpda_admin(request):
     elif app_id:
         # update the status of app
         # verify that app_id is not changed, ie untampered
-        application = Cpda_application.objects.get(id=app_id)
-        application.status = status;
+        application = Cpda_application.objects.select_related('applicant').get(id=app_id)
+        application.status = status
         application.save()
-        # print (application)
+        
 
         # add notif
         messages.success(request, 'Status updated successfully!')
@@ -99,7 +99,7 @@ def handle_ltc_admin(request):
                 # if reviewer_design != HoldsDesignation.objects.get(user=reviewer_id):
                 #     messages.error(request, 'Reviewer doesn\'t holds the designation you specified!')
                 # else:
-                application = Ltc_application.objects.get(id=app_id)
+                application = Ltc_application.objects.select_related('applicant').get(id=app_id)
                 application.tracking_info.reviewer_id = reviewer_id
                 application.tracking_info.reviewer_design = reviewer_design
                 application.tracking_info.remarks = remarks
@@ -108,7 +108,6 @@ def handle_ltc_admin(request):
                 
                 # add notif
                 messages.success(request, 'Reviewer assigned successfully!')
-                # print (reviewer_design, ' ||| ', reviewer_id)
 
             else:
                 errors = "Please specify a reviewer and their designation."
@@ -117,8 +116,8 @@ def handle_ltc_admin(request):
         elif app_id:
             # update the status of app
             # verify that app_id is not changed, ie untampered
-            application = Ltc_application.objects.get(id=app_id)
-            application.status = status;
+            application = Ltc_application.objects.select_related('applicant').get(id=app_id)
+            application.status = status
             application.save()
             # add notif
             messages.success(request, 'Status updated successfully!')
@@ -169,7 +168,7 @@ def handle_ltc_admin(request):
         hometown_ltc_availed = request.POST.get('hometown_ltc_availed')
         elsewhere_ltc_availed = request.POST.get('elsewhere_ltc_availed')
 
-        eligible_user = Ltc_eligible_user.objects.get(user=user_id)
+        eligible_user = Ltc_eligible_user.objects.select_related('user').get(user=user_id)
         eligible_user.date_of_joining = joining_date
         eligible_user.current_block_size = current_block_size
         eligible_user.total_ltc_allowed = total_ltc_allowed
@@ -187,11 +186,11 @@ def handle_ltc_admin(request):
             return
 
         user_id = User.objects.get(username=username)
-        if not Ltc_eligible_user.objects.filter(user=user_id).exists():
+        if not Ltc_eligible_user.objects.select_related('user').filter(user=user_id).exists():
             messages.error(request, 'This user already isn\'t eligible for availing LTC')
             return
 
-        eligible_user = Ltc_eligible_user.objects.get(user=user_id)
+        eligible_user = Ltc_eligible_user.objects.select_related('user').get(user=user_id)
         eligible_user.delete()
         messages.success(request, 'User successfully removed from eligible LTC users')
 
@@ -200,6 +199,7 @@ def generate_cpda_admin_lists(request):
 
     # only requested and adjustment_pending
     unreviewed_apps = (Cpda_application.objects
+                .select_related('applicant')
                 .exclude(status='rejected')
                 .exclude(status='finished')
                 .exclude(status='approved')
@@ -230,15 +230,16 @@ def generate_cpda_admin_lists(request):
                 ('finished', 'Finished')
             ]
         app.assign_form = temp
-        # print (app.assign_form.fields['status']._choices)
         
     # only approved
     approved_apps = (Cpda_application.objects
+                    .select_related('applicant')
                     .filter(status='approved')
                     .order_by('-request_timestamp'))
 
     # only rejected and finished
     archived_apps = (Cpda_application.objects
+                    .select_related('applicant')
                     .exclude(status='approved')
                     .exclude(status='requested')
                     .exclude(status='adjustments_pending')
@@ -258,6 +259,7 @@ def generate_ltc_admin_lists(request):
 
     # only requested and adjustment_pending
     unreviewed_apps = (Ltc_application.objects
+                .select_related('applicant')
                 .filter(status='requested')
                 .order_by('-request_timestamp'))
     pending_apps = []
@@ -277,14 +279,14 @@ def generate_ltc_admin_lists(request):
             ('rejected', 'Rejected')
         ]
         app.assign_form = temp
-        # print (app.assign_form.fields['status']._choices)
         
     # approved and rejected
     archived_apps = (Ltc_application.objects
+                    .select_related('applicant')
                     .exclude(status='requested')
                     .order_by('-request_timestamp'))
 
-    current_eligible_users = Ltc_eligible_user.objects.order_by('user')
+    current_eligible_users = Ltc_eligible_user.objects.select_related('user').order_by('user')
     for user in current_eligible_users:
         temp = Ltc_Eligible_Form(initial={
             'username': user.user,
@@ -314,7 +316,6 @@ def generate_ltc_admin_lists(request):
 
 def handle_cpda_eligible(request):
     if 'cpda_request' in request.POST:
-        print(" *** CPDA request submit *** ")
         applicant = request.user
         pf_number = request.POST.get('pf_number')
         purpose = request.POST.get('purpose')
@@ -334,7 +335,6 @@ def handle_cpda_eligible(request):
             application = application,
             review_status = 'to_assign'
         )
-        # print (application.tracking_info.application)
 
         # add notif here
         messages.success(request, 'Request sent successfully!')
@@ -371,7 +371,6 @@ def handle_cpda_eligible(request):
         messages.success(request, 'Bills submitted successfully!')
         
     elif 'cpda_review' in request.POST:
-        print(" *** CPDA Review submit *** ")
         app_id = request.POST.get('app_id')
         # verify that app_id is not changed, ie untampered
         review_comment = request.POST.get('remarks')
@@ -385,7 +384,6 @@ def handle_cpda_eligible(request):
 
 def handle_ltc_eligible(request):
     if 'ltc_request' in request.POST:
-        print(" *** LTC request submit *** ")
         applicant = request.user
 
         pf_number = request.POST.get('pf_number') 
@@ -436,12 +434,10 @@ def handle_ltc_eligible(request):
             application = application,
             review_status = 'to_assign'
         )
-        # print (application.tracking_info.application)
         # add notif here
         messages.success(request, 'Request sent successfully!')
 
     if 'ltc_review' in request.POST:
-        print(" *** LTC Review submit *** ")
         app_id = request.POST.get('app_id')
         # verify that app_id is not changed, ie untampered
         review_comment = request.POST.get('remarks')
@@ -455,18 +451,21 @@ def handle_ltc_eligible(request):
 
 def generate_cpda_eligible_lists(request):
     active_apps = (Cpda_application.objects
+                    .select_related('applicant')
                     .filter(applicant=request.user)
                     .exclude(status='rejected')
                     .exclude(status='finished')
                     .order_by('-request_timestamp'))
 
     archive_apps = (Cpda_application.objects
+                    .select_related('applicant')
                     .filter(applicant=request.user)
                     .exclude(status='requested')
                     .exclude(status='approved')
                     .exclude(status='adjustments_pending')
                     .order_by('-request_timestamp'))
     to_review_apps = (Cpda_application.objects
+                    .select_related('applicant')
                     .filter(tracking_info__reviewer_id=request.user)
                     .exclude(status='rejected')
                     .exclude(status='finished')
@@ -478,7 +477,7 @@ def generate_cpda_eligible_lists(request):
 
     form = Cpda_Form()
     bill_forms = {}
-    apps = Cpda_application.objects.filter(applicant=request.user).filter(status='approved')
+    apps = Cpda_application.objects.select_related('applicant').filter(applicant=request.user).filter(status='approved')
     for app in apps:
         bill_forms[app.id] = Cpda_Bills_Form(initial={'app_id': app.id})
 
@@ -494,7 +493,7 @@ def generate_cpda_eligible_lists(request):
 
 def generate_ltc_eligible_lists(request):
     ltc_info = {}
-    ltc_queryset = Ltc_eligible_user.objects.filter(user=request.user)
+    ltc_queryset = Ltc_eligible_user.objects.select_related('user').filter(user=request.user)
     ltc_info['eligible'] = ltc_queryset.exists()
 
     if ltc_info['eligible']:
@@ -502,14 +501,15 @@ def generate_ltc_eligible_lists(request):
         ltc_info['total_ltc_remaining'] = ltc_queryset.first().total_ltc_remaining()
         ltc_info['hometown_ltc_remaining'] = ltc_queryset.first().hometown_ltc_remaining()
         ltc_info['elsewhere_ltc_remaining'] = ltc_queryset.first().elsewhere_ltc_remaining()
-        # print (ltc_info)
 
         active_apps = (Ltc_application.objects
+                        .select_related('applicant')
                         .filter(applicant=request.user)
                         .filter(status='requested')
                         .order_by('-request_timestamp'))
 
         archive_apps = (Ltc_application.objects
+                        .select_related('applicant')
                         .filter(applicant=request.user)
                         .exclude(status='requested')
                         .order_by('-request_timestamp'))

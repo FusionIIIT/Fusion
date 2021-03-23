@@ -33,13 +33,9 @@ def financeModule(request):
 
     context = {
     }
-    print(request.user)
-    k = HoldsDesignation.objects.filter(working = request.user)
-    print(k)
-    print("asdasd")
+    k = HoldsDesignation.objects.select_related().filter(working = request.user)
     flag = 0
     for z in k:
-        print(str(z.designation))
         if(str(z.designation) == 'dealing assistant'):
             flag = 1
             b = Paymentscheme.objects.filter(view = True, senior_verify = False )
@@ -105,10 +101,8 @@ def previewing(request):
     @variables
     Basic details of the employee with all the salary components are previewed in this function
     """
-    print(request.user)
-    k = HoldsDesignation.objects.filter(working = request.user)
-    print(k)
-    print("asdasd")
+    k = HoldsDesignation.objects.select_related().filter(working = request.user)
+
     flag = 0
     for z in k:
         if(str(z.designation) == 'dealing assistant'):
@@ -205,98 +199,108 @@ officeOfRegistrar
     a - object of the verifying method
     id - primary key of the payment scheme model
     """
-    k = HoldsDesignation.objects.filter(working = request.user)
+    k = HoldsDesignation.objects.select_related().filter(working = request.user)
 
     for z in k:
         if request.method == "POST" :
             if(str(z.designation) == 'dealing assistant'):
                 a = request.POST.getlist('box')
+                pay_scheme = []
                 for i in range(len(a)) :
                     if "verify" in request.POST :
                         p = Paymentscheme.objects.get(id = a[i])
                         p.senior_verify = True
-                        p.save()
+                        pay_scheme.append(p)
 
 
                     if "delete" in request.POST :
                         p = Paymentscheme.objects.get(id = a[i])
                         p.senior_verify = False
-                        p.delete()
+                        pay_scheme.append(p)
+                Paymentscheme.objects.bulk_update(pay_scheme,['senior_verify'])
 
             if(str(z.designation) == 'sr dealing assitant'):
                 a = request.POST.getlist('box')
+                sr_pay_scheme = []
                 for i in range(len(a)) :
                     if "verify" in request.POST :
                         p = Paymentscheme.objects.get(id = a[i])
                         p.ass_registrar_verify = True
-                        p.save()
+                        sr_pay_scheme.append(p)
 
 
                     if "delete" in request.POST :
                         p = Paymentscheme.objects.get(id = a[i])
                         p.senior_verify = False
-                        p.save()
-
+                        sr_pay_scheme.append(p)
+                Paymentscheme.objects.bulk_update(sr_pay_scheme,['senior_verify','ass_registrar_verify'])
 
             if(str(z.designation) == 'asst. registrar fa'):
                 a = request.POST.getlist('box')
+                asst_pay_scheme = []
                 for i in range(len(a)) :
                     if "verify" in request.POST :
                         p = Paymentscheme.objects.get(id = a[i])
                         p.ass_registrar_aud_verify = True
-                        p.save()
+                        asst_pay_scheme.append(p)
 
 
                     if "delete" in request.POST :
                         p = Paymentscheme.objects.get(id = a[i])
                         p.ass_registrar_verify = False
-                        p.save()
+                        asst_pay_scheme.append(p)
+                Paymentscheme.objects.bulk_update(asst_pay_scheme,['ass_registrar_verify','ass_registrar_aud_verify'])
 
             if(str(z.designation) == 'asst. registrar aud'):
                 a = request.POST.getlist('box')
+                aud_pay_scheme = []
                 for i in range(len(a)) :
                     if "verify" in request.POST :
                         p = Paymentscheme.objects.get(id = a[i])
                         p.registrar_director_verify = True
-                        p.save()
+                        aud_pay_scheme.append(p)
 
 
                     if "delete" in request.POST :
                         p = Paymentscheme.objects.get(id = a[i])
                         p.ass_registrar_aud_verify = False
-                        p.save()
+                        aud_pay_scheme.append(p)
+                Paymentscheme.objects.bulk_update(aud_pay_scheme,['registrar_director_verify','ass_registrar_aud_verify'])
 
             if(str(z.designation) == 'Registrar'):
                 a = request.POST.getlist('box')
+                reg_pay_scheme = []
                 for i in range(len(a)) :
                     if "verify" in request.POST :
                         p = Paymentscheme.objects.get(id = a[i])
                         p.runpayroll = True
                         p.view = False
-                        p.save()
-
+                        reg_pay_scheme.append(p)
 
                     if "delete" in request.POST :
                         p = Paymentscheme.objects.get(id = a[i])
                         p.registrar_director_verify = False
                         p.view = True
-                        p.save()
+                        reg_pay_scheme.append(p)
+                Paymentscheme.objects.bulk_update(reg_pay_scheme,['runpayroll','view','registrar_director_verify'])
 
             if(str(z.designation) == 'director'):
                 a = request.POST.getlist('box')
+                dir_pay_scheme=[]
                 for i in range(len(a)) :
                     if "verify" in request.POST :
                         p = Paymentscheme.objects.get(id = a[i])
                         p.runpayroll = True
                         p.view = False
-                        p.save()
+                        dir_pay_scheme.append(p)
 
 
                     if "delete" in request.POST :
                         p = Paymentscheme.objects.get(id = a[i])
                         p.registrar_director_verify = False
                         p.view = True
-                        p.save()
+                        dir_pay_scheme.append(p)
+                Paymentscheme.objects.bulk_update(dir_pay_scheme,['view','runpayroll','registrar_director_verify'])
 
     return HttpResponseRedirect("/finance/finance/")
 
@@ -313,14 +317,13 @@ def previous(request) :
         @variables
         a,b - these are taken as inout variables of month and year respectively for the display of the corresponding month's payments
     """
-    k = HoldsDesignation.objects.filter(working = request.user)
+    k = HoldsDesignation.objects.select_related().filter(working = request.user)
     
     for z in k:
         if request.method == "POST" :
             if(str(z.designation) == 'dealing assistant'):
                 a = request.POST.get('selectmonth')
                 b = request.POST.get('selectyear')
-                print (a)
 
                 c = Paymentscheme.objects.filter(month = a , year = b , runpayroll = True)
                 context = {
@@ -332,7 +335,6 @@ def previous(request) :
             if(str(z.designation) == 'sr dealing assitant'):
                 a = request.POST.get('selectmonth')
                 b = request.POST.get('selectyear')
-                print (a)
 
                 c = Paymentscheme.objects.filter(month = a , year = b , runpayroll = True)
                 context = {
@@ -343,7 +345,6 @@ def previous(request) :
             if(str(z.designation) == 'asst. registrar fa'):
                 a = request.POST.get('selectmonth')
                 b = request.POST.get('selectyear')
-                print (a)
 
                 c = Paymentscheme.objects.filter(month = a , year = b , runpayroll = True)
                 context = {
@@ -355,7 +356,6 @@ def previous(request) :
             if(str(z.designation) == 'asst. registrar aud'):
                 a = request.POST.get('selectmonth')
                 b = request.POST.get('selectyear')
-                print (a)
 
                 c = Paymentscheme.objects.filter(month = a , year = b , runpayroll = True)
                 context = {
@@ -367,7 +367,6 @@ def previous(request) :
             if(str(z.designation) == 'Registrar'):
                 a = request.POST.get('selectmonth')
                 b = request.POST.get('selectyear')
-                print (a)
 
                 c = Paymentscheme.objects.filter(month = a , year = b , runpayroll = True)
                 context = {
@@ -378,7 +377,6 @@ def previous(request) :
             if(str(z.designation) == 'director'):
                 a = request.POST.get('selectmonth')
                 b = request.POST.get('selectyear')
-                print (a)
 
                 c = Paymentscheme.objects.filter(month = a , year = b , runpayroll = True)
                 context = {
@@ -397,7 +395,7 @@ def createPayments(request):
         @variables
         Basic details of a new payement transaction.
     """
-    k = HoldsDesignation.objects.filter(working = request.user)
+    k = HoldsDesignation.objects.select_related().filter(working = request.user)
 
     for z in k:
         if(str(z.designation) == "asst. registrar fa"):
@@ -483,7 +481,7 @@ def previousPayments(request) :
         @variables
         a,b - these are taken as inout variables of month and year respectively for the display of the corresponding month's payments.
     """
-    k = HoldsDesignation.objects.filter(working = request.user)
+    k = HoldsDesignation.objects.select_related().filter(working = request.user)
 
     for z in k:
         if request.method == "POST" :
@@ -545,7 +543,7 @@ def createReceipts(request):
         @variables
         Basic details of a new payement transaction for generating receipts.
     """
-    k = HoldsDesignation.objects.filter(working = request.user)
+    k = HoldsDesignation.objects.select_related().filter(working = request.user)
 
     for z in k:
         if(str(z.designation) == "asst. registrar fa"):
@@ -611,7 +609,7 @@ def previousReceipts(request) :
         @variables
         a,b - these are taken as inout variables of month and year respectively for the display of the corresponding month's payment recei.
     """
-    k = HoldsDesignation.objects.filter(working = request.user)
+    k = HoldsDesignation.objects.select_related().filter(working = request.user)
 
     for z in k:
         if request.method == "POST" :
@@ -672,7 +670,7 @@ def createBank(request):
         @variables
         Basic details of a new bank Branch.
     """
-    k = HoldsDesignation.objects.filter(working = request.user, designation = Designation.objects.get(name = 'adminstrator'))
+    k = HoldsDesignation.objects.select_related().filter(working = request.user, designation = Designation.objects.get(name = 'adminstrator'))
     
     acc_no = request.POST.get("acc_no")
     bank_Name = request.POST.get("bank_name")
@@ -695,7 +693,7 @@ def createCompany(request):
         @variables
         Basic details of a new Company.
     """
-    k = HoldsDesignation.objects.filter(working = request.user, designation = Designation.objects.get(name = 'adminstrator'))
+    k = HoldsDesignation.objects.select_related().filter(working = request.user, designation = Designation.objects.get(name = 'adminstrator'))
 
     c_name = request.POST.get("c_name")
     start_date = request.POST.get("start_date")
@@ -790,7 +788,7 @@ def printSalary(request) :
 
     """
 
-    k = HoldsDesignation.objects.filter(working = request.user, designation = Designation.objects.get(name = 'adminstrator'))
+    k = HoldsDesignation.objects.select_related().filter(working = request.user, designation = Designation.objects.get(name = 'adminstrator'))
 
     month = request.POST.get("month")
     year = request.POST.get("year")
