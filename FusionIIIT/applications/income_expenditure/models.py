@@ -13,7 +13,7 @@ class Expenditure(models.Model):
 	amount = models.IntegerField(null=False)
 	date_added = models.DateTimeField(auto_now_add=True)
 	granted_to = models.CharField(max_length=100, blank=False)
-	expenditure_receipt = models.ImageField(blank=False, upload_to = 'iemodule/expenditure_receipts')
+	expenditure_receipt = models.FileField(blank=False, upload_to = 'iemodule/expenditure_receipts')
 
 	def __str__(self):
         return str(self.amount)
@@ -30,7 +30,7 @@ class Income(models.Model):
 	source_account = models.BigIntegerField(null=False)
 	date_added = models.DateTimeField(auto_now_add=True)
 	granted_by = models.CharField(max_length=100, blank=False)
-	receipt = models.ImageField(blank=False, upload_to = 'iemodule/income_receipts')
+	receipt = models.FileField(blank=False, upload_to = 'iemodule/income_receipts')
 
 	def __str__(self):
         return str(self.amount)
