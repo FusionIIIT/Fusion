@@ -30,7 +30,7 @@ class Income(models.Model):
 	source_account = models.CharField(null=True)
 	date_added = models.DateTimeField(auto_now_add=True)
 	granted_by = models.CharField(max_length=100, blank=True)
-	receipt = models.FileField(blank=False, upload_to = 'iemodule/income_receipts')
+	receipt = models.FileField(blank=True, upload_to = 'iemodule/income_receipts')
 
 	def __str__(self):
         return str(self.amount)
