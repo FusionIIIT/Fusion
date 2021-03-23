@@ -37,6 +37,7 @@ def hod(request):
     
     #cse_hod = request.user.holds_designations.filter(designation__name='hod').exists()
     fac_view = request.user.holds_designations.filter(designation__name='faculty').exists() ## main part
+    print(request.user.holds_designations.filter(designation__name='faculty'))
     student = request.user.holds_designations.filter(designation__name='student').exists()
 
     # finding designation of user
@@ -51,7 +52,7 @@ def hod(request):
     print(fac_view, student) #### Both false for Faculties... maybe error in database need to confirm
     if fac_view:
         user_designation = "faculty"
-    else:
+    elif student:
         user_designation = "student"
     
     if user_designation == "student":
