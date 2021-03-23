@@ -309,7 +309,7 @@ def action(request):
     if 'Send' in request.POST:
         sent_design=request.POST.get('sent_design')
         sent_design = Designation.objects.get(name=sent_design)
-        sent_hold_design = HoldsDesignation.select_related('user','designation','working').objects.get(designation=sent_design)
+        sent_hold_design = HoldsDesignation.objects.select_related('user','designation','working').get(designation=sent_design)
         Tracking.objects.create(
                 file_id=requisition.assign_file,
                 current_id=extrainfo,
