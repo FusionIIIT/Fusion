@@ -26,6 +26,7 @@ def student_api(request):
         }
         return Response(data=resp,status=status.HTTP_200_OK)
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
@@ -39,6 +40,7 @@ def course_api(request):
         }
         return Response(data=resp,status=status.HTTP_200_OK)
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
@@ -46,8 +48,134 @@ def curriculum_api(request):
 
     if request.method == 'GET':
         curriculum = Curriculum.objects.all()
-        curriculum_serialized = serializers.CourseSerializers(course,many=True).data
+        curriculum_serialized = serializers.CurriculumSerializers(curriculum,many=True).data
         resp = {
             'curriculum' : curriculum_serialized,
+        }
+        return Response(data=resp,status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def meeting_api(request):
+
+    if request.method == 'GET':
+        meeting = Meeting.objects.all()
+        meeting_serialized = serializers.MeetingSerializers(meeting,many=True).data
+        resp = {
+            'meeting' : meeting_serialized,
+        }
+        return Response(data=resp,status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def calendar_api(request):
+
+    if request.method == 'GET':
+        calendar = Calendar.objects.all()
+        calendar_serialized = serializers.CalendarSerializers(calendar,many=True).data
+        resp = {
+            'calendar' :calendar_serialized,
+        }
+        return Response(data=resp,status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def holiday_api(request):
+
+    if request.method == 'GET':
+        holiday = Holiday.objects.all()
+        holiday_serialized = serializers.HolidaySerializers(holiday,many=True).data
+        resp = {
+            'holiday' : holiday_serialized,
+        }
+        return Response(data=resp,status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def timetable_api(request):
+
+    if request.method == 'GET':
+        timetable = Timetable.objects.all()
+        timetable_serialized = serializers.TimetableSerializers(timetable,many=True).data
+        resp = {
+            'timetable' : timetable_serialized,
+        }
+        return Response(data=resp,status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def exam_timetable_api(request):
+
+    if request.method == 'GET':
+        exam_timetable = Exam_timetable.objects.all()
+        exam_timetable_serialized = serializers.Exam_timetableSerializers(exam_timetable,many=True).data
+        resp = {
+            'exam_timetable' : exam_timetable_serialized,
+        }
+        return Response(data=resp,status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def curriculum_instructor_api(request):
+
+    if request.method == 'GET':
+        curriculum_instructor = Curriculum_Instructor.objects.all()
+        curriculum_instructor_serialized = serializers.Curriculum_InstructorSerializers(curriculum_instructor,many=True).data
+        resp = {
+            'curriculum_instructor' : curriculum_instructor_serialized,
+        }
+        return Response(data=resp,status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def student_attendance_api(request):
+
+    if request.method == 'GET':
+        student_attendance = Student_attendance.objects.all()
+        student_attendance_serialized = serializers.Student_attendanceSerializers(student_attendance,many=True).data
+        resp = {
+            'student_attendance' : student_attendance_serialized,
+        }
+        return Response(data=resp,status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def grades_api(request):
+
+    if request.method == 'GET':
+        grades = Grades.objects.all()
+        grades_serialized = serializers.GradesSerializers(grades,many=True).data
+        resp = {
+            'grades' : grades_serialized,
+        }
+        return Response(data=resp,status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def spi_api(request):
+
+    if request.method == 'GET':
+        spi = Spi.objects.all()
+        spi_serialized = serializers.SpiSerializers(grades,many=True).data
+        resp = {
+            'spi' : spi_serialized,
         }
         return Response(data=resp,status=status.HTTP_200_OK)

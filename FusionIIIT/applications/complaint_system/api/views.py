@@ -186,8 +186,28 @@ def edit_caretaker_api(request,c_id):
             serializer.save()
             return Response(serializer.data,status=status.HTTP_200_OK)
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-<<<<<<< HEAD
-=======
+        
+   
+@api_view(['DELETE','PUT'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([TokenAuthentication])
+def edit_supervisor_api(request,s_id):
+    user = get_object_or_404(User,username=request.user.username)
+    if user.is_superuser == False:
+        return Response({'message':'Logged in user does not have permission'},status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
+    try: 
+        supervisor = Supervisor.objects.get(id = s_id) 
+    except Supervisor.DoesNotExist: 
+        return Response({'message': 'The Caretaker does not exist'}, status=status.HTTP_404_NOT_FOUND)
+    if request.method == 'DELETE':
+        supervisor.delete()
+        return Response({'message': 'Caretaker deleted'},status=status.HTTP_404_NOT_FOUND)
+    elif request.method == 'PUT':
+        serializer = serializers.SupervisorSerializers(supervisor,data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
@@ -210,70 +230,4 @@ def supervisor_api(request):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data,status=status.HTTP_201_CREATED)
-        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-   
-@api_view(['DELETE','PUT'])
-@permission_classes([IsAuthenticated])
-@authentication_classes([TokenAuthentication])
-def edit_supervisor_api(request,s_id):
-    user = get_object_or_404(User,username=request.user.username)
-    if user.is_superuser == False:
-        return Response({'message':'Logged in user does not have permission'},status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
-    try: 
-        supervisor = Supervisor.objects.get(id = s_id) 
-    except Supervisor.DoesNotExist: 
-        return Response({'message': 'The Caretaker does not exist'}, status=status.HTTP_404_NOT_FOUND)
-    if request.method == 'DELETE':
-        supervisor.delete()
-        return Response({'message': 'Caretaker deleted'},status=status.HTTP_404_NOT_FOUND)
-    elif request.method == 'PUT':
-        serializer = serializers.SupervisorSerializers(supervisor,data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data,status=status.HTTP_200_OK)
-        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
->>>>>>> efce4e169c26926b08f51e1ff3b5925d9dccbe57
-
-@api_view(['GET','POST'])
-@permission_classes([IsAuthenticated])
-@authentication_classes([TokenAuthentication])
-def supervisor_api(request):
-
-    if request.method == 'GET':
-        supervisor = Supervisor.objects.all()
-        supervisors = serializers.SupervisorSerializers(supervisor,many=True).data
-        resp = {
-            'supervisors' : supervisors,
-        }
-        return Response(data=resp,status=status.HTTP_200_OK)
-    
-    elif request.method == 'POST':
-        user = get_object_or_404(User,username=request.user.username)
-        if user.is_superuser == False:
-            return Response({'message':'Logged in user does not have permission'},status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
-        serializer = serializers.SupervisorSerializers(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data,status=status.HTTP_201_CREATED)
-        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-   
-@api_view(['DELETE','PUT'])
-@permission_classes([IsAuthenticated])
-@authentication_classes([TokenAuthentication])
-def edit_supervisor_api(request,s_id):
-    user = get_object_or_404(User,username=request.user.username)
-    if user.is_superuser == False:
-        return Response({'message':'Logged in user does not have permission'},status=status.HTTP_203_NON_AUTHORITATIVE_INFORMATION)
-    try: 
-        supervisor = Supervisor.objects.get(id = s_id) 
-    except Supervisor.DoesNotExist: 
-        return Response({'message': 'The Caretaker does not exist'}, status=status.HTTP_404_NOT_FOUND)
-    if request.method == 'DELETE':
-        supervisor.delete()
-        return Response({'message': 'Caretaker deleted'},status=status.HTTP_404_NOT_FOUND)
-    elif request.method == 'PUT':
-        serializer = serializers.SupervisorSerializers(supervisor,data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data,status=status.HTTP_200_OK)
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
