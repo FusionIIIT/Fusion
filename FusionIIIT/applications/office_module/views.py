@@ -62,7 +62,7 @@ def _req_history(req):
     """
     Return requisition history: All tracking rows that are associated with the passet requisition
     """
-    return Tracking.objects.filter(file_id=req.assign_file)
+    return Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department','current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').filter(file_id=req.assign_file)
 
 _pnd_deslist={
             'Civil_JE': 'Junior Engg. (Civil)',
@@ -105,7 +105,7 @@ def officeOfDeanPnD(request):
     if 'createassign' in request.POST:
         print("createassign", request)
         req_id=request.POST.get('req_id')
-        requisition=Requisitions.objects.get(pk=req_id)
+        requisition=Requisitions.objects.select_related('userid__user','userid__department','assign_file__uploader__user','assign_file__uploader__department','assign_file__designation').get(pk=req_id)
         description=request.POST.get('description')
         upload_file=request.FILES.get('estimate')
         sender_design=None
@@ -160,7 +160,7 @@ def officeOfDeanPnD(request):
         if hold:
             req_id=request.POST.get('req_id')
             try:
-                req = Requisitions.objects.get(pk=req_id)
+                req = Requisitions.objects.select_related('userid__user','userid__department','assign_file__uploader__user','assign_file__uploader__department','assign_file__designation').get(pk=req_id)
                 office_dean_PnD_notif(request.user, req.userid.user, 'request_rejected')
                 req.tag = 1 # tag = 1 implies the requisition has been deleted
                 req.save()
@@ -170,19 +170,19 @@ def officeOfDeanPnD(request):
             return HttpResponse('Unauthorized', status=401)
 
     # Requisitions that *don't* have as assignment
-    req=Requisitions.objects.filter(assign_file__isnull=True, tag=0)
+    req=Requisitions.objects.select_related('userid__user','userid__department','assign_file__uploader__user','assign_file__uploader__department','assign_file__designation').filter(assign_file__isnull=True, tag=0)
     # all requisitions
-    all_req=Requisitions.objects.filter(tag=0)
+    all_req=Requisitions.objects.select_related('userid__user','userid__department','assign_file__uploader__user','assign_file__uploader__department','assign_file__designation').filter(tag=0)
     # list of all requisitions that have an assignment
-    assigned_req=list(Requisitions.objects.filter(assign_file__isnull=False).select_related())
+    assigned_req=list(Requisitions.objects.select_related('userid__user','userid__department','assign_file__uploader__user','assign_file__uploader__department','assign_file__designation').filter(assign_file__isnull=False).select_related())
     # use list comprehension to create a list of pairs of (tracking file, corresponding requisition)
     # for incoming tracking files
     incoming_files=[(f, _list_find(assigned_req, lambda r: r.assign_file==f.file_id))
-            for f in Tracking.objects.filter(receiver_id=user).filter(is_read=False)]
+            for f in Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department','current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').filter(receiver_id=user).filter(is_read=False)]
     # use list comprehension to create a list of pairs of (tracking file, corresponding requisition)
     # for outgoing tracking files
     outgoing_files=[(f, _list_find(assigned_req, lambda r: r.assign_file==f.file_id))
-            for f in Tracking.objects.filter(current_id__user=user)]
+            for f in Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department','current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').filter(current_id__user=user)]
     # history of assignment, list of pair of (requisition, history list)
     assign_history=[(r, _req_history(r)) for r in assigned_req]
 
@@ -200,7 +200,7 @@ def officeOfDeanPnD(request):
             # this way all history is generated
             passed = [r.assign_file.designation] + [t.receive_design for t in Tracking.objects.filter(file_id=r.assign_file)]
             # the last date the requisition was sent
-            last_date = Tracking.objects.filter(file_id=r.assign_file).last().receive_date
+            last_date = Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department','current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').filter(file_id=r.assign_file).last().receive_date
             # map with readable titles from deslist
             passed = [pndReadableDesignation(d) for d in passed]
             req_history.append((r, passed, last_date))
@@ -275,14 +275,14 @@ def action(request):
     user = request.user
     extrainfo = ExtraInfo.objects.select_related('user','department').get(user=user)
     req_id=request.POST.get('req_id')
-    requisition = Requisitions.objects.get(pk=req_id)
+    requisition = Requisitions.objects.select_related('userid__user','userid__department','assign_file__uploader__user','assign_file__uploader__department','assign_file__designation').get(pk=req_id)
     description=request.POST.get('description')
     upload_file=request.FILES.get('estimate')
-    track = Tracking.objects.filter(file_id=requisition.assign_file).filter(receiver_id=user).get(is_read=False)
+    track = Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department','current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').filter(file_id=requisition.assign_file).filter(receiver_id=user).get(is_read=False)
     
     # current, previous and next Designation and HoldsDesignation found out
     current_design = track.receive_design
-    current_hold_design = HoldsDesignation.objects.select_related('user','designation','working').filter(user=User.objects.all().first()).get(designation=current_design)
+    current_hold_design = HoldsDesignation.objects.select_related('user','designation','working').filter(user=user).get(designation=current_design)
     # prev_design = track.current_design.designation
     # prev_hold_design = track.current_design
     
@@ -396,7 +396,7 @@ def eisModulenew(request):
     project2=Project_Closure.objects.select_related('project_id__PI_id__user','project_id__PI_id__department').all()
     project3=Project_Reallocation.objects.select_related('project_id__PI_id__user','project_id__PI_id__department').all()
 
-    design = HoldsDesignation.objects.select_related('user','designation').filter(working=request.user)
+    design = HoldsDesignation.objects.select_related('user','designation','working').filter(working=request.user)
     print(design)
     desig=[]
     for i in design:
@@ -427,7 +427,7 @@ def officeOfRegistrar(request):
     for atrack in archive_track:
         archive_view[atrack] = atrack.track_id.file_id
 
-    director_track = Tracking.objects.filter(receive_design__name = "Registrar", current_design__designation__name = "Director")
+    director_track = Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department','current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').filter(receive_design__name = "Registrar", current_design__designation__name = "Director")
     director_view = {}
     for track in director_track:
         if not Registrar_response.objects.filter(track_id = track):
@@ -492,8 +492,8 @@ def officeOfRegistrar_forward_submit(request):
             receiver_design = Designation.objects.filter(name=receiver_design_text)[0]
             current_id = request.user.extrainfo
             current_design = HoldsDesignation.objects.select_related('user','designation','working').filter(user = request.user)[0]
-            t_id = Tracking.objects.get(id = track_id)
-            up_file = Tracking.objects.get(id = track_id)
+            t_id = Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department','current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').get(id = track_id)
+            up_file = Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department','current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').get(id = track_id)
             remarks = ""
 
             Tracking.objects.create(
@@ -504,7 +504,7 @@ def officeOfRegistrar_forward_submit(request):
                         receiver_id=receiver_id,
                         remarks=remarks,
                     )
-            rr = Registrar_response(track_id = Tracking.objects.get(id=track_id), remark = "forwarded to"+receiver, status = "forward")
+            rr = Registrar_response(track_id = Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department','current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').get(id=track_id), remark = "forwarded to"+receiver, status = "forward")
             rr.save()
             messages.success(request,'File sent successfully')
             return HttpResponse('File sent successfully')
@@ -520,11 +520,11 @@ def officeOfRegistrar_view_file(request, id):
     """
     #file = get_object_or_404(File, id=id)
     
-    track = Tracking.objects.get(id=id)
+    track = Tracking.objects.select_related('file_id__uploader__user','file_id__uploader__department','file_id__designation','current_id__user','current_id__department','current_design__user','current_design__working','current_design__designation','receiver_id','receive_design').get(id=id)
     file = track.file_id
-    extrainfo = ExtraInfo.objects.all()
-    holdsdesignations = HoldsDesignation.objects.all()
-    designations = HoldsDesignation.objects.filter(user=request.user)
+    extrainfo = ExtraInfo.objects.select_related('user','department').all()
+    holdsdesignations = HoldsDesignation.objects.select_related('user','designation','working').all()
+    designations = HoldsDesignation.objects.select_related('user','designation','working').filter(user=request.user)
 
     context = {
         'designations':designations,
@@ -570,7 +570,7 @@ def project_register(request):
 
     """Project Fields added"""
     user = request.user
-    extrainfo = ExtraInfo.objects.get(user=user)
+    extrainfo = ExtraInfo.objects.select_related('user','department').get(user=user)
     project_title = request.POST.get('project_title')
     sponsored_agency = ""
     sponsored_agency = request.POST.get('sponsored_agency')
@@ -728,13 +728,13 @@ def project_extension(request):
     project_id = request.POST.get('project_id')
     # ob = get_object_or_404(Project_Registration, pk=project_id)
     try:
-        ob = Project_Registration.objects.get(pk=project_id)
+        ob = Project_Registration.objects.select_related('PI_id__user','PI_id__department').get(pk=project_id)
     except:
         messages.error(request, 'Project ID not found! Try again')
         return HttpResponseRedirect('/profile')
 
     user = request.user
-    extrainfo = ExtraInfo.objects.get(user=user)
+    extrainfo = ExtraInfo.objects.select_related('user','department').get(user=user)
     """Validating the user in each form, if not then generating error message"""
     if extrainfo.id == ob.PI_id.id:
         # date = ob.start_date
@@ -822,13 +822,13 @@ def project_closure(request):
     """Project closure conditions added"""
     project_id = request.POST.get('project_id')
     try:
-        extrainfo1 = Project_Registration.objects.get(pk=project_id)
+        extrainfo1 = Project_Registration.objects.select_related('PI_id__user','PI_id__department').get(pk=project_id)
     except:
         messages.error(request, 'Project ID not found! Try again')
         return HttpResponseRedirect('/profile')
 
     user = request.user
-    extrainfo = ExtraInfo.objects.get(user=user)
+    extrainfo = ExtraInfo.objects.select_related('user','department').get(user=user)
     """Validating the user in each form, if not then generating error message"""
     if extrainfo.id == extrainfo1.PI_id.id:
         completion_date = request.POST.get('date')
@@ -917,12 +917,12 @@ def project_reallocation(request):
     """Project reallocation details added"""
     project_id = request.POST.get('project_id')
     try:
-        ob1 = Project_Registration.objects.get(pk=project_id)
+        ob1 = Project_Registration.objects.select_related('PI_id__user','PI_id__department').get(pk=project_id)
     except:
         messages.error(request, 'Project ID not found! Try again')
         return HttpResponseRedirect('/profile')
     user = request.user
-    extrainfo = ExtraInfo.objects.get(user=user)
+    extrainfo = ExtraInfo.objects.select_related('user','department').get(user=user)
     """Validating the user in each form, if not then generating error message"""
     if extrainfo.id == ob1.PI_id.id:
         # applied_date = request.POST.get('applied_date')
@@ -965,7 +965,7 @@ def project_reallocation_permission(request):
         for id in id_list:
             obj = get_object_or_404(Project_Reallocation, pk=id)
             if "Pending" in obj.DRSPC_response or "Disapprove" in obj.DRSPC_response:
-                ob = Project_Registration.objects.get(pk=obj.project_id.id)
+                ob = Project_Registration.objects.select_related('PI_id__user','PI_id__department').get(pk=obj.project_id.id)
                 pf = int(ob.PI_id.id)
                 title = ob.project_title
                 ptype = ob.project_type
