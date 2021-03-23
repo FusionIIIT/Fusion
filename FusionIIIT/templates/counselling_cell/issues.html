@@ -1,226 +1,147 @@
+{#{% extends 'globals/base.html'%}#}
 {% load static %}
-{% block issues %}
-    {% comment %}the main tab starts here {% endcomment %}
+{#{% block body %}#}
+{% block Issues %}
+    {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="Raise Issue">
+        <a class="active item" data-tab="feedback">
             Raise Issue
         </a>
 
-        <a class="item" data-tab="Issue Status">
-            Issue Status
+        <a class="item" data-tab="viewfeedback">
+            Status
         </a>
+
+       
     </div>
 
-    {% comment %}the Raise issues tab starts here {% endcomment %}
-    <div class="ui active tab" data-tab="Raise Issue">
+    <div class="ui active tab" data-tab="feedback" id="feedback">
         <div class="ui vertical segment">
-            <form class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">{% csrf_token %}
-                
-                  <div class="field">
-                      <label>Category</label>
-                      <select id="Category" class="ui search fluid" name="Category_id" required="true">
-                        <option selected hidden>--SELECT--</option>
-                        {% comment %} {% for doctor in doctors %}
-                        <option value="{{doctor.id}}">{{doctor.doctor_name}}</option>
-                        {% endfor %} {% endcomment %}
-                      </select>
-                   </div>
-               
-                <div class="field">
-                    <label>Describe Issue</label><p id="desc"></p>
-                    <div class="ui fluid input">
-                        <textarea id="description" class="ui textarea" rows="2" name="description" required="true"></textarea>
+
+            {% comment %}Form Tag starts here!{% endcomment %}
+            <form method="POST">
+                {% csrf_token %}
+                {% comment %}The add a new skill Accordian starts here!{% endcomment %}
+                <div class="ui form" style="padding: 8px; padding-left: 24px; padding-right: 24px;">
+
+                    <div class="ui header">
+                        Raise issue Form :
                     </div>
-                </div>
 
-                <div class="field">
-                    <label><br></label>
+                    <br>
 
-                    <div >
-                      <input type="submit" id="appo" name="Submit" value="Submit" class="ui small right floated primary button" />
+                    <div class="two fields">
+
+                        <div class="two fields">
+                            <div class="twelve wide field">
+                                <label>Category*</label>
+                                <select class="ui dropdown" name="category" id="category">
+                                    <option value="Academics">Academics</option>
+                                    <option value="Personal">Personal</option>
+                                    <option value="Others">Others</option>
+                                </select>
+                            </div>
+
+                        </div>
+                    </div>
+                    
+                    <div class="field">
+                        <label>Description of issue*</label>
+                        <textarea rows="10" id="description" name="description" required="true"></textarea>
+                    </div>
+                    
+                    <div class="field">
+                        <label><br></label>
+                            <button class="ui primary fluid button" type="submit" onclick="return feedback()">
+                            Submit
+                            </button>
                     </div>
 
                 </div>
             </form>
-          <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
-          <script type="text/javascript">
+            {% comment %}Form Tag ends here!{% endcomment %}
 
 
+            <div class="ui divider"></div>
 
-             function trimfield(str)
-                                       {
-                                         return str.replace(/^\s+|\s+$/g,'');
-                                       }
-				 
-						
-					
-					
-					
-                $('#appo').on('click',function(e){
-                     e.preventDefault();
+        </div>
+    </div>
 
-                     var tod = new Date(new Date().setHours(0, 0, 0, 0));
-                     var today = new Date(new Date());
-                     var now = today.getHours();
+    <div class="ui tab" data-tab="viewfeedback">
+    {% block viewstatus %}
+            {% include 'counselling_cell/Status.html' %}
+            {% endblock %}
+    </div>
 
-                     if(trimfield(document.getElementById("description").value) == '')
-                       {
-                       $('#desc').html('*Please fill out the Description!');
-                       document.getElementById("description").focus();
+{% endblock %}
+{#{% endblock %}#}
+
+{% block javascript %}
+<script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
+
+ <script>
+        const required_check_faq_form = () => {
+            if ($("#answer").val().length == 0  && $("#question").val().length == 0) {
+                check = 0;
+                return check;
+            }
+            else {
+                check = 1;
+            }
+        }
+       
+        function feedback(){
+            check = required_check_faq_form();
+            if(check == 0){
+                alert("Please fill question and anser both");
+            }
+            else {
+                $.ajax({
+                    type: 'POST',
+                    url: 'submitfaq/',
+                    dataType: 'json',
+                    data: {
+                        'csrfmiddlewaretoken': '{{ csrf_token }}',
+                        'category': $("#category").val(),
+                        'answer': $("#answer").val(),
+                        'question': $("#question").val()
+                    },
+                    success: function (data) {
+                        if (data.status) {
+                            $("#feedback").load(location.href + " #feedback>*", "");
+
+                            // var monthNames = ["January", "February", "March", "April", "May", "June",
+                            //                   "July", "August", "September", "October", "November", "December"];
+                            // var name = $("#user_name").text();
+                            // var today_date = new Date();
+                            // var t_date = monthNames[today_date.getMonth()] + " " + today_date.getDate() + ", " + today_date.getFullYear();
+                            // $("#feedback_history").prepend("<div class='item'><div class='left floated content'>" +
+                            //         "<a class='header'>" + name + "</a>" +
+                            //     "<a class='meta'>" + $("#feedback_type").val() +"</a><div class='description'>"
+                            //     + $("#description").val() + "</div></div><div class='right floated content'>" +
+                            //     "<span class='meta'>" + t_date + "</span></div></div>");
+
+                            alert("Data Inserted Successfully");
+
+                            document.getElementById('feedback_type').value = "";
+                            document.getElementById('description').value = "";
+
                         }
-																										
-
-                     else{
-                     $.ajax({
-                     type:'post',
-                     url:'/healthcenter/student/',
-                     data: {
-                     csrfmiddlewaretoken: '{{ csrf_token }}',
-                     doctor:$("#doc").val(),
-                     date:$("#date").val(),
-                     description:$("#description").val(),
-                     appointment:$("#appo").val(),
-                     },
-                     success: function(data){
-                        var dte = new Date(data.dt);
-                        dte.setHours(0, 0, 0, 0);
-
-                         alert("Appointment requested.Check history for the status of appointment. ")
-                         document.getElementById("doc").value=""
-                         document.getElementById("date").value=""
-                         document.getElementById("description").value=" "
-                         $('#desc').html('');
-                         window.location.reload();
-                         $('#app_dte').html('');
-
-                   }
-                  });
+                    },
+                    error: function (data, err) {
+                        console.log(err.message)
+                        alert(err.message);
+                        $("#feedback").load(location.href + " #feedback>*", "");
                     }
                 });
+            }
+        return false;
+    }
+    
 
-              </script>
-
-            <br>
-            <br>
-        </div>
-        <br>
-        <div class="extra segment"></div>
-
-    </div>
-    {% comment %}the Raise issue tab ends here {% endcomment %}
-
-    {% comment %}the ambulance appointment tab starts here {% endcomment %}
-    {% comment %} actually here there should be status of issue but im unable to make it ,
-     i have modified data from appointments html present in phc module templates, below code is incomplete and is not related to issues{% endcomment %}
-    <div class="ui tab" data-tab="Status of issue">
-        <div class="ui vertical segment">
-            <form class="ui form" method="POST" style="padding: 8px; padding-left: 24px; padding-right: 24px;">{% csrf_token %}
-                <div class="two fields" >
-                    <div class="field">
-                        <label>From</label>
-                                <input type="date" placeholder="From" id="start_date" name="start_date">
-                                <p id="stdt"></p>
-
-                    </div>
-                    <div class="field">
-                        <label>To</label>
-
-                          <input type="date" placeholder="To" id="end_date" name="end_date">
-                          <p id="endt"></p>
-
-
-                    </div>
-                </div>
-
-
-                <div class="field">
-                    <label>Reason</label>
-                    <div class="ui fluid input">
-                        <textarea class="ui textarea" rows="2" id="reason" name="reason"></textarea>
-                        <p id="reas"></p>
-                    </div>
-                </div>
-
-                <div class="field">
-                    <label><br></label>
-                    <div >
-                      <input type="button" id="amb_submit" name="amb_submit"  value="Submit"class="ui large right floated primary button" />
-                    </div>
-                </div>
-
-            </form>
-            <script type="text/javascript">
-
-            function trimfield(str)
-                                       {
-                                         return str.replace(/^\s+|\s+$/g,'');
-                                       }
-
-              $('#amb_submit').click(function(e)
-                                                  {
-                                                    var startDate = document.getElementById('start_date').value;
-                                                    var endDate = document.getElementById('end_date').value;
-                                                    var start = new Date(startDate);
-                                                    var end=new Date(endDate);
-
-                                                    var today = new Date(new Date().setHours(0, 0, 0, 0));
-
-
-                                                    $('#stdt').html('');
-                                                    $('#endt').html('');
-                                                    if ( +start < +today ) {
-                                                        $('#stdt').html('You cannot enter a date before today!.');
-                                                        return false;
-                                                    }
-                                                    if(endDate!="")
-                                                    {
-                                                    if ( +end < +start ) {
-                                                        $('#endt').html('You cannot enter a date before start date!.');
-                                                        return false;
-                                                    }
-                                                  }
-
-                                                   if(trimfield(document.getElementById("reason").value) == '')
-                                                     {
-                                                           $('#reas').html('*Please fill out the details!');
-                                                           document.getElementById("reason").focus();
-                                                      }
-
-                                                   else{
-                                                    $.ajax({
-                                                      type:'post',
-                                                      url:'/healthcenter/student/',
-                                                      data: {
-                                                      csrfmiddlewaretoken: '{{ csrf_token }}',
-                                                      start_date:$("#start_date").val(),
-                                                      end_date:$("#end_date").val(),
-                                                      reason:$("#reason").val(),
-                                                      amb_submit:$("#amb_submit").val()
-                                                    },
-                                                      success: function(data){
-                                                      alert("Ambulance requested.");
-                                                      document.getElementById("start_date").value="";
-                                                      document.getElementById("end_date").value="";
-                                                      document.getElementById("reason").value="";
-                                                      window.location.reload();
-
-                                                      $('#reas').html('');
-                                                      $('#stdt').html('');
-                                                      $('#endt').html('');
-
-                                                    }
-                                                  });
-                                                  }
-                                                });
 
 </script>
-            <br>
-            <br>
-        </div>
-        <br>
-        <div class="extra segment"></div>
-    </div>
-
-
-    {% comment %}the ambulance appointment tab ends here {% endcomment %}
 {% endblock %}
+
+
+

@@ -47,7 +47,7 @@
                         </tr>
                         </thead>
 
-                        <tbody>
+                        {% comment %} <tbody>
                         
                             {% for winner in mcm %}
                                 {% if winner.student.id == request.user.extrainfo.student.id %}
@@ -143,8 +143,8 @@
                             {% endif %}
                         </tr>
                                 {% endif %}
-                            {% endfor %}
-                        </tbody>
+                            {% endfor %} 
+                        </tbody>{% endcomment %}
                     </table>
                 </div>
             </div>
@@ -154,7 +154,7 @@
     <div class="ui tab" data-tab="history">
         <div class="ui vertical segment">
             <div class="ui header">
-                Previous deatils of issues
+                Previous details of issues
             </div>
 
             <div class="content">
@@ -182,7 +182,7 @@
                         </tr>
                         </thead>
 
-                        <tbody>
+                        {% comment %} <tbody>
                         {% for winner in winners %}
                             {% if winner.student.id == request.user.extrainfo.student.id %}
                         <tr>
@@ -205,6 +205,6 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div>{% endcomment %}
 
-{%  endblock %}
+{%  endblock %} 

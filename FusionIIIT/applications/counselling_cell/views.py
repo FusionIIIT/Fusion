@@ -12,11 +12,11 @@ from django.views.generic import (
     CreateView
 )
 from .models import (
-    CounsellingInfo,
+    StudentCounsellingTeam,
     CounsellingMeeting,
     CounsellingMinutes,
-    FAQ,
-    Issues
+    CounsellingFAQ,
+    CounsellingIssue
 )
 from .handlers import (
     add_counselling_faq
@@ -35,7 +35,7 @@ print(extra_info.user_type)
 # faq = FAQ.objects.all()
 # print(faq) 
 def counselling_cell(request):
-    faqs = FAQ.objects.all()
+    faqs = CounsellingFAQ.objects.all()
     context = {
         "faqs":faqs
     }

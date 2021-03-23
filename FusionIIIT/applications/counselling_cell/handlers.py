@@ -1,4 +1,4 @@
-from  .models import FAQ
+from  .models import CounsellingFAQ
 def add_counselling_faq(request, student):
     """
     This function is to record the feedback submitted
