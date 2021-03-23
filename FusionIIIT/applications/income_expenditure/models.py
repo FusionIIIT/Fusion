@@ -3,7 +3,7 @@ from django.utils import timezone
 
 
 class ExpenditureType(models.Model):
-	expenditure_type = models.TextField(max_length=100)
+	expenditure_type = models.CharField(max_length=100)
 
 	def __str__(self):
         return self.expenditure_type
@@ -19,7 +19,7 @@ class Expenditure(models.Model):
         return str(self.amount)
 
 class IncomeSource(models.Model):
-	income_source = models.TextField(max_length=100)
+	income_source = models.CharField(max_length=100)
 
 	def __str__(self):
         return self.income_source
