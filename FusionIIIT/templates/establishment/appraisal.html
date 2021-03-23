@@ -1,12 +1,273 @@
+{% load semanticui %}
 {% load static %}
-{% block cpda %}
-    <div class="ui pointing secondary menu">
-        <a class=" ui active item" data-tab="appraisal_one">
-            Appraisal
+{% block appraisal %}
+
+
+    <div class="ui top attached tabular menu">
+        <a class="item active" data-tab="appraisal_one">
+            Appraisal Form
+        </a>
+        <a class="item" data-tab="appraisal_two">
+            Active Applications
+        </a>
+        <a class="item" data-tab="appraisal_three">
+            Archived Applications
+        </a>
+        <a class="item" data-tab="appraisal_four">
+            Review Applications
         </a>
     </div>
-    <div class="ui active tab" data-tab="appraisal_one">
-        <div class="ui vertical segment"></div>
+
+
+<!-- Appraisal Form -->
+<div class="ui bottom attached tab segment active" data-tab="appraisal_one">
+    <div class="content">
+        <div class="description">
+            <form class="ui large form" method="post" enctype="multipart/form-data" id="form1">
+                {% csrf_token %}
+
+                <label for="id"><b>ID:</b></label><br><br>
+                <input type="text" id="id" name="id"><br><br>
+                <label for="specific_field_knowledge"><b>Specific Field Knowledge:</b></label><br><br>
+                <textarea id="specific_field_knowledge" name="specific_field_knowledge" rows="3" cols="30"></textarea><br><br>
+                <label for="current_research_interest"><b>Current Research Interest:</b></label><br><br>
+                <textarea id="current_research_interest" name="current_research_interest" rows="3" cols="30"></textarea><br><br><br>
+
+                <hr  style="height:5px;background-color:#333;">
+
+                <h2>&emsp;&emsp;&emsp; 1. &emsp; <u> INSTRUCTION ELEMENT</u></h2>
+                <p>1.1 &emsp;&emsp;<u>Teaching</u></p>
+
+                <!--
+                Table for CoursesInstructed
+                -->
+
+                <style>
+                	* { font: 17px Calibri; }
+                    table { width: 70%; }
+                    table, th, td { border: solid 1px #DDD;
+                        border-collapse: collapse; padding: 2px 3px; text-align: center;
+                    }
+                </style>
+
+                <body onload="createTable()">
+                    <p>1.1.1 &emsp; <u>Courses Taught at UG/PG Level</u></p>
+                    <div id="cont"></div>  <!-- the container to add the TABLE -->
+                    <p><input type="button" value="Add New Course" onclick="javascript:addRow()"/></p>
+
+                <!-- End of Table CoursesInstructed -->
+
+                <!--
+                Table for NewCoursesOffered
+                -->
+
+                    <p>1.1.2 &emsp; <u>New Courses/Laboratory experiments Introduced and  Taught</u></p>
+                    <div id="new_courses"></div>  <!-- the container to add the TABLE -->
+                    <p><input type="button" value="Add New Course" onclick="javascript:addRowNewCourses()"/></p>
+                </body>
+
+                <!-- End of Table NewCoursesOffered -->
+
+
+                <script type="text/javascript">
+                    var count = 0;
+                    var counter_string = "0";
+                    var arrHead = new Array();	// array for header.
+                    arrHead = ['Semester','Course-Name','Course Number','Lecture (Hours/week)','Tutorial (Hours/week)','Lab (Hours/week)','Number of Registered Students']
+
+                    var count2 = 0;
+                    var counter_string2 = "0";
+                    var arrHead2 = new Array();	// array for header.
+                    arrHead2 = ['Course-Name','Course Number','UG/PG','Tutorial (Hours/week)','YEAR','Semester']
+
+                    // first create TABLE structure with the headers.
+                    function createTable() {
+                      var courseTable = document.createElement('table');
+                      courseTable.setAttribute('id', 'CoursesInstructed'); // table id.
+
+                      var tr = courseTable.insertRow(-1);
+                      for (var h = 0; h < arrHead.length; h++) {
+                          var th = document.createElement('th'); // create table headers
+                          th.innerHTML = arrHead[h];
+                          tr.appendChild(th);
+                      }
+
+                      var div = document.getElementById('cont');
+                      div.appendChild(courseTable);  // add the TABLE to the container.
+
+                      var newcourseTable = document.createElement('table');
+                      newcourseTable.setAttribute('id', 'NewCoursesOffered'); // table id.
+                      var tr2 = newcourseTable.insertRow(-1);
+
+                      for (var h = 0; h < arrHead2.length; h++) {
+                          var th = document.createElement('th'); // create table headers
+                          th.innerHTML = arrHead2[h];
+                          tr2.appendChild(th);
+                      }
+
+                      var div2 = document.getElementById('new_courses');
+                      div2.appendChild(newcourseTable);  // add the TABLE to the container.
+                }
+
+
+                  // now, add a new to the TABLE.
+                  function addRow() {
+                      count = count + 1;
+                      counter_string = count.toString();
+                      var courseTab = document.getElementById('CoursesInstructed');
+                      var rowCnt = courseTab.rows.length;  // table row count.
+                      var tr = courseTab.insertRow(rowCnt);
+
+
+                      for(var c = 0; c < arrHead.length; c++){
+                          var td = document.createElement('td');
+                          td = tr.insertCell(c);
+
+                          if(c == 8){
+                            // Remove Button
+                            var button = document.createElement('input');
+
+                            // set input attributes.
+                            button.setAttribute('type', 'button');
+                            button.setAttribute('value', 'Remove');
+
+                            // add button's 'onclick' event.
+                            button.setAttribute('onclick', 'removeRow(this)');
+
+                            td.appendChild(button);
+                          }
+                          else if(c == 1){
+                            // Course Name: Text input field
+                            var ele = document.createElement('input');
+                            ele.setAttribute('type', 'text');
+                            ele.setAttribute('value', '');
+                            ele.setAttribute('name', 'Course-Name' + counter_string);
+                            td.appendChild(ele);
+                          }
+                          else{
+                            // Others
+                            var ele = document.createElement('input');
+                            ele.setAttribute('type', 'number');
+                            ele.setAttribute('value', 0.0);
+                            ele.setAttribute('name', arrHead[c] + counter_string);
+                            td.appendChild(ele);
+                          }
+                      }
+                  }
+
+
+                  function addRowNewCourses() {
+                      count2 = count2 + 1;
+                      counter_string2 = count2.toString();
+                      var newcourseTab = document.getElementById('NewCoursesOffered');
+                      var rowCnt2 = newcourseTab.rows.length;  // table row count.
+                      var tr = newcourseTab.insertRow(rowCnt2);
+
+                      for(var c = 0; c < arrHead2.length; c++){
+                          var td = document.createElement('td');
+                          td = tr.insertCell(c);
+
+                          if(c == 0 || c == 2){
+                            // Course Name: Text input field
+                            var ele = document.createElement('input');
+                            ele.setAttribute('type', 'text');
+                            ele.setAttribute('value', '');
+                            ele.setAttribute('name', arrHead2[c] + '1.1.2' + counter_string);
+                            td.appendChild(ele);
+                          }
+                          else{
+                            var ele = document.createElement('input');
+                            ele.setAttribute('type', 'number');
+                            ele.setAttribute('value', 0.0);
+                            ele.setAttribute('name', arrHead2[c] + '1.1.2' + counter_string);
+                            td.appendChild(ele);
+                          }
+                  }}
+
+                  // delete TABLE row function.
+                  function removeRow(oButton) {
+                      console.log("Check");
+                      var courseTab = document.getElementById('CoursesInstructed');
+                      courseTab.deleteRow(oButton.parentNode.parentNode.rowIndex); // button -> td -> tr.
+                  }
+
+
+                </script>
+
+
+                <hr style="height:5px;background-color:#333;">
+                <h2>&emsp;&emsp;&emsp; 2. &emsp; <u> RESEARCH ELEMENT</u></h2>
+                <br>
+                <label for="other_research_element"><h3>2.3 Other Research Element:</h3></label>
+                <textarea name= "other_research_element" rows="2" cols="30" placeholder="such as Development of Research Facilities, Patent(Applied For/Granted), Transfer of Technology, etc"></textarea>
+                <br><br>
+                <label for="publications"><h3>2.4 Publication(s)</h3></label>
+                <textarea name="publications" rows="2" cols="30" placeholder="Journal, Conference, Book, Book Chapter, Technical Report, etc."></textarea>
+                <br><br>
+                <label for="conferences_meeting_attended"><h3>2.5 Conferences Attended:</h3></label>
+                <textarea name="conferences_meeting_attended" rows="2" cols="30"></textarea>
+                <br><br>
+                <label for="conferences_meeting_organized"><h3>2.6 Conferences Organized:</h3></label>
+                <textarea name="conferences_meeting_organized" rows="2" cols="30"></textarea>
+                <br><br>
+                <hr  style="height:5px;background-color:#333;">
+
+                <h2>&emsp;&emsp;&emsp; 3. &emsp;<u>ADMINISTRATION ASSIGNMENT</u></h2>
+                <br>
+                <label for="admin_assign"><h3>3.1 Administrative Assignments:</h3></label>
+                <textarea name="admin_assign" rows="1" cols="30" placeholder="please mention institute/discipline level"></textarea>
+                <br><br>
+                <label for="sevice_to_ins"><h3>3.2 Service To Institute Community:</h3></label>
+                <textarea name="sevice_to_ins" rows="1" cols="20" placeholder="please mention institute/others"></textarea>
+                <br><br>
+                <label for="extra_info"><h3>3.3 Any Other Contribution:</h3></label>
+                <textarea name="extra_info" rows="1" cols="20"></textarea>
+                <br><br>
+                <hr  style="height:5px;background-color:#333;">
+
+                <h2>&emsp;&emsp;&emsp; 4. &emsp;<u>SELF-APPRAISAL BY FACULTY</u></h2>
+                <textarea name="faculty_comments" rows="3" cols="30" placeholder="Your comments on your performance so far and this academic year particularly"></textarea>
+                <br><br>
+                <hr  style="height:5px;background-color:#333;">
+                <br><br>
+                <button type="submit" name="appraisal_request" class="ui large primary button">
+                    Submit Request
+                </button>
+            </form>
+        </div>
     </div>
+</div>
+
+
+<!-- Appraisal Active -->
+<div class="ui tab segment" data-tab="appraisal_two">
+    <div class="content">
+        <div class="description">
+        </div>
+    </div>
+</div>
+
+<!-- Appraisal Archived -->
+<div class="ui tab segment" data-tab="appraisal_three">
+    <div class="content">
+        <div class="description">
+        </div>
+    </div>
+</div>
+
+<!-- Appraisal Review -->
+<div class="ui tab segment" data-tab="appraisal_four">
+    <div class="content">
+        <div class="description">
+        </div>
+    </div>
+</div>
+
+
 {% endblock %}
-{% block javascript %}{% endblock %}
+
+{% block javascript %}
+
+
+
+{% endblock %}
