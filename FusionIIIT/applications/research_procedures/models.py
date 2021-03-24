@@ -1,7 +1,6 @@
 from django.db import models
 
-# Create your models here.
-# group 8 and group 9
+#
 class Constants:
     DEPARTMENT = (
         ('CSE','CSE'),
@@ -16,51 +15,6 @@ class Constants:
         ('OI','Outreach and Inclusivity'),
         ('PR','PERCEPTION')
     )
-#Awards and Achievements Table for Research related achievements
-class ResearchAward(models.Model):
-  Award_Id= models.CharField(primary_key =True)
-  Award_Title= models.CharField(max_length= 100)
-  Brief = models.CharField(max_length = 250)
- 
- #FUnct
-def year_choices(): return [(r,r) for r in range(2004, datetime.date.today().year+1)]
- 
- #List of student and faculty  who recieved the award
-class Awards_List(models.Model) :
-  Sno = models.IntegerField(primary_key = True)
-  Award_Id= models.ForeignKey(Award , on_delete = models.CASCADE) 
-  Student_Id = models.ForeignKey(Student ,on_delete         =models.CASCADE) 
-  year = models.IntegerField(_('year'), choices=year_choices, default=current_year)
-  Status = models.CharField(max_length = 10)
- 
-  
-  
- 
-# Webinars , Seminars and Workshops related Information 
-class Workshop(models.Model):
-  workshop_id = models.AutoField(primary_key = True)
-  workshop_title = models.CharField(max_length = 80)
-  workshop_brief = models.CharField(max_length = 200)
-  incharge = models.ForeignKey(Employee ,on_delete    =models.CASCADE) 
-  status = models.CharField(max_length = 10)
-  date = models.DateField()
-  venue = models.CharField(max_length = 10)
- 
- #List of people participating in a particular workshop
-
-class Workshop_application(models.Model):
-  application_id = models.AutoField(primary)
-  student_id = models.ForeignKey(Student , on_delete = models.CASCADE)  #Foreign Key
-  workshop_id = models.ForeignKey(Workshop ,on_delete =models.CASCADE) # Foreign Key
-  status = models.CharField(max_length = 10)
-
-
- #Info about hackathons and students participating in it
-class Hackathons(models.Model):
-  Hackathon_Title = models.CharField(max_length = 80)
-  Student_Id = models.ForeignKey(Student , on_delete = models.CASCADE)
-  last_date_to_apply = models.DateField()
-  Status = models.CharField(max_length = 50)
 
 # for adding new publicatons by faculty
 class Add_publication(models.Model):
