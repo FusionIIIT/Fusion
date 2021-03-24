@@ -1,7 +1,7 @@
 import datetime
 from django.db import models
 from django.contrib.auth.models import User
-from applications.globals.models import ExtraInfo, Staff
+from applications.globals.models import ExtraInfo, Staff, Faculty
 from applications.academic_information.models import Student
 from applications.complaint_system.models import Caretaker
 from django.utils import timezone
@@ -10,9 +10,9 @@ from django.utils import timezone
 class HostelManagementConstants:
     ROOM_STATUS = (
         ('Booked', 'Booked'),
-        ('CheckedIn', 'CheckedIn'),
+        ('CheckedIn', 'Checked In'),
         ('Available', 'Available'),
-        ('UnderMaintenance', 'UnderMaintenance'),
+        ('UnderMaintenance', 'Under Maintenance'),
         )
 
     DAYS_OF_WEEK = (
@@ -30,28 +30,24 @@ class HostelManagementConstants:
     ("Pending" , 'Pending'),
     ("Rejected" , 'Rejected'),
     ("Canceled" , 'Canceled'),
-    ("CancelRequested" , 'CancelRequested'),
-    ("CheckedIn" , 'CheckedIn'),
+    ("CancelRequested" , 'Cancel Requested'),
+    ("CheckedIn" , 'Checked In'),
     ("Complete", 'Complete'),
     ("Forward", 'Forward')
     )
 
-    HALL_NO = (
-        ('HALL-1','Hall-1'),
-        ('HALL-3','Hall-3'),
-        ('HALL-4','Hall-4'),
-    )
 
 
 class Hall(models.Model):
-    hall_no = models.CharField(max_length=15, choices=HostelManagementConstants.HALL_NO, default='')
+    hall_id = models.CharField(max_length=10)
+    hall_name = models.CharField(max_length=50)
     max_accomodation = models.IntegerField(default=0)
     number_students = models.PositiveIntegerField(default=0)
-    hall_caretaker = models.ForeignKey(Caretaker, on_delete=models.CASCADE)
-    hall_warden = models.ForeignKey(Staff, on_delete=models.CASCADE)
+    hall_caretaker = models.ManyToManyField(Caretaker, on_delete=models.CASCADE)
+    hall_warden = models.ManyToManyField(Faculty, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.hall_no
+        return self.hall_id
     
 
 class GuestRoomDetail(models.Model):
@@ -99,7 +95,7 @@ class StaffSchedule(models.Model):
 
 class HostelNoticeBoard(models.Model):
     hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.ForeignKey)
+    posted_by = models.ForeignKey(User, on_delete=models.ForeignKey)
     head_line = models.CharField(max_length=100)
     content = models.FileField(upload_to='hostel_management/', blank=True, null=True)
     description = models.TextField(blank=True)
