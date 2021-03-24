@@ -6,6 +6,7 @@ from applications.globals.models import ExtraInfo
 
 
 class Constants:
+    # Class for various choices on the enumerations
     GENDER_CHOICES = (
         ('M', 'Male'),
         ('F', 'Female'),
@@ -50,12 +51,15 @@ class Constants:
 
 
 
-# table for employee details
+
 # Employee model
 class Employee(models.Model):
+    """
+    table for employee details
+    
+    """
 
     extra_info = models.OneToOneField(ExtraInfo, on_delete=models.CASCADE)
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
     father_name = models.CharField(max_length=40, default='')
     mother_name = models.CharField(max_length=40, default='')
     hire_date = models.DateTimeField(max_length=6, null=True)
@@ -79,6 +83,12 @@ class Employee(models.Model):
     
 # table for employee  confidential details
 class EmpConfidentialDetails(models.Model):
+
+    """
+    table for employee  confidential details
+    
+    """
+
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     aadhar_no = models.IntegerField(default=0)
     medical_certificate =  models.FileField(blank=True)
@@ -91,6 +101,9 @@ class EmpConfidentialDetails(models.Model):
 
 # table for employee's dependent details
 class EmpDependents(model.Model):
+    """Table for employee's dependent details """
+
+
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     name = models.CharField(max_length=40, default='')
     gender = models.CharField(max_length=1, choices=Constants.GENDER_CHOICES)
@@ -99,10 +112,12 @@ class EmpDependents(model.Model):
 
 # table for  details about employee training
 class EmpTraining(models.Model):
-      employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
-      training_type =  models.CharField(max_length=40, default='')
-      name =  models.CharField(max_length=40, default='')
-      description =  models.CharField(max_length=40, default='')
-      institute_name =  models.CharField(max_length=40, default='')
-      from_date =  models.DateTimeField(max_length=6, null=True)
-      to_date =  models.DateTimeField(max_length=6, null=True)
+    """table for  details about employee training"""
+
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    training_type =  models.CharField(max_length=40, default='')
+    name =  models.CharField(max_length=40, default='')
+    description =  models.CharField(max_length=40, default='')
+    institute_name =  models.CharField(max_length=40, default='')
+    from_date =  models.DateTimeField(max_length=6, null=True)
+    to_date =  models.DateTimeField(max_length=6, null=True)

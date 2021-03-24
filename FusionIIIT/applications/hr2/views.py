@@ -1,10 +1,13 @@
 from django.shortcuts import render
 
-# Create your views here.
 
 def hr2_index(request):
-    template = 'hr2Module/hr2_index.html'
-    return render(request,template)
+        """ Views for HR2 main page"""
+        template='hr2Module/hr2_index.html'
+        return render(request,template)
+
+
 def hrAdmin(request):
-    template = 'hr2Module/hradmin.html'
-    return render(request,template)
+        """ Views for HR2 Admin page """
+        template='hr2Module/hradmin.html'
+        return render(request,template)
