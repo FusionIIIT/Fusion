@@ -147,9 +147,7 @@ class FinalRegistrations(models.Model):
 
 class AddCourses(models.Model):
     curr_id = models.ForeignKey(Curriculum, on_delete = models.CASCADE)
-    semester = models.IntegerField()
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
-    batch = models.IntegerField(default =datetime.datetime.now().year )
 
     class Meta:
         db_table = 'AddCourses'
