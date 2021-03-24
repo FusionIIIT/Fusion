@@ -4,6 +4,7 @@ from applications.globals.models import Staff
 from applications.filetracking.models import File
 
 class IndentFile(models.Model):
+                '''contain fields for storing information of new indent'''  
     file_info=models.OneToOneField(File, on_delete=models.CASCADE,primary_key=True)
     item_name=models.CharField(max_length=250,blank=False)
     quantity= models.IntegerField(blank=False)
@@ -27,6 +28,7 @@ class IndentFile(models.Model):
         db_table = 'Indent_File'
 
 class Stock(models.Model):
+               '''contain fields for storing information of procured items'''
     item_id=models.ForeignKey(Indent_File, on_delete=models.CASCADE,primary_key=True)
     dealing_assistant_id=models.ForeignKey(Staff, on_delete=models.CASCADE)
     vendor=models.CharField(max_length=250, blank=False)
