@@ -230,6 +230,7 @@ Y8b  d8 88      88  .8D 88   88      88   88 88 `88. Y8b  d8 88   88   .88.    `
                                 <div class="meta">Requested Adjustment Amount : ₹ {{app.adjustment_amount}}</div>
                             {% endif %}
                             <div class="meta"> Purpose : {{app.purpose}}</div>
+                            <div class="meta"> Admin remarks : {{app.tracking_info.remarks}}</div>
                             <div>
                                 <button class="ui large primary button" onclick="$('.ui.modal.review-{{app.id}}').modal('show')">
                                     Review
@@ -262,7 +263,7 @@ Y8b  d8 88      88  .8D 88   88      88   88 88 `88. Y8b  d8 88   88   .88.    `
                                         <label>Requested Advance : ₹ {{app.requested_advance}}</label>
                                     </div>
                                 </div>
-                                {% if app.status == 'requested' %}
+                                {% if app.status == 'adjustments_pending' %}
                                     <label>Adjustment Amount : ₹ {{app.adjustment_amount}}</label><br>
                                     <label>Total Bills Amount : ₹ {{app.total_bills_amount}}</label><br>
                                 {% endif %}
