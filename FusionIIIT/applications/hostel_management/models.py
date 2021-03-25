@@ -3,7 +3,6 @@ from django.db import models
 from django.contrib.auth.models import User
 from applications.globals.models import ExtraInfo, Staff, Faculty
 from applications.academic_information.models import Student
-from applications.complaint_system.models import Caretaker
 from django.utils import timezone
 
 
@@ -34,8 +33,7 @@ class HostelManagementConstants:
     ("CheckedIn" , 'Checked In'),
     ("Complete", 'Complete'),
     ("Forward", 'Forward')
-    )
-
+    )    
 
 
 class Hall(models.Model):
@@ -43,11 +41,25 @@ class Hall(models.Model):
     hall_name = models.CharField(max_length=50)
     max_accomodation = models.IntegerField(default=0)
     number_students = models.PositiveIntegerField(default=0)
-    hall_caretaker = models.ManyToManyField(Caretaker, on_delete=models.CASCADE)
-    hall_warden = models.ManyToManyField(Faculty, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.hall_id
+        return self.hall_id 
+
+
+class HallCaretaker(models.Model):
+    hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
+    staff = models.ForeignKey(Staff, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.hall + self.staff
+
+
+class HallWarden(models.Model):
+    hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
+    faculty = models.ForeignKey(Faculty, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.hall + self.faculty
     
 
 class GuestRoomDetail(models.Model):
@@ -61,15 +73,14 @@ class GuestRoomDetail(models.Model):
 
 class GuestRoomBooking(models.Model):
     hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
-    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
+    intender = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
     guest_name = models.CharField(max_length=100)
     guest_phone = models.CharField(max_length=15)
     guest_email = models.CharField(max_length=40, blank=True)
     guest_address = models.TextField(blank=True)
-    number_of_rooms =  models.IntegerField(default=1,null=True,blank=True)
-    guest_room_id = models.ManyToManyField(GuestRoomDetail, on_delete=models.CASCADE)
+    rooms_required =  models.IntegerField(default=1,null=True,blank=True)
+    guest_room_id = models.ManyToManyField(GuestRoomDetail)
     total_guest = models.IntegerField(default=1)
-    relation_with_student = models.CharField(max_length=50)
     purpose = models.TextField()
     arrival_date = models.DateField(auto_now_add=False, auto_now=False)
     arrival_time = models.TimeField(auto_now_add=False, auto_now=False)
@@ -96,7 +107,7 @@ class StaffSchedule(models.Model):
 
 class HostelNoticeBoard(models.Model):
     hall = models.ForeignKey(Hall, on_delete=models.CASCADE)
-    posted_by = models.ForeignKey(User, on_delete=models.ForeignKey)
+    posted_by = models.ForeignKey(ExtraInfo, on_delete=models.ForeignKey)
     head_line = models.CharField(max_length=100)
     content = models.FileField(upload_to='hostel_management/', blank=True, null=True)
     description = models.TextField(blank=True)
