@@ -1034,7 +1034,7 @@ def closure_details(request, pr_id):
 def hod_action(request):
     if 'forward' in request.POST:
         id=request.POST.get('id')
-        obj=Project_Registration.objects.get(pk=id)
+        obj=Project_Registration.objects.select_related('PI_id__user','PI_id__department').get(pk=id)
         print(obj.HOD_response)
         if obj.HOD_response == 'Pending' or obj.HOD_response == 'pending' :
             obj.HOD_response='Forwarded'
@@ -1056,7 +1056,7 @@ def hod_closure(request):
 def hod_extension(request):
     if 'forward' in request.POST:
         id=request.POST.get('id')
-        obj=Project_Extension.objects.get(pk=id)
+        obj=Project_Extension.objects.select_related('project_id__PI_id__user','project_id__PI_id__department').get(pk=id)
         print(obj.HOD_response)
         if obj.HOD_response == 'Pending' or obj.HOD_response == 'pending' :
             obj.HOD_response='Forwarded'
@@ -1067,7 +1067,7 @@ def hod_extension(request):
 def hod_allocation(request):
     if 'forward' in request.POST:
         id=request.POST.get('id')
-        obj=Project_Reallocation.objects.get(pk=id)
+        obj=Project_Reallocation.objects.select_related('project_id__PI_id__user','project_id__PI_id__department').get(pk=id)
         print(obj.HOD_response)
         if obj.HOD_response == 'Pending' or obj.HOD_response == 'pending' :
             obj.HOD_response='Forwarded'
@@ -1078,7 +1078,7 @@ def hod_allocation(request):
 
 
 def pdf(request,pr_id):
-    obj=Project_Registration.objects.get(pk=pr_id)
+    obj=Project_Registration.objects.select_related('PI_id__user','PI_id__department').get(pk=pr_id)
     return render(request,"officeModule/officeOfDeanRSPC/view_details.html",{"obj":obj})
 
 
@@ -1146,7 +1146,7 @@ def newordershod(request):
         print(objid)
         #find the instance with this objid and set its hod_approve_bit to 1
         try:
-            obj = apply_for_purchase.objects.get(id = objid)
+            obj = apply_for_purchase.objects.select_related('indentor_name__user','indentor_name__department').get(id = objid)
             obj.HOD_approve_tag = 1
             obj.director_approve_tag = 0
             obj.save()
@@ -1167,7 +1167,7 @@ def newordersregistrar(request):
         print(objid)
         #find the instance with this objid and set its hod_approve_bit to 1
         try:
-            obj = apply_for_purchase.objects.get(id = objid)
+            obj = apply_for_purchase.objects.select_related('indentor_name__user','indentor_name__department').get(id = objid)
             obj.registrar_approve_tag = 1
             obj.director_approve_tag = 1
             obj.save()
@@ -1188,7 +1188,7 @@ def newordersregistrar2(request):
         print(objid)
         #find the instance with this objid and set its hod_approve_bit to 1
         try:
-            obj = apply_for_purchase.objects.get(id = objid)
+            obj = apply_for_purchase.objects.select_related('indentor_name__user','indentor_name__department').get(id = objid)
             obj.registrar_approve_tag = 1
             obj.save()
             print("work done")
@@ -1209,7 +1209,7 @@ def newordersdirector(request):
         print(objid)
         #find the instance with this objid and set its hod_approve_bit to 1
         try:
-            obj = apply_for_purchase.objects.get(id = objid)
+            obj = apply_for_purchase.objects.select_related('indentor_name__user','indentor_name__department').get(id = objid)
             obj.director_approve_tag = 1
             obj.save()
             print("work done")
@@ -1228,7 +1228,7 @@ def newordersdirectorview(request):
         objid = request.POST.get('id')
         print(objid)
     try:
-        obj = apply_for_purchase.objects.get(id = objid)
+        obj = apply_for_purchase.objects.select_related('indentor_name__user','indentor_name__department').get(id = objid)
         context ={"data":obj}
         print(context)
         return HttpResponse("abhi iska template nahi bana hai")
@@ -1243,7 +1243,7 @@ def newordersPO(request):
         objid = request.POST.get('id')
         print(objid)
         try:
-            obj = apply_for_purchase.objects.get(id = objid)
+            obj = apply_for_purchase.objects.select_related('indentor_name__user','indentor_name__department').get(id = objid)
             obj.gem_tag=-1
             obj.save()
         except apply_for_purchase.DoesNotExist:
@@ -1255,7 +1255,7 @@ def newordersPOonGem(request):
         objid = request.POST.get('id')
         print(objid)
         try:
-            obj = apply_for_purchase.objects.get(id = objid)
+            obj = apply_for_purchase.objects.select_related('indentor_name__user','indentor_name__department').get(id = objid)
             obj.gem_tag=1
             obj.save()
         except apply_for_purchase.DoesNotExist:
@@ -1273,9 +1273,9 @@ def apply_purchase(request):
 #    user=ExtraInfo.objects.get(user=user)
     current_user = get_object_or_404(User, username=request.user.username)
     #print(current_user)
-    user_details = ExtraInfo.objects.all().filter(user=current_user).first()
+    user_details = ExtraInfo.objects.select_related('user','department').all().filter(user=current_user).first()
     #print(user_details)
-    user_type = HoldsDesignation.objects.all().filter(user=current_user).first()
+    user_type = HoldsDesignation.objects.select_related('user','designation','working').all().filter(user=current_user).first()
     #print(user_type)
     usertype=str.split(str(user_type))
     #print(usertype)
@@ -1362,9 +1362,9 @@ def apply_purchase(request):
 def add_items(request):
     current_user = get_object_or_404(User, username=request.user.username)
     print(current_user)
-    user_details = ExtraInfo.objects.all().filter(user=current_user).first()
+    user_details = ExtraInfo.objects.select_related('user','department').all().filter(user=current_user).first()
     print(user_details)
-    user_type = HoldsDesignation.objects.all().filter(user=current_user).first()
+    user_type = HoldsDesignation.objects.select_related('user','designation','working').all().filter(user=current_user).first()
     print(user_type)
     usertype=str.split(str(user_type))
     print(usertype)
@@ -1415,7 +1415,7 @@ def after_purchase(request):
         file_no=request.POST.get('file_no')
         amount=request.POST.get('amount')
         invoice=request.POST.get('invoice')
-        apply_for_purchase.objects.filter(id=file_no).update(amount=amount, invoice=invoice)
+        apply_for_purchase.objects.select_related('indentor_name__user','indentor_name__department').filter(id=file_no).update(amount=amount, invoice=invoice)
 
         return render(request, "officeModule/officeOfPurchaseOfficer/after_purchase.html",{})
     else:
@@ -1427,9 +1427,9 @@ def officeOfPurchaseOfficer(request):
     context={}
     current_user = get_object_or_404(User, username=request.user.username)
     #print(current_user)
-    user_details = ExtraInfo.objects.all().filter(user=current_user).first()
+    user_details = ExtraInfo.objects.select_related('user','department').all().filter(user=current_user).first()
     #print(user_details)
-    user_type = HoldsDesignation.objects.all().filter(user=current_user).first()
+    user_type = HoldsDesignation.objects.select_related('user','designation','working').all().filter(user=current_user).first()
     #print(user_type)
     usertype=str.split(str(user_type))
     print(usertype)
@@ -1495,27 +1495,27 @@ def officeOfPurchaseOfficer(request):
             #render appropritate templates as per the actor like approvalHOD2 or approvalRegistrar2 etc
             #this is working through user_type not utype
             if(user_type=="HOD" or per_user=="pkhanna"):
-                alldata = apply_for_purchase.objects.filter(HOD_approve_tag=0).order_by('-id')
+                alldata = apply_for_purchase.objects.select_related('indentor_name__user','indentor_name__department').filter(HOD_approve_tag=0).order_by('-id')
                 context={'alldata':alldata}
                 print(context)
                 return render(request, "officeModule/officeOfPurchaseOfficer/approvalHOD2.html",context=context)
 
             elif(user_type=="DeputyRegistrar" or user_type=="Registrar" or per_user=="swapnali"):
-                alldata = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=0).order_by('-id')
+                alldata = apply_for_purchase.objects.select_related('indentor_name__user','indentor_name__department').filter(HOD_approve_tag=1,registrar_approve_tag=0).order_by('-id')
                 #alldata2 = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=0,expected_cost__gte = 50001)
                 context = {'alldata':alldata,'des':user_type}
                 return render(request, "officeModule/officeOfPurchaseOfficer/approvalRegistrar.html",context=context)
 
             elif(user_type=="director" or user_type=="Director"):
                 #alldata = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=1,expected_cost__gte = 50001)
-                alldata = apply_for_purchase.objects.filter(expected_cost__gte = 50001,director_approve_tag=0).order_by('-id')
+                alldata = apply_for_purchase.objects.select_related('indentor_name__user','indentor_name__department').filter(expected_cost__gte = 50001,director_approve_tag=0).order_by('-id')
                 print(alldata)
                 context = {'alldata':alldata,'des':user_type}
                 return render(request, "officeModule/officeOfPurchaseOfficer/approvaldirector.html",context=context)
 
             elif(user_type=="purchaseofficer" or user_type=="PurchaseOfficer"):
                 print("entered purchase officer section")
-                alldata = apply_for_purchase.objects.filter(director_approve_tag=1,gem_tag=0).order_by('-id')
+                alldata = apply_for_purchase.objects.select_related('indentor_name__user','indentor_name__department').filter(director_approve_tag=1,gem_tag=0).order_by('-id')
                 #alldata2 = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=1,expected_cost__lte = 50000)
                 #context = {'alldata':alldata,'alldata2':alldata2}SS
 
@@ -1527,19 +1527,19 @@ def officeOfPurchaseOfficer(request):
 
         elif "approved_orders" in request.POST:
             if(user_type=="HOD" or per_user=="pkhanna"):
-                alldata = apply_for_purchase.objects.filter(HOD_approve_tag=1).order_by('-id')
+                alldata = apply_for_purchase.objects.select_related('indentor_name__user','indentor_name__department').filter(HOD_approve_tag=1).order_by('-id')
                 context={'alldata':alldata}
                 #print(context)
                 return render(request, "officeModule/officeOfPurchaseOfficer/approvedHOD.html",context=context)
 
             elif(user_type=="DeputyRegistrar" or user_type=="Registrar" or per_user=="swapnali"):
-                alldata = apply_for_purchase.objects.filter(registrar_approve_tag=1,expected_cost__lte = 50000).order_by('-id')
+                alldata = apply_for_purchase.objects.select_related('indentor_name__user','indentor_name__department').filter(registrar_approve_tag=1,expected_cost__lte = 50000).order_by('-id')
                 context = {'alldata':alldata,'des':user_type}
                 return render(request, "officeModule/officeOfPurchaseOfficer/approvedRegistrar.html",context=context)
 
             elif(user_type=="director" or user_type=="Director"):
                 #alldata = apply_for_purchase.objects.filter(HOD_approve_tag=1,registrar_approve_tag=1,expected_cost__gte = 50001)
-                alldata = apply_for_purchase.objects.filter(expected_cost__gte = 50001,director_approve_tag=1).order_by('-id')
+                alldata = apply_for_purchase.objects.select_related('indentor_name__user','indentor_name__department').filter(expected_cost__gte = 50001,director_approve_tag=1).order_by('-id')
                 #print(alldata)
                 context = {'alldata':alldata}
                 return render(request, "officeModule/officeOfPurchaseOfficer/approvedDirector.html",context=context)
@@ -1552,14 +1552,14 @@ def officeOfPurchaseOfficer(request):
         elif "checked_orders" in request.POST:
             if(user_type == "PurchaseOfficer" or user_type == "purchseofficer"):
                 #print("in checked orders")
-                alldata = apply_for_purchase.objects.filter(director_approve_tag=1).exclude(gem_tag=0)
+                alldata = apply_for_purchase.objects.select_related('indentor_name__user','indentor_name__department').filter(director_approve_tag=1).exclude(gem_tag=0)
                 context = {'alldata':alldata,'des':user_type}
                 return render(request, "officeModule/officeOfPurchaseOfficer/checkedpurchaseofficer.html",context=context)
 
         elif "forwarded_orders" in request.POST:
             if(user_type == "Registrar" or user_type == "DeputyRegistrar"):
                 #print("in checked orders")
-                alldata = apply_for_purchase.objects.filter(expected_cost__gte = 50001,director_approve_tag=0).order_by('-id')
+                alldata = apply_for_purchase.objects.select_related('indentor_name__user','indentor_name__department').filter(expected_cost__gte = 50001,director_approve_tag=0).order_by('-id')
                 context = {'alldata':alldata,'des':user_type}
 
                 return render(request, "officeModule/officeOfPurchaseOfficer/forwardedRegistrar.html",context=context)
@@ -1595,11 +1595,11 @@ def officeOfPurchaseOfficer(request):
 
         elif "item_search" in request.POST:
             srch = request.POST['item_name']
-            print("this is the itemset")
-            print(srch)
+            # print("this is the itemset")
+            # print(srch)
             #match = stock.objects.filter(Q(item_name__icontains=srch))
             match = stock.objects.filter(item_name=srch)
-            print(match)
+            # print(match)
             return render(request, "officeModule/officeOfPurchaseOfficer/officeOfPurchaseOfficer.html",{'match':match})
 
         elif "vendor_search" in request.POST:
