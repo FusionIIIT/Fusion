@@ -67,6 +67,7 @@ class GuestRoomBooking(models.Model):
     guest_email = models.CharField(max_length=40, blank=True)
     guest_address = models.TextField(blank=True)
     number_of_rooms =  models.IntegerField(default=1,null=True,blank=True)
+    guest_room_id = models.ManyToManyField(GuestRoomDetail, on_delete=models.CASCADE)
     total_guest = models.IntegerField(default=1)
     relation_with_student = models.CharField(max_length=50)
     purpose = models.TextField()
