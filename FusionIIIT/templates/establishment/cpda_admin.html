@@ -41,11 +41,15 @@ pending cpda applications
 
                             <div>
                                 <button class="ui large primary button" onclick="$('.ui.modal.assign-{{app.id}}').modal('show')">
-                                    {% if app.tracking_info.review_status == 'reviewed' %}
-                                    Approve/Reject
+                                {% if app.tracking_info.review_status == 'reviewed' %}
+                                    {% if app.status == 'adjustments_pending' %}
+                                    Finish
                                     {% else %}
-                                    Assign Reviewer
+                                    Approve/Reject
                                     {% endif %}
+                                {% else %}
+                                Assign reviewer
+                                {% endif %}
                                 </button>
                             </div>
                         </div>
@@ -54,7 +58,15 @@ pending cpda applications
                     <div class="ui modal assign-{{app.id}}">
                         <i class="close icon"></i>
                         <div class="header">
-                            Assign reviewer or Approve/Reject application
+                            {% if app.tracking_info.review_status == 'reviewed' %}
+                                {% if app.status == 'adjustments_pending' %}
+                                Finish
+                                {% else %}
+                                Approve/Reject
+                                {% endif %}
+                            {% else %}
+                            Assign reviewer
+                            {% endif %}
                         </div>
                         <div class="content">
                             <div class="description">
@@ -88,9 +100,13 @@ pending cpda applications
                                     <br>
                                     <button type="submit" name="cpda_assign_form" class="ui large primary button">
                                         {% if app.tracking_info.review_status == 'reviewed' %}
-                                        Approve/Reject
+                                            {% if app.status == 'adjustments_pending' %}
+                                            Finish
+                                            {% else %}
+                                            Approve/Reject
+                                            {% endif %}
                                         {% else %}
-                                        Assign Reviewer
+                                        Assign reviewer
                                         {% endif %}
                                     </button>
                                 </form>

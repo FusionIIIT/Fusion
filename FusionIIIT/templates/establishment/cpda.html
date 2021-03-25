@@ -263,7 +263,7 @@ Y8b  d8 88      88  .8D 88   88      88   88 88 `88. Y8b  d8 88   88   .88.    `
                                         <label>Requested Advance : ₹ {{app.requested_advance}}</label>
                                     </div>
                                 </div>
-                                {% if app.status == 'requested' %}
+                                {% if app.status == 'adjustments_pending' %}
                                     <label>Adjustment Amount : ₹ {{app.adjustment_amount}}</label><br>
                                     <label>Total Bills Amount : ₹ {{app.total_bills_amount}}</label><br>
                                 {% endif %}
