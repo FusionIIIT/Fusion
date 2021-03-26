@@ -43,7 +43,11 @@ class Constants:
         ('A+', 'A+'),
         ('A-', 'A-'),
         
-
+    )
+    FOREIGN_SERVICE = (
+        ('LIEN', 'LIEN'),
+        ('DEPUTATION', 'DEPUTATION'),
+        ('OTHER', 'OTHER'),
     )
     
 
@@ -56,9 +60,7 @@ class Constants:
 class Employee(models.Model):
     """
     table for employee details
-    
     """
-
     extra_info = models.OneToOneField(ExtraInfo, on_delete=models.CASCADE)
     father_name = models.CharField(max_length=40, default='')
     mother_name = models.CharField(max_length=40, default='')
@@ -83,12 +85,9 @@ class Employee(models.Model):
     
 # table for employee  confidential details
 class EmpConfidentialDetails(models.Model):
-
     """
     table for employee  confidential details
-    
     """
-
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     aadhar_no = models.IntegerField(default=0)
     medical_certificate =  models.FileField(blank=True)
@@ -102,10 +101,8 @@ class EmpConfidentialDetails(models.Model):
 # table for employee's dependent details
 class EmpDependents(model.Model):
     """Table for employee's dependent details """
-
-
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
-    name = models.CharField(max_length=40, default='')
+    name = models.CharField(max_length=100, default='')
     gender = models.CharField(max_length=1, choices=Constants.GENDER_CHOICES)
     dob =  models.DateTimeField(max_length=6, null=True)
     relationship = models.CharField(max_length=40, default='')
@@ -113,11 +110,30 @@ class EmpDependents(model.Model):
 # table for  details about employee training
 class EmpTraining(models.Model):
     """table for  details about employee training"""
-
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     training_type =  models.CharField(max_length=40, default='')
     name =  models.CharField(max_length=40, default='')
-    description =  models.CharField(max_length=40, default='')
-    institute_name =  models.CharField(max_length=40, default='')
+    description =  models.CharField(max_length=100, default='')
+    institute_name =  models.CharField(max_length=100, default='')
     from_date =  models.DateTimeField(max_length=6, null=True)
     to_date =  models.DateTimeField(max_length=6, null=True)
+
+
+
+class ForeignService(models.Model):
+    """
+    This table contains details about deputation, lien 
+    and other foreign services of employee
+    """
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    start_date =  models.DateTimeField(max_length=6, null=True)
+    end_date =  models.DateTimeField(max_length=6, null=True)
+    job_title = models.CharField(max_length=50, default='')
+    organisation = models.CharField(max_length=100, default='')
+    description = models.CharField(max_length=300, default='')
+    salary_source = models.CharField(max_length=100, default='')
+    designation = models.CharField(max_length=100, default='')
+    service_type = models.CharField(max_length=100, choices=Constants.FOREIGN_SERVICE)
+    
+    
+    
