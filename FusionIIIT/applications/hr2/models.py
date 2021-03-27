@@ -64,21 +64,19 @@ class Employee(models.Model):
     extra_info = models.OneToOneField(ExtraInfo, on_delete=models.CASCADE)
     father_name = models.CharField(max_length=40, default='')
     mother_name = models.CharField(max_length=40, default='')
-    hire_date = models.DateTimeField(max_length=6, null=True)
     religion = models.CharField(max_length=40, default='')
     category  = models.CharField(
         max_length=50, null=False, choices=Constants.CATEGORY)
     cast  = models.CharField(max_length=40, default='')
     home_state =   models.CharField(max_length=40, default='')
     home_district =  models.CharField(max_length=40, default='')
-    identification_mark =  models.CharField(max_length=40, default='')
     height  =  models.IntegerField(default=0)
     date_of_joining =  models.DateTimeField(max_length=6, null=True)
     designation =  models.CharField(max_length=40, default='')
-    blood_group =   models.CharField(max_length=1, choices=Constants.BLOOD_GROUP)
+    blood_group =   models.CharField(max_length=50, choices=Constants.BLOOD_GROUP)
 
     def __str__(self):
-        return self.first_name
+        return self.extra_info.user.first_name
     
 
 
@@ -99,12 +97,12 @@ class EmpConfidentialDetails(models.Model):
     salary =  models.IntegerField(default=0)
 
 # table for employee's dependent details
-class EmpDependents(model.Model):
+class EmpDependents(models.Model):
     """Table for employee's dependent details """
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     name = models.CharField(max_length=100, default='')
-    gender = models.CharField(max_length=1, choices=Constants.GENDER_CHOICES)
-    dob =  models.DateTimeField(max_length=6, null=True)
+    gender = models.CharField(max_length=50, choices=Constants.GENDER_CHOICES)
+    dob =  models.DateField(max_length=6, null=True)
     relationship = models.CharField(max_length=40, default='')
 
 # table for  details about employee training
@@ -115,8 +113,8 @@ class EmpTraining(models.Model):
     name =  models.CharField(max_length=40, default='')
     description =  models.CharField(max_length=100, default='')
     institute_name =  models.CharField(max_length=100, default='')
-    from_date =  models.DateTimeField(max_length=6, null=True)
-    to_date =  models.DateTimeField(max_length=6, null=True)
+    from_date =  models.DateField(max_length=6, null=True)
+    to_date =  models.DateField(max_length=6, null=True)
 
 
 
@@ -126,8 +124,8 @@ class ForeignService(models.Model):
     and other foreign services of employee
     """
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
-    start_date =  models.DateTimeField(max_length=6, null=True)
-    end_date =  models.DateTimeField(max_length=6, null=True)
+    start_date =  models.DateField(max_length=6, null=True)
+    end_date =  models.DateField(max_length=6, null=True)
     job_title = models.CharField(max_length=50, default='')
     organisation = models.CharField(max_length=100, default='')
     description = models.CharField(max_length=300, default='')

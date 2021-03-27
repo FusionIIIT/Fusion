@@ -55,6 +55,7 @@ Module
 
     <div class="eight wide column">
         <div class="ui top attached tabular large menu">
+
             <a class="active item" data-tab="first">Pending approval</a>
             <a class="item" data-tab="second">Approved details</a>
         </div>
@@ -105,8 +106,22 @@ Module
                     </div> -->
 
 
+                    <div class="item"
+                        style="margin-top: 10px ;margin-bottom: 10px ;margin-right: 10px;display: flex;justify-content: flex-end; ">
+                        <form method="GET" action="">
 
+                            <div class="ui search">
+                                <div class="ui action input">
+                                    <input type="text" name="search" placeholder="Search...">
+                                    <button type="submit" class="ui button"><i class="search icon"></i></button>
+                                </div>
+                                <div class="results"></div>
+                            </div>
 
+                        </form>
+                    </div>
+
+                    {%for emp in emps%}
 
                     <div class="ui one cards" style="padding: 2px;">
                         <div class="ui blue card" id="noti">
@@ -120,7 +135,7 @@ Module
 
 
                                 <div class="header">
-                                    <a href="sdfasd"> Username 1
+                                    <a href="sdfasd"> {{emp.user.first_name}} {{emp.user.last_name}}
                                     </a>
                                 </div>
                                 <div class="meta">
@@ -130,11 +145,11 @@ Module
                                 <!-- <div class="description">
                                     status
                                 </div> -->
-
-                                <div class="ui right floated blue button notif-status" id="notif-status">
-                                    <div id="notif-sp">View</div>
-                                </div>
-
+                                <a href="{%url 'hr2:editEmployeeDetails'%}">
+                                    <div class="ui right floated blue button notif-status" id="notif-status">
+                                        <div id="notif-sp">Edit</div>
+                                    </div>
+                                </a>
                                 <!-- <div class="ui right floated button notif-status" id="notif-status">
                                     <div id="notif-sp">Mark as Unread</div>
                                 </div> -->
@@ -147,86 +162,13 @@ Module
 
                         </div>
 
-                        <div class="ui blue card" id="noti">
-
-
-
-
-                            <div class="content">
-
-
-
-
-                                <div class="header">
-                                    <a href="sdfasd"> Username 2
-                                    </a>
-                                </div>
-                                <div class="meta">
-                                    Details updated 6hrs ago
-                                </div>
-
-                                <!-- <div class="description">
-                                    status
-                                </div> -->
-
-                                <div class="ui right floated blue button notif-status" id="notif-status">
-                                    <div id="notif-sp">View</div>
-                                </div>
-
-                                <!-- <div class="ui right floated button notif-status" id="notif-status">
-                                    <div id="notif-sp">Mark as Unread</div>
-                                </div> -->
-
-                            </div>
-
-
-
-
-
-                        </div>
-                        <div class="ui blue card" id="noti">
-
-
-
-
-                            <div class="content">
-
-
-
-
-                                <div class="header">
-                                    <a href="sdfasd"> Username 3
-                                    </a>
-                                </div>
-                                <div class="meta">
-                                    Details updated 6hrs ago
-                                </div>
-
-                                <!-- <div class="description">
-                                    status
-                                </div> -->
-
-                                <div class="ui right floated blue button notif-status" id="notif-status">
-                                    <div id="notif-sp">View</div>
-                                </div>
-
-                                <!-- <div class="ui right floated button notif-status" id="notif-status">
-                                    <div id="notif-sp">Mark as Unread</div>
-                                </div> -->
-
-                            </div>
-
-
-
-
-
-                        </div>
 
 
 
 
                     </div>
 
+                    {% endfor %}
 
 
 

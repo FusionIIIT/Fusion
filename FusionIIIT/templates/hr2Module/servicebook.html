@@ -30,7 +30,6 @@ Module
         {% comment %}The user image card ends here!{% endcomment %}
 
         <div class="ui divider"></div>
-
         {% comment %}The Tab-Menu starts here!{% endcomment %}
         <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
 
@@ -42,17 +41,11 @@ Module
         </div>
 
 
-        <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
 
-            <a class="item" href="{% url 'hr2:serviceBook' %}">
-                Service Books
-                <i class="right floated chevron right icon"></i>
-            </a>
-
-        </div>
 
 
         {% comment %}The Tab-Menu ends here!{% endcomment %}
+
 
     </div>
     {% comment %}
@@ -69,8 +62,10 @@ Module
 
     <div class="eight wide column">
         <div class="ui top attached tabular large menu">
-            <a class="active item" data-tab="first">Edit Details</a>
-            <a class="item" data-tab="second">Status</a>
+            <a class="active item" data-tab="first">Lien</a>
+            <a class="item" data-tab="second">Deputation</a>
+            <a class="item" data-tab="third">Other</a>
+
         </div>
         <div class="ui bottom attached active tab segment" data-tab="first">
             <div id="textSegmentDiv">
@@ -84,13 +79,19 @@ Module
 
                 <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
                     {% block alerts %}
-                    {% include 'hr2Module/editDetails.html' %}
+
+
+
+
                     {% endblock %}
                 </div>
             </div>
 
         </div>
         <div class="ui bottom attached tab segment" data-tab="second">
+            Waiting For Verification From HR Admin.
+        </div>
+        <div class="ui bottom attached tab segment" data-tab="third">
             Waiting For Verification From HR Admin.
         </div>
     </div>
@@ -139,17 +140,5 @@ Module
         }
     });
 
-    /*$(document).ready(function(){
-        $("#textLoader").toggle();
-        $("#replacement-card").toggle();
-        setTimeout(loader, 1750);
-    });
-
-    function loader() {
-        $("#textLoader").toggle();
-        $("#replacement-card").toggle();
-        $("#loader").removeClass("active");
-        $("#loader").addClass("disabled");
-    }*/
 </script>
 {% endblock %}
