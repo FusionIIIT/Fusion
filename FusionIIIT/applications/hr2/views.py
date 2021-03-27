@@ -19,21 +19,17 @@ def editEmployeeDetails(request):
         template='hr2Module/editDetails.html'
 
 
-        # if request.method == "POST":
-        #         form = editDetailsForm(request.POST, request.FILES)
-        # if form.is_valid():
-        #     form.save()
-        #     messages.success(request, "Employee details edited successfully")
+        if request.method == "POST":
+                form = editDetailsForm(request.POST, request.FILES)
+                if form.is_valid():
+                        form.save()
+                        messages.success(request, "Employee details edited successfully")
 
-        # form = editDetailsForm()
-        # context = {'form': form,
-        #        }
-        # return render(request, 'blog/createpost.html', context)
+        form = editDetailsForm()
+        context = {'form': form,
+               }
 
-
-
-
-        return render(request,template)
+        return render(request,template, context)
 
 
 

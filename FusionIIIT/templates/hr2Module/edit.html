@@ -7,47 +7,52 @@
 
                 <div class="three fields">
                     <div class="eight wide field">
-                        <label>First Name</label>
-                        <input type="text" placeholder="First Name" class="ui large input" name="club_name" required>
+                        <label for="post_title">Select user</label>
+
+                        {{form.extra_info}}
+                        {{form.extra_info.errors}}
                     </div>
                     <div class="eight wide field">
-                        <label>Middle Name</label>
-                        <input type="text" placeholder="Middle Name" class="ui large input" name="club_name" required>
+                        <label for="post_title">Father name</label>
+
+                        {{form.father_name}}
+
+                        {{form.father_name.errors}}
                     </div>
                     <div class="eight wide field">
-                        <label>Last Name</label>
-                        <input type="text" placeholder="Last Name" class="ui large input" name="club_name" required>
+
+
+                        <label for="post_title">Mother name</label>
+
+                        {{form.mother_name}}
+
+                        {{form.mother_name.errors}}
+
+
                     </div>
 
                 </div>
 
                 <div class="two fields">
                     <div class="eight wide field">
-                        <label>Gender</label>
-                        <div class="ui selection dropdown">
-                            <input type="hidden" name="category">
-                            <i class="dropdown icon"></i>
-                            <div class="default text">Select</div>
-                            <div class="menu">
-                                <div class="item" data-value="Technical">Male</div>
-                                <div class="item" data-value="Cultural">Female</div>
-                                <div class="item" data-value="Cultural">Other</div>
-                            </div>
-                        </div>
+                        <label for="post_title">Religion</label>
+
+                        {{form.religion}}
+
+                        {{form.religion.errors}}
+
+
+
+
+
                     </div>
                     <div class="eight wide field">
-                        <label>Department</label>
-                        <div class="ui selection dropdown">
-                            <input type="hidden" name="category">
-                            <i class="dropdown icon"></i>
-                            <div class="default text">Select</div>
-                            <div class="menu">
-                                <div class="item" data-value="Technical">Mechanical</div>
-                                <div class="item" data-value="Cultural">Computer Science</div>
-                                <div class="item" data-value="Sports">Electronics and Communication</div>
-                                <div class="item" data-value="others">Natural Science and Design</div>
-                            </div>
-                        </div>
+                        <label for="post_title">Select category</label>
+
+                        {{form.category}}
+
+                        {{form.category.errors}}
+
                     </div>
 
 
@@ -55,36 +60,51 @@
 
                 <div class="two fields">
                     <div class="eight wide field">
-                        <label>Date of Joining</label>
-                        <input type="text" class="ui large input" name="club_name" required>
+                        <label for="post_title">cast</label>
+
+                        {{form.cast}}
+                        {{form.cast.errors}}
                     </div>
                     <div class="eight wide field">
-                        <label>Designation</label>
-                        <input type="text" class="ui large input" name="club_name" required>
+
+
+                        <label for="post_title">Designation</label>
+
+                        {{form.designation}}
+
+
                     </div>
                 </div>
 
                 <div class="two fields">
                     <div class="eight wide field">
-                        <label>Phone Number</label>
-                        <input list="dropdown-menu2" name="coco" id="co_co_Search" type="text" />
-                        <datalist class="dropdown-menu" id="dropdown-menu2"></datalist>
-                        <!-- <select class="ui search fluid dropdown" id="coco" name="coco" required>
-                                <option value="">Select</option>
 
-                            </select> -->
+                        <label for="post_title">Home state</label>
+
+                        {{form.home_state}}
+                        {{form.home_state.errors}}
                     </div>
                     <div class="eight wide field">
-                        <label>Address</label>
-                        <input list="dropdown-menu3" name="faculty" id="faculty_Search" type="text" />
-                        <datalist class="dropdown-menu" id="dropdown-menu3"></datalist>
-                        <!-- <select class="ui search fluid dropdown" id="faculty" name="faculty" required>
-                                <option value="">Select</option>
-                    
-                            </select> -->
+                        <label for="post_title">Home disctrict</label>
+
+                        {{form.home_district}}
+                        {{form.home_district.errors}}
                     </div>
                 </div>
 
+                <div class="two fields">
+                    <div class="eight wide field">
+
+                        <label for="post_title">height</label>
+
+                        {{form.height}}
+                    </div>
+                    <div class="eight wide field">
+                        <label for="post_title">Blood group</label>
+
+                        {{form.blood_group}}
+                    </div>
+                </div>
 
 
 
@@ -102,17 +122,11 @@
                     <span id="lblError" style="color: red;"></span>
                 </div>
 
-                <!-- <div class="field">
-                    <label>Awards</label>
-                    <textarea rows="2" name="d_d" required></textarea>
-                    <button>Add Award</button> 
-                </div>
+                <div class="eight wide field">
+                    <label for="post_title">Date of joining</label>
 
-                <div class="field">
-                    <label>Training</label>
-                    <textarea rows="2" name="d_d" required></textarea>
-                    <button>Add Training</button> 
-                </div> -->
+                    {{form.date_of_joining}}
+                </div>
 
                 <div class="field">
                     <label>Education</label>
@@ -241,8 +255,7 @@
                 </div>
 
                 <div class="field">
-                    <button class="ui primary button right floated" type="submit"
-                        onclick="form_submit('new_club','new_club_form',event);">
+                    <button class="ui primary button right floated" type="submit" value="Submit">
                         Submit
                     </button>
                 </div>
@@ -250,6 +263,8 @@
         </form>
         <br>
         <br>
+
+
     </div>
     <br>
     <div class="extra content"></div>
