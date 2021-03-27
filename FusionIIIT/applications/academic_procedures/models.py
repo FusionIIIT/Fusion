@@ -145,7 +145,7 @@ class FinalRegistrations(models.Model):
         db_table = 'FinalRegistrations'
 
 
-class AddCourses(models.Model):
+class CourseRequested(models.Model):
     curr_id = models.ForeignKey(Curriculum, on_delete = models.CASCADE)
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
 
