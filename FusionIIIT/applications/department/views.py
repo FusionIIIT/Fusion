@@ -113,17 +113,17 @@ def PhD_Students(request):
     return render(request, 'department/BTechStudents.html',context=id_dict)
 
 def cse_faculty(request):
-    cse_f=ExtraInfo.objects.filter(department__name='CSE').filter(user_type='faculty')
+    cse_f=ExtraInfo.objects.filter(department__name='CSE',user_type='faculty')
 
     id_dict={'fac_list':cse_f,'department':'CSE'}
     return render(request,'department/faculty.html',context=id_dict)
 
 def ece_faculty(request):
-    ece_f=ExtraInfo.objects.filter(department__name='ECE').filter(user_type='faculty')
+    ece_f=ExtraInfo.objects.filter(department__name='ECE',user_type='faculty')
     id_dict={'fac_list':ece_f,'department':'ECE'}
     return render(request,'department/faculty.html',context=id_dict)
 
 def me_faculty(request):
-    me_f=ExtraInfo.objects.filter(department__name='ME').filter(user_type='faculty')
+    me_f=ExtraInfo.objects.filter(department__name='ME',user_type='faculty')
     id_dict={'fac_list':me_f,'department':'ME'}
     return render(request,'department/faculty.html',context=id_dict)
