@@ -85,6 +85,7 @@ def BtechFinalYear_Students(request):
 
 def cse_faculty(request):
     cse_f=ExtraInfo.objects.filter(department__name='CSE').filter(user_type='faculty')
+
     id_dict={'fac_list':cse_f,'department':'CSE'}
     return render(request,'department/faculty.html',context=id_dict)
 
