@@ -139,120 +139,74 @@
                 <h4>Personal Details</h4>
 
                 <div class="two fields">
+
+
+                    <div class="eight wide field">
+                        <label>Employee</label>
+                        {{confForm.employee}}
+                        {{confForm.employee.errors}}
+
+                    </div>
+
+
                     <div class="eight wide field">
                         <label>Aadhar Card Number</label>
-                        <input type="text" class="ui large input" name="club_name" required>
+                        {{confForm.aadhar_no}}
+                        {{confForm.aadhar_no.errors}}
                     </div>
-                    <div class="eight wide field">
-                        <label>Salary</label>
-                        <input type="text" class="ui large input" name="club_name" required>
-                    </div>
+
                 </div>
 
-                <div class="two fields">
-                    <div class="eight wide field">
-                        <label>Identity Mark</label>
-                        <input type="text" class="ui large input" name="club_name" required>
-                    </div>
-                    <div class="eight wide field">
-                        <label>Height (cm)</label>
-                        <input type="text" class="ui large input" name="club_name" required>
-                    </div>
-                </div>
+
 
                 <div class="three fields">
                     <div class="eight wide field">
-                        <label>Category</label>
-                        <div class="ui selection dropdown">
-                            <input type="hidden" name="category">
-                            <i class="dropdown icon"></i>
-                            <div class="default text">Select</div>
-                            <div class="menu">
-                                <div class="item" data-value="Technical">OBC</div>
-                                <div class="item" data-value="Cultural">General</div>
-                                <div class="item" data-value="Sports">SC</div>
-                                <div class="item" data-value="others">ST</div>
-                            </div>
-                        </div>
+                        <label>Medical Certificate</label>
+                        {{confForm.medical_certificate}}
+                        {{confForm.medical_certificate.errors}}
+
                     </div>
                     <div class="eight wide field">
-                        <label>Caste</label>
-                        <input type="text" class="ui large input" name="club_name" required>
+                        <label>Age certificate</label>
+
+                        {{confForm.age_certificate}}
+                        {{confForm.age_certificate.errors}}
                     </div>
-                    <div class="eight wide field">
-                        <label>Religion</label>
-                        <input type="text" class="ui large input" name="club_name" required>
-                    </div>
+
 
                 </div>
 
-                <div class="two fields">
-                    <div class="eight wide field">
-                        <label>Home State</label>
-                        <input type="text" class="ui large input" name="club_name" required>
-                    </div>
-                    <div class="eight wide field">
-                        <label>Home District</label>
-                        <input type="text" class="ui large input" name="club_name" required>
-                    </div>
+                <div class="eight wide field">
+                    <label>Cast certificate</label>
+                    {{confForm.cast_certificate}}
+                    {{confForm.cast_certificate.errors}}
                 </div>
 
                 <div class="two fields">
-                    <div class="eight wide field">
-                        <label>Father's Name</label>
-                        <input type="text" class="ui large input" name="club_name" required>
-                    </div>
-                    <div class="eight wide field">
-                        <label>Mother's Name</label>
-                        <input type="text" class="ui large input" name="club_name" required>
-                    </div>
-                </div>
-
-                <div class="two fields">
-                    <div class="eight wide field">
-                        <label>Date Of Birth</label>
-                        <input type="text" class="ui large input" name="club_name" required>
-                    </div>
                     <div class="eight wide field">
                         <label>Salary</label>
-                        <input type="text" class="ui large input" name="club_name" required>
+                        {{confForm.salary}}
+                        {{confForm.salary.errors}}
+                    </div>
+                    <div class="eight wide field">
+                        <label>Bank account No.</label>
+                        {{confForm.bank_account_no}}
+                        {{confForm.bank_account_no.errors}}
                     </div>
                 </div>
 
+
+
                 <div class="two fields">
-                    <div class="eight wide field">
-                        <label>Bank Account Number</label>
-                        <input type="text" class="ui large input" name="club_name" required>
-                    </div>
+
                     <div class="eight wide field">
                         <label>Marital Status</label>
-                        <div class="ui selection dropdown">
-                            <input type="hidden" name="category">
-                            <i class="dropdown icon"></i>
-                            <div class="default text">Select</div>
-                            <div class="menu">
-                                <div class="item" data-value="Technical">Married</div>
-                                <div class="item" data-value="Cultural">Un-Married</div>
-                                <div class="item" data-value="Cultural">Widow</div>
-                            </div>
-                        </div>
+                        {{confForm.maritial_status}}
+                        {{confForm.maritial_status.errors}}
                     </div>
                 </div>
 
-                <div class="two fields">
-                    <div class="field">
-                        <label>Medical Certificate</label>
-                        <input class="ui input" id="fileUpload" onchange="return ValidateExtension()" type="file"
-                            name="file" accept=".pdf" required></input>
-                        <span id="lblError" style="color: red;"></span>
-                    </div>
-                    <div class="field">
-                        <label>Caste Certificate</label>
-                        <input class="ui input" id="fileUpload" onchange="return ValidateExtension()" type="file"
-                            name="file" accept=".pdf" required></input>
-                        <span id="lblError" style="color: red;"></span>
-                    </div>
-                </div>
+
 
                 <div class="field">
                     <button class="ui primary button right floated" type="submit" value="Submit">

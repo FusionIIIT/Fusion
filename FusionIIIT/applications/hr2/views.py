@@ -3,7 +3,7 @@ from .models import *
 from applications.globals.models import ExtraInfo
 from django.db.models import Q
 from django.http import Http404
-from .forms import editDetailsForm
+from .forms import editDetailsForm,editConfidentialDetailsForm
 # def hr2_index(request):
 #         """ Views for HR2 main page"""
 #         template='hr2Module/hr2_index.html'
@@ -21,12 +21,18 @@ def editEmployeeDetails(request):
 
         if request.method == "POST":
                 form = editDetailsForm(request.POST, request.FILES)
-                if form.is_valid():
+                conf_form = editConfidentialDetailsForm(request.POST,request.FILES)
+
+                if form.is_valid() and conf_form.is_valid():
                         form.save()
+                        conf_form.save()
                         messages.success(request, "Employee details edited successfully")
+        
+
 
         form = editDetailsForm()
-        context = {'form': form,
+        conf_form = editConfidentialDetailsForm()
+        context = {'form': form,'confForm':conf_form
                }
 
         return render(request,template, context)
