@@ -14,7 +14,7 @@ from .forms import editDetailsForm,editConfidentialDetailsForm
 
 
 
-def editEmployeeDetails(request):
+def editEmployeeDetails(request,id):
         """ Views for edit details"""
         template='hr2Module/editDetails.html'
 
