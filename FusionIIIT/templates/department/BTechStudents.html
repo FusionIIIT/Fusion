@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block title %}
-    B_Tech_First_Year_Students_List
+    Students_List
 {% endblock %}
 
 {% block body %}
@@ -16,7 +16,8 @@
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="complaint">
-            B.Tech {{ batch }} Year Students List
+
+            {{ batch }} Year Students List
         </a>
     </div>
 
@@ -27,13 +28,14 @@
           <table class="ui very basic collapsing celled sortable table"
        style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
             <thead>
-              <th>Id</th>
+              <th>Roll</th>
+              <th>Department</th>
               <th>Programme</th>
 			   <th>Batch</th>
               <th>Cpi</th>
 			   <th>Category</th>
-              <th>Father Name</th>
-			   <th>Mother Name</th>
+              <th>First Name</th>
+			   <th>Last Name</th>
               <th>Hall No.</th>
 			   <th>Room No.</th>
               <th>Specialization</th>
@@ -41,13 +43,14 @@
 
             {% for stu in student_list %}
               <tr>
-                <td>{{ stu.id }}</td>
+                <td>{{ stu.id.user }}</td>
+                <td>{{ stu.id.department.name }}</td>
                 <td>{{ stu.programme }}</td>
 				<td>{{ stu.batch }}</td>
                 <td>{{ stu.cpi }}</td>
 				<td>{{ stu.category }}</td>
-                <td>{{ stu.father_name }}</td>
-				<td>{{ stu.mother_name }}</td>
+                <td>{{ stu.id.user.first_name }}</td>
+				<td>{{ stu.id.user.last_name }}</td>
                 <td>{{ stu.hall_no }}</td>
 				<td>{{ stu.room_no }}</td>
                 <td>{{ stu.specialization }}</td>
