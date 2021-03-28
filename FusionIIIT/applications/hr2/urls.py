@@ -8,7 +8,7 @@ urlpatterns = [
 
     url(r'^$',views.serviceBook, name='hr2'),
     url(r'^hradmin/$', views.hrAdmin, name='hradmin'),
-    url(r'^edit/$', views.editEmployeeDetails, name='editEmployeeDetails'),
+    url(r'^edit/(?P<id>\d+)/$', views.editEmployeeDetails, name='editEmployeeDetails'),
     
     # url(r'^servicebook/$', views.serviceBook, name='serviceBook'),
 

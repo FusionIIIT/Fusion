@@ -135,17 +135,18 @@ Module
 
 
                                 <div class="header">
-                                    <a href="sdfasd"> {{emp.user.first_name}} {{emp.user.last_name}}
+                                    <a href="#"> {{emp.user.first_name}} {{emp.user.last_name}}
                                     </a>
                                 </div>
                                 <div class="meta">
                                     Details updated 6hrs ago
+
                                 </div>
 
                                 <!-- <div class="description">
                                     status
                                 </div> -->
-                                <a href="{%url 'hr2:editEmployeeDetails'%}">
+                                <a href="{%url 'hr2:editEmployeeDetails' emp.id %}">
                                     <div class="ui right floated blue button notif-status" id="notif-status">
                                         <div id="notif-sp">Edit</div>
                                     </div>

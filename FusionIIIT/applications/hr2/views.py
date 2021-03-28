@@ -18,6 +18,12 @@ def editEmployeeDetails(request,id):
         """ Views for edit details"""
         template='hr2Module/editDetails.html'
 
+        try:
+               employee = ExtraInfo.objects.get(pk=id)
+        except:
+                raise Http404("Post does not exist")
+
+        
 
         if request.method == "POST":
                 form = editDetailsForm(request.POST, request.FILES)
@@ -27,11 +33,14 @@ def editEmployeeDetails(request,id):
                         form.save()
                         conf_form.save()
                         messages.success(request, "Employee details edited successfully")
+                else:
+                        print(form.errors)
+                        print(conf_form.errors)
         
 
 
-        form = editDetailsForm()
-        conf_form = editConfidentialDetailsForm()
+        form = editDetailsForm(initial={'extra_info': employee})
+        conf_form = editConfidentialDetailsForm(initial={'extra_info': employee})
         context = {'form': form,'confForm':conf_form
                }
 
