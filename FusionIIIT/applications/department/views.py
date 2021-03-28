@@ -66,11 +66,11 @@ def hod(request):
     if user_designation == "student":
         return render(request,"department/index.html")
     elif(str(user.extrainfo.user_type)=='faculty'):
-        return render(request, 'department/dep_complaint.html', {"user_designation":'faculty'})
+        return render(request, 'department/dep_request.html', {"user_designation":'faculty'})
 
-def file_complaint(request):
+def file_request(request):
     #return render(request, "department/dep_complaint.html")
-    return render(request, 'department/dep_complaint.html')
+    return render(request, 'department/dep_request.html')
 
 def BtechFirstYear_Students(request):
     # student_list1=Student.objects.filter(batch=2019)

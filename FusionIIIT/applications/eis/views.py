@@ -14,13 +14,12 @@ from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from xhtml2pdf import pisa
 
 from applications.eis import admin
-from applications.globals.models import ExtraInfo, HoldsDesignation
+from applications.globals.models import ExtraInfo, HoldsDesignation, DepartmentInfo
 from django.http.response import JsonResponse
-from applications.globals.models import (DepartmentInfo, ExtraInfo,
-                                         HoldsDesignation)
 from .forms import *
 from .models import *
 from django.core.files.storage import FileSystemStorage
+import logging
 
 countries = {
         'AF': 'Afghanistan',
@@ -310,7 +309,7 @@ def profile(request, username=None):
     except:
         pers = None
     # edited 26March
-    a1 = HoldsDesignation.objects.filter(working = user)
+    a1 = HoldsDesignation.objects.select_related('user','working','designation').filter(working = user)
     flag_rspc = 0
     for i in a1:
         if(str(i.designation)=='Dean (RSPC)'):
@@ -318,8 +317,8 @@ def profile(request, username=None):
     
     # done edit
 
-    design = HoldsDesignation.objects.filter(working=user)
-    
+    #design = HoldsDesignation.objects.filter(working=user)
+    design=a1
     desig=[]
     for i in design:
         desig.append(str(i.designation))
@@ -382,7 +381,7 @@ def rspc_profile(request):
         y.append(r)
 
     pers = get_object_or_404(faculty_about, user = request.user)
-    design = HoldsDesignation.objects.filter(working=request.user)
+    design = HoldsDesignation.objects.select_related('user','working','designation').filter(working=request.user)
     
     desig=[]
     for i in design:
@@ -417,13 +416,10 @@ def rspc_profile(request):
 def persinfo(request):
     if request.method == 'POST':
         try:
-            print(request.user)
             faculty = get_object_or_404(faculty_about, user = request.user)
-       
             contact = request.POST['contact']
             contact = contact[6:]
             faculty.contact = contact
-            print(contact)
             faculty.about = request.POST['about']
             faculty.interest = request.POST['interest']
             faculty.education = request.POST['education']
@@ -458,7 +454,6 @@ def emp_consymDelete(request, pk, sr, mark):
     if mark== '13':
         url = '/profile/?page13='+str(page)
     
-    print(url)
     instance.delete()
     return redirect(url)
 
@@ -478,7 +473,6 @@ def emp_event_organizedDelete(request, pk, sr, mark):
     if mark== '12':
         url = '/profile/?page12='+str(page)
     
-    print(url)
     instance.delete()
     return redirect(url)
 
@@ -517,7 +511,6 @@ def emp_published_booksDelete(request, pk, sr, mark):
     page = int(sr)//10
     page = page+1
     url = '/profile/?page2='+str(page)
-    print("-------------"+url)
     instance.delete()
     return redirect(url)
 
@@ -530,7 +523,6 @@ def emp_research_papersDelete(request, pk, sr,mark):
         url = '/profile/?page='+str(page)
     if mark== '2':
         url = '/profile/?page3='+str(page)
-    print(url)
     instance.delete()
     return redirect(url)
 
@@ -564,7 +556,6 @@ def emp_visitsDelete(request, pk, sr, mark):
         url = '/profile/?page10='+str(page)
     if mark== '11':
         url = '/profile/?page11='+str(page)
-    print(url)
     instance.delete()
     return redirect(url)
 
@@ -647,7 +638,6 @@ def ivisit_insert(request):
     eis.country = request.POST.get('country2')
     eis.place = request.POST.get('place2')
     eis.purpose = request.POST.get('purpose2')
-    print(".............",request.POST.get('start_date2'))
     try:
         eis.start_date = datetime.datetime.strptime(request.POST.get('start_date2'), "%B %d, %Y")
     except:
@@ -663,7 +653,6 @@ def ivisit_insert(request):
 
 #Function to save journal of employee 
 def journal_insert(request):
-    print("intered")
     user = get_object_or_404(ExtraInfo, user=request.user)
     eis = emp_research_papers.objects.create(pf_no = user.id)
     eis.rtype = 'Journal'
@@ -674,7 +663,6 @@ def journal_insert(request):
         fs = FileSystemStorage()
         filename = fs.save(myfile.name, myfile)
         uploaded_file_url = fs.url(filename)
-        print(uploaded_file_url)
         eis.paper=uploaded_file_url
     except:
         eis.paper = None
@@ -739,10 +727,9 @@ def editjournal(request):
         fs = FileSystemStorage()
         filename = fs.save(myfile.name, myfile)
         uploaded_file_url = fs.url(filename)
-        print(uploaded_file_url)
         eis.paper=uploaded_file_url
     except:
-        print("nothing,.........")
+        logging.warning('No New Journal Found for Update, Older one will be kept.')
     eis.co_authors = request.POST.get('co_author')
     eis.name = request.POST.get('name')
     eis.doc_id = request.POST.get('doc_id')
@@ -798,7 +785,6 @@ def editjournal(request):
                 x, "%b. %d, %Y")
     if (request.POST.get('dos') != None and request.POST.get('dos') != '' and request.POST.get('dos') != 'None'):
         x = request.POST.get('dos')
-        print(x[-10:])
         if x[-10:] == ', midnight':
             x = x[0:-10]
         if x[:5] == "Sept." :
@@ -813,11 +799,9 @@ def editjournal(request):
     page = int(request.POST.get('index'))//10
     page = page+1
     url = "/profile/?page="+str(page)
-    print(url)
     return redirect(url)
 
 def editforeignvisit(request):
-    print("its coming here")
     eis = emp_visits.objects.get(pk=request.POST.get('foreignvisitpk'))
     eis.country = request.POST.get('country')
     eis.place = request.POST.get('place')
@@ -825,7 +809,7 @@ def editforeignvisit(request):
     x = request.POST.get('start_date')
     if x[:5] == "Sept." :
             x = "Sep." + x[5:]
-    print(x,"/////////////")
+    
     try:
         eis.start_date = datetime.datetime.strptime(x, "%B %d, %Y")
     except:
@@ -837,16 +821,13 @@ def editforeignvisit(request):
         eis.end_date = datetime.datetime.strptime(x, "%B %d, %Y")
     except:
         eis.end_date = datetime.datetime.strptime(x, "%b. %d, %Y")
-    #eis.end_date = request.POST.get('end_date')
     eis.save()
     page = int(request.POST.get('index10'))//10
     page = page+1
     url = "/profile/?page10="+str(page)
-    print(url)
     return redirect(url)
 
 def editindianvisit(request):
-    print("its coming here")
     eis = emp_visits.objects.get(pk=request.POST.get('indianvisitpk'))
     eis.country = request.POST.get('country2')
     eis.place = request.POST.get('place2')
@@ -865,12 +846,10 @@ def editindianvisit(request):
         eis.end_date = datetime.datetime.strptime(x, "%B %d, %Y")
     except:
         eis.end_date = datetime.datetime.strptime(x, "%b. %d, %Y")
-    #eis.end_date = request.POST.get('end_date')
     eis.save()
     page = int(request.POST.get('index11'))//10
     page = page+1
     url = "/profile/?page11="+str(page)
-    print(url)
     return redirect(url)
 
 
@@ -891,7 +870,8 @@ def conference_insert(request):
         uploaded_file_url = fs.url(filename)
         eis.paper=uploaded_file_url
     except:
-        print("nothing")
+        logging.warning('Journal file not Uploaded')
+    
     eis.name = request.POST.get('name3')
     eis.venue = request.POST.get('venue3')
     if request.POST.get('page_no3') != '':
@@ -967,14 +947,14 @@ def editconference(request):
         uploaded_file_url = fs.url(filename)
         eis.paper=uploaded_file_url
     except:
-        print("nothing")
+        logging.warning('Journal File not Uploaded.')
 
     eis.name = request.POST.get('name3')
     eis.venue = request.POST.get('venue3')
     isbn  = request.POST.get('isbn_no3')
-    print(1)
+    
     eis.page_no = request.POST.get('page_no3')
-    print(2)
+    
     eis.year = request.POST.get('year3')
     eis.status = request.POST.get('status3')
     if(request.POST.get('doi3') != None and request.POST.get('doi3') != '' and request.POST.get('doi3') != 'None'):
@@ -1027,7 +1007,6 @@ def editconference(request):
     page = int(request.POST.get('index3'))//10
     page = page+1
     url = "/profile/?page3="+str(page)
-    print(url)
     return redirect(url)
 
 
@@ -1045,8 +1024,6 @@ def book_insert(request):
     return redirect('/profile/?page2=1')
 
 def editbooks(request):
-    print("++++++++++++++"+ request.POST.get('bookspk2'))
-    print("--------------"+ str(request))
     eis = emp_published_books.objects.get(pk=request.POST.get('bookspk2'))
     eis.p_type = request.POST.get('book_p_type')
     eis.title = request.POST.get('book_title')
@@ -1057,7 +1034,6 @@ def editbooks(request):
     page = int(request.POST.get('index15'))//10
     page = page+1
     url = "/profile/?page2="+str(page)
-    print(url)
     return redirect(url)
 
 def consym_insert(request):
@@ -1128,12 +1104,10 @@ def editconsym(request):
     page = int(request.POST.get('index13'))//10
     page = page+1
     url = "/profile/?page13="+str(page)
-    print(url)
 
     return redirect('/profile/?page13=1')
 
 def event_insert(request):
-    print(request)
     user = get_object_or_404(ExtraInfo, user=request.user)
     pf = user.id
 
@@ -1397,6 +1371,7 @@ def achievements(request):
             decoded_file = file.read().decode('utf-8').splitlines()
             reader = csv.DictReader(decoded_file)
             c=1
+            achieve = []
             for row in reader:
                 e = emp_achievement()
                 e.pf_no = row['pf_no']
@@ -1430,7 +1405,9 @@ def achievements(request):
                         e.date_entry = datetime.datetime.strptime(e.date_entry, "%Y-%m-%d").date()
                 except:
                     a=1
-                e.save()
+                
+                achieve.append(e)
+            emp_achievement.objects.bulk_create(achieve)
             return HttpResponseRedirect('DONE')
     else:
         form = UploadFileForm()
@@ -1445,6 +1422,7 @@ def confrence(request):
             decoded_file = file.read().decode('utf-8').splitlines()
             reader = csv.DictReader(decoded_file)
             c=1
+            confr = []
             for row in reader:
                 e = emp_confrence_organised()
                 e.pf_no = row['pf_no']
@@ -1486,7 +1464,9 @@ def confrence(request):
                         e.date_entry = datetime.datetime.strptime(e.date_entry, "%Y-%m-%d").date()
                 except:
                     a=1
-                e.save()
+                
+                confr.append(e)
+            emp_confrence_organised.objects.bulk_create(confr)
             return HttpResponseRedirect('DONE')
     else:
         form = UploadFileForm()
@@ -1501,6 +1481,7 @@ def consultancy(request):
             decoded_file = file.read().decode('utf-8').splitlines()
             reader = csv.DictReader(decoded_file)
             c=1
+            consult = []
             for row in reader:
                 e = emp_consultancy_projects()
                 e.pf_no = row['pf_no']
@@ -1542,7 +1523,9 @@ def consultancy(request):
                         e.date_entry = datetime.datetime.strptime(e.date_entry, "%Y-%m-%d").date()
                 except:
                     a=1
-                e.save()
+                
+                consult.append(e)
+            emp_consultancy_projects.objects.bulk_create(consult)
             return HttpResponseRedirect('DONE')
     else:
         form = UploadFileForm()
@@ -1558,6 +1541,7 @@ def event(request):
             decoded_file = file.read().decode('utf-8').splitlines()
             reader = csv.DictReader(decoded_file)
             c=1
+            organize = []
             for row in reader:
                 e = emp_event_organized()
                 e.pf_no = row['pf_no']
@@ -1595,7 +1579,9 @@ def event(request):
                         e.date_entry = datetime.datetime.strptime(e.date_entry, "%Y-%m-%d").date()
                 except:
                     a=1
-                e.save()
+                
+                organize.append(e)
+            emp_event_organized.objects.bulk_create(organize)
             return HttpResponseRedirect('DONE')
     else:
         form = UploadFileForm()
@@ -1610,6 +1596,7 @@ def lectures(request):
             decoded_file = file.read().decode('utf-8').splitlines()
             reader = csv.DictReader(decoded_file)
             c=1
+            expert = []
             for row in reader:
                 e = emp_expert_lectures()
                 e.pf_no = row['pf_no']
@@ -1637,7 +1624,9 @@ def lectures(request):
                         e.date_entry = datetime.datetime.strptime(e.date_entry, "%Y-%m-%d").date()
                 except:
                     a=1
-                e.save()
+                
+                expert.append(e)
+            emp_expert_lectures.objects.bulk_create(expert)
             return HttpResponseRedirect('DONE')
     else:
         form = UploadFileForm()
@@ -1652,6 +1641,7 @@ def keynote(request):
             decoded_file = file.read().decode('utf-8').splitlines()
             reader = csv.DictReader(decoded_file)
             c=1
+            address = []
             for row in reader:
                 e = emp_keynote_address()
                 e.pf_no = row['pf_no']
@@ -1692,7 +1682,9 @@ def keynote(request):
                         e.date_entry = datetime.datetime.strptime(e.date_entry, "%Y-%m-%d").date()
                 except:
                     a=1
-                e.save()
+                
+                address.append(e)
+            emp_keynote_address.objects.bulk_create(address)
             return HttpResponseRedirect('DONE')
     else:
         form = UploadFileForm()
@@ -1707,6 +1699,7 @@ def thesis(request):
             decoded_file = file.read().decode('utf-8').splitlines()
             reader = csv.DictReader(decoded_file)
             c=1
+            mtech_phd_thesis = []
             for row in reader:
                 e = emp_mtechphd_thesis()
                 e.pf_no = row['pf_no']
@@ -1730,7 +1723,9 @@ def thesis(request):
                         e.date_entry = datetime.datetime.strptime(e.date_entry, "%Y-%m-%d").date()
                 except:
                     a=1
-                e.save()
+                
+                mtech_phd_thesis.append(e)
+            emp_mtechphd_thesis.objects.bulk_create(mtech_phd_thesis)
             return HttpResponseRedirect('DONE')
     else:
         form = UploadFileForm()
@@ -1745,6 +1740,7 @@ def patents(request):
             decoded_file = file.read().decode('utf-8').splitlines()
             reader = csv.DictReader(decoded_file)
             c=1
+            patent = []
             for row in reader:
                 e = emp_patents()
                 e.pf_no = row['pf_no']
@@ -1772,7 +1768,9 @@ def patents(request):
                         e.date_entry = datetime.datetime.strptime(e.date_entry, "%Y-%m-%d").date()
                 except:
                     a=1
-                e.save()
+                
+                patent.append(e)
+            emp_patents.objects.bulk_create(patent)
             return HttpResponseRedirect('DONE')
     else:
         form = UploadFileForm()
@@ -1787,6 +1785,7 @@ def published_books(request):
             decoded_file = file.read().decode('utf-8').splitlines()
             reader = csv.DictReader(decoded_file)
             c=1
+            pub_books = []
             for row in reader:
                 e = emp_published_books()
                 e.pf_no = row['pf_no']
@@ -1816,7 +1815,9 @@ def published_books(request):
                         e.date_entry = datetime.datetime.strptime(e.date_entry, "%Y-%m-%d").date()
                 except:
                     a=1
-                e.save()
+                
+                pub_books.append(e)
+            emp_published_books.objects.bulk_create(pub_books)
             return HttpResponseRedirect('DONE')
     else:
         form = UploadFileForm()
@@ -1831,6 +1832,7 @@ def papers(request):
             decoded_file = file.read().decode('utf-8').splitlines()
             reader = csv.DictReader(decoded_file)
             c=1
+            research_papers = []
             for row in reader:
                 e = emp_research_papers()
                 e.pf_no = row['pf_no']
@@ -1881,7 +1883,7 @@ def papers(request):
 
                 except:
                     a=1
-                e.save()
+                
 
                 try:
                     if (row['date_acceptance'] == ' ' or row['date_acceptance'] == ''):
@@ -1920,7 +1922,9 @@ def papers(request):
                     a=1
                 a = e.start_date
                 b = e.end_date
-                e.save()
+                
+                research_papers.append(e)
+            emp_research_papers.objects.bulk_create(research_papers)
             return HttpResponseRedirect('DONE')
     else:
         form = UploadFileForm()
@@ -1936,6 +1940,7 @@ def projects(request):
             file = request.FILES['fileUpload']
             decoded_file = file.read().decode('utf-8').splitlines()
             reader = csv.DictReader(decoded_file)
+            research_projects = []
             for row in reader:
                 e = emp_research_projects()
                 e.pf_no = row['pf_no']
@@ -1945,7 +1950,6 @@ def projects(request):
                 e.funding_agency = row['funding_agency']
                 e.financial_outlay = row['financial_outlay']
                 e.status = row['status']
-
 
 
                 try:
@@ -1989,7 +1993,9 @@ def projects(request):
                 except:
                     a=1
 
-                e.save()
+                
+                research_projects.append(e)
+            emp_research_projects.objects.bulk_create(research_projects)
             return HttpResponseRedirect('DONE')
     else:
         form = UploadFileForm()
@@ -2003,6 +2009,7 @@ def visits(request):
             file = request.FILES['fileUpload']
             decoded_file = file.read().decode('utf-8').splitlines()
             reader = csv.DictReader(decoded_file)
+            visit = []
             for row in reader:
                 e = emp_visits()
                 e.pf_no = row['pf_no']
@@ -2050,7 +2057,9 @@ def visits(request):
                 except:
                     a=1
 
-                e.save()
+                
+                visit.append(e)
+            emp_visits.objects.bulk_create(visit)
             return HttpResponseRedirect('DONE')
     else:
         form = UploadFileForm()
@@ -2065,6 +2074,7 @@ def upload_file(request):
             file = request.FILES['fileUpload']
             decoded_file = file.read().decode('utf-8').splitlines()
             reader = csv.DictReader(decoded_file)
+            session = []
             for row in reader:
                 e = emp_session_chair()
                 e.pf_no = row['pf_no']
@@ -2101,7 +2111,9 @@ def upload_file(request):
                 except:
                     a=1
 
-                e.save()
+                
+                session.append(e)
+            emp_session_chair.objects.bulk_create(session)
             return HttpResponseRedirect('DONE')
     else:
         form = UploadFileForm()
@@ -2496,7 +2508,7 @@ def generate_report(request):
         events_req = "0"
 
     pers = get_object_or_404(faculty_about, user = request.user)
-    design = HoldsDesignation.objects.filter(working=request.user)
+    design = HoldsDesignation.objects.select_related('user','working','designation').filter(working=request.user)
     desig=[]
     for i in design:
         desig.append(str(i.designation))
@@ -2925,7 +2937,7 @@ def rspc_generate_report(request):
         events_req = "0"
 
     pers = get_object_or_404(faculty_about, user = request.user)
-    design = HoldsDesignation.objects.filter(working=request.user)
+    design = HoldsDesignation.objects.select_related('user','working','designation').filter(working=request.user)
     
     desig=[]
     for i in design:

@@ -4,16 +4,16 @@
 
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
-        <a class="active item" data-tab="complaint">
-            Complaint
+        <a class="active item" data-tab="first">
+            Special Request
         </a>
     </div>
 
-    <div class="ui active tab" data-tab="complaint">
+    <div class="ui active tab" data-tab="first">
         <div class="ui vertical segment">
             <form class="ui form" style="padding-left: 24px; padding-right: 24px;">
                 <div class="ui header">
-                    Add a new Complaint:
+                    Add a new Request:
                 </div>
 
                 <br>
@@ -21,7 +21,7 @@
                 <div class="fields">
 
                     <div class="eight wide field">
-                        <label>Complaint for Department</label>
+                        <label>Make Request</label>
                         <div class="ui fluid search selection dropdown">
                             <input name="Department" type="hidden">
                             <i class="dropdown icon"></i>
@@ -110,8 +110,8 @@
                 </div>
 
                 <div class="field">
-                    <label>Complaint Details</label>
-                    <textarea placeholder="Complaint Details" rows="2"></textarea>
+                    <label>Request Details</label>
+                    <textarea placeholder="Request Details" rows="2"></textarea>
                 </div>
 
                 <br>
