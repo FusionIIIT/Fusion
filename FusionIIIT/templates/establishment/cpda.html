@@ -41,7 +41,19 @@ Y8b  d8 88      88  .8D 88   88      88 `88. 88.     `8P  d8' 88b  d88 88.     d
                 </div>
                 <br>
                 <div class="field">
-                    {% render_field cpda_form.requested_advance %} 
+                    <b>Block</b> {{ block_period }}
+                    <br><br>
+                    <b>Total Advance Availed</b> : Rs {{ total_advance_by_user }}
+                    <br><br>
+                    <b>Advance Limit</b> : Rs 3 Lakh per 3 year block
+                    <br><br>
+                    <b>Eligible Advance Amount</b> : Rs {{ remaining_advance }}
+                </div>
+                <br>
+                <div class="field">
+                    <b>Advance Requested</b>
+                    <br><br>
+                    <input id="numberbox" type='number' name='advance' max='{{ remaining_advance }}' required>
                 </div>
                 <br>
                 <div class="field">
@@ -230,7 +242,6 @@ Y8b  d8 88      88  .8D 88   88      88   88 88 `88. Y8b  d8 88   88   .88.    `
                                 <div class="meta">Requested Adjustment Amount : ₹ {{app.adjustment_amount}}</div>
                             {% endif %}
                             <div class="meta"> Purpose : {{app.purpose}}</div>
-                            <div class="meta"> Admin remarks : {{app.tracking_info.remarks}}</div>
                             <div>
                                 <button class="ui large primary button" onclick="$('.ui.modal.review-{{app.id}}').modal('show')">
                                     Review
@@ -267,9 +278,10 @@ Y8b  d8 88      88  .8D 88   88      88   88 88 `88. Y8b  d8 88   88   .88.    `
                                     <label>Adjustment Amount : ₹ {{app.adjustment_amount}}</label><br>
                                     <label>Total Bills Amount : ₹ {{app.total_bills_amount}}</label><br>
                                 {% endif %}
-
                                 <label>Remarks from Est. Admin. : {{app.tracking_info.remarks}}</label><br>
-
+                                <label>Remarks from HOD : {{app.tracking_info.remarks_rev1}}</label><br>
+                                <label>Remarks from Registrar : {{app.tracking_info.remarks_rev2}}</label><br>
+                                <label>Remarks from Director : {{app.tracking_info.remarks_rev3}}</label><br>
                                 {% render_field app.reviewform.app_id %} 
                                 <div class="field">
                                     {% render_field app.reviewform.remarks %} 

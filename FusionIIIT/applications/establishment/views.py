@@ -3,11 +3,11 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
-
-from datetime import datetime
+from django.db.models import Avg, Count, Min, Sum
+from datetime import datetime,date
 from .models import *
 from .forms import *
-
+import numpy as np
 
 def initial_checks(request):
     return {}
@@ -39,24 +39,43 @@ def handle_cpda_admin(request):
     app_id = request.POST.get('app_id')
     status = request.POST.get('status')
     reviewer = request.POST.get('reviewer_id')
+    reviewer2 = request.POST.get('reviewer_id2')
+    reviewer3 = request.POST.get('reviewer_id3')
     designation = request.POST.get('reviewer_design')
+    designation2 = request.POST.get('reviewer_design2')
+    designation3 = request.POST.get('reviewer_design3')
     remarks = request.POST.get('remarks')
     if status == 'requested' or status == 'adjustments_pending':
-        if reviewer and designation and app_id:
+        if reviewer and reviewer2 and reviewer3 and designation and app_id:
             # assign the app to the reviewer
             reviewer_id = User.objects.get(username=reviewer)
+            reviewer_id2 = User.objects.get(username=reviewer2)
+            reviewer_id3 = User.objects.get(username=reviewer3)
             reviewer_design = Designation.objects.filter(name=designation)
-
+            reviewer_design2 = Designation.objects.filter(name=designation2)
+            reviewer_design3 = Designation.objects.filter(name=designation3)
             # check if the reviewer holds the given designation, if not show error
             if reviewer_design:
                 reviewer_design = reviewer_design[0]
+            if reviewer_design2:
+                reviewer_design2 = reviewer_design2[0]
+            if reviewer_design3:
+                reviewer_design3 = reviewer_design3[0]
             # if reviewer_design != HoldsDesignation.objects.get(user=reviewer_id):
             #     messages.error(request, 'Reviewer doesn\'t holds the designation you specified!')
             # else:
             application = Cpda_application.objects.select_related('applicant').get(id=app_id)
+            application.tracking_info.current_reviewer_id=1
             application.tracking_info.reviewer_id = reviewer_id
+            application.tracking_info.reviewer_id2 = reviewer_id2
+            application.tracking_info.reviewer_id3 = reviewer_id3
             application.tracking_info.reviewer_design = reviewer_design
+            application.tracking_info.reviewer_design2 = reviewer_design2
+            application.tracking_info.reviewer_design3 = reviewer_design3
             application.tracking_info.remarks = remarks
+            application.tracking_info.remarks_rev1=""
+            application.tracking_info.remarks_rev2=""
+            application.tracking_info.remarks_rev3=""
             application.tracking_info.review_status = 'under_review'
             application.tracking_info.save()
             
@@ -231,6 +250,7 @@ def generate_cpda_admin_lists(request):
             ]
         app.assign_form = temp
         
+        
     # only approved
     approved_apps = (Cpda_application.objects
                     .select_related('applicant')
@@ -319,7 +339,7 @@ def handle_cpda_eligible(request):
         applicant = request.user
         pf_number = request.POST.get('pf_number')
         purpose = request.POST.get('purpose')
-        advance = request.POST.get('requested_advance')
+        advance = request.POST.get('advance')
         status = 'requested'
         timestamp = datetime.now()
         application = Cpda_application.objects.create(
@@ -375,8 +395,15 @@ def handle_cpda_eligible(request):
         # verify that app_id is not changed, ie untampered
         review_comment = request.POST.get('remarks')
         application = Cpda_application.objects.get(id=app_id)
-        application.tracking_info.remarks = review_comment
-        application.tracking_info.review_status = 'reviewed'
+        if(application.tracking_info.current_reviewer_id==1):
+            application.tracking_info.remarks_rev1 = review_comment
+        elif(application.tracking_info.current_reviewer_id==2):
+            application.tracking_info.remarks_rev2 = review_comment
+        else:
+            application.tracking_info.remarks_rev3 = review_comment
+        if(application.tracking_info.current_reviewer_id==3):
+            application.tracking_info.review_status = 'reviewed'
+        application.tracking_info.current_reviewer_id +=1
         application.tracking_info.save()
         # add notif here
         messages.success(request, 'Review submitted successfully!')
@@ -466,12 +493,28 @@ def generate_cpda_eligible_lists(request):
                     .order_by('-request_timestamp'))
     to_review_apps = (Cpda_application.objects
                     .select_related('applicant')
-                    .filter(tracking_info__reviewer_id=request.user)
+                    .filter(tracking_info__reviewer_id=request.user).filter(tracking_info__current_reviewer_id=1)
                     .exclude(status='rejected')
                     .exclude(status='finished')
                     .exclude(status='approved')
                     .filter(tracking_info__review_status='under_review')
                     .order_by('-request_timestamp'))
+    if not to_review_apps:
+        to_review_apps = (Cpda_application.objects.select_related('applicant')
+                        .filter(tracking_info__reviewer_id2=request.user).filter(tracking_info__current_reviewer_id=2)
+                        .exclude(status='rejected')
+                        .exclude(status='finished')
+                        .exclude(status='approved')
+                        .filter(tracking_info__review_status='under_review')
+                        .order_by('-request_timestamp'))
+    if not to_review_apps:
+        to_review_apps = (Cpda_application.objects.select_related('applicant')
+                        .filter(tracking_info__reviewer_id3=request.user).filter(tracking_info__current_reviewer_id=3)
+                        .exclude(status='rejected')
+                        .exclude(status='finished')
+                        .exclude(status='approved')
+                        .filter(tracking_info__review_status='under_review')
+                        .order_by('-request_timestamp'))
     for app in to_review_apps:
         app.reviewform = Review_Form(initial={'app_id': app.id})
 
@@ -481,12 +524,29 @@ def generate_cpda_eligible_lists(request):
     for app in apps:
         bill_forms[app.id] = Cpda_Bills_Form(initial={'app_id': app.id})
 
+    advance_took = (Cpda_application.objects
+                    .select_related('applicant')
+                    .filter(applicant=request.user)
+                    .exclude(status='requested')
+                    .aggregate(total_advance=Sum('requested_advance')))
+    
+    if advance_took['total_advance']:
+        advance_taken=advance_took['total_advance']
+        advance_avail=300000-advance_took['total_advance']
+    else:
+        advance_taken=0
+        advance_avail=300000
+    today_date=date.today()
+    block_period=str(2018+int((np.ceil((today_date.year-2018)/3)-1))*3)+"-"+ str(2018+int(np.ceil((today_date.year-2018)/3))*3)
     response = {
         'cpda_form': form,
         'cpda_billforms': bill_forms,
         'cpda_active_apps': active_apps,
         'cpda_archive_apps': archive_apps,
-        'cpda_to_review_apps': to_review_apps
+        'cpda_to_review_apps': to_review_apps,
+        'total_advance_by_user':advance_taken,
+        'remaining_advance': advance_avail,
+        'block_period': block_period
     }
     return response
 

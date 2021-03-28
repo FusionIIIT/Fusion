@@ -7,8 +7,7 @@ dec3 = 'I hereby declare that the previous LTC advance drawn by me has already b
 
 class Cpda_Form(forms.Form):
     pf_number = forms.CharField(label='PF Number', required=True)
-    purpose = forms.CharField(label='Purpose', widget=forms.TextInput, required=True)
-    requested_advance = forms.IntegerField(label='Advance Requested', min_value=0, required=True)
+    purpose = forms.CharField(label='Purpose', widget=forms.Textarea, required=True)
     declaration = forms.BooleanField(label=dec, required=True)
 
     
@@ -46,8 +45,12 @@ class Ltc_Form(forms.Form):
 class Assign_Form(forms.Form):
     app_id = forms.IntegerField(widget = forms.HiddenInput(), required=True)
     status = forms.ChoiceField(choices=Constants.STATUS)
-    reviewer_id = forms.CharField(label="Reviewer ID", required=False)
-    reviewer_design = forms.CharField(label="Reviewer Designation", required=False)
+    reviewer_id = forms.CharField(label="Reviewer ID 1", required=False)
+    reviewer_id2 = forms.CharField(label="Reviewer ID 2", required=False)
+    reviewer_id3 = forms.CharField(label="Reviewer ID 3", required=False)
+    reviewer_design = forms.CharField(label="Reviewer Designation 1", required=False,initial='HOD')
+    reviewer_design2 = forms.CharField(label="Reviewer Designation 2", required=False,initial='Registrar')
+    reviewer_design3 = forms.CharField(label="Reviewer Designation 3", required=False,initial='Director')
     remarks = forms.CharField(label="Remarks")
 
 
