@@ -36,7 +36,9 @@
 				<td> phone_no </td>
                 <td> user_type </td>
 				<td> department </td>
-              </tr>
+                <td> github </td>
+                
+            </tr>
             </thead>
 
             {% for fcu in fac_list %}
@@ -51,6 +53,7 @@
 				<td>{{ fcu.phone_no }}</td>
                 <td>{{ fcu.user_type }}</td>
 				<td>{{ fcu.department }}</td>
+                <td>{{ fcu.user.faculty_about.github }}</td>
                 {% endwith %}
               </tr>
               

@@ -21,6 +21,10 @@
         <a class="item" data-tab="students">
             Students
         </a>
+
+        <a class="item" data-tab="announcements">
+            Announcements
+        </a>
     </div>
 {% comment %}
     <div class="ui pointing secondary menu">
@@ -144,7 +148,13 @@
                                 PhD Students
                             </div>
                             <div class="content">
-                                PhD CSE Department
+                                <a class="active item" href="/dep/PhD_Students/">
+                        <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                        <button style="border: solid; float: left; display: block;">
+                            PhD CSE Students
+                        </button>
+                    </a>
+                     <br>  
                             </div>
                         </div>
 
@@ -154,9 +164,21 @@
                                 Mtech Students
                             </div>
                             <div class="content">
-                                M.Tech First Year<br>
-                                M.Tech Second Year
+                                <a class="active item" href="/dep/MtechFirstYear_Students/">
+                        <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                        <button style="border: solid; float: left; display: block;" >
+                            M.Tech First Year
+                        </button>
+                    </a>
+                        <a class="active item" href="/dep/MtechSecondYear_Students/">
+                        <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                        <button style="border: solid; float: left; display: block;">
+                            M.Tech Second Year
+                        </button>
+                    </a>
+                     <br>     
                             </div>
+                        </div>
                             
                         </div>
 
@@ -200,5 +222,70 @@
             </div>
         </div>
     </div>
+
+    {% comment %} tabs contains Announcement_List {% endcomment %}
+    <div class="ui tab" data-tab="announcements">
+        <div class="ui vertical segment">
+            <div class="content">
+                <div class="description">
+                    <span>
+                        {% comment %}browse student announcement Data{% endcomment %}
+                        <div class="ui styled accordion">
+                            <div class="title">
+                                <i class="dropdown icon"></i>
+                                PhD Students
+                            </div>
+                        </div>
+
+                        <div class="ui styled accordion">
+                            <div class="title">
+                                <i class="dropdown icon"></i>
+                                Mtech Students
+                            </div>
+                            <div class="content">
+                                M.Tech First Year<br>
+                                M.Tech Second Year
+                            </div>
+                            
+                        </div>
+
+                        <div class="ui styled accordion">
+                            <div class="title">
+                                <i class="dropdown icon"></i>
+                               B.Tech Students
+                            </div>
+                            <div class="content">
+                                <a class="active item" href="/dep/BtechFirstYear_Students_Announcements/">
+                        <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                        <button style="border: solid; float: left; display: block;" >
+                            B.Tech First Year
+                        </button>
+                    </a>
+                        <a class="active item" href="/dep/BtechSecondYear_Students_Announcements/">
+                        <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                        <button style="border: solid; float: left; display: block;">
+                            B.Tech Second Year
+                        </button>
+                    </a>
+                        <a class="active item" href="/dep/BtechThirdYear_Students_Announcements/">
+                        <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                        <button style="border: solid; float: left; display: block;">
+                            B.Tech Third Year
+                        </button>
+                    </a>
+                        <a class="active item" href="/dep/BtechFinalYear_Students_Announcements/">
+                        <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                        <button style="border: solid; float: left; display: block;">
+                            B.Tech Final Year
+                        </button>
+                    </a><br>
+                               
+                            </div>
+                        </div>
+
+                    </span>
+                    <div class="ui divider"></div>
+                </div>
+            </div>
 
 {% endblock %}
