@@ -4,9 +4,9 @@ from django.utils import timezone
 
 class ExpenditureType(models.Model):
 	expenditure_type = models.CharField(max_length=100)
-
+	
 	def __str__(self):
-        return self.expenditure_type
+	return self.expenditure_type
 
 class Expenditure(models.Model):
 	spent_on = models.ForeignKey(ExpenditureType, related_name="expenditureType", on_delete=models.PROTECT)
@@ -21,7 +21,7 @@ class Expenditure(models.Model):
 class IncomeSource(models.Model):
 	income_source = models.CharField(max_length=100)
 
-	def __str__(self):
+	def __str__(self):	
         return self.income_source
 
 class Income(models.Model):
