@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
-from django.db.models import Avg, Count, Min, Sum
+from django.db.models import Avg, Count, Min, Sum,Q
 from datetime import datetime,date
 from .models import *
 from .forms import *
@@ -491,30 +491,24 @@ def generate_cpda_eligible_lists(request):
                     .exclude(status='approved')
                     .exclude(status='adjustments_pending')
                     .order_by('-request_timestamp'))
+    
     to_review_apps = (Cpda_application.objects
                     .select_related('applicant')
-                    .filter(tracking_info__reviewer_id=request.user).filter(tracking_info__current_reviewer_id=1)
+                    .filter(Q(tracking_info__reviewer_id=request.user,tracking_info__current_reviewer_id=1) | 
+                            Q(tracking_info__reviewer_id2=request.user,tracking_info__current_reviewer_id=2) |
+                            Q(tracking_info__reviewer_id3=request.user,tracking_info__current_reviewer_id=3))
                     .exclude(status='rejected')
                     .exclude(status='finished')
                     .exclude(status='approved')
                     .filter(tracking_info__review_status='under_review')
                     .order_by('-request_timestamp'))
-    if not to_review_apps:
-        to_review_apps = (Cpda_application.objects.select_related('applicant')
-                        .filter(tracking_info__reviewer_id2=request.user).filter(tracking_info__current_reviewer_id=2)
-                        .exclude(status='rejected')
-                        .exclude(status='finished')
-                        .exclude(status='approved')
-                        .filter(tracking_info__review_status='under_review')
-                        .order_by('-request_timestamp'))
-    if not to_review_apps:
-        to_review_apps = (Cpda_application.objects.select_related('applicant')
-                        .filter(tracking_info__reviewer_id3=request.user).filter(tracking_info__current_reviewer_id=3)
-                        .exclude(status='rejected')
-                        .exclude(status='finished')
-                        .exclude(status='approved')
-                        .filter(tracking_info__review_status='under_review')
-                        .order_by('-request_timestamp'))
+    
+    reviewed_apps= (Cpda_application.objects.select_related('applicant')
+                    .filter(Q(tracking_info__reviewer_id=request.user,tracking_info__current_reviewer_id__gte=2) | 
+                            Q(tracking_info__reviewer_id2=request.user,tracking_info__current_reviewer_id__gte=3) | 
+                            Q(tracking_info__reviewer_id3=request.user,tracking_info__current_reviewer_id__gte=4))
+                    .order_by('-request_timestamp'))
+    
     for app in to_review_apps:
         app.reviewform = Review_Form(initial={'app_id': app.id})
 
@@ -538,6 +532,8 @@ def generate_cpda_eligible_lists(request):
         advance_avail=300000
     today_date=date.today()
     block_period=str(2018+int((np.ceil((today_date.year-2018)/3)-1))*3)+"-"+ str(2018+int(np.ceil((today_date.year-2018)/3))*3)
+    
+    
     response = {
         'cpda_form': form,
         'cpda_billforms': bill_forms,
@@ -546,7 +542,8 @@ def generate_cpda_eligible_lists(request):
         'cpda_to_review_apps': to_review_apps,
         'total_advance_by_user':advance_taken,
         'remaining_advance': advance_avail,
-        'block_period': block_period
+        'block_period': block_period,
+        'cpda_reviewed_apps': reviewed_apps
     }
     return response
 
