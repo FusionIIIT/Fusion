@@ -24,7 +24,7 @@ from jsonschema.exceptions import ValidationError
 
 def index(request):
     context = {}
-    print(request.user)
+    #print(request.user)
     if(str(request.user)!="AnonymousUser"):
         return HttpResponseRedirect('/dashboard/')
     else:
