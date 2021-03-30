@@ -126,7 +126,11 @@ INSTALLED_APPS = [
     'applications.visitor_hostel',
     'applications.establishment',
     'applications.estate_module',
+<<<<<<< HEAD
     'applications.hr2',
+=======
+    'applications.counselling_cell',
+>>>>>>> origin
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
