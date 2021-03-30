@@ -15,7 +15,7 @@ DATABASES = {
         # 'PASSWORD': 'hello123',
         'HOST': 'localhost',
         'USER': 'Fusion',
-        'PASSWORD': '123456',
+        'PASSWORD': '1999',
     }
 }
 
