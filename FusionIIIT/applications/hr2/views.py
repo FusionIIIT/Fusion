@@ -3,7 +3,8 @@ from .models import *
 from applications.globals.models import ExtraInfo
 from django.db.models import Q
 from django.http import Http404
-from .forms import editDetailsForm,editConfidentialDetailsForm
+from .forms import EditDetailsForm,EditConfidentialDetailsForm
+from django.contrib import messages
 # def hr2_index(request):
 #         """ Views for HR2 main page"""
 #         template='hr2Module/hr2_index.html'
@@ -14,7 +15,7 @@ from .forms import editDetailsForm,editConfidentialDetailsForm
 
 
 
-def editEmployeeDetails(request,id):
+def edit_employee_details(request,id):
         """ Views for edit details"""
         template='hr2Module/editDetails.html'
 
@@ -26,21 +27,24 @@ def editEmployeeDetails(request,id):
         
 
         if request.method == "POST":
-                form = editDetailsForm(request.POST, request.FILES)
-                conf_form = editConfidentialDetailsForm(request.POST,request.FILES)
+                form = EditDetailsForm(request.POST, request.FILES)
+                conf_form = EditConfidentialDetailsForm(request.POST,request.FILES)
 
+                
                 if form.is_valid() and conf_form.is_valid():
                         form.save()
                         conf_form.save()
                         messages.success(request, "Employee details edited successfully")
                 else:
-                        print(form.errors)
-                        print(conf_form.errors)
+                        print(form['extra_info'].value())
+                        print(form['father_name'].value())
+                        
+                        print("___________ ",form.errors)
+                        print("+=++++",conf_form.errors)
         
 
-
-        form = editDetailsForm(initial={'extra_info': employee})
-        conf_form = editConfidentialDetailsForm(initial={'extra_info': employee})
+        form = EditDetailsForm(initial={'extra_info': employee.id})
+        conf_form = EditConfidentialDetailsForm(initial={'extra_info': employee})
         context = {'form': form,'confForm':conf_form
                }
 
@@ -48,7 +52,7 @@ def editEmployeeDetails(request,id):
 
 
 
-def hrAdmin(request):
+def hr_admin(request):
         """ Views for HR2 Admin page """
         template='hr2Module/hradmin.html'
 
@@ -72,13 +76,29 @@ def hrAdmin(request):
                 emp  = emp.filter(user_type="faculty")
 
         context = {'emps':emp}
-
-
         return render(request,template,context)
 
-def serviceBook(request):
+def service_book(request):
         """
         Views for service book page
         """
+        user = request.user
+        extra_info = ExtraInfo.objects.select_related().get(user=user)
+        lien_service_book = ForeignService.objects.filter(extra_info = extra_info).filter(service_type= "LIEN").order_by('-start_date')
+        deputation_service_book = ForeignService.objects.filter(extra_info = extra_info).filter(service_type= "DEPUTATION").order_by('-start_date')
+        other_service_book = ForeignService.objects.filter(extra_info = extra_info).filter(service_type= "OTHER").order_by('-start_date')
         template = 'hr2Module/servicebook.html'
-        return render(request,template)
+        context = {'lienServiceBooks':lien_service_book,'deputationServiceBooks':deputation_service_book,'otherServiceBooks':other_service_book}
+        return render(request,template,context)
+
+
+def view_employee_details(request,id):
+        """ Views for edit details"""
+        extra_info = ExtraInfo.objects.get(pk=id)
+        lien_service_book = ForeignService.objects.filter(extra_info = extra_info).filter(service_type= "LIEN").order_by('-start_date')
+        deputation_service_book = ForeignService.objects.filter(extra_info = extra_info).filter(service_type= "DEPUTATION").order_by('-start_date')
+        other_service_book = ForeignService.objects.filter(extra_info = extra_info).filter(service_type= "OTHER").order_by('-start_date')
+        template = 'hr2Module/viewdetails.html'
+        context = {'lienServiceBooks':lien_service_book,'deputationServiceBooks':deputation_service_book,'otherServiceBooks':other_service_book,'user':extra_info.user,'extrainfo':extra_info}
+        return render(request,template,context)
+

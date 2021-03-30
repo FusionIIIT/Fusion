@@ -71,7 +71,7 @@ class Employee(models.Model):
     home_state =   models.CharField(max_length=40, default='')
     home_district =  models.CharField(max_length=40, default='')
     height  =  models.IntegerField(default=0)
-    date_of_joining =  models.DateField(max_length=6, null=True,blank=True)
+    date_of_joining =  models.DateField(null=True,blank=True)
     designation =  models.CharField(max_length=40, default='')
     blood_group =   models.CharField(max_length=50, choices=Constants.BLOOD_GROUP)
 
@@ -132,9 +132,11 @@ class ForeignService(models.Model):
     This table contains details about deputation, lien 
     and other foreign services of employee
     """
-    extra_info = models.OneToOneField(ExtraInfo, on_delete=models.CASCADE)
-    start_date =  models.DateField(max_length=6, null=True)
-    end_date =  models.DateField(max_length=6, null=True)
+
+    # extra_info = models.OneToOneField(ExtraInfo, on_delete=models.CASCADE)
+    extra_info = models.ForeignKey(ExtraInfo,on_delete=models.CASCADE)
+    start_date =  models.DateField(max_length=6, null=True,blank=True)
+    end_date =  models.DateField(max_length=6, null=True,blank=True)
     job_title = models.CharField(max_length=50, default='')
     organisation = models.CharField(max_length=100, default='')
     description = models.CharField(max_length=300, default='')
