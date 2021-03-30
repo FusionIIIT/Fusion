@@ -127,3 +127,23 @@ def me_faculty(request):
     me_f=ExtraInfo.objects.filter(department__name='ME',user_type='faculty')
     id_dict={'fac_list':me_f,'department':'ME'}
     return render(request,'department/faculty.html',context=id_dict)
+
+def BtechFirstYear_Students_Announcements(request):
+   announcements_list1 = Announcements.objects.all()[:11]
+   id_dict={'announcements_list':announcements_list1 }
+   return render(request, 'department/browse_announcements.html',context=id_dict)
+
+def BtechSecondYear_Students_Announcements(request):
+    announcements_list2 = Announcements.objects.all()[:11]
+    id_dict={'announcements_list':announcements_list2 }
+    return render(request, 'department/browse_announcements.html',context=id_dict)
+
+def BtechThirdYear_Students_Announcements(request):
+    announcements_list3 = Announcements.objects.all()[:11]
+    id_dict={'announcements_list':announcements_list3 }
+    return render(request, 'department/browse_announcements.html',context=id_dict)
+
+def BtechFinalYear_Students_Announcements(request):
+    announcements_list4 = Announcements.objects.all()[:11]
+    id_dict={'announcements_list':announcements_list4 }
+    return render(request, 'department/browse_announcements.html',context=id_dict)
