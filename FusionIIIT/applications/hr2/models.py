@@ -127,13 +127,12 @@ class EmpTraining(models.Model):
 
 
 
+
 class ForeignService(models.Model):
     """
     This table contains details about deputation, lien 
     and other foreign services of employee
     """
-
-    # extra_info = models.OneToOneField(ExtraInfo, on_delete=models.CASCADE)
     extra_info = models.ForeignKey(ExtraInfo,on_delete=models.CASCADE)
     start_date =  models.DateField(max_length=6, null=True,blank=True)
     end_date =  models.DateField(max_length=6, null=True,blank=True)
@@ -141,11 +140,17 @@ class ForeignService(models.Model):
     organisation = models.CharField(max_length=100, default='')
     description = models.CharField(max_length=300, default='')
     salary_source = models.CharField(max_length=100, default='')
-    designation = models.CharField(max_length=100, default='')
+    designation = models.CharField(max_length=100, default='') 
     service_type = models.CharField(max_length=100, choices=Constants.FOREIGN_SERVICE)
+
 
     def __str__(self):
         return self.extra_info.user.first_name
     
-    
-    
+class EmpAppraisalForm(models.Model):
+    extra_info = models.ForeignKey(ExtraInfo,on_delete=models.CASCADE)
+    year = models.DateField(max_length=6, null=True,blank=True)
+    appraisal_form  = models.FileField(
+        upload_to='Hr2/appraisal_form', null=True, default=" ")
+    def __str__(self):
+        return self.extra_info.user.first_name
