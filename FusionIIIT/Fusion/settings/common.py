@@ -138,7 +138,7 @@ INSTALLED_APPS = [
     'markdown_deux',
     'django_cleanup.apps.CleanupConfig',
     'django_unused_media',
-]
+    ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
