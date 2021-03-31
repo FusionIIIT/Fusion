@@ -3,6 +3,11 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
+from applications.academic_information.models import Curriculum_Instructor
+from applications.eis.models import (emp_consultancy_projects,emp_research_projects,
+                                        emp_mtechphd_thesis,emp_patents,emp_techtransfer,
+                                            emp_published_books,emp_confrence_organised,
+                                            emp_achievement,emp_event_organized)
 
 from datetime import datetime
 from .models import *
@@ -20,6 +25,20 @@ def is_admin(request):
 def is_eligible(request):
     return True
 
+def is_hod(request):
+    user_dsg = list(HoldsDesignation.objects.filter(user=request.user))
+    designation = user_dsg[0].designation.name
+    if("HOD" in designation):
+        return True
+    return False
+
+def is_director(request):
+     user_dsg = list(HoldsDesignation.objects.filter(user=request.user))
+     designation = user_dsg[0].designation.name
+     print(designation)
+     if("Director" in designation):
+         return True
+     return False
 
 def is_cpda(dictx):
     for key in dictx.keys():
@@ -31,6 +50,13 @@ def is_cpda(dictx):
 def is_ltc(dictx):
     for key in dictx.keys():
         if 'ltc' in key:
+            return True
+    return False
+
+
+def is_appraisal(dictx):
+    for key in dictx.keys():
+        if 'appraisal' in key:
             return True
     return False
 
@@ -59,10 +85,10 @@ def handle_cpda_admin(request):
             application.tracking_info.remarks = remarks
             application.tracking_info.review_status = 'under_review'
             application.tracking_info.save()
-            
+
             # add notif
             messages.success(request, 'Reviewer assigned successfully!')
-            
+
 
         else:
             errors = "Please specify a reviewer and their designation."
@@ -74,7 +100,7 @@ def handle_cpda_admin(request):
         application = Cpda_application.objects.select_related('applicant').get(id=app_id)
         application.status = status
         application.save()
-        
+
 
         # add notif
         messages.success(request, 'Status updated successfully!')
@@ -105,7 +131,7 @@ def handle_ltc_admin(request):
                 application.tracking_info.remarks = remarks
                 application.tracking_info.review_status = 'under_review'
                 application.tracking_info.save()
-                
+
                 # add notif
                 messages.success(request, 'Reviewer assigned successfully!')
 
@@ -124,6 +150,7 @@ def handle_ltc_admin(request):
 
     elif 'ltc_new_eligible_user' in request.POST:
         username = request.POST.get('username')
+
         if not User.objects.filter(username=username).exists():
             messages.error(request, 'The given user does not exist')
             return
@@ -230,7 +257,10 @@ def generate_cpda_admin_lists(request):
                 ('finished', 'Finished')
             ]
         app.assign_form = temp
-        
+
+        # print (app.assign_form.fields['status']._choices)
+
+
     # only approved
     approved_apps = (Cpda_application.objects
                     .select_related('applicant')
@@ -279,7 +309,10 @@ def generate_ltc_admin_lists(request):
             ('rejected', 'Rejected')
         ]
         app.assign_form = temp
-        
+
+        # print (app.assign_form.fields['status']._choices)
+
+
     # approved and rejected
     archived_apps = (Ltc_application.objects
                     .select_related('applicant')
@@ -352,9 +385,9 @@ def handle_cpda_eligible(request):
         Cpda_bill.objects.create(
             application_id = app_id,
             bill = upload_file
-        )                           
+        )
 
-        bills_attached = 1                
+        bills_attached = 1
         timestamp = datetime.now()
 
         application.bills_attached = bills_attached
@@ -369,7 +402,7 @@ def handle_cpda_eligible(request):
         application.tracking_info.save()
         # add notif here
         messages.success(request, 'Bills submitted successfully!')
-        
+
     elif 'cpda_review' in request.POST:
         app_id = request.POST.get('app_id')
         # verify that app_id is not changed, ie untampered
@@ -386,24 +419,24 @@ def handle_ltc_eligible(request):
     if 'ltc_request' in request.POST:
         applicant = request.user
 
-        pf_number = request.POST.get('pf_number') 
-        basic_pay = request.POST.get('basic_pay') 
+        pf_number = request.POST.get('pf_number')
+        basic_pay = request.POST.get('basic_pay')
 
-        is_leave_req = request.POST.get('is_leave_req') 
-        leave_start = request.POST.get('leave_start') 
-        leave_end = request.POST.get('leave_end') 
-        family_departure_date = request.POST.get('family_departure_date') 
-        leave_nature = request.POST.get('leave_nature') 
-        purpose = request.POST.get('purpose') 
-        leave_type = request.POST.get('leave_type') 
-        address_during_leave = request.POST.get('address_during_leave') 
-        phone_number = request.POST.get('phone_number') 
-        travel_mode = request.POST.get('travel_mode') 
+        is_leave_req = request.POST.get('is_leave_req')
+        leave_start = request.POST.get('leave_start')
+        leave_end = request.POST.get('leave_end')
+        family_departure_date = request.POST.get('family_departure_date')
+        leave_nature = request.POST.get('leave_nature')
+        purpose = request.POST.get('purpose')
+        leave_type = request.POST.get('leave_type')
+        address_during_leave = request.POST.get('address_during_leave')
+        phone_number = request.POST.get('phone_number')
+        travel_mode = request.POST.get('travel_mode')
 
-        ltc_availed = request.POST.get('ltc_availed') 
-        ltc_to_avail = request.POST.get('ltc_to_avail') 
-        dependents = request.POST.get('dependents') 
-        requested_advance = request.POST.get('requested_advance') 
+        ltc_availed = request.POST.get('ltc_availed')
+        ltc_to_avail = request.POST.get('ltc_to_avail')
+        dependents = request.POST.get('dependents')
+        requested_advance = request.POST.get('requested_advance')
 
         status = 'requested'
         timestamp = datetime.now()
@@ -447,6 +480,237 @@ def handle_ltc_eligible(request):
         application.tracking_info.save()
         # add notif here
         messages.success(request, 'Review submitted successfully!')
+
+
+def handle_appraisal(request):
+    if 'appraisal_request' in request.POST:
+        applicant = request.user
+
+        user_dsg = list(HoldsDesignation.objects.filter(user=request.user))
+        designation = user_dsg[0].designation
+
+        user_dep = list(ExtraInfo.objects.filter(user=request.user))
+        discipline = user_dep[0].department
+
+        knowledge_field = request.POST.get('specific_field_knowledge')
+        research_interest = request.POST.get('current_research_interest')
+        status = 'requested'
+        timestamp = datetime.now()
+
+        other_research_element = request.POST.get('other_research_element')
+        publications = request.POST.get('publications')
+        conferences_meeting_attended = request.POST.get('conferences_meeting_attended')
+        conferences_meeting_organized = request.POST.get('conferences_meeting_organized')
+
+        admin_assign = request.POST.get('admin_assign')
+        sevice_to_ins = request.POST.get('sevice_to_ins')
+        extra_info = request.POST.get('extra_info')
+
+        faculty_comments = request.POST.get('faculty_comments')
+
+
+        application = Appraisal.objects.create(
+                applicant = applicant,
+                designation = designation,
+                discipline = discipline,
+                knowledge_field = knowledge_field,
+                research_interest = research_interest,
+                status = status,
+                timestamp = timestamp,
+                other_research_element = other_research_element,
+                publications = publications,
+                conferences_meeting_attended = conferences_meeting_attended,
+                conferences_meeting_organized = conferences_meeting_organized,
+                admin_assign = admin_assign,
+                sevice_to_ins = sevice_to_ins,
+                extra_info = extra_info,
+                faculty_comments = faculty_comments
+        )
+
+
+        # # CoursesInstructed
+        # count = 1
+        # while(1):
+        #     semester = request.POST.get('Semester'+str(count))
+        #     course_name = request.POST.get('Course-Name'+str(count))
+        #     course_num = request.POST.get('Course Number'+str(count))
+        #     lecture_hrs_wk = request.POST.get('Lecture (Hours/week)'+str(count))
+        #     tutorial_hrs_wk = request.POST.get('Tutorial (Hours/week)'+str(count))
+        #     lab_hrs_wk = request.POST.get('Lab (Hours/week)'+str(count))
+        #     reg_students = request.POST.get('Number of Registered Students'+str(count))
+        #     if(semester == None):
+        #         break
+        #
+        #     course = CoursesInstructed.objects.create(
+        #                 appraisal = application,
+        #                 semester = semester,
+        #                 course_name = course_name,
+        #                 course_num = course_num,
+        #                 lecture_hrs_wk = lecture_hrs_wk,
+        #                 tutorial_hrs_wk = tutorial_hrs_wk,
+        #                 lab_hrs_wk = lab_hrs_wk,
+        #                 reg_students = reg_students,
+        #                 co_instructor = None
+        #     )
+        #
+        #     count += 1
+        #
+        #
+        #     # NewCoursesOffered
+        #     count = 1
+        #     while(1):
+        #         course_name = request.POST.get('Course-Name1.1.2'+str(count))
+        #         course_num = request.POST.get('Course Number1.1.2'+str(count))
+        #         UGorPG = request.POST.get('UG/PG1.1.2'+str(count))
+        #         tutorial_hrs_wk = request.POST.get('Tutorial (Hours/week)1.1.2'+str(count))
+        #         year = request.POST.get('YEAR1.1.2'+str(count))
+        #         semester = request.POST.get('Semester1.1.2'+str(count))
+        #         if(semester == None):
+        #             break
+        #
+        #         new_course = NewCoursesOffered.objects.create(
+        #                         appraisal = application,
+        #                         course_name = course_name,
+        #                         course_num = course_num,
+        #                         ug_or_pg = UGorPG,
+        #                         tutorial_hrs_wk = tutorial_hrs_wk,
+        #                         year = year,
+        #                         semester = semester
+        #         )
+        #
+        #         count += 1
+        #
+        #
+        #     # NewCourseMaterial
+        #     count = 1
+        #     while(1):
+        #         course_name = request.POST.get('Course-Name' + '1.1.3' + str(count))
+        #         course_num = request.POST.get('Course Number' + '1.1.3' + str(count))
+        #         ug_or_pg = request.POST.get('UG/PG' + '1.1.3' + str(count))
+        #         activity_type = request.POST.get('Type of Activity' + '1.1.3' + str(count))
+        #         availiability = request.POST.get('Web/Public' + '1.1.3' + str(count))
+        #         if(course_num == None):
+        #             break
+        #
+        #         new_courses_material = NewCourseMaterial.objects.create(
+        #                                 appraisal = application,
+        #                                 course_name = course_name,
+        #                                 course_num = course_num,
+        #                                 ug_or_pg = ug_or_pg,
+        #                                 activity_type = activity_type,
+        #                                 availiability = availiability
+        #         )
+        #
+        #         count += 1
+        #
+        #
+        #     # ThesisResearchSupervision
+        #     count = 1
+        #     while(1):
+        #         stud_name = request.POST.get('Name of Student (MTech/PhD)' + '2.1' + str(count))
+        #         thesis_title = request.POST.get('Title Of Thesis / Thesis Topic' + '2.1' + str(count))
+        #         year = request.POST.get('Year' + '2.1' + str(count))
+        #         semester = request.POST.get('Semester' + '2.1' + str(count))
+        #         status = request.POST.get('Status(Completed / Submitted / In progress)' + '2.1' + str(count))
+        #         co_supervisors = request.POST.get('Co-Supervisors' + '2.1' + str(count))
+        #         if(semester == None):
+        #             break
+        #
+        #         new_thesis_research = ThesisResearchSupervision.objects.create(
+        #                                 appraisal = application,
+        #                                 stud_name = stud_name,
+        #                                 thesis_title = thesis_title,
+        #                                 year = year,
+        #                                 semester = semester,
+        #                                 status = status,
+        #                                 co_supervisors = co_supervisors
+        #         )
+        #
+        #         count += 1
+        #
+        #
+        #     # SponsoredProjects
+        #     count = 1
+        #     while(1):
+        #         project_title = request.POST.get('Title Of Project' + '2.2' + str(count))
+        #         sponsoring_agency = request.POST.get('Sponsoring Agency / Organization' + '2.2' + str(count))
+        #         funding = request.POST.get('Project Funding (Rs.)' + '2.2' + str(count))
+        #         duration = request.POST.get('Project Duration' + '2.2' + str(count))
+        #         co_investigators = request.POST.get('Co-investigators(if-any)' + '2.2' + str(count))
+        #         status = request.POST.get('Status(Completed / Submitted / In progress)' + '2.2' + str(count))
+        #         remarks = request.POST.get('Remarks' + '2.2' + str(count))
+        #         if(funding == None):
+        #             break
+        #
+        #         new_sponsored_projects = SponsoredProjects.objects.create(
+        #                                     appraisal = application,
+        #                                     project_title = project_title,
+        #                                     sponsoring_agency = sponsoring_agency,
+        #                                     funding = funding,
+        #                                     duration = duration,
+        #                                     co_investigators = co_investigators,
+        #                                     status = status,
+        #                                     remarks = remarks
+        #         )
+        #
+        #         count += 1
+
+        user_info = ExtraInfo.objects.filter(user = applicant)
+        user_info = user_info[0]
+
+        designation = None
+        if(user_info.department.name == 'CSE'):
+            designation = Designation.objects.filter(name = 'CSE HOD')
+        elif(user_info.department.name == 'ECE'):
+            designation = Designation.objects.filter(name = 'HOD (ECE)')
+        elif(user_info.department.name == 'ME'):
+            designation = Designation.objects.filter(name = 'HOD (ME)')
+        elif(user_info.department.name == 'Design'):
+            designation = Designation.objects.filter(name = 'HOD (Design)')
+        else:
+            designation = Designation.objects.filter(name = 'HOD (NS)')
+
+        holds_designation = HoldsDesignation.objects.filter(designation = designation[0])
+        hod = holds_designation[0].user
+
+        designation = Designation.objects.filter(name = 'Director')
+        holds_designation = HoldsDesignation.objects.filter(designation = designation[0])
+        director = holds_designation[0].user
+
+        appraisal_request = AppraisalRequest.objects.create(
+                appraisal = application,
+                hod = hod,
+                director = director
+        )
+
+        messages.success(request, 'Appraisal Request sent successfully!')
+
+
+    if 'hod_appraisal_review' in request.POST:
+        app_id = int(request.POST.get('app_id'))
+        review_comment = request.POST.get('remarks_hod')
+        result = request.POST.get('result')
+        application = Appraisal.objects.get(id=app_id)
+        request_object = AppraisalRequest.objects.filter(appraisal = application)
+        appraisal_track = request_object[0]
+        appraisal_track.remark_hod = review_comment
+        appraisal_track.status_hod = result
+        appraisal_track.save()
+        messages.success(request, 'Review submitted successfully!')
+
+    if 'director_appraisal_review' in request.POST:
+        app_id = int(request.POST.get('app_id'))
+        review_comment = request.POST.get('remarks_director')
+        result = request.POST.get('result')
+        application = Appraisal.objects.get(id=app_id)
+        application.status = result
+        request_object = AppraisalRequest.objects.filter(appraisal = application)
+        appraisal_track = request_object[0]
+        appraisal_track.remark_director = review_comment
+        appraisal_track.status_director = result
+        appraisal_track.save()
+        application.save()
+
 
 
 def generate_cpda_eligible_lists(request):
@@ -536,33 +800,151 @@ def generate_ltc_eligible_lists(request):
     return response
 
 
+def generate_appraisal_lists(request):
+
+    response = {}
+
+    user_courses = []
+    course_objects = Curriculum_Instructor.objects.all()
+    for course in course_objects:
+        if(course.instructor_id.user == request.user):
+            user_courses.append(course)
+
+    consultancy_projects = emp_consultancy_projects.objects.filter(user = request.user)
+    research_projects = emp_research_projects.objects.filter(user = request.user)
+    thesis = emp_mtechphd_thesis.objects.filter(user = request.user)
+    patents = emp_patents.objects.filter(user = request.user)
+    tech_transfer = emp_techtransfer.objects.filter(user = request.user)
+    publications = emp_published_books.objects.filter(user = request.user)
+    conferences = emp_confrence_organised.objects.filter(user = request.user)
+    achievments = emp_achievement.objects.filter(user = request.user)
+    events = emp_event_organized.objects.filter(user = request.user)
+
+    active_apps = Appraisal.objects.filter(applicant=request.user).exclude(status='rejected').exclude(status='accepted').order_by('-timestamp')
+    archive_apps = Appraisal.objects.filter(applicant=request.user).exclude(status='requested').order_by('-timestamp')
+
+    response.update({
+            'user_courses': user_courses,
+            'consultancy_projects': consultancy_projects,
+            'research_projects': research_projects,
+            'thesis': thesis,
+            'patents': patents,
+            'tech_transfer': tech_transfer,
+            'publications': publications,
+            'conferences': conferences,
+            'achievments': achievments,
+            'events': events,
+            'appraisal_active_apps':active_apps,
+            'appraisal_archive_apps':archive_apps
+    })
+
+    return response
+
+
+def generate_appraisal_lists_hod(request):
+
+    response = {}
+    review_apps_hod = AppraisalRequest.objects.filter(hod = request.user).exclude(status_hod = 'rejected').exclude(status_hod = 'accepted')
+    archived_apps_hod = AppraisalRequest.objects.filter(hod = request.user).exclude(status_hod = 'pending')
+    course_objects_all = Curriculum_Instructor.objects.all()
+    consultancy_projects_all = emp_consultancy_projects.objects.all()
+    research_projects_all = emp_research_projects.objects.all()
+    thesis_all = emp_mtechphd_thesis.objects.all()
+    events_all = emp_event_organized.objects.all()
+    patents_all = emp_patents.objects.all()
+    tech_transfer_all = emp_techtransfer.objects.all()
+    publications_all = emp_published_books.objects.all()
+    conferences_all = emp_confrence_organised.objects.all()
+    achievments_all = emp_achievement.objects.all()
+
+    response.update({
+        'archived_apps_hod': archived_apps_hod,
+        'course_objects_all': course_objects_all,
+        'review_apps_hod': review_apps_hod,
+        'thesis_all': thesis_all,
+        'events_all': events_all,
+        'patents_all': patents_all,
+        'tech_transfer_all': tech_transfer_all,
+        'publications_all': publications_all,
+        'conferences_all': conferences_all,
+        'achievments_all': achievments_all,
+        'consultancy_projects_all': consultancy_projects_all,
+        'research_projects_all': research_projects_all
+    })
+    return response
+
+
+def generate_appraisal_lists_director(request):
+    response = {}
+    review_apps_director = AppraisalRequest.objects.filter(director = request.user).exclude(status_hod = 'rejected').exclude(status_hod = 'pending').exclude(status_director = 'rejected').exclude(status_director = 'accepted')
+    archived_apps_director = AppraisalRequest.objects.filter(director = request.user).exclude(status_director = 'pending')
+    course_objects_all = Curriculum_Instructor.objects.all()
+    consultancy_projects_all = emp_consultancy_projects.objects.all()
+    research_projects_all = emp_research_projects.objects.all()
+    thesis_all = emp_mtechphd_thesis.objects.all()
+    events_all = emp_event_organized.objects.all()
+    patents_all = emp_patents.objects.all()
+    tech_transfer_all = emp_techtransfer.objects.all()
+    publications_all = emp_published_books.objects.all()
+    conferences_all = emp_confrence_organised.objects.all()
+    achievments_all = emp_achievement.objects.all()
+
+    response.update({
+        'course_objects_all': course_objects_all,
+        'review_apps_director': review_apps_director,
+        'archived_apps_director': archived_apps_director,
+        'thesis_all': thesis_all,
+        'events_all': events_all,
+        'patents_all': patents_all,
+        'tech_transfer_all': tech_transfer_all,
+        'publications_all': publications_all,
+        'conferences_all': conferences_all,
+        'achievments_all': achievments_all,
+        'consultancy_projects_all': consultancy_projects_all,
+        'research_projects_all': research_projects_all
+    })
+
+    return response
+
+
+
 @login_required(login_url='/accounts/login')
 def establishment(request):
     response = {}
     # Check if establishment variables exist, if not create some fields or ask for them
-    response.update(initial_checks(request))    
-
-    if is_admin(request) and request.method == "POST": 
+    response.update(initial_checks(request))
+    # print(request.user.username)
+    if is_admin(request) and request.method == "POST":
         if is_cpda(request.POST):
             handle_cpda_admin(request)
         if is_ltc(request.POST):
             handle_ltc_admin(request)
 
+
     if is_eligible(request) and request.method == "POST":
         if is_cpda(request.POST):
             handle_cpda_eligible(request)
-        if is_ltc(request.POST):
+        elif is_ltc(request.POST):
             handle_ltc_eligible(request)
-
-    ############################################################################
-
+        elif(is_appraisal(request.POST)):
+            handle_appraisal(request)
+    #
+    # ############################################################################
+    #
     if is_admin(request):
         response.update(generate_cpda_admin_lists(request))
         response.update(generate_ltc_admin_lists(request))
         return render(request, 'establishment/establishment.html', response)
-    
+
     if is_eligible(request):
         response.update(generate_cpda_eligible_lists(request))
         response.update(generate_ltc_eligible_lists(request))
-    
+        response.update(generate_appraisal_lists(request))
+
+    if is_hod(request):
+        response.update(generate_appraisal_lists_hod(request))
+
+    if is_director(request):
+        response.update(generate_appraisal_lists_director(request))
+
     return render(request, 'establishment/establishment.html', response)
