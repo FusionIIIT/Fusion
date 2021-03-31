@@ -73,9 +73,9 @@ def handle_cpda_admin(request):
             application.tracking_info.reviewer_design2 = reviewer_design2
             application.tracking_info.reviewer_design3 = reviewer_design3
             application.tracking_info.remarks = remarks
-            application.tracking_info.remarks_rev1=""
-            application.tracking_info.remarks_rev2=""
-            application.tracking_info.remarks_rev3=""
+            application.tracking_info.remarks_rev1="Not reviewed yet"
+            application.tracking_info.remarks_rev2="Not reviewed yet"
+            application.tracking_info.remarks_rev3="Not reviewed yet"
             application.tracking_info.review_status = 'under_review'
             application.tracking_info.save()
             
@@ -404,6 +404,22 @@ def handle_cpda_eligible(request):
         if(application.tracking_info.current_reviewer_id==3):
             application.tracking_info.review_status = 'reviewed'
         application.tracking_info.current_reviewer_id +=1
+        application.tracking_info.save()
+        # add notif here
+        messages.success(request, 'Review submitted successfully!')
+    
+    elif 'cpda_reject' in request.POST:
+        app_id = request.POST.get('app_id')
+        # verify that app_id is not changed, ie untampered
+        review_comment = request.POST.get('remarks')
+        application = Cpda_application.objects.get(id=app_id)
+        if(application.tracking_info.current_reviewer_id==1):
+            application.tracking_info.remarks_rev1 = review_comment +"(Rejected)"
+        elif(application.tracking_info.current_reviewer_id==2):
+            application.tracking_info.remarks_rev2 = review_comment +"(Rejected)"
+        else:
+            application.tracking_info.remarks_rev3 = review_comment +"(Rejected)"
+        application.tracking_info.review_status = 'reviewed'
         application.tracking_info.save()
         # add notif here
         messages.success(request, 'Review submitted successfully!')
