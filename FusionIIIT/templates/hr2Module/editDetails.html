@@ -31,28 +31,7 @@ Module
 
         <div class="ui divider"></div>
 
-        {% comment %}The Tab-Menu starts here!{% endcomment %}
-        <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
 
-            <a class="item" href="{% url 'globals:profile' %}">
-                View Details
-                <i class="right floated chevron right icon"></i>
-            </a>
-
-        </div>
-
-
-        <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
-
-            <a class="item" href="{% url 'hr2:serviceBook' %}">
-                Service Books
-                <i class="right floated chevron right icon"></i>
-            </a>
-
-        </div>
-
-
-        {% comment %}The Tab-Menu ends here!{% endcomment %}
 
     </div>
     {% comment %}
@@ -70,7 +49,7 @@ Module
     <div class="eight wide column">
         <div class="ui top attached tabular large menu">
             <a class="active item" data-tab="first">Edit Details</a>
-            <a class="item" data-tab="second">Status</a>
+
         </div>
         <div class="ui bottom attached active tab segment" data-tab="first">
             <div id="textSegmentDiv">
@@ -84,19 +63,28 @@ Module
 
                 <div id="textLoader" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
                     {% block alerts %}
-                    {% include 'hr2Module/editDetails.html' %}
+                    {% include 'hr2Module/edit.html' %}
                     {% endblock %}
                 </div>
             </div>
 
         </div>
-        <div class="ui bottom attached tab segment" data-tab="second">
-            Waiting For Verification From HR Admin.
-        </div>
+
     </div>
 
     {% comment %}The central-rail segment ends here!{% endcomment %}
 
+    <!-- {% comment %}The right-rail segment starts here!{% endcomment %}
+        <div class="three wide column">
+            <div class="row">
+                {% comment %}The Modules:{% endcomment %}
+                {% block modules %}
+                    {% include 'dashboard/modules.html' %}
+                {% endblock %}
+            </div>
+
+        </div>
+        {% comment %}The right-rail segment ends here!{% endcomment %} -->
 
 
 
