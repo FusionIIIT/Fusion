@@ -38,7 +38,7 @@
                     Expenditure Details
                     <i class="right floated chevron right icon"></i>
                 </a>
-                 <a class="item" data-tab="check_dues">
+                 <a class="item" data-tab="three">
                     View Stats
                     <i class="right floated chevron right icon"></i>
                 </a>
@@ -70,16 +70,16 @@
                     </a>
                 </div>
                 <div class="ui active tab segment" data-tab="add_income" >
-                    {%  include 'academic_procedures/registeredCourse.html' %}
+                    {%  include 'incomeExpenditure/addIncome.html' %}
                 </div>
                 <div class="ui tab segment" data-tab="view_income_history">
-                    {%  include 'academic_procedures/register.html' %}
+                    {%  include 'incomeExpenditure/viewIncomeHistory.html' %}
                 </div>
                 <div class="ui tab segment" data-tab="add_income_source">
-                    {%  include 'academic_procedures/finalregister.html' %}
+                    {%  include 'incomeExpenditure/addIncomeSource.html' %}
                 </div>
             </div>
-            <div class="ui tab segment" data-tab="two" style="width: 100%"  >
+            <div class="ui tab segment" data-tab="two"  >
                 <div class="ui pointing secondary menu">
                     <a class=" active item" data-tab="add_expenditure" style="width: 33%;">
                         <p style="margin-left: 30%;">Add Expenditure</p>
@@ -92,34 +92,54 @@
                     </a>
                 </div>
                 <div class="ui active tab segment" data-tab="add_expenditure" >
-                    {%  include 'academic_procedures/registeredCourse.html' %}
+                    {%  include 'incomeExpenditure/addExpenditure.html' %}
                 </div>
                 <div class="ui tab segment" data-tab="view_expenditure_history">
-                    {%  include 'academic_procedures/register.html' %}
+                    
+                    {%  include 'incomeExpenditure/viewExpenditureHistory.html' %}
+                    
                 </div>
                 <div class="ui tab segment" data-tab="add_expenditure_type">
-                    {%  include 'academic_procedures/finalregister.html' %}
+                    {%  include 'incomeExpenditure/addExpenditureType.html' %}
                 </div>
             </div>
-            <div class="ui tab segment" data-tab="three" style="width: 100%">
+
+            <div class="ui tab segment" data-tab="three" style="width: 100%"  >
                 <div class="ui pointing secondary menu">
-                    <a class="active item" data-tab="add_courses" style="width: 37%;">
-                        <p style="margin-left: 30%;">Add Course</p>
+                    <a class=" active item" data-tab="view_stats" style="width: 33%;">
+                        <p style="margin-left: 30%;">View Stats</p>
                     </a>
-                    <a class="item" data-tab="drop_courses" style="width: 38%;">
-                        <p style="margin-left: 35%;">Drop Course</p>
+                    <a class="item" data-tab="balance_sheet" style="width: 33%;">
+                        <p style="margin-left: 25%;">Balance Sheet</p>
                     </a>
-                    <p class="item"  style="width: 25%;text-align: right; font-weight:bold;color:green">
-                        Current Credits :  {{current_credits}}
-                    </p>
+                    
                 </div>
-                <div class="ui active tab segment" data-tab="add_courses" >
-                    {%  include 'academic_procedures/addCourse.html' %}
+                <div class="ui active tab segment" data-tab="view_stats" >
+                    {%  include 'incomeExpenditure/viewStats.html' %}
                 </div>
-                <div class="ui tab segment" data-tab="drop_courses">
-                    {%  include 'academic_procedures/dropCourse.html' %}
-                </div>                
+                <div class="ui tab segment" data-tab="balance_sheet">
+                    {%  include 'incomeExpenditure/balanceSheet.html' %}
+                </div>
+                
             </div>
+            
+            <!---<div class="ui tab segment" data-tab="three" style="width: 100%">
+                <div class="ui pointing secondary menu">
+                    <a class="active item" data-tab="view_stats" style="width: 37%;">
+                        <p style="margin-left: 30%;">View Stats</p>
+                    </a>
+                    <a class="item" data-tab=balance_sheet" style="width: 38%;">
+                        <p style="margin-left: 25%;">Balance Sheet</p>
+                    </a>
+                    
+                </div>
+                <div class="ui active tab segment" data-tab="view_stats" >
+                    {%  include 'incomeExpenditure/viewStats.html' %}
+                </div>
+                <div class="ui tab segment" data-tab="balance_sheet">
+                    {%  include 'incomeExpenditure/balanceSheet.html' %}
+                </div>                
+            </div>  -->
             
         </div>
         {% comment %}The central-rail segment ends here!{% endcomment %}
