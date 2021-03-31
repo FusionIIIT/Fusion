@@ -127,6 +127,7 @@ INSTALLED_APPS = [
     'applications.establishment',
     'applications.estate_module',
     'applications.counselling_cell',
+    'applications.income_expenditure',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
