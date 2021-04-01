@@ -70,7 +70,6 @@ class Employee(models.Model):
     cast  = models.CharField(max_length=40, default='')
     home_state =   models.CharField(max_length=40, default='')
     home_district =  models.CharField(max_length=40, default='')
-    height  =  models.IntegerField(default=0)
     date_of_joining =  models.DateField(null=True,blank=True)
     designation =  models.CharField(max_length=40, default='')
     blood_group =   models.CharField(max_length=50, choices=Constants.BLOOD_GROUP)
