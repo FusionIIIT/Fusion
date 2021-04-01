@@ -1,7 +1,7 @@
 from django.db import models
 
 # Create your models here.
-from applications.globals.models import ExtraInfo
+"""from applications.globals.models import ExtraInfo
 
 class Constants:
     BREIF = (
@@ -48,4 +48,4 @@ class StudentRequest(models.Model):
     upload_request = models.FileField(blank=True)
 
     def __str__(self):
-        return str(self.request_maker.user.username)
+        return str(self.request_maker.user.username)"""

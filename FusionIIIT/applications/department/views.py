@@ -24,7 +24,6 @@ from jsonschema.exceptions import ValidationError
 
 def index(request):
     context = {}
-    #print(request.user)
     if(str(request.user)!="AnonymousUser"):
         return HttpResponseRedirect('/dashboard/')
     else:
@@ -147,3 +146,4 @@ def BtechFinalYear_Students_Announcements(request):
     announcements_list4 = Announcements.objects.all()[:11]
     id_dict={'announcements_list':announcements_list4 }
     return render(request, 'department/browse_announcements.html',context=id_dict)
+
