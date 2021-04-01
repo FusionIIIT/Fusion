@@ -25,7 +25,6 @@ from jsonschema.exceptions import ValidationError
 
 def index(request):
     context = {}
-    print(request.user)
     if(str(request.user)!="AnonymousUser"):
         return HttpResponseRedirect('/dashboard/')
     else:
@@ -209,16 +208,38 @@ def All_Students(request,bid):
 #     return render(request, 'department/AllStudents.html',context=id_dict)
 
 def cse_faculty(request):
-    cse_f=ExtraInfo.objects.filter(department__name='CSE').filter(user_type='faculty')
+    cse_f=ExtraInfo.objects.filter(department__name='CSE',user_type='faculty')
+
     id_dict={'fac_list':cse_f,'department':'CSE'}
     return render(request,'department/faculty.html',context=id_dict)
 
 def ece_faculty(request):
-    ece_f=ExtraInfo.objects.filter(department__name='ECE').filter(user_type='faculty')
+    ece_f=ExtraInfo.objects.filter(department__name='ECE',user_type='faculty')
     id_dict={'fac_list':ece_f,'department':'ECE'}
     return render(request,'department/faculty.html',context=id_dict)
 
 def me_faculty(request):
-    me_f=ExtraInfo.objects.filter(department__name='ME').filter(user_type='faculty')
+    me_f=ExtraInfo.objects.filter(department__name='ME',user_type='faculty')
     id_dict={'fac_list':me_f,'department':'ME'}
     return render(request,'department/faculty.html',context=id_dict)
+
+def BtechFirstYear_Students_Announcements(request):
+   announcements_list1 = Announcements.objects.all()[:11]
+   id_dict={'announcements_list':announcements_list1 }
+   return render(request, 'department/browse_announcements.html',context=id_dict)
+
+def BtechSecondYear_Students_Announcements(request):
+    announcements_list2 = Announcements.objects.all()[:11]
+    id_dict={'announcements_list':announcements_list2 }
+    return render(request, 'department/browse_announcements.html',context=id_dict)
+
+def BtechThirdYear_Students_Announcements(request):
+    announcements_list3 = Announcements.objects.all()[:11]
+    id_dict={'announcements_list':announcements_list3 }
+    return render(request, 'department/browse_announcements.html',context=id_dict)
+
+def BtechFinalYear_Students_Announcements(request):
+    announcements_list4 = Announcements.objects.all()[:11]
+    id_dict={'announcements_list':announcements_list4 }
+    return render(request, 'department/browse_announcements.html',context=id_dict)
+
