@@ -224,28 +224,27 @@ def me_faculty(request):
     id_dict={'fac_list':me_f,'department':'ME'}
     return render(request,'department/faculty.html',context=id_dict)
 
-<<<<<<< HEAD
-@login_required
-def make_announcements(request,maker_id):
-    a = get_object_or_404(User, username=request.user.username)
-    y = ExtraInfo.objects.all().select_related('user','department').get(id=id)
+# @login_required
+# def make_announcements(request,maker_id):
+#     a = get_object_or_404(User, username=request.user.username)
+#     y = ExtraInfo.objects.all().select_related('user','department').get(id=id)
 
-    if request.method == 'POST':
-        maker_id = request.POST.get('maker_id', '')
-        programme = request.POST.get('programme', '')
-        batch = request.POST.get('batch', '')
-        announcement = request.POST.get('announcement')
+#     if request.method == 'POST':
+#         maker_id = request.POST.get('maker_id', '')
+#         programme = request.POST.get('programme', '')
+#         batch = request.POST.get('batch', '')
+#         announcement = request.POST.get('announcement')
 
-    obj1, created = Announcements.objects.get_or_create(maker_id=y,
+#     obj1, created = Announcements.objects.get_or_create(maker_id=y,
         
-                                programme=programme,
-                                batch=batch,
-                                announcement=announcement)
+#                                 programme=programme,
+#                                 batch=batch,
+#                                 announcement=announcement)
                                
-    # message = "A New Announcement has been published"
-    #     complaint_system_notif(request.user, caretaker_name.user,'make_announcement_alert',obj1.id,user,message)
+#     # message = "A New Announcement has been published"
+#     #     complaint_system_notif(request.user, caretaker_name.user,'make_announcement_alert',obj1.id,user,message)
 
-    return HttpResponseRedirect('/dep/browse_announcements/')
+#     return HttpResponseRedirect('/dep/browse_announcements/')
 
 def browse_announcements(request):
     """
@@ -286,7 +285,7 @@ def browse_announcements(request):
 #     announcements_list4 = Announcements.objects.all()[:11]
 #     id_dict={'announcements_list':announcements_list4 }
 #     return render(request, 'department/browse_announcements.html',context=id_dict)
-=======
+
 def BtechFirstYear_Students_Announcements(request):
    announcements_list1 = Announcements.objects.all()[:11]
    id_dict={'announcements_list':announcements_list1 }
@@ -307,4 +306,3 @@ def BtechFinalYear_Students_Announcements(request):
     id_dict={'announcements_list':announcements_list4 }
     return render(request, 'department/browse_announcements.html',context=id_dict)
 
->>>>>>> cc0055ececdc80c9a80d386122b72bb5b2f4f84a
