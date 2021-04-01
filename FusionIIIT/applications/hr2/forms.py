@@ -14,7 +14,7 @@ class EditDetailsForm(forms.ModelForm):
         }
     
     def __init__(self, *args, **kwargs):
-        super(editDetailsForm, self).__init__(*args, **kwargs)
+        super(EditDetailsForm, self).__init__(*args, **kwargs)
      
 
 
@@ -26,7 +26,7 @@ class EditConfidentialDetailsForm(forms.ModelForm):
                   'maritial_status', 'bank_account_no', 'salary']
 
     def __init__(self, *args, **kwargs):
-       super(editConfidentialDetailsForm, self).__init__(*args, **kwargs)
+       super(EditConfidentialDetailsForm, self).__init__(*args, **kwargs)
 
                 
 
