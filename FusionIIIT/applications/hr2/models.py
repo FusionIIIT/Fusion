@@ -88,9 +88,6 @@ class EmpConfidentialDetails(models.Model):
     """
     extra_info = models.OneToOneField(ExtraInfo, on_delete=models.CASCADE)
     aadhar_no = models.IntegerField(default=0)
-    medical_certificate =  models.FileField(blank=True,null=True)
-    age_certificate =  models.FileField(blank=True,null=True)
-    cast_certificate =  models.FileField(blank=True,null=True)
     maritial_status = models.CharField(
         max_length=50, null=False, choices=Constants.MARITIAL_STATUS)
     bank_account_no = models.IntegerField(default=0)
@@ -110,21 +107,6 @@ class EmpDependents(models.Model):
 
     def __str__(self):
         return self.extra_info.user.first_name
-
-# table for  details about employee training
-class EmpTraining(models.Model):
-    """table for  details about employee training"""
-    extra_info = models.OneToOneField(ExtraInfo, on_delete=models.CASCADE)
-    training_type =  models.CharField(max_length=40, default='')
-    name =  models.CharField(max_length=40, default='')
-    description =  models.CharField(max_length=100, default='')
-    institute_name =  models.CharField(max_length=100, default='')
-    from_date =  models.DateField(max_length=6, null=True)
-    to_date =  models.DateField(max_length=6, null=True)
-
-    def __str__(self):
-        return self.extra_info.user.first_name
-
 
 
 

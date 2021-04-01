@@ -36,16 +36,12 @@ def edit_employee_details(request,id):
                         conf_form.save()
                         messages.success(request, "Employee details edited successfully")
                 else:
-                        print(form['extra_info'].value())
-                        print(form['father_name'].value())
-                        
-                        print("___________ ",form.errors)
-                        print("+=++++",conf_form.errors)
+                        pass
         
 
         form = EditDetailsForm(initial={'extra_info': employee.id})
         conf_form = EditConfidentialDetailsForm(initial={'extra_info': employee})
-        context = {'form': form,'confForm':conf_form
+        context = {'form': form,'confForm':conf_form,'employee':employee
                }
 
         return render(request,template, context)
