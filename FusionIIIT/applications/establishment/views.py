@@ -315,6 +315,34 @@ def generate_ltc_admin_lists(request):
         else:
             pending_apps.append(app)
 
+    availed = (Ltc_availed.objects.filter(ltc__status='requested'))
+    to_avail = (Ltc_to_avail.objects.filter(ltc__status='requested'))
+    depend = (Dependent.objects.filter(ltc__status='requested'))
+    availed_pending = []
+    to_avail_pending = []
+    depend_pending = []
+    availed_under_review = []
+    to_avail_under_review = []
+    depend_under_review = []
+
+    for app in availed:
+        if app.ltc.tracking_info.review_status == 'under_review':
+            availed_under_review.append(app)
+        else:
+            availed_pending.append(app)
+
+    for app in to_avail:
+        if app.ltc.tracking_info.review_status == 'under_review':
+            to_avail_under_review.append(app)
+        else:
+            to_avail_pending.append(app)
+
+    for app in depend:
+        if app.ltc.tracking_info.review_status == 'under_review':
+            depend_under_review.append(app)
+        else:
+            depend_pending.append(app)
+
     # combine assign_form object into unreviewed_app object respectively
     for app in unreviewed_apps:
         temp = Assign_Form(initial={'status': 'requested', 'app_id': app.id})
@@ -333,6 +361,10 @@ def generate_ltc_admin_lists(request):
                     .select_related('applicant')
                     .exclude(status='requested')
                     .order_by('-request_timestamp'))
+
+    availed_archive = (Ltc_availed.objects.exclude(ltc__status='requested'))
+    to_avail_archive = (Ltc_to_avail.objects.exclude(ltc__status='requested'))
+    depend_archive = (Dependent.objects.exclude(ltc__status='requested'))
 
     current_eligible_users = Ltc_eligible_user.objects.select_related('user').order_by('user')
     for user in current_eligible_users:
@@ -357,7 +389,16 @@ def generate_ltc_admin_lists(request):
         'ltc_new_eligible_user_form': new_ltc_eligible_user,
         'ltc_pending_apps': pending_apps,
         'ltc_under_review_apps': under_review_apps,
-        'ltc_archived_apps': archived_apps
+        'ltc_archived_apps': archived_apps,
+        'ltc_availed_pending': availed_pending,
+        'ltc_to_avail_pending': to_avail_pending,
+        'dependent_pending': depend_pending,
+        'ltc_availed_under_review': availed_under_review,
+        'ltc_to_avail_under_review': to_avail_under_review,
+        'dependent_under_review': depend_under_review,
+        'ltc_availed_archive': availed_archive,
+        'ltc_to_avail_archive': to_avail_archive,
+        'dependent_archive': depend_archive
     }
     return response
 
@@ -471,9 +512,7 @@ def handle_ltc_eligible(request):
         phone_number = request.POST.get('phone_number')
         travel_mode = request.POST.get('travel_mode')
 
-        ltc_availed = request.POST.get('ltc_availed')
-        ltc_to_avail = request.POST.get('ltc_to_avail')
-        dependents = request.POST.get('dependents')
+        
         requested_advance = request.POST.get('requested_advance')
 
         status = 'requested'
@@ -493,13 +532,57 @@ def handle_ltc_eligible(request):
             address_during_leave = address_during_leave,
             phone_number = phone_number,
             travel_mode = travel_mode,
-            ltc_availed = ltc_availed,
-            ltc_to_avail = ltc_to_avail,
-            dependents = dependents,
             requested_advance = requested_advance,
             request_timestamp=timestamp,
             status=status
         )
+        # ltc_availed
+        count = 1
+        while(1):
+                  name = request.POST.get('Name1'+str(count))
+                  age = request.POST.get('Age1'+str(count))
+                  if(name == None):
+                      break
+                  ltc_availed = Ltc_availed.objects.create(
+                                  ltc = application,
+                                  name = name,
+                                  age = age
+                  )
+        
+                  count += 1
+        # ltc_to_avail
+        count = 1
+        while(1):
+                  name = request.POST.get('Name2'+str(count))
+                  age = request.POST.get('Age2'+str(count))
+                  if(name == None):
+                      break
+                  ltc_to_avail = Ltc_to_avail.objects.create(
+                                  ltc = application,
+                                  name = name,
+                                  age = age
+                  )
+        
+                  count += 1
+
+        # Dependents
+        count = 1
+        while(1):
+                  name = request.POST.get('Name3'+str(count))
+                  age = request.POST.get('Age3'+str(count))
+                  depend = request.POST.get('Why fully dependent'+str(count))
+                  if(name == None):
+                      break
+                  dependent = Dependent.objects.create(
+                                  ltc = application,
+                                  name = name,
+                                  age = age,
+                                  depend = depend
+                  )
+        
+                  count += 1
+
+
         # next 3 lines are working magically, DON'T TOUCH THEM
         track = Ltc_tracking.objects.create(
             application = application,
@@ -845,6 +928,13 @@ def generate_ltc_eligible_lists(request):
                         .filter(applicant=request.user)
                         .exclude(status='requested')
                         .order_by('-request_timestamp'))
+
+        availed_active = (Ltc_availed.objects.filter(ltc__applicant=request.user).filter(ltc__status='requested'))
+        to_avail_active = (Ltc_to_avail.objects.filter(ltc__applicant=request.user).filter(ltc__status='requested'))
+        depend_active = (Dependent.objects.filter(ltc__applicant=request.user).filter(ltc__status='requested'))
+        availed_archived = (Ltc_availed.objects.filter(ltc__applicant=request.user).exclude(ltc__status='requested'))
+        to_avail_archived = (Ltc_to_avail.objects.filter(ltc__applicant=request.user).exclude(ltc__status='requested'))
+        depend_archived = (Dependent.objects.filter(ltc__applicant=request.user).exclude(ltc__status='requested'))
         form = Ltc_Form()
 
     to_review_apps = (Ltc_application.objects
@@ -852,18 +942,31 @@ def generate_ltc_eligible_lists(request):
                     .filter(status='requested')
                     .filter(tracking_info__review_status='under_review')
                     .order_by('-request_timestamp'))
+
+    availed_review = (Ltc_availed.objects.filter(ltc__tracking_info__reviewer_id=request.user).filter(ltc__status='requested').filter(ltc__tracking_info__review_status='under_review'))
+    to_avail_review = (Ltc_to_avail.objects.filter(ltc__tracking_info__reviewer_id=request.user).filter(ltc__status='requested').filter(ltc__tracking_info__review_status='under_review'))
+    depend_review = (Dependent.objects.filter(ltc__tracking_info__reviewer_id=request.user).filter(ltc__status='requested').filter(ltc__tracking_info__review_status='under_review'))
     for app in to_review_apps:
         app.reviewform = Review_Form(initial={'app_id': app.id})
 
     response = {
         'ltc_info': ltc_info,
-        'ltc_to_review_apps': to_review_apps
+        'ltc_to_review_apps': to_review_apps,
+        'ltc_availed_review': availed_review,
+        'ltc_to_avail_review': to_avail_review,
+        'dependent_review': depend_review
     }
     if ltc_info['eligible']:
         response.update({
             'ltc_form': form,
             'ltc_active_apps': active_apps,
-            'ltc_archive_apps': archive_apps
+            'ltc_archive_apps': archive_apps,
+            'ltc_availed_active': availed_active,
+            'ltc_to_avail_active': to_avail_active,
+            'dependent_active': depend_active,
+            'ltc_availed_archived': availed_archived,
+            'ltc_to_avail_archived': to_avail_archived,
+            'dependent_archived': depend_archived
         })
     return response
 
