@@ -95,7 +95,8 @@ def view_employee_details(request,id):
         lien_service_book = ForeignService.objects.filter(extra_info = extra_info).filter(service_type= "LIEN").order_by('-start_date')
         deputation_service_book = ForeignService.objects.filter(extra_info = extra_info).filter(service_type= "DEPUTATION").order_by('-start_date')
         other_service_book = ForeignService.objects.filter(extra_info = extra_info).filter(service_type= "OTHER").order_by('-start_date')
+        appraisal_form = EmpAppraisalForm.objects.filter(extra_info = extra_info).order_by('-year')
         template = 'hr2Module/viewdetails.html'
-        context = {'lienServiceBooks':lien_service_book,'deputationServiceBooks':deputation_service_book,'otherServiceBooks':other_service_book,'user':extra_info.user,'extrainfo':extra_info}
+        context = {'lienServiceBooks':lien_service_book,'deputationServiceBooks':deputation_service_book,'otherServiceBooks':other_service_book,'user':extra_info.user,'extrainfo':extra_info,'appraisalForm':appraisal_form}
         return render(request,template,context)
 
