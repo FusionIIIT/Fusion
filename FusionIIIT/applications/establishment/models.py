@@ -77,9 +77,17 @@ class Cpda_application(models.Model):
 
 class Cpda_tracking(models.Model):
     application = models.OneToOneField(Cpda_application, primary_key=True, related_name='tracking_info',on_delete=models.CASCADE)
-    reviewer_id = models.ForeignKey(User, null = True, blank=True, on_delete=models.CASCADE)
-    reviewer_design = models.ForeignKey(Designation, null=True, blank=True, on_delete=models.CASCADE)
+    reviewer_id = models.ForeignKey(User,related_name='reviewer1', null = True, blank=True, on_delete=models.CASCADE)
+    reviewer_id2 = models.ForeignKey(User,related_name='reviewer2', null = True, blank=True, on_delete=models.CASCADE)
+    reviewer_id3 = models.ForeignKey(User,related_name='reviewer3', null = True, blank=True, on_delete=models.CASCADE)
+    current_reviewer_id= models.IntegerField(blank=True,default=1)
+    reviewer_design = models.ForeignKey(Designation,related_name='desig1', null=True, blank=True, on_delete=models.CASCADE)
+    reviewer_design2 = models.ForeignKey(Designation,related_name='desig2', null=True, blank=True, on_delete=models.CASCADE)
+    reviewer_design3 = models.ForeignKey(Designation,related_name='desig3', null=True, blank=True, on_delete=models.CASCADE)
     remarks = models.CharField(max_length=250, null=True, blank=True)
+    remarks_rev1 = models.CharField(max_length=250, null=True, blank=True)
+    remarks_rev2 = models.CharField(max_length=250, null=True, blank=True)
+    remarks_rev3 = models.CharField(max_length=250, null=True, blank=True)
     review_status = models.CharField(max_length=20, null=True, choices=Constants.REVIEW_STATUS)
 
     def __str__(self):
