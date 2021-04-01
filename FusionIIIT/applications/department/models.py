@@ -2,7 +2,7 @@ from datetime import timezone
 from django.db import models
 
 # Create your models here.
-from applications.globals.models import ExtraInfo
+"""from applications.globals.models import ExtraInfo
 
 class Constants:
     BREIF = (
@@ -69,3 +69,4 @@ class Announcements(models.Model):
     def __str__(self):
          return str(self.maker_id.user.username)
 
+        return str(self.request_maker.user.username)"""
