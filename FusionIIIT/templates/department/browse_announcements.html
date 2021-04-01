@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block title %}
-    Students_Announcement
+    Browse Announcements
 {% endblock %}
 
 {% block body %}
@@ -10,57 +10,86 @@
         {% include 'dashboard/navbar.html' %}
     {% endblock %} 
 	
-{% comment %} {% block Announcement_ %} {% endcomment %}
-
-
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
+
         <a class="active item" data-tab="complaint">
-            B.Tech {{ batch }} Year Students Announcements
+            Club Details
         </a>
+        
+        <a class="item" data-tab="complaint">
+            Club Sessions
+        </a>
+
+   <a class="item" data-tab="complaint">
+            Club Events
+        </a>
+
+       
     </div>
-
-    <div class="ui active tab" data-tab="complaint">
-        {% comment %} <div class=""> 
-        Date = date of published announcement
-        Programme = Announcement made for the particular Programme (b.tech/mtech/phd)
-        Batch = batch of the Programme
-        Message = announcements made
-        {% endcomment %}
-           
-		   {% if announcements_list %}
-          <table class="ui very basic collapsing celled sortable table"
-       style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
-            <thead>
-              <th>Date</th>
-              <th>Programme</th> 
-			   <th>Batch</th>
-			   <th>Message</th>
-              
-            </thead>
-
-            {% for announcement in announcements_list %}
-              <tr>
-                <td>{{ announcement.date }}</td>
-                <td>{{ announcement.programme }}</td>
-				<td>{{ announcement.batch }}</td>
-                <td>{{ announcement.message }}</td>
-	
-              </tr>
+    function display_club_session() {
+            $('#tbody').empty();
+             var data1 = document.getElementById('club_session_').value;
+            {% for i in Club_session %}
+            console.log()
+            var x =  "{{ i.club.club_name }}";
+            if(data1==x )
+            {
+                $('#tbody').append('<tr><td onclick="view_session_(\'' + {{i}} + '\')">{{i.venue }}</td><td>{{ i.date }}</td><td>{{ i.start_time }}-{{ i.end_time }}</td><td>{{ i.details }}</td></tr>')
+            }
             {% endfor %}
-        </table>
+            return data1;
 
-      {% else %}
-        <p>No Announcement Records. Table Not Created.</p>
-      {% endif %}
+         }
+    <div class="ui active tab" data-tab="club">
+        <!-- <div class="ui vertical segment"> -->
+        <div class="ui tab" data-tab="session">
+        <div class="ui vertical segment">
+            <form class="ui form" style="padding-left: 32px; padding-right: 32px;">
+                <div class="field">
+                    <label>Club</label>
+                    <select class="ui search fluid dropdown" name="club" id="club_session_" onchange="display_club_session()" required>
+                        <option value="">Select</option>
+                            {% for i in Club_name %}
+                                {% if i.status == "confirmed" %}
+                                <option value="{{ i.club_name }}">{{ i.club_name }} </option>
+                                {% endif %}
+                            {% endfor %}
+                    </select>
+                </div>
+            </form>
+            <br>
+            <h4 class="ui dividing header" style="margin-left: 32px; margin-right: 32px;">Club Sessions</h4>
+            <table class="ui very basic collapsing celled sortable table"
+                   style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
+                <thead>
+                <tr>
+                    <th class="three wide column">
+                        Venue
+                    </th>
 
-            
+                    <th>
+                        Date
+                    </th>
+                    <th>
+                        Time
+                    </th>
+
+                    <th>
+                        Details
+                    </th>
+
+                </tr>
+                </thead>
+
+                <tbody id="tbody">
+                </tbody>
+            </table>
+
+            <br>
             <div class="ui divider"></div>
-        {% comment %} </div> {% endcomment %}
-    </div>
-
-
-{% comment %} {% endblock %} {% endcomment %}
-
-{% include 'department/alert.html' %}
+        </div>
+        <br>
+        <div class="extra content"></div>
+     </div>
 {% endblock %}
