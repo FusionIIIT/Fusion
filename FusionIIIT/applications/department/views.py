@@ -1,3 +1,4 @@
+from applications.department.models import Announcements
 import datetime
 import json
 from operator import or_
@@ -8,13 +9,14 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
 # Create your views here.
 from django.db.models import Q
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from applications.academic_information.models import Spi, Student
 from applications.globals.models import (Designation, ExtraInfo,
                                          HoldsDesignation)
 from applications.eis.models import (faculty_about, emp_research_projects)
+from notification.views import  complaint_system_notif
 
 #from .models import ()
 from jsonschema import validate
@@ -209,7 +211,6 @@ def All_Students(request,bid):
 
 def cse_faculty(request):
     cse_f=ExtraInfo.objects.filter(department__name='CSE',user_type='faculty')
-
     id_dict={'fac_list':cse_f,'department':'CSE'}
     return render(request,'department/faculty.html',context=id_dict)
 
@@ -223,6 +224,69 @@ def me_faculty(request):
     id_dict={'fac_list':me_f,'department':'ME'}
     return render(request,'department/faculty.html',context=id_dict)
 
+<<<<<<< HEAD
+@login_required
+def make_announcements(request,maker_id):
+    a = get_object_or_404(User, username=request.user.username)
+    y = ExtraInfo.objects.all().select_related('user','department').get(id=id)
+
+    if request.method == 'POST':
+        maker_id = request.POST.get('maker_id', '')
+        programme = request.POST.get('programme', '')
+        batch = request.POST.get('batch', '')
+        announcement = request.POST.get('announcement')
+
+    obj1, created = Announcements.objects.get_or_create(maker_id=y,
+        
+                                programme=programme,
+                                batch=batch,
+                                announcement=announcement)
+                               
+    # message = "A New Announcement has been published"
+    #     complaint_system_notif(request.user, caretaker_name.user,'make_announcement_alert',obj1.id,user,message)
+
+    return HttpResponseRedirect('/dep/browse_announcements/')
+
+def browse_announcements(request):
+    """
+    function that shows detail about complaint
+    """
+    # browse_announcements = Announcements.objects.select_related('maker_id','date','announcement','batch','programme').get(id=maker_id)
+    # if(browse_announcements.maker_id is None):
+    #     maker_id = browse_announcements.maker_id  
+    # else:
+    #     maker_id = browse_announcements.maker_id.id
+    #     Announcements.objects.select_related('maker_id','date','announcement','batch','programme').get(id=maker_id)        
+    # a=User.objects.get(username=browse_announcements.maker_id.user.username)           
+    # y=ExtraInfo.objects.all().select_related('user','department').get(user=a)
+    # num=0
+    
+   
+    # return render(request, "dep/browse_announcements.html", {"browse_announcements": browse_announcements, "maker_id":maker_id,"batch":batch,"programme":programme})
+    return render(request, 'department/browse_announcements.html')
+
+
+
+# def BtechFirstYear_Students_Announcements(request):
+#    announcements_list1 = Announcements.objects.all()[:11]
+#    id_dict={'announcements_list':announcements_list1 }
+#    return render(request, 'department/browse_announcements.html',context=id_dict)
+
+# def BtechSecondYear_Students_Announcements(request):
+#     announcements_list2 = Announcements.objects.all()[:11]
+#     id_dict={'announcements_list':announcements_list2 }
+#     return render(request, 'department/browse_announcements.html',context=id_dict)
+
+# def BtechThirdYear_Students_Announcements(request):
+#     announcements_list3 = Announcements.objects.all()[:11]
+#     id_dict={'announcements_list':announcements_list3 }
+#     return render(request, 'department/browse_announcements.html',context=id_dict)
+
+# def BtechFinalYear_Students_Announcements(request):
+#     announcements_list4 = Announcements.objects.all()[:11]
+#     id_dict={'announcements_list':announcements_list4 }
+#     return render(request, 'department/browse_announcements.html',context=id_dict)
+=======
 def BtechFirstYear_Students_Announcements(request):
    announcements_list1 = Announcements.objects.all()[:11]
    id_dict={'announcements_list':announcements_list1 }
@@ -243,3 +307,4 @@ def BtechFinalYear_Students_Announcements(request):
     id_dict={'announcements_list':announcements_list4 }
     return render(request, 'department/browse_announcements.html',context=id_dict)
 
+>>>>>>> cc0055ececdc80c9a80d386122b72bb5b2f4f84a

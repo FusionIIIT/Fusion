@@ -22,9 +22,10 @@
             Students
         </a>
 
-        <a class="item" data-tab="announcements">
+        <a class="item" data-tab="announcement">
             Announcements
         </a>
+
     </div>
 {% comment %}
     <div class="ui pointing secondary menu">
@@ -135,6 +136,34 @@
         </div>
     </div>
 
+{% comment %} tabs contains Announcement_List {% endcomment %}
+    <div class="ui tab" data-tab="announcement">
+        <div class="ui vertical segment">
+            <div class="content">
+                <div class="description">
+                    <span>
+                        <a class="active item" href="/dep/browse_announcements/">
+                            <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                            <button style="border: solid; float: left; display: block;" >
+                                Browse Announcement
+                            </button>
+                        </a>
+
+                        {% if user_designation == 'faculty'%}
+                            <a class="active item"  href="/dep/make_announcements/">
+                                <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                                <button style="border: solid; float: left; display: block;">
+                                    Make Announcement
+                                </button>
+                            </a>
+                        {% endif %} 
+                    </span>
+                    <div class="ui divider"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     {% comment %} tabs content students {% endcomment %}
     <div class="ui tab" data-tab="students">
         <div class="ui vertical segment">
@@ -225,69 +254,6 @@
         </div>
     </div>
 
-    {% comment %} tabs contains Announcement_List {% endcomment %}
-    <div class="ui tab" data-tab="announcements">
-        <div class="ui vertical segment">
-            <div class="content">
-                <div class="description">
-                    <span>
-                        {% comment %}browse student announcement Data{% endcomment %}
-                        <div class="ui styled accordion">
-                            <div class="title">
-                                <i class="dropdown icon"></i>
-                                PhD Students
-                            </div>
-                        </div>
-
-                        <div class="ui styled accordion">
-                            <div class="title">
-                                <i class="dropdown icon"></i>
-                                Mtech Students
-                            </div>
-                            <div class="content">
-                                M.Tech First Year<br>
-                                M.Tech Second Year
-                            </div>
-                            
-                        </div>
-
-                        <div class="ui styled accordion">
-                            <div class="title">
-                                <i class="dropdown icon"></i>
-                               B.Tech Students
-                            </div>
-                            <div class="content">
-                                <a class="active item" href="/dep/BtechFirstYear_Students_Announcements/">
-                        <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
-                        <button style="border: solid; float: left; display: block;" >
-                            B.Tech First Year
-                        </button>
-                    </a>
-                        <a class="active item" href="/dep/BtechSecondYear_Students_Announcements/">
-                        <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
-                        <button style="border: solid; float: left; display: block;">
-                            B.Tech Second Year
-                        </button>
-                    </a>
-                        <a class="active item" href="/dep/BtechThirdYear_Students_Announcements/">
-                        <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
-                        <button style="border: solid; float: left; display: block;">
-                            B.Tech Third Year
-                        </button>
-                    </a>
-                        <a class="active item" href="/dep/BtechFinalYear_Students_Announcements/">
-                        <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
-                        <button style="border: solid; float: left; display: block;">
-                            B.Tech Final Year
-                        </button>
-                    </a><br>
-                               
-                            </div>
-                        </div>
-
-                    </span>
-                    <div class="ui divider"></div>
-                </div>
-            </div>
+    
 
 {% endblock %}
