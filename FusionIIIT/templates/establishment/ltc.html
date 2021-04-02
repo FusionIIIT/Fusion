@@ -105,16 +105,23 @@
                     {% render_field ltc_form.travel_mode %}
                 </div>
                 <br>
+                <body onload="createTable2()">
                 <div class="field">
-                    {% render_field ltc_form.ltc_availed %}
+                        <p><b>Details of family members who availed ltc in this block</b></p>
+                        <div id="Availed"></div>  <!-- the container to add the TABLE -->
+                        <p><input type="button" value="Add new family member" onclick="javascript:addRow1()"/></p>
                 </div>
                 <br>
                 <div class="field">
-                    {% render_field ltc_form.ltc_to_avail %}
+                        <p><b>Details of family members who will avail ltc</b></p>
+                        <div id="ToAvail"></div>  <!-- the container to add the TABLE -->
+                        <p><input type="button" value="Add new family member" onclick="javascript:addRow2()"/></p>
                 </div>
                 <br>
                 <div class="field">
-                    {% render_field ltc_form.dependents %}
+                        <p><b>Details of all dependents</b></p>
+                        <div id="Depend"></div>  <!-- the container to add the TABLE -->
+                        <p><input type="button" value="Add new dependent" onclick="javascript:addRow3()"/></p>
                 </div>
                 <br>
                 <div class="field">
@@ -132,6 +139,7 @@
                 <button type="submit" name="ltc_request" class="ui large primary button">
                     Submit Request
                 </button>
+                </body>
             </form>
         </div>
     </div>
@@ -158,6 +166,9 @@
                             {% if app.status == 'requested' %}
                                 {% if app.tracking_info.review_status != 'to_assign' %}
                                     <div class="meta">Review Status : {{app.tracking_info.review_status}} by {{app.tracking_info.reviewer_id}} ({{app.tracking_info.reviewer_design}})</div>
+                                {% endif %}
+                                {% if app.tracking_info.review_status == 'to_assign' %}
+                                    <div class="meta">Review Status : Reviewer is not assigned</div>
                                 {% endif %}
                             {% endif %}
                             <div class="meta">
@@ -191,9 +202,57 @@
                                 <label>address_during_leave : {{ app.address_during_leave }}</label><br>
                                 <label>phone_number : {{ app.phone_number }}</label><br>
                                 <label>travel_mode : {{ app.travel_mode }}</label><br>
-                                <label>ltc_availed : {{ app.ltc_availed }}</label><br>
-                                <label>ltc_to_avail : {{ app.ltc_to_avail }}</label><br>
-                                <label>dependents : {{ app.dependents }}</label><br>
+                                <label>Details of family members who have already availed ltc in this block
+                                <table border = '2'><th>Name</th><th>Age</th>
+                                    {% for app2 in ltc_availed_active %}
+                                    {% if app2.ltc.leave_start == app.leave_start %}
+                                    <tr>
+                                        <td> 
+                                            {{ app2.name }}
+                                        </td>
+                                        <td> 
+                                            {{ app2.age }}
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                    {% endfor %}
+                                </table>
+                                </label><br>
+                                <label>Details of family members who will avail ltc
+                                    <table border = '2'><th>Name</th><th>Age</th>
+                                        {% for app2 in ltc_to_avail_active %}
+                                        {% if app2.ltc.leave_start == app.leave_start %}
+                                        <tr>
+                                            <td> 
+                                                {{ app2.name }}
+                                            </td>
+                                            <td> 
+                                                {{ app2.age }}
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </table>
+                                </label><br>
+                                <label>Details of dependents
+                                    <table border = '2'><th>Name</th><th>Age</th><th>Why fully dependent</th>
+                                        {% for app2 in dependent_active %}
+                                        {% if app2.ltc.leave_start == app.leave_start %}
+                                        <tr>
+                                            <td> 
+                                                {{ app2.name }}
+                                            </td>
+                                            <td> 
+                                                {{ app2.age }}
+                                            </td>
+                                            <td> 
+                                                {{ app2.depend }}
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </table>
+                                </label><br>
                                 <label>requested_advance : {{ app.requested_advance }}</label><br>
                             </div>
                         </div>
@@ -259,9 +318,57 @@
                                 <label>address_during_leave : {{ app.address_during_leave }}</label><br>
                                 <label>phone_number : {{ app.phone_number }}</label><br>
                                 <label>travel_mode : {{ app.travel_mode }}</label><br>
-                                <label>ltc_availed : {{ app.ltc_availed }}</label><br>
-                                <label>ltc_to_avail : {{ app.ltc_to_avail }}</label><br>
-                                <label>dependents : {{ app.dependents }}</label><br>
+                                <label>Details of family members who have already availed ltc in this block
+                                    <table border = '2'><th>Name</th><th>Age</th>
+                                        {% for app2 in ltc_availed_archived %}
+                                        {% if app2.ltc.leave_start == app.leave_start %}
+                                        <tr>
+                                            <td> 
+                                                {{ app2.name }}
+                                            </td>
+                                            <td> 
+                                                {{ app2.age }}
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </table>
+                                    </label><br>
+                                    <label>Details of family members who will avail ltc
+                                        <table border = '2'><th>Name</th><th>Age</th>
+                                            {% for app2 in ltc_to_avail_archived %}
+                                            {% if app2.ltc.leave_start == app.leave_start %}
+                                            <tr>
+                                                <td> 
+                                                    {{ app2.name }}
+                                                </td>
+                                                <td> 
+                                                    {{ app2.age }}
+                                                </td>
+                                            </tr>
+                                            {% endif %}
+                                            {% endfor %}
+                                        </table>
+                                    </label><br>
+                                    <label>Details of dependents
+                                        <table border = '2'><th>Name</th><th>Age</th><th>Why fully dependent</th>
+                                            {% for app2 in dependent_archived %}
+                                            {% if app2.ltc.leave_start == app.leave_start %}
+                                            <tr>
+                                                <td> 
+                                                    {{ app2.name }}
+                                                </td>
+                                                <td> 
+                                                    {{ app2.age }}
+                                                </td>
+                                                <td> 
+                                                    {{ app2.depend }}
+                                                </td>
+                                            </tr>
+                                            {% endif %}
+                                            {% endfor %}
+                                        </table>
+                                    </label><br>
                                 <label>requested_advance : {{ app.requested_advance }}</label><br>
                             </div>
                         </div>
@@ -388,19 +495,59 @@
                                 </div>
                                 <div class="field">
                                     <div class="disabled field">
-                                        <label>ltc_availed : {{ app.ltc_availed }}</label>
-                                    </div>
+                                <label>Details of family members who have already availed ltc in this block
+                                    <table border = '2'><th>Name</th><th>Age</th>
+                                        {% for app2 in ltc_availed_review %}
+                                        {% if app2.ltc.leave_start == app.leave_start %}
+                                        <tr>
+                                            <td> 
+                                                {{ app2.name }}
+                                            </td>
+                                            <td> 
+                                                {{ app2.age }}
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </table>
+                                    </label><br>
+                                    <label>Details of family members who will avail ltc
+                                        <table border = '2'><th>Name</th><th>Age</th>
+                                            {% for app2 in ltc_to_avail_review %}
+                                            {% if app2.ltc.leave_start == app.leave_start %}
+                                            <tr>
+                                                <td> 
+                                                    {{ app2.name }}
+                                                </td>
+                                                <td> 
+                                                    {{ app2.age }}
+                                                </td>
+                                            </tr>
+                                            {% endif %}
+                                            {% endfor %}
+                                        </table>
+                                    </label><br>
+                                    <label>Details of dependents
+                                        <table border = '2'><th>Name</th><th>Age</th><th>Why fully dependent</th>
+                                            {% for app2 in dependent_review %}
+                                            {% if app2.ltc.leave_start == app.leave_start %}
+                                            <tr>
+                                                <td> 
+                                                    {{ app2.name }}
+                                                </td>
+                                                <td> 
+                                                    {{ app2.age }}
+                                                </td>
+                                                <td> 
+                                                    {{ app2.depend }}
+                                                </td>
+                                            </tr>
+                                            {% endif %}
+                                            {% endfor %}
+                                        </table>
+                                    </label><br>
                                 </div>
-                                <div class="field">
-                                    <div class="disabled field">
-                                        <label>ltc_to_avail : {{ app.ltc_to_avail }}</label>
                                     </div>
-                                </div>
-                                <div class="field">
-                                    <div class="disabled field">
-                                        <label>dependents : {{ app.dependents }}</label>
-                                    </div>
-                                </div>
                                 <div class="field">
                                     <div class="disabled field">
                                         <label>requested_advance : {{ app.requested_advance }}</label>
@@ -439,7 +586,169 @@
 
 {% endblock %}
 {% block javascript %}
-<script>
+<script type="text/javascript">
+
+var count21 = 0;
+var counter_string21 = "0";
+var arrHead21 = new Array();	// array for header.
+arrHead21 = ['Name1','Age1']
+
+var count22 = 0;
+var counter_string22 = "0";
+var arrHead22 = new Array();	// array for header.
+arrHead22 = ['Name2','Age2']
+
+var count23 = 0;
+var counter_string23 = "0";
+var arrHead23 = new Array();	// array for header.
+arrHead23 = ['Name3','Age3', 'Why fully dependent']
+
+function createTable2() {
+
+// Table for ltc availed
+var ltcAvailedTable = document.createElement('table');
+ltcAvailedTable.setAttribute('id', 'ltcAvailed'); // table id.
+ltcAvailedTable.style.border="2px solid black";
+
+var tr = ltcAvailedTable.insertRow(-1);
+for (var h = 0; h < arrHead21.length; h++) {
+    var th = document.createElement('th'); // create table headers
+    if(h==0)
+    th.innerHTML = 'Name';
+    else
+    th.innerHTML = 'Age';
+    tr.appendChild(th);
+}
+
+var div = document.getElementById('Availed');
+div.appendChild(ltcAvailedTable);  // add the TABLE to the container.
+
+
+// Table for ltc to avail
+var ltcToAvailTable = document.createElement('table');
+ltcToAvailTable.style.border="2px solid black";
+ltcToAvailTable.setAttribute('id', 'ltcToAvail'); // table id.
+var tr2 = ltcToAvailTable.insertRow(-1);
+
+for (var h = 0; h < arrHead22.length; h++) {
+    var th = document.createElement('th'); // create table headers
+    if(h==0)
+    th.innerHTML = 'Name';
+    else
+    th.innerHTML = 'Age';
+    tr2.appendChild(th);
+}
+
+var div2 = document.getElementById('ToAvail');
+div2.appendChild(ltcToAvailTable);  // add the TABLE to the container.
+
+
+// Table for NewCourseMaterial
+var dependentTable = document.createElement('table');
+dependentTable.style.border="2px solid black";
+dependentTable.setAttribute('id','Dependent'); // table id.
+var tr3 = dependentTable.insertRow(-1);
+
+for(var h = 0; h < arrHead23.length; h++){
+  var th = document.createElement('th'); // create table headers
+  if(h==0)
+  th.innerHTML = 'Name';
+  else if(h==1)
+  th.innerHTML = 'Age';
+  else
+  th.innerHTML = 'Dependent';
+  tr3.appendChild(th);
+}
+
+var div3 = document.getElementById('Depend');
+div3.appendChild(dependentTable);
+
+}
+
+function addRow1() {
+      count21 = count21 + 1;
+      counter_string21 = count21.toString();
+      var ltcAvailedTab = document.getElementById('ltcAvailed');
+      var rowCnt21 = ltcAvailedTab.rows.length;  // table row count.
+      var tr = ltcAvailedTab.insertRow(rowCnt21);
+
+      for(var c = 0; c < arrHead21.length; c++){
+          var td = document.createElement('td');
+          td = tr.insertCell(c);
+
+          if(c == 0){
+            // Name: Text input field
+            var ele = document.createElement('input');
+            ele.setAttribute('type', 'text');
+            ele.setAttribute('value', '');
+            ele.setAttribute('name', arrHead21[c] + counter_string21);
+            td.appendChild(ele);
+          }
+          else{
+            var ele = document.createElement('input');
+            ele.setAttribute('type', 'number');
+            ele.setAttribute('value', 0);
+            ele.setAttribute('name', arrHead21[c] + counter_string21);
+            td.appendChild(ele);
+          }
+  }}
+
+  function addRow2() {
+      count22 = count22 + 1;
+      counter_string22 = count22.toString();
+      var ltcToAvailTab = document.getElementById('ltcToAvail');
+      var rowCnt22 = ltcToAvailTab.rows.length;  // table row count.
+      var tr = ltcToAvailTab.insertRow(rowCnt22);
+
+      for(var c = 0; c < arrHead22.length; c++){
+          var td = document.createElement('td');
+          td = tr.insertCell(c);
+
+          if(c == 0){
+            // Name: Text input field
+            var ele = document.createElement('input');
+            ele.setAttribute('type', 'text');
+            ele.setAttribute('value', '');
+            ele.setAttribute('name', arrHead22[c] + counter_string21);
+            td.appendChild(ele);
+          }
+          else{
+            var ele = document.createElement('input');
+            ele.setAttribute('type', 'number');
+            ele.setAttribute('value', 0);
+            ele.setAttribute('name', arrHead21[c] + counter_string21);
+            td.appendChild(ele);
+          }
+  }}
+
+  function addRow3() {
+      count23 = count23 + 1;
+      counter_string23 = count23.toString();
+      var dependentTab = document.getElementById('Dependent');
+      var rowCnt23 = dependentTab.rows.length;  // table row count.
+      var tr = dependentTab.insertRow(rowCnt23);
+
+      for(var c = 0; c < arrHead23.length; c++){
+          var td = document.createElement('td');
+          td = tr.insertCell(c);
+
+          if(c == 0 || c == 2){
+            // Text input field
+            var ele = document.createElement('input');
+            ele.setAttribute('type', 'text');
+            ele.setAttribute('value', '');
+            ele.setAttribute('name', arrHead23[c] + counter_string23);
+            td.appendChild(ele);
+          }
+          else{
+            var ele = document.createElement('input');
+            ele.setAttribute('type', 'number');
+            ele.setAttribute('value', 0);
+            ele.setAttribute('name', arrHead23[c] + counter_string23);
+            td.appendChild(ele);
+          }
+  }}
+
 
 </script>
 {% endblock %}
