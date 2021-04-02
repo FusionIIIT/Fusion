@@ -15,15 +15,6 @@ class Constants:
         ('NR2', 'NR2'),
         ('Rewa_Residency', 'Rewa_Residency'),
     )
-    # COMPLAINT_TYPE = (
-    #     ('Electricity', 'Electricity'),
-    #     ('carpenter', 'carpenter'),
-    #     ('plumber', 'plumber'),
-    #     ('garbage', 'garbage'),
-    #     ('dustbin', 'dustbin'),
-    #     ('internet', 'internet'),
-    #     ('other', 'other'),
-    # )
 
    
 class Receiver(models.Model):    ### need thinking
@@ -34,7 +25,7 @@ class Receiver(models.Model):    ### need thinking
     # no_of_comps = models.CharField(max_length=1000)
 
     def __str__(self):
-        return str(self.id) + '-' + self.area
+        return str(self.id)
 
 class StudentRequest(models.Model):
     request_maker = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
