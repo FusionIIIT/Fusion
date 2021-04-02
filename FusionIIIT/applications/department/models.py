@@ -2,7 +2,7 @@ from datetime import timezone
 from django.db import models
 
 # Create your models here.
-"""from applications.globals.models import ExtraInfo
+from applications.globals.models import ExtraInfo
 
 class Constants:
     BREIF = (
@@ -67,6 +67,6 @@ class Announcements(models.Model):
     batch = models.IntegerField(default="2016")
     programme = models.CharField(max_length=10, choices=Constants.PROGRAMME)
     def __str__(self):
-         return str(self.maker_id.user.username)
+        return str(self.maker_id.user.username)
 
-        return str(self.request_maker.user.username)"""
+        return str(self.request_maker.user.username)
