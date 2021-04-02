@@ -43,24 +43,13 @@ def admin(request):
 
 
 def hod(request):
-    ###### not working need to find another way to implement
     user = request.user
     
-    #cse_hod = request.user.holds_designations.filter(designation__name='hod').exists()
     fac_view = request.user.holds_designations.filter(designation__name='faculty').exists() 
     print(request.user.holds_designations.filter(designation__name='faculty'))
     student = request.user.holds_designations.filter(designation__name='student').exists()
 
-    # finding designation of user
     user_designation = ""
-    # if cse_hod:
-    #     user_designation = "hod"
-    # elif fac_view:
-    #     user_designation = "faculty"
-    # elif student:
-    #     user_designation = "student"
-    
-    print(fac_view, student) 
     if fac_view:
         user_designation = "faculty"
     elif student:
@@ -71,7 +60,6 @@ def hod(request):
         return render(request, 'department/dep_request.html', {"user_designation":'faculty'})
 
 def file_request(request):
-    #return render(request, "department/dep_complaint.html")
     return render(request, 'department/dep_request.html')
 
 
