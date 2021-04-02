@@ -16,7 +16,7 @@
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="complaint">
-             {{ department }}faculty List
+             {{ department }} faculty List
         </a>
     </div>
 
@@ -28,8 +28,8 @@
        style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
             <thead>
                 <td> id </td>
-                <td> user </td>
-				<td> title </td>
+                <td> faculty name </td>
+				<!-- <td> title </td> -->
                 <td> sex </td>
 				<td> date_of_birth </td>
                 <td> address </td>
@@ -43,17 +43,17 @@
 
             {% for fcu in fac_list %}
               <tr>
-                {% with "127.0.0.1:8000/eis/profile/"|add:fcu.user as link %}
+                {% with "127.0.0.1:8000/eis/profile/"|add:fcu.user.first_name as link %}
                 <td>{{ fcu.id }}</td>
-                <td><a href = {{ link }}>{{ fcu.user }}</a></td>
-				<td>{{ fcu.title }}</td>
+                <td><a href = {{ link }}>{{ fcu.user.first_name}} {{ user.second_name}}</a></td>
+			    <!-- <td>{{ fcu.title }}</td> -->
                 <td>{{ fcu.sex }}</td>
 				<td>{{ fcu.date_of_birth }}</td>
                 <td>{{ fcu.address }}</td>
 				<td>{{ fcu.phone_no }}</td>
                 <td>{{ fcu.user_type }}</td>
 				<td>{{ fcu.department }}</td>
-                <td>{{ fcu.user.faculty_about.github }}</td>
+                <td>{{ fcu.id.faculty_about.github }}</td>
                 {% endwith %}
               </tr>
               

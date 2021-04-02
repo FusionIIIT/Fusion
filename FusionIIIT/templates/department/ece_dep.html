@@ -109,7 +109,7 @@
         </div>
     </div>
 
-    {% comment %} tabs content students {% endcomment %}
+     {% comment %} tabs content students {% endcomment %}
     <div class="ui tab" data-tab="students">
         <div class="ui vertical segment">
             <div class="content">
@@ -122,7 +122,13 @@
                                 PhD Students
                             </div>
                             <div class="content">
-                                PhD ECE Department
+                                <a class="active item" href="./All_Students/{{2111111}}">
+                        <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                        <button style="border: solid; float: left; display: block;">
+                            PhD ECE Students
+                        </button>
+                    </a>
+                     <br>  
                             </div>
                         </div>
 
@@ -132,9 +138,21 @@
                                 Mtech Students
                             </div>
                             <div class="content">
-                                M.Tech First Year<br>
-                                M.Tech Second Year
+                                <a class="active item" href="./All_Students/{{21111}}">
+                        <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                        <button style="border: solid; float: left; display: block;" >
+                            M.Tech First Year
+                        </button>
+                    </a>
+                        <a class="active item" href="./All_Students/{{211111}}">
+                        <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                        <button style="border: solid; float: left; display: block;">
+                            M.Tech Second Year
+                        </button>
+                    </a>
+                     <br>     
                             </div>
+                        </div>
                             
                         </div>
 
@@ -144,12 +162,36 @@
                                B.Tech Students
                             </div>
                             <div class="content">
-                                B.Tech First Year<br>
-                                B.Tech Second Year<br>
-                                B.Tech Third Year<br>
-                                B.Tech Final Year
+                                {% comment %} <a class="active item" href="/dep/All_Students/"> {% endcomment %}
+                         <a class="active item" href="./All_Students/{{2}}">
+                        <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                        <button style="border: solid; float: left; display: block;">
+                            B.Tech First Year
+                        </button>
+                    </a>
+                        {% comment %} <a class="active item" href="/dep/BtechSecondYear_Students/"> {% endcomment %}
+                        <a class="active item" href="./All_Students/{{21}}">
+                        <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                        <button style="border: solid; float: left; display: block;">
+                            B.Tech Second Year
+                        </button>
+                    </a>
+                         <a class="active item" href="./All_Students/{{211}}">
+                        <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                        <button style="border: solid; float: left; display: block;">
+                            B.Tech Third Year
+                        </button>
+                    </a>
+                         <a class="active item" href="./All_Students/{{2111}}">
+                        <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                        <button style="border: solid; float: left; display: block;">
+                            B.Tech Final Year
+                        </button>
+                    </a><br>
+                               
                             </div>
                         </div>
+
                     </span>
                     <div class="ui divider"></div>
                 </div>
