@@ -43,23 +43,13 @@ def admin(request):
 
 
 def hod(request):
-    ###### not working need to find another way to implement
     user = request.user
     
-    #cse_hod = request.user.holds_designations.filter(designation__name='hod').exists()
     fac_view = request.user.holds_designations.filter(designation__name='faculty').exists() 
     print(request.user.holds_designations.filter(designation__name='faculty'))
     student = request.user.holds_designations.filter(designation__name='student').exists()
 
-    # finding designation of user
     user_designation = ""
-    # if cse_hod:
-    #     user_designation = "hod"
-    # elif fac_view:
-    #     user_designation = "faculty"
-    # elif student:
-    #     user_designation = "student"
-    
     if fac_view:
         user_designation = "faculty"
     elif student:
@@ -70,11 +60,10 @@ def hod(request):
         return render(request, 'department/dep_request.html', {"user_designation":'faculty'})
 
 def file_request(request):
-    #return render(request, "department/dep_complaint.html")
     return render(request, 'department/dep_request.html')
 
 
-
+@login_required(login_url='/accounts/login')
 def All_Students(request,bid):
     if int(bid)==1:
         student_list1=Student.objects.order_by('id').filter(programme='B.Tech',batch=2019,id__user_type='student',id__department__name='CSE').select_related('id') 
@@ -205,22 +194,22 @@ def make_announcements(request,maker_id):
     a = get_object_or_404(User, username=request.user.username)
     y = ExtraInfo.objects.all().select_related('user','department').get(id=id)
 
-    if request.method == 'POST':
-        maker_id = request.POST.get('maker_id', '')
-        programme = request.POST.get('programme', '')
-        batch = request.POST.get('batch', '')
-        announcement = request.POST.get('announcement')
+#     if request.method == 'POST':
+#         maker_id = request.POST.get('maker_id', '')
+#         programme = request.POST.get('programme', '')
+#         batch = request.POST.get('batch', '')
+#         announcement = request.POST.get('announcement')
 
-    obj1, created = Announcements.objects.get_or_create(maker_id=y,
+#     obj1, created = Announcements.objects.get_or_create(maker_id=y,
         
-                                programme=programme,
-                                batch=batch,
-                                announcement=announcement)
+#                                 programme=programme,
+#                                 batch=batch,
+#                                 announcement=announcement)
                                
-    # message = "A New Announcement has been published"
-    #     complaint_system_notif(request.user, caretaker_name.user,'make_announcement_alert',obj1.id,user,message)
+#     # message = "A New Announcement has been published"
+#     #     complaint_system_notif(request.user, caretaker_name.user,'make_announcement_alert',obj1.id,user,message)
 
-    return HttpResponseRedirect('/dep/browse_announcements/')
+#     return HttpResponseRedirect('/dep/browse_announcements/')
 
 def browse_announcements(request):
     """

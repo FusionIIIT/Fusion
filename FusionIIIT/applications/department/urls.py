@@ -11,6 +11,7 @@ urlpatterns = [
     url(r'^browse_announcements/$', views.browse_announcements,name='browse_announcements'),
     # url(r'^All_Students/$', views.All_Students, name='All_Students'),
     url(r'^All_Students/(?P<bid>[0-9]+)/$', views.All_Students,name='All_Students'),
+    
     #  url(r'^All_Students/<int:batch>/<slug:branch>/', views.All_Students,name='All_Students'),
     # url(r'^BtechSecondYear_Students/$', views.BtechSecondYear_Students, name='BtechSecondYear_Students'),
     # url(r'^BtechThirdYear_Students/$', views.BtechThirdYear_Students, name='BtechThirdYear_Students'),
