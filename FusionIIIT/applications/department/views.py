@@ -1,3 +1,4 @@
+from applications.globals.models import Faculty
 from applications.department.models import Announcements
 import datetime
 import json
@@ -14,7 +15,7 @@ from django.contrib.auth.models import User
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from applications.academic_information.models import Spi, Student
 from applications.globals.models import (Designation, ExtraInfo,
-                                         HoldsDesignation)
+                                         HoldsDesignation,Faculty)
 from applications.eis.models import (faculty_about, emp_research_projects)
 from notification.views import  complaint_system_notif
 
@@ -72,7 +73,10 @@ def hod(request):
 
 def file_request(request):
     #return render(request, "department/dep_complaint.html")
-    return render(request, 'department/dep_request.html')
+    a = get_object_or_404(User, username=request.user.username)
+    y = ExtraInfo.objects.all().select_related('user').filter(user=a).first()
+    ann_id = y.id
+    return render(request, 'department/dep_request.html',context="ann_id")
 
 
 

@@ -25,10 +25,10 @@
                     <div class="eight wide field">
                         <label>Programme Type<sup><i class="small red asterisk icon"></i></sup></label>
                         <div class="ui selection dropdown">
-                            <input name="programme" type="hidden" name="programme" required="True">
+                            <input name="programme" type="hidden" name="programme" required='true'>
                             <i class="dropdown icon"></i>
 
-                            <div class="default text">Select dep Type</div>
+                            <div class="default text">Select Department Type</div>
 
                             <div class="menu" >
                                 <div class="item" data-value="B.tech" >
@@ -52,14 +52,14 @@
                     </div>
 
                     <div class="eight wide field">
-                        <label>Batch<sup><i class="small red asterisk icon"></i></sup></label>
+                        <label>Batch </label>
                         <div class="ui selection dropdown">
-                            <input name="batch" type="hidden" required>
+                            <input name="batch" type="hidden" required='TRUE'>
                             <i class="dropdown icon"></i>
 
                             <div class="default text">Select Batch</div>
 
-                            <div class="menu" id="Location">
+                            <div class="menu" id="batch">
                                 <div class="item" data-value="Year-1">
                                     Year-1
                                 </div>
@@ -89,8 +89,8 @@
                 </div>
 
                 
-                    Announcement will be made with your User ID : {{ maker_id }}
-                <input type="text"  name="maker_id" style="visibility: hidden;" value="{{ maker_id }}" >
+                    Announcement will be made with your User ID : {{ ann_id }}
+                <input type="text"  name="ann_id" style="visibility: hidden;" value="{{ ann_id }}" >
 
                 <br>
 
