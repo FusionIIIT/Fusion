@@ -340,11 +340,15 @@
                   <div class="content">
                       <div class="header">Status : {{app.status}}</div>
                       <div class="meta">
-                          <span>HOD Remarks: {{app.appraisal_tracking.remark_hod}}</span>
+                        {% for app2 in appraisal_requests_active %}
+                        {% if app2.appraisal == app %}
+                          <span>HOD Remarks: {{app2.remark_hod}}</span>
                       </div>
                       <div class="meta">
-                          <span>Director Remarks: {{app.appraisal_tracking.remark_director}}</span>
+                          <span>Director Remarks: {{app2.remark_director}}</span>
                       </div>
+                        {% endif %}
+                        {% endfor %}
                       <div>
                           <button class="ui large primary button" onclick="$('.ui.modal.view-{{app.id}}').modal('show')">
                               View
@@ -641,12 +645,17 @@
               <div class="item">
                   <div class="content">
                       <div class="header">Status : {{app.status}}</div>
+                      {% for app2 in appraisal_requests_archived %}
+                      {% if app2.appraisal == app %}
                               <div class="meta">
-                                  <span>HOD Remarks: {{app.appraisal_tracking.remark_hod}}</span>
+                                
+                                  <span>HOD Remarks: {{app2.remark_hod}}</span>
                               </div>
                               <div class="meta">
-                                  <span>Director Remarks: {{app.appraisal_tracking.remark_director}}</span>
+                                  <span>Director Remarks: {{app2.remark_director}}</span>
                               </div>
+                      {% endif %}
+                      {% endfor %}
                       <div>
                           <button class="ui large primary button" onclick="$('.ui.modal.view-{{app.id}}').modal('show')">
                               View
