@@ -73,7 +73,7 @@ def file_request(request):
     return render(request, 'department/dep_request.html')
 
 
-
+@login_required(login_url='/accounts/login')
 def All_Students(request,bid):
     if int(bid)==1:
         student_list1=Student.objects.order_by('id').filter(programme='B.Tech',batch=2019,id__user_type='student',id__department__name='CSE').select_related('id') 
@@ -207,11 +207,15 @@ def All_Students(request,bid):
 #     id_dict={'student_list':student_list7,}
 #     return render(request, 'department/AllStudents.html',context=id_dict)
 
-def cse_faculty(request):
-    cse_f=ExtraInfo.objects.filter(department__name='CSE',user_type='faculty')
-
-    id_dict={'fac_list':cse_f,'department':'CSE'}
-    return render(request,'department/faculty.html',context=id_dict)
+def cse_faculty(request,fid):
+    print(manish)
+    print(fid)
+    if int(fid)==136:
+        print(sharma)
+        print(fid)
+        cse_f=ExtraInfo.objects.filter(department__name='CSE',user_type='faculty')
+        id_dict={'fac_list':cse_f,'department':'CSE'}
+        return render(request,'department/faculty.html',context=id_dict)
 
 def ece_faculty(request):
     ece_f=ExtraInfo.objects.filter(department__name='ECE',user_type='faculty')
