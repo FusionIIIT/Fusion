@@ -61,15 +61,7 @@ def hod(request):
         return render(request, 'department/dep_request.html', {"user_designation":'faculty'})
 
 def file_request(request):
-<<<<<<< HEAD
-    #return render(request, "department/dep_complaint.html")
-    a = get_object_or_404(User, username=request.user.username)
-    y = ExtraInfo.objects.all().select_related('user').filter(user=a).first()
-    ann_id = y.id
-    return render(request, 'department/dep_request.html',context="ann_id")
-=======
     return render(request, 'department/dep_request.html')
->>>>>>> 6668eb35f8b5de5a0a10e5e7a0c48924721fc9ee
 
 
 @login_required(login_url='/accounts/login')
