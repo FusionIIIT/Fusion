@@ -359,7 +359,7 @@ under_review ltc applications
                                     </div>
                                     <br>
                                     <div class="field">
-                                        {% render_field app.assign_form.reviewer_design %} 
+                                        {% render_field app.assign_form.reviewer_design3 %} 
                                     </div>
                                     <br>
                                     <div class="field">
@@ -385,7 +385,7 @@ under_review ltc applications
 </div>
 
 <!--
-reviwed ltc applications 
+reviewed ltc applications 
 -->
 <div class="ui active tab segment" data-tab="ltcfive">
     <div class="content">
@@ -492,6 +492,10 @@ reviwed ltc applications
                                     {% render_field app.assign_form.app_id %} 
                                     <div class="field">
                                         {% render_field app.assign_form.status %} 
+                                    </div>
+                                    <br>
+                                    <div class="field">
+                                        Remarks from Director : {{ app.tracking_info.remarks }}
                                     </div>
                                     <br>
                                     <div class="field">

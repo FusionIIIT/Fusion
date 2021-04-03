@@ -130,7 +130,7 @@ def handle_ltc_admin(request):
         app_id = request.POST.get('app_id')
         status = request.POST.get('status')
         reviewer = request.POST.get('reviewer_id')
-        designation = request.POST.get('reviewer_design')
+        designation = request.POST.get('reviewer_design3')
         remarks = request.POST.get('remarks')
         if status == 'requested':
             if reviewer and designation and app_id:
