@@ -61,6 +61,24 @@ def hod(request):
         return render(request, 'department/dep_request.html', {"user_designation":'faculty'})
 
 def file_request(request):
+    a = get_object_or_404(User, username=request.user.username)
+    y = ExtraInfo.objects.all().select_related('user','department').filter(user=a).first()
+    num = 1
+    ann_maker_id = y.id
+    if request.method == 'POST':
+        batch = request.POST.get('batch', '')
+        programme = request.POST.get('programme', '')
+        message = request.POST.get('message', '')
+        upload_announcement = request.FILES.get('upload_announcement')
+        ann_date = datetime.now()
+    y = ExtraInfo.objects.all().select_related('user','department').get(id=ann_maker_id)
+
+    obj1, created = Announcements.objects.get_or_create(maker_id=y,
+                                batch=batch,
+                                programme=programme,
+                                message=message,
+                                upload_announcement=upload_announcement,
+                                ann_date=ann_date)
     return render(request, 'department/dep_request.html')
 
 

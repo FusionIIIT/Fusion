@@ -25,7 +25,7 @@
                     <div class="eight wide field">
                         <label>Programme Type<sup><i class="small red asterisk icon"></i></sup></label>
                         <div class="ui selection dropdown">
-                            <input name="programme" type="hidden" name="programme" required='true'>
+                            <input name="programme" type="hidden" placeholder="programme" required='true'>
                             <i class="dropdown icon"></i>
 
                             <div class="default text">Select Department Type</div>
@@ -88,13 +88,17 @@
                     <input placeholder="What is the Announcement?" name="announcement" required></textarea>
                 </div>
 
-                
-                    Announcement will be made with your User ID : {{ ann_id }}
-                <input type="text"  name="ann_id" style="visibility: hidden;" value="{{ ann_id }}" >
+                <div class = "file">
+                      <label for="file">Attach Files ( PDF, JPEG, PNG, JPG )</label>
+                      <input type="file" id="file" name="upload_announcement" accept=".pdf, .jpg, .jpeg, .png" >
+                </div>
+
+                    Announcement will be made with your User ID : {{ ann_maker_id }}
+                <input type="text"  name="ann_id" style="visibility: hidden;" value="{{ ann_maker_id }}" >
 
                 <br>
 
-                <button class="ui large primary button right floated" onclick= "sub(),disabled=true">
+                <button class="ui large primary button right floated" onclick= "announce()">
                     Publish
                 </button>
 
@@ -115,5 +119,5 @@
     <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
     <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
     <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
-    
+    <script type="text/javascript" src="{% static 'department/js/function.js' %}"></script>
 {% endblock %}

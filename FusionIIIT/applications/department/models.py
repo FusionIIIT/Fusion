@@ -57,11 +57,11 @@ class Receiver(models.Model):
 
 class Announcements(models.Model):
     maker_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
-    #date = models.DateTimeField(default=timezone.now)
-    announcement = models.CharField(max_length=200)
+    ann_date = models.DateTimeField(default="04-04-2021")
+    message = models.CharField(max_length=200)
     batch = models.IntegerField(default="2016")
     programme = models.CharField(max_length=10, choices=Constants.PROGRAMME)
+    upload_announcement = models.FileField(blank=True)
     def __str__(self):
         return str(self.maker_id.user.username)
 
-        return str(self.request_maker.user.username)
