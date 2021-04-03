@@ -35,6 +35,7 @@ class Constants:
 class Receiver(models.Model):    
     staff_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
     area = models.CharField(choices=Constants.PERSON, max_length=20, default='admin')
+    #area = models.CharField(choices=Constants.AREA, max_length=20, default='hall-3')
 
     def __str__(self):
         return str(self.id)
@@ -42,6 +43,7 @@ class Receiver(models.Model):
 # class StudentRequest(models.Model):
 #     request_maker = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
 #     request_date = models.DateTimeField(default=timezone.now)
+#    # request_date = models.DateTimeField(default=timezone.now)
 #     brief = models.CharField(choices=Constants.BRIEF,
 #                                       max_length=20, default='meet_request')
 #     details = models.CharField(max_length=200)
@@ -55,7 +57,7 @@ class Receiver(models.Model):
 
 class Announcements(models.Model):
     maker_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
-    date = models.DateTimeField(default=timezone)
+    #date = models.DateTimeField(default=timezone.now)
     announcement = models.CharField(max_length=200)
     batch = models.IntegerField(default="2016")
     programme = models.CharField(max_length=10, choices=Constants.PROGRAMME)

@@ -21,6 +21,11 @@
         <a class="item" data-tab="students">
             Students
         </a>
+
+        <a class="item" data-tab="announcement">
+            Announcements
+        </a>
+
     </div>
 
 
@@ -108,7 +113,26 @@
             </div>
         </div>
     </div>
-
+    
+     {% comment %} tabs contains Announcement_List {% endcomment %}
+    <div class="ui tab" data-tab="announcement">
+        <div class="ui vertical segment">
+            <div class="content">
+                <div class="description">
+                    <span>
+                        <a class="active item" href="/dep/browse_announcements/">
+                            <!--   <button style="border: none; float: left; display: block;" class="ui inverted right floated small red button" onclick="requestModal()"> -->
+                            <button style="border: solid; float: left; display: block;" >
+                                Browse Announcement
+                            </button>
+                        </a>
+                    </span>
+                    <div class="ui divider"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
      {% comment %} tabs content students {% endcomment %}
     <div class="ui tab" data-tab="students">
         <div class="ui vertical segment">

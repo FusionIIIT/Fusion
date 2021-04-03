@@ -1,3 +1,4 @@
+from applications.globals.models import Faculty
 from applications.department.models import Announcements
 import datetime
 import json
@@ -14,7 +15,7 @@ from django.contrib.auth.models import User
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from applications.academic_information.models import Spi, Student
 from applications.globals.models import (Designation, ExtraInfo,
-                                         HoldsDesignation)
+                                         HoldsDesignation,Faculty)
 from applications.eis.models import (faculty_about, emp_research_projects)
 from notification.views import  complaint_system_notif
 

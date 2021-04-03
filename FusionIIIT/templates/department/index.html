@@ -34,33 +34,29 @@
             <div class="ui divider"></div>
 
             {% comment %}The Tab-Menu starts here!{% endcomment %}
-            <div class="ui huge fluid vertical pointing menu"
-                 style="max-width: 320px;">
+            <div class="ui huge fluid vertical pointing menu" style="max-width: 320px;">
 
                 
-                    <a class="active item" data-tab="first" id="CSE_Dep">
-                        CSE Department
-                        <i class="right floated chevron right icon"></i>
-                    </a>
+                <a class="active item" data-tab="first" id="CSE_Dep">
+                    CSE Department
+                    <i class="right floated chevron right icon"></i>
+                </a>
 
-                    <a class="item" data-tab="second" id="ECE_Dep">
-                        ECE Department
-                        <i class="right floated chevron right icon"></i>
-                    </a>
+                <a class="item" data-tab="second" id="ECE_Dep">
+                    ECE Department
+                    <i class="right floated chevron right icon"></i>
+                </a>
 
-                    <a class="item" data-tab="third" id="ME_Dep">
-                        ME Department
-                        <i class="right floated chevron right icon"></i>
-                    </a>
+                <a class="item" data-tab="third" id="ME_Dep">
+                    ME Department
+                    <i class="right floated chevron right icon"></i>
+                </a>
 
-                    <a class="item" data-tab="fourth" id="SM_Dep">
-                        SM Department
-                        <i class="right floated chevron right icon"></i>
-                    </a>
-                
-
-                
-                
+                <a class="item" data-tab="fourth" id="SM_Dep">
+                    SM Department
+                    <i class="right floated chevron right icon"></i>
+                </a>
+            
             </div>
             {% comment %}The Tab-Menu ends here!{% endcomment %}
 
@@ -109,10 +105,8 @@
                 {% endblock %}
             </div>
             {% comment %}SM{% endcomment %}
-
-            
-
         </div>
+        
         {% comment %}The central-rail segment ends here!{% endcomment %}
         <div class="three wide column">
             <div class="row">
@@ -121,7 +115,7 @@
 
                     <a class="active item" data-tab="dep-complaint">
                 {% endcomment %}
-
+            
                 {% comment %}Generate CV {% endcomment %}
                 <div class="ui styled accordion">
                     <a class="active item" href="{% url 'dep:file_request' %}">
