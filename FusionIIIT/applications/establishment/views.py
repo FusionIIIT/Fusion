@@ -991,8 +991,10 @@ def generate_appraisal_lists(request):
     achievments = emp_achievement.objects.filter(user = request.user)
     events = emp_event_organized.objects.filter(user = request.user)
 
-    active_apps = Appraisal.objects.filter(applicant=request.user).exclude(status='rejected').exclude(status='accepted').order_by('-timestamp')
+    active_apps = (Appraisal.objects.filter(applicant=request.user).exclude(status='rejected').exclude(status='accepted').order_by('-timestamp'))
     archive_apps = Appraisal.objects.filter(applicant=request.user).exclude(status='requested').order_by('-timestamp')
+    request_active = (AppraisalRequest.objects.filter(appraisal__applicant=request.user).filter(appraisal__status='requested'))
+    request_archived = (AppraisalRequest.objects.filter(appraisal__applicant=request.user).exclude(appraisal__status='requested'))
 
     response.update({
             'user_courses': user_courses,
@@ -1006,7 +1008,9 @@ def generate_appraisal_lists(request):
             'achievments': achievments,
             'events': events,
             'appraisal_active_apps':active_apps,
-            'appraisal_archive_apps':archive_apps
+            'appraisal_archive_apps':archive_apps,
+            'appraisal_requests_active':request_active,
+            'appraisal_requests_archived':request_archived
     })
 
     return response

@@ -570,8 +570,7 @@ archived ltc applications
                                 <label>Details of family members who have already availed ltc in this block
                                     <table border = '2'><th>Name</th><th>Age</th>
                                         {% for app2 in ltc_availed_archive %}
-                                        {% if app2.ltc.applicant == app.applicant %}
-                                        {% if app2.ltc.leave_start == app.leave_start %}
+                                        {% if app2.ltc == app %}
                                         <tr>
                                             <td> 
                                                 {{ app2.name }}
@@ -580,43 +579,41 @@ archived ltc applications
                                                 {{ app2.age }}
                                             </td>
                                         </tr>
-                                        {% endif %}
                                         {% endif %}
                                         {% endfor %}
                                     </table>
                                 </label><br>
                                 <label>Details of family members who will avail ltc
                                     <table border = '2'><th>Name</th><th>Age</th>
-                                        {% for app2 in ltc_to_avail_archive %}
-                                        {% if app2.ltc.applicant == app.applicant %}
-                                        {% if app2.ltc.leave_start == app.leave_start %}
+                                        {% for app3 in ltc_to_avail_archive %}
+                                        {% if app3.ltc == app %}
                                         <tr>
                                             <td> 
-                                                {{ app2.name }}
+                                                {{ app3.name }}
                                             </td>
                                             <td> 
-                                                {{ app2.age }}
+                                                {{ app3.age }}
                                             </td>
                                         </tr>
-                                        {% endif %}
                                         {% endif %}
                                         {% endfor %}
                                     </table>
                                 </label><br>
                                 <label>Details of dependents
-                                    <table border = '2'><th>Name</th><th>Age</th>
-                                        {% for app2 in dependent_archive %}
-                                        {% if app2.ltc.applicant == app.applicant %}
-                                        {% if app2.ltc.leave_start == app.leave_start %}
+                                    <table border = '2'><th>Name</th><th>Age</th><th>Why fully dependent</th>
+                                        {% for app4 in dependent_archive %}
+                                        {% if app4.ltc == app %}
                                         <tr>
                                             <td> 
-                                                {{ app2.name }}
+                                                {{ app4.name }}
                                             </td>
                                             <td> 
-                                                {{ app2.age }}
+                                                {{ app4.age }}
+                                            </td>
+                                            <td> 
+                                                {{ app4.depend }}
                                             </td>
                                         </tr>
-                                        {% endif %}
                                         {% endif %}
                                         {% endfor %}
                                     </table>
