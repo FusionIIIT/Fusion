@@ -103,20 +103,20 @@
                 </div>
 
                 <div class="field">
-                    <label>Specific Location</label>
+                    <label>Request Details</label>
                     <div class="ui large input">
-                        <input placeholder="Specific Location">
+                        <input placeholder="Specific Location" name="request_details">
                     </div>
                 </div>
 
-                <div class="field">
-                    <label>Request Details</label>
-                    <textarea placeholder="Request Details" rows="2"></textarea>
+                <div class = "file">
+                      <label for="file">Attach Files ( PDF, JPEG, PNG, JPG )</label>
+                      <input type="file" id="file" name="upload_request" accept=".pdf, .jpg, .jpeg, .png" >
                 </div>
 
                 <br>
 
-                <button class="ui large primary button right floated">
+                <button class="ui large primary button right floated" onclick="request()">
                     Submit
                 </button>
 
@@ -131,4 +131,11 @@
     </div>
 
 
+{% endblock %}
+
+{% block javascript %}
+    <script src="https://cdn.rawgit.com/mdehoog/Semantic-UI/6e6d051d47b598ebab05857545f242caf2b4b48c/dist/semantic.min.js"></script>
+    <script type="text/javascript" src="{% static 'globals/js/datepicker.js' %}"></script>
+    <script type="text/javascript" src="{% static 'globals/js/tablesort.js' %}"></script>
+    <script type="text/javascript" src="{% static 'department/js/function.js' %}"></script>
 {% endblock %}

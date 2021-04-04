@@ -18,7 +18,7 @@
                         </button>
         </a>
 
-        <a class="active item" data-tab="year1">
+        <a class="active item" data-tab="Year-1">
             B.Tech-First Year &nbsp&nbsp           
         </a>
         
@@ -44,120 +44,31 @@
        
     </div>
 
-    {% comment %} <div class="ui active tab" data-tab="complaint"> {% endcomment %}
-    <div class="ui tab" data-tab="year1">
-        <div class="ui vertical segment">
+ {% comment %} <div class="ui active tab" data-tab="complaint"> {% endcomment %}
+    <div class="ui vertical segment" data-tab="Year-1">
 
-            <table class="ui very basic collapsing celled sortable table"
-                   style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
-                <thead>
+        {% if ann_list %}
+        <table class="ui very basic collapsing celled sortable table" style="padding-left: 2.5%; padding-right: 2.5%;padding-top: 1%; padding-bottom: 1.5%; margin: auto;">
+            <thead>
+                <th>Roll</th>
+                <th>Department</th>
+                <th>Programme</th>
+                <th>Batch</th>
+
+            </thead>
+
+            {% for stu in ann_list %}
                 <tr>
-                    <th>
-                        Date
-                    </th>
-                    
-                    <th>
-                        Department
-                    </th>
-
-                    <th>
-                        Batch
-                    </th>
-
-                    <th>
-                        Announcement
-                    </th>
-
-                    
-
+                <td>{{ stu.id }}</td>
+                <td>{{ stu.department}}</td>
+                <td>{{ stu.programme }}</td>
+                <td>{{ stu.batch }}</td>
                 </tr>
-                </thead>
-                    <tbody>
-                        
-                        {% for i in Club_event%}
-                               <tr>
-                                        <td onclick="view_event_('{{ i.id }}_')">
-                                           {{ i.club.club_name }}
-                                       </td>
-                                       <td onclick="view_event_('{{ i.id }}_')">
-                                           {{ i.event_name }}
-                                       </td>
+            {% endfor %}
 
-                                       <td onclick="view_event_('{{ i.id }}_')">
-                                           {{ i.incharge }}
-                                       </td>
-
-                                       <td onclick="view_event_('{{ i.id }}_')">
-                                           {{ i.date}}
-                                       </td>
-                                      </tr>
-                                      {% empty %}
-                                       <tr>
-                                         <td colspan="4" class="text-center bg-warning">No Events</td>
-                                       </tr>
-
-                           {% endfor %}
-                       
-                            {% for i in Club_event%}
-                            <tr>
-                                <td onclick="view_event_('{{ i.id }}_')">
-                                    {{ i.club.club_name }}
-                                </td>
-                                <td onclick="view_event_('{{ i.id }}_')">
-                                    {{ i.event_name }}
-                                </td>
-
-                                <td onclick="view_event_('{{ i.id }}_')">
-                                    {{ i.incharge }}
-                                </td>
-
-                                <td onclick="view_event_('{{ i.id }}_')">
-                                    {{ i.date}}
-                                </td>
-
-                           </tr>
-                           {% empty %}
-                           <tr>
-                             <td colspan="4" class="text-center bg-warning">No Events</td>
-                           </tr>
-
-                            {% endfor %}
-                    
-
-                    {% for i in Club_event%}
-                    <tr>
-                        <td onclick="view_event_('{{ i.id }}_')">
-                            {{ i.club.club_name }}
-                        </td>
-                        <td onclick="view_event_('{{ i.id }}_')">
-                            {{ i.event_name }}
-                        </td>
-
-                        <td onclick="view_event_('{{ i.id }}_')">
-                            {{ i.incharge }}
-                        </td>
-
-                        <td onclick="view_event_('{{ i.id }}_')">
-                            {{ i.date}}
-                        </td>
-
-
-                   </tr>
-                   {% empty %}
-                   <tr>
-                     <td colspan="4" class="text-center bg-warning">No Events</td>
-                   </tr>
-                {% endfor %}
-                
-
-                    </tbody>
-            </table>
-
-            <br>
-            <div class="ui divider"></div>
-        <!-- </div> -->
-        <br>
-        <!-- <div class="extra content"></div> -->
+        </table>
+        {% endif %}
+        <br><div class="ui divider"></div><br>
     </div>
-</div>
+
 {% endblock %}

@@ -49,3 +49,47 @@ function announce(event)
         }
     };
 
+    function request(event)
+    {
+    var department= $('input[name="Department"]').val();
+    var location = $('input[name="Location"]').val();
+    var request_details =  $('input[name="request_details"]').val() ;
+    var upload_request=$('input[name="upload_request"]').val() ;
+    console.log(department);
+    console.log(location);
+    console.log(request_details);
+    if(department=="" || location=="" || request_details =="" )
+    {
+        alert("Please fill all the details!");
+        return;
+    }
+    else
+    {
+        event.preventDefault();
+        $.ajax({
+            type : 'POST',
+            url : '.',
+            data : {
+                'department' : department,
+                'location' : location,
+                'request_details' : request_details,
+                'upload_request' : upload_request,
+                
+            },
+            success : function (data){
+
+                alert("Request successfully made!!");
+                setTimeout(function() {
+            window.location.replace('http://localhost:8000/dep/file_request/');
+        }, 1500);
+
+                
+            },
+            error : function (data,err){
+                alert('Request successfully made ... ');
+
+            }
+        });
+    }
+};
+
