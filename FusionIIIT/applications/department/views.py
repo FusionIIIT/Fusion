@@ -91,7 +91,9 @@ def file_request(request):
                                     upload_announcement=upload_announcement,
                                     department = department,
                                     ann_date=ann_date)
-    return render(request, 'department/dep_request.html', {"user_designation":y.user_type})
+    ann_list=Student.objects.order_by('maker_id').filter(programme='B.tech',batch='Year-1',department='CSE').select_related('maker_id') 
+
+    return render(request, 'department/dep_request.html', {"user_designation":y.user_type}, context=ann_list)
 
 
 @login_required(login_url='/accounts/login')
