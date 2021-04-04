@@ -32,10 +32,16 @@ def is_hod(request):
         return True
     return False
 
+def is_registrar(request):
+    user_dsg = list(HoldsDesignation.objects.filter(user=request.user))
+    designation = user_dsg[0].designation.name
+    if("Registrar" in designation):
+        return True
+    return False
+
 def is_director(request):
      user_dsg = list(HoldsDesignation.objects.filter(user=request.user))
      designation = user_dsg[0].designation.name
-     print(designation)
      if("Director" in designation):
          return True
      return False
@@ -100,7 +106,7 @@ def handle_cpda_admin(request):
             application.tracking_info.reviewer_design3 = reviewer_design3
             application.tracking_info.remarks = remarks
             application.tracking_info.remarks_rev1="Not reviewed yet"
-            application.tracking_info.remarks_rev2="Not reviewed yet"
+            application.trfroacking_info.remarks_rev2="Not reviewed yet"
             application.tracking_info.remarks_rev3="Not reviewed yet"
             application.tracking_info.review_status = 'under_review'
             application.tracking_info.save()
@@ -353,7 +359,6 @@ def generate_ltc_admin_lists(request):
         ]
         app.assign_form = temp
 
-        # print (app.assign_form.fields['status']._choices)
 
 
     # approved and rejected
@@ -823,9 +828,9 @@ def handle_appraisal(request):
         app_id = int(request.POST.get('app_id'))
         review_comment = request.POST.get('remarks_director')
         result = request.POST.get('result')
-        application = Appraisal.objects.get(id=app_id)
+        application = Appraisal.objects.select_related('applicant').get(id=app_id)
         application.status = result
-        request_object = AppraisalRequest.objects.filter(appraisal = application)
+        request_object = AppraisalRequest.objects.select_related('appraisal').filter(appraisal = application)
         appraisal_track = request_object[0]
         appraisal_track.remark_director = review_comment
         appraisal_track.status_director = result
@@ -891,8 +896,13 @@ def generate_cpda_eligible_lists(request):
     today_date=date.today()
     block_period=str(2018+int((np.ceil((today_date.year-2018)/3)-1))*3)+"-"+ str(2018+int(np.ceil((today_date.year-2018)/3))*3)
     
-    
+    hod=is_hod(request)
+    registrar=is_registrar(request)
+    director=is_director(request)
     response = {
+        'hod':hod,
+        'registrar':registrar,
+        'director':director,
         'cpda_form': form,
         'cpda_billforms': bill_forms,
         'cpda_active_apps': active_apps,
@@ -991,10 +1001,11 @@ def generate_appraisal_lists(request):
     achievments = emp_achievement.objects.filter(user = request.user)
     events = emp_event_organized.objects.filter(user = request.user)
 
-    active_apps = (Appraisal.objects.filter(applicant=request.user).exclude(status='rejected').exclude(status='accepted').order_by('-timestamp'))
-    archive_apps = Appraisal.objects.filter(applicant=request.user).exclude(status='requested').order_by('-timestamp')
-    request_active = (AppraisalRequest.objects.filter(appraisal__applicant=request.user).filter(appraisal__status='requested'))
-    request_archived = (AppraisalRequest.objects.filter(appraisal__applicant=request.user).exclude(appraisal__status='requested'))
+    active_apps = (Appraisal.objects.select_related('applicant').filter(applicant=request.user).exclude(status='rejected').exclude(status='accepted').order_by('-timestamp'))
+   
+    archive_apps = Appraisal.objects.select_related('applicant').filter(applicant=request.user).exclude(status='requested').order_by('-timestamp')
+    request_active = (AppraisalRequest.objects.select_related('appraisal').filter(appraisal__applicant=request.user).filter(appraisal__status='requested'))
+    request_archived = (AppraisalRequest.objects.select_related('appraisal').filter(appraisal__applicant=request.user).exclude(appraisal__status='requested'))
 
     response.update({
             'user_courses': user_courses,
@@ -1019,8 +1030,8 @@ def generate_appraisal_lists(request):
 def generate_appraisal_lists_hod(request):
 
     response = {}
-    review_apps_hod = AppraisalRequest.objects.filter(hod = request.user).exclude(status_hod = 'rejected').exclude(status_hod = 'accepted')
-    archived_apps_hod = AppraisalRequest.objects.filter(hod = request.user).exclude(status_hod = 'pending')
+    review_apps_hod = AppraisalRequest.objects.select_related('appraisal').filter(hod = request.user).exclude(status_hod = 'rejected').exclude(status_hod = 'accepted')
+    reviewed_apps_hod = AppraisalRequest.objects.select_related('appraisal').filter(hod = request.user).exclude(status_hod = 'pending')
     course_objects_all = Curriculum_Instructor.objects.all()
     consultancy_projects_all = emp_consultancy_projects.objects.all()
     research_projects_all = emp_research_projects.objects.all()
@@ -1031,9 +1042,11 @@ def generate_appraisal_lists_hod(request):
     publications_all = emp_published_books.objects.all()
     conferences_all = emp_confrence_organised.objects.all()
     achievments_all = emp_achievement.objects.all()
+    appraisal_all = Appraisal.objects.select_related('applicant').all()
 
     response.update({
-        'archived_apps_hod': archived_apps_hod,
+        'hod': True,
+        'reviewed_apps_hod': reviewed_apps_hod,
         'course_objects_all': course_objects_all,
         'review_apps_hod': review_apps_hod,
         'thesis_all': thesis_all,
@@ -1044,15 +1057,16 @@ def generate_appraisal_lists_hod(request):
         'conferences_all': conferences_all,
         'achievments_all': achievments_all,
         'consultancy_projects_all': consultancy_projects_all,
-        'research_projects_all': research_projects_all
+        'research_projects_all': research_projects_all,
+        'appraisal_all': appraisal_all
     })
     return response
 
 
 def generate_appraisal_lists_director(request):
     response = {}
-    review_apps_director = AppraisalRequest.objects.filter(director = request.user).exclude(status_hod = 'rejected').exclude(status_hod = 'pending').exclude(status_director = 'rejected').exclude(status_director = 'accepted')
-    archived_apps_director = AppraisalRequest.objects.filter(director = request.user).exclude(status_director = 'pending')
+    review_apps_director = AppraisalRequest.objects.select_related('appraisal').filter(director = request.user).exclude(status_hod = 'rejected').exclude(status_hod = 'pending').exclude(status_director = 'rejected').exclude(status_director = 'accepted')
+    reviewed_apps_director = AppraisalRequest.objects.select_related('appraisal').filter(director = request.user).exclude(status_director = 'pending')
     course_objects_all = Curriculum_Instructor.objects.all()
     consultancy_projects_all = emp_consultancy_projects.objects.all()
     research_projects_all = emp_research_projects.objects.all()
@@ -1063,11 +1077,12 @@ def generate_appraisal_lists_director(request):
     publications_all = emp_published_books.objects.all()
     conferences_all = emp_confrence_organised.objects.all()
     achievments_all = emp_achievement.objects.all()
-
+    appraisal_all = Appraisal.objects.select_related('applicant').all()
     response.update({
+        'director': True,
         'course_objects_all': course_objects_all,
         'review_apps_director': review_apps_director,
-        'archived_apps_director': archived_apps_director,
+        'reviewed_apps_director': reviewed_apps_director,
         'thesis_all': thesis_all,
         'events_all': events_all,
         'patents_all': patents_all,
@@ -1076,7 +1091,8 @@ def generate_appraisal_lists_director(request):
         'conferences_all': conferences_all,
         'achievments_all': achievments_all,
         'consultancy_projects_all': consultancy_projects_all,
-        'research_projects_all': research_projects_all
+        'research_projects_all': research_projects_all,
+        'appraisal_all': appraisal_all
     })
 
     return response
@@ -1088,7 +1104,6 @@ def establishment(request):
     response = {}
     # Check if establishment variables exist, if not create some fields or ask for them
     response.update(initial_checks(request))
-    # print(request.user.username)
     if is_admin(request) and request.method == "POST":
         if is_cpda(request.POST):
             handle_cpda_admin(request)
