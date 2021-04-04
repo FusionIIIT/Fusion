@@ -74,7 +74,6 @@ function announce(event)
                 'location' : location,
                 'request_details' : request_details,
                 'upload_request' : upload_request,
-                
             },
             success : function (data){
 
@@ -83,7 +82,6 @@ function announce(event)
             window.location.replace('http://localhost:8000/dep/file_request/');
         }, 1500);
 
-                
             },
             error : function (data,err){
                 alert('Request successfully made ... ');

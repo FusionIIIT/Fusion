@@ -5,7 +5,7 @@ from django.db import models
 from applications.globals.models import ExtraInfo
 
 class Constants:
-    BREIF = (
+    BRIEF = (
         ('meet_request', 'meet_request'),
         ('hall-3', 'hall-3'),
         ('hall-4', 'hall-4'),
@@ -40,19 +40,22 @@ class Receiver(models.Model):
     def __str__(self):
         return str(self.id)
 
-# class StudentRequest(models.Model):
-#     request_maker = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
-#     request_date = models.DateTimeField(default=timezone.now)
-#    # request_date = models.DateTimeField(default=timezone.now)
-#     brief = models.CharField(choices=Constants.BRIEF,
-#                                       max_length=20, default='meet_request')
-#     details = models.CharField(max_length=200)
-#     status = models.CharField(max_length=50,default='Pending')
-#     remarks = models.CharField(max_length=300, default="--")
-#     request_receiver = models.ForeignKey(Receiver, blank=True, null=True,on_delete=models.CASCADE)
-#     upload_request = models.FileField(blank=True)
-#     def __str__(self):
-#         return str(self.id) + '-' + self.area
+class StudentRequest(models.Model):
+    request_maker = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
+    request_date = models.DateTimeField(default="04-04-2021")
+   # request_date = models.DateTimeField(default=timezone.now)
+    department = models.CharField(max_length=40,default="ALL")
+    location = models.CharField(max_length=40,default="")
+    # brief = models.CharField(choices=Constants.BRIEF,max_length=20, default='meet_request')
+    request_details = models.CharField(max_length=200)
+    upload_request = models.FileField(blank=True)
+    ##request status fields below
+    status = models.CharField(max_length=50,default='Pending')
+    remarks = models.CharField(max_length=300, default="--")
+    request_receiver = models.ForeignKey(Receiver, blank=True, null=True,on_delete=models.CASCADE)
+
+    def __str__(self):
+        return str(self.id) + '-' + self.area
 
 
 class Announcements(models.Model):
