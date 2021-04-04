@@ -3,9 +3,6 @@ from applications.academic_information.models import Student
 from applications.eis.api.views import profile as eis_profile
 from applications.globals.models import (HoldsDesignation,Designation)
 from applications.gymkhana.api.views import coordinator_club
-from applications.placement_cell.models import (Achievement, Course, Education,
-                                                Experience, Has, Patent,
-                                                Project, Publication, Skill)
 from django.shortcuts import get_object_or_404, redirect
 
 from rest_framework.permissions import IsAuthenticated
@@ -103,140 +100,7 @@ def profile(request, username=None):
         return Response(data=resp, status=status.HTTP_200_OK)
     elif profile['user_type'] == 'faculty':
         return redirect('/eis/api/profile/' + (username+'/' if username else ''))
-
-@api_view(['PUT'])
-def profile_update(request):
-    user = request.user
-    profile = user.extrainfo
-    current = user.current_designation.filter(designation__name="student")
-    if current:
-        student = profile.student
-        if 'education' in request.data:
-            data = request.data
-            data['education']['unique_id'] = profile
-            serializer = serializers.EducationSerializer(data=data['education'])
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        elif 'profilesubmit' in request.data:
-            serializer = serializers.ExtraInfoSerializer(profile, data=request.data['profilesubmit'],partial=True)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        elif 'skillsubmit' in request.data:
-            serializer = serializers.HasSerializer(data=request.data['skillsubmit'])
-            if serializer.is_valid():
-                serializer.save(unique_id=student)
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        elif 'achievementsubmit' in request.data:
-            request.data['achievementsubmit']['unique_id'] = profile
-            serializer = serializers.AchievementSerializer(data=request.data['achievementsubmit'])
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        elif 'publicationsubmit' in request.data:
-            request.data['publicationsubmit']['unique_id'] = profile
-            serializer = serializers.PublicationSerializer(data=request.data['publicationsubmit'])
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        elif 'patentsubmit' in request.data:
-            request.data['patentsubmit']['unique_id'] = profile
-            serializer = serializers.PatentSerializer(data=request.data['patentsubmit'])
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        elif 'coursesubmit' in request.data:
-            request.data['coursesubmit']['unique_id'] = profile
-            serializer = serializers.CourseSerializer(data=request.data['coursesubmit'])
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        elif 'projectsubmit' in request.data:
-            request.data['projectsubmit']['unique_id'] = profile
-            serializer = serializers.ProjectSerializer(data=request.data['projectsubmit'])
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        elif 'experiencesubmit' in request.data:
-            request.data['experiencesubmit']['unique_id'] = profile
-            serializer = serializers.ExperienceSerializer(data=request.data['experiencesubmit'])
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    return Response({'error': 'Cannot update'}, status=status.HTTP_400_BAD_REQUEST)
-
-@api_view(['DELETE'])
-def profile_delete(request, id):
-    user = request.user
-    profile = user.extrainfo
-    student = profile.student
-    if 'deleteskill' in request.data:
-        try:
-            skill = Has.objects.get(id=id)
-        except:
-            return Response({'error': 'Skill does not exist'}, status=status.HTTP_400_BAD_REQUEST)
-        skill.delete()
-        return Response({'message': 'Skill deleted successfully'}, status=status.HTTP_200_OK)
-    elif 'deleteedu' in request.data:
-        try:
-            education = Education.objects.get(id=id)
-        except:
-            return Response({'error': 'Education does not exist'}, status=status.HTTP_400_BAD_REQUEST)
-        education.delete()
-        return Response({'message': 'Education deleted successfully'}, status=status.HTTP_200_OK)
-    elif 'deletecourse' in request.data:
-        try:
-            course = Course.objects.get(id=id)
-        except:
-            return Response({'error': 'Course does not exist'}, status=status.HTTP_400_BAD_REQUEST)
-        course.delete()
-        return Response({'message': 'Course deleted successfully'}, status=status.HTTP_200_OK)
-    elif 'deleteexp' in request.data:
-        try:
-            experience = Experience.objects.get(id=id)
-        except:
-            return Response({'error': 'Experience does not exist'}, status=status.HTTP_400_BAD_REQUEST)
-        experience.delete()
-        return Response({'message': 'Experience deleted successfully'}, status=status.HTTP_200_OK)
-    elif 'deletepro' in request.data:
-        try:
-            project = Project.objects.get(id=id)
-        except:
-            return Response({'error': 'Project does not exist'}, status=status.HTTP_400_BAD_REQUEST)
-        project.delete()
-        return Response({'message': 'Project deleted successfully'}, status=status.HTTP_200_OK)
-    elif 'deleteach' in request.data:
-        try:
-            achievement = Achievement.objects.get(id=id)
-        except:
-            return Response({'error': 'Achievement does not exist'}, status=status.HTTP_400_BAD_REQUEST)
-        achievement.delete()
-        return Response({'message': 'Achievement deleted successfully'}, status=status.HTTP_200_OK)
-    elif 'deletepub' in request.data:
-        try:
-            publication = Publication.objects.get(id=id)
-        except:
-            return Response({'error': 'Publication does not exist'}, status=status.HTTP_400_BAD_REQUEST)
-        publication.delete()
-        return Response({'message': 'Publication deleted successfully'}, status=status.HTTP_200_OK)
-    elif 'deletepat' in request.data:
-        try:
-            patent = Patent.objects.get(id=id)
-        except:
-            return Response({'error': 'Patent does not exist'}, status=status.HTTP_400_BAD_REQUEST)
-        patent.delete()
-        return Response({'message': 'Patent deleted successfully'}, status=status.HTTP_200_OK)
-    return Response({'error': 'Wrong attribute'}, status=status.HTTP_400_BAD_REQUEST)
+      
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -256,3 +120,4 @@ def NotificationRead(request):
             'error':'Failed, notification is not marked as seen.'
         }
         return Response(response,status=status.HTTP_404_NOT_FOUND)
+        

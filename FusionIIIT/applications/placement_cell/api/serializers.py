@@ -3,8 +3,7 @@ from rest_framework import serializers
 
 from applications.placement_cell.models import (Achievement, Course, Education,
                                                 Experience, Has, Patent,
-                                                Project, Publication, Skill,
-                                                PlacementStatus, NotifyStudent)
+                                                Project, Publication, Skill)
 
 class SkillSerializer(serializers.ModelSerializer):
 
@@ -18,15 +17,6 @@ class HasSerializer(serializers.ModelSerializer):
     class Meta:
         model = Has
         fields = ('skill_id','skill_rating')
-
-    def create(self, validated_data):
-        skill = validated_data.pop('skill_id')
-        skill_id, created = Skill.objects.get_or_create(**skill)
-        try:
-            has_obj = Has.objects.create(skill_id=skill_id,**validated_data)
-        except:
-            raise serializers.ValidationError({'skill': 'This skill is already present'})
-        return has_obj
 
 class EducationSerializer(serializers.ModelSerializer):
 
@@ -69,16 +59,3 @@ class PatentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Patent
         fields = ('__all__')
-
-class NotifyStudentSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = NotifyStudent
-        fields = ('__all__')
-
-class PlacementStatusSerializer(serializers.ModelSerializer):
-    notify_id = NotifyStudentSerializer()
-
-    class Meta:
-        model = PlacementStatus
-        fields = ('notify_id', 'invitation', 'placed', 'timestamp', 'no_of_days')
