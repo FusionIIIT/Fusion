@@ -10,7 +10,7 @@ from applications.globals.models import (ExtraInfo, HoldsDesignation, Department
 from applications.placement_cell.api.serializers import (SkillSerializer, HasSerializer,
                                                         EducationSerializer, CourseSerializer, ExperienceSerializer,
                                                         ProjectSerializer, AchievementSerializer, PublicationSerializer,
-                                                        PatentSerializer)
+                                                        PatentSerializer, PlacementStatusSerializer, NotifyStudentSerializer)
 
 User = get_user_model()
 
