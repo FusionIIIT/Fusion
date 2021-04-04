@@ -9,11 +9,12 @@ function announce(event)
         var message= $('input[name="announcement"]').val();
         var batch = $('input[name="batch"]').val();
         var programme =  $('input[name="programme"]').val() ;
+        var department = $('input[name="department"]').val() ;
         var upload_announcement =$('input[name="upload_announcement"]').val() ;
-        // console.log(batch);
-        // console.log(message);
-        // console.log(programme);
-        if(message=="" || batch=="" || programme =="" )
+        console.log(batch);
+        console.log(message);
+        console.log(programme);
+        if(message=="" || batch=="" || programme =="" || department=="")
         {
             alert("Please fill all the details!");
             return;
@@ -29,7 +30,7 @@ function announce(event)
                     'batch' : batch,
                     'programme' : programme,
                     'upload_announcement' : upload_announcement,
-
+                    'department' : department,
                 },
                 success : function (data){
 

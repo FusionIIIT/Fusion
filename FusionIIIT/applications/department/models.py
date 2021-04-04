@@ -59,9 +59,9 @@ class Announcements(models.Model):
     maker_id = models.ForeignKey(ExtraInfo, on_delete=models.CASCADE)
     ann_date = models.DateTimeField(default="04-04-2021")
     message = models.CharField(max_length=200)
-    batch = models.IntegerField(default="2016")
+    batch = models.CharField(max_length=40,default="Year-1")
+    department = models.CharField(max_length=40,default="ALL")
     programme = models.CharField(max_length=10, choices=Constants.PROGRAMME)
     upload_announcement = models.FileField(blank=True)
     def __str__(self):
         return str(self.maker_id.user.username)
-

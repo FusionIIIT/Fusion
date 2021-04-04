@@ -1,6 +1,6 @@
 from applications.globals.models import Faculty
 from applications.department.models import Announcements
-import datetime
+from datetime import date
 import json
 from operator import or_
 from functools import reduce
@@ -58,11 +58,14 @@ def hod(request):
     if user_designation == "student":
         return render(request,"department/index.html")
     elif(str(user.extrainfo.user_type)=='faculty'):
-        return render(request, 'department/dep_request.html', {"user_designation":'faculty'})
+        # return render(request, 'department/dep_request.html', {"user_designation":'faculty'})
+        return file_request(request)
 
 def file_request(request):
     a = get_object_or_404(User, username=request.user.username)
+    print("a", a)
     y = ExtraInfo.objects.all().select_related('user','department').filter(user=a).first()
+    print("user_type", y.user_type)
     num = 1
     ann_maker_id = y.id
     print("****************Before POST*******************")
@@ -70,23 +73,25 @@ def file_request(request):
         print("**************** INSIDE POST *******************")
         batch = request.POST.get('batch', '')
         programme = request.POST.get('programme', '')
-        message = request.POST.get('message', '')
+        message = request.POST.get('announcement', '')
         upload_announcement = request.FILES.get('upload_announcement')
-        ann_date = datetime.now()
+        department = request.POST.get('department')
+        ann_date = date.today()
         y = ExtraInfo.objects.all().select_related('user','department').get(id=ann_maker_id)
-        # print("***********************************")
-        # print("y = ",y)
-        # print("batch = ",batch)
-        # print("programme = ",programme)
-        # print("message = ",message)
-        # print("***********************************")
+        print("***********************************")
+        print("y = ",y)
+        print("batch = ",batch)
+        print("programme = ",programme)
+        print("message = ",message)
+        print("***********************************")
         obj1, created = Announcements.objects.get_or_create(maker_id=y,
                                     batch=batch,
                                     programme=programme,
                                     message=message,
                                     upload_announcement=upload_announcement,
+                                    department = department,
                                     ann_date=ann_date)
-    return render(request, 'department/dep_request.html')
+    return render(request, 'department/dep_request.html', {"user_designation":y.user_type})
 
 
 @login_required(login_url='/accounts/login')
