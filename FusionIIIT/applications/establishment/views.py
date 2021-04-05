@@ -106,7 +106,7 @@ def handle_cpda_admin(request):
             application.tracking_info.reviewer_design3 = reviewer_design3
             application.tracking_info.remarks = remarks
             application.tracking_info.remarks_rev1="Not reviewed yet"
-            application.trfroacking_info.remarks_rev2="Not reviewed yet"
+            application.tracking_info.remarks_rev2="Not reviewed yet"
             application.tracking_info.remarks_rev3="Not reviewed yet"
             application.tracking_info.review_status = 'under_review'
             application.tracking_info.save()
