@@ -8,12 +8,9 @@ function announce(event)
         {
         var message= $('input[name="announcement"]').val();
         var batch = $('input[name="batch"]').val();
-        var programme =  $('input[name="programme"]').val() ;
-        var department = $('input[name="department"]').val() ;
-        var upload_announcement =$('input[name="upload_announcement"]').val() ;
-        console.log(batch);
-        console.log(message);
-        console.log(programme);
+        var programme =  $('input[name="programme"]').val();
+        var department = $('input[name="department"]').val();
+        var upload_announcement =$('input[name="upload_announcement"]').val();
         if(message=="" || batch=="" || programme =="" || department=="")
         {
             alert("Please fill all the details!");
@@ -53,11 +50,8 @@ function request(event)
     {
     var department= $('input[name="Department"]').val();
     var location = $('input[name="Location"]').val();
-    var request_details =  $('input[name="request_details"]').val() ;
-    var upload_request=$('input[name="upload_request"]').val() ;
-    console.log(department);
-    console.log(location);
-    console.log(request_details);
+    var request_details =  $('input[name="request_details"]').val();
+    var upload_request=$('input[name="upload_request"]').val();
     if(department=="" || location=="" || request_details =="" )
     {
         alert("Please fill all the details!");

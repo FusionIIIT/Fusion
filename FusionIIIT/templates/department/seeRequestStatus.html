@@ -4,7 +4,7 @@
     {% comment %}The tab menu starts here!{% endcomment %}
     <div class="ui pointing secondary menu">
         <a class="active item" data-tab="all_complaint">
-            All Complaint History
+            All Request History
         </a>
         <a class="item" data-tab="feedback">
             Feedback Received
@@ -13,13 +13,13 @@
 
     <div class="ui active tab" data-tab="all_complaint">
         <div class="ui vertical segment">
-            Location of all these complaint is : <b>{{ area }}</b>
+            Location of all these request is : <b>{{ area }}</b>
             <table class="ui very basic collapsing celled sortable table"
-                   style="padding-left: 2.5%;
-                                                          padding-right: 2.5%;
-                                                          padding-top: 1%;
-                                                          padding-bottom: 1.5%;
-                                                          margin: auto;">
+                    style="padding-left: 2.5%;
+                    padding-right: 2.5%;
+                    padding-top: 1%;
+                    padding-bottom: 1.5%;
+                    margin: auto;">
                 <thead>
                 <tr>
                     <th>
@@ -128,25 +128,25 @@
 
     <div class="ui tab" data-tab="feedback">
         <div class="ui vertical segment ">
-            Location of all these complaint is : <b>{{ area }}</b>
+            Location of all these request is : <b>{{ area }}</b>
             <p></p>
             {% for i in all_complaint %}
             <div class="ui header">
-                <div>Complaint ID :{{ i.id }}</div>
+                <div>Request ID :{{ i.id }}</div>
                 <div class="fields">
                     <div class="eight wide field">
                         <label>Name :
                             {{ i.complainer.user.username }}</label>
                     </div>
                     <div class="">
-                        <label>Complaint Date: {{ i.complaint_date }}</label>
+                        <label>Request Date: {{ i.complaint_date }}</label>
                     </div>
                 </div>
             </div>
             <div class="extra content">
                 <div class="fields">
                     <div class="eight wide field">
-                        <label>Complaint Finished On :
+                        <label>Request Finished On :
                             {{ i.complaint_finish }}</label>
                     </div>
                     <div class="">
