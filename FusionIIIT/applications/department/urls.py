@@ -20,7 +20,8 @@ urlpatterns = [
     # url(r'^MtechSecondYear_Students/$', views.MtechSecondYear_Students, name='MtechSecondYear_Students'),
     # url(r'^PhD_Students/$', views.PhD_Students, name='PhD_Students'),
 
-    url(r'^cse_faculty/$', views.cse_faculty, name='cse_faculty'),
-    url(r'^ece_faculty/$', views.ece_faculty, name='ece_faculty'),
-    url(r'^me_faculty/$', views.me_faculty, name='me_faculty')
+#     url(r'^cse_faculty/$', views.cse_faculty, name='cse_faculty'),
+#     url(r'^ece_faculty/$', views.ece_faculty, name='ece_faculty'),
+#     url(r'^me_faculty/$', views.me_faculty, name='me_faculty')
+
 ]

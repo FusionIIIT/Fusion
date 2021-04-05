@@ -59,8 +59,8 @@
 
                                 {% for stu in announcements.all %}
                                     <tr>
-                                        <td>{{ stu.ann_date }}</td>
-                                        <td>{{ stu.maker_id }}</td>
+                                        <td>{{ stu.ann_date.date }}</td>
+                                        <td>{{ stu.maker_id.user }}</td>
                                         <td>{{ stu.programme }}</td>
                                         <td>{{ stu.batch }}</td>
                                         <td>{{ stu.message }}</td>
@@ -107,8 +107,8 @@
 
                                 {% for stu in announcements.cse %}
                                     <tr>
-                                        <td>{{ stu.ann_date }}</td>
-                                        <td>{{ stu.maker_id }}</td>
+                                        <td>{{ stu.ann_date.date }}</td>
+                                        <td>{{ stu.maker_id.user }}</td>
                                         <td>{{ stu.programme }}</td>
                                         <td>{{ stu.batch }}</td>
                                         <td>{{ stu.message }}</td>
@@ -155,8 +155,8 @@
 
                                 {% for stu in announcements.ece %}
                                     <tr>
-                                        <td>{{ stu.ann_date }}</td>
-                                        <td>{{ stu.maker_id }}</td>
+                                        <td>{{ stu.ann_date.date }}</td>
+                                        <td>{{ stu.maker_id.user }}</td>
                                         <td>{{ stu.programme }}</td>
                                         <td>{{ stu.batch }}</td>
                                         <td>{{ stu.message }}</td>
@@ -203,8 +203,8 @@
 
                                 {% for stu in announcements.me %}
                                     <tr>
-                                        <td>{{ stu.ann_date }}</td>
-                                        <td>{{ stu.maker_id }}</td>
+                                        <td>{{ stu.ann_date.date }}</td>
+                                        <td>{{ stu.maker_id.user }}</td>
                                         <td>{{ stu.programme }}</td>
                                         <td>{{ stu.batch }}</td>
                                         <td>{{ stu.message }}</td>
@@ -251,8 +251,8 @@
 
                                 {% for stu in announcements.sm %}
                                     <tr>
-                                        <td>{{ stu.ann_date }}</td>
-                                        <td>{{ stu.maker_id }}</td>
+                                        <td>{{ stu.ann_date.date }}</td>
+                                        <td>{{ stu.maker_id.user }}</td>
                                         <td>{{ stu.programme }}</td>
                                         <td>{{ stu.batch }}</td>
                                         <td>{{ stu.message }}</td>

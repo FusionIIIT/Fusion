@@ -65,13 +65,15 @@ def hod(request):
     fac_view = request.user.holds_designations.filter(designation__name='faculty').exists()
     student = request.user.holds_designations.filter(designation__name='student').exists()
     context = browse_announcements()
+    context_f = faculty()
     user_designation = ""
     if fac_view:
         user_designation = "faculty"
     elif student:
         user_designation = "student"
     if user_designation == "student":
-        return render(request,"department/index.html", {"announcements":context})
+        return render(request,"department/index.html", {"announcements":context,
+                                                        "fac_list" : context_f})
     elif(str(user.extrainfo.user_type)=='faculty'):
         # return render(request, 'department/dep_request.html', {"user_designation":'faculty'})
         return file_request(request)
@@ -225,20 +227,32 @@ def All_Students(request,bid):
 #     id_dict={'student_list':student_list7,}
 #     return render(request, 'department/AllStudents.html',context=id_dict)
 
-def cse_faculty(request):
+# def cse_faculty(request):
+#     cse_f=ExtraInfo.objects.filter(department__name='CSE',user_type='faculty')
+#     id_dict={'fac_list':cse_f,'department':'CSE'}
+#     return render(request,'department/faculty.html',context=id_dict)
+
+# def ece_faculty(request):
+#     ece_f=ExtraInfo.objects.filter(department__name='ECE',user_type='faculty')
+#     id_dict={'fac_list':ece_f,'department':'ECE'}
+#     return render(request,'department/faculty.html',context=id_dict)
+
+# def me_faculty(request):
+#     me_f=ExtraInfo.objects.filter(department__name='ME',user_type='faculty')
+#     id_dict={'fac_list':me_f,'department':'ME'}
+#     return render(request,'department/faculty.html',context=id_dict)
+
+def faculty():
     cse_f=ExtraInfo.objects.filter(department__name='CSE',user_type='faculty')
-    id_dict={'fac_list':cse_f,'department':'CSE'}
-    return render(request,'department/faculty.html',context=id_dict)
-
-def ece_faculty(request):
     ece_f=ExtraInfo.objects.filter(department__name='ECE',user_type='faculty')
-    id_dict={'fac_list':ece_f,'department':'ECE'}
-    return render(request,'department/faculty.html',context=id_dict)
-
-def me_faculty(request):
     me_f=ExtraInfo.objects.filter(department__name='ME',user_type='faculty')
-    id_dict={'fac_list':me_f,'department':'ME'}
-    return render(request,'department/faculty.html',context=id_dict)
+    context_f = {
+        "cse_f" : cse_f,
+        "ece_f" : ece_f,
+        "me_f" : me_f,
+    }
+    return context_f
+
 
 # @login_required
 # def make_announcements(request,maker_id):
