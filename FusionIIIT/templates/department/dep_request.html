@@ -52,6 +52,11 @@
                             Make Announcement
                             <i class="right floated chevron right icon"></i>
                         </a>
+
+                        <a class="item" data-tab="fourth" id="br_ann">
+                            Browse Announcement
+                            <i class="right floated chevron right icon"></i>
+                        </a>
                     {% endif %}
                     
                 </div>
@@ -90,6 +95,14 @@
                 <div class="ui tab segment" data-tab="third">
                     {% block make_announcement %}
                         {% include "department/make_announcements_fac.html" %}
+                    {% endblock %}
+                </div>
+                {% comment %}status of complaint!{% endcomment %}
+
+                {% comment %}status of complaint!{% endcomment %}
+                <div class="ui tab segment" data-tab="fourth">
+                    {% block browse_announcement %}
+                        {% include "department/browse_announcements.html" %}
                     {% endblock %}
                 </div>
                 {% comment %}status of complaint!{% endcomment %}

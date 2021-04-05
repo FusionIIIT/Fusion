@@ -49,7 +49,7 @@ function announce(event)
         }
     };
 
-    function request(event)
+function request(event)
     {
     var department= $('input[name="Department"]').val();
     var location = $('input[name="Location"]').val();

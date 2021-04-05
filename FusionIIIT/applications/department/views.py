@@ -19,7 +19,7 @@ from applications.globals.models import (Designation, ExtraInfo,
 from applications.eis.models import (faculty_about, emp_research_projects)
 from notification.views import  complaint_system_notif
 
-#from .models import ()
+from .models import Announcements
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 
@@ -42,21 +42,36 @@ def admin(request):
     hd_hod = HoldsDesignation.objects.filter(
         user=request.user, designation=hod)
 
+def browse_announcements():
+    cse_ann = Announcements.objects.filter(department="CSE")
+    ece_ann = Announcements.objects.filter(department="ECE")
+    me_ann = Announcements.objects.filter(department="ME")
+    sm_ann = Announcements.objects.filter(department="SM")
+    all_ann = Announcements.objects.filter(department="ALL")
+
+    context = {
+        "cse" : cse_ann,
+        "ece" : ece_ann,
+        "me" : me_ann,
+        "sm" : sm_ann,
+        "all" : all_ann
+    }
+
+    return context
 
 def hod(request):
     user = request.user
     
-    fac_view = request.user.holds_designations.filter(designation__name='faculty').exists() 
-    # print(request.user.holds_designations.filter(designation__name='faculty'))
+    fac_view = request.user.holds_designations.filter(designation__name='faculty').exists()
     student = request.user.holds_designations.filter(designation__name='student').exists()
-
+    context = browse_announcements()
     user_designation = ""
     if fac_view:
         user_designation = "faculty"
     elif student:
         user_designation = "student"
     if user_designation == "student":
-        return render(request,"department/index.html")
+        return render(request,"department/index.html", {"announcements":context})
     elif(str(user.extrainfo.user_type)=='faculty'):
         # return render(request, 'department/dep_request.html', {"user_designation":'faculty'})
         return file_request(request)
@@ -78,12 +93,13 @@ def file_request(request):
         department = request.POST.get('department')
         ann_date = date.today()
         y = ExtraInfo.objects.all().select_related('user','department').get(id=ann_maker_id)
-        print("***********************************")
-        print("y = ",y)
-        print("batch = ",batch)
-        print("programme = ",programme)
-        print("message = ",message)
-        print("***********************************")
+        # print("***********************************")
+        # print("y = ",y)
+        # print("batch = ",batch)
+        # print("programme = ",programme)
+        # print("message = ",message)
+        # print("***********************************")
+
         obj1, created = Announcements.objects.get_or_create(maker_id=y,
                                     batch=batch,
                                     programme=programme,
@@ -91,9 +107,11 @@ def file_request(request):
                                     upload_announcement=upload_announcement,
                                     department = department,
                                     ann_date=ann_date)
-    ann_list=Student.objects.order_by('maker_id').filter(programme='B.tech',batch='Year-1',department='CSE').select_related('maker_id') 
 
-    return render(request, 'department/dep_request.html', {"user_designation":y.user_type}, context=ann_list)
+    context = browse_announcements()
+    return render(request, 'department/dep_request.html', {"user_designation":y.user_type,
+                                                            "announcements":context
+                                                        })
 
 
 @login_required(login_url='/accounts/login')
@@ -222,10 +240,10 @@ def me_faculty(request):
     id_dict={'fac_list':me_f,'department':'ME'}
     return render(request,'department/faculty.html',context=id_dict)
 
-@login_required
-def make_announcements(request,maker_id):
-    a = get_object_or_404(User, username=request.user.username)
-    y = ExtraInfo.objects.all().select_related('user','department').get(id=id)
+# @login_required
+# def make_announcements(request,maker_id):
+#     a = get_object_or_404(User, username=request.user.username)
+#     y = ExtraInfo.objects.all().select_related('user','department').get(id=id)
 
 #     if request.method == 'POST':
 #         maker_id = request.POST.get('maker_id', '')
@@ -244,23 +262,23 @@ def make_announcements(request,maker_id):
 
 #     return HttpResponseRedirect('/dep/browse_announcements/')
 
-def browse_announcements(request):
-    """
-    function that shows detail about complaint
-    """
-    # browse_announcements = Announcements.objects.select_related('maker_id','date','announcement','batch','programme').get(id=maker_id)
-    # if(browse_announcements.maker_id is None):
-    #     maker_id = browse_announcements.maker_id  
-    # else:
-    #     maker_id = browse_announcements.maker_id.id
-    #     Announcements.objects.select_related('maker_id','date','announcement','batch','programme').get(id=maker_id)        
-    # a=User.objects.get(username=browse_announcements.maker_id.user.username)           
-    # y=ExtraInfo.objects.all().select_related('user','department').get(user=a)
-    # num=0
+# def browse_announcements(request):
+#     """
+#     function that shows detail about complaint
+#     """
+#     # browse_announcements = Announcements.objects.select_related('maker_id','date','announcement','batch','programme').get(id=maker_id)
+#     # if(browse_announcements.maker_id is None):
+#     #     maker_id = browse_announcements.maker_id  
+#     # else:
+#     #     maker_id = browse_announcements.maker_id.id
+#     #     Announcements.objects.select_related('maker_id','date','announcement','batch','programme').get(id=maker_id)        
+#     # a=User.objects.get(username=browse_announcements.maker_id.user.username)           
+#     # y=ExtraInfo.objects.all().select_related('user','department').get(user=a)
+#     # num=0
     
    
-    # return render(request, "dep/browse_announcements.html", {"browse_announcements": browse_announcements, "maker_id":maker_id,"batch":batch,"programme":programme})
-    return render(request, 'department/browse_announcements.html')
+#     # return render(request, "dep/browse_announcements.html", {"browse_announcements": browse_announcements, "maker_id":maker_id,"batch":batch,"programme":programme})
+#     return render(request, 'department/browse_announcements.html')
 
 
 
