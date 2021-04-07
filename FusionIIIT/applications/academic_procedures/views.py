@@ -212,7 +212,7 @@ def academic_procedures_student(request):
 
 
         current_sem_branch_courses = get_branch_courses(request.user, user_sem, user_branch)
-        next_sem_branch_courses = get_branch_courses(request.user, user_sem, user_branch)
+        next_sem_branch_courses = get_branch_courses(request.user, user_sem+1, user_branch)
         acad_year = get_acad_year(user_sem, year)
         currently_registered_courses = get_currently_registered_courses(user_details.id, user_sem)
         current_credits = get_current_credits(currently_registered_courses)
@@ -1247,7 +1247,6 @@ def addCourse_list(request):
 def add_courses(request):
     if request.method == 'POST':
         try:
-            print(111111111111111111111111111111111111111111111111111111111111111111111)
             current_user = get_object_or_404(User, username=request.POST.get('user'))
             current_user = ExtraInfo.objects.all().filter(user=current_user).first()
             current_user = Student.objects.all().filter(id=current_user.id).first()
@@ -1274,7 +1273,6 @@ def add_courses(request):
 
 def verify_addCourse(request):
     if request.is_ajax():
-        print(request.POST.get('roll'),request.POST.get('course_code'))
         if request.POST.get('status_req') == "accept" :
             roll_no = request.POST.get('roll')
             curriculum_id = request.POST.get('curriculum_id')
@@ -1589,7 +1587,7 @@ def acad_person(request):
             # result_year = [1,2]
         change_queries = BranchChange.objects.select_related('branches','user','user__id','user__id__user','user__id__department').all()
 
-        course_verification_date = True
+        course_verification_date = get_course_verification_date_eligibilty(demo_date.date())
 
 
         initial_branch = []
