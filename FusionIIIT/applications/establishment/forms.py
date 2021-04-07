@@ -22,7 +22,7 @@ class Ltc_Form(forms.Form):
     pf_number = forms.CharField(label='PF Number', required=True)
     basic_pay = forms.IntegerField(label='Basic Pay', min_value=0, required=True)
 
-    is_leave_req = forms.ChoiceField(label='Is leave required ?', choices=Constants.LTC_LEAVE, required=True)
+    is_leave_req = forms.ChoiceField(label='Is leave required for LTC ?', choices=Constants.LTC_LEAVE, required=True)
     leave_start = forms.DateField(label='Leave Start Date')
     leave_end = forms.DateField(label='Leave End Date')
     family_departure_date = forms.DateField(label='Family Departure Date')
@@ -62,11 +62,11 @@ class Review_Form(forms.Form):
 class Ltc_Eligible_Form(forms.Form):
     username = forms.CharField(label="Username", required=True)
     joining_date = forms.DateField(label='Employee Joining Date', required=True)
-    current_block_size = forms.IntegerField(label="Current LTC Block Size", required=True, min_value=0)
+    current_block_size = forms.IntegerField(label="Current LTC Block Size", required=True, min_value=0,initial=4)
 
-    total_ltc_allowed = forms.IntegerField(label="Total LTC allowed", min_value=0)
-    hometown_ltc_allowed = forms.IntegerField(label="Hometown LTC allowed", min_value=0)
-    elsewhere_ltc_allowed = forms.IntegerField(label="Elsewhere LTC allowed", min_value=0)
+    total_ltc_allowed = forms.IntegerField(label="Total LTC allowed", min_value=0,initial=2)
+    hometown_ltc_allowed = forms.IntegerField(label="Hometown LTC allowed", min_value=0,initial=2)
+    elsewhere_ltc_allowed = forms.IntegerField(label="Elsewhere LTC allowed", min_value=0,initial=1)
 
-    hometown_ltc_availed = forms.IntegerField(label="Hometown LTC availed", min_value=0)
-    elsewhere_ltc_availed = forms.IntegerField(label="Elsewhere LTC availed", min_value=0)
+    hometown_ltc_availed = forms.IntegerField(label="Hometown LTC availed", min_value=0,initial=0)
+    elsewhere_ltc_availed = forms.IntegerField(label="Elsewhere LTC availed", min_value=0,initial=0)

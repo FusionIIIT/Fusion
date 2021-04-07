@@ -10,14 +10,13 @@
             LTC Request
         </a>
         <a class="item" data-tab="ltctwo">
-            Active Applications
-        </a>
+            Active         </a>
         <a class="item" data-tab="ltcthree">
-            Archived Applications
+            Archived 
         </a>
     {% endif %}
     <a class="item" data-tab="ltcfour">
-        Review Applications
+            Review 
     </a>
 </div>
 
@@ -30,6 +29,10 @@
                 You are {% if not ltc_info.eligible %}<u>not</u>{% endif %} eligible for 
                 availing LTC.
             </h2>
+            {% if lessthan1year %}
+                <h2>Years of job : {{ ltc_info.years_of_job }} years</h2>
+                <h2>You have less than 1 year of service.</h2>
+            {% endif %}
             {% if ltc_info.eligible %}
                 <h2>Years of job : {{ ltc_info.years_of_job }} years</h2>
                 <h2>Total LTC remaining : {{ ltc_info.total_ltc_remaining }} </h2>

@@ -13,6 +13,7 @@ from datetime import datetime,date
 from .models import *
 from .forms import *
 import numpy as np
+from dateutil.relativedelta import relativedelta
 
 def initial_checks(request):
     return {}
@@ -169,6 +170,16 @@ def handle_ltc_admin(request):
             # verify that app_id is not changed, ie untampered
             application = Ltc_application.objects.select_related('applicant').get(id=app_id)
             application.status = status
+            eligible_ltc_user=Ltc_eligible_user.objects.get(user=application.applicant)
+            if(application.is_hometown_or_elsewhere=='hometown' and eligible_ltc_user.hometown_ltc_availed<eligible_ltc_user.hometown_ltc_allowed):
+                eligible_ltc_user.hometown_ltc_availed+=1
+                if(eligible_ltc_user.hometown_ltc_availed==2):
+                    eligible_ltc_user.elsewhere_ltc_availed=1
+            if(application.is_hometown_or_elsewhere=='elsewhere' and eligible_ltc_user.elsewhere_ltc_availed<eligible_ltc_user.elsewhere_ltc_allowed):
+                eligible_ltc_user.elsewhere_ltc_availed+=1
+                eligible_ltc_user.hometown_ltc_availed+=1
+            
+            eligible_ltc_user.save()
             application.save()
             # add notif
             messages.success(request, 'Status updated successfully!')
@@ -303,6 +314,7 @@ def generate_cpda_admin_lists(request):
         'cpda_approved_apps': approved_apps,
         'cpda_archived_apps': archived_apps
     }
+    print('pending ',pending_apps)
     return response
 
 
@@ -522,79 +534,86 @@ def handle_ltc_eligible(request):
 
         status = 'requested'
         timestamp = datetime.now()
-        application = Ltc_application.objects.create(
-            # save all
-            applicant=applicant,
-            pf_number=pf_number,
-            basic_pay = basic_pay,
-            is_leave_required = is_leave_req,
-            leave_start = leave_start,
-            leave_end = leave_end,
-            family_departure_date = family_departure_date,
-            leave_nature = leave_nature,
-            purpose = purpose,
-            is_hometown_or_elsewhere = leave_type,
-            address_during_leave = address_during_leave,
-            phone_number = phone_number,
-            travel_mode = travel_mode,
-            requested_advance = requested_advance,
-            request_timestamp=timestamp,
-            status=status
-        )
-        # ltc_availed
-        count = 1
-        while(1):
-                  name = request.POST.get('Name1'+str(count))
-                  age = request.POST.get('Age1'+str(count))
-                  if(name == None):
-                      break
-                  ltc_availed = Ltc_availed.objects.create(
-                                  ltc = application,
-                                  name = name,
-                                  age = age
-                  )
         
-                  count += 1
-        # ltc_to_avail
-        count = 1
-        while(1):
-                  name = request.POST.get('Name2'+str(count))
-                  age = request.POST.get('Age2'+str(count))
-                  if(name == None):
-                      break
-                  ltc_to_avail = Ltc_to_avail.objects.create(
-                                  ltc = application,
-                                  name = name,
-                                  age = age
-                  )
-        
-                  count += 1
+        eligible_ltc_user=Ltc_eligible_user.objects.get(user=applicant)
+        ret = relativedelta(datetime.today().date(), eligible_ltc_user.date_of_joining)
+        ret=ret.years + ret.months/12 + ret.days/365
+        if(eligible_ltc_user.hometown_ltc_availed+eligible_ltc_user.elsewhere_ltc_availed>2):
+            messages.error(request, 'Not Eligible, LTC limit exceeded!!')
+        else:
+            application = Ltc_application.objects.create(
+                # save all
+                applicant=applicant,
+                pf_number=pf_number,
+                basic_pay = basic_pay,
+                is_leave_required = is_leave_req,
+                leave_start = leave_start,
+                leave_end = leave_end,
+                family_departure_date = family_departure_date,
+                leave_nature = leave_nature,
+                purpose = purpose,
+                is_hometown_or_elsewhere = leave_type,
+                address_during_leave = address_during_leave,
+                phone_number = phone_number,
+                travel_mode = travel_mode,
+                requested_advance = requested_advance,
+                request_timestamp=timestamp,
+                status=status
+            )
+            # ltc_availed
+            count = 1
+            while(1):
+                    name = request.POST.get('Name1'+str(count))
+                    age = request.POST.get('Age1'+str(count))
+                    if(name == None):
+                        break
+                    ltc_availed = Ltc_availed.objects.create(
+                                    ltc = application,
+                                    name = name,
+                                    age = age
+                    )
+            
+                    count += 1
+            # ltc_to_avail
+            count = 1
+            while(1):
+                    name = request.POST.get('Name2'+str(count))
+                    age = request.POST.get('Age2'+str(count))
+                    if(name == None):
+                        break
+                    ltc_to_avail = Ltc_to_avail.objects.create(
+                                    ltc = application,
+                                    name = name,
+                                    age = age
+                    )
+            
+                    count += 1
 
-        # Dependents
-        count = 1
-        while(1):
-                  name = request.POST.get('Name3'+str(count))
-                  age = request.POST.get('Age3'+str(count))
-                  depend = request.POST.get('Why fully dependent'+str(count))
-                  if(name == None):
-                      break
-                  dependent = Dependent.objects.create(
-                                  ltc = application,
-                                  name = name,
-                                  age = age,
-                                  depend = depend
-                  )
-        
-                  count += 1
+            # Dependents
+            count = 1
+            while(1):
+                    name = request.POST.get('Name3'+str(count))
+                    age = request.POST.get('Age3'+str(count))
+                    depend = request.POST.get('Why fully dependent'+str(count))
+                    if(name == None):
+                        break
+                    dependent = Dependent.objects.create(
+                                    ltc = application,
+                                    name = name,
+                                    age = age,
+                                    depend = depend
+                    )
+            
+                    count += 1
 
 
-        # next 3 lines are working magically, DON'T TOUCH THEM
-        track = Ltc_tracking.objects.create(
-            application = application,
-            review_status = 'to_assign'
-        )
-        # add notif here
-        messages.success(request, 'Request sent successfully!')
+            # next 3 lines are working magically, DON'T TOUCH THEM
+            track = Ltc_tracking.objects.create(
+                application = application,
+                review_status = 'to_assign'
+            )
+            # add notif here
+            messages.success(request, 'Request sent successfully!')
 
     if 'ltc_review' in request.POST:
         app_id = request.POST.get('app_id')
@@ -603,6 +622,7 @@ def handle_ltc_eligible(request):
         application = Ltc_application.objects.get(id=app_id)
         application.tracking_info.remarks = review_comment
         application.tracking_info.review_status = 'reviewed'
+        #if(application.is_hometown_or_elsewhere=='hometown')     
         application.tracking_info.save()
         # add notif here
         messages.success(request, 'Review submitted successfully!')
@@ -920,13 +940,18 @@ def generate_ltc_eligible_lists(request):
     ltc_info = {}
     ltc_queryset = Ltc_eligible_user.objects.select_related('user').filter(user=request.user)
     ltc_info['eligible'] = ltc_queryset.exists()
+    less_than_1_year=False
 
     if ltc_info['eligible']:
         ltc_info['years_of_job'] = ltc_queryset.first().get_years_of_job()
         ltc_info['total_ltc_remaining'] = ltc_queryset.first().total_ltc_remaining()
         ltc_info['hometown_ltc_remaining'] = ltc_queryset.first().hometown_ltc_remaining()
         ltc_info['elsewhere_ltc_remaining'] = ltc_queryset.first().elsewhere_ltc_remaining()
-
+        
+        
+        if(float(ltc_info['years_of_job'])<1):
+            ltc_info['eligible']=False
+            less_than_1_year=True
         active_apps = (Ltc_application.objects
                         .select_related('applicant')
                         .filter(applicant=request.user)
@@ -958,13 +983,14 @@ def generate_ltc_eligible_lists(request):
     depend_review = (Dependent.objects.filter(ltc__tracking_info__reviewer_id=request.user).filter(ltc__status='requested').filter(ltc__tracking_info__review_status='under_review'))
     for app in to_review_apps:
         app.reviewform = Review_Form(initial={'app_id': app.id})
-
+    
     response = {
         'ltc_info': ltc_info,
         'ltc_to_review_apps': to_review_apps,
         'ltc_availed_review': availed_review,
         'ltc_to_avail_review': to_avail_review,
-        'dependent_review': depend_review
+        'dependent_review': depend_review,
+        'lessthan1year': less_than_1_year
     }
     if ltc_info['eligible']:
         response.update({
