@@ -62,8 +62,9 @@ class DesignationSerializer(serializers.ModelSerializer):
         fields = ('__all__')
 
 class HoldsDesignationSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
     designation = DesignationSerializer()
 
     class Meta:
         model = HoldsDesignation
-        fields = ('designation','held_at')
+        fields = ('user','designation','held_at')
