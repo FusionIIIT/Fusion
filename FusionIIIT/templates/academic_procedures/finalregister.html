@@ -11,7 +11,7 @@
 
 <center><b>Final Registration</b></center>
     <div class="ui vertical segment">
-        {% if frd %}
+        {% if True %}
             {% if final_registration_flag == True %}
                 <p style="color:red"><CENTER>  You have already registered for this semester!!! </CENTER></p>
                  <center><a id="viewbtn1" class="btn" onclick="view1()" style="display: inline;">View Courses</a>
@@ -205,6 +205,32 @@
                     </div>
                 </div>
                     </form>
+
+                    <form id='payment' action='/academic-procedures/success' method="POST">{% csrf_token %}
+
+
+
+                        <h1>Fee Payment</h1>
+                        
+
+                          <script    src="https://checkout.razorpay.com/v1/checkout.js"
+                                     data-key="rzp_test_p860XxWC2yFrgd"
+                                     data-amount="4500000"
+                                     data-currency="INR"
+                                     data-order_id="{{payment.id}}"
+                                     data-buttontext="Pay with Razorpay"
+                                     data-name="IIITDM Jabalpur"
+                                     data-description="Test transaction"
+                                     data-image="https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcRpWzPOB8s9WRX7JXZ96x1oPESu-eoN5YUFfDKcebTKFn7piPBS&usqp=CAU"
+                                     data-prefill.name="{{ name }}"
+                                     data-prefill.email="{{ email }}"
+                                     data-prefill.contact="{{ phone }}"
+                                     data-theme.color="#F37254"></script>
+                          <input type="hidden" custom="Hidden Element" name="hidden">
+                  
+                        </form>
+
+
             {% endif %}
         {% else %}
             <CENTER><p style="color: red" >   Final Registration Date is yet to come </p></CENTER>
