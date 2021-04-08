@@ -279,12 +279,20 @@ def generate_cpda_admin_lists(request):
     for app in unreviewed_apps:
         # if status is requested:to_assign/reviewed
         if app.status == 'requested':
-            temp = Assign_Form(initial={'status': 'requested', 'app_id': app.id})
+            temp = Assign_Form(initial={'assign_status': 'requested','app_id': app.id})
             temp.fields["status"]._choices = [
                 ('requested', 'Requested'),
                 ('approved', 'Approved'),
                 ('rejected', 'Rejected')
             ]
+            temp.fields["assign_status"]._choices = [
+                ('requested', 'Requested')
+            ]
+            temp.fields["accept_status"]._choices = [
+                ('approved', 'Approved'),
+                ('rejected', 'Rejected')
+            ]
+
         # if status is adjustments_pending:to_assign/reviewed
         else:
             temp = Assign_Form(initial={'status': 'adjustments_pending', 'app_id': app.id})
@@ -363,11 +371,18 @@ def generate_ltc_admin_lists(request):
 
     # combine assign_form object into unreviewed_app object respectively
     for app in unreviewed_apps:
-        temp = Assign_Form(initial={'status': 'requested', 'app_id': app.id})
+        temp = Assign_Form(initial={'assign_status': 'requested','app_id': app.id})
         temp.fields["status"]._choices = [
             ('requested', 'Requested'),
             ('approved', 'Approved'),
             ('rejected', 'Rejected')
+        ]
+        temp.fields["assign_status"]._choices = [
+                ('requested', 'Requested')
+        ]
+        temp.fields["accept_status"]._choices = [
+                ('approved', 'Approved'),
+                ('rejected', 'Rejected')
         ]
         app.assign_form = temp
 
