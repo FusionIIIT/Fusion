@@ -190,22 +190,22 @@
                         <div class="content">
                             <div class="description">
                                 <label>Status : {{ app.status }}</label><br>
-                                <label>pf_number : {{ app.pf_number }}</label><br>
-                                <label>basic_pay : {{ app.basic_pay }}</label><br>
-                                <label>is_leave_required : {{ app.is_leave_required }}</label><br>
-                                <label>leave_start : {{ app.leave_start }}</label><br>
-                                <label>leave_end : {{ app.leave_end }}</label><br>
-                                <label>family_departure_date : {{ app.family_departure_date }}</label><br>
-                                <label>leave_nature : {{ app.leave_nature }}</label><br>
-                                <label>purpose : {{ app.purpose }}</label><br>
-                                <label>is_hometown_or_elsewhere : {{ app.is_hometown_or_elsewhere }}</label><br>
-                                <label>address_during_leave : {{ app.address_during_leave }}</label><br>
-                                <label>phone_number : {{ app.phone_number }}</label><br>
-                                <label>travel_mode : {{ app.travel_mode }}</label><br>
+                                <label>PF number : {{ app.pf_number }}</label><br>
+                                <label>Basic pay : {{ app.basic_pay }}</label><br>
+                                <label>Is leave required : {{ app.is_leave_required }}</label><br>
+                                <label>Start of leave : {{ app.leave_start }}</label><br>
+                                <label>End of leave : {{ app.leave_end }}</label><br>
+                                <label>Family departure date : {{ app.family_departure_date }}</label><br>
+                                <label>Nature of leave : {{ app.leave_nature }}</label><br>
+                                <label>Purpose : {{ app.purpose }}</label><br>
+                                <label>Is leave hometown or elsewhere : {{ app.is_hometown_or_elsewhere }}</label><br>
+                                <label>Address : {{ app.address_during_leave }}</label><br>
+                                <label>Phone number : {{ app.phone_number }}</label><br>
+                                <label>Mode of travel : {{ app.travel_mode }}</label><br>
                                 <label>Details of family members who have already availed ltc in this block
                                 <table border = '2'><th>Name</th><th>Age</th>
                                     {% for app2 in ltc_availed_active %}
-                                    {% if app2.ltc.leave_start == app.leave_start %}
+                                    {% if app2.ltc == app %}
                                     <tr>
                                         <td> 
                                             {{ app2.name }}
@@ -219,41 +219,41 @@
                                 </table>
                                 </label><br>
                                 <label>Details of family members who will avail ltc
-                                    <table border = '2'><th>Name</th><th>Age</th>
-                                        {% for app2 in ltc_to_avail_active %}
-                                        {% if app2.ltc.leave_start == app.leave_start %}
-                                        <tr>
-                                            <td> 
-                                                {{ app2.name }}
-                                            </td>
-                                            <td> 
-                                                {{ app2.age }}
-                                            </td>
-                                        </tr>
-                                        {% endif %}
-                                        {% endfor %}
-                                    </table>
+                                <table border = '2'><th>Name</th><th>Age</th>
+                                    {% for app2 in ltc_to_avail_active %}
+                                    {% if app2.ltc == app %}
+                                    <tr>
+                                        <td> 
+                                            {{ app2.name }}
+                                        </td>
+                                        <td> 
+                                            {{ app2.age }}
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                    {% endfor %}
+                                </table>
                                 </label><br>
                                 <label>Details of dependents
-                                    <table border = '2'><th>Name</th><th>Age</th><th>Why fully dependent</th>
-                                        {% for app2 in dependent_active %}
-                                        {% if app2.ltc.leave_start == app.leave_start %}
-                                        <tr>
-                                            <td> 
-                                                {{ app2.name }}
-                                            </td>
-                                            <td> 
-                                                {{ app2.age }}
-                                            </td>
-                                            <td> 
-                                                {{ app2.depend }}
-                                            </td>
-                                        </tr>
-                                        {% endif %}
-                                        {% endfor %}
-                                    </table>
+                                 <table border = '2'><th>Name</th><th>Age</th><th>Why fully dependent</th>
+                                    {% for app2 in dependent_active %}
+                                    {% if app2.ltc == app %}
+                                    <tr>
+                                        <td> 
+                                            {{ app2.name }}
+                                        </td>
+                                        <td> 
+                                            {{ app2.age }}
+                                        </td>                                           </td>
+                                        <td> 
+                                            {{ app2.depend }}
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                    {% endfor %}
+                                </table>
                                 </label><br>
-                                <label>requested_advance : {{ app.requested_advance }}</label><br>
+                                <label>Requested Advance : {{ app.requested_advance }}</label><br>
                             </div>
                         </div>
                         <div class="actions">
@@ -306,22 +306,22 @@
                         <div class="content">
                             <div class="description">
                                 <label>Status : {{ app.status }}</label><br>
-                                <label>pf_number : {{ app.pf_number }}</label><br>
-                                <label>basic_pay : {{ app.basic_pay }}</label><br>
-                                <label>is_leave_required : {{ app.is_leave_required }}</label><br>
-                                <label>leave_start : {{ app.leave_start }}</label><br>
-                                <label>leave_end : {{ app.leave_end }}</label><br>
-                                <label>family_departure_date : {{ app.family_departure_date }}</label><br>
-                                <label>leave_nature : {{ app.leave_nature }}</label><br>
-                                <label>purpose : {{ app.purpose }}</label><br>
-                                <label>is_hometown_or_elsewhere : {{ app.is_hometown_or_elsewhere }}</label><br>
-                                <label>address_during_leave : {{ app.address_during_leave }}</label><br>
-                                <label>phone_number : {{ app.phone_number }}</label><br>
-                                <label>travel_mode : {{ app.travel_mode }}</label><br>
+                                <label>PF number : {{ app.pf_number }}</label><br>
+                                <label>Basic pay : {{ app.basic_pay }}</label><br>
+                                <label>Is leave required : {{ app.is_leave_required }}</label><br>
+                                <label>Start of leave : {{ app.leave_start }}</label><br>
+                                <label>End of leave : {{ app.leave_end }}</label><br>
+                                <label>Family departure date : {{ app.family_departure_date }}</label><br>
+                                <label>Nature of leave : {{ app.leave_nature }}</label><br>
+                                <label>Purpose : {{ app.purpose }}</label><br>
+                                <label>Is leave hometown or elsewhere : {{ app.is_hometown_or_elsewhere }}</label><br>
+                                <label>Address : {{ app.address_during_leave }}</label><br>
+                                <label>Phone number : {{ app.phone_number }}</label><br>
+                                <label>Mode of travel : {{ app.travel_mode }}</label><br>
                                 <label>Details of family members who have already availed ltc in this block
                                     <table border = '2'><th>Name</th><th>Age</th>
                                         {% for app2 in ltc_availed_archived %}
-                                        {% if app2.ltc.leave_start == app.leave_start %}
+                                        {% if app2.ltc == app %}
                                         <tr>
                                             <td> 
                                                 {{ app2.name }}
@@ -335,41 +335,41 @@
                                     </table>
                                     </label><br>
                                     <label>Details of family members who will avail ltc
-                                        <table border = '2'><th>Name</th><th>Age</th>
-                                            {% for app2 in ltc_to_avail_archived %}
-                                            {% if app2.ltc.leave_start == app.leave_start %}
-                                            <tr>
-                                                <td> 
-                                                    {{ app2.name }}
-                                                </td>
-                                                <td> 
-                                                    {{ app2.age }}
-                                                </td>
-                                            </tr>
-                                            {% endif %}
-                                            {% endfor %}
-                                        </table>
+                                    <table border = '2'><th>Name</th><th>Age</th>
+                                        {% for app2 in ltc_to_avail_archived %}
+                                        {% if app2.ltc == app %}
+                                        <tr>
+                                            <td> 
+                                                {{ app2.name }}
+                                            </td>
+                                            <td> 
+                                                {{ app2.age }}
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </table>
                                     </label><br>
                                     <label>Details of dependents
-                                        <table border = '2'><th>Name</th><th>Age</th><th>Why fully dependent</th>
-                                            {% for app2 in dependent_archived %}
-                                            {% if app2.ltc.leave_start == app.leave_start %}
-                                            <tr>
-                                                <td> 
-                                                    {{ app2.name }}
-                                                </td>
-                                                <td> 
-                                                    {{ app2.age }}
-                                                </td>
-                                                <td> 
-                                                    {{ app2.depend }}
-                                                </td>
-                                            </tr>
-                                            {% endif %}
-                                            {% endfor %}
-                                        </table>
+                                    <table border = '2'><th>Name</th><th>Age</th><th>Why fully dependent</th>
+                                        {% for app2 in dependent_archived %}
+                                        {% if app2.ltc == app %}
+                                        <tr>
+                                            <td> 
+                                                {{ app2.name }}
+                                            </td>
+                                            <td> 
+                                                {{ app2.age }}
+                                            </td>
+                                            <td> 
+                                                {{ app2.depend }}
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </table>
                                     </label><br>
-                                <label>requested_advance : {{ app.requested_advance }}</label><br>
+                                <label>Requested Advance : {{ app.requested_advance }}</label><br>
                             </div>
                         </div>
                         <div class="actions">
@@ -435,62 +435,62 @@
                                 </div>
                                 <div class="field">
                                     <div class="disabled field">
-                                        <label>pf_number : {{ app.pf_number }}</label>
+                                        <label>PF Number : {{ app.pf_number }}</label>
                                     </div>
                                 </div>
                                 <div class="field">
                                     <div class="disabled field">
-                                        <label>basic_pay : {{ app.basic_pay }}</label>
+                                        <label>Basic pay : {{ app.basic_pay }}</label>
                                     </div>
                                 </div>
                                 <div class="field">
                                     <div class="disabled field">
-                                        <label>is_leave_required : {{ app.is_leave_required }}</label>
+                                        <label>Is leave required : {{ app.is_leave_required }}</label>
                                     </div>
                                 </div>
                                 <div class="field">
                                     <div class="disabled field">
-                                        <label>leave_start : {{ app.leave_start }}</label>
+                                        <label>Start of leave : {{ app.leave_start }}</label>
                                     </div>
                                 </div>
                                 <div class="field">
                                     <div class="disabled field">
-                                        <label>leave_end : {{ app.leave_end }}</label>
+                                        <label>End of leave : {{ app.leave_end }}</label>
                                     </div>
                                 </div>
                                 <div class="field">
                                     <div class="disabled field">
-                                        <label>family_departure_date : {{ app.family_departure_date }}</label>
+                                        <label>Family departure date : {{ app.family_departure_date }}</label>
                                     </div>
                                 </div>
                                 <div class="field">
                                     <div class="disabled field">
-                                        <label>leave_nature : {{ app.leave_nature }}</label>
+                                        <label>Nature of leave : {{ app.leave_nature }}</label>
                                     </div>
                                 </div>
                                 <div class="field">
                                     <div class="disabled field">
-                                        <label>purpose : {{ app.purpose }}</label>
+                                        <label>Purpose : {{ app.purpose }}</label>
                                     </div>
                                 </div>
                                 <div class="field">
                                     <div class="disabled field">
-                                        <label>is_hometown_or_elsewhere : {{ app.is_hometown_or_elsewhere }}</label>
+                                        <label>Is leave hometown or elsewhere? : {{ app.is_hometown_or_elsewhere }}</label>
                                     </div>
                                 </div>
                                 <div class="field">
                                     <div class="disabled field">
-                                        <label>address_during_leave : {{ app.address_during_leave }}</label>
+                                        <label>Address : {{ app.address_during_leave }}</label>
                                     </div>
                                 </div>
                                 <div class="field">
                                     <div class="disabled field">
-                                        <label>phone_number : {{ app.phone_number }}</label>
+                                        <label>Phone number : {{ app.phone_number }}</label>
                                     </div>
                                 </div>
                                 <div class="field">
                                     <div class="disabled field">
-                                        <label>travel_mode : {{ app.travel_mode }}</label>
+                                        <label>Mode of travel : {{ app.travel_mode }}</label>
                                     </div>
                                 </div>
                                 <div class="field">
@@ -498,7 +498,7 @@
                                 <label>Details of family members who have already availed ltc in this block
                                     <table border = '2'><th>Name</th><th>Age</th>
                                         {% for app2 in ltc_availed_review %}
-                                        {% if app2.ltc.leave_start == app.leave_start %}
+                                        {% if app2.ltc == app %}
                                         <tr>
                                             <td> 
                                                 {{ app2.name }}
@@ -514,7 +514,7 @@
                                     <label>Details of family members who will avail ltc
                                         <table border = '2'><th>Name</th><th>Age</th>
                                             {% for app2 in ltc_to_avail_review %}
-                                            {% if app2.ltc.leave_start == app.leave_start %}
+                                            {% if app2.ltc == app %}
                                             <tr>
                                                 <td> 
                                                     {{ app2.name }}
@@ -530,7 +530,7 @@
                                     <label>Details of dependents
                                         <table border = '2'><th>Name</th><th>Age</th><th>Why fully dependent</th>
                                             {% for app2 in dependent_review %}
-                                            {% if app2.ltc.leave_start == app.leave_start %}
+                                            {% if app2.ltc == app %}
                                             <tr>
                                                 <td> 
                                                     {{ app2.name }}
@@ -550,7 +550,7 @@
                                     </div>
                                 <div class="field">
                                     <div class="disabled field">
-                                        <label>requested_advance : {{ app.requested_advance }}</label>
+                                        <label>Requested advance : {{ app.requested_advance }}</label>
                                     </div>
                                 </div>
 
