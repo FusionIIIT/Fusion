@@ -36,9 +36,9 @@
                             <div class="twelve wide field">
                                 <label>Category*</label>
                                 <select class="ui dropdown" name="category" id="category">
-                                    <option value="Academics">Academics</option>
-                                    <option value="Personal">Personal</option>
-                                    <option value="Others">Others</option>
+                                    {% for category in categories %}
+                                    <option value={{category.category_id}}>{{category.category}}</option>
+                                    {% endfor %}
                                 </select>
                             </div>
 
@@ -80,13 +80,13 @@
                 <!--<img class="ui mini circular image" src="{% static 'globals/img/zlatan.jpg' %}"> --->
             <div class="item">
                 <div class="right floated content">
-                    <a class="header">{{faq.category}}</a>
+                    <a class="header">{{faq.counselling_category}}</a>
                 </div>
                 <div class="description">
                     <div class="header">Question {{forloop.counter}} : </div>
-                    <h2 class="ui header">{{faq.question}}</h1>
+                    <h2 class="ui header">{{faq.counselling_question}}</h1>
                     <div class="header">Answer {{forloop.counter}} :</div>
-                    <h3 class="ui header">{{faq.answer}}</h3>
+                    <h3 class="ui header">{{faq.counselling_answer}}</h3>
                 </div> 
                 
             </div>

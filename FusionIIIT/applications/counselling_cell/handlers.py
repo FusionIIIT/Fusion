@@ -1,4 +1,8 @@
-from  .models import CounsellingFAQ
+from  .models import (
+    CounsellingFAQ,
+    CounsellingIssueCategory
+)
+
 def add_counselling_faq(request, student):
     """
     This function is to record the feedback submitted
@@ -13,17 +17,15 @@ def add_counselling_faq(request, student):
     :return:
         data: to record success or any errors
     """
-    # date_today = datetime.now().date()
-    # mess_optn = Messinfo.objects.get(student_id=student)
-    answer = request.POST.get('answer')
-    category = request.POST.get('category')
-    question = request.POST.get('question')
-    print(answer)
-    # faq_object = FAQ(answer=answer,question=question,category=category)
 
-    # faq_object.save()
-    # data = {
-    #     'status': 1
-    # }
+    answer = request.POST.get('answer')
+    category = CounsellingIssueCategory.objects.filter(category_id=request.POST.get('category'))[0]
+    question = request.POST.get('question')
+    faq_object = CounsellingFAQ(counselling_answer=answer,counselling_question=question,counseliing_category=category)
+
+    faq_object.save()
+    data = {
+        'status': 1
+    }
     return data
 

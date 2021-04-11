@@ -1,7 +1,7 @@
 from django.db import models
 from applications.academic_information.models import Student
 from django.contrib.auth.models import User
-from applications.globals.models import Faculty
+from applications.globals.models import Faculty,ExtraInfo
 # Create your models here.
 
 class CounsellingCellConstants :
@@ -54,11 +54,10 @@ class StudentCounsellingInfo(models.Model):
         return f"{self.faculty} - {self.student_guide} - {self.student}"
 
 class CounsellingIssueCategory(models.Model):
-    category_id = models.CharField(max_length=40)
+    category_id = models.CharField(max_length=40,unique=True)
     category = models.CharField(max_length=40)
 
-    class Meta:
-        unique_together = (('category_id', 'category'))
+
 
     def __str__(self):
         return f"{self.category}"

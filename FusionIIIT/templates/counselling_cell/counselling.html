@@ -61,7 +61,7 @@ Counselling cell
 
         {% comment %}The ... starts here!{% endcomment %}
         <div class="ui tab segment" data-tab="second">
-            {% block Issues %}
+            {% block leaveRequest %}
             {% include 'messModule/applications.html' %}
             {% endblock %}
         </div>
@@ -71,7 +71,7 @@ Counselling cell
         {% comment %}The ... starts here!{% endcomment %}
         <div class="ui {% if info.user_type == 'student' %}active {% endif %}tab segment" data-tab="fourth">
             {% block views %}
-            {% include 'counselling_cell/issues.html' %}
+            {% include 'messModule/views.html' %}
             {% endblock %}
         </div>
         {% comment %}The ... ends here!{% endcomment %}
@@ -128,8 +128,8 @@ Counselling cell
 
         {% comment %}The ... starts here!{% endcomment %}
         <div class="ui {% if info.user_type == 'staff' or info.user_type == 'faculty' %}active {% endif %} tab segment" data-tab="thirteenth">
-            {% block issues %}
-            {% include 'counselling_cell/issues.html' %}
+            {% block viewmenu %}
+            {% include 'messModule/viewmenu.html' %}
             {% endblock %}
         </div>
         {% comment %}The ... ends here!{% endcomment %}
