@@ -13,7 +13,7 @@ from applications.leave.models import LeaveType,LeavesCount,Leave,ReplacementSeg
 from applications.leave.models import LeaveAdministrators,LeaveMigration,RestrictedHoliday,ClosedHoliday,VacationHoliday,LeaveOffline,LeaveSegmentOffline
 from . import serializers
 
-@api_view(['GET'])
+@api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def leave_type_api(request):
@@ -32,7 +32,7 @@ def leave_type_api(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET'])
+@api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def leaves_count_api(request):
@@ -51,7 +51,7 @@ def leaves_count_api(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET'])
+@api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def leave_api(request):
@@ -70,7 +70,7 @@ def leave_api(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET'])
+@api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def replacement_segment_api(request):
@@ -89,7 +89,7 @@ def replacement_segment_api(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET'])
+@api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def replacement_segment_offline_api(request):
@@ -108,7 +108,7 @@ def replacement_segment_offline_api(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET'])
+@api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def leave_segment_offline_api(request):
@@ -127,7 +127,7 @@ def leave_segment_offline_api(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET'])
+@api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def leave_segment_api(request):
@@ -146,7 +146,7 @@ def leave_segment_api(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET'])
+@api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def leave_request_api(request):
@@ -165,7 +165,7 @@ def leave_request_api(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET'])
+@api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def leave_administrators_api(request):
@@ -184,7 +184,7 @@ def leave_administrators_api(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET'])
+@api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def leave_migration_api(request):
@@ -203,7 +203,7 @@ def leave_migration_api(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET'])
+@api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def restricted_holiday_api(request):
@@ -222,7 +222,7 @@ def restricted_holiday_api(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET'])
+@api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def closed_holiday_api(request):
@@ -241,7 +241,7 @@ def closed_holiday_api(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET'])
+@api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def vacation_holiday_api(request):
@@ -278,3 +278,4 @@ def leave_offline_api(request):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
