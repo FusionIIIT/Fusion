@@ -70,7 +70,8 @@ def is_appraisal(dictx):
 
 def handle_cpda_admin(request):
     app_id = request.POST.get('app_id')
-    status = request.POST.get('status')
+    status = request.POST.get('assign_status')
+    status_accept=request.POST.get('accept_status')
     reviewer = request.POST.get('reviewer_id')
     reviewer2 = request.POST.get('reviewer_id2')
     reviewer3 = request.POST.get('reviewer_id3')
@@ -78,6 +79,8 @@ def handle_cpda_admin(request):
     designation2 = request.POST.get('reviewer_design2')
     designation3 = request.POST.get('reviewer_design3')
     remarks = request.POST.get('remarks')
+    if status is None:
+        status=status_accept
     if status == 'requested' or status == 'adjustments_pending':
         if reviewer and reviewer2 and reviewer3 and designation and app_id:
             # assign the app to the reviewer
@@ -135,10 +138,13 @@ def handle_cpda_admin(request):
 def handle_ltc_admin(request):
     if 'ltc_assign_form' in request.POST:
         app_id = request.POST.get('app_id')
-        status = request.POST.get('status')
+        status = request.POST.get('assign_status')
+        status_accept=request.POST.get('accept_status')
         reviewer = request.POST.get('reviewer_id')
         designation = request.POST.get('reviewer_design3')
         remarks = request.POST.get('remarks')
+        if status is None:
+            status=status_accept
         if status == 'requested':
             if reviewer and designation and app_id:
                 # assign the app to the reviewer
