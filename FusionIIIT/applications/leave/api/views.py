@@ -25,6 +25,12 @@ def leave_type_api(request):
             'leavetype' : leave_type,
         }
         return Response(data=resp,status=status.HTTP_200_OK)
+    elif request.method == 'POST':
+        serializer = serializers.LeaveTypeSerializers(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -38,6 +44,12 @@ def leaves_count_api(request):
             'leavescount' : leaves_count,
         }
         return Response(data=resp,status=status.HTTP_200_OK)
+    elif request.method == 'POST':
+        serializer = serializers.LeaveCountSerializers(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -51,6 +63,12 @@ def leave_api(request):
             'leave' : leave,
         }
         return Response(data=resp,status=status.HTTP_200_OK)
+    elif request.method == 'POST':
+        serializer = serializers.LeaveSerializers(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -64,6 +82,12 @@ def replacement_segment_api(request):
             'replacement_segment' : replacement_segment,
         }
         return Response(data=resp,status=status.HTTP_200_OK)
+    elif request.method == 'POST':
+        serializer = serializers.ReplacementSegmentSerializers(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -77,6 +101,12 @@ def replacement_segment_offline_api(request):
             'replacement_segment_offline' : replacement_segment_offline,
         }
         return Response(data=resp,status=status.HTTP_200_OK)
+    elif request.method == 'POST':
+        serializer = serializers.ReplacementSegmentOfflineSerializers(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -90,6 +120,12 @@ def leave_segment_offline_api(request):
             'leave_segment_offline' : leave_segment_offline,
         }
         return Response(data=resp,status=status.HTTP_200_OK)
+    elif request.method == 'POST':
+        serializer = serializers.LeaveSegmentOfflineSerializers(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -103,6 +139,12 @@ def leave_segment_api(request):
             'leave_segment' : leave_segment,
         }
         return Response(data=resp,status=status.HTTP_200_OK)
+    elif request.method == 'POST':
+        serializer = serializers.LeaveSegmentSerializers(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -116,6 +158,12 @@ def leave_request_api(request):
             'leave_request' : leave_request,
         }
         return Response(data=resp,status=status.HTTP_200_OK)
+    elif request.method == 'POST':
+        serializer = serializers.LeaveRequestSerializers(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -129,6 +177,12 @@ def leave_administrators_api(request):
             'leave_administrators' : leave_administrators,
         }
         return Response(data=resp,status=status.HTTP_200_OK)
+    elif request.method == 'POST':
+        serializer = serializers.LeaveAdministratorsSerializers(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -142,6 +196,12 @@ def leave_migration_api(request):
             'leave_migration' : leave_migration,
         }
         return Response(data=resp,status=status.HTTP_200_OK)
+    elif request.method == 'POST':
+        serializer = serializers.LeaveMigrationSerializers(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -155,6 +215,12 @@ def restricted_holiday_api(request):
             'restricted_holiday' : restricted_holiday,
         }
         return Response(data=resp,status=status.HTTP_200_OK)
+    elif request.method == 'POST':
+        serializer = serializers.RestrictedHolidaySerializers(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -168,6 +234,12 @@ def closed_holiday_api(request):
             'closed_holiday' : closed_holiday,
         }
         return Response(data=resp,status=status.HTTP_200_OK)
+    elif request.method == 'POST':
+        serializer = serializers.ClosedHolidaySerializers(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -181,8 +253,14 @@ def vacation_holiday_api(request):
             'vacation_holiday' : vacation_holiday,
         }
         return Response(data=resp,status=status.HTTP_200_OK)
+    elif request.method == 'POST':
+        serializer = serializers.VacationHolidaySerializers(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET'])
+@api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
 @authentication_classes([TokenAuthentication])
 def leave_offline_api(request):
@@ -194,3 +272,9 @@ def leave_offline_api(request):
             'leave_offline' : leave_offline,
         }
         return Response(data=resp,status=status.HTTP_200_OK)
+    elif request.method == 'POST':
+        serializer = serializers.LeaveOfflineSerializers(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
