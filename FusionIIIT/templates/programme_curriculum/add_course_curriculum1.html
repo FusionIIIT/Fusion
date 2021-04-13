@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html>
+
+   <head>
+      <title>Add Cousres to Curriculum</title>
+
+  <style>
+
+
+
+   section
+{
+    display:flex;
+}
+.leftside
+{
+  margin-top:55px;
+    margin-left :300px;
+    width:55%;
+    height:300px;
+}
+
+.rightside
+{
+      margin-left :5px;
+    width:30%;
+    height:auto;
+
+
+}
+
+
+h2 { color: #111;
+ font-family: 'Open Sans',sans-serif;
+  font-size: 20px;
+font-weight: 100;
+
+ }
+
+ h3 { color: #111;
+ font-family: 'Open Sans',sans-serif;
+  font-size: 30px;
+font-weight: 100;
+
+ }
+
+
+
+
+
+
+
+  .styled-table {
+    border-collapse: collapse;
+    margin: 25px 25px 25px;
+      margin-left: 0px;
+      margin-right: auto;
+      margin-top :15px;
+    font-size: 0.9em;
+    font-family: sans-serif;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+
+
+.styled-table thead tr {
+    background-color: #009879;
+    color: #ffffff;
+    text-align: left;
+}
+
+.styled-table th,
+.styled-table td {
+    padding: 12px 15px;
+}
+
+.styled-table tbody tr {
+    border-bottom: 1px solid #dddddd;
+}
+
+.styled-table tbody tr:nth-of-type(even) {
+    background-color: #f3f3f3;
+}
+
+.styled-table tbody tr:last-of-type {
+    border-bottom: 2px solid #009879;
+}
+
+
+
+
+
+     .custom-select {
+  position: relative;
+  font-family: Arial;
+}
+
+
+
+.select-selected {
+  background-color: DodgerBlue;
+}
+
+
+
+input[type=text], select, textarea {
+  width: 80%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  resize: vertical;
+}
+
+
+input[type=number], select, textarea {
+  width: 80%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  resize: vertical;
+}
+
+
+label {
+  padding: 12px 12px 12px 0;
+  display: inline-block;
+}
+
+input[type=submit] {
+  background-color: #4CAF50;
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  float: right;
+}
+
+input[type=submit]:hover {
+  background-color: #45a049;
+}
+
+.container {
+
+  margin-top :40px;
+  height : 300px;
+  width :500px;
+  border-radius: 5px;
+  background-color: #f2f2f2;
+  padding: 20px;
+   border-bottom: 1px solid #009879;
+  border-top: 1px solid #009879;
+  border-left: 1px solid #009879;
+  border-right: 1px solid #009879;
+
+
+}
+
+.col-25 {
+  float: left;
+  width: 25%;
+  margin-top: 6px;
+}
+
+.col-75 {
+  float: left;
+  width: 75%;
+  margin-top: 6px;
+}
+.col-70 {
+  float: left;
+  width: 70%;
+  margin-top: 6px;
+}
+
+
+.col-20 {
+  float: left;
+
+  margin-bottom: 5px;
+}
+
+
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+
+
+
+
+
+  </style>
+   </head>
+
+<body>
+
+
+<section>
+
+  <div class="leftside">
+ <h3> Update Curriculum</h3>
+<div class="container">
+       <h2>Add Courses to Curriculum</h2>
+
+
+  <form action="">
+
+        <div class="row">
+      <div class="col-25">
+
+        <label>Semester Number :</label>
+      </div>
+      <div class="col-75">
+
+          <select>
+        <option value="0">Select Semester:</option>
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5">5</option>
+    <option value="6">6</option>
+    <option value="7">7</option>
+    <option value="8">8</option>
+
+  </select>
+
+      </div>
+    </div>
+
+
+    <div class="row">
+      <div class="col-25">
+
+
+        <label>Course Code</label>
+      </div>
+      <div class="col-70">
+        <input type="text" id="course_code" name="course_code" placeholder="Course Code">
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-25">
+        <label for="Credit">Credit</label>
+      </div>
+      <div class="col-70">
+        <input type="number" id="credit" name="credit" placeholder="Credit">
+      </div>
+    </div>
+
+
+
+   <br>
+    <br>
+    <div class="row">
+      <div class="col-20">
+             <input type="submit" value="Add">
+      </div>
+      <div class="col-70">
+
+      </div>
+    </div>
+
+
+
+  </form>
+</div>
+  </div>
+
+
+
+
+  <div class ="rightside">
+  <h2>See Course List</h2>
+
+       <div class="row">
+      <div class="col-25">
+
+        <label>Semester No:</label>
+      </div>
+      <div class="col-75">
+
+          <select>
+             <option value="0">Select Semester:</option>
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5">5</option>
+    <option value="6">6</option>
+    <option value="7">7</option>
+    <option value="8">8</option>
+
+  </select>
+
+      </div>
+    </div>
+
+
+
+
+    <table class="styled-table">
+    <thead>
+        <tr>
+            <th>Course Code</th>
+            <th>Course Name</th>
+            <th>Credit</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>CS 205</td>
+            <td>Computer Network</td>
+            <td>3</td>
+              <td>update</td>
+        </tr>
+        <tr >
+            <td>CS 203</td>
+            <td>Operating System</td>
+            <td>3</td>
+            <td>update</td>
+        </tr>
+          <tr>
+            <td>NS 101</td>
+            <td>Mathematics</td>
+            <td>4</td>
+             <td>update</td>
+        </tr>
+        <tr >
+            <td>NS 102</td>
+            <td>Mathematics</td>
+            <td>4</td>
+             <td>update</td>
+        </tr>
+
+       <tr >
+         <td>NS 104</td>
+            <td>Optics</td>
+            <td>4</td>
+             <td>update</td>
+        </tr>
+     <tr >
+           <td>NS 101</td>
+            <td>Mechanics</td>
+            <td>4</td>
+             <td>update</td>
+        </tr>
+     <tr >
+            <td>ES 102</td>
+            <td>Data Structure</td>
+            <td>4</td>
+             <td>update</td>
+
+        </tr>
+       <tr >
+             <td>CS 203</td>
+            <td>Algorithms</td>
+            <td>4</td>
+             <td>update</td>
+        </tr>
+
+        <tr >
+             <td>CS 203</td>
+            <td>Algorithms</td>
+            <td>4</td>
+             <td>update</td>
+        </tr>
+
+
+    </tbody>
+</table>
+
+
+  </div>
+</section>
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>add_course</title>
+    <link rel='stylesheet' type='text/css' media='screen' href='/static/style.css'>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <!-- <script src='main.js'></script> -->
+</head>
+<body>
+    <div class="top">
+        <h1>Add Course</h1>
+    </div>
+    <section>
+        <table class="styled-table-widder">
+        <form actions="/add_courses" method="POST">
+        {% csrf_token %}
+        <tbody>
+            {{ form }}
+                    <td></td>
+                    <td><input type="Submit" name="Submit"></td>
+        </form>
+        </tbody>
+        </table>
+    </section>
+
