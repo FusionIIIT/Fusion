@@ -4,6 +4,7 @@ from applications.globals.models import ExtraInfo, HoldsDesignation, Designation
 from applications.health_center.models import *
 from datetime import datetime, timedelta, time,date
 from django.db import transaction
+from notification.views import  healthcare_center_notif
 
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
@@ -25,11 +26,15 @@ def student_request_api(request):
     usertype=ExtraInfo.objects.get(user=request.user).user_type
     if usertype == 'student' or usertype == 'faculty' or usertype == 'POST':
         if 'ambulancerequest' in request.data and request.method=='POST':
+            comp_id = ExtraInfo.objects.filter(user_type='compounder')
             request.data['user_id'] = get_object_or_404(User,username=request.user.username)
             request.data['date_request']=datetime.now()
             serializer = serializers.AmbulanceRequestSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()
+                healthcare_center_notif(request.user, request.user, 'amb_request')
+                for cmp in comp_id:
+                    healthcare_center_notif(request.user, cmp.user, 'amb_req')
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
@@ -54,9 +59,13 @@ def student_request_api(request):
             except:
                 return Response({'message': 'Please enter doctor id'}, status=status.HTTP_404_NOT_FOUND)
             request.data['schedule'] =get_object_or_404(Schedule,doctor_id=request.data['doctor_id'],day=day).id
+            comp_id = ExtraInfo.objects.filter(user_type='compounder')
             serializer = serializers.AppointmentSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()
+                healthcare_center_notif(request.user, request.user, 'appoint')
+                for cmp in comp_id:
+                     healthcare_center_notif(request.user, cmp.user, 'appoint_req')
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -226,8 +235,10 @@ def compounder_request_api(request):
 
         elif 'prescriptionsubmit' in request.data and request.method == 'POST':
             serializer = serializers.PrescriptionSerializer(data=request.data)
+            user = ExtraInfo.objects.get(id=request.data['user_id'])
             if serializer.is_valid():
                 serializer.save()
+                healthcare_center_notif(request.user, user.user, 'Presc')
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -274,7 +285,7 @@ def compounder_request_api(request):
             try: 
                 complain = Complaint.objects.get(id = pk) 
             except Complaint.DoesNotExist: 
-                return Response({'message': 'The Complaint does not exist'}, status=status.HTTP_404_NOT_FOUND)
+                return Response({'message': 'Complaint does not exist'}, status=status.HTTP_404_NOT_FOUND)
             serializer = serializers.ComplaintSerializer(complain,data=request.data,partial=True)
             if serializer.is_valid():
                 serializer.save()
