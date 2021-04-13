@@ -107,39 +107,3 @@ class CourseSlot(models.Model):
 
     def get_courses_objects(self):
         return self.courses.all()
-
-# class CurriculumList(models.Model):
-#     programme_id = models.ForeignKey(ProgrammeList ,on_delete=models.CASCADE)
-#     name = models.CharField(max_length=100)
-#     batch_year = models.IntegerField(default=datetime.date.today().year)
-#     version = models.IntegerField(default=1)
-#     working_curriculum = models.BooleanField(default=True)
-    
-
-#     class Meta:
-#         db_table = 'CurriculumList'
-
-#     def __str__(self):
-#         return self.name +" "+ self.version
-    # def __str__(self) -> str:
-    #     return super().__str__()
-
-# class SemesterList(models.Model):
-#     curriculum_id = models.ForeignKey(CurriculumList ,on_delete=models.CASCADE)
-#     semester_no = models.IntegerField(default=1)
-#     # courses = models.ManyToManyField(CourseDetails)
-
-#     class Meta:
-#         db_table = 'SemesterList'
-    
-#     def __str__(self):
-#         return str(self.semester_no) +" "+ str(self.curriculum_id)
-
-
-
-# class SemesterCourseList(models.Model):
-#     semester_id = models.ForeignKey(SemesterList ,on_delete=models.CASCADE)
-#     course_id = models.IntegerField(CourseDetails)
-
-#     class Meta:
-#         db_table = 'SemesterCourseList'
