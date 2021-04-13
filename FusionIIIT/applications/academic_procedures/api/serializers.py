@@ -2,7 +2,8 @@ from rest_framework.authtoken.models import Token
 from rest_framework import serializers
 
 from applications.academic_procedures.models import (ThesisTopicProcess, InitialRegistrations,
-                                                     FinalRegistrations, SemesterMarks)
+                                                     FinalRegistrations, SemesterMarks,
+                                                     BranchChange)
 
 from applications.academic_information.api.serializers import (CurriculumInstructorSerializer,
                                                                CurriculumSerializer)
@@ -30,4 +31,10 @@ class SemesterMarksSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SemesterMarks
+        fields = ('__all__')
+
+class BranchChangeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = BranchChange
         fields = ('__all__')
