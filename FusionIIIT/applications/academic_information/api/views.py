@@ -174,7 +174,7 @@ def spi_api(request):
 
     if request.method == 'GET':
         spi = Spi.objects.all()
-        spi_serialized = serializers.SpiSerializers(grades,many=True).data
+        spi_serialized = serializers.SpiSerializers(spi,many=True).data
         resp = {
             'spi' : spi_serialized,
         }
