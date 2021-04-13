@@ -34,7 +34,7 @@ def course_api(request):
 
     if request.method == 'GET':
         course = Course.objects.all()
-        course_serialized = serializers.CourseSerializers(course,many=True).data
+        course_serialized = serializers.CourseSerializer(course,many=True).data
         resp = {
             'courses' : course_serialized,
         }
@@ -48,7 +48,7 @@ def curriculum_api(request):
 
     if request.method == 'GET':
         curriculum = Curriculum.objects.all()
-        curriculum_serialized = serializers.CurriculumSerializers(curriculum,many=True).data
+        curriculum_serialized = serializers.CurriculumSerializer(curriculum,many=True).data
         resp = {
             'curriculum' : curriculum_serialized,
         }
@@ -132,7 +132,7 @@ def curriculum_instructor_api(request):
 
     if request.method == 'GET':
         curriculum_instructor = Curriculum_Instructor.objects.all()
-        curriculum_instructor_serialized = serializers.Curriculum_InstructorSerializers(curriculum_instructor,many=True).data
+        curriculum_instructor_serialized = serializers.CurriculumInstructorSerializer(curriculum_instructor,many=True).data
         resp = {
             'curriculum_instructor' : curriculum_instructor_serialized,
         }

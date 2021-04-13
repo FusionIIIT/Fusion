@@ -1,10 +1,14 @@
+from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
 from rest_framework import serializers
 
 from applications.academic_information.models import (Curriculum, Curriculum_Instructor,
-                                                      Course)
+                                                      Course, Student, Student_attendance, Meeting, Calendar, Holiday, Grades, Spi, Timetable, Exam_timetable)
 
 from applications.globals.api.serializers import ExtraInfoSerializer
+
+from notifications.models import Notification
+from applications.globals.models import ExtraInfo,User
 
 class CourseSerializer(serializers.ModelSerializer):
 
