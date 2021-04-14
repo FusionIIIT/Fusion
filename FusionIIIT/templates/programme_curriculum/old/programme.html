@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <link rel='stylesheet' type='text/css' media='screen' href='style.css'> -->
+    <link rel='stylesheet' type='text/css' media='screen' href='/static/style.css'>
+    {% comment %} <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css"> {% endcomment %}
+    <title>Programmes</title>
+    
+</head>
+<body>
+    <div class="top">
+       <h1>Programme</h1>
+   </div>
+    <div>
+        <table class="styled-table-widder">
+            <thead>
+                <tr style="text-align: center;">
+                    <th>UG: Under Graduate</th>
+                    <th>PG: Post Graduate</th>
+                    <th>PHD: Doctor of Philosophy</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% import itertools %}
+                {% for (ug, pg, phd) in itertools.zip_longest(UG, PG, PHD, fillvalue=""): %}
+                <tr>
+                    <td><a href="{% url 'curriculum' ug.id %}">{{ug.title | title }}</a></td>
+                    <td><a href="{% url 'curriculum' pg.id %}">{{ pg.title | title }}</a></td>
+                    <td><a href="{% url 'curriculum' phd.id %}">{{ phd.title | title }}</a></td>
+                </tr>
+                {% endfor %}
+                <!-- <tr>
+                    <td><a href="">B-Tech (Computer Science Engineering)</a></td>
+                    <td><a href="">M-Tech (Computer Science Engineering)</a></td>
+                    <td><a href="">PHD (Computer Science Engineering)</a></td>
+                </tr>
+                <tr>
+                    <td><a href="">B-Tech (Electronics and Communication Engineering)</a></td>
+                    <td><a href="">M-Tech (Electronics and Communication Engineering)</a></td>
+                    <td><a href="">PHD (Electronics and Communication Engineering)</a></td>
+                </tr>
+                <tr>
+                    <td><a href="">B-Tech (Mechanical Engineering)</a></td>
+                    <td><a href="">M-Tech (Mechanical Engineering)</a></td>
+                    <td><a href="">PHD (Mechanical Engineering)</a></td>
+                </tr>
+                <tr>
+                    <td><a href="">B-Tech (Smart Manufactring)Bachelor of DesignPHD (Mathematics)</a></td>
+                    <td></td>
+                    <td><a href="">PHD (Mathematics)</a></td>
+                </tr>
+                <tr>
+                    <td><a href="">Bachelor of Design</a></td>
+                    <td><a href="">Masters of Design</a></td>
+                    <td></td>
+                </tr> -->
+            </tbody>
+            </table>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
+</body>
+</html>

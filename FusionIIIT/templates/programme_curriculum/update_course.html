@@ -11,50 +11,40 @@
 </head>
 <body>
     <div class="top">
-        <h1>Curriculum: <span>{{ Title.title }}</span></h1>
+        {% comment %} <h1> <span>{{ Title.title }}</span></h1> {% endcomment %}
     </div>
     <section>
         <div class="leftside">
-            <h2> Current Curriculums</h2>
+            <h2>Update Course</h2>
             <table class="styled-table">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Batch Year</th>
-                    <th>Version</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for cc in Current_curriculum %}
-                <tr>
-                    <td>{{ cc.name }}</td>
-                    <td>{{ cc.batch_year }}</td>
-                    <td>{{ cc.version }}</td>
-                    <td><a href="{% url 'programme_curriculum:semester' cc.id %}">view</a></td>
-                </tr>
-                {% endfor %}
-            </tbody>
+                <form actions="/add_programme" method="POST">
+                {% csrf_token %}
+                <tbody>
+                    {{ form }}
+                    <td></td>
+                    <td><input type="Submit" name="Submit" value="Update"></td>
+                </tbody>
+                </form>
             </table>
         </div>
         <div class="rightside">
-            <h2> Past Curriculums</h2>
+            <h2>See Course List</h2>
             <table class="styled-table">
                 <thead>
                     <tr>
-                        <th>Name</th>
-                        <th>Batch Year</th>
-                        <th> Version</th>
+                        <th>Course Code</th>
+                        <th>Course Name</th>
+                        <th>Credit</th>
                         <th></th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for pc in Past_curriculum %}
+                    {% for cr in cour %}
                     <tr>
-                        <td>{{ pc.name }}</td>
-                        <td>{{ pc.batch_year }}</td>
-                        <td>{{ pc.version }}</td>
-                        <td><a href="{% url 'programme_curriculum:semester' pc.id %}">view</a></td>
+                        <td>{{ cr.course_code }}</td>
+                        <td>{{ cr.title }}</td>
+                        <td>{{ cr.credits }}</td>
+                        <td><a href="{% url 'programme_curriculum:update_course' cr.id %}">update</a></td>
                     </tr>
                     {% endfor %}
                 </tbody>

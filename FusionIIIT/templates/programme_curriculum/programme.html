@@ -4,79 +4,53 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel='stylesheet' type='text/css' media='screen' href='style.css'>
-    <title>Programmes</title>
-    
+    <link rel='stylesheet' type='text/css' media='screen' href='/static/style.css'>
+    {% comment %} <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css"> {% endcomment %}
+    <title>Programme</title>
 </head>
-<body>
+<body> 
     <div class="top">
        <h1>Programme</h1>
    </div>
     <div>
-        <table class="styled-table">
+        <table class="styled-table-widder">
             <thead>
                 <tr style="text-align: center;">
                     <th>UG: Under Graduate</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ug in UG %}
+                    <tr><td><a href="{% url 'programme_curriculum:curriculum' ug.id %}">{{ug.title | title }}</a></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <table class="styled-table-widder">
+            <thead>
+                <tr style="text-align: center;">
                     <th>PG: Post Graduate</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pg in PG %}
+                    <tr><td><a href="{% url 'programme_curriculum:curriculum' pg.id %}">{{pg.title | title }}</a></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <table class="styled-table-widder">
+            <thead>
+                <tr style="text-align: center;">
                     <th>PHD: Doctor of Philosophy</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>
-                        <ul>
-                        <li>
-                            B-Tech (Computer Science Engineering)
-                        </li>
-                        <li>
-                            B-Tech (Electronics and Communication Engineering)
-                        </li>
-                        <li>
-                            B-Tech (Mechanical Engineering)
-                        </li>
-                        <li>
-                            B-Tech (Smart Manufactring)
-                        </li>
-                        <li>
-                            Bachelor of Design
-                        </li>
-                        </ul>
-                    </td>
-                    <td>
-                        <ul>
-                        <li>
-                            M-Tech (Computer Science Engineering)
-                        </li>
-                        <li>
-                            M-Tech (Electronics and Communication Engineering)
-                        </li>
-                        <li>
-                            M-Tech (Mechanical Engineering)
-                        </li>
-                        <li>
-                            Bachelor of Design
-                        </li>
-                        </ul>
-                    </td>
-                    <td>
-                        <ul>
-                        <li>
-                            PHD (Computer Science Engineering)
-                        </li>
-                        <li>
-                            PHD (Electronics and Communication Engineering)
-                        </li>
-                        <li>
-                            PHD (Mechanical Engineering)
-                        </li>
-                        <li>
-                            PHD (Mathematics)
-                        </li>
-                        </ul>
-                    </td>
-                </tr>
+                {% for phd in PHD %}
+                    <tr><td><a href="{% url 'programme_curriculum:curriculum' phd.id %}">{{phd.title | title }}</a></td></tr>
+                {% endfor %}
             </tbody>
-            </table>
+        </table>
     </div>
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
 </body>
 </html>

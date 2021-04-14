@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Courses</title>
+    <link rel='stylesheet' type='text/css' media='screen' href='/static/style.css'>
+    <!-- <link rel="stylesheet" type="text/css" href="semantic/dist/semantic.min.css"> -->
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <!-- <script src='main.js'></script> -->
+</head>
+<body>
+    <div class="top"> 
+        <h1>Course Name</h1>
+    </div>
+    <section>
+        <table class="styled-table-widder">
+            {% for cd in Course_detail %}
+            <thead>
+                <tr style="text-align: center;">
+                    <th>Course Code</th>
+                    <th style="background-color: white; color: black;">{{ cd.course_code }}</th>
+                </tr>
+            </thead>
+            <thead>
+                <tr style="text-align: center;">
+                    <th>Course Title</th>
+                    <th style="background-color: white; color: black;">{{ cd.title }}</th>
+                </tr>
+            </thead>
+            <thead>
+                <tr style="text-align: center;">
+                    <th>Contact hours</th>
+                    <th style="background-color: white; color: black;">
+                        <ul>
+                            <li>Lecture: {{ cd.contact_hours_Lecture }}</li>
+                            <li>Tutorial: {{ cd.contact_hours_Tutorial }}</li>
+                            <li>Lab: {{ cd.contact_hours_Lab }}</li>
+                            <li>Discussion: {{ cd.contact_hours_Discussion }}</li>
+                            <li>Project: {{ cd.contact_hours_Project }}</li>
+                        </ul>
+                    </th>
+                </tr>
+            </thead>
+            <thead>
+                <tr style="text-align: center;">
+                    <th>Credits</th>
+                    <th style="background-color: white; color: black;">{{ cd.credits }}</th>
+                </tr>
+            </thead>
+            <thead>
+                <tr style="text-align: center;">
+                    <th>Syllabus</th>
+                    <th style="background-color: white; color: black;">{{ cd.syllabus }}</th>
+                </tr>
+            </thead>
+            <thead>
+                <tr style="text-align: center;">
+                    <th>Evaluation Schema</th>
+                    <th style="background-color: white; color: black;">
+                        <ul>
+                            <li>Quiz 1: {{ cd.evaluation_schema_quiz1 }}</li>
+                            <li>Mid-Sem: {{ cd.evaluation_schema_midsem }}</li>
+                            <li>Lab: {{ cd.evaluation_schema_lab }}</li>
+                            <li>Quiz 2: {{ cd.evaluation_schema_quiz2 }}</li>
+                            <li>End-Sem: {{ cd.evaluation_schema_endsem }}</li>
+                        </ul>
+                    </th>
+                </tr>
+            </thead>
+            <thead>
+                <tr style="text-align: center;">
+                    <th>References & Book</th>
+                    <th style="background-color: white; color: black;">{{ cd.ref_books }}</th>
+                </tr>
+            </thead>
+        {% endfor %}
+        </table>
+    </section>
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+<script src="semantic/dist/semantic.min.js"></script>
+</body>
+</html>

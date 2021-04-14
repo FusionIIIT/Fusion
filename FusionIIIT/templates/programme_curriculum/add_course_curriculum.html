@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Curriculum</title>
+    <link rel='stylesheet' type='text/css' media='screen' href='/static/style.css'>
+    {% comment %} <link rel="stylesheet" type="text/css" href="semantic/dist/semantic.min.css"> {% endcomment %}
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <!-- <script src='main.js'></script> -->
+</head>
+<body>
+    <div class="top">
+        <h1>ADD COURSE TO CURRICULUM</h1>
+    </div>
+    <section>
+            <table class="styled-table">
+                <form actions="/add_programme" method="POST">
+                {% csrf_token %}
+                <tbody>
+                    <tr>
+                        <td>Curriculum: </td>
+                        <td>
+                            <select id="currid" name="currid">
+                            {% for c in cur %}
+                                <option value="{{ c.id }}">{{ c.name }} {{ c.version }}</option>
+                            {% endfor %}
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Semester Number: </td>
+                        <td><input type="number" id="semno" name="semno"></td>
+                    </tr>
+                    <tr>
+                        <td>Course: </td>
+                        <td>
+                            <select id="courid" name="courid">
+                            {% for co in cour %}
+                                <option value="{{ co.id }}">{{ co.course_code }} {{ co.title }}</option>
+                            {% endfor %}
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td><button type="submit">Submit</button></td>
+                    </tr>
+                </tbody>
+                </form>
+            </table>
+    </section>
+    {% comment %} <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+<script src="semantic/dist/semantic.min.js"></script> {% endcomment %}
+</body>
+</html>

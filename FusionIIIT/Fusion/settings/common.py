@@ -121,6 +121,7 @@ INSTALLED_APPS = [
     'applications.finance_accounts',
     'applications.health_center',
     'applications.online_cms',
+    'applications.programme_curriculum',
     'applications.placement_cell',
     'applications.scholarships',
     'applications.visitor_hostel',

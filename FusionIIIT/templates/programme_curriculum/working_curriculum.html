@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Curriculum</title>
+    <link rel='stylesheet' type='text/css' media='screen' href='/static/style.css'>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <!-- <script src='main.js'></script> -->
+</head>
+<body>
+    <div class="top">
+        <h1>Curriculums</h1>
+        <h2>Working Curriculums</h2>
+    </div>
+    <section>
+        <table class="styled-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Batch Year</th>
+                <th>Version</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cc in Current_curriculum %}
+                <tr>
+                    <td>{{ cc.name }}</td>
+                    <td>{{ cc.batch_year }}</td>
+                    <td>{{ cc.version }}</td>
+                    <td><a href="{% url 'programme_curriculum:semester' cc.id %}">view</a></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+        </table>
+    </section>
+</body>
+</html>

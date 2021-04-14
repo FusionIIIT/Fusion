@@ -1,0 +1,8 @@
+{% for sm in scl %}
+    {% for sc in scl %}
+        {% comment %} {{ ss = scl.filter(semester_id_id = smm.id) }} {% endcomment %}
+        {% for sss in scl.filter(semester_id_id = smm.id) %}
+            {{ sss.course_id_id }}
+        {% endfor %}
+    {% endfor %}
+{% endfor %}
