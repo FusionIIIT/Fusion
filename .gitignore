@@ -68,5 +68,5 @@ celerybeat-schedule
 node_modules/
 
 FusionIIIT/static/
-FusionIIIT/Fusion/settings
+FusionIIIT/Fusion/settings/
 package-lock.json
