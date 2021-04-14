@@ -4,7 +4,7 @@ from django.utils import timezone
 
 class ExpenditureType(models.Model):
 	expenditure_type = models.CharField(max_length=100)
-
+	
 	def __str__(self):
 		return self.expenditure_type
 

@@ -9,7 +9,7 @@
     <div class="ui vertical segment">
         {% if sthesis_flag %}
         <B>You can only have one thesis per semester</B>
-        {% else %}
+        {% else %}  
         <form id="add_thesis_form" action='/academic-procedures/addThesis/'>{% csrf_token %}
             <div class="ui form" style="border: black" > 
                     <div class="field">
