@@ -28,7 +28,7 @@ class Programme(models.Model):
     name = models.CharField(max_length=70, null=False, unique=True, blank=False)
 
     def __str__(self):
-        return str(self.name)
+        return str(self.category + " - "+ self.name)
 
 class Discipline(models.Model):
     name = models.CharField(max_length=100, null=False, unique=True, blank=False)
@@ -51,7 +51,7 @@ class Curriculum(models.Model):
         unique_together = ('name', 'version',)
     
     def __str__(self):
-        return str(self.name)
+        return str(self.name + " v" + str(self.version))
 
 class Semester(models.Model):
     curriculum = models.ForeignKey(Curriculum, null=False, on_delete=models.CASCADE)
@@ -61,7 +61,7 @@ class Semester(models.Model):
         unique_together = ('curriculum', 'semester_no',)
     
     def __str__(self):
-        return str(self.semester_no)
+        return str(Curriculum.__str__(self.curriculum) + ", sem-" + str(self.semester_no))
 
 class Course(models.Model):
     code = models.CharField(max_length=10, null=False, unique=True, blank=False)
@@ -80,7 +80,7 @@ class Course(models.Model):
         unique_together = ('code', 'name',)
     
     def __str__(self):
-        return str(self.code + " " +self.name)
+        return str(self.code + " - " +self.name)
 
 class Batch(models.Model):
     name = models.CharField(max_length=50, null=False, unique=True, blank=False)
@@ -92,7 +92,7 @@ class Batch(models.Model):
         unique_together = ('discipline', 'year',)
 
     def __str__(self):
-        return str(self.id)
+        return str(self.name)
 
 class CourseSlot(models.Model):
     semester = models.ForeignKey(Semester, null=False, on_delete=models.CASCADE)
@@ -103,7 +103,7 @@ class CourseSlot(models.Model):
     courses = models.ManyToManyField(Course)
 
     def __str__(self):
-        return str(self.id)
+        return str(Semester.__str__(self.semester) + ", " + self.name + ", id = " + str(self.id))
 
     def get_courses_objects(self):
         return self.courses.all()
