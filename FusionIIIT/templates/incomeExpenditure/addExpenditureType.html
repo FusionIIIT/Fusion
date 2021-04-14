@@ -1,60 +1,36 @@
 {% load static %}
-{% block complainthistory %}
 
 {% comment %}The tab menu starts here!{% endcomment %}
 
 
-<div class="ui tab segment" data-tab="add_expenditure_type">
     
-    <div class="ui pointing secondary menu">
-        <a class = "active item" data-tab = "add">
-            Add Expenditure Type
-        </a>
+<div class="ui vertical segment">
+    <form id="add_expenditure_type_form" action='/incomeExpenditure/addExpenditureType/'>{% csrf_token %}
+        <div class="ui form" style="border: black" >
 
-        <a class = "item" data-tab = "delete">
-            Delete Expenditure Type
-        </a>
-    </div>
+            <div class="field">          
+                <input placeholder="Expenditure Type" name='expenditure_type' required="true" type="text"><br>            
+            </div>
+            <br>
 
-    <div class = "ui active tab segment" data-tab = "add">
-
-        <div class="ui vertical segment" style="border = 0">
-            
-            <form id="add_thesis_form" action='/academic-procedures/addExpenditureType/'>{% csrf_token %}
-                <div class="ui form" style="border: black" > 
-                        <div class="field">
-                            <input placeholder="Enter Expenditure Type" type="text">
-                        </div>
-                    
-                </div><br>
-                <div class="ui divider"></div><br>
-                <center> <button class="ui primary button">Add Expenditure Type</button></center>
-            </form>
-            
-        </div>
-
-
-    </div>
-
-    
-
-
-
+        </div><br>
+        <div class="ui divider"></div><br>
+        <center> <button class="ui primary button">Add</button></center>
+    </form>
 </div>
-{% endblock %}
 
 
 <script type="text/javascript" src="{% static 'globals/js/jquery.min.js' %}"></script>
 <script type="text/javascript">
 $(function() {
-    $("#add_thesis_form").submit(function(event) {
+    $("#add_expenditure_type_form").submit(function(event) {
 
         event.preventDefault();
         var friendForm = $(this);
 
         var posting = $.post( friendForm.attr('action'), friendForm.serialize() );
         posting.done(function(data) {
-            alert('Thesis Topic Successfully Submitted');
+            alert('Expenditure Type added Successfully');
             window.location = "/income-expenditure/main/";
         });
         posting.fail(function(data) {

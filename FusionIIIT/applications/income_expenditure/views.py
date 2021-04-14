@@ -5,3 +5,5 @@ from django.http import HttpResponse, HttpResponseRedirect
 
 def main_page(request):
 	return render(request, '../templates/incomeExpenditure/ie.html')
+
+
