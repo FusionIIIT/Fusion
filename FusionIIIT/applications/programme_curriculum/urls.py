@@ -7,6 +7,7 @@ app_name = 'programme_curriculum'
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', views.main_page),
     # url(r'', views.programme_curriculum, name='programme_curriculum'),
     # path('programme',views.programme, name='program_and_curriculum_management'),
     # url(r'^programme/$', views.programme, name='programme'),
