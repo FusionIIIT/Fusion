@@ -14,12 +14,11 @@
         <a class = "item" data-tab = "delete">
             Delete Expenditure Type
         </a>
+       
     </div>
 
     <div class = "ui active tab segment" data-tab = "add">
-
-        <div class="ui vertical segment" style="border = 0">
-            
+        <div class="ui vertical segment" style="border : 0">
             <form id="add_thesis_form" action='/academic-procedures/addExpenditureType/'>{% csrf_token %}
                 <div class="ui form" style="border: black" > 
                         <div class="field">
@@ -30,12 +29,26 @@
                 <div class="ui divider"></div><br>
                 <center> <button class="ui primary button">Add Expenditure Type</button></center>
             </form>
-            
         </div>
-
-
     </div>
 
+    <div class="ui tab segment" data-tab="delete">
+        <div class="ui vertical segment" style="border : 0">
+            <select class="ui dropdown" >
+                <option value="">Select Expenditure Type</option>
+                
+                <option value="type1">type1</option>
+                <option value="type2">type2</option>
+                <option value="type3">type3</option>
+                <option value="type4">type4</option>
+                <option value="type5">type5</option>
+                <option value="type6">type6</option>
+                <option value="type7">type7</option>
+            </select>
+            <input class="ui primary button" type="button" value="Delete" style="float: right;">
+        </div>
+    </div>
+  
     
 
 
